@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@layer components {
+  .glass-card {
+    /* ✅ shadow এবং [ এর মাঝে কোনো স্পেস হবে না এবং RGBA ঠিক করা হয়েছে */
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(32,38,135,0.07)];
+  }
+
+  .premium-gradient {
+    background: radial-gradient(circle at top left, #eef2ff 0%, #f8fafc 50%, #f1f5f9 100%);
+  }
+}
+
+/* বেসিক ব্যাকগ্রাউন্ড ফিক্স */
+body {
+  background-color: #F8FAFC;
+}
+@layer base {
+  :root {
+    /* This forces Tailwind to avoid wide-gamut colors like OKLCH */
+    color-interpolation-filters: sRGB;
+  }
+}
+
+@media print {
+  .print-section, .print-section * {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    /* This tells the browser to use old-school color math */
+    color-interpolation: sRGB !important;
+  }
+}

@@ -8,8 +8,8 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # গিটহাব রিপোজিটরির ভেতরে আপনার প্রজেক্ট ফোল্ডারের সঠিক নাম
-  APP_PATH: 'ai-book-generator/ismamstudio'
+  # ফোল্ডারের নাম ঠিক করা হয়েছে (শুধুমাত্র ismamstudio হবে)
+  APP_PATH: 'ismamstudio'
 
 jobs:
   build:

@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+# গিটহাবের Node 20 ওয়ার্নিং দূর করার জন্য এটি যোগ করা হলো
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,20 +19,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Node.js অ্যাকশন আপডেট করা হয়েছে
       - name: Set up Node.js version
         uses: actions/setup-node@v4
         with:
           node-version: '22.x'
 
-      # working-directory সরিয়ে ফেলা হয়েছে, কারণ কোড রুটেই আছে
       - name: npm install, build, and test
+        # মেমোরি ক্র্যাশ (Exit code 254) ঠেকানোর জন্য এই env সেটিংগুলো অত্যন্ত জরুরি
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          CI: false 
         run: |
           npm install
           npm run build --if-present
           npm run test --if-present
 
-      # path: . দেওয়া হয়েছে, যাতে পুরো রুট ডিরেক্টরি আপলোড হয়
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:

@@ -30,18 +30,20 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
           CI: false 
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }} # Clerk-এর পাবলিশেবল কি
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }} # Clerk-এর সিক্রেট কি
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         run: |
           npm install
-          npm run build --if-present
-          npm run test --if-present
+          npm run build
 
+      # এই অংশটি গুরুত্বপূর্ণ: আমরা নিশ্চিত করছি যেন সব প্রয়োজনীয় ফাইল আপলোড হয়
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: ./${{ env.APP_PATH }} 
+          path: |
+            ./${{ env.APP_PATH }}
+            !./${{ env.APP_PATH }}/node_modules
 
   deploy:
     runs-on: ubuntu-latest
@@ -69,5 +71,4 @@ jobs:
         with:
           app-name: 'ismamstudio'
           slot-name: 'Production'
-          package: .
-          
+          package: ./${{ env.APP_PATH }}

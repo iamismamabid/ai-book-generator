@@ -58,6 +58,7 @@ export default function WordSearchStudio() {
     
     // 🚨 INTERIOR SETTINGS STATES 🚨
     const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
+    const [paperType, setPaperType] = useState<'white' | 'cream'>('white'); 
     const [totalPuzzles, setTotalPuzzles] = useState(10); 
     const [gridSize, setGridSize] = useState(12);
     const [wordsPerPage, setWordsPerPage] = useState(15); 
@@ -85,17 +86,6 @@ export default function WordSearchStudio() {
     const [cleanWordsList, setCleanWordsList] = useState<any[]>([]); 
     const [showAnswers, setShowAnswers] = useState(false); 
     const csvInputRef = useRef<HTMLInputElement>(null);
-    export default function WordSearchStudio() {
-    const [activeTab, setActiveTab] = useState<'interior' | 'cover'>('interior'); 
-    const [isGenerating, setIsGenerating] = useState(false);
-    
-    
-    const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
-    // 👇 নতুন লাইন এখানে যোগ করুন
-    const [paperType, setPaperType] = useState<'white' | 'cream'>('white'); 
-    const [totalPuzzles, setTotalPuzzles] = useState(10); 
-    const [gridSize, setGridSize] = useState(12);
-    // ... বাকি কোড ...
 
     // 🚨 COVER & 3D MOCKUP STATES 🚨
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -111,14 +101,7 @@ export default function WordSearchStudio() {
     const [show3DMockup, setShow3DMockup] = useState(false); // 3D Mockup Trigger
 
     // Dynamic Cover Math
-    const [show3DMockup, setShow3DMockup] = useState(false); // 3D Mockup Trigger
-
-    // Dynamic Cover Math
-    // 👇 পুরনো লাইনটি মুছে এই পরিবর্তনটি করুন
     const spineWidth = (totalPuzzles * 2) * (paperType === 'white' ? 0.002252 : 0.0025); 
-    const bleed = 0.125;
-    const coverTotalWidth = (trimSize.w * 2) + spineWidth + (bleed * 2);
-    // ... বাকি কোড ...
     const bleed = 0.125;
     const coverTotalWidth = (trimSize.w * 2) + spineWidth + (bleed * 2);
     const coverTotalHeight = trimSize.h + (bleed * 2);
@@ -417,56 +400,55 @@ export default function WordSearchStudio() {
                             <h2 className="font-bold text-sm uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2 shrink-0"><Settings className="w-4 h-4" /> Global Settings</h2>
                             
                             <div className="space-y-6 overflow-y-auto flex-1 pr-2 custom-scrollbar">
-                                {/* 1. Page Layout */}
                                {/* 1. Page Layout */}
-<div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-    <h3 className="font-bold text-xs text-indigo-600 uppercase">Layout & Pages</h3>
-    
-    {/* Trim Size এবং Paper Type এর জন্য Grid */}
-    <div className="grid grid-cols-2 gap-2">
-        <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase">Trim Size</label>
-            <select value={`${trimSize.w}x${trimSize.h}`} onChange={(e) => setTrimSize(TRIM_SIZES.find(t => `${t.w}x${t.h}` === e.target.value) || TRIM_SIZES[0])} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white">
-                {TRIM_SIZES.map(t => <option key={t.label} value={`${t.w}x${t.h}`}>{t.label}</option>)}
-            </select>
-        </div>
-        <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase">Paper Type</label>
-            <select value={paperType} onChange={(e) => setPaperType(e.target.value as 'white' | 'cream')} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white">
-                <option value="white">White</option>
-                <option value="cream">Cream</option>
-            </select>
-        </div>
-    </div>
+                                <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    <h3 className="font-bold text-xs text-indigo-600 uppercase">Layout & Pages</h3>
+                                    
+                                    {/* Trim Size এবং Paper Type এর জন্য Grid */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Trim Size</label>
+                                            <select value={`${trimSize.w}x${trimSize.h}`} onChange={(e) => setTrimSize(TRIM_SIZES.find(t => `${t.w}x${t.h}` === e.target.value) || TRIM_SIZES[0])} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white">
+                                                {TRIM_SIZES.map(t => <option key={t.label} value={`${t.w}x${t.h}`}>{t.label}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Paper Type</label>
+                                            <select value={paperType} onChange={(e) => setPaperType(e.target.value as 'white' | 'cream')} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white">
+                                                <option value="white">White</option>
+                                                <option value="cream">Cream</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
-    {/* অন্যান্য সেটিংস এর জন্য Grid */}
-    <div className="grid grid-cols-2 gap-2">
-        <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase">Total Puzzles</label>
-            <input type="number" value={totalPuzzles} onChange={(e) => setTotalPuzzles(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white" />
-        </div>
-        <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase">Words/Puz</label>
-            <input type="number" value={wordsPerPage} onChange={(e) => setWordsPerPage(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white" />
-        </div>
-        <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase">Puz/Page</label>
-            <select value={puzzlesPerPage} onChange={(e) => setPuzzlesPerPage(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white">
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-                <option value={4}>4</option>
-            </select>
-        </div>
-        <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase">Align</label>
-            <select value={puzzleAlign} onChange={(e) => setPuzzleAlign(e.target.value as any)} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white">
-                <option value="left">Left</option>
-                <option value="center">Center</option>
-                <option value="right">Right</option>
-            </select>
-        </div>
-    </div>
-</div>
+                                    {/* অন্যান্য সেটিংস এর জন্য Grid */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Total Puzzles</label>
+                                            <input type="number" value={totalPuzzles} onChange={(e) => setTotalPuzzles(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white" />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Words/Puz</label>
+                                            <input type="number" value={wordsPerPage} onChange={(e) => setWordsPerPage(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white" />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Puz/Page</label>
+                                            <select value={puzzlesPerPage} onChange={(e) => setPuzzlesPerPage(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white">
+                                                <option value={1}>1</option>
+                                                <option value={2}>2</option>
+                                                <option value={4}>4</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Align</label>
+                                            <select value={puzzleAlign} onChange={(e) => setPuzzleAlign(e.target.value as any)} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs bg-white">
+                                                <option value="left">Left</option>
+                                                <option value="center">Center</option>
+                                                <option value="right">Right</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 {/* 3. Words List Style */}
                                 <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">

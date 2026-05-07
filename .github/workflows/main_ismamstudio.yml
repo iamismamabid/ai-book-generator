@@ -6,9 +6,10 @@ on:
       - main
   workflow_dispatch:
 
-# গিটহাবের Node 20 ওয়ার্নিং দূর করার জন্য এটি যোগ করা হলো
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # গিটহাব রিপোজিটরির ভেতরে আপনার প্রজেক্ট ফোল্ডারের সঠিক নাম এখানে দেওয়া হলো:
+  APP_PATH: 'ismamstudio' # (যদি ফোল্ডারের নাম ai-book-generator/ismamstudio হয়, তবে এখানে 'ai-book-generator/ismamstudio' লিখবেন)
 
 jobs:
   build:
@@ -25,7 +26,8 @@ jobs:
           node-version: '22.x'
 
       - name: npm install, build, and test
-        # মেমোরি ক্র্যাশ (Exit code 254) ঠেকানোর জন্য এই env সেটিংগুলো অত্যন্ত জরুরি
+        # এই লাইনের মাধ্যমে গিটহাবকে নির্দিষ্ট ফোল্ডারে ঢোকানো হচ্ছে
+        working-directory: ./${{ env.APP_PATH }} 
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
           CI: false 
@@ -38,7 +40,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          # ডেপ্লয় করার সময় শুধু প্রজেক্টের ফোল্ডারটিই আপলোড করা হবে
+          path: ./${{ env.APP_PATH }} 
 
   deploy:
     runs-on: ubuntu-latest

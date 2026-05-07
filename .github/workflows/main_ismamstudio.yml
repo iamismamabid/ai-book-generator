@@ -6,10 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-# আপনার প্রজেক্ট ফোল্ডারের নাম (যেখানে package.json আছে)
-env:
-  APP_PATH: 'ai-book-generator'
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,23 +15,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node.js অ্যাকশন আপডেট করা হয়েছে
       - name: Set up Node.js version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22.x'
 
+      # working-directory সরিয়ে ফেলা হয়েছে, কারণ কোড রুটেই আছে
       - name: npm install, build, and test
-        working-directory: ./${{ env.APP_PATH }}
         run: |
           npm install
           npm run build --if-present
           npm run test --if-present
 
+      # path: . দেওয়া হয়েছে, যাতে পুরো রুট ডিরেক্টরি আপলোড হয়
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: ./${{ env.APP_PATH }}
+          path: .
 
   deploy:
     runs-on: ubuntu-latest

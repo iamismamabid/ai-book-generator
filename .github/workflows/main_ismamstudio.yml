@@ -8,7 +8,6 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # ফোল্ডারের নাম ঠিক করা হয়েছে (শুধুমাত্র ismamstudio হবে)
   APP_PATH: 'ismamstudio'
 
 jobs:
@@ -26,11 +25,11 @@ jobs:
           node-version: '22.x'
 
       - name: npm install, build, and test
-        # এই লাইনের মাধ্যমে গিটহাবকে নির্দিষ্ট ফোল্ডারে ঢোকানো হচ্ছে
         working-directory: ./${{ env.APP_PATH }} 
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
           CI: false 
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }} # গিটহাব থেকে সিক্রেটটি এখানে আসবে
         run: |
           npm install
           npm run build --if-present
@@ -40,7 +39,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          # ডেপ্লয় করার সময় শুধু প্রজেক্টের ফোল্ডারটিই আপলোড করা হবে
           path: ./${{ env.APP_PATH }} 
 
   deploy:

@@ -1,9 +1,6 @@
-node_modeles
-  .next
-  .git
-  .gitignore
-  npm-debug.log
-  Dockerignore
-  .dockerignore
-  .env
-  .env.*
+node_modules
+.next
+npm-debug.log
+.dockerignore
+.env
+.env.*

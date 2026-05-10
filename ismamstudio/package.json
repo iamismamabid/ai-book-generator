@@ -46,6 +46,6 @@
     "typescript": "^5"
   },
   "overrides": {
-    "lightningcss": "1.32"
+    "lightningcss": "1.32.0"
   }
 }

@@ -45,4 +45,8 @@
     "tailwindcss": "^4.2.4",
     "typescript": "^5"
   }
+   "overrides": {
+    "lightningcss": "1.26.4"
+  }
+}
 }

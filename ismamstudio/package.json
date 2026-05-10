@@ -44,9 +44,8 @@
     "postcss": "^8.5.14",
     "tailwindcss": "^4.2.4",
     "typescript": "^5"
-  }
-   "overrides": {
+  },
+  "overrides": {
     "lightningcss": "1.26.4"
   }
 }
-

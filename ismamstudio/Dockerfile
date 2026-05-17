@@ -1,29 +1,39 @@
-FROM node:22-bookworm-slim AS builder
+# ১. বেইজ ইমেজ সেট করা
+FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Install deps (including devDependencies) needed to build
-COPY package.json package-lock.json ./
+# ২. শুধুমাত্র প্যাকেজ ফাইলগুলো আগে কপি করা (ডকার ক্যাশ ব্যবহারের জন্য)
+COPY package*.json ./
+
+# ৩. ডিপেন্ডেন্সি ইনস্টল করা
 RUN npm ci
 
-# Build
+# ৪. প্রিজমা স্কিমা ফাইলটি কপি করা (CRITICAL STEP)
+# আপনার প্রিজমা ফোল্ডারটি যেখানে আছে সেটি কপি করুন
+COPY prisma ./prisma/
+
+# ৫. ডকার বিল্ডের ভেতরেই প্রিজমা ক্লায়েন্ট জেনারেট করা
+RUN npx prisma generate
+
+# ৬. প্রজেক্টের বাকি সব কোড কপি করা
 COPY . .
+
+# ৭. এবার নেক্সট জেএস বিল্ড রান করা
 RUN npm run build
 
-FROM node:22-bookworm-slim AS runner
+# --- রানটাইম স্টেজ (Production Stage) ---
+FROM node:18-alpine AS runner
 WORKDIR /app
+
 ENV NODE_ENV=production
 
-# Install only production dependencies
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-# Copy build output and required assets
+# প্রোডাকশনের জন্য প্রয়োজনীয় ফাইলগুলো কপি করা
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
 
-# If these exist in the project root, Next may read them at runtime.
-COPY --from=builder /app/next.config.* ./
+EXPOSE 3000
 
-ENV PORT=8080
-EXPOSE 8080
 CMD ["npm", "run", "start"]

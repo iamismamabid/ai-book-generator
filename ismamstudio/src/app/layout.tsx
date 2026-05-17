@@ -1,10 +1,6 @@
-import { Inter } from 'next/font/google';
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
 import Link from "next/link";
-
-// 🎨 গুগল ফন্ট লোড করা হচ্ছে
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata = {
   title: "Ismam.AI | Write Masterpieces with AI",
@@ -19,7 +15,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       {/* 🎯 html ট্যাগে ফন্টের ভেরিয়েবল ইনজেক্ট করা হলো */}
-      <html lang="en" className={`scroll-smooth ${inter.variable}`}>
+      <html lang="en" className="scroll-smooth">
         <body className="bg-[#F8FAFC] text-slate-900 antialiased font-sans selection:bg-indigo-100 selection:text-indigo-900">
           
           {/* Professional Floating Navbar */}

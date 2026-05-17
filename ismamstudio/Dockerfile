@@ -1,5 +1,6 @@
 # ১. বেইজ ইমেজ সেট করা
-FROM node:18-alpine AS builder
+FROM node:18-bookworm-slim AS builder
+
 WORKDIR /app
 
 # ২. শুধুমাত্র প্যাকেজ ফাইলগুলো আগে কপি করা (ডকার ক্যাশ ব্যবহারের জন্য)
@@ -22,7 +23,7 @@ COPY . .
 RUN npm run build
 
 # --- রানটাইম স্টেজ (Production Stage) ---
-FROM node:18-alpine AS runner
+FROM node:18-bookworm-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production

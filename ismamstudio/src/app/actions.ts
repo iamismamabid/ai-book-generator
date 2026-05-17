@@ -6,10 +6,17 @@ import { Groq } from "groq-sdk";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+function getGroqClient() {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error("GROQ_API_KEY is missing.");
+  }
+  return new Groq({ apiKey });
+}
 
 // ১. নতুন বই তৈরি করার ফাংশন
 export async function createBook(formData: FormData) {
+  const groq = getGroqClient();
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -58,6 +65,7 @@ export async function deleteBook(id: string) {
 
 // ৩. নেক্সট চ্যাপ্টার জেনারেট করার ফাংশন
 export async function generateNextChapter(bookId: string, outline: string, title: string) {
+  const groq = getGroqClient();
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 

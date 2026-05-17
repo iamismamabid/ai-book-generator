@@ -9,12 +9,6 @@ export const maxDuration = 60; // এআইয়ের ভাবার সময় �
 
 
 
-// ১. Groq-কে OpenAI এর ফরম্যাটে কনফিগার করা
-const groq = createOpenAI({
-  baseURL: 'https://api.groq.com/openai/v1',
-  apiKey: process.env.GROQ_API_KEY,
-});
-
 export async function POST(req: Request) {
   // ২. ইউজার লগ-ইন করা আছে কি না চেক করা
   const { userId } = await auth();
@@ -24,6 +18,17 @@ export async function POST(req: Request) {
 
   // ৩. ফ্রন্টএন্ড থেকে আসা প্রম্পটটি রিসিভ করা
   const { prompt } = await req.json();
+
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    return new Response("GROQ_API_KEY is missing", { status: 500 });
+  }
+
+  // ১. Groq-কে OpenAI এর ফরম্যাটে কনফিগার করা
+  const groq = createOpenAI({
+    baseURL: 'https://api.groq.com/openai/v1',
+    apiKey,
+  });
 
   // ৪. এআই-এর ইনস্ট্রাকশন (সিস্টেম প্রম্পট)
   const systemPrompt = `Generate a book outline based on this idea: "${prompt}".

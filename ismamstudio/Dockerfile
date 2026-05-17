@@ -1,5 +1,5 @@
 # ১. বেইজ ইমেজ সেট করা
-FROM node:18-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ COPY . .
 RUN npm run build
 
 # --- রানটাইম স্টেজ (Production Stage) ---
-FROM node:18-bookworm-slim AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production

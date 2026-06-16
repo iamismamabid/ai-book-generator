@@ -8,5 +8,10 @@
     "out/**",
     "build/**",
     "next-env.d.ts"
-  ]
+  ],
+  "settings": {
+    "next": {
+      "rootDir": "./"
+    }
+  }
 }

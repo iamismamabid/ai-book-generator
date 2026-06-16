@@ -1,6 +1,7 @@
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
 import Link from "next/link";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata = {
   title: "Ismam.AI | Write Masterpieces with AI",
@@ -50,6 +51,7 @@ export default function RootLayout({
           {children}
         </div>
 
+        <SpeedInsights />
       </body>
     </html>
   );

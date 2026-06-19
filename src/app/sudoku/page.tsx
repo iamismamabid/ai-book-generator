@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { generatesudoku, generatesudokuBook, Grid, Difficulty } from "@/lib/sudoku";
-import { downloadsudokuPdf } from "@/lib/sudoku-pdf";
-import { DownloadButton } from "@/components/DownloadButton";
-
+import { generatesudoku, generatesudokuBook, Grid, Difficulty } from '../../lib/sudoku'; 
+import { downloadsudokuPdf } from '../../lib/sudoku-pdf';
+import DownloadButton from "@/components/DownloadButton";
 function sudokuPreview({ grid }: { grid: Grid }) {
   return (
     <div className="grid grid-cols-9 gap-0 w-full max-w-md mx-auto border-2 border-slate-700">
@@ -149,14 +148,17 @@ export default function sudokuGeneratorPage() {
               {isGenerating ? "Generating..." : "Preview a puzzle"}
             </button>
 
+           
             <DownloadButton
-              onDownload={handleDownloadPdf}
-              label={
-                isDownloading
-                  ? "Building PDF..."
-                  : `Download ${bookCount} puzzles as PDF`
-              }
-            />
+  onClick={handleDownloadPdf}
+  label={isDownloading ? "Downloading..." : "Download PDF"}
+/>
+
+
+
+
+
+
           </div>
 
           {/* Preview panel */}

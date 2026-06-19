@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import { 
   Plus, Trash2, FileDown, Settings, Type, LayoutGrid, 
@@ -13,7 +11,7 @@ import {
 export interface PuzzleOutput {
   grid: string[][];
   placedWords: any[];
-  mask?: boolean[][]; // Used for Word Search solutions
+  mask?: boolean[][]; 
 }
 
 export interface BookPage {
@@ -24,6 +22,7 @@ export interface BookPage {
     gridData?: PuzzleOutput;
     gridSize?: number;
     showSolution?: boolean;
+    solutionStyle?: 'apple' | 'fill' | 'fade'; // NEW: Highlighter mode
   };
 }
 
@@ -31,7 +30,6 @@ export interface BookPage {
 // 🧠 2. PUZZLE GENERATOR ALGORITHMS
 // ==========================================
 
-// --- Crossword Algorithm (From Current Code) ---
 function generateCrosswordGrid(wordList: {word: string, clue: string}[], gridSize = 15): PuzzleOutput {
   const grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
   const placedWords: any[] = [];
@@ -94,7 +92,6 @@ function generateCrosswordGrid(wordList: {word: string, clue: string}[], gridSiz
   return { grid, placedWords };
 }
 
-// --- Word Search Algorithm (Extracted & Adapted from Backup Code) ---
 function generateWordSearchGrid(wordList: string[], size = 15): PuzzleOutput {
   const grid = Array(size).fill(null).map(() => Array(size).fill(''));
   const mask = Array(size).fill(null).map(() => Array(size).fill(false)); 
@@ -139,7 +136,6 @@ function generateWordSearchGrid(wordList: string[], size = 15): PuzzleOutput {
     }
   });
 
-  // Fill empty spaces with random letters
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
@@ -177,7 +173,6 @@ const CrosswordEditor = ({ page, updatePage }: { page: BookPage, updatePage: any
 
   return (
     <div className="w-full flex flex-col lg:flex-row gap-6 h-full p-4">
-      {/* Editor Settings */}
       <div className="w-full lg:w-1/3 flex flex-col gap-4">
         <div>
           <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Words & Clues (Word, Clue)</label>
@@ -193,7 +188,6 @@ const CrosswordEditor = ({ page, updatePage }: { page: BookPage, updatePage: any
         </button>
       </div>
 
-      {/* Live Preview Canvas */}
       <div className="w-full lg:w-2/3 bg-white border border-slate-200 shadow-xl rounded-sm flex flex-col items-center p-6 relative aspect-[8.5/11] overflow-y-auto custom-scrollbar">
         <h2 className="text-xl font-black uppercase tracking-widest mb-6 text-slate-800">Crossword Puzzle</h2>
         {gridData ? (
@@ -206,7 +200,6 @@ const CrosswordEditor = ({ page, updatePage }: { page: BookPage, updatePage: any
                   return (
                     <div key={`${r}-${c}`} className={`aspect-square flex items-center justify-center relative ${isBlank ? 'bg-slate-800' : 'bg-white border border-slate-800'}`}>
                       {startWord && <span className="absolute top-0.5 left-1 text-[8px] sm:text-[10px] font-bold text-slate-600 leading-none">{startWord.num}</span>}
-                      {/* Note: Letters hidden in Crossword view usually, toggleable later */}
                     </div>
                   );
                 })
@@ -251,13 +244,14 @@ const WordSearchEditor = ({ page, updatePage }: { page: BookPage, updatePage: an
   const gridSize = page.config.gridSize || 12;
   const gridData = page.config.gridData;
   const showSolution = page.config.showSolution || false;
+  const solutionStyle = page.config.solutionStyle || 'apple';
 
   const handleGenerate = () => {
     const wordList = inputText.split('\n').map(w => w.trim()).filter(w => w.length > 2);
     if (wordList.length === 0) return alert("Please enter at least one valid word.");
     
     const result = generateWordSearchGrid(wordList, gridSize);
-    updatePage({ rawText: inputText, gridData: result, gridSize, showSolution: false });
+    updatePage({ rawText: inputText, gridData: result, gridSize, showSolution: false, solutionStyle });
   };
 
   return (
@@ -269,11 +263,25 @@ const WordSearchEditor = ({ page, updatePage }: { page: BookPage, updatePage: an
           <textarea 
             value={inputText} 
             onChange={(e) => setInputText(e.target.value)}
-            className="w-full h-64 p-3 border border-slate-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="w-full h-48 p-3 border border-slate-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
             placeholder="APPLE&#10;BANANA&#10;CHERRY"
           />
         </div>
-        <button onClick={handleGenerate} className="w-full bg-slate-800 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-900 transition shadow-sm">
+        
+        <div>
+          <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Solution Highlighter</label>
+          <select 
+            value={solutionStyle}
+            onChange={(e) => updatePage({ ...page.config, solutionStyle: e.target.value as any })}
+            className="w-full p-3 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white cursor-pointer"
+          >
+            <option value="apple">Apple Style (Rounded Pill)</option>
+            <option value="fade">Fade Style (Watermark)</option>
+            <option value="fill">Fill Style (Blocks)</option>
+          </select>
+        </div>
+
+        <button onClick={handleGenerate} className="w-full bg-slate-800 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-900 transition shadow-sm mt-auto">
           <RefreshCw className="w-4 h-4"/> Generate Word Search
         </button>
       </div>
@@ -283,7 +291,7 @@ const WordSearchEditor = ({ page, updatePage }: { page: BookPage, updatePage: an
         {gridData && (
            <button 
             onClick={() => updatePage({ ...page.config, showSolution: !showSolution })} 
-            className={`absolute top-4 right-4 p-2 rounded-full z-20 transition-colors ${showSolution ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400 hover:text-indigo-600'}`}
+            className={`absolute top-4 right-4 p-2 rounded-full z-20 transition-colors shadow-sm ${showSolution ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'}`}
             title="Toggle Solution"
           >
             {showSolution ? <Eye className="w-5 h-5"/> : <EyeOff className="w-5 h-5"/>}
@@ -295,15 +303,56 @@ const WordSearchEditor = ({ page, updatePage }: { page: BookPage, updatePage: an
         {gridData ? (
           <div className="flex flex-col items-center w-full max-w-md">
             <div className="grid w-full aspect-square relative" style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
+              
+              {/* --- 🎨 NEW: APPLE STYLE SVG OVERLAY --- */}
+              {showSolution && solutionStyle === 'apple' && (
+                  <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-10">
+                      {gridData.placedWords.map((w, i) => {
+                          const len = Math.hypot(w.endC - w.startC, w.endR - w.startR); 
+                          const ang = Math.atan2(w.endR - w.startR, w.endC - w.startC) * (180 / Math.PI);
+                          return (
+                            <rect 
+                              key={i} 
+                              x={w.startC + 0.15} 
+                              y={w.startR + 0.15} 
+                              width={len + 0.70} 
+                              height={0.70} 
+                              rx="0.35" 
+                              transform={`rotate(${ang}, ${w.startC + 0.5}, ${w.startR + 0.5})`} 
+                              fill="rgba(79, 70, 229, 0.15)" 
+                              stroke="#4F46E5" 
+                              strokeWidth="0.08" 
+                            />
+                          );
+                      })}
+                  </svg>
+              )}
+
+              {/* Grid Cells */}
               {gridData.grid.map((row, r) => 
                 row.map((cell, c) => {
                   const isAnswer = gridData.mask?.[r][c];
-                  const highlight = showSolution && isAnswer;
+                  
+                  // Dynamic Styles based on Highlighter selection
+                  let cellClasses = 'text-slate-800 bg-transparent';
+                  
+                  if (showSolution) {
+                    if (solutionStyle === 'fill') {
+                      cellClasses = isAnswer ? 'bg-indigo-100 text-indigo-800' : 'text-slate-800';
+                    } 
+                    else if (solutionStyle === 'fade') {
+                      cellClasses = isAnswer ? 'text-slate-900 font-black' : 'text-slate-200';
+                    }
+                    else if (solutionStyle === 'apple') {
+                       // The SVG handles the shape, we just fade non-answers slightly for clarity
+                      cellClasses = isAnswer ? 'text-indigo-900' : 'text-slate-300';
+                    }
+                  }
+
                   return (
                     <div 
                       key={`${r}-${c}`} 
-                      className={`flex items-center justify-center text-sm sm:text-lg font-bold border border-slate-100 transition-colors duration-300
-                        ${highlight ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'text-slate-800'}`}
+                      className={`flex items-center justify-center text-sm sm:text-lg font-bold border border-slate-50 transition-colors duration-300 z-0 ${cellClasses}`}
                     >
                       {cell}
                     </div>
@@ -312,11 +361,12 @@ const WordSearchEditor = ({ page, updatePage }: { page: BookPage, updatePage: an
               )}
             </div>
 
+            {/* Word List */}
             <div className="w-full mt-8 pt-6 border-t border-slate-100">
               <h3 className="font-bold text-xs mb-3 uppercase text-slate-400 tracking-tighter text-center">Words to Find</h3>
               <div className="grid grid-cols-3 gap-x-4 gap-y-2 text-xs font-semibold text-slate-700 text-center">
                 {gridData.placedWords.map((w, i) => (
-                  <span key={i} className={showSolution ? "line-through opacity-50" : ""}>{w.word}</span>
+                  <span key={i} className={showSolution ? "line-through opacity-50 text-indigo-600" : ""}>{w.word}</span>
                 ))}
               </div>
             </div>
@@ -342,7 +392,6 @@ export default function App() {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Persistence: Load from Local Storage on mount
   useEffect(() => {
     const saved = localStorage.getItem("kdp_studio_pages");
     if (saved) {
@@ -358,7 +407,6 @@ export default function App() {
     setIsLoaded(true);
   }, []);
 
-  // Persistence: Save to Local Storage on change
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem("kdp_studio_pages", JSON.stringify(bookPages));
@@ -388,106 +436,94 @@ export default function App() {
   if (!isLoaded) return <div className="p-8 text-center text-slate-500">Loading Studio...</div>;
 
   return (
-    <div className="flex h-[calc(100vh-40px)] m-4 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm font-sans">
-      
-      {/* LEFT SIDEBAR: Puzzles */}
-      <div className="w-64 bg-slate-50 p-4 border-r border-slate-200 overflow-y-auto flex flex-col">
-        <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Add to Book</h3>
-        <div className="space-y-2 flex flex-col">
-          <button onClick={() => addPageToBook('word_search')} className="p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 shadow-sm transition-colors"><Plus className="w-4 h-4"/> Word Search</button>
-          <button onClick={() => addPageToBook('crossword')} className="p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 shadow-sm transition-colors"><Plus className="w-4 h-4"/> Crossword</button>
-          <div className="relative mt-2">
-            <div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[1px] z-10 rounded-lg flex items-center justify-center">
-               <span className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded font-bold uppercase tracking-widest shadow-md">Coming Next</span>
-            </div>
-            <button disabled className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 opacity-50"><Plus className="w-4 h-4"/> Sudoku</button>
-          </div>
-        </div>
-        
-        <div className="mt-auto pt-6">
-           <div className="bg-indigo-50 text-indigo-700 p-3 rounded-lg text-xs border border-indigo-100 leading-relaxed">
-             <strong className="block mb-1">Architecture Note:</strong>
-             Data is automatically saved to Local Storage. PDF Compiler module is decoupled and will iterate over the <code className="bg-indigo-100 px-1 rounded">bookPages</code> state.
-           </div>
-        </div>
-      </div>
-
-      {/* MIDDLE: Active Canvas Editor */}
-      <div className="flex-1 bg-slate-100 p-4 flex flex-col items-center overflow-y-auto relative shadow-inner">
-        {bookPages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-slate-400">
-            <LayoutTemplate className="w-16 h-16 mb-4 opacity-20" />
-            <p className="font-medium text-lg text-slate-500">Your book is empty.</p>
-            <p className="text-sm mt-2">Select a puzzle type from the left to start building.</p>
-          </div>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            {/* Conditional Rendering based on Page Type Interface */}
-            {bookPages[activeIndex]?.type === 'crossword' && (
-              <CrosswordEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
-              />
-            )}
-            
-            {bookPages[activeIndex]?.type === 'word_search' && (
-              <WordSearchEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
-              />
-            )}
-
-            {!['crossword', 'word_search'].includes(bookPages[activeIndex]?.type) && (
-               <div className="w-full max-w-md bg-white shadow-xl rounded-sm aspect-[8.5/11] p-6 border border-slate-200 flex flex-col items-center justify-center text-center">
-                  <Type className="w-16 h-16 mb-4 opacity-20 text-indigo-500" />
-                  <h2 className="text-2xl font-black text-slate-800 capitalize mb-2">
-                    {bookPages[activeIndex]?.type.replace('_', ' ')}
-                  </h2>
-                  <p className="text-sm text-slate-500 bg-yellow-50 text-yellow-700 p-3 rounded-md border border-yellow-200">
-                    Editor UI mapping required for this specific Generator Engine.
-                  </p>
-               </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* RIGHT SIDEBAR: Page Sequence Manager */}
-      <div className="w-72 bg-white p-4 border-l border-slate-200 flex flex-col">
-        <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4 flex justify-between items-center">
-          My Book <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{bookPages.length}</span>
-        </h3>
-        <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-          {bookPages.map((page, index) => (
-            <div 
-              key={page.id} 
-              onClick={() => setActiveIndex(index)} 
-              className={`p-3 border rounded-lg flex justify-between items-center cursor-pointer transition-all group
-                ${activeIndex === index ? 'bg-indigo-50 border-indigo-300 ring-1 ring-indigo-300' : 'bg-white border-slate-200 hover:border-indigo-200 hover:bg-slate-50'}`}
-            >
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Page {index + 1}</span>
-                <span className="text-sm font-semibold text-slate-800 capitalize">{page.type.replace('_', ' ')}</span>
+    <div className="flex h-screen bg-slate-200/50 p-4 font-sans">
+      <div className="flex w-full h-full border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xl">
+        {/* LEFT SIDEBAR: Puzzles */}
+        <div className="w-64 bg-slate-50 p-4 border-r border-slate-200 overflow-y-auto flex flex-col">
+          <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Add to Book</h3>
+          <div className="space-y-2 flex flex-col">
+            <button onClick={() => addPageToBook('word_search')} className="p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 shadow-sm transition-colors"><Plus className="w-4 h-4"/> Word Search</button>
+            <button onClick={() => addPageToBook('crossword')} className="p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 shadow-sm transition-colors"><Plus className="w-4 h-4"/> Crossword</button>
+            <div className="relative mt-2">
+              <div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[1px] z-10 rounded-lg flex items-center justify-center">
+                <span className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded font-bold uppercase tracking-widest shadow-md">Coming Next</span>
               </div>
-              <button 
-                onClick={(e) => removePage(e, page.id)} 
-                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all" 
-                title="Delete Page"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <button disabled className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 opacity-50"><Plus className="w-4 h-4"/> Sudoku</button>
             </div>
-          ))}
+          </div>
+          
+          <div className="mt-auto pt-6">
+            <div className="bg-indigo-50 text-indigo-700 p-3 rounded-lg text-xs border border-indigo-100 leading-relaxed">
+              <strong className="block mb-1">Architecture Note:</strong>
+              Data is automatically saved to Local Storage. Add pages, change settings, and test previews dynamically!
+            </div>
+          </div>
         </div>
-        
-        <div className="pt-4 border-t border-slate-100 mt-4">
-          <button 
-            disabled={bookPages.length === 0}
-            className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-black hover:bg-indigo-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            onClick={() => alert("Book pages are sequenced in memory! Next step: Pass the `bookPages` array to the pdf-lib compiler service.")}
-          >
-            <FileDown className="w-4 h-4" /> EXPORT TO PDF
-          </button>
+
+        {/* MIDDLE: Active Canvas Editor */}
+        <div className="flex-1 bg-slate-100 p-4 flex flex-col items-center overflow-y-auto relative shadow-inner">
+          {bookPages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-slate-400">
+              <LayoutTemplate className="w-16 h-16 mb-4 opacity-20" />
+              <p className="font-medium text-lg text-slate-500">Your book is empty.</p>
+              <p className="text-sm mt-2">Select a puzzle type from the left to start building.</p>
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              {bookPages[activeIndex]?.type === 'crossword' && (
+                <CrosswordEditor 
+                  page={bookPages[activeIndex]} 
+                  updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+                />
+              )}
+              
+              {bookPages[activeIndex]?.type === 'word_search' && (
+                <WordSearchEditor 
+                  page={bookPages[activeIndex]} 
+                  updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+                />
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT SIDEBAR: Page Sequence Manager */}
+        <div className="w-72 bg-white p-4 border-l border-slate-200 flex flex-col z-10">
+          <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4 flex justify-between items-center">
+            My Book <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{bookPages.length}</span>
+          </h3>
+          <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+            {bookPages.map((page, index) => (
+              <div 
+                key={page.id} 
+                onClick={() => setActiveIndex(index)} 
+                className={`p-3 border rounded-lg flex justify-between items-center cursor-pointer transition-all group
+                  ${activeIndex === index ? 'bg-indigo-50 border-indigo-300 ring-1 ring-indigo-300' : 'bg-white border-slate-200 hover:border-indigo-200 hover:bg-slate-50'}`}
+              >
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Page {index + 1}</span>
+                  <span className="text-sm font-semibold text-slate-800 capitalize">{page.type.replace('_', ' ')}</span>
+                </div>
+                <button 
+                  onClick={(e) => removePage(e, page.id)} 
+                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all" 
+                  title="Delete Page"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+          
+          <div className="pt-4 border-t border-slate-100 mt-4 bg-white">
+            <button 
+              disabled={bookPages.length === 0}
+              className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-black hover:bg-indigo-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              onClick={() => alert("Book pages are sequenced in memory! Next step: Pass the `bookPages` array to the pdf-lib compiler service.")}
+            >
+              <FileDown className="w-4 h-4" /> EXPORT TO PDF
+            </button>
+          </div>
         </div>
       </div>
       

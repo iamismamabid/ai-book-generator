@@ -5,20 +5,24 @@ import { useRouter } from "next/navigation";
 import { generatesudoku, generatesudokuBook, Grid, Difficulty } from '../../lib/sudoku'; 
 import { downloadsudokuPdf } from '../../lib/sudoku-pdf';
 import DownloadButton from "@/components/DownloadButton";
-function sudokuPreview({ grid }: { grid: Grid }) {
+
+// FIXED: Properly enclosed the return statement inside the function body
+function SudokuPreview({ grid }: { grid: Grid }) {
   return (
-    <div className="grid grid-cols-9 gap-0 w-full max-w-md mx-auto border-2 border-slate-700">
+    <div className="grid grid-cols-9 gap-0 w-full max-w-md mx-auto border-4 border-slate-700">
       {grid.flatMap((row, r) =>
         row.map((val, c) => {
+          // Thicker borders for the 3x3 grid intersections
           const thickRight = (c + 1) % 3 === 0 && c !== 8;
           const thickBottom = (r + 1) % 3 === 0 && r !== 8;
+          
           return (
             <div
               key={`${r}-${c}`}
-              className={`aspect-square flex items-center justify-center text-sm font-medium border border-slate-700/50
-                ${thickRight ? "border-r-2 border-r-slate-500" : ""}
-                ${thickBottom ? "border-b-2 border-b-slate-500" : ""}
-                ${val !== 0 ? "text-white bg-slate-800" : "bg-slate-900"}
+              className={`aspect-square flex items-center justify-center text-lg font-bold border border-slate-600/50
+                ${thickRight ? "border-r-4 border-r-slate-700" : ""}
+                ${thickBottom ? "border-b-4 border-b-slate-700" : ""}
+                ${val !== 0 ? "text-amber-500 bg-slate-800/80" : "bg-slate-900"}
               `}
             >
               {val !== 0 ? val : ""}
@@ -30,14 +34,13 @@ function sudokuPreview({ grid }: { grid: Grid }) {
   );
 }
 
-export default function sudokuGeneratorPage() {
+// FIXED: Capitalized the main page component (React best practice)
+export default function SudokuGeneratorPage() {
   const router = useRouter();
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [bookCount, setBookCount] = useState(10);
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
-  const [currentPuzzle, setCurrentPuzzle] = useState<{ puzzle: Grid; solution: Grid } | null>(
-    null
-  );
+  const [currentPuzzle, setCurrentPuzzle] = useState<{ puzzle: Grid; solution: Grid } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -61,7 +64,7 @@ export default function sudokuGeneratorPage() {
           puzzles,
           difficulty,
           trimSize,
-          title: `sudoku Puzzle Book - ${difficulty}`,
+          title: `Sudoku Puzzle Book - ${difficulty}`,
         },
         `sudoku-${difficulty}-${bookCount}puzzles.pdf`
       );
@@ -79,7 +82,7 @@ export default function sudokuGeneratorPage() {
           >
             ← Back to home
           </button>
-          <h1 className="text-4xl font-bold mb-2">sudoku Generator</h1>
+          <h1 className="text-4xl font-bold mb-2">Sudoku Generator</h1>
           <p className="text-slate-400">
             Generate print-ready sudoku puzzle books for KDP. Choose your
             difficulty, preview a sample, then download the full book as PDF.
@@ -134,9 +137,9 @@ export default function sudokuGeneratorPage() {
                 onChange={(e) => setTrimSize(e.target.value as typeof trimSize)}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
               >
-                <option value="6x9">6&quot; x 9&quot; (most popular)</option>
-                <option value="8.5x11">8.5&quot; x 11&quot; (large print)</option>
-                <option value="5x8">5&quot; x 8&quot; (compact)</option>
+                <option value="6x9">6" x 9" (most popular)</option>
+                <option value="8.5x11">8.5" x 11" (large print)</option>
+                <option value="5x8">5" x 8" (compact)</option>
               </select>
             </div>
 
@@ -148,27 +151,21 @@ export default function sudokuGeneratorPage() {
               {isGenerating ? "Generating..." : "Preview a puzzle"}
             </button>
 
-           
             <DownloadButton
-  onClick={handleDownloadPdf}
-  label={isDownloading ? "Downloading..." : "Download PDF"}
-/>
-
-
-
-
-
-
+              onClick={handleDownloadPdf}
+              label={isDownloading ? "Downloading..." : "Download PDF"}
+            />
           </div>
 
           {/* Preview panel */}
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
             <h2 className="text-lg font-bold mb-4">Live preview</h2>
             {currentPuzzle ? (
-              <sudokuPreview grid={currentPuzzle.puzzle} />
+              // FIXED: Changed <sudokuPreview> to <SudokuPreview>
+              <SudokuPreview grid={currentPuzzle.puzzle} />
             ) : (
               <div className="aspect-square flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-xl">
-                Click &quot;Preview a puzzle&quot; to see a sample
+                Click "Preview a puzzle" to see a sample
               </div>
             )}
           </div>

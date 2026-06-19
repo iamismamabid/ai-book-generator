@@ -1,7 +1,6 @@
 // lib/sudoku-pdf.ts
-// Generates a KDP-ready PDF of sudoku puzzles using jsPDF (already in your
-// project's dependencies). One puzzle per page, with a solutions section
-// at the end — standard format for KDP puzzle books.
+// Generates a KDP-ready PDF of sudoku puzzles using jsPDF.
+// One puzzle per page, with a solutions section at the end.
 
 import jsPDF from "jspdf";
 import { Grid, Difficulty } from "./sudoku";
@@ -36,30 +35,32 @@ function drawGrid(
       const x = startX + c * cellSize;
       const y = startY + r * cellSize;
 
-      // Thin cell border
-      doc.setLineWidth(0.2);
+      // Thin cell border (scaled for inches)
+      doc.setLineWidth(0.01);
       doc.rect(x, y, cellSize, cellSize);
 
       const val = grid[r][c];
       if (val !== 0 && showNumbers) {
-        doc.setFontSize(cellSize * 5.5);
-        doc.text(String(val), x + cellSize / 2, y + cellSize / 2 + cellSize * 0.15, {
+        // Convert cellSize (inches) to points (1 inch = 72 pt)
+        const fontSizePt = cellSize * 72 * 0.65;
+        doc.setFontSize(fontSizePt);
+        doc.text(String(val), x + cellSize / 2, y + cellSize * 0.72, {
           align: "center",
         });
       }
     }
   }
 
-  // Thick lines for 3x3 boxes
-  doc.setLineWidth(0.8);
+  // Thick lines for 3x3 boxes (scaled for inches)
+  doc.setLineWidth(0.04);
   for (let i = 0; i <= 9; i += 3) {
     const offset = i * cellSize;
     doc.line(startX + offset, startY, startX + offset, startY + size); // vertical
     doc.line(startX, startY + offset, startX + size, startY + offset); // horizontal
   }
 
-  // Outer border
-  doc.setLineWidth(1);
+  // Outer border (scaled for inches)
+  doc.setLineWidth(0.06);
   doc.rect(startX, startY, size, size);
 }
 

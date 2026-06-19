@@ -29,6 +29,10 @@ export default function LandingPage() {
             <a href="#features" className="hover:text-amber-500 transition">
               Features
             </a>
+
+            <Link href="/sudoku" className="hover:text-amber-500 transition">
+    Sudoku
+  </Link>
             <a href="#pricing" className="hover:text-amber-500 transition">
               Pricing
             </a>
@@ -132,6 +136,10 @@ export default function LandingPage() {
                 Word Search (free), Crossword, Sudoku, Maze. Every puzzle type KDP
                 creators need.
               </p>
+
+              <Link href="/sudoku" className="text-amber-400 font-semibold hover:text-amber-500 flex items-center gap-1 text-sm">
+    Try Sudoku Generator <ArrowRight size={14} />
+  </Link>
             </div>
 
             {/* Feature 4 */}

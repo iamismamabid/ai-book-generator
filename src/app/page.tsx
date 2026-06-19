@@ -1,442 +1,176 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { ArrowRight, Zap, BookOpen, Sparkles, Users, TrendingUp, Check } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { generatesudoku, generatesudokuBook, Grid, Difficulty } from '../../lib/sudoku'; 
+import { downloadsudokuPdf } from '../../lib/sudoku-pdf';
+import DownloadButton from "@/components/DownloadButton";
 
-export default function LandingPage() {
-  const [isScrolled, setIsScrolled] = useState(false);
+// FIXED: Properly enclosed the return statement inside the function body
+function SudokuPreview({ grid }: { grid: Grid }) {
+  return (
+    <div className="grid grid-cols-9 gap-0 w-full max-w-md mx-auto border-4 border-slate-700">
+      {grid.flatMap((row, r) =>
+        row.map((val, c) => {
+          // Thicker borders for the 3x3 grid intersections
+          const thickRight = (c + 1) % 3 === 0 && c !== 8;
+          const thickBottom = (r + 1) % 3 === 0 && r !== 8;
+          
+          return (
+            <div
+              key={`${r}-${c}`}
+              className={`aspect-square flex items-center justify-center text-lg font-bold border border-slate-600/50
+                ${thickRight ? "border-r-4 border-r-slate-700" : ""}
+                ${thickBottom ? "border-b-4 border-b-slate-700" : ""}
+                ${val !== 0 ? "text-amber-500 bg-slate-800/80" : "bg-slate-900"}
+              `}
+            >
+              {val !== 0 ? val : ""}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
 
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+// FIXED: Capitalized the main page component (React best practice)
+export default function SudokuGeneratorPage() {
+  const router = useRouter();
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+  const [bookCount, setBookCount] = useState(10);
+  const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
+  const [currentPuzzle, setCurrentPuzzle] = useState<{ puzzle: Grid; solution: Grid } | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handlePreview = () => {
+    setIsGenerating(true);
+    // setTimeout lets the loading state render before the (synchronous,
+    // CPU-heavy) generation blocks the main thread
+    setTimeout(() => {
+      const result = generatesudoku(difficulty);
+      setCurrentPuzzle(result);
+      setIsGenerating(false);
+    }, 50);
+  };
+
+  const handleDownloadPdf = () => {
+    setIsDownloading(true);
+    setTimeout(() => {
+      const puzzles = generatesudokuBook(bookCount, difficulty);
+      downloadsudokuPdf(
+        {
+          puzzles,
+          difficulty,
+          trimSize,
+          title: `Sudoku Puzzle Book - ${difficulty}`,
+        },
+        `sudoku-${difficulty}-${bookCount}puzzles.pdf`
+      );
+      setIsDownloading(false);
+    }, 50);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white overflow-hidden">
-      {/* Navigation */}
-      <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled ? "bg-slate-900/95 backdrop-blur border-b border-amber-500/20" : ""
-        }`}
-      >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold">
-            <span className="text-amber-500">Ismam</span>.AI
-          </div>
-          <div className="hidden sm:flex gap-8 items-center">
-            <a href="#features" className="hover:text-amber-500 transition">
-              Features
-            </a>
-
-            <Link href="/sudoku" className="hover:text-amber-500 transition">
-    Sudoku
-  </Link>
-            <a href="#pricing" className="hover:text-amber-500 transition">
-              Pricing
-            </a>
-            <Link
-              href="/generate"
-              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-2 rounded-lg transition"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Animated Badge */}
-          <div className="inline-block mb-6 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30">
-            <p className="text-amber-400 text-sm font-semibold flex items-center gap-2">
-              <Zap size={16} /> Generate KDP books in minutes, not weeks
-            </p>
-          </div>
-
-          {/* Main Headline */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black mb-6 leading-tight">
-            Create{" "}
-            <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-              Puzzle Books
-            </span>
-            {" "}Your Readers Love
-          </h1>
-
-          {/* Subheadline */}
-          <p className="text-xl sm:text-2xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            AI-powered Word Search, Crossword & Sudoku generation for KDP creators.
-            Publish on Amazon in days. Automate the tedious part. Keep the creative
-            control.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link
-              href="/generate"
-              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-8 py-4 rounded-xl text-lg transition transform hover:scale-105 flex items-center justify-center gap-2"
-            >
-              Start Free <ArrowRight size={20} />
-            </Link>
-            <a
-              href="#features"
-              className="border-2 border-amber-500/50 hover:border-amber-500 text-white font-bold px-8 py-4 rounded-xl text-lg transition"
-            >
-              See How It Works
-            </a>
-          </div>
-
-          {/* Social Proof */}
-          <div className="text-slate-400 text-sm">
-            💚 Join 500+ KDP creators making more books faster
-          </div>
-        </div>
-
-        {/* Decorative element */}
-        <div className="absolute top-20 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl -z-10"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -z-10"></div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">Why creators choose Ismam.AI</h2>
-          <p className="text-center text-slate-400 mb-16 text-lg">
-            Everything you need to scale your KDP business
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border border-slate-700 hover:border-amber-500/50 transition">
-              <Zap className="text-amber-500 mb-4" size={32} />
-              <h3 className="text-xl font-bold mb-2">Generate in seconds</h3>
-              <p className="text-slate-300">
-                Create puzzle books instantly. No design skills needed. Just pick your
-                trim size and download.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border border-slate-700 hover:border-amber-500/50 transition">
-              <Sparkles className="text-amber-500 mb-4" size={32} />
-              <h3 className="text-xl font-bold mb-2">AI-powered word lists</h3>
-              <p className="text-slate-300">
-                Just describe a theme. Our AI generates perfect word lists automatically.
-                No CSV uploads needed.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border border-slate-700 hover:border-amber-500/50 transition">
-              <BookOpen className="text-amber-500 mb-4" size={32} />
-              <h3 className="text-xl font-bold mb-2">All puzzle types</h3>
-              <p className="text-slate-300">
-                Word Search (free), Crossword, Sudoku, Maze. Every puzzle type KDP
-                creators need.
-              </p>
-
-              <Link href="/sudoku" className="text-amber-400 font-semibold hover:text-amber-500 flex items-center gap-1 text-sm">
-    Try Sudoku Generator <ArrowRight size={14} />
-  </Link>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border border-slate-700 hover:border-amber-500/50 transition">
-              <TrendingUp className="text-amber-500 mb-4" size={32} />
-              <h3 className="text-xl font-bold mb-2">KDP niche research</h3>
-              <p className="text-slate-300">
-                Find profitable niches on Amazon. Know what sells before you write a
-                single word.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border border-slate-700 hover:border-amber-500/50 transition">
-              <Users className="text-amber-500 mb-4" size={32} />
-              <h3 className="text-xl font-bold mb-2">Bulk generation</h3>
-              <p className="text-slate-300">
-                Create 10 books at once. Build a whole series faster than your
-                competition.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border border-slate-700 hover:border-amber-500/50 transition">
-              <Check className="text-amber-500 mb-4" size={32} />
-              <h3 className="text-xl font-bold mb-2">No watermarks</h3>
-              <p className="text-slate-300">
-                Professional PDFs ready for Amazon KDP. No logos, no markings. Publish
-                straight away.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">How it works</h2>
-
-          <div className="space-y-8">
-            {[
-              {
-                step: 1,
-                title: "Pick your puzzle type",
-                desc: "Choose Word Search, Crossword, Sudoku, or Maze.",
-              },
-              {
-                step: 2,
-                title: "Enter your theme or word list",
-                desc: "Type a topic. AI generates words. Or upload your own CSV.",
-              },
-              {
-                step: 3,
-                title: "Customize layout",
-                desc: "Set trim size, puzzle count, difficulty. Match KDP requirements.",
-              },
-              {
-                step: 4,
-                title: "Download & publish",
-                desc: "Get PDF. Upload to Amazon KDP. Start earning.",
-              },
-            ].map((item) => (
-              <div key={item.step} className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-12 h-12 bg-amber-500 text-slate-950 font-bold rounded-full flex items-center justify-center text-xl">
-                  {item.step}
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                  <p className="text-slate-300">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">Simple pricing</h2>
-          <p className="text-center text-slate-400 mb-16 text-lg">
-            Start free. Upgrade when you need more.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Free Plan */}
-            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 flex flex-col">
-              <h3 className="text-xl font-bold mb-2">Free</h3>
-              <div className="mb-6">
-                <span className="text-4xl font-black">$0</span>
-              </div>
-              <ul className="space-y-3 mb-8 flex-1 text-slate-300">
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> 3 PDFs per month
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> Word Search only
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> Basic trim sizes
-                </li>
-              </ul>
-              <Link
-                href="/generate"
-                className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition text-center"
-              >
-                Get Started
-              </Link>
-            </div>
-
-            {/* Starter Plan (Featured) */}
-            <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 p-8 rounded-2xl border-2 border-amber-500 flex flex-col relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-amber-500 text-slate-950 px-4 py-1 rounded-full text-sm font-bold">
-                Most Popular
-              </div>
-              <h3 className="text-xl font-bold mb-2">Starter</h3>
-              <div className="mb-6">
-                <span className="text-4xl font-black">$9.99</span>
-                <span className="text-slate-400 ml-2">/month</span>
-              </div>
-              <ul className="space-y-3 mb-8 flex-1 text-slate-300">
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> Unlimited downloads
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> Word Search + Crossword
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> AI word list generator
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> Save your books
-                </li>
-              </ul>
-              <Link
-                href="/pricing"
-                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-lg transition text-center"
-              >
-                Start Creating
-              </Link>
-            </div>
-
-            {/* Pro Plan */}
-            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 flex flex-col">
-              <h3 className="text-xl font-bold mb-2">Pro</h3>
-              <div className="mb-6">
-                <span className="text-4xl font-black">$19.99</span>
-                <span className="text-slate-400 ml-2">/month</span>
-              </div>
-              <ul className="space-y-3 mb-8 flex-1 text-slate-300">
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> Everything in Starter
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> Sudoku + Maze
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> Niche research tool
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={18} className="text-amber-500" /> Bulk generation (10x)
-                </li>
-              </ul>
-              <Link
-                href="/pricing"
-                className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition text-center"
-              >
-                Go Pro
-              </Link>
-            </div>
-          </div>
-
-          <p className="text-center text-slate-400 text-sm mt-8">
-            All plans include access to your book library. No credit card required for free plan.
-          </p>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">Loved by KDP creators</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[
-              {
-                quote: "I went from 2 books/month to 8 books/month. Best $9.99 I spend.",
-                author: "Sarah M.",
-                role: "KDP Author",
-              },
-              {
-                quote: "No more manual puzzle design. AI generates perfect word lists instantly.",
-                author: "James P.",
-                role: "Content Creator",
-              },
-              {
-                quote: "It's like having a design team in your pocket. Unreal value.",
-                author: "Amira K.",
-                role: "Publishing Entrepreneur",
-              },
-              {
-                quote: "Finally, someone building tools FOR creators, not against them.",
-                author: "Ahmed R.",
-                role: "Indie Publisher",
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-                <p className="text-slate-300 mb-4">"{item.quote}"</p>
-                <div>
-                  <p className="font-bold">{item.author}</p>
-                  <p className="text-sm text-slate-400">{item.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to scale your KDP business?</h2>
-          <p className="text-xl text-slate-300 mb-8">
-            Create your first puzzle book in minutes. Upgrade anytime as you grow.
-          </p>
-          <Link
-            href="/generate"
-            className="inline-block bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-8 py-4 rounded-xl text-lg transition transform hover:scale-105"
+    <div className="min-h-screen bg-slate-950 text-white py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-10">
+          <button
+            onClick={() => router.push("/")}
+            className="text-slate-400 hover:text-amber-500 text-sm mb-4"
           >
-            Start Free Now →
-          </Link>
+            ← Back to home
+          </button>
+          <h1 className="text-4xl font-bold mb-2">Sudoku Generator</h1>
+          <p className="text-slate-400">
+            Generate print-ready sudoku puzzle books for KDP. Choose your
+            difficulty, preview a sample, then download the full book as PDF.
+          </p>
         </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <p className="font-bold mb-4">Product</p>
-              <ul className="space-y-2 text-slate-400 text-sm">
-                <li>
-                  <a href="/generate" className="hover:text-amber-500">
-                    App
-                  </a>
-                </li>
-                <li>
-                  <a href="#pricing" className="hover:text-amber-500">
-                    Pricing
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <p className="font-bold mb-4">Community</p>
-              <ul className="space-y-2 text-slate-400 text-sm">
-                <li>
-                  <a href="#" className="hover:text-amber-500">
-                    Twitter
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-amber-500">
-                    Discord
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <p className="font-bold mb-4">Legal</p>
-              <ul className="space-y-2 text-slate-400 text-sm">
-                <li>
-                  <a href="#" className="hover:text-amber-500">
-                    Privacy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-amber-500">
-                    Terms
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <p className="font-bold mb-4">Contact</p>
-              <p className="text-slate-400 text-sm">
-                Built by Ismam for KDP creators worldwide.
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Settings panel */}
+          <div className="space-y-6">
+            <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+              <h2 className="text-lg font-bold mb-4">Difficulty</h2>
+              <div className="grid grid-cols-3 gap-3">
+                {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDifficulty(d)}
+                    className={`py-3 rounded-lg font-semibold capitalize transition ${
+                      difficulty === d
+                        ? "bg-amber-500 text-slate-950"
+                        : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 mt-2">
+                {difficulty === "easy" && "~40 numbers shown — good for beginners"}
+                {difficulty === "medium" && "~32 numbers shown — balanced challenge"}
+                {difficulty === "hard" && "~26 numbers shown — for experienced solvers"}
               </p>
             </div>
+
+            <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+              <h2 className="text-lg font-bold mb-4">Book settings</h2>
+
+              <label className="block text-sm text-slate-400 mb-2">
+                Number of puzzles
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={200}
+                value={bookCount}
+                onChange={(e) => setBookCount(Number(e.target.value))}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 mb-4 text-white"
+              />
+
+              <label className="block text-sm text-slate-400 mb-2">Trim size</label>
+              <select
+                value={trimSize}
+                onChange={(e) => setTrimSize(e.target.value as typeof trimSize)}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
+              >
+                <option value="6x9">6" x 9" (most popular)</option>
+                <option value="8.5x11">8.5" x 11" (large print)</option>
+                <option value="5x8">5" x 8" (compact)</option>
+              </select>
+            </div>
+
+            <button
+              onClick={handlePreview}
+              disabled={isGenerating}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition disabled:opacity-50"
+            >
+              {isGenerating ? "Generating..." : "Preview a puzzle"}
+            </button>
+
+            <DownloadButton
+              onClick={handleDownloadPdf}
+              label={isDownloading ? "Downloading..." : "Download PDF"}
+            />
           </div>
 
-          <div className="border-t border-slate-800 pt-8 text-center text-slate-500 text-sm">
-            © 2025 Ismam.AI. All rights reserved.
+          {/* Preview panel */}
+          <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h2 className="text-lg font-bold mb-4">Live preview</h2>
+            {currentPuzzle ? (
+              // FIXED: Changed <sudokuPreview> to <SudokuPreview>
+              <SudokuPreview grid={currentPuzzle.puzzle} />
+            ) : (
+              <div className="aspect-square flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-xl">
+                Click "Preview a puzzle" to see a sample
+              </div>
+            )}
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mongodb"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Book {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  title     String
+  content   String
+  chapters  Chapter[] // এক একটি বইয়ের অনেকগুলো চ্যাপ্টার থাকতে পারে (One-to-Many)
+  createdAt DateTime  @default(now())
+}
+
+model Chapter {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  content   String
+  order     Int      // চ্যাপ্টার ১ না কি ২ সেটি বোঝার জন্য
+  bookId    String   @db.ObjectId
+  book      Book     @relation(fields: [bookId], references: [id])
+  createdAt DateTime @default(now())
+}

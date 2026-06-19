@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { generateSudoku, generateSudokuBook, Grid, Difficulty } from "@/lib/sudoku";
-import { downloadSudokuPdf } from "@/lib/sudoku-pdf";
+import { generatesudoku, generatesudokuBook, Grid, Difficulty } from "@/lib/sudoku";
+import { downloadsudokuPdf } from "@/lib/sudoku-pdf";
 import { DownloadButton } from "@/components/DownloadButton";
 
-function SudokuPreview({ grid }: { grid: Grid }) {
+function sudokuPreview({ grid }: { grid: Grid }) {
   return (
     <div className="grid grid-cols-9 gap-0 w-full max-w-md mx-auto border-2 border-slate-700">
       {grid.flatMap((row, r) =>
@@ -31,7 +31,7 @@ function SudokuPreview({ grid }: { grid: Grid }) {
   );
 }
 
-export default function SudokuGeneratorPage() {
+export default function sudokuGeneratorPage() {
   const router = useRouter();
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [bookCount, setBookCount] = useState(10);
@@ -47,7 +47,7 @@ export default function SudokuGeneratorPage() {
     // setTimeout lets the loading state render before the (synchronous,
     // CPU-heavy) generation blocks the main thread
     setTimeout(() => {
-      const result = generateSudoku(difficulty);
+      const result = generatesudoku(difficulty);
       setCurrentPuzzle(result);
       setIsGenerating(false);
     }, 50);
@@ -56,13 +56,13 @@ export default function SudokuGeneratorPage() {
   const handleDownloadPdf = () => {
     setIsDownloading(true);
     setTimeout(() => {
-      const puzzles = generateSudokuBook(bookCount, difficulty);
-      downloadSudokuPdf(
+      const puzzles = generatesudokuBook(bookCount, difficulty);
+      downloadsudokuPdf(
         {
           puzzles,
           difficulty,
           trimSize,
-          title: `Sudoku Puzzle Book - ${difficulty}`,
+          title: `sudoku Puzzle Book - ${difficulty}`,
         },
         `sudoku-${difficulty}-${bookCount}puzzles.pdf`
       );
@@ -80,9 +80,9 @@ export default function SudokuGeneratorPage() {
           >
             ← Back to home
           </button>
-          <h1 className="text-4xl font-bold mb-2">Sudoku Generator</h1>
+          <h1 className="text-4xl font-bold mb-2">sudoku Generator</h1>
           <p className="text-slate-400">
-            Generate print-ready Sudoku puzzle books for KDP. Choose your
+            Generate print-ready sudoku puzzle books for KDP. Choose your
             difficulty, preview a sample, then download the full book as PDF.
           </p>
         </div>
@@ -163,7 +163,7 @@ export default function SudokuGeneratorPage() {
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
             <h2 className="text-lg font-bold mb-4">Live preview</h2>
             {currentPuzzle ? (
-              <SudokuPreview grid={currentPuzzle.puzzle} />
+              <sudokuPreview grid={currentPuzzle.puzzle} />
             ) : (
               <div className="aspect-square flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-xl">
                 Click &quot;Preview a puzzle&quot; to see a sample

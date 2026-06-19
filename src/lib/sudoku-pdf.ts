@@ -1,5 +1,5 @@
 // lib/sudoku-pdf.ts
-// Generates a KDP-ready PDF of Sudoku puzzles using jsPDF (already in your
+// Generates a KDP-ready PDF of sudoku puzzles using jsPDF (already in your
 // project's dependencies). One puzzle per page, with a solutions section
 // at the end — standard format for KDP puzzle books.
 
@@ -63,10 +63,10 @@ function drawGrid(
   doc.rect(startX, startY, size, size);
 }
 
-export function generateSudokuPdf({
+export function generatesudokuPdf({
   puzzles,
   difficulty,
-  title = "Sudoku Puzzle Book",
+  title = "sudoku Puzzle Book",
   trimSize = "8.5x11",
   includeSolutions = true,
 }: PdfOptions): jsPDF {
@@ -140,7 +140,7 @@ export function generateSudokuPdf({
   return doc;
 }
 
-export function downloadSudokuPdf(options: PdfOptions, filename = "sudoku-book.pdf") {
-  const doc = generateSudokuPdf(options);
+export function downloadsudokuPdf(options: PdfOptions, filename = "sudoku-book.pdf") {
+  const doc = generatesudokuPdf(options);
   doc.save(filename);
 }

@@ -1,5 +1,5 @@
 // lib/sudoku.ts
-// Sudoku generator: creates a valid solved 9x9 grid, then removes numbers
+// sudoku generator: creates a valid solved 9x9 grid, then removes numbers
 // based on difficulty to create the puzzle. Uses backtracking for generation
 // and a uniqueness check so removed puzzles always have exactly one solution.
 
@@ -100,13 +100,13 @@ function cloneGrid(grid: Grid): Grid {
 }
 
 /**
- * Generates a Sudoku puzzle + its solution.
+ * Generates a sudoku puzzle + its solution.
  * Removes cells one at a time (in random order), checking after each
  * removal that the puzzle still has a unique solution. Stops once the
  * target clue count for the difficulty is reached, or removal would
  * break uniqueness.
  */
-export function generateSudoku(difficulty: Difficulty = "medium"): {
+export function generatesudoku(difficulty: Difficulty = "medium"): {
   puzzle: Grid;
   solution: Grid;
 } {
@@ -149,13 +149,13 @@ export function generateSudoku(difficulty: Difficulty = "medium"): {
  * Generates multiple unique puzzles for a book (e.g. 50 puzzles).
  * Each call produces an independent puzzle/solution pair.
  */
-export function generateSudokuBook(
+export function generatesudokuBook(
   count: number,
   difficulty: Difficulty = "medium"
 ): { puzzle: Grid; solution: Grid }[] {
   const puzzles: { puzzle: Grid; solution: Grid }[] = [];
   for (let i = 0; i < count; i++) {
-    puzzles.push(generateSudoku(difficulty));
+    puzzles.push(generatesudoku(difficulty));
   }
   return puzzles;
 }

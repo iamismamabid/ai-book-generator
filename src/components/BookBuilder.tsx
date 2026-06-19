@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Trash2, FileDown, Settings } from "lucide-react";
+import { Plus, Trash2, FileDown, Settings, Type, LayoutGrid } from "lucide-react";
 
 interface BookPage {
   id: string;
-  type: 'word_search' | 'maze' | 'sudoku' | 'blank_journal';
+  // 👇 ADDED 'crossword' TO THE TYPES HERE
+  type: 'word_search' | 'crossword' | 'maze' | 'sudoku' | 'blank_journal'; 
   config: any;
 }
 
@@ -44,18 +45,28 @@ export default function BookBuilder() {
       <div className="w-1/4 bg-slate-50 p-4 border-r border-slate-200 overflow-y-auto">
         <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Add to Book</h3>
         <div className="space-y-2 flex flex-col">
+          
           <button onClick={() => addPageToBook('word_search')} className="p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 transition-colors">
             <Plus className="w-4 h-4"/> Word Search
           </button>
+
+          {/* 👇 NEW CROSSWORD BUTTON ADDED HERE 👇 */}
+          <button onClick={() => addPageToBook('crossword')} className="p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 transition-colors">
+            <Plus className="w-4 h-4"/> Crossword
+          </button>
+          
           <button onClick={() => addPageToBook('maze')} className="p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 transition-colors">
             <Plus className="w-4 h-4"/> Shaped Maze
           </button>
+          
           <button onClick={() => addPageToBook('sudoku')} className="p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 transition-colors">
             <Plus className="w-4 h-4"/> Sudoku
           </button>
+          
           <button onClick={() => addPageToBook('blank_journal')} className="p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 transition-colors">
             <Plus className="w-4 h-4"/> Lined Journal Page
           </button>
+
         </div>
       </div>
 
@@ -70,6 +81,13 @@ export default function BookBuilder() {
           <div className="w-full max-w-md bg-white shadow-xl rounded-sm aspect-[8.5/11] p-6 border border-slate-200 flex items-center justify-center relative">
             <div className="text-center">
               <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 inline-block">Page {activeIndex + 1}</span>
+              
+              {/* Show an icon based on the puzzle type */}
+              <div className="flex justify-center mb-4 text-indigo-300">
+                  {bookPages[activeIndex]?.type === 'crossword' && <LayoutGrid className="w-16 h-16" />}
+                  {bookPages[activeIndex]?.type === 'word_search' && <Type className="w-16 h-16" />}
+              </div>
+
               <h2 className="text-2xl font-black text-slate-800 capitalize">{bookPages[activeIndex]?.type.replace('_', ' ')} Editor</h2>
               <p className="text-sm text-slate-500 mt-2">Settings for this puzzle will appear here.</p>
             </div>

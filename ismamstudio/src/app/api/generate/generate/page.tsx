@@ -1,3 +1,6 @@
+// FILE: src/app/generate/page.tsx
+// PURPOSE: Frontend UI and React Component
+
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -10,10 +13,17 @@ export default function GeneratePage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // 🚀 Vercel AI SDK Magic Hook
+  // Vercel AI SDK Hook talking to the backend route above
   const { completion, input, handleInputChange, handleSubmit, isLoading } = useCompletion({
-    api: '/api/generate',
+    api: '/api/generate', 
     streamProtocol: 'text',
+    
+    onError: (error) => {
+      console.error("AI Generation Error:", error.message);
+      alert(`Oops! Something went wrong: ${error.message}`);
+      setIsSaving(false); 
+    },
+
     onFinish: async (prompt, result) => {
       setIsSaving(true);
       const titleMatch = result.match(/\*\*Book Title:\*\*\s*"([^"]+)"/);
@@ -34,11 +44,14 @@ export default function GeneratePage() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-indigo-100 via-slate-50 to-blue-100 flex items-center justify-center p-6 pt-24">
+      
       <div className="max-w-3xl w-full bg-white/60 backdrop-blur-3xl p-10 md:p-16 rounded-[4rem] shadow-2xl border border-white/80 relative overflow-hidden transition-all duration-700">
+        
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-200/40 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-200/40 rounded-full blur-3xl"></div>
 
         <div className="relative z-10">
+          
           {!isLoading && completion.length === 0 ? (
             <div className="animate-fade-in">
               <div className="text-center mb-12">
@@ -76,6 +89,7 @@ export default function GeneratePage() {
               </form>
             </div>
           ) : (
+            
             <div className="animate-fade-in flex flex-col h-[60vh]">
               <div className="flex items-center justify-between border-b border-slate-200 pb-6 mb-6">
                 <div className="flex items-center gap-4">

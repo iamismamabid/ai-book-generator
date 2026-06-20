@@ -136,7 +136,7 @@ export default function WordSearchStudio() {
 
     // 🖱️ Canva Drag & Drop Handlers (Cover)
     const handlePointerDown = (e: React.PointerEvent, id: string) => {
-        e.stopPropagation(); setActiveElementId(id); setIsDragging(true); (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        e.stopPropagation(); setActiveElementId(id); setIsDragging(true); (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     };
     const handlePointerMove = (e: React.PointerEvent) => {
         if (!isDragging || !activeElementId || !canvasRef.current) return;
@@ -155,7 +155,10 @@ export default function WordSearchStudio() {
         setCoverElements(prev => prev.map(el => el.id === activeElementId ? { ...el, x: xPercent, y: yPercent } : el));
     };
     const handlePointerUp = (e: React.PointerEvent) => {
-        setIsDragging(false); (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        setIsDragging(false); 
+        if ((e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) {
+            (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+        }
     };
 
     const addNewText = () => {
@@ -253,7 +256,7 @@ export default function WordSearchStudio() {
                 const startY = zone.y + titleSpace;
 
                 doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
-                const displayTitle = useFirstLineAsTitle ? `${titleText} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
+                const displayTitle = (useFirstLineAsTitle && titleText) ? `${titleText} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
                 doc.text(displayTitle, zone.x + zone.w/2, zone.y + 0.2, { align: "center" });
 
                 doc.setLineWidth(lineWidth * 0.01); doc.setDrawColor(borderColor);
@@ -352,7 +355,7 @@ export default function WordSearchStudio() {
 
         coverElements.forEach(el => {
             const actualX = (el.x / 100) * coverTotalWidth; const actualY = (el.y / 100) * coverTotalHeight;
-            doc.setGState(new doc.GState({ opacity: el.opacity || 1 }));
+            doc.setGState(new (doc as any).GState({ opacity: el.opacity || 1 }));
 
             if (el.type === 'shape') {
                 doc.setFillColor(el.color);
@@ -372,7 +375,7 @@ export default function WordSearchStudio() {
                 });
             }
         });
-        doc.setGState(new doc.GState({ opacity: 1 }));
+        doc.setGState(new (doc as any).GState({ opacity: 1 }));
         doc.save(`KDP_Pro_Cover_${trimSize.w}x${trimSize.h}.pdf`);
         setIsGenerating(false);
     };
@@ -589,7 +592,7 @@ export default function WordSearchStudio() {
                         <div className="flex-1 bg-slate-100 flex flex-col items-center justify-center p-8 relative shadow-inner overflow-hidden">
                             <div 
                                 className="relative w-full max-w-2xl shadow-2xl transition-all duration-300 select-none"
-                                style={{ background: `linear-gradient(to right, ${backCoverColor} 0%, ${backCoverColor} ${backCoverPercentage}%, ${frontCoverColor} ${backCoverPercentage}%, ${frontCoverColor} 100%)`, aspectRatio: `${coverTotalWidth} / ${coverTotalHeight}` }}
+                                style={{ background: `linear-gradient(to right, ${backCoverColor} 0%, ${backCoverColor} ${backCoverPercentage}%, ${frontCoverColor} ${backCoverPercentage}%, ${frontCoverColor} 100%)`, aspectRatio: `${coverTotalWidth} / ${coverTotalHeight}`, containerType: 'inline-size' }}
                                 ref={canvasRef} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp} onClick={(e) => { if (e.target === canvasRef.current) setActiveElementId(null); }}
                             >
                                 {showKdpGuides && (
@@ -617,6 +620,8 @@ export default function WordSearchStudio() {
                                     } else if (el.type === 'shape') {
                                         return <div key={el.id} onPointerDown={(e) => handlePointerDown(e, el.id)} className={`${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : 'hover:ring-1 ring-white/50'}`} style={{ ...commonStyles, width: `${el.width}%`, aspectRatio: '1/1', backgroundColor: el.color, borderRadius: el.shapeType === 'circle' ? '50%' : '0%' }}></div>
                                     }
+                                    
+                                    return null;
                                 })}
                             </div>
                         </div>

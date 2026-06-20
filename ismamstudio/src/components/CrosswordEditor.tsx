@@ -1,0 +1,90 @@
+"use client";
+
+import React, { useState } from "react";
+import { RefreshCw } from "lucide-react";
+import { generateCrosswordGrid } from "../utils/crosswordGenerator";
+
+export const CrosswordEditor = ({ page, updatePage }: any) => {
+  const [inputText, setInputText] = useState(page.config.rawText || "REACT, A popular UI library\nNEXTJS, A React framework\nVERCEL, Hosting platform\nCODING, Writing software");
+  const [gridData, setGridData] = useState<any>(page.config.gridData || null);
+
+  const handleGenerate = () => {
+    const lines = inputText.split('\n').filter((l: string) => l.trim().length > 0);
+    const wordList = lines.map((l: string) => {
+      const parts = l.split(',');
+      return { word: parts[0]?.trim() || '', clue: parts[1]?.trim() || '' };
+    }).filter((item: any) => item.word.length > 0);
+
+    if (wordList.length === 0) return alert("Please enter words and clues.");
+
+    const result = generateCrosswordGrid(wordList, 15);
+    setGridData(result);
+    updatePage({ rawText: inputText, gridData: result });
+  };
+
+  return (
+    <div className="w-full flex gap-8 h-full p-4 overflow-y-auto">
+      {/* Editor Panel */}
+      <div className="w-80 flex flex-col gap-4">
+        <textarea 
+          value={inputText} 
+          onChange={(e) => setInputText(e.target.value)}
+          className="w-full h-80 p-4 border border-slate-200 rounded-xl text-sm font-mono shadow-inner"
+          placeholder="WORD, Clue"
+        />
+        <button onClick={handleGenerate} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">
+          <RefreshCw className="w-4 h-4 inline mr-2"/> Generate Puzzle
+        </button>
+      </div>
+
+      {/* Canvas Area */}
+      <div className="flex-1 bg-white p-10 shadow-2xl border border-slate-200 min-h-[900px]">
+        <h1 className="text-3xl font-black text-center mb-8 uppercase tracking-widest">Crossword</h1>
+        
+        {gridData ? (
+          <div className="flex flex-col items-center">
+            {/* একক এবং সঠিক গ্রিড রেন্ডারার */}
+            <div className="grid border-4 border-slate-900 bg-slate-900 shadow-xl" 
+                 style={{ gridTemplateColumns: `repeat(15, minmax(0, 1fr))` }}>
+              {gridData.grid.map((row: any[], r: number) => 
+                row.map((cell: string, c: number) => {
+                  const isBlank = cell === '';
+                  const wordStart = gridData.placedWords.find((w: any) => w.r === r && w.c === c);
+                  return (
+                    <div key={`${r}-${c}`} 
+                         className={`w-8 h-8 flex items-center justify-center relative 
+                         ${isBlank ? 'bg-slate-900' : 'bg-white border-[0.5px] border-slate-900'}`}>
+                      {wordStart && <span className="absolute top-0 left-0.5 text-[8px] font-bold text-slate-800">{wordStart.num}</span>}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Clues Section */}
+            <div className="w-full mt-10 grid grid-cols-2 gap-12 border-t border-slate-200 pt-6">
+              <div>
+                <h3 className="font-black text-lg mb-3 uppercase tracking-wider">Across</h3>
+                <ul className="space-y-2 text-sm text-slate-600">
+                  {gridData.placedWords.filter((w: any) => w.dir === 'H').map((w: any) => (
+                    <li key={w.num} className="flex gap-2"><span className="font-bold text-slate-900">{w.num}.</span> {w.clue}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-black text-lg mb-3 uppercase tracking-wider">Down</h3>
+                <ul className="space-y-2 text-sm text-slate-600">
+                  {gridData.placedWords.filter((w: any) => w.dir === 'V').map((w: any) => (
+                    <li key={w.num} className="flex gap-2"><span className="font-bold text-slate-900">{w.num}.</span> {w.clue}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center text-slate-400 mt-20">Enter words to generate your crossword.</div>
+        )}
+      </div>
+    </div>
+  );
+};

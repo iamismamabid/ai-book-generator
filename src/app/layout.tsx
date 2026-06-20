@@ -3,6 +3,7 @@ import "./globals.css";
 // 🚨 Added Clerk Auth UI components to your imports
 import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import Link from "next/link";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 // 🎨 গুগল ফন্ট লোড করা হচ্ছে
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -73,6 +74,7 @@ export default function RootLayout({
             {children}
           </div>
 
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>

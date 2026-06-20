@@ -1,4 +1,4 @@
-import MazeGenerator from '@/components/MazeGenerator';
+
 
 export default function MazePage() {
   return (

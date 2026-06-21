@@ -7,7 +7,7 @@ import { Stage, Layer, Rect, Circle as KonvaCircle, Text as KonvaText, Image as 
 import useImage from 'use-image';
 
 // Import our BookBuilder component!
-import BookBuilder from "../../components/components/BookBuilder";
+import BookBuilder from "../../components/BookBuilder";
 
 const TRIM_SIZES = [
     { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },

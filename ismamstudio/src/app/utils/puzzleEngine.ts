@@ -1,58 +1,59 @@
-export function generateCrosswordGrid(wordList: {word: string, clue: string}[], gridSize = 15) {
-  const grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
-  const placedWords: any[] = [];
-  const sortedWords = [...wordList].sort((a, b) => b.word.length - a.word.length);
+// --- SUDOKU GENERATOR ALGORITHM ---
+export function generateSudoku(difficulty: 'easy' | 'medium' | 'hard' = 'medium') {
+  const BLANK = 0;
+  const board = Array(9).fill(null).map(() => Array(9).fill(BLANK));
 
-  // Helper: Check if word fits at specific position
-  const canPlace = (word: string, r: number, c: number, dir: 'H' | 'V') => {
-    if (dir === 'H') {
-      if (c + word.length > gridSize) return false;
-      for (let i = 0; i < word.length; i++) {
-        const cell = grid[r][c + i];
-        if (cell !== '' && cell !== word[i]) return false;
-      }
-    } else {
-      if (r + word.length > gridSize) return false;
-      for (let i = 0; i < word.length; i++) {
-        const cell = grid[r + i][c];
-        if (cell !== '' && cell !== word[i]) return false;
+  // Helper: Check if safe to place a number
+  const isSafe = (board: number[][], row: number, col: number, num: number) => {
+    for (let x = 0; x <= 8; x++) if (board[row][x] === num) return false;
+    for (let x = 0; x <= 8; x++) if (board[x][col] === num) return false;
+    const startRow = row - (row % 3), startCol = col - (col % 3);
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (board[i + startRow][j + startCol] === num) return false;
       }
     }
     return true;
   };
 
-  // Place first word
-  const first = sortedWords[0].word.toUpperCase().replace(/[^A-Z]/g, '');
-  for (let i = 0; i < first.length; i++) grid[Math.floor(gridSize/2)][Math.floor((gridSize-first.length)/2) + i] = first[i];
-  placedWords.push({ word: first, clue: sortedWords[0].clue, r: Math.floor(gridSize/2), c: Math.floor((gridSize-first.length)/2), dir: 'H', num: 1 });
-
-  let currentNum = 2;
-
-  for (let w = 1; w < sortedWords.length; w++) {
-    const word = sortedWords[w].word.toUpperCase().replace(/[^A-Z]/g, '');
-    let placed = false;
-
-    // Scan grid for intersection
-    for (let r = 0; r < gridSize && !placed; r++) {
-      for (let c = 0; c < gridSize && !placed; c++) {
-        for (let i = 0; i < word.length; i++) {
-          if (grid[r][c] === word[i]) {
-            // Check Vertical
-            if (canPlace(word, r - i, c, 'V')) {
-              for (let k = 0; k < word.length; k++) grid[r - i + k][c] = word[k];
-              placedWords.push({ word, clue: sortedWords[w].clue, r: r - i, c, dir: 'V', num: currentNum++ });
-              placed = true; break;
-            }
-            // Check Horizontal
-            if (canPlace(word, r, c - i, 'H')) {
-              for (let k = 0; k < word.length; k++) grid[r][c - i + k] = word[k];
-              placedWords.push({ word, clue: sortedWords[w].clue, r, c: c - i, dir: 'H', num: currentNum++ });
-              placed = true; break;
+  // Helper: Fill the board fully
+  const fillBoard = (board: number[][]) => {
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (board[row][col] === BLANK) {
+          const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
+          for (let num of numbers) {
+            if (isSafe(board, row, col, num)) {
+              board[row][col] = num;
+              if (fillBoard(board)) return true;
+              board[row][col] = BLANK;
             }
           }
+          return false;
         }
       }
     }
+    return true;
+  };
+
+  // Generate complete solution
+  fillBoard(board);
+  const solution = board.map(row => [...row]);
+
+  // Remove elements to create the puzzle
+  let attempts = difficulty === 'easy' ? 30 : difficulty === 'medium' ? 45 : 55;
+  const puzzle = board.map(row => [...row]);
+
+  while (attempts > 0) {
+    let row = Math.floor(Math.random() * 9);
+    let col = Math.floor(Math.random() * 9);
+    while (puzzle[row][col] === BLANK) {
+      row = Math.floor(Math.random() * 9);
+      col = Math.floor(Math.random() * 9);
+    }
+    puzzle[row][col] = BLANK;
+    attempts--;
   }
-  return { grid, placedWords };
+
+  return { puzzle, solution };
 }

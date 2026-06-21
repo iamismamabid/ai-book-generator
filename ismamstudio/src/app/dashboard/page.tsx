@@ -14,6 +14,11 @@ export default async function DashboardPage() {
     );
   }
 
+  // 👇 DEBUG LOG ADDED HERE
+  console.log("----------------------------------------");
+  console.log("Database URL Check:", process.env.DATABASE_URL); 
+  console.log("----------------------------------------");
+
   // ১. ডাটাবেস থেকে ইউজারের সব বই নিয়ে আসা
   const books = await prisma.book.findMany({
     where: { userId: userId as string },
@@ -104,4 +109,3 @@ export default async function DashboardPage() {
     </main>
   );
 }
-

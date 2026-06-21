@@ -3,9 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+} // <--- The bracket belongs here, enclosing everything!
 
 model User {
   id                String    @id @default(uuid())
@@ -14,6 +15,8 @@ model User {
   downloadCount     Int       @default(0)
   lastDownloadReset DateTime  @default(now())
   createdAt         DateTime  @default(now())
+
+  @@map("users")
 }
 
 model Book {
@@ -21,16 +24,20 @@ model Book {
   userId    String
   title     String
   content   String
-  chapters  Chapter[] // One-to-Many relation with Chapter
+  chapters  Chapter[] 
   createdAt DateTime  @default(now())
+
+  @@map("books")
 }
 
 model Chapter {
   id        String   @id @default(uuid())
   title     String
   content   String
-  order     Int      // Chapter sequence indicator
+  order     Int      
   bookId    String
   book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  @@map("chapters")
 }

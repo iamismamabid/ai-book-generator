@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { generatesudoku, generatesudokuBook, Grid, Difficulty } from '../../lib/sudoku'; 
 import { downloadsudokuPdf } from '../../lib/sudoku-pdf';
-import DownloadButton from "../../../ismamstudio/src/components/components/DownloadButton";
+import DownloadButton from "../../../ismamstudio/src/components/DownloadButton";
 
 // FIXED: Properly enclosed the return statement inside the function body
 function SudokuPreview({ grid }: { grid: Grid }) {

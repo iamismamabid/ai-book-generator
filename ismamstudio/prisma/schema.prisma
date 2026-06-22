@@ -8,6 +8,11 @@ datasource db {
   directUrl = env("DIRECT_URL")
 } // <--- The bracket belongs here, enclosing everything!
 
+
+
+
+
+
 model User {
   id                String    @id @default(uuid())
   clerkId           String    @unique

@@ -6,6 +6,9 @@ import { Groq } from "groq-sdk";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+
+// Look! No import line here anymore.
+
 function getGroqClient() {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
@@ -102,7 +105,7 @@ export async function generateNextChapter(bookId: string, outline: string, title
   return { success: true };
 }
 
-// 🎯 ৪. চ্যাপ্টার আপডেট (এডিট) করার ফাংশন [এটি আপনার মিসিং ছিল!]
+// 🎯 ৪. চ্যাপ্টার আপডেট (এডিট) করার ফাংশন 
 export async function updateChapter(chapterId: string, newContent: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");

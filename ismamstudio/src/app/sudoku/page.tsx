@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { generatesudoku, generatesudokuBook, Grid, Difficulty } from '../../lib/sudoku'; 
-import { downloadsudokuPdf } from '../../lib/sudoku-pdf';
-import DownloadButton from "../../../ismamstudio/src/components/DownloadButton";
+import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku'; 
+import { downloadSudokuPdf } from '../../lib/sudoku-pdf';
+import DownloadButton from "@/components/DownloadButton";
 
 // FIXED: Properly enclosed the return statement inside the function body
 function SudokuPreview({ grid }: { grid: Grid }) {
@@ -49,7 +49,7 @@ export default function SudokuGeneratorPage() {
     // setTimeout lets the loading state render before the (synchronous,
     // CPU-heavy) generation blocks the main thread
     setTimeout(() => {
-      const result = generatesudoku(difficulty);
+      const result = generateSudoku(difficulty);
       setCurrentPuzzle(result);
       setIsGenerating(false);
     }, 50);
@@ -58,8 +58,8 @@ export default function SudokuGeneratorPage() {
   const handleDownloadPdf = () => {
     setIsDownloading(true);
     setTimeout(() => {
-      const puzzles = generatesudokuBook(bookCount, difficulty);
-      downloadsudokuPdf(
+      const puzzles = generateSudokuBook(bookCount, difficulty);
+      downloadSudokuPdf(
         {
           puzzles,
           difficulty,

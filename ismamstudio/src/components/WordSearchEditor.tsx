@@ -4,14 +4,14 @@ import { RefreshCw, Search } from "lucide-react";
 
 // Use your existing grid generation function
 // Ensure this is imported correctly from your utils file
-import { generatePuzzleGrid } from "../utils/puzzleEngine"; 
+import { generatePuzzleGrid } from "@/app/utils/puzzleEngine"; 
 
 export const WordSearchEditor = ({ page, updatePage }: any) => {
   const [inputText, setInputText] = useState(page.config.rawText || "NEXTJS, REACT, PRISMA, TAILWIND, CODING, JAVASCRIPT");
   const [gridData, setGridData] = useState<any>(page.config.gridData || null);
 
   const handleGenerate = () => {
-    const wordList = inputText.split(',').map((w: string) => w.trim()).filter(w => w.length > 0);
+    const wordList = inputText.split(',').map((w: string) => w.trim()).filter((w: string) => w.length > 0);
     if (wordList.length === 0) return alert("Please enter some words.");
 
     // Assuming size 12 for the grid

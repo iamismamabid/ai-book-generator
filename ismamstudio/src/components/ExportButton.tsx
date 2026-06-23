@@ -4,12 +4,12 @@ import {jsPDF } from "jspdf";
 import { Download } from "lucide-react";
 
 interface ExportButtonProps{
-    title: string;
-    content: string;
+    title?: string;
+    content?: string;
 
 }
 
-export default function ExportButton({title,content}: ExportButtonProps){
+export default function ExportButton({title = "My Book", content = "No content available."}: ExportButtonProps){
     const handleDownload = () =>{
         const doc = new jsPDF();
 

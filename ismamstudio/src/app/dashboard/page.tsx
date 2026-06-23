@@ -20,10 +20,15 @@ export default async function DashboardPage() {
   console.log("----------------------------------------");
 
   // ১. ডাটাবেস থেকে ইউজারের সব বই নিয়ে আসা
-  const books = await prisma.book.findMany({
-    where: { userId: userId as string },
-    orderBy: { createdAt: "desc" },
-  });
+  let books: any[] = [];
+  try {
+    books = await prisma.book.findMany({
+      where: { userId: userId as string },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch books from database:", error);
+  }
 
   // 🎯 ২. Empty State: যদি কোনো বই না থাকে
   if (books.length === 0) {

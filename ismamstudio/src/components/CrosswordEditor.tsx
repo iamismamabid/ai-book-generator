@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { RefreshCw } from "lucide-react";
-import { generateCrosswordGrid } from "../utils/crosswordGenerator";
+import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
 
 export const CrosswordEditor = ({ page, updatePage }: any) => {
   const [inputText, setInputText] = useState(page.config.rawText || "REACT, A popular UI library\nNEXTJS, A React framework\nVERCEL, Hosting platform\nCODING, Writing software");

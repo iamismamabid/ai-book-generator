@@ -80,7 +80,7 @@ export default function WordSearchStudio() {
     const [wordTextSize, setWordTextSize] = useState(10);
     const [wordTextColor, setWordTextColor] = useState('#000000');
     
-    const [solutionHighlighter, setSolutionHighlighter] = useState<'apple' | 'fill' | 'grayout'>('apple');
+    const [solutionHighlighter, setSolutionHighlighter] = useState<'apple' | 'fill' | 'grayout' | 'fade'>('apple');
     const [useFirstLineAsTitle, setUseFirstLineAsTitle] = useState(false);
 
     const [words, setWords] = useState("NEXTJS\nREACT\nPRISMA\nTAILWIND\nCODING\nJAVASCRIPT\nTYPESCRIPT\nDATABASE\nSERVER\nVERCEL\nGITHUB\nAPI\nJSON\nNODE\nFRONTEND\nBACKEND");

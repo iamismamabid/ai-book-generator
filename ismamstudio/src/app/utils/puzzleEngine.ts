@@ -57,3 +57,45 @@ export function generateSudoku(difficulty: 'easy' | 'medium' | 'hard' = 'medium'
 
   return { puzzle, solution };
 }
+
+export function generatePuzzleGrid(wordList: string[], size: number, textCase: string) {
+  const grid = Array(size).fill(null).map(() => Array(size).fill(''));
+  const mask = Array(size).fill(null).map(() => Array(size).fill(false)); 
+  const directions = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+  const placedWords: any[] = [];
+
+  wordList.forEach(word => {
+    let placed = false; let attempts = 0;
+    const targetWord = textCase === 'lowercase' ? word.toLowerCase() : word.toUpperCase();
+    while (!placed && attempts < 200) { 
+      const dir = directions[Math.floor(Math.random() * directions.length)];
+      const minRow = dir[0] === -1 ? targetWord.length - 1 : 0; const maxRow = dir[0] === 1 ? size - targetWord.length : size - 1;
+      const minCol = 0; const maxCol = dir[1] === 1 ? size - targetWord.length : size - 1;
+      const row = Math.floor(Math.random() * (maxRow - minRow + 1)) + minRow;
+      const col = Math.floor(Math.random() * (maxCol - minCol + 1)) + minCol;
+
+      let canPlace = true;
+      for (let i = 0; i < targetWord.length; i++) {
+        const r = row + (dir[0] * i); const c = col + (dir[1] * i);
+        if (r < 0 || r >= size || c < 0 || c >= size || (grid[r][c] !== '' && grid[r][c] !== targetWord[i])) { canPlace = false; break; }
+      }
+      if (canPlace) {
+        for (let i = 0; i < targetWord.length; i++) {
+          const r = row + (dir[0] * i); const c = col + (dir[1] * i);
+          grid[r][c] = targetWord[i]; mask[r][c] = true; 
+        }
+        placed = true;
+        placedWords.push({ text: targetWord, startR: row, startC: col, endR: row + (dir[0] * (targetWord.length - 1)), endC: col + (dir[1] * (targetWord.length - 1)) });
+      }
+      attempts++;
+    }
+  });
+  
+  const alphabet = textCase === 'lowercase' ? "abcdefghijklmnopqrstuvwxyz" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) { 
+      if (grid[r][c] === '') grid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)]; 
+    }
+  }
+  return { grid, words: placedWords, mask };
+}

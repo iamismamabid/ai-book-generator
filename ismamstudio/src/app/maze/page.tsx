@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { generateMaze, MazeGrid, Shape } from "@/lib/maze";
 import { downloadMazePdf } from "@/lib/maze-pdf";
-import DownloadButton from "@/components/DownloadButton"; // Adjusted to use clean alias
+import DownloadButton from "@/components/DownloadButton";
 
 function MazePreview({ 
   grid, 
@@ -28,7 +28,7 @@ function MazePreview({
     >
       {grid.flatMap((row, r) =>
         row.map((cell, c) => {
-          if (!cell.isActive) {
+          if (!cell.active) {
             return <div key={`${r}-${c}`} className="bg-transparent aspect-square" />;
           }
 
@@ -76,7 +76,7 @@ export default function MazeGeneratorPage() {
     setIsGenerating(true);
     setTimeout(() => {
       try {
-        const maze = generateMaze(gridSize, gridSize, shape);
+        const maze = generateMaze({ rows: gridSize, cols: gridSize, shape });
         setPreviewMaze(maze);
       } catch (err) {
         console.error("Failed to generate preview:", err);
@@ -91,7 +91,7 @@ export default function MazeGeneratorPage() {
     setTimeout(() => {
       try {
         const mazes = Array.from({ length: bookCount }, () => 
-          generateMaze(gridSize, gridSize, shape)
+          generateMaze({ rows: gridSize, cols: gridSize, shape })
         );
 
         downloadMazePdf(
@@ -115,6 +115,12 @@ export default function MazeGeneratorPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12 max-w-7xl mx-auto">
       <div className="mb-8 border-b border-slate-800 pb-6">
+        <button
+          onClick={() => router.push("/")}
+          className="text-slate-400 hover:text-amber-500 text-sm mb-4 block"
+        >
+          ← Back to home
+        </button>
         <h1 className="text-4xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent mb-2">
           Premium Maze Generator
         </h1>

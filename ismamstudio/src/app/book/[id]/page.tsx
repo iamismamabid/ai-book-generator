@@ -2,11 +2,11 @@ import { prisma } from "@/lib/prisma"; // Adjusted to use clean alias
 import Link from "next/link";
 import { ArrowLeft, CreditCard, BookOpen } from "lucide-react";
 import ExportButton from "@/components/ExportButton"; // Adjusted to use clean alias
-
-// Import the Client Component
 import { SudokuGenerator } from "@/components/SudokuGenerator";
 
-// Inline implementation of ContinueWritingButton to prevent module errors or duplicate declaration
+import ChapterButton from "./ChapterButton";
+import EditableChapter from "./EditableChapter";
+
 function ContinueWritingButton({ bookId }: { bookId: string }) {
   return (
     <Link
@@ -22,9 +22,12 @@ function ContinueWritingButton({ bookId }: { bookId: string }) {
 export default async function ProfessionalBookPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
-  let book: { id: string; title: string; content: string | null } | null = null;
+  let book: any = null;
   try {
-    book = await prisma.book.findUnique({ where: { id } });
+    book = await prisma.book.findUnique({ 
+      where: { id },
+      include: { chapters: { orderBy: { order: "asc" } } }
+    });
   } catch (error) {
     console.error("Database query failed, using fallback...", error);
   }
@@ -32,7 +35,8 @@ export default async function ProfessionalBookPage({ params }: { params: Promise
   const displayBook = book ?? {
     id,
     title: "The AI Generation Journey",
-    content: "This is a placeholder book because the database record was not found. ".repeat(150)
+    content: "This is a placeholder book because the database record was not found. ".repeat(150),
+    chapters: []
   };
 
   const words = (displayBook.content ?? "").split(" ");
@@ -41,6 +45,11 @@ export default async function ProfessionalBookPage({ params }: { params: Promise
   for (let i = 0; i < words.length; i += wordsPerPage) {
     pages.push(words.slice(i, i + wordsPerPage).join(" "));
   }
+
+  const fullContent = [
+    displayBook.content,
+    ...displayBook.chapters.map((c: any) => `\n\n${c.title}\n\n${c.content}`)
+  ].join("\n");
 
   return (
     <main className="min-h-screen bg-slate-100 font-serif">
@@ -52,7 +61,7 @@ export default async function ProfessionalBookPage({ params }: { params: Promise
           </Link>
           
           <div className="flex items-center gap-4">
-            <ExportButton title={displayBook.title} content={displayBook.content ?? ""} />
+            <ExportButton title={displayBook.title} content={fullContent} />
             <button className="bg-indigo-600 text-white px-5 py-2 rounded-full font-sans font-bold flex items-center gap-2 hover:bg-indigo-700 shadow-lg transition-all active:scale-95">
               <CreditCard className="w-4 h-4" /> Publish & Sell
             </button>
@@ -84,12 +93,33 @@ export default async function ProfessionalBookPage({ params }: { params: Promise
             </section>
           ))}
 
+          {/* 📖 Render Generated Chapters */}
+          {displayBook.chapters.map((chapter: any, idx: number) => (
+            <section 
+              key={chapter.id}
+              className="relative aspect-[1/1.414] bg-white shadow-xl p-16 md:p-24 border border-slate-200 overflow-hidden mt-12"
+              style={{ boxShadow: "5px 0 15px -5px rgba(0,0,0,0.1) inset" }}
+            >
+              <h2 className="text-3xl font-black mb-6 leading-tight text-slate-900 border-b pb-4">{chapter.title}</h2>
+              <EditableChapter chapter={chapter} />
+              <span className="absolute bottom-10 left-1/2 -translate-x-1/2 text-slate-400 font-sans text-sm">
+                — Page {pages.length + idx + 1} —
+              </span>
+            </section>
+          ))}
+
           <section className="h-64 bg-slate-200/50 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-500">
             <BookOpen className="w-10 h-10 mb-4 opacity-20" />
             <p className="font-sans font-bold italic">The End of {displayBook.title}</p>
           </section>
           
-          <div className="print:hidden flex justify-center w-full">
+          <div className="print:hidden flex flex-col items-center justify-center w-full gap-6">
+            <ChapterButton 
+              bookId={displayBook.id} 
+              outline={displayBook.content ?? ""} 
+              title={displayBook.title} 
+              currentCount={displayBook.chapters.length} 
+            />
             <ContinueWritingButton bookId={displayBook.id} />
           </div>
 

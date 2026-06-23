@@ -14,6 +14,11 @@ export default function GeneratePage() {
   const { completion, input, handleInputChange, handleSubmit, isLoading } = useCompletion({
     api: '/api/generate',
     streamProtocol: 'text',
+    onError: (error) => {
+      console.error("AI Generation Error:", error.message);
+      alert(`Oops! Something went wrong: ${error.message}`);
+      setIsSaving(false); 
+    },
     onFinish: async (prompt, result) => {
       setIsSaving(true);
       const titleMatch = result.match(/\*\*Book Title:\*\*\s*"([^"]+)"/);

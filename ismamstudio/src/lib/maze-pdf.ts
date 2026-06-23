@@ -41,7 +41,7 @@ function drawMaze(
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const cell = grid[r][c];
-      if (!cell.isActive) continue;
+      if (!cell.active) continue;
 
       const x = xOffset + c * cellSize;
       const y = yOffset + r * cellSize;
@@ -69,7 +69,7 @@ function drawMaze(
 
   // 3. Draw Solution Path (if provided for the solutions section)
   if (solutionPath && solutionPath.length > 0) {
-    doc.setGatcDrawColor && doc.setDrawColor(245, 158, 11); // Amber-500 line
+    doc.setDrawColor(245, 158, 11); // Amber-500 line
     doc.setLineWidth(0.025);
     
     // Setting up dotted/dashed line for standard KDP print layouts

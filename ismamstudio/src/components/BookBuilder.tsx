@@ -1,12 +1,21 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, Trash2, FileDown } from "lucide-react"; // FileDown ইম্পোর্ট করা হয়েছে
 import { CrosswordEditor } from "./CrosswordEditor";
-import { exportBookToPDF } from "../utils/pdfExportService"; // PDF সার্ভিস ইম্পোর্ট করা হয়েছে
+import { exportBookToPDF } from "@/app/utils/pdfExportService"; // PDF সার্ভিস ইম্পোর্ট করা হয়েছে
 import { WordSearchEditor } from "./WordSearchEditor";
 export default function BookBuilder() {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("kdp-book-draft");
+    if (saved) setBookPages(JSON.parse(saved));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("kdp-book-draft", JSON.stringify(bookPages));
+  }, [bookPages]);
 
   const addPage = (type: string) => {
     setBookPages([...bookPages, { id: Date.now(), type, config: {} }]);
@@ -38,27 +47,11 @@ export default function BookBuilder() {
               />
             )}
                 {bookPages[activeIndex].type === 'word_search' && (
-  <WordSearchEditor 
-    page={bookPages[activeIndex]} 
-    updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
-  />
-)}
-
-
-
-
-      useEffect(() => {
-  const saved = localStorage.getItem("kdp-book-draft");
-  if (saved) setBookPages(JSON.parse(saved));
-}, []);
-
-useEffect(() => {
-  localStorage.setItem("kdp-book-draft", JSON.stringify(bookPages));
-}, [bookPages]);
-            
-            {bookPages[activeIndex].type === 'word_search' && (
-              <div className="text-center mt-20 text-gray-500">Word Search Editor Coming Soon...</div>
-            )}
+                  <WordSearchEditor 
+                    page={bookPages[activeIndex]} 
+                    updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+                  />
+                )}
           </>
         ) : (
           <div className="text-center text-gray-500 mt-20">Please add a page to start editing.</div>

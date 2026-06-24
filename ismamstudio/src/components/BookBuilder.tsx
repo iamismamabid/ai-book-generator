@@ -1,16 +1,29 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, FileDown } from "lucide-react";
+import { Plus, Trash2, FileDown, ArrowUp, ArrowDown, Copy, BookOpen, Settings2, Sparkles, X } from "lucide-react";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
 import { SudokuEditor } from "./SudokuEditor";
 import { MazeEditor } from "./MazeEditor";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
 
-export default function BookBuilder() {
+const TRIM_SIZES = [
+  { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
+  { label: '6" x 9" (Novel)', w: 6, h: 9 },
+  { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
+];
+
+export default function BookBuilder({ coverState }: { coverState?: any }) {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  
+  // Premium Export Modal States
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [includeCover, setIncludeCover] = useState(false);
+  const [includePageNumbers, setIncludePageNumbers] = useState(true);
+  const [gutterMargin, setGutterMargin] = useState(false);
+  const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);
 
   useEffect(() => {
     const saved = localStorage.getItem("kdp-book-draft");
@@ -48,42 +61,137 @@ export default function BookBuilder() {
     ));
   };
 
+  const movePage = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === bookPages.length - 1) return;
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const updated = [...bookPages];
+    const temp = updated[index];
+    updated[index] = updated[targetIndex];
+    updated[targetIndex] = temp;
+
+    setBookPages(updated);
+    setActiveIndex(targetIndex);
+  };
+
+  const duplicatePage = (index: number) => {
+    const pageToDup = bookPages[index];
+    const dup = {
+      ...pageToDup,
+      id: Date.now() + Math.random(),
+      config: JSON.parse(JSON.stringify(pageToDup.config))
+    };
+    const updated = [...bookPages];
+    updated.splice(index + 1, 0, dup);
+    setBookPages(updated);
+    setActiveIndex(index + 1);
+  };
+
+  const autoGenerateAllSolutions = () => {
+    const newSolPages: any[] = [];
+    bookPages.forEach((page) => {
+      // Check if it's a puzzle and not already a solution page
+      if (['crossword', 'word_search', 'sudoku', 'maze'].includes(page.type) && !page.config.isSolution) {
+        newSolPages.push({
+          id: Date.now() + Math.random(),
+          type: page.type,
+          config: {
+            ...JSON.parse(JSON.stringify(page.config)),
+            isSolution: true,
+            showSolution: true // For maze
+          }
+        });
+      }
+    });
+
+    if (newSolPages.length === 0) {
+      alert("No puzzle pages found to generate solutions for.");
+      return;
+    }
+
+    setBookPages([...bookPages, ...newSolPages]);
+  };
+
+  const triggerExport = () => {
+    exportBookToPDF(bookPages, {
+      includeCover,
+      coverState,
+      includePageNumbers,
+      gutterMargin,
+      trimSize: selectedTrim
+    });
+    setIsExportModalOpen(false);
+  };
+
   return (
     <div className="flex h-screen bg-[#F8FAFC]">
       {/* Sidebar Left: Asset Tool buttons */}
-      <div className="w-68 bg-slate-900 text-slate-100 p-5 border-r border-slate-800 flex flex-col gap-4">
-        <div>
-          <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-4">Add Puzzle Page</h2>
-          <div className="space-y-2.5">
-            <button 
-              onClick={() => addPage('crossword')} 
-              className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-            >
-              <span>+ Crossword</span>
-              <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-            </button>
-            <button 
-              onClick={() => addPage('word_search')} 
-              className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-            >
-              <span>+ Word Search</span>
-              <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-            </button>
-            <button 
-              onClick={() => addPage('sudoku')} 
-              className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-            >
-              <span>+ Sudoku</span>
-              <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-            </button>
-            <button 
-              onClick={() => addPage('maze')} 
-              className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-            >
-              <span>+ Maze Challenge</span>
-              <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-            </button>
+      <div className="w-72 bg-slate-900 text-slate-100 p-5 border-r border-slate-800 flex flex-col justify-between">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-4">Core Pages</h2>
+            <div className="space-y-2">
+              <button 
+                onClick={() => addPage('title')} 
+                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+              >
+                <span>➕ Title Page</span>
+                <BookOpen className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+              </button>
+              <button 
+                onClick={() => addPage('blank')} 
+                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+              >
+                <span>➕ Blank Spacer Page</span>
+                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+              </button>
+            </div>
           </div>
+
+          <div>
+            <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-4">Add Puzzle Page</h2>
+            <div className="space-y-2.5">
+              <button 
+                onClick={() => addPage('crossword')} 
+                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+              >
+                <span>+ Crossword</span>
+                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+              </button>
+              <button 
+                onClick={() => addPage('word_search')} 
+                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+              >
+                <span>+ Word Search</span>
+                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+              </button>
+              <button 
+                onClick={() => addPage('sudoku')} 
+                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+              >
+                <span>+ Sudoku</span>
+                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+              </button>
+              <button 
+                onClick={() => addPage('maze')} 
+                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+              >
+                <span>+ Maze Challenge</span>
+                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bulk Utility Section */}
+        <div className="pt-4 border-t border-slate-800">
+          <button
+            onClick={autoGenerateAllSolutions}
+            className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/25 border border-amber-500/20 rounded-xl text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center justify-center gap-2 transition"
+          >
+            <Sparkles className="w-3.5 h-3.5" /> Auto-Build Solutions
+          </button>
         </div>
       </div>
 
@@ -115,58 +223,256 @@ export default function BookBuilder() {
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
               />
             )}
+            {bookPages[activeIndex].type === 'title' && (
+              <TitlePageEditor 
+                page={bookPages[activeIndex]} 
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              />
+            )}
+            {bookPages[activeIndex].type === 'blank' && (
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 bg-white border border-slate-200 rounded-2xl p-10 min-h-[500px]">
+                <h3 className="text-xl font-bold uppercase text-slate-500 mb-2">Blank Spacer Page</h3>
+                <p className="text-xs">This page will export as a blank page in your KDP Interior PDF.</p>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm gap-2">
+          <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm gap-2 bg-white border border-dashed border-slate-300 rounded-2xl m-4">
+            <span className="text-4xl">📚</span>
             <p className="font-bold">No pages added to your book yet.</p>
-            <p className="text-xs">Click one of the buttons on the left to add your first puzzle page.</p>
+            <p className="text-xs text-slate-400">Click one of the buttons on the left sidebar to add pages.</p>
           </div>
         )}
       </div>
 
       {/* Sidebar Right: Book Pages & Merge Export */}
-      <div className="w-72 bg-white p-5 border-l border-slate-200 flex flex-col">
-        <h2 className="font-black text-xs uppercase text-slate-400 tracking-wider mb-4">Book Outline Pages</h2>
+      <div className="w-76 bg-white p-5 border-l border-slate-200 flex flex-col">
+        <h2 className="font-black text-xs uppercase text-slate-400 tracking-wider mb-4">Book Outline ({bookPages.length} Pages)</h2>
         
-        <div className="flex-1 overflow-y-auto space-y-2">
-          {bookPages.map((p, i) => (
-            <div 
-              key={p.id} 
-              onClick={() => setActiveIndex(i)} 
-              className={`p-3 rounded-xl border cursor-pointer flex justify-between items-center transition ${
-                activeIndex === i 
-                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
-                  : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
-              }`}
-            >
-              <div className="flex flex-col">
-                <span className="text-xs font-black">Page {i + 1}</span>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-0.5">{p.type.replace('_', ' ')}</span>
-              </div>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removePage(i);
-                }} 
-                className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition"
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+          {bookPages.map((p, i) => {
+            const isSol = p.config.isSolution || false;
+            return (
+              <div 
+                key={p.id} 
+                onClick={() => setActiveIndex(i)} 
+                className={`p-2.5 rounded-xl border cursor-pointer flex justify-between items-center transition ${
+                  activeIndex === i 
+                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
+                    : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
+                }`}
               >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ))}
+                <div className="flex flex-col">
+                  <span className="text-xs font-black">Page {i + 1}</span>
+                  <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider mt-0.5">
+                    {p.type.replace('_', ' ')} {isSol && <span className="text-indigo-600 font-extrabold">(SOL)</span>}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <button 
+                    onClick={() => movePage(i, 'up')} 
+                    disabled={i === 0}
+                    className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
+                  >
+                    <ArrowUp className="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    onClick={() => movePage(i, 'down')} 
+                    disabled={i === bookPages.length - 1}
+                    className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
+                  >
+                    <ArrowDown className="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    onClick={() => duplicatePage(i)}
+                    title="Duplicate Page"
+                    className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    onClick={() => removePage(i)} 
+                    className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* PDF Export Button */}
         {bookPages.length > 0 && (
           <div className="mt-4 pt-4 border-t border-slate-200">
             <button 
-              onClick={() => exportBookToPDF(bookPages)} 
+              onClick={() => setIsExportModalOpen(true)} 
               className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs font-black hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition active:scale-95"
             >
               <FileDown className="w-4 h-4" /> MERGE & DOWNLOAD PDF
             </button>
           </div>
         )}
+      </div>
+
+      {/* PREMIUM EXPORT DIALOG MODAL */}
+      {isExportModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full shadow-2xl p-6 relative animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setIsExportModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-indigo-600/10 rounded-xl flex items-center justify-center text-indigo-600"><Settings2 className="w-5 h-5"/></div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 uppercase">Export Book interior</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Configure layouts and covers</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Cover Integration */}
+              <div className="flex justify-between items-center p-3.5 bg-slate-50 rounded-2xl border border-slate-200/50">
+                <div>
+                  <label className="text-xs font-black text-slate-800 block">Include Front & Back Cover</label>
+                  <span className="text-[9px] font-bold text-slate-400 block uppercase">Compile designs from Cover Studio</span>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={includeCover} 
+                  disabled={!coverState || coverState.coverElements?.length === 0}
+                  onChange={(e) => setIncludeCover(e.target.checked)}
+                  className="w-4 h-4 accent-indigo-600 cursor-pointer disabled:opacity-50"
+                />
+              </div>
+
+              {/* Page Numbers */}
+              <div className="flex justify-between items-center p-3.5 bg-slate-50 rounded-2xl border border-slate-200/50">
+                <div>
+                  <label className="text-xs font-black text-slate-800 block">Include Page Numbers</label>
+                  <span className="text-[9px] font-bold text-slate-400 block uppercase">Add index footers to puzzle pages</span>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={includePageNumbers} 
+                  onChange={(e) => setIncludePageNumbers(e.target.checked)}
+                  className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                />
+              </div>
+
+              {/* Gutter Margin */}
+              <div className="flex justify-between items-center p-3.5 bg-slate-50 rounded-2xl border border-slate-200/50">
+                <div>
+                  <label className="text-xs font-black text-slate-800 block">Double-Sided Gutter Margin</label>
+                  <span className="text-[9px] font-bold text-slate-400 block uppercase">Adds extra padding for binding</span>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={gutterMargin} 
+                  onChange={(e) => setGutterMargin(e.target.checked)}
+                  className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                />
+              </div>
+
+              {/* Trim Size Selection */}
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider block mb-1.5">KDP Book Trim Size</label>
+                <select 
+                  value={selectedTrim.label}
+                  onChange={(e) => {
+                    const matched = TRIM_SIZES.find(t => t.label === e.target.value);
+                    if (matched) setSelectedTrim(matched);
+                  }}
+                  className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:border-indigo-500 outline-none"
+                >
+                  {TRIM_SIZES.map((t, idx) => (
+                    <option key={idx} value={t.label}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button 
+                onClick={() => setIsExportModalOpen(false)}
+                className="flex-1 py-3 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-black transition"
+              >
+                CANCEL
+              </button>
+              <button 
+                onClick={triggerExport}
+                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-600/25 transition active:scale-95"
+              >
+                EXPORT NOW
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Title Page Configuration Component
+function TitlePageEditor({ page, updatePage }: any) {
+  const [title, setTitle] = useState(page.config.title || "My Masterpiece Book");
+  const [subtitle, setSubtitle] = useState(page.config.subtitle || "A Collection of AI Puzzles");
+  const [author, setAuthor] = useState(page.config.author || "Ismam Studio");
+
+  const handleChange = (field: string, val: string) => {
+    const newConfig = { ...page.config, [field]: val };
+    if (field === 'title') setTitle(val);
+    if (field === 'subtitle') setSubtitle(val);
+    if (field === 'author') setAuthor(val);
+    updatePage(newConfig);
+  };
+
+  return (
+    <div className="w-full flex gap-8 h-full p-4 overflow-y-auto">
+      <div className="w-80 flex flex-col gap-4 bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+        <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Title Page Editor</h3>
+        <div>
+          <label className="text-xs font-bold text-slate-600 block mb-1">Book Title</label>
+          <input 
+            type="text" 
+            value={title} 
+            onChange={(e) => handleChange('title', e.target.value)} 
+            className="w-full p-2.5 border rounded-xl text-xs font-bold bg-white focus:border-indigo-500 outline-none shadow-sm" 
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-600 block mb-1">Subtitle</label>
+          <input 
+            type="text" 
+            value={subtitle} 
+            onChange={(e) => handleChange('subtitle', e.target.value)} 
+            className="w-full p-2.5 border rounded-xl text-xs font-bold bg-white focus:border-indigo-500 outline-none shadow-sm" 
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-600 block mb-1">Author Name</label>
+          <input 
+            type="text" 
+            value={author} 
+            onChange={(e) => handleChange('author', e.target.value)} 
+            className="w-full p-2.5 border rounded-xl text-xs font-bold bg-white focus:border-indigo-500 outline-none shadow-sm" 
+          />
+        </div>
+      </div>
+      
+      <div className="flex-1 bg-white p-10 shadow-2xl border border-slate-200 min-h-[600px] flex flex-col justify-between items-center text-slate-800">
+        <div className="w-full mt-24 text-center">
+          <h1 className="text-4xl font-extrabold uppercase tracking-widest text-slate-900 mb-4">{title}</h1>
+          <p className="text-md text-slate-500 font-semibold italic">{subtitle}</p>
+        </div>
+        <div className="mb-24 text-center font-black text-slate-600 uppercase tracking-widest text-xs">
+          By {author}
+        </div>
       </div>
     </div>
   );

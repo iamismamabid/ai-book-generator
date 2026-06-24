@@ -8,6 +8,8 @@ export const CrosswordEditor = ({ page, updatePage }: any) => {
   const [inputText, setInputText] = useState(page.config.rawText || "REACT, A popular UI library\nNEXTJS, A React framework\nVERCEL, Hosting platform\nCODING, Writing software");
   const [gridData, setGridData] = useState<any>(page.config.gridData || null);
 
+  const isSolution = page.config.isSolution || false;
+
   const handleGenerate = () => {
     const lines = inputText.split('\n').filter((l: string) => l.trim().length > 0);
     const wordList = lines.map((l: string) => {
@@ -19,17 +21,47 @@ export const CrosswordEditor = ({ page, updatePage }: any) => {
 
     const result = generateCrosswordGrid(wordList, 15);
     setGridData(result);
-    updatePage({ rawText: inputText, gridData: result });
+    updatePage({ rawText: inputText, gridData: result, isSolution });
+  };
+
+  const handleToggleMode = (solMode: boolean) => {
+    updatePage({ rawText: inputText, gridData, isSolution: solMode });
   };
 
   return (
     <div className="w-full flex gap-8 h-full p-4 overflow-y-auto">
       {/* Editor Panel */}
       <div className="w-80 flex flex-col gap-4">
+        <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+          <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Page Mode</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleToggleMode(false)}
+              className={`py-2 rounded-lg font-bold text-xs uppercase transition ${
+                !isSolution
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Puzzle Grid
+            </button>
+            <button
+              onClick={() => handleToggleMode(true)}
+              className={`py-2 rounded-lg font-bold text-xs uppercase transition ${
+                isSolution
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Solution Grid
+            </button>
+          </div>
+        </div>
+
         <textarea 
           value={inputText} 
           onChange={(e) => setInputText(e.target.value)}
-          className="w-full h-80 p-4 border border-slate-200 rounded-xl text-sm font-mono shadow-inner"
+          className="w-full h-80 p-4 border border-slate-200 rounded-xl text-sm font-mono shadow-inner bg-white"
           placeholder="WORD, Clue"
         />
         <button onClick={handleGenerate} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">
@@ -39,7 +71,9 @@ export const CrosswordEditor = ({ page, updatePage }: any) => {
 
       {/* Canvas Area */}
       <div className="flex-1 bg-white p-10 shadow-2xl border border-slate-200 min-h-[900px]">
-        <h1 className="text-3xl font-black text-center mb-8 uppercase tracking-widest">Crossword</h1>
+        <h1 className="text-3xl font-black text-center mb-8 uppercase tracking-widest">
+          Crossword {isSolution && <span className="text-indigo-600">(Solution)</span>}
+        </h1>
         
         {gridData ? (
           <div className="flex flex-col items-center">
@@ -55,6 +89,7 @@ export const CrosswordEditor = ({ page, updatePage }: any) => {
                          className={`w-8 h-8 flex items-center justify-center relative 
                          ${isBlank ? 'bg-slate-900' : 'bg-white border-[0.5px] border-slate-900'}`}>
                       {wordStart && <span className="absolute top-0 left-0.5 text-[8px] font-bold text-slate-800">{wordStart.num}</span>}
+                      {isSolution && !isBlank && <span className="text-sm font-black text-slate-800">{cell}</span>}
                     </div>
                   );
                 })

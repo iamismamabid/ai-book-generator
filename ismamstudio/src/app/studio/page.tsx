@@ -426,7 +426,21 @@ export default function MasterStudioApp() {
         {/* ================= 1. INTERIOR COMPONENT ================= */}
         {activeTab === 'interior' && (
           <div className="animate-in fade-in duration-300 w-full h-full">
-            <BookBuilder />
+            <BookBuilder 
+              coverState={{
+                coverElements,
+                frontCoverColor,
+                backCoverColor,
+                frontCoverType,
+                backCoverType,
+                frontCoverGradientStart,
+                frontCoverGradientEnd,
+                backCoverGradientStart,
+                backCoverGradientEnd,
+                spineWidth,
+                trimSize
+              }}
+            />
           </div>
         )}
 

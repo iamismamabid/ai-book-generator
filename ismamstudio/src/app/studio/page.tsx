@@ -5,11 +5,9 @@ import { Grid3x3, Palette, Loader2, Shuffle, KeyRound, Calculator, ArrowRight, S
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-// Dynamic import for FabricCoverStudio to prevent server-side rendering errors
+// Dynamic imports — both components use browser-only APIs (canvas, localStorage)
 const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
-
-// Import our BookBuilder component!
-import BookBuilder from "../../components/BookBuilder";
+const BookBuilder = dynamic(() => import("@/components/BookBuilder"), { ssr: false });
 
 const TRIM_SIZES = [
   { label: '6" x 9" (Novel)', w: 6, h: 9 },

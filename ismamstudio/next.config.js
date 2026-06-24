@@ -2,8 +2,50 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone', // <--- এই লাইনটি অবশ্যই যোগ করুন
+  output: 'standalone',
   outputFileTracingRoot: path.resolve(__dirname),
+
+  // ─── Strip console.log in production builds ───────────────────────────────
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production'
+      ? { exclude: ['error', 'warn'] }
+      : false,
+  },
+
+  // ─── Image optimization config (KDP export quality) ──────────────────────
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.amazonaws.com',
+      },
+    ],
+  },
+
+  // ─── Webpack: bundle analyzer (dev-only) ─────────────────────────────────
+  webpack(config, { isServer }) {
+    if (process.env.ANALYZE === 'true') {
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          reportFilename: isServer
+            ? '../analyze/server.html'
+            : './analyze/client.html',
+          openAnalyzer: false,
+        })
+      );
+    }
+    return config;
+  },
 };
 
 module.exports = nextConfig;

@@ -11,6 +11,10 @@ import {
 import { jsPDF } from "jspdf";
 import { Stage, Layer, Rect, Circle as KonvaCircle, Text as KonvaText, Image as KonvaImage, Transformer, Star as KonvaStar, Line as KonvaLine } from 'react-konva';
 import useImage from 'use-image';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for FabricCoverStudio to prevent server-side rendering errors
+const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
 
 // Import our BookBuilder component!
 import BookBuilder from "../../components/BookBuilder";
@@ -83,6 +87,7 @@ export default function MasterStudioApp() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [pageCount, setPageCount] = useState(100);
+  const [editorMode, setEditorMode] = useState<'standard' | 'premium'>('premium');
 
   // Cover Studio States
   const stageRef = useRef<any>(null);
@@ -372,24 +377,47 @@ export default function MasterStudioApp() {
           </div>
         </div>
         
-        {/* TAB SWITCHER */}
-        <div className="flex bg-slate-200/80 p-1 rounded-full shadow-inner border border-slate-300/40">
-          <button 
-            onClick={() => setActiveTab('interior')} 
-            className={`px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
-              activeTab === 'interior' ? 'bg-white shadow-md text-slate-900' : 'text-slate-500 hover:bg-slate-300/50'
-            }`}
-          >
-            <Grid3x3 className="w-4 h-4"/> Book Builder
-          </button>
-          <button 
-            onClick={() => setActiveTab('cover')} 
-            className={`px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
-              activeTab === 'cover' ? 'bg-white shadow-md text-slate-900' : 'text-slate-500 hover:bg-slate-300/50'
-            }`}
-          >
-            <Palette className="w-4 h-4"/> Cover Studio
-          </button>
+        {/* TAB & WORKSPACE SWITCHERS */}
+        <div className="flex gap-4">
+          {activeTab === 'cover' && (
+            <div className="flex bg-amber-50/80 p-1 rounded-full shadow-inner border border-amber-200/40">
+              <button 
+                onClick={() => setEditorMode('standard')} 
+                className={`px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-wider transition-all ${
+                  editorMode === 'standard' ? 'bg-amber-500 text-slate-950 shadow-sm font-black' : 'text-slate-500 hover:bg-amber-200/50'
+                }`}
+              >
+                Standard (Konva)
+              </button>
+              <button 
+                onClick={() => setEditorMode('premium')} 
+                className={`px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-wider transition-all ${
+                  editorMode === 'premium' ? 'bg-amber-500 text-slate-950 shadow-sm font-black' : 'text-slate-500 hover:bg-amber-200/50'
+                }`}
+              >
+                Premium (Fabric.js)
+              </button>
+            </div>
+          )}
+
+          <div className="flex bg-slate-200/80 p-1 rounded-full shadow-inner border border-slate-300/40">
+            <button 
+              onClick={() => setActiveTab('interior')} 
+              className={`px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
+                activeTab === 'interior' ? 'bg-white shadow-md text-slate-900' : 'text-slate-500 hover:bg-slate-300/50'
+              }`}
+            >
+              <Grid3x3 className="w-4 h-4"/> Book Builder
+            </button>
+            <button 
+              onClick={() => setActiveTab('cover')} 
+              className={`px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
+                activeTab === 'cover' ? 'bg-white shadow-md text-slate-900' : 'text-slate-500 hover:bg-slate-300/50'
+              }`}
+            >
+              <Palette className="w-4 h-4"/> Cover Studio
+            </button>
+          </div>
         </div>
       </header>
 
@@ -405,9 +433,27 @@ export default function MasterStudioApp() {
         {/* ================= 2. COVER STUDIO COMPONENT ================= */}
         {activeTab === 'cover' && (
           <div className="flex h-[calc(100vh-140px)] rounded-3xl border border-slate-200 overflow-hidden bg-white shadow-sm animate-in fade-in duration-500">
-            
-            {/* Left Workspace Panel Toolbar */}
-            <div className="w-16 bg-slate-950 flex flex-col items-center py-6 gap-5 border-r border-slate-900 z-20 text-slate-400">
+            {editorMode === 'premium' ? (
+              <FabricCoverStudio
+                trimSize={trimSize}
+                pageCount={pageCount}
+                backCoverColor={backCoverColor}
+                setBackCoverColor={setBackCoverColor}
+                frontCoverColor={frontCoverColor}
+                setFrontCoverColor={setFrontCoverColor}
+                showKdpGuides={showKdpGuides}
+                setShowKdpGuides={setShowKdpGuides}
+                snapToGrid={snapToGrid}
+                setSnapToGrid={setSnapToGrid}
+                initialElements={coverElements}
+                onSaveWorkspace={(json) => {
+                  console.log("Fabric state saved:", json);
+                }}
+              />
+            ) : (
+              <>
+                {/* Left Workspace Panel Toolbar */}
+                <div className="w-16 bg-slate-950 flex flex-col items-center py-6 gap-5 border-r border-slate-900 z-20 text-slate-400">
               <button 
                 onClick={() => setActiveToolTab('elements')} 
                 title="Shapes & Text"
@@ -1628,9 +1674,10 @@ export default function MasterStudioApp() {
                 <span>Right: Front Cover</span>
               </div>
             </div>
-
-          </div>
+          </>
         )}
+      </div>
+    )}
       </div>
     </div>
   );

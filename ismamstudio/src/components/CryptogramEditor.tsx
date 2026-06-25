@@ -150,12 +150,12 @@ export function CryptogramEditor({ page, updatePage }: any) {
               <input
                 type="number"
                 min="0"
-                max={Math.max(0, inputText.split("\n").filter(q => q.trim().length > 0).length - 1)}
+                max={Math.max(0, inputText.split("\n").filter((q: string) => q.trim().length > 0).length - 1)}
                 value={selectedQuoteIndex}
                 onChange={(e) => setSelectedQuoteIndex(parseInt(e.target.value) || 0)}
                 className="w-20 p-2 border rounded-lg text-xs font-bold text-slate-800"
               />
-              <span className="text-slate-400 text-xs font-bold uppercase">of {inputText.split("\n").filter(q => q.trim().length > 0).length} quotes</span>
+              <span className="text-slate-400 text-xs font-bold uppercase">of {inputText.split("\n").filter((q: string) => q.trim().length > 0).length} quotes</span>
             </div>
           </div>
         </div>

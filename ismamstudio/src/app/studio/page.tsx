@@ -32,6 +32,11 @@ export default function MasterStudioApp() {
   const [frontCoverGradientStart, setFrontCoverGradientStart] = useState('#1E293B');
   const [frontCoverGradientEnd, setFrontCoverGradientEnd] = useState('#0F172A');
 
+  // Background Image States
+  const [backCoverImage, setBackCoverImage] = useState('');
+  const [frontCoverImage, setFrontCoverImage] = useState('');
+  const [fullCoverImage, setFullCoverImage] = useState('');
+
   const [coverElements, setCoverElements] = useState<any[]>([]);
   const [showKdpGuides, setShowKdpGuides] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(false);
@@ -97,6 +102,9 @@ export default function MasterStudioApp() {
                 frontCoverGradientEnd,
                 backCoverGradientStart,
                 backCoverGradientEnd,
+                backCoverImage,
+                frontCoverImage,
+                fullCoverImage,
                 spineWidth,
                 trimSize
               }}
@@ -130,6 +138,13 @@ export default function MasterStudioApp() {
               setFrontCoverGradientStart={setFrontCoverGradientStart}
               frontCoverGradientEnd={frontCoverGradientEnd}
               setFrontCoverGradientEnd={setFrontCoverGradientEnd}
+
+              backCoverImage={backCoverImage}
+              setBackCoverImage={setBackCoverImage}
+              frontCoverImage={frontCoverImage}
+              setFrontCoverImage={setFrontCoverImage}
+              fullCoverImage={fullCoverImage}
+              setFullCoverImage={setFullCoverImage}
 
               showKdpGuides={showKdpGuides}
               setShowKdpGuides={setShowKdpGuides}

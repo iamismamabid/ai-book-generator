@@ -269,7 +269,7 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
         {puzzleData ? (
           <div className="w-full max-w-md flex-1 flex flex-col justify-center items-center">
             {/* Addition Grid */}
-            {puzzleType === "addition" && (
+            {puzzleType === "addition" && puzzleData.hiddenIndices && (
               <div className="grid grid-cols-3 gap-y-8 gap-x-8 relative p-6 bg-slate-50/50 border border-slate-250 rounded-3xl">
                 {puzzleData.grid.map((val: number, idx: number) => {
                   const r = Math.floor(idx / 3);
@@ -311,7 +311,7 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
             )}
 
             {/* Multiplication Grid */}
-            {puzzleType === "multiplication" && (
+            {puzzleType === "multiplication" && puzzleData.colFactors && (
               <div className="grid grid-cols-5 gap-1.5 border-4 border-slate-900 bg-white p-2 rounded-2xl shadow-lg">
                 {Array.from({ length: 5 }).map((_, r) =>
                   Array.from({ length: 5 }).map((_, c) => {
@@ -376,7 +376,7 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
             )}
 
             {/* Number Fill (Sums Grid) */}
-            {puzzleType === "number_fill" && (
+            {puzzleType === "number_fill" && puzzleData.hiddenCells && (
               <div className="grid grid-cols-5 gap-1.5 border-4 border-slate-900 bg-white p-2 rounded-2xl shadow-lg">
                 {Array.from({ length: 5 }).map((_, r) =>
                   Array.from({ length: 5 }).map((_, c) => {

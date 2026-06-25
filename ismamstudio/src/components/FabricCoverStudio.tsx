@@ -6,20 +6,20 @@ import {
   Type, Square, Circle as CircleIcon, Star, Ruler, 
   Trash2, Undo2, Redo2, Loader2, Download, Check, Settings,
   Sparkles, Shapes, Upload, LayoutTemplate, Grid, ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight,
-  Plus
+  Plus, Eraser
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
 import { initFabricSnapping } from "@/hooks/useFabricSnap";
 
-const FONT_FAMILIES = ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS"];
+const FONT_FAMILIES = ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Outfit", "Inter"];
 
 const CLIPARTS = [
-  { name: "Geometric Frame", src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=300&q=80" },
-  { name: "Mandala Flower", src: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=300&q=80" },
-  { name: "Floral Frame", src: "https://images.unsplash.com/photo-1525498128493-380d1990a112?auto=format&fit=crop&w=300&q=80" },
-  { name: "Golden Pattern", src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80" },
-  { name: "Retro Starburst", src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=300&q=80" }
+  { name: "Quantum Propulsion", src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=300&q=80" },
+  { name: " containment field", src: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=300&q=80" },
+  { name: "Warp Schematic", src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80" },
+  { name: "Magnetic Coil", src: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=300&q=80" },
+  { name: "FAA Flight Orbit", src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=300&q=80" }
 ];
 
 const BACKGROUNDS = [
@@ -59,6 +59,13 @@ interface FabricCoverStudioProps {
   setFrontCoverGradientStart: (color: string) => void;
   frontCoverGradientEnd: string;
   setFrontCoverGradientEnd: (color: string) => void;
+
+  backCoverImage: string;
+  setBackCoverImage: (url: string) => void;
+  frontCoverImage: string;
+  setFrontCoverImage: (url: string) => void;
+  fullCoverImage: string;
+  setFullCoverImage: (url: string) => void;
 
   showKdpGuides: boolean;
   setShowKdpGuides: (show: boolean) => void;
@@ -157,6 +164,12 @@ export default function FabricCoverStudio({
   setFrontCoverGradientStart,
   frontCoverGradientEnd,
   setFrontCoverGradientEnd,
+  backCoverImage,
+  setBackCoverImage,
+  frontCoverImage,
+  setFrontCoverImage,
+  fullCoverImage,
+  setFullCoverImage,
   showKdpGuides,
   setShowKdpGuides,
   snapToGrid,
@@ -175,6 +188,192 @@ export default function FabricCoverStudio({
   const [historyStep, setHistoryStep] = useState(-1);
   const isUpdatingHistory = useRef(false);
 
+  // Unsplash search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
+
+  // Active object editing states
+  const [objectColor, setObjectColor] = useState("#FFFFFF");
+  const [objectStrokeColor, setObjectStrokeColor] = useState("#FFFFFF");
+  const [objectStrokeWidth, setObjectStrokeWidth] = useState(0);
+  const [objectText, setObjectText] = useState("");
+  const [objectFontSize, setObjectFontSize] = useState(32);
+  const [objectFontFamily, setObjectFontFamily] = useState("Arial");
+
+  // Spine Text Alignment States
+  const [spineTextVAlign, setSpineTextVAlign] = useState<'top' | 'center' | 'bottom'>('center');
+  const [spineTextRotation, setSpineTextRotation] = useState<90 | 270>(90);
+
+  // Typography & Effects States
+  const [objectCharSpacing, setObjectCharSpacing] = useState(0);
+  const [objectLineHeight, setObjectLineHeight] = useState(1.16);
+  const [objectOpacity, setObjectOpacity] = useState(1);
+  const [objectHasShadow, setObjectHasShadow] = useState(false);
+  const [objectShadowColor, setObjectShadowColor] = useState("rgba(0,0,0,0.5)");
+  const [objectShadowBlur, setObjectShadowBlur] = useState(10);
+  const [objectShadowOffsetX, setObjectShadowOffsetX] = useState(5);
+  const [objectShadowOffsetY, setObjectShadowOffsetY] = useState(5);
+
+  // Layer list state for UI rendering
+  const [layers, setLayers] = useState<fabric.Object[]>([]);
+
+  // Background Image refs
+  const backCoverImageEl = useRef<HTMLImageElement | null>(null);
+  const frontCoverImageEl = useRef<HTMLImageElement | null>(null);
+  const fullCoverImageEl = useRef<HTMLImageElement | null>(null);
+
+  // Background Image loaders
+  useEffect(() => {
+    if (fullCoverImage) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = fullCoverImage;
+      img.onload = () => {
+        fullCoverImageEl.current = img;
+        canvas?.requestRenderAll();
+      };
+      img.onerror = () => {
+        fullCoverImageEl.current = null;
+      };
+    } else {
+      fullCoverImageEl.current = null;
+      canvas?.requestRenderAll();
+    }
+  }, [fullCoverImage, canvas]);
+
+  useEffect(() => {
+    if (backCoverImage) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = backCoverImage;
+      img.onload = () => {
+        backCoverImageEl.current = img;
+        canvas?.requestRenderAll();
+      };
+      img.onerror = () => {
+        backCoverImageEl.current = null;
+      };
+    } else {
+      backCoverImageEl.current = null;
+      canvas?.requestRenderAll();
+    }
+  }, [backCoverImage, canvas]);
+
+  useEffect(() => {
+    if (frontCoverImage) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = frontCoverImage;
+      img.onload = () => {
+        frontCoverImageEl.current = img;
+        canvas?.requestRenderAll();
+      };
+      img.onerror = () => {
+        frontCoverImageEl.current = null;
+      };
+    } else {
+      frontCoverImageEl.current = null;
+      canvas?.requestRenderAll();
+    }
+  }, [frontCoverImage, canvas]);
+
+  // Sync active object properties to states
+  useEffect(() => {
+    if (!activeObject) return;
+    setObjectColor(activeObject.fill as string || "#FFFFFF");
+    setObjectStrokeColor(activeObject.stroke || "#FFFFFF");
+    setObjectStrokeWidth(activeObject.strokeWidth || 0);
+    setObjectOpacity(activeObject.opacity ?? 1);
+
+    // Sync shadow properties if any
+    const shadow = activeObject.shadow as fabric.Shadow | undefined;
+    if (shadow) {
+      setObjectHasShadow(true);
+      setObjectShadowColor(shadow.color || "rgba(0,0,0,0.5)");
+      setObjectShadowBlur(shadow.blur || 10);
+      setObjectShadowOffsetX(shadow.offsetX || 5);
+      setObjectShadowOffsetY(shadow.offsetY || 5);
+    } else {
+      setObjectHasShadow(false);
+    }
+
+    if (activeObject.type === 'i-text' || activeObject.type === 'text') {
+      const textObj = activeObject as fabric.IText;
+      setObjectText(textObj.text || "");
+      setObjectFontSize(textObj.fontSize || 32);
+      setObjectFontFamily(textObj.fontFamily || "Arial");
+      setObjectCharSpacing(textObj.charSpacing || 0);
+      setObjectLineHeight(textObj.lineHeight || 1.16);
+    }
+  }, [activeObject]);
+
+  const updateActiveObjectProperty = (property: string, value: any) => {
+    if (!canvas || !activeObject) return;
+    activeObject.set({ [property]: value });
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const updateActiveObjectShadow = (hasShadow: boolean, color: string, blur: number, ox: number, oy: number) => {
+    if (!canvas || !activeObject) return;
+    if (hasShadow) {
+      activeObject.set({
+        shadow: new fabric.Shadow({
+          color: color,
+          blur: blur,
+          offsetX: ox,
+          offsetY: oy
+        })
+      });
+    } else {
+      activeObject.set({ shadow: undefined });
+    }
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  // Keyboard Shortcuts via stable handler refs (initialized empty to avoid TDZ errors)
+  const handlersRef = useRef<any>({});
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && key === 'z') {
+        e.preventDefault();
+        handlersRef.current.handleUndo();
+      } else if ((e.ctrlKey || e.metaKey) && key === 'y') {
+        e.preventDefault();
+        handlersRef.current.handleRedo();
+      } else if (e.key === 'Delete') {
+        e.preventDefault();
+        handlersRef.current.deleteSelected();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Paper Type Selection ('white' | 'cream' | 'color')
+  const [paperType, setPaperType] = useState<'white' | 'cream' | 'color'>('white');
+
+  // Helper for KDP interior margin guidelines
+  const getKdpGutterReference = (pages: number) => {
+    if (pages <= 150) return { gutter: '0.375" (9.6 mm)', outsideNoBleed: '0.25" (6.4 mm)', outsideBleed: '0.375" (9.6 mm)' };
+    if (pages <= 300) return { gutter: '0.500" (12.7 mm)', outsideNoBleed: '0.25" (6.4 mm)', outsideBleed: '0.375" (9.6 mm)' };
+    if (pages <= 500) return { gutter: '0.625" (15.9 mm)', outsideNoBleed: '0.25" (6.4 mm)', outsideBleed: '0.375" (9.6 mm)' };
+    if (pages <= 700) return { gutter: '0.750" (19.1 mm)', outsideNoBleed: '0.25" (6.4 mm)', outsideBleed: '0.375" (9.6 mm)' };
+    return { gutter: '0.875" (22.3 mm)', outsideNoBleed: '0.25" (6.4 mm)', outsideBleed: '0.375" (9.6 mm)' };
+  };
+
   // Graphics panel states
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [imageUrlInput, setImageUrlInput] = useState('');
@@ -184,7 +383,7 @@ export default function FabricCoverStudio({
     trimWidth: trimSize.w,
     trimHeight: trimSize.h,
     pageCount: pageCount,
-    paperType: 'white'
+    paperType: paperType
   }, 800);
 
   // Initialize Fabric Canvas
@@ -206,10 +405,21 @@ export default function FabricCoverStudio({
     setHistory([initialJson]);
     setHistoryStep(0);
 
+    // Sync layers list helper
+    const updateLayers = () => {
+      setLayers([...fCanvas.getObjects()].reverse());
+    };
+
     // Selection events
-    fCanvas.on("selection:created", (e) => setActiveObject(e.selected ? e.selected[0] : null));
-    fCanvas.on("selection:updated", (e) => setActiveObject(e.selected ? e.selected[0] : null));
-    fCanvas.on("selection:cleared", () => setActiveObject(null));
+    fCanvas.on("selection:created", (e) => {
+      setActiveObject(e.selected ? e.selected[0] : null);
+    });
+    fCanvas.on("selection:updated", (e) => {
+      setActiveObject(e.selected ? e.selected[0] : null);
+    });
+    fCanvas.on("selection:cleared", () => {
+      setActiveObject(null);
+    });
 
     // Save history on changes
     const saveState = () => {
@@ -224,6 +434,7 @@ export default function FabricCoverStudio({
       
       const legacyElements = serializeToLegacyElements(fCanvas);
       onSaveWorkspace(legacyElements);
+      updateLayers();
     };
 
     fCanvas.on("object:added", saveState);
@@ -232,6 +443,9 @@ export default function FabricCoverStudio({
 
     // Initial elements import (translation from Konva element nodes to Fabric objects)
     importLegacyElements(fCanvas, initialElements, layout);
+
+    // Initial layers load
+    updateLayers();
 
     return () => {
       fCanvas.dispose();
@@ -268,18 +482,19 @@ export default function FabricCoverStudio({
     };
   }, [canvas, snapToGrid, layout]);
 
-  // Background painting and KDP Guides rendering in Fabric's after:render
+  // Background painting and KDP Guides rendering in Fabric's before:render and after:render
   useEffect(() => {
     if (!canvas) return;
 
-    // Remove legacy after-render listeners
+    // Remove legacy render listeners
+    canvas.off("before:render");
     canvas.off("after:render");
 
-    canvas.on("after:render", () => {
+    // Paint backgrounds BEFORE drawing objects (so they sit behind all elements)
+    canvas.on("before:render", () => {
       const ctx = canvas.getContext();
       if (!ctx) return;
 
-      // Draw background layout splits
       ctx.save();
       
       // 1. Draw Back Cover background
@@ -293,8 +508,15 @@ export default function FabricCoverStudio({
       }
       ctx.fillRect(0, 0, layout.spineLeftPx, layout.canvasHeight);
 
-      // 2. Draw Spine background
-      ctx.fillStyle = backCoverColor;
+      // 2. Draw Spine background (smooth connecting gradient or solid color)
+      if (backCoverType === 'gradient' && frontCoverType === 'gradient') {
+        const grad = ctx.createLinearGradient(layout.spineLeftPx, 0, layout.spineRightPx, 0);
+        grad.addColorStop(0, backCoverGradientEnd);
+        grad.addColorStop(1, frontCoverGradientStart);
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = backCoverColor;
+      }
       ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
 
       // 3. Draw Front Cover background
@@ -308,9 +530,25 @@ export default function FabricCoverStudio({
       }
       ctx.fillRect(layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
 
-      ctx.restore();
+      // 4. Overlay Background Images if loaded
+      if (fullCoverImageEl.current) {
+        ctx.drawImage(fullCoverImageEl.current, 0, 0, layout.canvasWidth, layout.canvasHeight);
+      }
+      if (backCoverImageEl.current) {
+        ctx.drawImage(backCoverImageEl.current, 0, 0, layout.spineLeftPx, layout.canvasHeight);
+      }
+      if (frontCoverImageEl.current) {
+        ctx.drawImage(frontCoverImageEl.current, layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
+      }
 
-      // Draw Guidelines if toggled
+      ctx.restore();
+    });
+
+    // Draw Guidelines AFTER drawing objects (so they sit on top)
+    canvas.on("after:render", () => {
+      const ctx = canvas.getContext();
+      if (!ctx) return;
+
       if (showKdpGuides && !isGenerating) {
         ctx.save();
         
@@ -338,6 +576,20 @@ export default function FabricCoverStudio({
         ctx.moveTo(layout.spineRightPx, 0);
         ctx.lineTo(layout.spineRightPx, layout.canvasHeight);
         ctx.stroke();
+
+        // 2b. Draw Spine Text Safety Boundaries (dashed amber lines, 0.0625" inside spine folds)
+        if (layout.spineWidth > 0.125) {
+          const spineSafeMarginPx = 0.0625 * layout.scale;
+          ctx.strokeStyle = "#EAB308"; // amber-500
+          ctx.lineWidth = 1;
+          ctx.setLineDash([2, 4]);
+          ctx.beginPath();
+          ctx.moveTo(layout.spineLeftPx + spineSafeMarginPx, 0);
+          ctx.lineTo(layout.spineLeftPx + spineSafeMarginPx, layout.canvasHeight);
+          ctx.moveTo(layout.spineRightPx - spineSafeMarginPx, 0);
+          ctx.lineTo(layout.spineRightPx - spineSafeMarginPx, layout.canvasHeight);
+          ctx.stroke();
+        }
 
         // 3. Draw Live Safety Area Lines (Orange dash)
         ctx.strokeStyle = "#F97316"; // orange-500
@@ -376,6 +628,7 @@ export default function FabricCoverStudio({
   }, [
     canvas, backCoverColor, backCoverType, backCoverGradientStart, backCoverGradientEnd,
     frontCoverColor, frontCoverType, frontCoverGradientStart, frontCoverGradientEnd,
+    fullCoverImage, backCoverImage, frontCoverImage,
     showKdpGuides, isGenerating, layout
   ]);
 
@@ -445,7 +698,11 @@ export default function FabricCoverStudio({
           opacity: el.opacity ?? 1
         } as any);
       } else if (el.type === 'clipart') {
-        fabric.Image.fromURL(el.src, (img) => {
+        const secureSrc = el.src.includes('?') 
+          ? `${el.src}&ts=${Date.now()}` 
+          : `${el.src}?ts=${Date.now()}`;
+          
+        fabric.Image.fromURL(secureSrc, (img) => {
           img.set({
             id: el.id,
             left: el.x,
@@ -585,17 +842,217 @@ export default function FabricCoverStudio({
 
   const addClipart = (src: string) => {
     if (!canvas) return;
-    fabric.Image.fromURL(src, (img) => {
+    // Add unique cache buster query parameter to bypass browser CORS cache issue
+    const secureSrc = src.includes('?') 
+      ? `${src}&ts=${Date.now()}` 
+      : `${src}?ts=${Date.now()}`;
+      
+    fabric.Image.fromURL(secureSrc, (img) => {
+      const imgW = img.width || 150;
+      const imgH = img.height || 150;
+      
+      // Scale image to fit within a 200x200 bounding box proportionally
+      const maxW = 200;
+      const maxH = 200;
+      const scale = Math.min(maxW / imgW, maxH / imgH);
+      
       img.set({
-        left: layout.frontCoverCenterPx - 75,
-        top: layout.canvasHeight / 2 - 75,
-        width: 150,
-        height: 150
+        left: layout.frontCoverCenterPx - (imgW * scale) / 2,
+        top: layout.canvasHeight / 2 - (imgH * scale) / 2,
+        scaleX: scale,
+        scaleY: scale
       });
       canvas.add(img);
       canvas.setActiveObject(img);
       canvas.requestRenderAll();
     }, { crossOrigin: 'anonymous' });
+  };
+
+  const bringToFront = () => {
+    if (!canvas || !activeObject) return;
+    activeObject.bringToFront();
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const sendToBack = () => {
+    if (!canvas || !activeObject) return;
+    activeObject.sendToBack();
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const duplicateSelected = () => {
+    if (!canvas || !activeObject) return;
+    activeObject.clone((cloned: any) => {
+      cloned.set({
+        left: (activeObject.left || 0) + 25,
+        top: (activeObject.top || 0) + 25,
+        id: `${activeObject.type}-${Date.now()}`
+      });
+      canvas.add(cloned);
+      canvas.setActiveObject(cloned);
+      canvas.requestRenderAll();
+    });
+  };
+
+  const handleSearchUnsplash = async () => {
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    setSearchError("");
+    try {
+      const res = await fetch(`/api/generate/unsplash?query=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      if (res.ok) {
+        if (data.results) {
+          setSearchResults(data.results.map((item: any) => ({
+            name: item.description || item.alt_description || "Photo",
+            thumb: item.urls.small,
+            full: item.urls.regular
+          })));
+        } else {
+          setSearchResults([]);
+        }
+      } else {
+        setSearchError(data.error || "Failed to search images");
+      }
+    } catch (err) {
+      setSearchError("Failed to connect to search API");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const alignTextToSpine = (vAlignOverride?: 'top' | 'center' | 'bottom', rotOverride?: 90 | 270) => {
+    if (!canvas || !activeObject) return;
+
+    const vAlign = vAlignOverride || spineTextVAlign;
+    const rot = rotOverride || spineTextRotation;
+    
+    // Safety margin of 0.0625" (1/16") inside spine fold on each side
+    // Total reduction = 0.125" (1/8")
+    const maxAllowedWidthPx = (layout.spineWidth - 0.125) * layout.scale; 
+
+    // Set origin to center for exact centering on spine
+    activeObject.set({
+      originX: 'center',
+      originY: 'center',
+      angle: rot
+    });
+    
+    // Scale down if thickness exceeds safety boundaries
+    let boundingBox = activeObject.getBoundingRect();
+    if (boundingBox.width > maxAllowedWidthPx) {
+      const scaleFactor = maxAllowedWidthPx / boundingBox.width;
+      activeObject.set({
+        scaleX: (activeObject.scaleX || 1) * scaleFactor,
+        scaleY: (activeObject.scaleY || 1) * scaleFactor
+      });
+      // Re-calculate bounding box after scaling
+      boundingBox = activeObject.getBoundingRect();
+    }
+
+    // Calculate vertical position (top, center, bottom)
+    // Keep 0.75" safe margin from top/bottom trim borders
+    const vMarginPx = 0.75 * layout.scale;
+    const textHeightPx = boundingBox.height; // rotated height (the length of the text)
+    
+    let topPos = layout.canvasHeight / 2;
+    if (vAlign === 'top') {
+      topPos = layout.trimTopPx + vMarginPx + (textHeightPx / 2);
+    } else if (vAlign === 'bottom') {
+      topPos = layout.trimBottomPx - vMarginPx - (textHeightPx / 2);
+    }
+
+    activeObject.set({
+      left: layout.spineCenterPx,
+      top: topPos
+    });
+
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const addBarcodePlaceholder = () => {
+    if (!canvas) return;
+    
+    // Barcode dimensions: 2.0" wide by 1.2" high
+    const bcW = 2.0 * layout.scale;
+    const bcH = 1.2 * layout.scale;
+    
+    // Bottom-left corner of the back cover, keeping 0.375" margin from trim borders
+    const margin = 0.375 * layout.scale;
+    const left = layout.trimLeftPx + margin;
+    const top = layout.trimBottomPx - margin - bcH;
+    
+    // Background card
+    const bgRect = new fabric.Rect({
+      left: 0,
+      top: 0,
+      width: bcW,
+      height: bcH,
+      fill: '#FFFFFF',
+      stroke: '#CBD5E1',
+      strokeWidth: 1,
+      rx: 4,
+      ry: 4
+    });
+    
+    // ISBN Label at the top
+    const isbnLabel = new fabric.Text("ISBN 978-3-16-148410-0", {
+      left: bcW / 2,
+      top: 6,
+      fontSize: Math.max(7, Math.round(layout.scale * 0.08)),
+      fontFamily: 'monospace',
+      fontWeight: 'bold',
+      fill: '#0F172A',
+      originX: 'center'
+    });
+    
+    // Bottom numbers label
+    const numLabel = new fabric.Text("9 783161 484100", {
+      left: bcW / 2,
+      top: bcH - 14,
+      fontSize: Math.max(7, Math.round(layout.scale * 0.08)),
+      fontFamily: 'monospace',
+      fontWeight: 'bold',
+      fill: '#0F172A',
+      originX: 'center'
+    });
+    
+    // Dummy barcode lines
+    const lines = [];
+    const numLines = 28;
+    let currentX = 14;
+    for (let i = 0; i < numLines; i++) {
+      const lineW = Math.random() > 0.4 ? 2 : 4;
+      const spacing = Math.random() > 0.4 ? 3 : 5;
+      
+      if (currentX + lineW > bcW - 14) break;
+      
+      lines.push(new fabric.Rect({
+        left: currentX,
+        top: 18,
+        width: lineW,
+        height: bcH - 34,
+        fill: '#0F172A'
+      }));
+      currentX += lineW + spacing;
+    }
+    
+    const barcodeGroup = new fabric.Group([bgRect, isbnLabel, numLabel, ...lines], {
+      left,
+      top,
+      id: `barcode-${Date.now()}`,
+      lockScalingX: true,
+      lockScalingY: true,
+      lockRotation: true,
+      hasControls: false // Lock controls to keep the size perfectly standard
+    } as any);
+    
+    canvas.add(barcodeGroup);
+    canvas.setActiveObject(barcodeGroup);
+    canvas.requestRenderAll();
   };
 
   const deleteSelected = () => {
@@ -635,11 +1092,60 @@ export default function FabricCoverStudio({
       setFrontCoverType('gradient');
       setFrontCoverGradientStart(frontStart);
       setFrontCoverGradientEnd(frontEnd);
+      // Synchronize solid color states
+      setBackCoverColor(back);
+      setFrontCoverColor(front);
     } else {
       setBackCoverType('solid');
       setBackCoverColor(back);
       setFrontCoverType('solid');
       setFrontCoverColor(front);
+    }
+    // Clear background images when applying preset colors
+    setBackCoverImage('');
+    setFrontCoverImage('');
+    setFullCoverImage('');
+  };
+
+  const applyBackgroundImage = (url: string, target: 'full' | 'front' | 'back') => {
+    if (!canvas) return;
+    
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+    img.onload = () => {
+      if (target === 'full') {
+        fullCoverImageEl.current = img;
+        setFullCoverImage(url);
+        setBackCoverImage('');
+        setFrontCoverImage('');
+        backCoverImageEl.current = null;
+        frontCoverImageEl.current = null;
+      } else if (target === 'front') {
+        frontCoverImageEl.current = img;
+        setFrontCoverImage(url);
+        setFullCoverImage('');
+        fullCoverImageEl.current = null;
+      } else if (target === 'back') {
+        backCoverImageEl.current = img;
+        setBackCoverImage(url);
+        setFullCoverImage('');
+        fullCoverImageEl.current = null;
+      }
+      canvas.requestRenderAll();
+      canvas.fire("object:modified");
+    };
+  };
+
+  const handleClearCanvas = () => {
+    if (!canvas) return;
+    if (confirm("Are you sure you want to clear all layers from the cover?")) {
+      const objects = canvas.getObjects();
+      while (objects.length > 0) {
+        canvas.remove(objects[0]);
+      }
+      canvas.discardActiveObject();
+      canvas.requestRenderAll();
     }
   };
 
@@ -666,6 +1172,9 @@ export default function FabricCoverStudio({
       setIsGenerating(false);
     }, 300);
   };
+
+  // Bind keyboard shortcut handler references
+  handlersRef.current = { handleUndo, handleRedo, deleteSelected };
 
   return (
     <div className="flex flex-1 overflow-hidden h-full">
@@ -745,24 +1254,6 @@ export default function FabricCoverStudio({
           <div className="space-y-5">
             <div className="flex justify-between items-center">
               <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Library Assets</h3>
-              <div className="flex gap-1.5">
-                <button 
-                  onClick={handleUndo} 
-                  disabled={historyStep <= 0} 
-                  title="Undo" 
-                  className="p-1.5 rounded bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-30"
-                >
-                  <Undo2 className="w-3.5 h-3.5"/>
-                </button>
-                <button 
-                  onClick={handleRedo} 
-                  disabled={historyStep === history.length - 1} 
-                  title="Redo" 
-                  className="p-1.5 rounded bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-30"
-                >
-                  <Redo2 className="w-3.5 h-3.5"/>
-                </button>
-              </div>
             </div>
 
             <div className="space-y-2.5">
@@ -781,35 +1272,389 @@ export default function FabricCoverStudio({
               <button onClick={addLine} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
                 <Ruler className="w-4 h-4 text-rose-500"/> Add Line Divider
               </button>
+              <button onClick={addBarcodePlaceholder} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                <Grid className="w-4 h-4 text-slate-500"/> Add Barcode Placeholder
+              </button>
             </div>
 
             {activeObject && (
               <div className="pt-4 border-t border-slate-200 space-y-4">
                 <h4 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Object Settings</h4>
-                <div className="flex gap-1.5">
-                  <button 
-                    onClick={() => handleAlignment('left')} 
-                    className="flex-1 py-1.5 bg-white border border-slate-200 text-[10px] font-black rounded-lg hover:border-indigo-500"
-                  >
-                    Align Left
-                  </button>
-                  <button 
-                    onClick={() => handleAlignment('center')} 
-                    className="flex-1 py-1.5 bg-white border border-slate-200 text-[10px] font-black rounded-lg hover:border-indigo-500"
-                  >
-                    Align Center
-                  </button>
-                  <button 
-                    onClick={() => handleAlignment('right')} 
-                    className="flex-1 py-1.5 bg-white border border-slate-200 text-[10px] font-black rounded-lg hover:border-indigo-500"
-                  >
-                    Align Right
-                  </button>
+                
+                {/* Text Specific Editing */}
+                {(activeObject.type === 'i-text' || activeObject.type === 'text') && (
+                  <div className="space-y-3 bg-white p-3 rounded-xl border border-slate-200">
+                    <div>
+                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Content</label>
+                      <textarea
+                        value={objectText}
+                        onChange={(e) => {
+                          setObjectText(e.target.value);
+                          updateActiveObjectProperty("text", e.target.value);
+                        }}
+                        className="w-full text-xs font-semibold p-2 border border-slate-200 rounded-lg outline-none focus:border-indigo-500 font-sans"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Family</label>
+                      <select
+                        value={objectFontFamily}
+                        onChange={(e) => {
+                          setObjectFontFamily(e.target.value);
+                          updateActiveObjectProperty("fontFamily", e.target.value);
+                        }}
+                        className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg"
+                      >
+                        {FONT_FAMILIES.map((font, idx) => (
+                          <option key={idx} value={font}>{font}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Size ({objectFontSize}px)</label>
+                      <input
+                        type="range"
+                        min="10"
+                        max="120"
+                        value={objectFontSize}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setObjectFontSize(val);
+                          updateActiveObjectProperty("fontSize", val);
+                        }}
+                        className="w-full accent-indigo-650 cursor-pointer"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Letter Spacing ({objectCharSpacing})</label>
+                      <input
+                        type="range"
+                        min="-50"
+                        max="300"
+                        step="5"
+                        value={objectCharSpacing}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setObjectCharSpacing(val);
+                          updateActiveObjectProperty("charSpacing", val);
+                        }}
+                        className="w-full accent-indigo-650 cursor-pointer"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Line Height ({objectLineHeight.toFixed(2)})</label>
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="2.5"
+                        step="0.05"
+                        value={objectLineHeight}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          setObjectLineHeight(val);
+                          updateActiveObjectProperty("lineHeight", val);
+                        }}
+                        className="w-full accent-indigo-650 cursor-pointer"
+                      />
+                    </div>
+                    
+                    <div className="pt-2 border-t border-slate-100 space-y-2">
+                      <span className="text-[9px] font-black text-slate-400 uppercase block">Spine Text Alignment</span>
+                      {pageCount < 80 ? (
+                        <p className="text-[8px] font-black text-amber-600 bg-amber-50/50 p-2 rounded-lg border border-amber-200/50 leading-normal">
+                          ⚠️ KDP Alert: Spine text is only allowed for books with 80+ pages. (Current page count: {pageCount})
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="flex gap-1">
+                            {(['top', 'center', 'bottom'] as const).map((align) => (
+                              <button
+                                key={align}
+                                onClick={() => {
+                                  setSpineTextVAlign(align);
+                                  alignTextToSpine(align, spineTextRotation);
+                                }}
+                                className={`flex-1 py-1 text-[9px] font-black rounded capitalize border transition-all ${
+                                  spineTextVAlign === align 
+                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
+                                    : 'bg-white border-slate-200 text-slate-655 hover:bg-slate-50'
+                                }`}
+                              >
+                                {align}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex gap-1 items-center">
+                            <span className="text-[9px] font-black text-slate-400 uppercase flex-1">Rotation:</span>
+                            <button
+                              onClick={() => {
+                                setSpineTextRotation(90);
+                                alignTextToSpine(spineTextVAlign, 90);
+                              }}
+                              className={`px-2 py-0.5 text-[9px] font-black rounded border transition-all ${
+                                spineTextRotation === 90
+                                  ? 'bg-indigo-600 text-white border-indigo-600'
+                                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                              }`}
+                            >
+                              90°
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSpineTextRotation(270);
+                                alignTextToSpine(spineTextVAlign, 270);
+                              }}
+                              className={`px-2 py-0.5 text-[9px] font-black rounded border transition-all ${
+                                spineTextRotation === 270
+                                  ? 'bg-indigo-600 text-white border-indigo-600'
+                                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                              }`}
+                            >
+                              270°
+                            </button>
+                            <button
+                              onClick={() => alignTextToSpine()}
+                              className="ml-auto py-0.5 px-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[9px] rounded uppercase tracking-wider transition-colors shadow-sm"
+                            >
+                              Align
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Color & Border Settings (Applicable to shapes and text) */}
+                <div className="space-y-3 bg-white p-3 rounded-xl border border-slate-200">
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Fill Color</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={objectColor}
+                        onChange={(e) => {
+                          setObjectColor(e.target.value);
+                          updateActiveObjectProperty("fill", e.target.value);
+                        }}
+                        className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
+                      />
+                      <input
+                        type="text"
+                        value={objectColor}
+                        onChange={(e) => {
+                          setObjectColor(e.target.value);
+                          updateActiveObjectProperty("fill", e.target.value);
+                        }}
+                        className="flex-1 text-xs font-bold uppercase p-1.5 border border-slate-200 rounded-lg text-center font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Stroke Color</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={objectStrokeColor}
+                        onChange={(e) => {
+                          setObjectStrokeColor(e.target.value);
+                          updateActiveObjectProperty("stroke", e.target.value);
+                        }}
+                        className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
+                      />
+                      <input
+                        type="text"
+                        value={objectStrokeColor}
+                        onChange={(e) => {
+                          setObjectStrokeColor(e.target.value);
+                          updateActiveObjectProperty("stroke", e.target.value);
+                        }}
+                        className="flex-1 text-xs font-bold uppercase p-1.5 border border-slate-200 rounded-lg text-center font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Stroke Width ({objectStrokeWidth}px)</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="15"
+                      value={objectStrokeWidth}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setObjectStrokeWidth(val);
+                        updateActiveObjectProperty("strokeWidth", val);
+                      }}
+                      className="w-full accent-indigo-650 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Opacity slider */}
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Layer Opacity ({Math.round(objectOpacity * 100)}%)</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={objectOpacity}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        setObjectOpacity(val);
+                        updateActiveObjectProperty("opacity", val);
+                      }}
+                      className="w-full accent-indigo-650 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Shadow settings */}
+                  <div className="space-y-2 pt-2 border-t border-slate-150">
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={objectHasShadow}
+                        onChange={(e) => {
+                          setObjectHasShadow(e.target.checked);
+                          updateActiveObjectShadow(e.target.checked, objectShadowColor, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY);
+                        }}
+                        className="rounded text-indigo-500 accent-indigo-500 cursor-pointer"
+                      />
+                      <span className="text-[9px] font-black text-slate-400 uppercase">Enable Layer Shadow</span>
+                    </label>
+                    
+                    {objectHasShadow && (
+                      <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                        <div className="col-span-2">
+                          <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Shadow Color</label>
+                          <div className="flex gap-1.5">
+                            <input
+                              type="color"
+                              value={objectShadowColor.startsWith('rgba') ? '#000000' : objectShadowColor}
+                              onChange={(e) => {
+                                setObjectShadowColor(e.target.value);
+                                updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY);
+                              }}
+                              className="w-5 h-5 rounded cursor-pointer border border-slate-200"
+                            />
+                            <input
+                              type="text"
+                              value={objectShadowColor}
+                              onChange={(e) => {
+                                setObjectShadowColor(e.target.value);
+                                updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY);
+                              }}
+                              className="flex-1 text-[8px] font-bold p-0.5 border border-slate-250 rounded font-mono text-center"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Blur ({objectShadowBlur}px)</label>
+                          <input
+                            type="range"
+                            min="0"
+                            max="30"
+                            value={objectShadowBlur}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setObjectShadowBlur(val);
+                              updateActiveObjectShadow(true, objectShadowColor, val, objectShadowOffsetX, objectShadowOffsetY);
+                            }}
+                            className="w-full accent-indigo-650 cursor-pointer"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Offset X ({objectShadowOffsetX}px)</label>
+                          <input
+                            type="range"
+                            min="-15"
+                            max="15"
+                            value={objectShadowOffsetX}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setObjectShadowOffsetX(val);
+                              updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, val, objectShadowOffsetY);
+                            }}
+                            className="w-full accent-indigo-650 cursor-pointer"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Offset Y ({objectShadowOffsetY}px)</label>
+                          <input
+                            type="range"
+                            min="-15"
+                            max="15"
+                            value={objectShadowOffsetY}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setObjectShadowOffsetY(val);
+                              updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, objectShadowOffsetX, val);
+                            }}
+                            className="w-full accent-indigo-650 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
+                {/* Alignment Actions */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase block">Align to Front Cover</label>
+                  <div className="flex gap-1.5">
+                    <button 
+                      onClick={() => handleAlignment('left')} 
+                      className="flex-1 py-1.5 bg-white border border-slate-200 text-[10px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50"
+                    >
+                      Left
+                    </button>
+                    <button 
+                      onClick={() => handleAlignment('center')} 
+                      className="flex-1 py-1.5 bg-white border border-slate-200 text-[10px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50"
+                    >
+                      Center
+                    </button>
+                    <button 
+                      onClick={() => handleAlignment('right')} 
+                      className="flex-1 py-1.5 bg-white border border-slate-200 text-[10px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50"
+                    >
+                      Right
+                    </button>
+                  </div>
+                </div>
+
+                {/* Depth / Layout Controls */}
+                <div className="space-y-2 pt-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase block">Layer depth & options</label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button 
+                      onClick={bringToFront}
+                      className="py-1.5 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider"
+                    >
+                      Bring Front
+                    </button>
+                    <button 
+                      onClick={sendToBack}
+                      className="py-1.5 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider"
+                    >
+                      Send Back
+                    </button>
+                    <button 
+                      onClick={duplicateSelected}
+                      className="col-span-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[9px] font-black rounded-lg uppercase tracking-wider transition-colors"
+                    >
+                      Duplicate Layer
+                    </button>
+                  </div>
+                </div>
+
+                {/* Delete button */}
                 <button 
                   onClick={deleteSelected} 
-                  className="w-full p-2.5 bg-red-50 text-red-600 text-xs font-black rounded-xl border border-red-100 hover:bg-red-100 flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full p-2.5 bg-red-50 text-red-650 text-xs font-black rounded-xl border border-red-100 hover:bg-red-100 flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Trash2 className="w-4 h-4"/> Delete Layer
                 </button>
@@ -827,24 +1672,243 @@ export default function FabricCoverStudio({
                 <span className="text-xs font-black text-slate-700 flex items-center gap-1">Snap to Grid (10px)</span>
               </label>
             </div>
+
+            {/* Canvas Layers Manager */}
+            <div className="pt-4 border-t border-slate-200 space-y-2.5">
+              <h4 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Canvas Layers ({layers.length})</h4>
+              {layers.length === 0 ? (
+                <p className="text-[10px] text-slate-400 italic">No layers added yet.</p>
+              ) : (
+                <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+                  {layers.map((layer: any, idx) => {
+                    const isSelected = activeObject === layer;
+                    let icon = "📝";
+                    let label = "Layer";
+                    
+                    if (layer.type === 'i-text' || layer.type === 'text') {
+                      icon = "🔤";
+                      label = layer.text ? (layer.text.length > 15 ? `${layer.text.substring(0, 15)}...` : layer.text) : "Text";
+                    } else if (layer.type === 'rect') {
+                      if (layer.id?.startsWith('barcode')) {
+                        icon = "📊";
+                        label = "Barcode Placeholder";
+                      } else {
+                        icon = "⏹️";
+                        label = "Rectangle";
+                      }
+                    } else if (layer.type === 'circle') {
+                      icon = "⚪";
+                      label = "Circle";
+                    } else if (layer.type === 'line') {
+                      icon = "➖";
+                      label = "Line Divider";
+                    } else if (layer.type === 'polygon' || layer.type === 'star') {
+                      icon = "⭐";
+                      label = "Star Shape";
+                    } else if (layer.type === 'image') {
+                      icon = "🖼️";
+                      label = "Image/Clipart";
+                    } else if (layer.type === 'group') {
+                      if (layer.id?.startsWith('barcode')) {
+                        icon = "📊";
+                        label = "Barcode Placeholder";
+                      } else {
+                        icon = "📦";
+                        label = "Group";
+                      }
+                    }
+                    
+                    return (
+                      <div 
+                        key={idx}
+                        className={`flex items-center gap-1.5 p-1.5 rounded-lg border transition-all text-xs font-semibold ${
+                          isSelected 
+                            ? 'bg-indigo-50 border-indigo-200 text-indigo-950 shadow-sm' 
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="text-sm select-none">{icon}</span>
+                        <span 
+                          onClick={() => {
+                            if (canvas) {
+                              canvas.setActiveObject(layer);
+                              canvas.requestRenderAll();
+                            }
+                          }}
+                          className="flex-1 truncate cursor-pointer select-none leading-none pr-1"
+                          title={label}
+                        >
+                          {label}
+                        </span>
+                        
+                        <div className="flex gap-0.5">
+                          <button
+                            onClick={() => {
+                              if (canvas) {
+                                layer.bringForward();
+                                canvas.requestRenderAll();
+                                canvas.fire("object:modified", { target: layer });
+                              }
+                            }}
+                            title="Move Up"
+                            className="p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-900 active:scale-95"
+                          >
+                            <ChevronUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (canvas) {
+                                layer.sendBackwards();
+                                canvas.requestRenderAll();
+                                canvas.fire("object:modified", { target: layer });
+                              }
+                            }}
+                            title="Move Down"
+                            className="p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-900 active:scale-95"
+                          >
+                            <ChevronDown className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (canvas) {
+                                canvas.remove(layer);
+                                if (activeObject === layer) {
+                                  canvas.discardActiveObject();
+                                  setActiveObject(null);
+                                }
+                                canvas.requestRenderAll();
+                                canvas.fire("object:modified", { target: layer });
+                              }
+                            }}
+                            title="Delete Layer"
+                            className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-655 active:scale-95"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {activeToolTab === 'graphics' && (
           <div className="space-y-4">
-            <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">BookBolt Clipart</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {CLIPARTS.map((clip, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => addClipart(clip.src)}
-                  className="group relative aspect-square rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-amber-400 hover:shadow-sm transition-all p-1"
+            <div>
+              <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-2">Unsplash Image Search</h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Search covers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchUnsplash()}
+                  className="flex-1 text-xs font-semibold p-2.5 border border-slate-200 rounded-xl focus:border-amber-400 outline-none bg-white"
+                />
+                <button
+                  onClick={handleSearchUnsplash}
+                  disabled={isSearching}
+                  className="px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={clip.src} alt={clip.name} className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300" />
-                  <span className="absolute bottom-1 left-1 right-1 bg-black/60 text-[8px] text-white text-center font-bold px-1 py-0.5 rounded truncate">{clip.name}</span>
+                  {isSearching ? "..." : "Search"}
                 </button>
-              ))}
+              </div>
+              {searchError && (
+                <p className="text-[9px] text-red-500 font-semibold mt-1 bg-red-55/40 p-2 rounded-lg leading-normal">
+                  {searchError}
+                </p>
+              )}
+            </div>
+
+            {/* Display Unsplash Results if Search matches */}
+            {searchResults.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-slate-200">
+                <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Search Results</h3>
+                <div className="grid grid-cols-2 gap-2 max-h-[250px] overflow-y-auto pr-1">
+                  {searchResults.map((clip, i) => (
+                    <div
+                      key={i}
+                      className="group relative aspect-square rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-amber-400 hover:shadow-sm transition-all p-1"
+                    >
+                      <img src={clip.thumb} alt={clip.name} crossOrigin="anonymous" className="w-full h-full object-cover rounded-lg" />
+                      
+                      {/* Hover Actions Menu */}
+                      <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1.5 p-2 z-10">
+                        <button
+                          onClick={() => addClipart(clip.full)}
+                          className="w-full py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[9px] font-black uppercase tracking-wider"
+                        >
+                          Add Layer
+                        </button>
+                        <button
+                          onClick={() => applyBackgroundImage(clip.full, 'full')}
+                          className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                        >
+                          Full BG
+                        </button>
+                        <button
+                          onClick={() => applyBackgroundImage(clip.full, 'front')}
+                          className="w-full py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                        >
+                          Front BG
+                        </button>
+                        <button
+                          onClick={() => applyBackgroundImage(clip.full, 'back')}
+                          className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                        >
+                          Back BG
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-slate-200 space-y-2">
+              <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Premium Schematics</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {CLIPARTS.map((clip, i) => (
+                  <div 
+                    key={i} 
+                    className="group relative aspect-square rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-amber-400 hover:shadow-sm transition-all p-1"
+                  >
+                    <img src={clip.src} alt={clip.name} crossOrigin="anonymous" className="w-full h-full object-cover rounded-lg" />
+                    <span className="absolute bottom-1 left-1 right-1 bg-black/60 text-[8px] text-white text-center font-bold px-1 py-0.5 rounded truncate group-hover:hidden">{clip.name}</span>
+                    
+                    {/* Hover Actions Menu */}
+                    <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1.5 p-2 z-10">
+                      <button
+                        onClick={() => addClipart(clip.src)}
+                        className="w-full py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[9px] font-black uppercase tracking-wider"
+                      >
+                        Add Layer
+                      </button>
+                      <button
+                        onClick={() => applyBackgroundImage(clip.src, 'full')}
+                        className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                      >
+                        Full BG
+                      </button>
+                      <button
+                        onClick={() => applyBackgroundImage(clip.src, 'front')}
+                        className="w-full py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                      >
+                        Front BG
+                      </button>
+                      <button
+                        onClick={() => applyBackgroundImage(clip.src, 'back')}
+                        className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                      >
+                        Back BG
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -930,14 +1994,40 @@ export default function FabricCoverStudio({
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Uploaded Assets</p>
                 <div className="grid grid-cols-2 gap-2">
                   {uploadedImages.map((src, i) => (
-                    <button 
+                    <div 
                       key={i} 
-                      onClick={() => addClipart(src)}
                       className="group relative aspect-square rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-amber-400 hover:shadow-sm transition-all p-1"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt="UploadedAsset" className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300" />
-                    </button>
+                      <img src={src} alt="UploadedAsset" className="w-full h-full object-cover rounded-lg" />
+                      
+                      {/* Hover Actions Menu */}
+                      <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1.5 p-2 z-10">
+                        <button
+                          onClick={() => addClipart(src)}
+                          className="w-full py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[9px] font-black uppercase tracking-wider"
+                        >
+                          Add Layer
+                        </button>
+                        <button
+                          onClick={() => applyBackgroundImage(src, 'full')}
+                          className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                        >
+                          Full BG
+                        </button>
+                        <button
+                          onClick={() => applyBackgroundImage(src, 'front')}
+                          className="w-full py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                        >
+                          Front BG
+                        </button>
+                        <button
+                          onClick={() => applyBackgroundImage(src, 'back')}
+                          className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                        >
+                          Back BG
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -967,6 +2057,19 @@ export default function FabricCoverStudio({
               </div>
 
               <div>
+                <label className="text-xs font-bold text-slate-600 block mb-1">Paper Type (Spine Factor)</label>
+                <select 
+                  value={paperType} 
+                  onChange={(e) => setPaperType(e.target.value as any)}
+                  className="w-full text-xs font-bold p-2.5 bg-white border border-slate-200 rounded-xl"
+                >
+                  <option value="white">White Paper (0.002252"/pg)</option>
+                  <option value="cream">Cream Paper (0.002500"/pg)</option>
+                  <option value="color">Color Paper (0.002347"/pg)</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="text-xs font-bold text-slate-600 block mb-1">Interior Pages Count ({pageCount})</label>
                 <input 
                   type="range" 
@@ -978,6 +2081,51 @@ export default function FabricCoverStudio({
                 />
                 <p className="text-[10px] text-slate-400 font-semibold mt-1">Spine size: {layout.spineWidth.toFixed(4)}" inches</p>
               </div>
+
+              {/* KDP Gutter Reference Card */}
+              <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-250/50 space-y-1.5 mt-2">
+                <span className="text-[9px] font-black text-amber-800 uppercase block tracking-wider">📐 KDP Interior Guidelines</span>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[9px] text-slate-650 font-semibold leading-normal">
+                  <span>Page Count:</span>
+                  <span className="font-bold text-slate-800">{pageCount} pages</span>
+                  
+                  <span>Inside Gutter:</span>
+                  <span className="font-bold text-slate-800">{getKdpGutterReference(pageCount).gutter}</span>
+                  
+                  <span>Outside (No Bleed):</span>
+                  <span className="font-bold text-slate-800">{getKdpGutterReference(pageCount).outsideNoBleed}</span>
+                  
+                  <span>Outside (With Bleed):</span>
+                  <span className="font-bold text-slate-800">{getKdpGutterReference(pageCount).outsideBleed}</span>
+                </div>
+              </div>
+
+              {/* Active Background Images Clear Actions */}
+              {(backCoverImage || frontCoverImage || fullCoverImage) && (
+                <div className="space-y-2 border-b border-slate-200 pb-3">
+                  <label className="text-xs font-bold text-slate-600 block">Active Image Backgrounds</label>
+                  <div className="space-y-1.5">
+                    {fullCoverImage && (
+                      <div className="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-[10px]">
+                        <span className="font-semibold text-indigo-950 truncate max-w-[150px]">Full Cover BG Image</span>
+                        <button onClick={() => setFullCoverImage('')} className="text-red-500 hover:text-red-750 font-bold uppercase transition-colors">Clear</button>
+                      </div>
+                    )}
+                    {backCoverImage && (
+                      <div className="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-[10px]">
+                        <span className="font-semibold text-indigo-950 truncate max-w-[150px]">Back Cover BG Image</span>
+                        <button onClick={() => setBackCoverImage('')} className="text-red-500 hover:text-red-755 font-bold uppercase transition-colors">Clear</button>
+                      </div>
+                    )}
+                    {frontCoverImage && (
+                      <div className="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-[10px]">
+                        <span className="font-semibold text-indigo-950 truncate max-w-[150px]">Front Cover BG Image</span>
+                        <button onClick={() => setFrontCoverImage('')} className="text-red-500 hover:text-red-755 font-bold uppercase transition-colors">Clear</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="h-px bg-slate-200 my-4" />
 
@@ -1120,6 +2268,51 @@ export default function FabricCoverStudio({
         {/* Spine details helper */}
         <div className="absolute top-4 bg-slate-950/80 px-4 py-2 rounded-full border border-slate-800 text-[10px] font-black uppercase text-amber-400 tracking-widest shadow-md z-15">
           Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"
+        </div>
+
+        {/* Global Canvas Control Bar */}
+        <div className="mb-4 flex items-center gap-3 bg-white py-2 px-4 rounded-full border border-slate-200 shadow-sm z-10 select-none">
+          <button 
+            onClick={handleUndo} 
+            disabled={historyStep <= 0} 
+            title="Undo (Ctrl+Z)" 
+            className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all flex items-center gap-1.5"
+          >
+            <Undo2 className="w-4 h-4"/>
+            <span className="text-[10px] font-black uppercase tracking-wider">Undo</span>
+          </button>
+          
+          <button 
+            onClick={handleRedo} 
+            disabled={historyStep === history.length - 1} 
+            title="Redo (Ctrl+Y)" 
+            className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all flex items-center gap-1.5"
+          >
+            <Redo2 className="w-4 h-4"/>
+            <span className="text-[10px] font-black uppercase tracking-wider">Redo</span>
+          </button>
+
+          <div className="w-px h-5 bg-slate-200 mx-1" />
+
+          <button 
+            onClick={deleteSelected} 
+            disabled={!activeObject}
+            title="Erase / Delete Selected Layer (Delete)" 
+            className="p-2 rounded-lg text-red-650 hover:bg-red-50 disabled:opacity-30 transition-all flex items-center gap-1.5"
+          >
+            <Trash2 className="w-4 h-4"/>
+            <span className="text-[10px] font-black uppercase tracking-wider">Erase</span>
+          </button>
+
+          <button 
+            onClick={handleClearCanvas} 
+            disabled={layers.length === 0}
+            title="Clear All Layers" 
+            className="p-2 rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-30 transition-all flex items-center gap-1.5"
+          >
+            <Eraser className="w-4 h-4"/>
+            <span className="text-[10px] font-black uppercase tracking-wider">Clear All</span>
+          </button>
         </div>
 
         {/* Canvas container */}

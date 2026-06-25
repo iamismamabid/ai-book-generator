@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, FileDown, ArrowUp, ArrowDown, Copy, BookOpen, Settings2, Sparkles, X } from "lucide-react";
+import { Plus, Trash2, FileDown, ArrowUp, ArrowDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2 } from "lucide-react";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
 import { SudokuEditor } from "./SudokuEditor";
@@ -20,13 +20,14 @@ const TRIM_SIZES = [
 export default function BookBuilder({ coverState }: { coverState?: any }) {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  
+
   // Premium Export Modal States
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [includeCover, setIncludeCover] = useState(false);
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [gutterMargin, setGutterMargin] = useState(false);
   const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("kdp-book-draft");
@@ -59,7 +60,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   };
 
   const updatePageConfig = (id: number, newConfig: any) => {
-    setBookPages(bookPages.map(page => 
+    setBookPages(bookPages.map(page =>
       page.id === id ? { ...page, config: newConfig } : page
     ));
   };
@@ -116,15 +117,23 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     setBookPages([...bookPages, ...newSolPages]);
   };
 
-  const triggerExport = () => {
-    exportBookToPDF(bookPages, {
-      includeCover,
-      coverState,
-      includePageNumbers,
-      gutterMargin,
-      trimSize: selectedTrim
-    });
-    setIsExportModalOpen(false);
+  const triggerExport = async () => {
+    setIsExporting(true);
+    try {
+      await exportBookToPDF(bookPages, {
+        includeCover,
+        coverState,
+        includePageNumbers,
+        gutterMargin,
+        trimSize: selectedTrim
+      });
+    } catch (e) {
+      console.error("Failed to export PDF", e);
+      alert("Error compiling PDF: " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setIsExporting(false);
+      setIsExportModalOpen(false);
+    }
   };
 
   return (
@@ -135,15 +144,15 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           <div>
             <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-4">Core Pages</h2>
             <div className="space-y-2">
-              <button 
-                onClick={() => addPage('title')} 
+              <button
+                onClick={() => addPage('title')}
                 className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
               >
                 <span>➕ Title Page</span>
                 <BookOpen className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
               </button>
-              <button 
-                onClick={() => addPage('blank')} 
+              <button
+                onClick={() => addPage('blank')}
                 className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
               >
                 <span>➕ Blank Spacer Page</span>
@@ -155,50 +164,50 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           <div>
             <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-4">Add Puzzle Page</h2>
             <div className="space-y-2.5">
-              <button 
-                onClick={() => addPage('crossword')} 
+              <button
+                onClick={() => addPage('crossword')}
                 className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
               >
                 <span>+ Crossword</span>
                 <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
               </button>
-              <button 
-                onClick={() => addPage('word_search')} 
+              <button
+                onClick={() => addPage('word_search')}
                 className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
               >
                 <span>+ Word Search</span>
                 <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
               </button>
-              <button 
-                onClick={() => addPage('sudoku')} 
+              <button
+                onClick={() => addPage('sudoku')}
                 className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
               >
                 <span>+ Sudoku</span>
                 <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
               </button>
-              <button 
-                onClick={() => addPage('maze')} 
+              <button
+                onClick={() => addPage('maze')}
                 className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
               >
                 <span>+ Maze Challenge</span>
                 <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
               </button>
-              <button 
-                onClick={() => addPage('word_scramble')} 
+              <button
+                onClick={() => addPage('word_scramble')}
                 className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
               >
                 <span>+ Word Scramble</span>
                 <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
               </button>
-              <button 
-                onClick={() => addPage('cryptogram')} 
+              <button
+                onClick={() => addPage('cryptogram')}
                 className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
               >
                 <span>+ Cryptogram</span>
                 <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
               </button>
-              <button 
-                onClick={() => addPage('math_puzzle')} 
+              <button
+                onClick={() => addPage('math_puzzle')}
                 className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
               >
                 <span>+ Math Puzzle Grid</span>
@@ -224,51 +233,51 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
         {bookPages.length > 0 && bookPages[activeIndex] ? (
           <div className="h-full">
             {bookPages[activeIndex].type === 'crossword' && (
-              <CrosswordEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              <CrosswordEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'word_search' && (
-              <WordSearchEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              <WordSearchEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'sudoku' && (
-              <SudokuEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              <SudokuEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'maze' && (
-              <MazeEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              <MazeEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'word_scramble' && (
-              <WordScrambleEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              <WordScrambleEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'cryptogram' && (
-              <CryptogramEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              <CryptogramEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'math_puzzle' && (
-              <MathPuzzleEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              <MathPuzzleEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'title' && (
-              <TitlePageEditor 
-                page={bookPages[activeIndex]} 
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              <TitlePageEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'blank' && (
@@ -290,19 +299,18 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
       {/* Sidebar Right: Book Pages & Merge Export */}
       <div className="w-76 bg-white p-5 border-l border-slate-200 flex flex-col">
         <h2 className="font-black text-xs uppercase text-slate-400 tracking-wider mb-4">Book Outline ({bookPages.length} Pages)</h2>
-        
+
         <div className="flex-1 overflow-y-auto space-y-2 pr-1">
           {bookPages.map((p, i) => {
             const isSol = p.config.isSolution || false;
             return (
-              <div 
-                key={p.id} 
-                onClick={() => setActiveIndex(i)} 
-                className={`p-2.5 rounded-xl border cursor-pointer flex justify-between items-center transition ${
-                  activeIndex === i 
-                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
-                    : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
-                }`}
+              <div
+                key={p.id}
+                onClick={() => setActiveIndex(i)}
+                className={`p-2.5 rounded-xl border cursor-pointer flex justify-between items-center transition ${activeIndex === i
+                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                    : 'bg-white border-slate-100 hover:bg-slate-55 text-slate-700'
+                  }`}
               >
                 <div className="flex flex-col">
                   <span className="text-xs font-black">Page {i + 1}</span>
@@ -310,31 +318,31 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                     {p.type.replace('_', ' ')} {isSol && <span className="text-indigo-600 font-extrabold">(SOL)</span>}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                  <button 
-                    onClick={() => movePage(i, 'up')} 
+                  <button
+                    onClick={() => movePage(i, 'up')}
                     disabled={i === 0}
                     className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
                   >
                     <ArrowUp className="w-3.5 h-3.5" />
                   </button>
-                  <button 
-                    onClick={() => movePage(i, 'down')} 
+                  <button
+                    onClick={() => movePage(i, 'down')}
                     disabled={i === bookPages.length - 1}
                     className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
                   >
                     <ArrowDown className="w-3.5 h-3.5" />
                   </button>
-                  <button 
+                  <button
                     onClick={() => duplicatePage(i)}
                     title="Duplicate Page"
                     className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
-                  <button 
-                    onClick={() => removePage(i)} 
+                  <button
+                    onClick={() => removePage(i)}
                     className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -348,8 +356,8 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
         {/* PDF Export Button */}
         {bookPages.length > 0 && (
           <div className="mt-4 pt-4 border-t border-slate-200">
-            <button 
-              onClick={() => setIsExportModalOpen(true)} 
+            <button
+              onClick={() => setIsExportModalOpen(true)}
               className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs font-black hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition active:scale-95"
             >
               <FileDown className="w-4 h-4" /> MERGE & DOWNLOAD PDF
@@ -362,7 +370,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
       {isExportModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full shadow-2xl p-6 relative animate-in zoom-in-95 duration-200">
-            <button 
+            <button
               onClick={() => setIsExportModalOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
             >
@@ -370,7 +378,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
             </button>
 
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-indigo-600/10 rounded-xl flex items-center justify-center text-indigo-600"><Settings2 className="w-5 h-5"/></div>
+              <div className="w-10 h-10 bg-indigo-600/10 rounded-xl flex items-center justify-center text-indigo-600"><Settings2 className="w-5 h-5" /></div>
               <div>
                 <h3 className="text-lg font-black text-slate-900 uppercase">Export Book interior</h3>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Configure layouts and covers</p>
@@ -384,9 +392,9 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                   <label className="text-xs font-black text-slate-800 block">Include Front & Back Cover</label>
                   <span className="text-[9px] font-bold text-slate-400 block uppercase">Compile designs from Cover Studio</span>
                 </div>
-                <input 
-                  type="checkbox" 
-                  checked={includeCover} 
+                <input
+                  type="checkbox"
+                  checked={includeCover}
                   disabled={!coverState || coverState.coverElements?.length === 0}
                   onChange={(e) => setIncludeCover(e.target.checked)}
                   className="w-4 h-4 accent-indigo-600 cursor-pointer disabled:opacity-50"
@@ -399,9 +407,9 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                   <label className="text-xs font-black text-slate-800 block">Include Page Numbers</label>
                   <span className="text-[9px] font-bold text-slate-400 block uppercase">Add index footers to puzzle pages</span>
                 </div>
-                <input 
-                  type="checkbox" 
-                  checked={includePageNumbers} 
+                <input
+                  type="checkbox"
+                  checked={includePageNumbers}
                   onChange={(e) => setIncludePageNumbers(e.target.checked)}
                   className="w-4 h-4 accent-indigo-600 cursor-pointer"
                 />
@@ -413,9 +421,9 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                   <label className="text-xs font-black text-slate-800 block">Double-Sided Gutter Margin</label>
                   <span className="text-[9px] font-bold text-slate-400 block uppercase">Adds extra padding for binding</span>
                 </div>
-                <input 
-                  type="checkbox" 
-                  checked={gutterMargin} 
+                <input
+                  type="checkbox"
+                  checked={gutterMargin}
                   onChange={(e) => setGutterMargin(e.target.checked)}
                   className="w-4 h-4 accent-indigo-600 cursor-pointer"
                 />
@@ -424,7 +432,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
               {/* Trim Size Selection */}
               <div>
                 <label className="text-xs font-black text-slate-500 uppercase tracking-wider block mb-1.5">KDP Book Trim Size</label>
-                <select 
+                <select
                   value={selectedTrim.label}
                   onChange={(e) => {
                     const matched = TRIM_SIZES.find(t => t.label === e.target.value);
@@ -440,17 +448,25 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
             </div>
 
             <div className="mt-6 flex gap-3">
-              <button 
+              <button
                 onClick={() => setIsExportModalOpen(false)}
                 className="flex-1 py-3 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-black transition"
               >
                 CANCEL
               </button>
-              <button 
+              <button
                 onClick={triggerExport}
-                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-600/25 transition active:scale-95"
+                disabled={isExporting}
+                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-600/25 transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                EXPORT NOW
+                {isExporting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    COMPILING...
+                  </>
+                ) : (
+                  "EXPORT NOW"
+                )}
               </button>
             </div>
           </div>
@@ -480,33 +496,33 @@ function TitlePageEditor({ page, updatePage }: any) {
         <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Title Page Editor</h3>
         <div>
           <label className="text-xs font-bold text-slate-600 block mb-1">Book Title</label>
-          <input 
-            type="text" 
-            value={title} 
-            onChange={(e) => handleChange('title', e.target.value)} 
-            className="w-full p-2.5 border rounded-xl text-xs font-bold bg-white focus:border-indigo-500 outline-none shadow-sm" 
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => handleChange('title', e.target.value)}
+            className="w-full p-2.5 border rounded-xl text-xs font-bold bg-white focus:border-indigo-500 outline-none shadow-sm"
           />
         </div>
         <div>
           <label className="text-xs font-bold text-slate-600 block mb-1">Subtitle</label>
-          <input 
-            type="text" 
-            value={subtitle} 
-            onChange={(e) => handleChange('subtitle', e.target.value)} 
-            className="w-full p-2.5 border rounded-xl text-xs font-bold bg-white focus:border-indigo-500 outline-none shadow-sm" 
+          <input
+            type="text"
+            value={subtitle}
+            onChange={(e) => handleChange('subtitle', e.target.value)}
+            className="w-full p-2.5 border rounded-xl text-xs font-bold bg-white focus:border-indigo-500 outline-none shadow-sm"
           />
         </div>
         <div>
           <label className="text-xs font-bold text-slate-600 block mb-1">Author Name</label>
-          <input 
-            type="text" 
-            value={author} 
-            onChange={(e) => handleChange('author', e.target.value)} 
-            className="w-full p-2.5 border rounded-xl text-xs font-bold bg-white focus:border-indigo-500 outline-none shadow-sm" 
+          <input
+            type="text"
+            value={author}
+            onChange={(e) => handleChange('author', e.target.value)}
+            className="w-full p-2.5 border rounded-xl text-xs font-bold bg-white focus:border-indigo-500 outline-none shadow-sm"
           />
         </div>
       </div>
-      
+
       <div className="flex-1 bg-white p-10 shadow-2xl border border-slate-200 min-h-[600px] flex flex-col justify-between items-center text-slate-800">
         <div className="w-full mt-24 text-center">
           <h1 className="text-4xl font-extrabold uppercase tracking-widest text-slate-900 mb-4">{title}</h1>

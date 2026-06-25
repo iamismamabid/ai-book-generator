@@ -22,7 +22,7 @@ export default function RootLayout({
     <ClerkProvider>
       {/* 🎯 html ট্যাগে ফন্টের ভেরিয়েবল ইনজেক্ট করা হলো */}
       <html lang="en" className={`scroll-smooth ${inter.variable}`}>
-        <body className="bg-[#F8FAFC] text-slate-900 antialiased font-sans selection:bg-indigo-100 selection:text-indigo-900">
+        <body className="bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased font-sans selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-300">
           <ThemeProvider>
             {/* Professional Floating Navbar */}
             <Header />

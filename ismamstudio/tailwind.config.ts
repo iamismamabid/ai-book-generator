@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  // 🚨 এই পাথগুলোই বলে দেয় Tailwind কোথায় তার ক্লাসগুলো খুঁজবে
+  darkMode: "class",
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",        // এটি src ফোল্ডারের সবকিছু কাভার করবে
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",    // app ফোল্ডার

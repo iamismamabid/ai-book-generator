@@ -8,7 +8,7 @@ export interface ExportOptions {
   trimSize?: { label: string; w: number; h: number };
 }
 
-export const exportBookToPDF = (bookPages: any[], options: ExportOptions = {}) => {
+export const exportBookToPDF = async (bookPages: any[], options: ExportOptions = {}) => {
   const {
     includeCover = false,
     coverState = null,
@@ -26,7 +26,7 @@ export const exportBookToPDF = (bookPages: any[], options: ExportOptions = {}) =
   // 1. Add Front Cover if integrated
   let firstPageAdded = false;
   if (includeCover && coverState) {
-    drawCoverPagePart(doc, coverState, 'front', w, h);
+    await drawCoverPagePart(doc, coverState, 'front', w, h);
     firstPageAdded = true;
   }
 
@@ -95,7 +95,7 @@ export const exportBookToPDF = (bookPages: any[], options: ExportOptions = {}) =
   // 3. Add Back Cover if integrated
   if (includeCover && coverState) {
     doc.addPage();
-    drawCoverPagePart(doc, coverState, 'back', w, h);
+    await drawCoverPagePart(doc, coverState, 'back', w, h);
   }
 
   doc.save("My_KDP_Puzzle_Book.pdf");
@@ -363,7 +363,7 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number) => {
 };
 
 // Helper: Draw Front Cover or Back Cover page
-const drawCoverPagePart = (doc: any, coverState: any, side: 'front' | 'back', pageWidth: number, pageHeight: number) => {
+const drawCoverPagePart = async (doc: any, coverState: any, side: 'front' | 'back', pageWidth: number, pageHeight: number) => {
   const { 
     coverElements = [], 
     frontCoverColor = '#1E293B', 
@@ -375,7 +375,10 @@ const drawCoverPagePart = (doc: any, coverState: any, side: 'front' | 'back', pa
     backCoverGradientStart = '#0F172A',
     backCoverGradientEnd = '#020617',
     spineWidth = 0.22,
-    trimSize = { w: 8.5, h: 11 }
+    trimSize = { w: 8.5, h: 11 },
+    backCoverImage = '',
+    frontCoverImage = '',
+    fullCoverImage = ''
   } = coverState;
 
   // 1. Draw Page Background
@@ -409,7 +412,62 @@ const drawCoverPagePart = (doc: any, coverState: any, side: 'front' | 'back', pa
     doc.rect(0, 0, pageWidth, pageHeight, "F");
   }
 
-  // 2. Draw Vector Elements belonging to this side
+  // 2. Draw Background Images if present
+  try {
+    if (fullCoverImage) {
+      // Let's load the full image first to get its dimensions
+      const img = await new Promise<HTMLImageElement | null>((resolve) => {
+        if (typeof window === 'undefined') {
+          resolve(null);
+          return;
+        }
+        const tempImg = new Image();
+        tempImg.crossOrigin = 'anonymous';
+        tempImg.src = fullCoverImage;
+        tempImg.onload = () => resolve(tempImg);
+        tempImg.onerror = () => resolve(null);
+      });
+
+      if (img) {
+        // Calculate crop bounds based on proportions of KDP cover layout
+        // Cover Total Width = trimSize.w * 2 + spineWidth + bleed * 2
+        const bleed = 0.125;
+        const totalW = trimSize.w * 2 + spineWidth + bleed * 2;
+        const totalH = trimSize.h + bleed * 2;
+
+        const imgW = img.width;
+        const imgH = img.height;
+
+        // Scale factors for pixels to image proportions
+        const scaleX = imgW / totalW;
+        const scaleY = imgH / totalH;
+
+        let cropX = 0;
+        let cropW = trimSize.w * scaleX;
+        const cropY = bleed * scaleY;
+        const cropH = trimSize.h * scaleY;
+
+        if (isFront) {
+          // Front cover starts after Back Cover + Spine + Bleed
+          cropX = (bleed + trimSize.w + spineWidth) * scaleX;
+        } else {
+          // Back cover starts after Bleed
+          cropX = bleed * scaleX;
+        }
+
+        const base64 = await loadAndCropImage(fullCoverImage, cropX, cropY, cropW, cropH);
+        doc.addImage(base64, 'JPEG', 0, 0, pageWidth, pageHeight);
+      }
+    } else if (isFront && frontCoverImage) {
+      doc.addImage(frontCoverImage, 'JPEG', 0, 0, pageWidth, pageHeight);
+    } else if (!isFront && backCoverImage) {
+      doc.addImage(backCoverImage, 'JPEG', 0, 0, pageWidth, pageHeight);
+    }
+  } catch (err) {
+    console.error("Error drawing cover background image in PDF", err);
+  }
+
+  // 3. Draw Vector Elements belonging to this side
   const CANVAS_WIDTH = 800;
   const bleed = 0.125;
   const coverTotalWidthInches = (trimSize.w * 2) + spineWidth + (bleed * 2);
@@ -447,8 +505,9 @@ const drawCoverPagePart = (doc: any, coverState: any, side: 'front' | 'back', pa
     const py = ry * pageHeight;
 
     // Width/height scaling
-    const wScale = pageWidth / pageWidth; // Aspect ratio check if needed, standard linear scaling
-    const scaleFactor = pageHeight / (canvasCoverHeight / scale); // inch per canvas inch
+    const rw = (el.width / canvasCoverWidth) * pageWidth;
+    const rh = (el.height / canvasCoverHeight) * pageHeight;
+    const rRad = (el.radius / canvasCoverWidth) * pageWidth;
     
     // Draw text
     if (el.type === 'text') {
@@ -460,15 +519,12 @@ const drawCoverPagePart = (doc: any, coverState: any, side: 'front' | 'back', pa
     } 
     // Draw shapes
     else if (el.type === 'rect') {
-      const rw = (el.width / canvasCoverWidth) * pageWidth;
-      const rh = (el.height / canvasCoverHeight) * pageHeight;
       doc.setFillColor(el.fill || "#F59E0B");
       doc.setDrawColor(el.stroke || "#FFFFFF");
       doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
       doc.rect(px, py, rw, rh, el.strokeWidth > 0 ? "FD" : "F");
     } 
     else if (el.type === 'circle') {
-      const rRad = (el.radius / canvasCoverWidth) * pageWidth;
       doc.setFillColor(el.fill || "#3B82F6");
       doc.setDrawColor(el.stroke || "#FFFFFF");
       doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
@@ -488,15 +544,56 @@ const drawCoverPagePart = (doc: any, coverState: any, side: 'front' | 'back', pa
   doc.setTextColor(0);
 };
 
-// Helper: Hex color parser
+// Helper: Hex color parser supporting 3 and 6 characters
 function hexToRgb(hex: string) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  const fullHex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
   return result ? {
     r: parseInt(result[1], 16),
     g: parseInt(result[2], 16),
     b: parseInt(result[3], 16)
   } : null;
 }
+
+// Helper: Load and crop image using a temporary HTML Canvas
+const loadAndCropImage = (
+  url: string, 
+  cropX: number, 
+  cropY: number, 
+  cropW: number, 
+  cropH: number
+): Promise<string> => {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') {
+      resolve(url);
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = cropW;
+        canvas.height = cropH;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+          resolve(canvas.toDataURL('image/jpeg', 0.95));
+        } else {
+          resolve(url);
+        }
+      } catch (e) {
+        console.error("Error cropping image in canvas", e);
+        resolve(url);
+      }
+    };
+    img.onerror = () => {
+      resolve(url);
+    };
+  });
+};
 
 // Helper: Draw Word Scramble
 const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {

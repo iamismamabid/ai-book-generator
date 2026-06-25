@@ -6,6 +6,9 @@ import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
 import { SudokuEditor } from "./SudokuEditor";
 import { MazeEditor } from "./MazeEditor";
+import { WordScrambleEditor } from "./WordScrambleEditor";
+import { CryptogramEditor } from "./CryptogramEditor";
+import { MathPuzzleEditor } from "./MathPuzzleEditor";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
 
 const TRIM_SIZES = [
@@ -92,7 +95,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     const newSolPages: any[] = [];
     bookPages.forEach((page) => {
       // Check if it's a puzzle and not already a solution page
-      if (['crossword', 'word_search', 'sudoku', 'maze'].includes(page.type) && !page.config.isSolution) {
+      if (['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle'].includes(page.type) && !page.config.isSolution) {
         newSolPages.push({
           id: Date.now() + Math.random(),
           type: page.type,
@@ -180,6 +183,27 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 <span>+ Maze Challenge</span>
                 <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
               </button>
+              <button 
+                onClick={() => addPage('word_scramble')} 
+                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+              >
+                <span>+ Word Scramble</span>
+                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+              </button>
+              <button 
+                onClick={() => addPage('cryptogram')} 
+                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+              >
+                <span>+ Cryptogram</span>
+                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+              </button>
+              <button 
+                onClick={() => addPage('math_puzzle')} 
+                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+              >
+                <span>+ Math Puzzle Grid</span>
+                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+              </button>
             </div>
           </div>
         </div>
@@ -219,6 +243,24 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
             )}
             {bookPages[activeIndex].type === 'maze' && (
               <MazeEditor 
+                page={bookPages[activeIndex]} 
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              />
+            )}
+            {bookPages[activeIndex].type === 'word_scramble' && (
+              <WordScrambleEditor 
+                page={bookPages[activeIndex]} 
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              />
+            )}
+            {bookPages[activeIndex].type === 'cryptogram' && (
+              <CryptogramEditor 
+                page={bookPages[activeIndex]} 
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
+              />
+            )}
+            {bookPages[activeIndex].type === 'math_puzzle' && (
+              <MathPuzzleEditor 
                 page={bookPages[activeIndex]} 
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)} 
               />

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Grid3x3, Palette, Loader2 } from "lucide-react";
+import { Grid3x3, Palette, Loader2, Sparkles } from "lucide-react";
 import dynamic from 'next/dynamic';
+import { motion, AnimatePresence } from "framer-motion";
 
 // Dynamic imports — both components use browser-only APIs (canvas, localStorage)
 const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
@@ -46,119 +47,154 @@ export default function MasterStudioApp() {
 
   if (!isMounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-indigo-600 bg-[#F8FAFC]">
-        <Loader2 className="w-8 h-8 animate-spin"/>
+      <div className="min-h-screen flex items-center justify-center text-indigo-500 bg-slate-950">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-sans text-slate-900 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 p-4 md:p-8 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-hidden relative">
+      
+      {/* 🌌 Background ambient gradient blobs */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       {/* APP HEADER */}
-      <header className="mb-6 flex flex-col sm:flex-row justify-between items-center max-w-[1600px] mx-auto w-full gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">AI</div>
+      <header className="mb-8 flex flex-col sm:flex-row justify-between items-center max-w-[1600px] mx-auto w-full gap-6 relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-500/20">
+            <Sparkles className="w-6 h-6" />
+          </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-black tracking-tight">KDP Master Studio</h1>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Premium Cover & Interior Creator</p>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-600 dark:from-white dark:via-slate-200 dark:to-indigo-400">
+              KDP Master Studio
+            </h1>
+            <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold uppercase tracking-widest">
+              Premium Cover & Interior Creator
+            </p>
           </div>
         </div>
 
         {/* TAB SWITCHER */}
-        <div className="flex bg-slate-200/80 p-1 rounded-full shadow-inner border border-slate-300/40">
+        <div className="flex bg-slate-200/60 dark:bg-slate-900/60 p-1.5 rounded-full shadow-inner border border-slate-300/30 dark:border-slate-800/30 backdrop-blur-md relative">
           <button
             onClick={() => setActiveTab('interior')}
-            className={`px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
-              activeTab === 'interior' ? 'bg-white shadow-md text-slate-900' : 'text-slate-500 hover:bg-slate-300/50'
+            className={`relative px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
+              activeTab === 'interior' ? 'text-slate-950 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
+            {activeTab === 'interior' && (
+              <motion.div
+                layoutId="activeTabPill"
+                className="absolute inset-0 bg-white dark:bg-slate-800 rounded-full shadow-md -z-10"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
             <Grid3x3 className="w-4 h-4"/> Book Builder
           </button>
+          
           <button
             onClick={() => setActiveTab('cover')}
-            className={`px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
-              activeTab === 'cover' ? 'bg-white shadow-md text-slate-900' : 'text-slate-500 hover:bg-slate-300/50'
+            className={`relative px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
+              activeTab === 'cover' ? 'text-slate-950 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
+            {activeTab === 'cover' && (
+              <motion.div
+                layoutId="activeTabPill"
+                className="absolute inset-0 bg-white dark:bg-slate-800 rounded-full shadow-md -z-10"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
             <Palette className="w-4 h-4"/> Cover Studio
           </button>
         </div>
       </header>
 
-      <div className="flex-1 max-w-[1600px] w-full mx-auto">
+      <main className="flex-1 max-w-[1600px] w-full mx-auto relative z-10">
+        <AnimatePresence mode="wait">
+          {activeTab === 'interior' ? (
+            <motion.div
+              key="interior"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="w-full h-full"
+            >
+              <BookBuilder
+                coverState={{
+                  coverElements,
+                  frontCoverColor,
+                  backCoverColor,
+                  frontCoverType,
+                  backCoverType,
+                  frontCoverGradientStart,
+                  frontCoverGradientEnd,
+                  backCoverGradientStart,
+                  backCoverGradientEnd,
+                  backCoverImage,
+                  frontCoverImage,
+                  fullCoverImage,
+                  spineWidth,
+                  trimSize
+                }}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="cover"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="flex h-[calc(100vh-140px)] rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden bg-white dark:bg-slate-900 shadow-xl"
+            >
+              <FabricCoverStudio
+                trimSize={trimSize}
+                setTrimSize={setTrimSize}
+                pageCount={pageCount}
+                setPageCount={setPageCount}
 
-        {/* ================= 1. INTERIOR COMPONENT ================= */}
-        {activeTab === 'interior' && (
-          <div className="animate-in fade-in duration-300 w-full h-full">
-            <BookBuilder
-              coverState={{
-                coverElements,
-                frontCoverColor,
-                backCoverColor,
-                frontCoverType,
-                backCoverType,
-                frontCoverGradientStart,
-                frontCoverGradientEnd,
-                backCoverGradientStart,
-                backCoverGradientEnd,
-                backCoverImage,
-                frontCoverImage,
-                fullCoverImage,
-                spineWidth,
-                trimSize
-              }}
-            />
-          </div>
-        )}
+                backCoverColor={backCoverColor}
+                setBackCoverColor={setBackCoverColor}
+                backCoverType={backCoverType}
+                setBackCoverType={setBackCoverType}
+                backCoverGradientStart={backCoverGradientStart}
+                setBackCoverGradientStart={setBackCoverGradientStart}
+                backCoverGradientEnd={backCoverGradientEnd}
+                setBackCoverGradientEnd={setBackCoverGradientEnd}
 
-        {/* ================= 2. COVER STUDIO COMPONENT ================= */}
-        {activeTab === 'cover' && (
-          <div className="flex h-[calc(100vh-140px)] rounded-3xl border border-slate-200 overflow-hidden bg-white shadow-sm animate-in fade-in duration-500">
-            <FabricCoverStudio
-              trimSize={trimSize}
-              setTrimSize={setTrimSize}
-              pageCount={pageCount}
-              setPageCount={setPageCount}
+                frontCoverColor={frontCoverColor}
+                setFrontCoverColor={setFrontCoverColor}
+                frontCoverType={frontCoverType}
+                setFrontCoverType={setFrontCoverType}
+                frontCoverGradientStart={frontCoverGradientStart}
+                setFrontCoverGradientStart={setFrontCoverGradientStart}
+                frontCoverGradientEnd={frontCoverGradientEnd}
+                setFrontCoverGradientEnd={setFrontCoverGradientEnd}
 
-              backCoverColor={backCoverColor}
-              setBackCoverColor={setBackCoverColor}
-              backCoverType={backCoverType}
-              setBackCoverType={setBackCoverType}
-              backCoverGradientStart={backCoverGradientStart}
-              setBackCoverGradientStart={setBackCoverGradientStart}
-              backCoverGradientEnd={backCoverGradientEnd}
-              setBackCoverGradientEnd={setBackCoverGradientEnd}
+                backCoverImage={backCoverImage}
+                setBackCoverImage={setBackCoverImage}
+                frontCoverImage={frontCoverImage}
+                setFrontCoverImage={setFrontCoverImage}
+                fullCoverImage={fullCoverImage}
+                setFullCoverImage={setFullCoverImage}
 
-              frontCoverColor={frontCoverColor}
-              setFrontCoverColor={setFrontCoverColor}
-              frontCoverType={frontCoverType}
-              setFrontCoverType={setFrontCoverType}
-              frontCoverGradientStart={frontCoverGradientStart}
-              setFrontCoverGradientStart={setFrontCoverGradientStart}
-              frontCoverGradientEnd={frontCoverGradientEnd}
-              setFrontCoverGradientEnd={setFrontCoverGradientEnd}
-
-              backCoverImage={backCoverImage}
-              setBackCoverImage={setBackCoverImage}
-              frontCoverImage={frontCoverImage}
-              setFrontCoverImage={setFrontCoverImage}
-              fullCoverImage={fullCoverImage}
-              setFullCoverImage={setFullCoverImage}
-
-              showKdpGuides={showKdpGuides}
-              setShowKdpGuides={setShowKdpGuides}
-              snapToGrid={snapToGrid}
-              setSnapToGrid={setSnapToGrid}
-              initialElements={coverElements}
-              onSaveWorkspace={(elements) => {
-                setCoverElements(elements);
-              }}
-            />
-          </div>
-        )}
-
-      </div>
+                showKdpGuides={showKdpGuides}
+                setShowKdpGuides={setShowKdpGuides}
+                snapToGrid={snapToGrid}
+                setSnapToGrid={setSnapToGrid}
+                initialElements={coverElements}
+                onSaveWorkspace={(elements) => {
+                  setCoverElements(elements);
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }

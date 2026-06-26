@@ -346,14 +346,16 @@ export default function FabricCoverStudio({
     }
   }, [activeObject]);
 
-  const updateActiveObjectProperty = (property: string, value: any) => {
+  const updateActiveObjectProperty = (property: string, value: any, saveHistory = true) => {
     if (!canvas || !activeObject) return;
     activeObject.set({ [property]: value });
     canvas.requestRenderAll();
-    canvas.fire("object:modified", { target: activeObject });
+    if (saveHistory) {
+      canvas.fire("object:modified", { target: activeObject });
+    }
   };
 
-  const updateActiveObjectShadow = (hasShadow: boolean, color: string, blur: number, ox: number, oy: number) => {
+  const updateActiveObjectShadow = (hasShadow: boolean, color: string, blur: number, ox: number, oy: number, saveHistory = true) => {
     if (!canvas || !activeObject) return;
     if (hasShadow) {
       activeObject.set({
@@ -368,7 +370,9 @@ export default function FabricCoverStudio({
       activeObject.set({ shadow: undefined });
     }
     canvas.requestRenderAll();
-    canvas.fire("object:modified", { target: activeObject });
+    if (saveHistory) {
+      canvas.fire("object:modified", { target: activeObject });
+    }
   };
 
   // Keyboard Shortcuts via stable handler refs (initialized empty to avoid TDZ errors)
@@ -964,7 +968,7 @@ export default function FabricCoverStudio({
   // Ref to store the previous cover background state to avoid duplicate saves
   const prevBgRef = useRef(coverBackground);
 
-  // Effect to watch changes in coverBackground and push to undo/redo history
+  // Effect to watch changes in coverBackground and push to undo/redo history (debounced)
   useEffect(() => {
     if (!canvas) return;
     if (isUpdatingHistory.current) {
@@ -974,10 +978,16 @@ export default function FabricCoverStudio({
 
     // Check if the background state actually changed
     if (JSON.stringify(prevBgRef.current) !== JSON.stringify(coverBackground)) {
-      if (saveStateRef.current) {
-        saveStateRef.current();
-      }
-      prevBgRef.current = coverBackground;
+      const handler = setTimeout(() => {
+        if (saveStateRef.current) {
+          saveStateRef.current();
+        }
+        prevBgRef.current = coverBackground;
+      }, 300); // 300ms debounce
+
+      return () => {
+        clearTimeout(handler);
+      };
     }
   }, [coverBackground, canvas]);
 
@@ -1802,7 +1812,7 @@ export default function FabricCoverStudio({
                         ))}
                       </select>
                     </div>
-                    <div>
+                     <div>
                       <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Size ({objectFontSize}px)</label>
                       <input
                         type="range"
@@ -1812,7 +1822,16 @@ export default function FabricCoverStudio({
                         onChange={(e) => {
                           const val = parseInt(e.target.value);
                           setObjectFontSize(val);
-                          updateActiveObjectProperty("fontSize", val);
+                          updateActiveObjectProperty("fontSize", val, false);
+                        }}
+                        onMouseUp={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                        }}
+                        onTouchEnd={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                        }}
+                        onBlur={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                         }}
                         className="w-full accent-indigo-650 cursor-pointer"
                       />
@@ -1829,7 +1848,16 @@ export default function FabricCoverStudio({
                         onChange={(e) => {
                           const val = parseInt(e.target.value);
                           setObjectCharSpacing(val);
-                          updateActiveObjectProperty("charSpacing", val);
+                          updateActiveObjectProperty("charSpacing", val, false);
+                        }}
+                        onMouseUp={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                        }}
+                        onTouchEnd={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                        }}
+                        onBlur={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                         }}
                         className="w-full accent-indigo-650 cursor-pointer"
                       />
@@ -1846,7 +1874,16 @@ export default function FabricCoverStudio({
                         onChange={(e) => {
                           const val = parseFloat(e.target.value);
                           setObjectLineHeight(val);
-                          updateActiveObjectProperty("lineHeight", val);
+                          updateActiveObjectProperty("lineHeight", val, false);
+                        }}
+                        onMouseUp={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                        }}
+                        onTouchEnd={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                        }}
+                        onBlur={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                         }}
                         className="w-full accent-indigo-650 cursor-pointer"
                       />
@@ -1929,7 +1966,10 @@ export default function FabricCoverStudio({
                         value={objectColor}
                         onChange={(e) => {
                           setObjectColor(e.target.value);
-                          updateActiveObjectProperty("fill", e.target.value);
+                          updateActiveObjectProperty("fill", e.target.value, false);
+                        }}
+                        onBlur={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                         }}
                         className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
                       />
@@ -1938,7 +1978,10 @@ export default function FabricCoverStudio({
                         value={objectColor}
                         onChange={(e) => {
                           setObjectColor(e.target.value);
-                          updateActiveObjectProperty("fill", e.target.value);
+                          updateActiveObjectProperty("fill", e.target.value, false);
+                        }}
+                        onBlur={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                         }}
                         className="flex-1 text-xs font-bold uppercase p-1.5 border border-slate-200 rounded-lg text-center font-mono"
                       />
@@ -1953,7 +1996,10 @@ export default function FabricCoverStudio({
                         value={objectStrokeColor}
                         onChange={(e) => {
                           setObjectStrokeColor(e.target.value);
-                          updateActiveObjectProperty("stroke", e.target.value);
+                          updateActiveObjectProperty("stroke", e.target.value, false);
+                        }}
+                        onBlur={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                         }}
                         className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
                       />
@@ -1962,7 +2008,10 @@ export default function FabricCoverStudio({
                         value={objectStrokeColor}
                         onChange={(e) => {
                           setObjectStrokeColor(e.target.value);
-                          updateActiveObjectProperty("stroke", e.target.value);
+                          updateActiveObjectProperty("stroke", e.target.value, false);
+                        }}
+                        onBlur={() => {
+                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                         }}
                         className="flex-1 text-xs font-bold uppercase p-1.5 border border-slate-200 rounded-lg text-center font-mono"
                       />
@@ -1978,7 +2027,16 @@ export default function FabricCoverStudio({
                       onChange={(e) => {
                         const val = parseInt(e.target.value);
                         setObjectStrokeWidth(val);
-                        updateActiveObjectProperty("strokeWidth", val);
+                        updateActiveObjectProperty("strokeWidth", val, false);
+                      }}
+                      onMouseUp={() => {
+                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                      }}
+                      onTouchEnd={() => {
+                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                      }}
+                      onBlur={() => {
+                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                       }}
                       className="w-full accent-indigo-650 cursor-pointer"
                     />
@@ -1996,7 +2054,16 @@ export default function FabricCoverStudio({
                       onChange={(e) => {
                         const val = parseFloat(e.target.value);
                         setObjectOpacity(val);
-                        updateActiveObjectProperty("opacity", val);
+                        updateActiveObjectProperty("opacity", val, false);
+                      }}
+                      onMouseUp={() => {
+                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                      }}
+                      onTouchEnd={() => {
+                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                      }}
+                      onBlur={() => {
+                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                       }}
                       className="w-full accent-indigo-650 cursor-pointer"
                     />
@@ -2027,7 +2094,10 @@ export default function FabricCoverStudio({
                               value={objectShadowColor.startsWith('rgba') ? '#000000' : objectShadowColor}
                               onChange={(e) => {
                                 setObjectShadowColor(e.target.value);
-                                updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY);
+                                updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY, false);
+                              }}
+                              onBlur={() => {
+                                if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                               }}
                               className="w-5 h-5 rounded cursor-pointer border border-slate-200"
                             />
@@ -2036,7 +2106,10 @@ export default function FabricCoverStudio({
                               value={objectShadowColor}
                               onChange={(e) => {
                                 setObjectShadowColor(e.target.value);
-                                updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY);
+                                updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY, false);
+                              }}
+                              onBlur={() => {
+                                if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                               }}
                               className="flex-1 text-[8px] font-bold p-0.5 border border-slate-250 rounded font-mono text-center"
                             />
@@ -2052,7 +2125,16 @@ export default function FabricCoverStudio({
                             onChange={(e) => {
                               const val = parseInt(e.target.value);
                               setObjectShadowBlur(val);
-                              updateActiveObjectShadow(true, objectShadowColor, val, objectShadowOffsetX, objectShadowOffsetY);
+                              updateActiveObjectShadow(true, objectShadowColor, val, objectShadowOffsetX, objectShadowOffsetY, false);
+                            }}
+                            onMouseUp={() => {
+                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                            }}
+                            onTouchEnd={() => {
+                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                            }}
+                            onBlur={() => {
+                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                             }}
                             className="w-full accent-indigo-650 cursor-pointer"
                           />
@@ -2067,7 +2149,16 @@ export default function FabricCoverStudio({
                             onChange={(e) => {
                               const val = parseInt(e.target.value);
                               setObjectShadowOffsetX(val);
-                              updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, val, objectShadowOffsetY);
+                              updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, val, objectShadowOffsetY, false);
+                            }}
+                            onMouseUp={() => {
+                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                            }}
+                            onTouchEnd={() => {
+                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                            }}
+                            onBlur={() => {
+                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                             }}
                             className="w-full accent-indigo-650 cursor-pointer"
                           />
@@ -2082,7 +2173,16 @@ export default function FabricCoverStudio({
                             onChange={(e) => {
                               const val = parseInt(e.target.value);
                               setObjectShadowOffsetY(val);
-                              updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, objectShadowOffsetX, val);
+                              updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, objectShadowOffsetX, val, false);
+                            }}
+                            onMouseUp={() => {
+                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                            }}
+                            onTouchEnd={() => {
+                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                            }}
+                            onBlur={() => {
+                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
                             }}
                             className="w-full accent-indigo-650 cursor-pointer"
                           />

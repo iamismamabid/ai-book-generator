@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, FileDown, ArrowUp, ArrowDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle, GripVertical } from "lucide-react";
 import { motion } from "framer-motion";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
@@ -12,6 +12,23 @@ import { CryptogramEditor } from "./CryptogramEditor";
 import { MathPuzzleEditor } from "./MathPuzzleEditor";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
 import { useBookValidation } from "@/hooks/useBookValidation";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 
 
@@ -91,18 +108,43 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     ));
   };
 
-  const movePage = (index: number, direction: 'up' | 'down') => {
-    if (direction === 'up' && index === 0) return;
-    if (direction === 'down' && index === bookPages.length - 1) return;
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    const updated = [...bookPages];
-    const temp = updated[index];
-    updated[index] = updated[targetIndex];
-    updated[targetIndex] = temp;
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
 
-    setBookPages(updated);
-    setActiveIndex(targetIndex);
+    if (active.id !== over.id) {
+      const oldIndex = bookPages.findIndex((p) => p.id === active.id);
+      const newIndex = bookPages.findIndex((p) => p.id === over.id);
+
+      const isActiveTitle = oldIndex === 0 && bookPages[0]?.type === 'title';
+      const isTargetTitle = newIndex === 0 && bookPages[0]?.type === 'title';
+
+      if (isActiveTitle || isTargetTitle) {
+        return;
+      }
+
+      const updated = arrayMove(bookPages, oldIndex, newIndex);
+      setBookPages(updated);
+
+      const activePageId = bookPages[activeIndex]?.id;
+      if (activePageId !== undefined) {
+        const nextActiveIndex = updated.findIndex((p) => p.id === activePageId);
+        if (nextActiveIndex !== -1) {
+          setActiveIndex(nextActiveIndex);
+        }
+      }
+    }
   };
 
   const duplicatePage = (index: number) => {
@@ -313,58 +355,29 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
               <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
-
           <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-            {bookPages.map((p, i) => {
-              const isSol = p.config.isSolution || false;
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => setActiveIndex(i)}
-                  className={`p-2.5 rounded-xl border cursor-pointer flex justify-between items-center transition ${activeIndex === i
-                      ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                      : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
-                    }`}
-                >
-                  <div className="flex flex-col">
-                    <span className="text-xs font-black">Page {i + 1}</span>
-                    <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider mt-0.5">
-                      {p.type.replace('_', ' ')} {isSol && <span className="text-indigo-600 font-extrabold">(SOL)</span>}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => movePage(i, 'up')}
-                      disabled={i === 0}
-                      className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
-                    >
-                      <ArrowUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => movePage(i, 'down')}
-                      disabled={i === bookPages.length - 1}
-                      className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
-                    >
-                      <ArrowDown className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => duplicatePage(i)}
-                      title="Duplicate Page"
-                      className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => removePage(i)}
-                      className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={bookPages.map(p => p.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {bookPages.map((p, i) => (
+                  <SortablePageItem
+                    key={p.id}
+                    page={p}
+                    index={i}
+                    isActive={activeIndex === i}
+                    onSelect={() => setActiveIndex(i)}
+                    onDuplicate={() => duplicatePage(i)}
+                    onRemove={() => removePage(i)}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
 
           {/* PDF Export Button */}
@@ -631,6 +644,104 @@ function TitlePageEditor({ page, updatePage }: any) {
         <div className="mb-24 text-center font-black text-slate-600 uppercase tracking-widest text-xs">
           By {author}
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface SortablePageItemProps {
+  page: any;
+  index: number;
+  isActive: boolean;
+  onSelect: () => void;
+  onDuplicate: () => void;
+  onRemove: () => void;
+}
+
+function SortablePageItem({
+  page,
+  index,
+  isActive,
+  onSelect,
+  onDuplicate,
+  onRemove,
+}: SortablePageItemProps) {
+  const isTitlePage = index === 0 && page.type === 'title';
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: page.id,
+    disabled: isTitlePage,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+  };
+
+  const isSol = page.config?.isSolution || false;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      onClick={onSelect}
+      className={`group p-2.5 rounded-xl border flex justify-between items-center transition select-none ${
+        isDragging ? 'opacity-50 border-indigo-400 bg-indigo-50/50 shadow-md' : ''
+      } ${
+        isActive
+          ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+          : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        {!isTitlePage ? (
+          <div
+            {...attributes}
+            {...listeners}
+            className="p-1 -ml-1 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded cursor-grab active:cursor-grabbing flex items-center justify-center transition"
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </div>
+        ) : (
+          <div className="p-1 -ml-1 text-slate-350 flex items-center justify-center cursor-not-allowed" title="Title page is locked">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+        )}
+
+        <div className="flex flex-col">
+          <span className="text-xs font-black">Page {index + 1}</span>
+          <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider mt-0.5">
+            {page.type.replace('_', ' ')} {isSol && <span className="text-indigo-600 font-extrabold">(SOL)</span>}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={onDuplicate}
+          title="Duplicate Page"
+          className="p-1 rounded text-slate-400 hover:text-indigo-650 hover:bg-indigo-50 transition cursor-pointer"
+        >
+          <Copy className="w-3.5 h-3.5" />
+        </button>
+        {!isTitlePage && (
+          <button
+            onClick={onRemove}
+            className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );

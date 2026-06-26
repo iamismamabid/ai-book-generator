@@ -88,9 +88,16 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       type = 'line';
     } else if (obj.type === 'image') {
       type = 'clipart';
+    } else if (obj.type === 'triangle') {
+      type = 'triangle';
+    } else if (obj.type === 'polygon' && obj.isHexagon) {
+      type = 'hexagon';
     } else if (obj.type === 'polygon') {
       type = 'star';
+    } else if (obj.type === 'path' && obj.isHeart) {
+      type = 'heart';
     }
+
 
     const base: any = {
       id: obj.id || `${type}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
@@ -353,6 +360,9 @@ export default function FabricCoverStudio({
       } else if (e.key === 'Delete') {
         e.preventDefault();
         handlersRef.current.deleteSelected();
+      } else if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+        e.preventDefault();
+        handlersRef.current.handleNudge(e.key, e.shiftKey);
       }
     };
 
@@ -361,6 +371,7 @@ export default function FabricCoverStudio({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
 
   // Paper Type Selection ('white' | 'cream' | 'color')
   const [paperType, setPaperType] = useState<'white' | 'cream' | 'color'>('white');
@@ -697,6 +708,58 @@ export default function FabricCoverStudio({
           angle: el.rotation || 0,
           opacity: el.opacity ?? 1
         } as any);
+      } else if (el.type === 'triangle') {
+        obj = new fabric.Triangle({
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          width: el.width || 100,
+          height: el.height || 100,
+          fill: el.fill || '#10B981',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: el.scaleX || 1,
+          scaleY: el.scaleY || 1,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1
+        } as any);
+      } else if (el.type === 'hexagon') {
+        const points = [
+          { x: 50, y: 0 },
+          { x: 100, y: 25 },
+          { x: 100, y: 75 },
+          { x: 50, y: 100 },
+          { x: 0, y: 75 },
+          { x: 0, y: 25 }
+        ];
+        obj = new fabric.Polygon(points, {
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          fill: el.fill || '#8B5CF6',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: el.scaleX || 1,
+          scaleY: el.scaleY || 1,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1
+        } as any);
+        (obj as any).isHexagon = true;
+      } else if (el.type === 'heart') {
+        const heartPath = "M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z";
+        obj = new fabric.Path(heartPath, {
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          fill: el.fill || '#EF4444',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: el.scaleX || 1,
+          scaleY: el.scaleY || 1,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1
+        } as any);
+        (obj as any).isHeart = true;
       } else if (el.type === 'clipart') {
         const secureSrc = el.src.includes('?') 
           ? `${el.src}&ts=${Date.now()}` 
@@ -799,6 +862,64 @@ export default function FabricCoverStudio({
     canvas.setActiveObject(circle);
     canvas.requestRenderAll();
   };
+
+  const addTriangle = () => {
+    if (!canvas) return;
+    const triangle = new fabric.Triangle({
+      left: layout.frontCoverCenterPx - 50,
+      top: layout.canvasHeight / 2 - 50,
+      width: 100,
+      height: 100,
+      fill: "#10B981",
+      stroke: "#FFFFFF",
+      strokeWidth: 2
+    });
+    canvas.add(triangle);
+    canvas.setActiveObject(triangle);
+    canvas.requestRenderAll();
+  };
+
+  const addHexagon = () => {
+    if (!canvas) return;
+    const points = [
+      { x: 50, y: 0 },
+      { x: 100, y: 25 },
+      { x: 100, y: 75 },
+      { x: 50, y: 100 },
+      { x: 0, y: 75 },
+      { x: 0, y: 25 }
+    ];
+    const hexagon = new fabric.Polygon(points, {
+      left: layout.frontCoverCenterPx - 50,
+      top: layout.canvasHeight / 2 - 50,
+      fill: "#8B5CF6",
+      stroke: "#FFFFFF",
+      strokeWidth: 2
+    });
+    (hexagon as any).isHexagon = true;
+    hexagon.scaleToWidth(100);
+    canvas.add(hexagon);
+    canvas.setActiveObject(hexagon);
+    canvas.requestRenderAll();
+  };
+
+  const addHeart = () => {
+    if (!canvas) return;
+    const heartPath = "M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z";
+    const heart = new fabric.Path(heartPath, {
+      left: layout.frontCoverCenterPx - 50,
+      top: layout.canvasHeight / 2 - 50,
+      fill: "#EF4444",
+      stroke: "#FFFFFF",
+      strokeWidth: 2
+    });
+    (heart as any).isHeart = true;
+    heart.scaleToWidth(100);
+    canvas.add(heart);
+    canvas.setActiveObject(heart);
+    canvas.requestRenderAll();
+  };
+
 
   const addStar = () => {
     if (!canvas) return;
@@ -1174,7 +1295,30 @@ export default function FabricCoverStudio({
   };
 
   // Bind keyboard shortcut handler references
-  handlersRef.current = { handleUndo, handleRedo, deleteSelected };
+  handlersRef.current = { 
+    handleUndo, 
+    handleRedo, 
+    deleteSelected,
+    handleNudge: (key: string, shiftKey: boolean) => {
+      if (!canvas) return;
+      const active = canvas.getActiveObject();
+      if (!active) return;
+
+      const nudgeAmount = shiftKey ? 10 : 1;
+      const left = active.left || 0;
+      const top = active.top || 0;
+
+      const lowerKey = key.toLowerCase();
+      if (lowerKey === 'arrowup') active.set({ top: top - nudgeAmount });
+      if (lowerKey === 'arrowdown') active.set({ top: top + nudgeAmount });
+      if (lowerKey === 'arrowleft') active.set({ left: left - nudgeAmount });
+      if (lowerKey === 'arrowright') active.set({ left: left + nudgeAmount });
+
+      canvas.requestRenderAll();
+      canvas.fire("object:modified", { target: active });
+    }
+  };
+
 
   return (
     <div className="flex flex-1 overflow-hidden h-full">
@@ -1254,28 +1398,69 @@ export default function FabricCoverStudio({
           <div className="space-y-5">
             <div className="flex justify-between items-center">
               <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Library Assets</h3>
+              <div className="flex items-center gap-1 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+                <svg className="w-2.5 h-2.5 animate-pulse" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
+                <span>Autosave</span>
+              </div>
             </div>
 
-            <div className="space-y-2.5">
-              <button onClick={addText} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                <Type className="w-4 h-4 text-indigo-500"/> Add Text Layer
-              </button>
-              <button onClick={addRectangle} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                <Square className="w-4 h-4 text-amber-500"/> Add Rectangle
-              </button>
-              <button onClick={addCircle} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                <CircleIcon className="w-4 h-4 text-sky-500"/> Add Circle
-              </button>
-              <button onClick={addStar} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                <Star className="w-4 h-4 text-emerald-500"/> Add Star Shape
-              </button>
-              <button onClick={addLine} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                <Ruler className="w-4 h-4 text-rose-500"/> Add Line Divider
-              </button>
-              <button onClick={addBarcodePlaceholder} className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                <Grid className="w-4 h-4 text-slate-500"/> Add Barcode Placeholder
-              </button>
+            <div className="space-y-4">
+              {/* Text Layer */}
+              <div>
+                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">Text</span>
+                <button onClick={addText} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700">
+                  <Type className="w-4 h-4 text-indigo-500"/> Add Text Layer
+                </button>
+              </div>
+
+              {/* Shapes Grid */}
+              <div>
+                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">Shapes</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={addRectangle} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <Square className="w-4 h-4 text-amber-500"/> Rect
+                  </button>
+                  <button onClick={addCircle} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <CircleIcon className="w-4 h-4 text-sky-500"/> Circle
+                  </button>
+                  <button onClick={addTriangle} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2L2 22h20L12 2z" />
+                    </svg>
+                    Triangle
+                  </button>
+                  <button onClick={addHexagon} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2l9 5.196v10.392l-9 5.196-9-5.196V7.196L12 2z" />
+                    </svg>
+                    Hexagon
+                  </button>
+                  <button onClick={addStar} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500/20"/> Star
+                  </button>
+                  <button onClick={addHeart} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <svg className="w-4 h-4 text-red-500 fill-red-500/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    Heart
+                  </button>
+                </div>
+              </div>
+
+              {/* Utility / Barcode */}
+              <div>
+                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">Utilities</span>
+                <div className="space-y-2">
+                  <button onClick={addLine} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <Ruler className="w-4 h-4 text-rose-500"/> Add Line Divider
+                  </button>
+                  <button onClick={addBarcodePlaceholder} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <Grid className="w-4 h-4 text-slate-500"/> Add Barcode Placeholder
+                  </button>
+                </div>
+              </div>
             </div>
+
 
             {activeObject && (
               <div className="pt-4 border-t border-slate-200 space-y-4">

@@ -57,7 +57,5 @@
   background: rgba(99, 102, 241, 0.5);
 }
 
-/* Base background fix */
-body {
-  background-color: #0b0f19;
-}
+/* Base background fix is now handled by Tailwind dark:bg-slate-950 inside layout.tsx */
+

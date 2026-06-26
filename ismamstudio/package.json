@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "echo \"No tests specified\" && exit 0",
+    "prepare": "husky"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.36",
@@ -45,6 +47,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^15.1.7",
+    "husky": "^9.1.7",
     "postcss": "^8.5.14",
     "tailwindcss": "^4.2.4",
     "typescript": "^5"

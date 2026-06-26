@@ -1,32 +1,32 @@
-name: CI
+name: Build check
 
 on:
   push:
-    branches: ["main"]
+    branches: [main, develop]
   pull_request:
-    branches: ["main"]
+    branches: [main]
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
-
     defaults:
       run:
-        working-directory: ./ismamstudio
+        working-directory: ismamstudio
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: ./ismamstudio/package-lock.json
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ismamstudio/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build check
+      - name: Run build
         run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true

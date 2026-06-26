@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, FileDown, ArrowUp, ArrowDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2 } from "lucide-react";
+import { Plus, Trash2, FileDown, ArrowUp, ArrowDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle } from "lucide-react";
+import { motion } from "framer-motion";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
 import { SudokuEditor } from "./SudokuEditor";
@@ -10,6 +11,9 @@ import { WordScrambleEditor } from "./WordScrambleEditor";
 import { CryptogramEditor } from "./CryptogramEditor";
 import { MathPuzzleEditor } from "./MathPuzzleEditor";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
+import { useBookValidation } from "@/hooks/useBookValidation";
+
+
 
 const TRIM_SIZES = [
   { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
@@ -21,6 +25,14 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
+  // Collapsible Sidebars States
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
+
+  // Template Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+
   // Premium Export Modal States
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [includeCover, setIncludeCover] = useState(false);
@@ -28,6 +40,20 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   const [gutterMargin, setGutterMargin] = useState(false);
   const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);
   const [isExporting, setIsExporting] = useState(false);
+
+  // Validation Hook
+  const { isValid, errors, validateBook, clearValidation } = useBookValidation();
+
+  // Validate book whenever pages or export modal state changes
+  useEffect(() => {
+    if (isExportModalOpen) {
+      validateBook(bookPages);
+    } else {
+      clearValidation();
+    }
+  }, [isExportModalOpen, bookPages, validateBook, clearValidation]);
+
+
 
   useEffect(() => {
     const saved = localStorage.getItem("kdp-book-draft");
@@ -137,101 +163,72 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC]">
+    <div className="flex h-[calc(100vh-140px)] bg-[#F8FAFC] dark:bg-slate-950 overflow-hidden relative rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-xl">
+      
       {/* Sidebar Left: Asset Tool buttons */}
-      <div className="w-72 bg-slate-900 text-slate-100 p-5 border-r border-slate-800 flex flex-col justify-between">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-4">Core Pages</h2>
-            <div className="space-y-2">
+      <motion.div
+        animate={{ 
+          width: leftOpen ? 288 : 0,
+          opacity: leftOpen ? 1 : 0
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="bg-slate-900 text-slate-100 border-r border-slate-800 flex flex-col justify-between overflow-hidden relative shrink-0"
+      >
+        <div className="w-72 p-5 space-y-6 flex flex-col h-full justify-between">
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-4 font-sans">Content Creator</h2>
               <button
-                onClick={() => addPage('title')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
+                onClick={() => setIsAddModalOpen(true)}
+                className="w-full py-4 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2.5 shadow-lg shadow-indigo-600/20 active:scale-95 transition-all cursor-pointer"
               >
-                <span>➕ Title Page</span>
-                <BookOpen className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
+                <Plus className="w-4 h-4" /> Add New Page
               </button>
-              <button
-                onClick={() => addPage('blank')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-              >
-                <span>➕ Blank Spacer Page</span>
-                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-              </button>
+            </div>
+            
+            <div className="pt-2">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Autosave</span>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-300 bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                <svg className="w-2.5 h-2.5 text-indigo-400 animate-pulse" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
+                <span>Draft Autosaved Locally</span>
+              </div>
             </div>
           </div>
 
-          <div>
-            <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-4">Add Puzzle Page</h2>
-            <div className="space-y-2.5">
-              <button
-                onClick={() => addPage('crossword')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-              >
-                <span>+ Crossword</span>
-                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-              </button>
-              <button
-                onClick={() => addPage('word_search')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-              >
-                <span>+ Word Search</span>
-                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-              </button>
-              <button
-                onClick={() => addPage('sudoku')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-              >
-                <span>+ Sudoku</span>
-                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-              </button>
-              <button
-                onClick={() => addPage('maze')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-              >
-                <span>+ Maze Challenge</span>
-                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-              </button>
-              <button
-                onClick={() => addPage('word_scramble')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-              >
-                <span>+ Word Scramble</span>
-                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-              </button>
-              <button
-                onClick={() => addPage('cryptogram')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-              >
-                <span>+ Cryptogram</span>
-                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-              </button>
-              <button
-                onClick={() => addPage('math_puzzle')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition flex items-center justify-between group"
-              >
-                <span>+ Math Puzzle Grid</span>
-                <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
-              </button>
-            </div>
+          {/* Bulk Utility Section */}
+          <div className="pt-4 border-t border-slate-800">
+            <button
+              onClick={autoGenerateAllSolutions}
+              className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/25 border border-amber-500/20 rounded-xl text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center justify-center gap-2 transition"
+            >
+              <Sparkles className="w-3.5 h-3.5" /> Auto-Build Solutions
+            </button>
           </div>
         </div>
-
-        {/* Bulk Utility Section */}
-        <div className="pt-4 border-t border-slate-800">
-          <button
-            onClick={autoGenerateAllSolutions}
-            className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/25 border border-amber-500/20 rounded-xl text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center justify-center gap-2 transition"
-          >
-            <Sparkles className="w-3.5 h-3.5" /> Auto-Build Solutions
-          </button>
-        </div>
-      </div>
+      </motion.div>
 
       {/* Main Page Workspace */}
-      <div className="flex-1 p-8 overflow-y-auto">
+      <div className="flex-1 p-8 overflow-y-auto relative min-w-0">
+        
+        {/* Sidebar Toggle Buttons */}
+        <button
+          onClick={() => setLeftOpen(!leftOpen)}
+          className="absolute left-4 top-4 z-20 p-2 bg-white dark:bg-slate-850 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95"
+          title={leftOpen ? "Collapse Side Panel" : "Expand Side Panel"}
+        >
+          {leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        </button>
+
+        <button
+          onClick={() => setRightOpen(!rightOpen)}
+          className="absolute right-4 top-4 z-20 p-2 bg-white dark:bg-slate-850 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95"
+          title={rightOpen ? "Collapse Outline Panel" : "Expand Outline Panel"}
+        >
+          {rightOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
+
         {bookPages.length > 0 && bookPages[activeIndex] ? (
-          <div className="h-full">
+          <div className="h-full pt-8">
             {bookPages[activeIndex].type === 'crossword' && (
               <CrosswordEditor
                 page={bookPages[activeIndex]}
@@ -291,80 +288,156 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm gap-2 bg-white border border-dashed border-slate-300 rounded-2xl m-4">
             <span className="text-4xl">📚</span>
             <p className="font-bold">No pages added to your book yet.</p>
-            <p className="text-xs text-slate-400">Click one of the buttons on the left sidebar to add pages.</p>
+            <p className="text-xs text-slate-400">Click the add button to insert pages.</p>
           </div>
         )}
       </div>
 
       {/* Sidebar Right: Book Pages & Merge Export */}
-      <div className="w-76 bg-white p-5 border-l border-slate-200 flex flex-col">
-        <h2 className="font-black text-xs uppercase text-slate-400 tracking-wider mb-4">Book Outline ({bookPages.length} Pages)</h2>
-
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-          {bookPages.map((p, i) => {
-            const isSol = p.config.isSolution || false;
-            return (
-              <div
-                key={p.id}
-                onClick={() => setActiveIndex(i)}
-                className={`p-2.5 rounded-xl border cursor-pointer flex justify-between items-center transition ${activeIndex === i
-                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                    : 'bg-white border-slate-100 hover:bg-slate-55 text-slate-700'
-                  }`}
-              >
-                <div className="flex flex-col">
-                  <span className="text-xs font-black">Page {i + 1}</span>
-                  <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider mt-0.5">
-                    {p.type.replace('_', ' ')} {isSol && <span className="text-indigo-600 font-extrabold">(SOL)</span>}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => movePage(i, 'up')}
-                    disabled={i === 0}
-                    className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
-                  >
-                    <ArrowUp className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => movePage(i, 'down')}
-                    disabled={i === bookPages.length - 1}
-                    className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
-                  >
-                    <ArrowDown className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => duplicatePage(i)}
-                    title="Duplicate Page"
-                    className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => removePage(i)}
-                    className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* PDF Export Button */}
-        {bookPages.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-200">
+      <motion.div
+        animate={{ 
+          width: rightOpen ? 304 : 0,
+          opacity: rightOpen ? 1 : 0
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="bg-white border-l border-slate-200 flex flex-col overflow-hidden shrink-0"
+      >
+        <div className="w-[304px] p-5 flex flex-col h-full justify-between">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-black text-xs uppercase text-slate-400 tracking-wider">Book Outline ({bookPages.length} Pages)</h2>
             <button
-              onClick={() => setIsExportModalOpen(true)}
-              className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs font-black hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition active:scale-95"
+              onClick={() => setIsAddModalOpen(true)}
+              className="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-150 text-indigo-650 transition active:scale-95 border border-indigo-200 flex items-center justify-center cursor-pointer"
+              title="Add New Page"
             >
-              <FileDown className="w-4 h-4" /> MERGE & DOWNLOAD PDF
+              <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
-        )}
-      </div>
+
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+            {bookPages.map((p, i) => {
+              const isSol = p.config.isSolution || false;
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => setActiveIndex(i)}
+                  className={`p-2.5 rounded-xl border cursor-pointer flex justify-between items-center transition ${activeIndex === i
+                      ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                      : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
+                    }`}
+                >
+                  <div className="flex flex-col">
+                    <span className="text-xs font-black">Page {i + 1}</span>
+                    <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider mt-0.5">
+                      {p.type.replace('_', ' ')} {isSol && <span className="text-indigo-600 font-extrabold">(SOL)</span>}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => movePage(i, 'up')}
+                      disabled={i === 0}
+                      className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => movePage(i, 'down')}
+                      disabled={i === bookPages.length - 1}
+                      className="p-1 rounded text-slate-400 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 transition"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => duplicatePage(i)}
+                      title="Duplicate Page"
+                      className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => removePage(i)}
+                      className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* PDF Export Button */}
+          {bookPages.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <button
+                onClick={() => setIsExportModalOpen(true)}
+                className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs font-black hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition active:scale-95"
+              >
+                <FileDown className="w-4 h-4" /> MERGE & DOWNLOAD PDF
+              </button>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+
+      {/* ADD PAGE MODAL DIALOG TEMPLATES */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full shadow-2xl p-6 relative animate-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setIsAddModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-655 transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-indigo-600/10 rounded-xl flex items-center justify-center text-indigo-600"><Plus className="w-5 h-5" /></div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 uppercase">Insert Book Page</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Choose a template style to generate</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1 custom-scrollbar">
+              {[
+                { type: 'title', label: 'Title Page', desc: 'Starting title and author credits', icon: '📝', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
+                { type: 'blank', label: 'Blank Spacer', desc: 'Adds gutter and spacing padding', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
+                { type: 'crossword', label: 'Crossword Puzzle', desc: 'Vocabulary grids with clues', icon: '🧩', color: 'bg-amber-50 border-amber-200 text-amber-600' },
+                { type: 'word_search', label: 'Word Search', desc: 'Hidden word grids with banks', icon: '🔍', color: 'bg-pink-50 border-pink-200 text-pink-600' },
+                { type: 'sudoku', label: 'Sudoku Grid', desc: 'Easy, medium, and hard math logic', icon: '🔢', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
+                { type: 'maze', label: 'Labyrinth Maze', desc: 'Square, circle, and heart shapes', icon: '🌀', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
+                { type: 'word_scramble', label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
+                { type: 'cryptogram', label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
+                { type: 'math_puzzle', label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' }
+              ].map((tmpl, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    addPage(tmpl.type);
+                    setIsAddModalOpen(false);
+                  }}
+                  className="p-4 bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-md rounded-2xl text-left transition-all flex flex-col justify-between h-32 group cursor-pointer"
+                >
+                  <div className="flex justify-between items-start w-full">
+                    <span className="text-2xl">{tmpl.icon}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${tmpl.color}`}>
+                      Select
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-slate-800 group-hover:text-indigo-650 transition-colors uppercase">{tmpl.label}</h4>
+                    <p className="text-[9px] font-bold text-slate-400 leading-tight mt-0.5">{tmpl.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* PREMIUM EXPORT DIALOG MODAL */}
       {isExportModalOpen && (
@@ -445,19 +518,45 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                   ))}
                 </select>
               </div>
+
+              {/* KDP Validation Warnings / Errors */}
+              {errors.length > 0 && (
+                <div className="space-y-2 mt-4 pt-4 border-t border-slate-200">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block font-sans">KDP Layout Requirements</span>
+                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                    {errors.map((err, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex gap-2 p-2.5 rounded-xl border text-[11px] font-bold leading-normal ${
+                          err.type === 'error'
+                            ? 'bg-red-50/50 border-red-200 text-red-700'
+                            : 'bg-amber-50/50 border-amber-200 text-amber-700'
+                        }`}
+                      >
+                        {err.type === 'error' ? (
+                          <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                        ) : (
+                          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                        )}
+                        <span>{err.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => setIsExportModalOpen(false)}
-                className="flex-1 py-3 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-black transition"
+                className="flex-1 py-3 border border-slate-200 hover:bg-slate-55 text-slate-700 rounded-xl text-xs font-black transition"
               >
                 CANCEL
               </button>
               <button
                 onClick={triggerExport}
-                disabled={isExporting}
-                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-600/25 transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={isExporting || !isValid}
+                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-600/25 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isExporting ? (
                   <>
@@ -469,6 +568,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 )}
               </button>
             </div>
+
           </div>
         </div>
       )}

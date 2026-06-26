@@ -45,7 +45,75 @@ export default function MasterStudioApp() {
   // Cover Math
   const spineWidth = pageCount * 0.002252;
 
+  // Load Cover draft on mount
+  useEffect(() => {
+    const savedCover = localStorage.getItem("kdp-cover-draft");
+    if (savedCover) {
+      try {
+        const data = JSON.parse(savedCover);
+        if (data.backCoverColor) setBackCoverColor(data.backCoverColor);
+        if (data.backCoverType) setBackCoverType(data.backCoverType);
+        if (data.backCoverGradientStart) setBackCoverGradientStart(data.backCoverGradientStart);
+        if (data.backCoverGradientEnd) setBackCoverGradientEnd(data.backCoverGradientEnd);
+        if (data.frontCoverColor) setFrontCoverColor(data.frontCoverColor);
+        if (data.frontCoverType) setFrontCoverType(data.frontCoverType);
+        if (data.frontCoverGradientStart) setFrontCoverGradientStart(data.frontCoverGradientStart);
+        if (data.frontCoverGradientEnd) setFrontCoverGradientEnd(data.frontCoverGradientEnd);
+        if (data.backCoverImage) setBackCoverImage(data.backCoverImage);
+        if (data.frontCoverImage) setFrontCoverImage(data.frontCoverImage);
+        if (data.fullCoverImage) setFullCoverImage(data.fullCoverImage);
+        if (data.coverElements) setCoverElements(data.coverElements);
+        if (data.pageCount) setPageCount(data.pageCount);
+        if (data.trimSize) {
+          const match = TRIM_SIZES.find(t => t.label === data.trimSize.label);
+          if (match) setTrimSize(match);
+        }
+      } catch (e) {
+        console.error("Failed to parse cover draft", e);
+      }
+    }
+  }, []);
+
+  // Save Cover draft on change
+  useEffect(() => {
+    if (!isMounted) return;
+    const data = {
+      backCoverColor,
+      backCoverType,
+      backCoverGradientStart,
+      backCoverGradientEnd,
+      frontCoverColor,
+      frontCoverType,
+      frontCoverGradientStart,
+      frontCoverGradientEnd,
+      backCoverImage,
+      frontCoverImage,
+      fullCoverImage,
+      coverElements,
+      pageCount,
+      trimSize
+    };
+    localStorage.setItem("kdp-cover-draft", JSON.stringify(data));
+  }, [
+    isMounted,
+    backCoverColor,
+    backCoverType,
+    backCoverGradientStart,
+    backCoverGradientEnd,
+    frontCoverColor,
+    frontCoverType,
+    frontCoverGradientStart,
+    frontCoverGradientEnd,
+    backCoverImage,
+    frontCoverImage,
+    fullCoverImage,
+    coverElements,
+    pageCount,
+    trimSize
+  ]);
+
   if (!isMounted) {
+
     return (
       <div className="min-h-screen flex items-center justify-center text-indigo-500 bg-slate-950">
         <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />

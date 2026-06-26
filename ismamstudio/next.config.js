@@ -46,6 +46,15 @@ const nextConfig = {
     }
     return config;
   },
+
+  // ─── Delegate TypeScript & ESLint checks to GitHub Actions CI ───────────
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 module.exports = nextConfig;
+

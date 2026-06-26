@@ -208,6 +208,8 @@ export default function FabricCoverStudio({
   // Ref to hold saveState function to call it when coverBackground updates
   const saveStateRef = useRef<() => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [scaleRatio, setScaleRatio] = useState(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
@@ -440,6 +442,35 @@ export default function FabricCoverStudio({
     paperType: paperType
   }, 800);
 
+  // Resize observer to calculate dynamic scale factor relative to container space
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateScale = () => {
+      if (!containerRef.current) return;
+      const parentWidth = containerRef.current.clientWidth;
+      const parentHeight = containerRef.current.clientHeight;
+      if (parentWidth && parentHeight) {
+        const ratioX = parentWidth / layout.canvasWidth;
+        const ratioY = parentHeight / layout.canvasHeight;
+        // Apply a padding margin of 0.95 so it fits with some breathing room
+        const ratio = Math.min(ratioX, ratioY) * 0.95;
+        setScaleRatio(ratio);
+      }
+    };
+
+    const observer = new ResizeObserver(() => {
+      updateScale();
+    });
+
+    observer.observe(containerRef.current);
+    updateScale();
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [layout.canvasWidth, layout.canvasHeight]);
+
   // Initialize Fabric Canvas
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -451,6 +482,21 @@ export default function FabricCoverStudio({
       backgroundColor: backCoverColor,
       preserveObjectStacking: true
     });
+
+    // Override getPointer to account for CSS transform scaling of parent container
+    fCanvas.getPointer = function (e, ignoreZoom) {
+      const rect = this.upperCanvasEl.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+      const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+      
+      const scaleX = rect.width / this.width;
+      const scaleY = rect.height / this.height;
+      
+      const x = (clientX - rect.left) / (scaleX || 1);
+      const y = (clientY - rect.top) / (scaleY || 1);
+      
+      return { x, y };
+    };
 
     setCanvas(fCanvas);
 
@@ -2823,9 +2869,19 @@ export default function FabricCoverStudio({
           </button>
         </div>
 
-        {/* Canvas container */}
-        <div className="relative shadow-[0_15px_50px_rgba(0,0,0,0.15)] bg-white rounded-sm ring-1 ring-slate-300 overflow-hidden cursor-default">
-          <canvas ref={canvasRef} />
+        {/* Responsive parent container to calculate scale */}
+        <div ref={containerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center relative">
+          {/* Scaled canvas container */}
+          <div 
+            style={{
+              transform: `scale(${scaleRatio})`,
+              transformOrigin: 'center center',
+              transition: 'transform 0.1s ease'
+            }}
+            className="relative shadow-[0_15px_50px_rgba(0,0,0,0.15)] bg-white rounded-sm ring-1 ring-slate-300 overflow-hidden cursor-default flex-shrink-0"
+          >
+            <canvas ref={canvasRef} />
+          </div>
         </div>
 
         {/* Instructions Bar */}

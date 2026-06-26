@@ -42,30 +42,32 @@ interface FabricCoverStudioProps {
   pageCount: number;
   setPageCount: (cnt: number) => void;
   
-  backCoverColor: string;
-  setBackCoverColor: (color: string) => void;
-  backCoverType: 'solid' | 'gradient';
-  setBackCoverType: (type: 'solid' | 'gradient') => void;
-  backCoverGradientStart: string;
-  setBackCoverGradientStart: (color: string) => void;
-  backCoverGradientEnd: string;
-  setBackCoverGradientEnd: (color: string) => void;
-
-  frontCoverColor: string;
-  setFrontCoverColor: (color: string) => void;
-  frontCoverType: 'solid' | 'gradient';
-  setFrontCoverType: (type: 'solid' | 'gradient') => void;
-  frontCoverGradientStart: string;
-  setFrontCoverGradientStart: (color: string) => void;
-  frontCoverGradientEnd: string;
-  setFrontCoverGradientEnd: (color: string) => void;
-
-  backCoverImage: string;
-  setBackCoverImage: (url: string) => void;
-  frontCoverImage: string;
-  setFrontCoverImage: (url: string) => void;
-  fullCoverImage: string;
-  setFullCoverImage: (url: string) => void;
+  coverBackground: {
+    backCoverColor: string;
+    backCoverType: 'solid' | 'gradient';
+    backCoverGradientStart: string;
+    backCoverGradientEnd: string;
+    frontCoverColor: string;
+    frontCoverType: 'solid' | 'gradient';
+    frontCoverGradientStart: string;
+    frontCoverGradientEnd: string;
+    backCoverImage: string;
+    frontCoverImage: string;
+    fullCoverImage: string;
+  };
+  setCoverBackground: React.Dispatch<React.SetStateAction<{
+    backCoverColor: string;
+    backCoverType: 'solid' | 'gradient';
+    backCoverGradientStart: string;
+    backCoverGradientEnd: string;
+    frontCoverColor: string;
+    frontCoverType: 'solid' | 'gradient';
+    frontCoverGradientStart: string;
+    frontCoverGradientEnd: string;
+    backCoverImage: string;
+    frontCoverImage: string;
+    fullCoverImage: string;
+  }>>;
 
   showKdpGuides: boolean;
   setShowKdpGuides: (show: boolean) => void;
@@ -160,28 +162,8 @@ export default function FabricCoverStudio({
   setTrimSize,
   pageCount,
   setPageCount,
-  backCoverColor,
-  setBackCoverColor,
-  backCoverType,
-  setBackCoverType,
-  backCoverGradientStart,
-  setBackCoverGradientStart,
-  backCoverGradientEnd,
-  setBackCoverGradientEnd,
-  frontCoverColor,
-  setFrontCoverColor,
-  frontCoverType,
-  setFrontCoverType,
-  frontCoverGradientStart,
-  setFrontCoverGradientStart,
-  frontCoverGradientEnd,
-  setFrontCoverGradientEnd,
-  backCoverImage,
-  setBackCoverImage,
-  frontCoverImage,
-  setFrontCoverImage,
-  fullCoverImage,
-  setFullCoverImage,
+  coverBackground,
+  setCoverBackground,
   showKdpGuides,
   setShowKdpGuides,
   snapToGrid,
@@ -189,6 +171,42 @@ export default function FabricCoverStudio({
   initialElements,
   onSaveWorkspace
 }: FabricCoverStudioProps) {
+  // Destructure coverBackground properties locally to maintain full compatibility with existing code
+  const {
+    backCoverColor,
+    backCoverType,
+    backCoverGradientStart,
+    backCoverGradientEnd,
+    frontCoverColor,
+    frontCoverType,
+    frontCoverGradientStart,
+    frontCoverGradientEnd,
+    backCoverImage,
+    frontCoverImage,
+    fullCoverImage
+  } = coverBackground;
+
+  // Local helper setters that update the combined coverBackground state object
+  const setBackCoverColor = (val: string) => setCoverBackground(prev => ({ ...prev, backCoverColor: val }));
+  const setBackCoverType = (val: 'solid' | 'gradient') => setCoverBackground(prev => ({ ...prev, backCoverType: val }));
+  const setBackCoverGradientStart = (val: string) => setCoverBackground(prev => ({ ...prev, backCoverGradientStart: val }));
+  const setBackCoverGradientEnd = (val: string) => setCoverBackground(prev => ({ ...prev, backCoverGradientEnd: val }));
+  const setFrontCoverColor = (val: string) => setCoverBackground(prev => ({ ...prev, frontCoverColor: val }));
+  const setFrontCoverType = (val: 'solid' | 'gradient') => setCoverBackground(prev => ({ ...prev, frontCoverType: val }));
+  const setFrontCoverGradientStart = (val: string) => setCoverBackground(prev => ({ ...prev, frontCoverGradientStart: val }));
+  const setFrontCoverGradientEnd = (val: string) => setCoverBackground(prev => ({ ...prev, frontCoverGradientEnd: val }));
+  const setBackCoverImage = (val: string) => setCoverBackground(prev => ({ ...prev, backCoverImage: val }));
+  const setFrontCoverImage = (val: string) => setCoverBackground(prev => ({ ...prev, frontCoverImage: val }));
+  const setFullCoverImage = (val: string) => setCoverBackground(prev => ({ ...prev, fullCoverImage: val }));
+
+  // Keep a ref to coverBackground to prevent stale closure inside saveState
+  const coverBackgroundRef = useRef(coverBackground);
+  useEffect(() => {
+    coverBackgroundRef.current = coverBackground;
+  }, [coverBackground]);
+
+  // Ref to hold saveState function to call it when coverBackground updates
+  const saveStateRef = useRef<() => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -437,7 +455,10 @@ export default function FabricCoverStudio({
     setCanvas(fCanvas);
 
     // Initial history step
-    const initialJson = JSON.stringify(fCanvas.toJSON());
+    const initialJson = JSON.stringify({
+      canvasJson: fCanvas.toJSON(),
+      background: coverBackgroundRef.current
+    });
     historyRef.current = [initialJson];
     historyStepRef.current = 0;
     setHistory([initialJson]);
@@ -462,7 +483,11 @@ export default function FabricCoverStudio({
     // Save history on changes
     const saveState = () => {
       if (isUpdatingHistory.current) return;
-      const json = JSON.stringify(fCanvas.toJSON());
+      const stateObj = {
+        canvasJson: fCanvas.toJSON(),
+        background: coverBackgroundRef.current
+      };
+      const json = JSON.stringify(stateObj);
       
       const currentHistory = historyRef.current;
       const currentStep = historyStepRef.current;
@@ -479,6 +504,8 @@ export default function FabricCoverStudio({
       onSaveWorkspace(legacyElements);
       updateLayers();
     };
+
+    saveStateRef.current = saveState;
 
     fCanvas.on("object:added", saveState);
     fCanvas.on("object:modified", saveState);
@@ -848,7 +875,16 @@ export default function FabricCoverStudio({
     if (historyStepRef.current > 0 && canvas) {
       isUpdatingHistory.current = true;
       const prevStep = historyStepRef.current - 1;
-      canvas.loadFromJSON(JSON.parse(historyRef.current[prevStep]), () => {
+      const stateObj = JSON.parse(historyRef.current[prevStep]);
+      
+      const canvasData = stateObj.canvasJson || stateObj;
+      const bgData = stateObj.background;
+      
+      if (bgData) {
+        setCoverBackground(bgData);
+      }
+
+      canvas.loadFromJSON(canvasData, () => {
         canvas.requestRenderAll();
         historyStepRef.current = prevStep;
         setHistoryStep(prevStep);
@@ -861,7 +897,16 @@ export default function FabricCoverStudio({
     if (historyStepRef.current < historyRef.current.length - 1 && canvas) {
       isUpdatingHistory.current = true;
       const nextStep = historyStepRef.current + 1;
-      canvas.loadFromJSON(JSON.parse(historyRef.current[nextStep]), () => {
+      const stateObj = JSON.parse(historyRef.current[nextStep]);
+      
+      const canvasData = stateObj.canvasJson || stateObj;
+      const bgData = stateObj.background;
+      
+      if (bgData) {
+        setCoverBackground(bgData);
+      }
+
+      canvas.loadFromJSON(canvasData, () => {
         canvas.requestRenderAll();
         historyStepRef.current = nextStep;
         setHistoryStep(nextStep);
@@ -869,6 +914,26 @@ export default function FabricCoverStudio({
       });
     }
   };
+
+  // Ref to store the previous cover background state to avoid duplicate saves
+  const prevBgRef = useRef(coverBackground);
+
+  // Effect to watch changes in coverBackground and push to undo/redo history
+  useEffect(() => {
+    if (!canvas) return;
+    if (isUpdatingHistory.current) {
+      prevBgRef.current = coverBackground;
+      return;
+    }
+
+    // Check if the background state actually changed
+    if (JSON.stringify(prevBgRef.current) !== JSON.stringify(coverBackground)) {
+      if (saveStateRef.current) {
+        saveStateRef.current();
+      }
+      prevBgRef.current = coverBackground;
+    }
+  }, [coverBackground, canvas]);
 
   // Add Element Helpers
   const addText = () => {
@@ -1372,26 +1437,37 @@ export default function FabricCoverStudio({
   };
 
   const applyPresetColors = (back: string, front: string, type?: string, backStart?: string, backEnd?: string, frontStart?: string, frontEnd?: string) => {
+    let newBg;
     if (type === 'gradient' && backStart && backEnd && frontStart && frontEnd) {
-      setBackCoverType('gradient');
-      setBackCoverGradientStart(backStart);
-      setBackCoverGradientEnd(backEnd);
-      setFrontCoverType('gradient');
-      setFrontCoverGradientStart(frontStart);
-      setFrontCoverGradientEnd(frontEnd);
-      // Synchronize solid color states
-      setBackCoverColor(back);
-      setFrontCoverColor(front);
+      newBg = {
+        backCoverType: 'gradient' as const,
+        backCoverGradientStart: backStart,
+        backCoverGradientEnd: backEnd,
+        frontCoverType: 'gradient' as const,
+        frontCoverGradientStart: frontStart,
+        frontCoverGradientEnd: frontEnd,
+        backCoverColor: back,
+        frontCoverColor: front,
+        backCoverImage: '',
+        frontCoverImage: '',
+        fullCoverImage: ''
+      };
     } else {
-      setBackCoverType('solid');
-      setBackCoverColor(back);
-      setFrontCoverType('solid');
-      setFrontCoverColor(front);
+      newBg = {
+        backCoverType: 'solid' as const,
+        backCoverColor: back,
+        backCoverGradientStart: back,
+        backCoverGradientEnd: back,
+        frontCoverType: 'solid' as const,
+        frontCoverColor: front,
+        frontCoverGradientStart: front,
+        frontCoverGradientEnd: front,
+        backCoverImage: '',
+        frontCoverImage: '',
+        fullCoverImage: ''
+      };
     }
-    // Clear background images when applying preset colors
-    setBackCoverImage('');
-    setFrontCoverImage('');
-    setFullCoverImage('');
+    setCoverBackground(newBg);
   };
 
   const applyBackgroundImage = (url: string, target: 'full' | 'front' | 'back') => {

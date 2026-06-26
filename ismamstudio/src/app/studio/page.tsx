@@ -23,20 +23,19 @@ export default function MasterStudioApp() {
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [pageCount, setPageCount] = useState(100);
 
-  const [backCoverColor, setBackCoverColor] = useState('#0F172A');
-  const [backCoverType, setBackCoverType] = useState<'solid' | 'gradient'>('solid');
-  const [backCoverGradientStart, setBackCoverGradientStart] = useState('#0F172A');
-  const [backCoverGradientEnd, setBackCoverGradientEnd] = useState('#020617');
-
-  const [frontCoverColor, setFrontCoverColor] = useState('#1E293B');
-  const [frontCoverType, setFrontCoverType] = useState<'solid' | 'gradient'>('solid');
-  const [frontCoverGradientStart, setFrontCoverGradientStart] = useState('#1E293B');
-  const [frontCoverGradientEnd, setFrontCoverGradientEnd] = useState('#0F172A');
-
-  // Background Image States
-  const [backCoverImage, setBackCoverImage] = useState('');
-  const [frontCoverImage, setFrontCoverImage] = useState('');
-  const [fullCoverImage, setFullCoverImage] = useState('');
+  const [coverBackground, setCoverBackground] = useState({
+    backCoverColor: '#0F172A',
+    backCoverType: 'solid' as 'solid' | 'gradient',
+    backCoverGradientStart: '#0F172A',
+    backCoverGradientEnd: '#020617',
+    frontCoverColor: '#1E293B',
+    frontCoverType: 'solid' as 'solid' | 'gradient',
+    frontCoverGradientStart: '#1E293B',
+    frontCoverGradientEnd: '#0F172A',
+    backCoverImage: '',
+    frontCoverImage: '',
+    fullCoverImage: ''
+  });
 
   const [coverElements, setCoverElements] = useState<any[]>([]);
   const [showKdpGuides, setShowKdpGuides] = useState(true);
@@ -51,17 +50,20 @@ export default function MasterStudioApp() {
     if (savedCover) {
       try {
         const data = JSON.parse(savedCover);
-        if (data.backCoverColor) setBackCoverColor(data.backCoverColor);
-        if (data.backCoverType) setBackCoverType(data.backCoverType);
-        if (data.backCoverGradientStart) setBackCoverGradientStart(data.backCoverGradientStart);
-        if (data.backCoverGradientEnd) setBackCoverGradientEnd(data.backCoverGradientEnd);
-        if (data.frontCoverColor) setFrontCoverColor(data.frontCoverColor);
-        if (data.frontCoverType) setFrontCoverType(data.frontCoverType);
-        if (data.frontCoverGradientStart) setFrontCoverGradientStart(data.frontCoverGradientStart);
-        if (data.frontCoverGradientEnd) setFrontCoverGradientEnd(data.frontCoverGradientEnd);
-        if (data.backCoverImage) setBackCoverImage(data.backCoverImage);
-        if (data.frontCoverImage) setFrontCoverImage(data.frontCoverImage);
-        if (data.fullCoverImage) setFullCoverImage(data.fullCoverImage);
+        const loadedBg = {
+          backCoverColor: data.backCoverColor ?? '#0F172A',
+          backCoverType: data.backCoverType ?? 'solid',
+          backCoverGradientStart: data.backCoverGradientStart ?? '#0F172A',
+          backCoverGradientEnd: data.backCoverGradientEnd ?? '#020617',
+          frontCoverColor: data.frontCoverColor ?? '#1E293B',
+          frontCoverType: data.frontCoverType ?? 'solid',
+          frontCoverGradientStart: data.frontCoverGradientStart ?? '#1E293B',
+          frontCoverGradientEnd: data.frontCoverGradientEnd ?? '#0F172A',
+          backCoverImage: data.backCoverImage ?? '',
+          frontCoverImage: data.frontCoverImage ?? '',
+          fullCoverImage: data.fullCoverImage ?? ''
+        };
+        setCoverBackground(loadedBg);
         if (data.coverElements) setCoverElements(data.coverElements);
         if (data.pageCount) setPageCount(data.pageCount);
         if (data.trimSize) {
@@ -78,17 +80,7 @@ export default function MasterStudioApp() {
   useEffect(() => {
     if (!isMounted) return;
     const data = {
-      backCoverColor,
-      backCoverType,
-      backCoverGradientStart,
-      backCoverGradientEnd,
-      frontCoverColor,
-      frontCoverType,
-      frontCoverGradientStart,
-      frontCoverGradientEnd,
-      backCoverImage,
-      frontCoverImage,
-      fullCoverImage,
+      ...coverBackground,
       coverElements,
       pageCount,
       trimSize
@@ -96,17 +88,7 @@ export default function MasterStudioApp() {
     localStorage.setItem("kdp-cover-draft", JSON.stringify(data));
   }, [
     isMounted,
-    backCoverColor,
-    backCoverType,
-    backCoverGradientStart,
-    backCoverGradientEnd,
-    frontCoverColor,
-    frontCoverType,
-    frontCoverGradientStart,
-    frontCoverGradientEnd,
-    backCoverImage,
-    frontCoverImage,
-    fullCoverImage,
+    coverBackground,
     coverElements,
     pageCount,
     trimSize
@@ -194,19 +176,9 @@ export default function MasterStudioApp() {
               <BookBuilder
                 coverState={{
                   coverElements,
-                  frontCoverColor,
-                  backCoverColor,
-                  frontCoverType,
-                  backCoverType,
-                  frontCoverGradientStart,
-                  frontCoverGradientEnd,
-                  backCoverGradientStart,
-                  backCoverGradientEnd,
-                  backCoverImage,
-                  frontCoverImage,
-                  fullCoverImage,
                   spineWidth,
-                  trimSize
+                  trimSize,
+                  ...coverBackground
                 }}
               />
             </motion.div>
@@ -224,32 +196,8 @@ export default function MasterStudioApp() {
                 setTrimSize={setTrimSize}
                 pageCount={pageCount}
                 setPageCount={setPageCount}
-
-                backCoverColor={backCoverColor}
-                setBackCoverColor={setBackCoverColor}
-                backCoverType={backCoverType}
-                setBackCoverType={setBackCoverType}
-                backCoverGradientStart={backCoverGradientStart}
-                setBackCoverGradientStart={setBackCoverGradientStart}
-                backCoverGradientEnd={backCoverGradientEnd}
-                setBackCoverGradientEnd={setBackCoverGradientEnd}
-
-                frontCoverColor={frontCoverColor}
-                setFrontCoverColor={setFrontCoverColor}
-                frontCoverType={frontCoverType}
-                setFrontCoverType={setFrontCoverType}
-                frontCoverGradientStart={frontCoverGradientStart}
-                setFrontCoverGradientStart={setFrontCoverGradientStart}
-                frontCoverGradientEnd={frontCoverGradientEnd}
-                setFrontCoverGradientEnd={setFrontCoverGradientEnd}
-
-                backCoverImage={backCoverImage}
-                setBackCoverImage={setBackCoverImage}
-                frontCoverImage={frontCoverImage}
-                setFrontCoverImage={setFrontCoverImage}
-                fullCoverImage={fullCoverImage}
-                setFullCoverImage={setFullCoverImage}
-
+                coverBackground={coverBackground}
+                setCoverBackground={setCoverBackground}
                 showKdpGuides={showKdpGuides}
                 setShowKdpGuides={setShowKdpGuides}
                 snapToGrid={snapToGrid}

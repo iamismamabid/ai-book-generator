@@ -6,7 +6,7 @@ import {
   Type, Square, Circle as CircleIcon, Star, Ruler, 
   Trash2, Undo2, Redo2, Loader2, Download, Check, Settings,
   Sparkles, Shapes, Upload, LayoutTemplate, Grid, ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight,
-  Plus, Eraser
+  Plus, Eraser, Lock, Unlock, Copy, Scissors, Clipboard, ChevronsUp, ChevronsDown
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -78,8 +78,8 @@ interface FabricCoverStudioProps {
 const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
   return fCanvas.getObjects().map((obj: any) => {
     let type = '';
-    if (obj.type === 'i-text' || obj.type === 'text') {
-      type = 'text';
+    if (obj.type === 'i-text' || obj.type === 'text' || obj.type === 'textbox') {
+      type = obj.type === 'textbox' ? 'textbox' : 'text';
     } else if (obj.type === 'rect') {
       type = 'rect';
     } else if (obj.type === 'circle') {
@@ -108,13 +108,14 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       opacity: obj.opacity ?? 1,
       fill: typeof obj.fill === 'string' ? obj.fill : undefined,
       stroke: obj.stroke,
-      strokeWidth: obj.strokeWidth
+      strokeWidth: obj.strokeWidth,
+      isLocked: !!obj.isLocked
     };
 
     // Set the id back on the object so it stays consistent
     obj.id = base.id;
 
-    if (type === 'text') {
+    if (type === 'text' || type === 'textbox') {
       base.text = obj.text;
       base.fontSize = Math.round((obj.fontSize || 24) * (obj.scaleX || 1));
       base.scaleX = 1;
@@ -122,6 +123,10 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       base.fontFamily = obj.fontFamily;
       base.fontStyle = obj.fontStyle;
       base.align = obj.textAlign;
+      if (type === 'textbox') {
+        base.width = (obj.width || 240) * (obj.scaleX || 1);
+        base.isTextbox = true;
+      }
     } else if (type === 'rect') {
       base.width = (obj.width || 100) * (obj.scaleX || 1);
       base.height = (obj.height || 100) * (obj.scaleY || 1);
@@ -188,6 +193,8 @@ export default function FabricCoverStudio({
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
+  const [clipboard, setClipboard] = useState<any>(null);
+  const [isObjectLocked, setIsObjectLocked] = useState(false);
   const [activeToolTab, setActiveToolTab] = useState<'elements' | 'graphics' | 'presets' | 'uploads' | 'settings'>('elements');
 
   // History Undo/Redo States
@@ -293,6 +300,7 @@ export default function FabricCoverStudio({
     setObjectStrokeColor(activeObject.stroke || "#FFFFFF");
     setObjectStrokeWidth(activeObject.strokeWidth || 0);
     setObjectOpacity(activeObject.opacity ?? 1);
+    setIsObjectLocked(!!(activeObject as any).isLocked);
 
     // Sync shadow properties if any
     const shadow = activeObject.shadow as fabric.Shadow | undefined;
@@ -357,7 +365,22 @@ export default function FabricCoverStudio({
       } else if ((e.ctrlKey || e.metaKey) && key === 'y') {
         e.preventDefault();
         handlersRef.current.handleRedo();
-      } else if (e.key === 'Delete') {
+      } else if ((e.ctrlKey || e.metaKey) && key === 'c') {
+        e.preventDefault();
+        handlersRef.current.copySelected();
+      } else if ((e.ctrlKey || e.metaKey) && key === 'x') {
+        e.preventDefault();
+        handlersRef.current.cutSelected();
+      } else if ((e.ctrlKey || e.metaKey) && key === 'v') {
+        e.preventDefault();
+        handlersRef.current.pasteSelected();
+      } else if ((e.ctrlKey || e.metaKey) && key === 'd') {
+        e.preventDefault();
+        handlersRef.current.duplicateSelected();
+      } else if ((e.ctrlKey || e.metaKey) && key === 'l') {
+        e.preventDefault();
+        handlersRef.current.toggleLockSelected();
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         handlersRef.current.deleteSelected();
       } else if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
@@ -650,8 +673,8 @@ export default function FabricCoverStudio({
     elements.forEach(el => {
       let obj: fabric.Object | null = null;
 
-      if (el.type === 'text') {
-        obj = new fabric.IText(el.text, {
+      if (el.type === 'text' || el.type === 'textbox') {
+        const textOptions = {
           id: el.id,
           left: el.x,
           top: el.y,
@@ -664,7 +687,16 @@ export default function FabricCoverStudio({
           scaleY: el.scaleY || 1,
           angle: el.rotation || 0,
           opacity: el.opacity ?? 1
-        } as any);
+        };
+
+        if (el.isTextbox || el.type === 'textbox') {
+          obj = new fabric.Textbox(el.text, {
+            ...textOptions,
+            width: el.width || 240
+          } as any);
+        } else {
+          obj = new fabric.IText(el.text, textOptions as any);
+        }
       } else if (el.type === 'rect') {
         obj = new fabric.Rect({
           id: el.id,
@@ -784,6 +816,17 @@ export default function FabricCoverStudio({
       }
 
       if (obj) {
+        if (el.isLocked) {
+          obj.set({
+            lockMovementX: true,
+            lockMovementY: true,
+            lockScalingX: true,
+            lockScalingY: true,
+            lockRotation: true,
+            hasControls: false,
+            isLocked: true
+          } as any);
+        }
         fCanvas.add(obj);
       }
     });
@@ -829,6 +872,38 @@ export default function FabricCoverStudio({
     });
     canvas.add(text);
     canvas.setActiveObject(text);
+    canvas.requestRenderAll();
+  };
+
+  const addHeading = () => {
+    if (!canvas) return;
+    const heading = new fabric.IText("Add Heading", {
+      left: layout.frontCoverCenterPx - 120,
+      top: layout.canvasHeight / 2 - 30,
+      fontFamily: "Arial",
+      fontSize: 48,
+      fontWeight: "bold",
+      fill: "#FFFFFF",
+      textAlign: "center"
+    });
+    canvas.add(heading);
+    canvas.setActiveObject(heading);
+    canvas.requestRenderAll();
+  };
+
+  const addMultilineText = () => {
+    if (!canvas) return;
+    const textbox = new fabric.Textbox("Add paragraph text here. Resize the box to wrap text automatically, and format it.", {
+      left: layout.frontCoverCenterPx - 150,
+      top: layout.canvasHeight / 2 - 40,
+      width: 300,
+      fontFamily: "Arial",
+      fontSize: 20,
+      fill: "#E2E8F0",
+      textAlign: "left"
+    });
+    canvas.add(textbox);
+    canvas.setActiveObject(textbox);
     canvas.requestRenderAll();
   };
 
@@ -1001,6 +1076,86 @@ export default function FabricCoverStudio({
     activeObject.sendToBack();
     canvas.requestRenderAll();
     canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const bringForward = () => {
+    if (!canvas || !activeObject) return;
+    activeObject.bringForward();
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const sendBackward = () => {
+    if (!canvas || !activeObject) return;
+    activeObject.sendBackward();
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const toggleLockSelected = () => {
+    if (!canvas || !activeObject) return;
+    const lock = !(activeObject as any).isLocked;
+    activeObject.set({
+      lockMovementX: lock,
+      lockMovementY: lock,
+      lockScalingX: lock,
+      lockScalingY: lock,
+      lockRotation: lock,
+      hasControls: !lock,
+      isLocked: lock
+    } as any);
+    setIsObjectLocked(lock);
+    canvas.discardActiveObject();
+    canvas.setActiveObject(activeObject);
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const copySelected = () => {
+    if (!canvas) return;
+    const active = canvas.getActiveObject();
+    if (!active) return;
+    active.clone((cloned: any) => {
+      setClipboard(cloned);
+    });
+  };
+
+  const cutSelected = () => {
+    if (!canvas) return;
+    const active = canvas.getActiveObject();
+    if (!active) return;
+    active.clone((cloned: any) => {
+      setClipboard(cloned);
+      canvas.remove(active);
+      canvas.discardActiveObject();
+      canvas.requestRenderAll();
+    });
+  };
+
+  const pasteSelected = () => {
+    if (!canvas || !clipboard) return;
+    clipboard.clone((cloned: any) => {
+      canvas.discardActiveObject();
+      cloned.set({
+        left: (cloned.left || 0) + 15,
+        top: (cloned.top || 0) + 15,
+        id: `${cloned.type}-${Date.now()}`,
+        evented: true,
+      });
+      if (cloned.type === 'activeSelection') {
+        cloned.canvas = canvas;
+        cloned.forEachObject((obj: any) => {
+          canvas.add(obj);
+        });
+        cloned.setCoords();
+      } else {
+        canvas.add(cloned);
+      }
+      clipboard.top += 15;
+      clipboard.left += 15;
+      canvas.setActiveObject(cloned);
+      canvas.requestRenderAll();
+    });
   };
 
   const duplicateSelected = () => {
@@ -1299,6 +1454,11 @@ export default function FabricCoverStudio({
     handleUndo, 
     handleRedo, 
     deleteSelected,
+    copySelected,
+    cutSelected,
+    pasteSelected,
+    duplicateSelected,
+    toggleLockSelected,
     handleNudge: (key: string, shiftKey: boolean) => {
       if (!canvas) return;
       const active = canvas.getActiveObject();
@@ -1407,10 +1567,23 @@ export default function FabricCoverStudio({
             <div className="space-y-4">
               {/* Text Layer */}
               <div>
-                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">Text</span>
-                <button onClick={addText} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700">
-                  <Type className="w-4 h-4 text-indigo-500"/> Add Text Layer
-                </button>
+                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">Text Styles</span>
+                <div className="grid grid-cols-1 gap-2">
+                  <button onClick={addHeading} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
+                    <span className="text-sm font-black text-indigo-500 w-4 text-center">H</span>
+                    <span>Add Heading (Large)</span>
+                  </button>
+                  <button onClick={addText} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
+                    <Type className="w-4 h-4 text-indigo-500"/>
+                    <span>Add Simple Text (Single Line)</span>
+                  </button>
+                  <button onClick={addMultilineText} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
+                    <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                    <span>Add Paragraph (Multiline)</span>
+                  </button>
+                </div>
               </div>
 
               {/* Shapes Grid */}
@@ -1810,39 +1983,102 @@ export default function FabricCoverStudio({
                     </button>
                   </div>
                 </div>
-
-                {/* Depth / Layout Controls */}
                 <div className="space-y-2 pt-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase block">Layer depth & options</label>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block">Layer Security</label>
+                  <button 
+                    onClick={toggleLockSelected}
+                    className={`w-full p-2.5 rounded-xl text-xs font-black border flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                      isObjectLocked 
+                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    {isObjectLocked ? (
+                      <>
+                        <Lock className="w-4 h-4 text-amber-600" />
+                        <span>Unlock Layer (Locked)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Unlock className="w-4 h-4 text-slate-400" />
+                        <span>Lock Layer (Editable)</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Edit & Clipboard Actions */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase block">Edit Actions</label>
                   <div className="grid grid-cols-2 gap-1.5">
                     <button 
-                      onClick={bringToFront}
-                      className="py-1.5 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider"
+                      onClick={copySelected}
+                      disabled={isObjectLocked}
+                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
                     >
-                      Bring Front
+                      <Copy className="w-3 h-3 text-indigo-500" /> Copy
                     </button>
                     <button 
-                      onClick={sendToBack}
-                      className="py-1.5 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider"
+                      onClick={cutSelected}
+                      disabled={isObjectLocked}
+                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
                     >
-                      Send Back
+                      <Scissors className="w-3 h-3 text-indigo-500" /> Cut
                     </button>
                     <button 
                       onClick={duplicateSelected}
-                      className="col-span-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[9px] font-black rounded-lg uppercase tracking-wider transition-colors"
+                      disabled={isObjectLocked}
+                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
                     >
-                      Duplicate Layer
+                      <Plus className="w-3 h-3 text-indigo-500" /> Duplicate
+                    </button>
+                    <button 
+                      onClick={deleteSelected}
+                      className="py-2 bg-red-50 hover:bg-red-100 border border-red-100 text-red-650 text-[9px] font-black rounded-lg uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <Trash2 className="w-3 h-3" /> Delete
                     </button>
                   </div>
                 </div>
 
-                {/* Delete button */}
-                <button 
-                  onClick={deleteSelected} 
-                  className="w-full p-2.5 bg-red-50 text-red-650 text-xs font-black rounded-xl border border-red-100 hover:bg-red-100 flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4"/> Delete Layer
-                </button>
+                {/* Layer Arrangement (Depth Control) */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase block">Layer depth & arrangement</label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button 
+                      onClick={bringToFront}
+                      disabled={isObjectLocked}
+                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
+                      title="Bring all the way to front"
+                    >
+                      <ChevronsUp className="w-3 h-3 text-slate-500" /> To Front
+                    </button>
+                    <button 
+                      onClick={bringForward}
+                      disabled={isObjectLocked}
+                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
+                      title="Bring one layer forward"
+                    >
+                      <ChevronUp className="w-3 h-3 text-slate-500" /> Forward
+                    </button>
+                    <button 
+                      onClick={sendBackward}
+                      disabled={isObjectLocked}
+                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
+                      title="Send one layer backward"
+                    >
+                      <ChevronDown className="w-3 h-3 text-slate-500" /> Backward
+                    </button>
+                    <button 
+                      onClick={sendToBack}
+                      disabled={isObjectLocked}
+                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
+                      title="Send all the way to back"
+                    >
+                      <ChevronsDown className="w-3 h-3 text-slate-500" /> To Back
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 

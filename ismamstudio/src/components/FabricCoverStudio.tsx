@@ -200,6 +200,8 @@ export default function FabricCoverStudio({
   // History Undo/Redo States
   const [history, setHistory] = useState<string[]>([]);
   const [historyStep, setHistoryStep] = useState(-1);
+  const historyRef = useRef<string[]>([]);
+  const historyStepRef = useRef<number>(-1);
   const isUpdatingHistory = useRef(false);
 
   // Unsplash search states
@@ -436,6 +438,8 @@ export default function FabricCoverStudio({
 
     // Initial history step
     const initialJson = JSON.stringify(fCanvas.toJSON());
+    historyRef.current = [initialJson];
+    historyStepRef.current = 0;
     setHistory([initialJson]);
     setHistoryStep(0);
 
@@ -460,11 +464,16 @@ export default function FabricCoverStudio({
       if (isUpdatingHistory.current) return;
       const json = JSON.stringify(fCanvas.toJSON());
       
-      setHistory(prev => {
-        const sliced = prev.slice(0, historyStep + 1);
-        return [...sliced, json];
-      });
-      setHistoryStep(prev => prev + 1);
+      const currentHistory = historyRef.current;
+      const currentStep = historyStepRef.current;
+      const sliced = currentHistory.slice(0, currentStep + 1);
+      const nextHistory = [...sliced, json];
+      const nextStep = nextHistory.length - 1;
+
+      historyRef.current = nextHistory;
+      historyStepRef.current = nextStep;
+      setHistory(nextHistory);
+      setHistoryStep(nextStep);
       
       const legacyElements = serializeToLegacyElements(fCanvas);
       onSaveWorkspace(legacyElements);
@@ -836,11 +845,12 @@ export default function FabricCoverStudio({
 
   // Undo / Redo Actions
   const handleUndo = () => {
-    if (historyStep > 0 && canvas) {
+    if (historyStepRef.current > 0 && canvas) {
       isUpdatingHistory.current = true;
-      const prevStep = historyStep - 1;
-      canvas.loadFromJSON(JSON.parse(history[prevStep]), () => {
+      const prevStep = historyStepRef.current - 1;
+      canvas.loadFromJSON(JSON.parse(historyRef.current[prevStep]), () => {
         canvas.requestRenderAll();
+        historyStepRef.current = prevStep;
         setHistoryStep(prevStep);
         isUpdatingHistory.current = false;
       });
@@ -848,11 +858,12 @@ export default function FabricCoverStudio({
   };
 
   const handleRedo = () => {
-    if (historyStep < history.length - 1 && canvas) {
+    if (historyStepRef.current < historyRef.current.length - 1 && canvas) {
       isUpdatingHistory.current = true;
-      const nextStep = historyStep + 1;
-      canvas.loadFromJSON(JSON.parse(history[nextStep]), () => {
+      const nextStep = historyStepRef.current + 1;
+      canvas.loadFromJSON(JSON.parse(historyRef.current[nextStep]), () => {
         canvas.requestRenderAll();
+        historyStepRef.current = nextStep;
         setHistoryStep(nextStep);
         isUpdatingHistory.current = false;
       });

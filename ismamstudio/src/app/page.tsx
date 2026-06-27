@@ -17,7 +17,10 @@ import {
   Sliders,
   Type,
   Maximize2,
-  X
+  X,
+  Key,
+  Calculator,
+  Shuffle
 } from "lucide-react";
 import PricingSection from "../components/PricingSection";
 
@@ -418,7 +421,64 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* 6. Complete Book Compilation */}
+          {/* 6. Cryptogram Generator */}
+          <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
+            <div>
+              <div className="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-400 mb-6 group-hover:bg-yellow-500 group-hover:text-white transition-all duration-300 shadow-inner">
+                <Key className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-3">Cryptogram Studio</h3>
+              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+                Create substitution cipher worksheets from custom quote libraries, complete with letter hints and solution keys formatted for publishing.
+              </p>
+            </div>
+            <Link 
+              href="/studio/cryptogram"
+              className="inline-flex items-center gap-2 text-sm font-black text-yellow-450 hover:text-yellow-300 mt-6"
+            >
+              Generate Cryptograms <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* 7. Math Puzzle Builder */}
+          <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
+            <div>
+              <div className="w-14 h-14 bg-sky-500/10 rounded-2xl flex items-center justify-center text-sky-400 mb-6 group-hover:bg-sky-500 group-hover:text-white transition-all duration-300 shadow-inner">
+                <Calculator className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-3">Math Puzzle Builder</h3>
+              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+                Generate arithmetic, cross-number, and logic puzzle sheets for children, senior exercises, or educational KDP workbook niches.
+              </p>
+            </div>
+            <Link 
+              href="/studio/math-puzzle"
+              className="inline-flex items-center gap-2 text-sm font-black text-sky-405 hover:text-sky-300 mt-6"
+            >
+              Generate Math Puzzles <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* 8. Word Scramble Studio */}
+          <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
+            <div>
+              <div className="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-400 mb-6 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300 shadow-inner">
+                <Shuffle className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-3">Word Scramble Studio</h3>
+              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+                Scramble custom word lists to build activity worksheets. Customize difficulty, borders, layout guides, and download PDF sheets.
+              </p>
+            </div>
+            <Link 
+              href="/studio/word-scramble"
+              className="inline-flex items-center gap-2 text-sm font-black text-rose-450 hover:text-rose-300 mt-6"
+            >
+              Generate Scrambles <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* 9. Complete Book Compilation */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300 shadow-inner">

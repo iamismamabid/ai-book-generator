@@ -16,7 +16,8 @@ import {
   Layers,
   Sliders,
   Type,
-  Maximize2
+  Maximize2,
+  X
 } from "lucide-react";
 import PricingSection from "../components/PricingSection";
 
@@ -266,6 +267,49 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ⚠️ Problem / Solution Section */}
+      <section className="relative z-10 max-w-5xl mx-auto px-6 py-12 text-center">
+        <div className="bg-slate-900/40 backdrop-blur-md rounded-[3rem] border border-slate-900 p-8 md:p-12">
+          <h2 className="text-2xl md:text-3xl font-black text-white mb-8">KDP Publishing Is Hard...</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+            <div className="space-y-4">
+              <span className="text-[10px] font-black uppercase tracking-wider text-rose-450 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/10">Traditional Formatting Pitfalls</span>
+              <ul className="space-y-3 font-semibold text-xs md:text-sm text-slate-400">
+                <li className="flex items-start gap-2.5">
+                  <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                  <span>Formatting interiors takes hours of manual ruler calculations.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                  <span>Puzzle generators yield duplicate grids rejected by Amazon KDP.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                  <span>Cover design calculations require expensive, custom layout software.</span>
+                </li>
+              </ul>
+            </div>
+            <div className="space-y-4">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/10">The Ismam Studio Solution</span>
+              <ul className="space-y-3 font-semibold text-xs md:text-sm text-slate-350">
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-450 shrink-0 mt-0.5" />
+                  <span>All-in-one suite. Go from zero to publication-ready PDF in 30 seconds.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-455 shrink-0 mt-0.5" />
+                  <span>Mathematically unique, single-solution puzzles every compile.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-450 shrink-0 mt-0.5" />
+                  <span>Dynamic cover canvas with live bleed guides and margins.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 🛠️ SaaS Features Grid */}
       <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50">
         <div className="text-center mb-16">
@@ -391,6 +435,50 @@ export default function HomePage() {
             >
               Start Assembling <ArrowRight className="w-4 h-4" />
             </Link>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 🛠️ How It Works Section */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50 text-center">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider mb-3">
+            <Sliders className="w-4 h-4" /> Simple Blueprint
+          </div>
+          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">How It Works</h2>
+          <p className="text-slate-400 text-sm font-semibold max-w-md mx-auto">
+            Three simple steps to publish your puzzle, activity, or story book directly to Amazon KDP.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto relative z-10">
+          
+          {/* Step 1 */}
+          <div className="bg-slate-900/35 border border-slate-900 rounded-[2rem] p-8 space-y-4 hover:border-slate-800 transition-all">
+            <div className="w-12 h-12 bg-indigo-500/15 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 font-black text-lg mx-auto">1</div>
+            <h3 className="text-white font-bold text-lg">Pick a Creation Engine</h3>
+            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+              Select one of our specialized tools: Sudoku Studio, Shaped Maze Designer, Word Search, or the AI Novel Chapter Writer.
+            </p>
+          </div>
+
+          {/* Step 2 */}
+          <div className="bg-slate-900/35 border border-slate-900 rounded-[2rem] p-8 space-y-4 hover:border-slate-800 transition-all">
+            <div className="w-12 h-12 bg-purple-500/15 rounded-2xl flex items-center justify-center text-purple-400 border border-purple-500/20 font-black text-lg mx-auto">2</div>
+            <h3 className="text-white font-bold text-lg">Build & Format</h3>
+            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+              Customize puzzle complexity, layout shapes, or story parameters, and download print-ready vector PDF interiors.
+            </p>
+          </div>
+
+          {/* Step 3 */}
+          <div className="bg-slate-900/35 border border-slate-900 rounded-[2rem] p-8 space-y-4 hover:border-slate-800 transition-all">
+            <div className="w-12 h-12 bg-amber-500/15 rounded-2xl flex items-center justify-center text-amber-400 border border-amber-500/20 font-black text-lg mx-auto">3</div>
+            <h3 className="text-white font-bold text-lg">Wrap Cover & Publish</h3>
+            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+              Design a gorgeous cover in our canvas based on page counts, compile all sections together, and upload directly to Amazon KDP!
+            </p>
           </div>
 
         </div>

@@ -16,8 +16,8 @@ export async function POST(req: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  // ৩. ফ্রন্টএন্ড থেকে আসা প্রম্পটটি রিসিভ করা
-  const { prompt } = await req.json();
+  // ৩. ফ্রন্টএন্ড থেকে আসা প্রম্পট এবং প্যারামিটার রিসিভ করা
+  const { prompt, genre, tone, audience } = await req.json();
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
@@ -32,6 +32,9 @@ export async function POST(req: Request) {
 
   // ৪. এআই-এর ইনস্ট্রাকশন (সিস্টেম প্রম্পট)
   const systemPrompt = `Generate a book outline based on this idea: "${prompt}".
+  Target Genre: ${genre || 'General Fiction'}
+  Narrative Tone: ${tone || 'Engaging'}
+  Target Audience: ${audience || 'General Readers'}
   Provide the output in this exact format:
   **Book Title:** "Title Name"
   **Book Blurb:** A short description.
@@ -47,10 +50,5 @@ export async function POST(req: Request) {
   });
 
   // ৬. ডাটাগুলোকে পাইপলাইনের মাধ্যমে (Stream) ফ্রন্টএন্ডে পাঠানো
-  //return result.toDataStreamResponse();// ❌ ভুল (পুরনো ভার্সনের মেথড):
-// return result.toDataStreamResponse();
-
-// ✅ সঠিক (নতুন ভার্সনের মেথড):
-return result.toTextStreamResponse();
-
+  return result.toTextStreamResponse();
 }

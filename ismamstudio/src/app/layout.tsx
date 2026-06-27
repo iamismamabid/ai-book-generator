@@ -1,6 +1,7 @@
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
 import Header from '@/app/components/Header';
+import Footer from '@/app/components/Footer';
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -9,8 +10,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata = {
-  title: "Ismam.AI | Write Masterpieces with AI",
-  description: "Generate, edit, and publish AI-assisted books in minutes.",
+  title: "Ismam Studio | Your All-in-One KDP Publishing Toolkit",
+  description: "Create, format, and publish professional puzzle interiors, word searches, mazes, and gorgeous covers for Amazon KDP in minutes.",
 };
 
 export default function RootLayout({
@@ -28,8 +29,11 @@ export default function RootLayout({
             <Header />
 
             {/* Main Content Area */}
-            <div className="pt-20">
-              {children}
+            <div className="pt-20 min-h-[calc(100vh-80px)] flex flex-col justify-between">
+              <main className="flex-grow">
+                {children}
+              </main>
+              <Footer />
             </div>
           </ThemeProvider>
         </body>

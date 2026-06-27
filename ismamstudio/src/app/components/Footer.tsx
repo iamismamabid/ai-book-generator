@@ -1,0 +1,105 @@
+import Link from "next/link";
+import { Mail, Shield, BookOpen } from "lucide-react";
+
+export default function Footer() {
+  return (
+    <footer className="relative z-10 bg-slate-950/80 border-t border-slate-900 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+          
+          {/* Brand Info */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.168.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.132.477-4.5 1.253" />
+                </svg>
+              </div>
+              <span className="text-xl font-black tracking-tight text-white">
+                Ismam<span className="text-indigo-400">Studio</span>
+              </span>
+            </Link>
+            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+              Your all-in-one KDP publishing toolkit. Create puzzles, write story chapters, and compile custom book designs in minutes.
+            </p>
+          </div>
+
+          {/* Navigation Links */}
+          <div>
+            <h4 className="text-white font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <BookOpen className="w-4 h-4 text-indigo-400" /> Platform
+            </h4>
+            <ul className="space-y-2.5 text-xs font-semibold">
+              <li>
+                <Link href="/" className="text-slate-400 hover:text-indigo-400 transition-colors">Home</Link>
+              </li>
+              <li>
+                <Link href="/#features" className="text-slate-400 hover:text-indigo-400 transition-colors">Features</Link>
+              </li>
+              <li>
+                <Link href="/#pricing" className="text-slate-400 hover:text-indigo-400 transition-colors">Pricing</Link>
+              </li>
+              <li>
+                <Link href="/#examples" className="text-slate-400 hover:text-indigo-400 transition-colors">Examples</Link>
+              </li>
+              <li>
+                <Link href="/blog" className="text-slate-400 hover:text-indigo-400 transition-colors">Blog</Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal / Policy Links */}
+          <div>
+            <h4 className="text-white font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-indigo-400" /> Legal
+            </h4>
+            <ul className="space-y-2.5 text-xs font-semibold">
+              <li>
+                <Link href="/privacy" className="text-slate-400 hover:text-indigo-400 transition-colors">Privacy Policy</Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-slate-400 hover:text-indigo-400 transition-colors">Terms of Service</Link>
+              </li>
+              <li>
+                <Link href="/refund" className="text-slate-400 hover:text-indigo-400 transition-colors">Refund Policy</Link>
+              </li>
+              <li>
+                <Link href="/cookies" className="text-slate-400 hover:text-indigo-400 transition-colors">Cookie Policy</Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Support / Contact */}
+          <div>
+            <h4 className="text-white font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Mail className="w-4 h-4 text-indigo-400" /> Contact Support
+            </h4>
+            <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-3">
+              Need help? Feel free to contact our support team.
+            </p>
+            <a 
+              href="mailto:support@ismamstudio.me"
+              className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              <Mail className="w-4 h-4" /> support@ismamstudio.me
+            </a>
+          </div>
+
+        </div>
+
+        <div className="h-px bg-slate-900 my-8" />
+
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-500 text-xs font-bold uppercase tracking-wider text-center">
+          <div>
+            © {new Date().getFullYear()} Ismam Studio. All rights reserved.
+          </div>
+          <div className="flex gap-4">
+            <span className="text-[10px] bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/10">
+              100% KDP spec compliant
+            </span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

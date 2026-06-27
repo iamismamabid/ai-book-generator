@@ -53,7 +53,7 @@ const TRIM_SIZES = [
 ];
 
 export default function WordSearchStudio() {
-    const [activeTab, setActiveTab] = useState<'interior' | 'cover'>('interior'); 
+    const [activeTab, setActiveTab] = useState<'interior' | 'cover' | 'guide'>('interior'); 
     const [isGenerating, setIsGenerating] = useState(false);
     
     // 🚨 INTERIOR SETTINGS STATES 🚨
@@ -381,16 +381,17 @@ export default function WordSearchStudio() {
     };
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-sans text-slate-900 flex flex-col">
+        <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0b0f19] p-4 md:p-8 font-sans text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
             
             <header className="mb-6 flex justify-between items-center max-w-[1600px] mx-auto w-full">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black">AI</div>
-                    <h1 className="text-2xl font-black tracking-tight">KDP Master Studio</h1>
+                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-500/20">IS</div>
+                    <h1 className="text-2xl font-black tracking-tight">Ismam Studio</h1>
                 </div>
-                <div className="flex bg-slate-200 p-1 rounded-full">
-                    <button onClick={() => setActiveTab('interior')} className={`px-6 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeTab === 'interior' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}><Grid3x3 className="w-4 h-4"/> Interior Generator</button>
-                    <button onClick={() => setActiveTab('cover')} className={`px-6 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeTab === 'cover' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}><Palette className="w-4 h-4"/> Cover Studio</button>
+                <div className="flex bg-slate-200 dark:bg-slate-900 p-1 rounded-full border border-slate-300 dark:border-slate-800">
+                    <button onClick={() => setActiveTab('interior')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'interior' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><Grid3x3 className="w-4 h-4"/> Interior</button>
+                    <button onClick={() => setActiveTab('cover')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'cover' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><Palette className="w-4 h-4"/> Cover Studio</button>
+                    <button onClick={() => setActiveTab('guide')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'guide' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><BookOpen className="w-4 h-4"/> KDP Guide</button>
                 </div>
             </header>
 
@@ -625,6 +626,48 @@ export default function WordSearchStudio() {
                                 })}
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* ================= KDP PUBLISHING GUIDE UI ================= */}
+                {activeTab === 'guide' && (
+                    <div className="bg-white dark:bg-slate-900/60 p-8 md:p-12 rounded-[2.5rem] border border-slate-200 dark:border-slate-850 space-y-8 animate-fade-in text-slate-600 dark:text-slate-350 text-sm leading-relaxed font-semibold max-w-4xl mx-auto mt-6 shadow-sm">
+                        <section className="space-y-3">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <BookOpen className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> KDP Word Search Specifications
+                            </h3>
+                            <p>
+                                Word Search puzzle books are highly sought-after on Amazon KDP. To ensure your interior prints flawlessly, consider these settings:
+                            </p>
+                            <ul className="list-disc list-inside pl-4 space-y-2 text-slate-500 dark:text-slate-400">
+                                <li>**8.5" x 11" (Standard Trim)**: This is the industry-standard dimension for Word Search collections. It provides ample space for both the letter grid and the word list below.</li>
+                                <li>**Grid Size complexity**: 12x12 is ideal for children or casual solvers, while 15x15 to 20x20 is perfect for adults looking for a challenge.</li>
+                                <li>**Gutter Safety margins**: Keep borders inside the 0.5-inch safety buffer. All PDF compilations generated by Ismam Studio automatically calculate margins so KDP review passes without error.</li>
+                            </ul>
+                        </section>
+
+                        <section className="space-y-3">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <BookOpen className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Custom Word Lists & CSV Uploads
+                            </h3>
+                            <p>
+                                Instead of generic words, create themed books (e.g. "Nature lovers Word Search", "90s Retro Movies"). 
+                                You can upload a list of custom words via CSV, setting the **Words Per Puzzle** value on the Settings sidebar. 
+                                The system will dynamically generate the layout and matching solution pages.
+                            </p>
+                        </section>
+
+                        <section className="space-y-3">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <BookOpen className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Export & Compile Checklist
+                            </h3>
+                            <ol className="list-decimal list-inside pl-4 space-y-2 text-slate-500 dark:text-slate-400 font-bold">
+                                <li>Configure grid settings, paste or upload your words, and click **Export PDF** to get your interior pages.</li>
+                                <li>Solution pages are automatically generated at the end of the document. Write down your final page count.</li>
+                                <li>Switch to **Cover Studio** tab, input your page count to calculate the spine width, and design your cover layout using snap-to-grid tools.</li>
+                                <li>Download KDP cover PDF and upload both files directly to Amazon KDP portal!</li>
+                            </ol>
+                        </section>
                     </div>
                 )}
             </div>

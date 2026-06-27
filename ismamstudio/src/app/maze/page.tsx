@@ -57,6 +57,7 @@ function MazePreview({
 
 export default function MazeGeneratorPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"generator" | "guide">("generator");
   const [shape, setShape] = useState<Shape>("square");
   const [gridSize, setGridSize] = useState<number>(15);
   const [bookCount, setBookCount] = useState<number>(10);
@@ -113,155 +114,224 @@ export default function MazeGeneratorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12 max-w-7xl mx-auto">
-      <div className="mb-8 border-b border-slate-800 pb-6">
+    <div className="min-h-screen bg-[#0b0f19] text-white p-6 md:p-12 max-w-7xl mx-auto">
+      <div className="mb-8 border-b border-slate-900 pb-6">
         <button
           onClick={() => router.push("/")}
-          className="text-slate-400 hover:text-amber-500 text-sm mb-4 block"
+          className="text-slate-400 hover:text-amber-500 text-sm mb-4 block transition-colors"
         >
-          ← Back to home
+          ← Back to Home
         </button>
         <h1 className="text-4xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent mb-2">
-          Premium Maze Generator
+          Labyrinth Book Designer
         </h1>
-        <p className="text-slate-400">
+        <p className="text-slate-400 text-sm font-semibold">
           Generate print-ready shape-masked mazes (Square, Circle, Heart) perfect for Amazon KDP interiors.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Controls Column */}
-        <div className="space-y-6">
-          {/* Shape Selector */}
-          <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-            <h3 className="text-lg font-bold mb-4 text-amber-300">1. Select Maze Shape</h3>
-            <div className="grid grid-cols-3 gap-3">
-              {(["square", "circle", "heart"] as Shape[]).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setShape(s)}
-                  className={`py-3 rounded-xl font-semibold capitalize transition text-sm ${
-                    shape === s
-                      ? "bg-amber-500 text-slate-950 shadow-lg font-bold"
-                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Tab Buttons */}
+      <div className="flex gap-2 border-b border-slate-900 pb-4 mb-8">
+        <button
+          onClick={() => setActiveTab("generator")}
+          className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
+            activeTab === "generator"
+              ? "bg-amber-500 text-slate-950 shadow-md"
+              : "text-slate-400 hover:text-white hover:bg-slate-900"
+          }`}
+        >
+          Interactive Creator
+        </button>
+        <button
+          onClick={() => setActiveTab("guide")}
+          className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
+            activeTab === "guide"
+              ? "bg-amber-500 text-slate-950 shadow-md"
+              : "text-slate-400 hover:text-white hover:bg-slate-900"
+          }`}
+        >
+          KDP Publishing Guide
+          <span className="ml-1.5 bg-amber-500/20 text-amber-300 text-[9px] uppercase px-1.5 py-0.5 rounded-full">
+            Specs
+          </span>
+        </button>
+      </div>
 
-          {/* Size & Book Specs */}
-          <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
-            <h3 className="text-lg font-bold text-amber-300">2. Configuration settings</h3>
-            
-            <div>
-              <label className="block text-sm text-slate-400 mb-2">
-                Grid Size / Complexity: <span className="text-white font-bold">{gridSize} x {gridSize}</span>
-              </label>
-              <input
-                type="range"
-                min={10}
-                max={30}
-                step={1}
-                value={gridSize}
-                onChange={(e) => setGridSize(Number(e.target.value))}
-                className="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
-              />
-              <div className="flex justify-between text-xs text-slate-500 mt-1">
-                <span>10 (Easy)</span>
-                <span>20 (Medium)</span>
-                <span>30 (Hard)</span>
+      {activeTab === "generator" ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Controls Column */}
+          <div className="space-y-6">
+            {/* Shape Selector */}
+            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850">
+              <h3 className="text-lg font-bold mb-4 text-amber-300">1. Select Maze Shape</h3>
+              <div className="grid grid-cols-3 gap-3">
+                {(["square", "circle", "heart"] as Shape[]).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setShape(s)}
+                    className={`py-3 rounded-xl font-semibold capitalize transition text-sm ${
+                      shape === s
+                        ? "bg-amber-500 text-slate-950 shadow-lg font-bold"
+                        : "bg-slate-800 text-slate-350 hover:bg-slate-700"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 pt-2">
+            {/* Size & Book Specs */}
+            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850 space-y-4">
+              <h3 className="text-lg font-bold text-amber-300">2. Configuration settings</h3>
+              
               <div>
-                <label className="block text-sm text-slate-400 mb-2">Number of Puzzles</label>
+                <label className="block text-sm text-slate-400 mb-2">
+                  Grid Size / Complexity: <span className="text-white font-bold">{gridSize} x {gridSize}</span>
+                </label>
                 <input
-                  type="number"
-                  min={1}
-                  max={100}
-                  value={bookCount}
-                  onChange={(e) => setBookCount(Number(e.target.value))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white font-mono"
+                  type="range"
+                  min={10}
+                  max={30}
+                  step={1}
+                  value={gridSize}
+                  onChange={(e) => setGridSize(Number(e.target.value))}
+                  className="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
+                />
+                <div className="flex justify-between text-xs text-slate-500 mt-1">
+                  <span>10 (Easy)</span>
+                  <span>20 (Medium)</span>
+                  <span>30 (Hard)</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-sm text-slate-400 mb-2">Number of Puzzles</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={bookCount}
+                    onChange={(e) => setBookCount(Number(e.target.value))}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2 text-white font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-slate-400 mb-2">KDP Trim Size</label>
+                  <select
+                    value={trimSize}
+                    onChange={(e) => setTrimSize(e.target.value as typeof trimSize)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2 text-white"
+                  >
+                    <option value="6x9">6" x 9" (Standard)</option>
+                    <option value="8.5x11">8.5" x 11" (Large Print)</option>
+                    <option value="5x8">5" x 8" (Pocket)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <input
+                  type="checkbox"
+                  id="solutions"
+                  checked={includeSolutions}
+                  onChange={(e) => setIncludeSolutions(e.target.checked)}
+                  className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                />
+                <label htmlFor="solutions" className="text-sm text-slate-350 cursor-pointer select-none font-bold">
+                  Include 2x2 grid Solution Keys at the end of the book
+                </label>
+              </div>
+            </div>
+
+            {/* Core Action Buttons */}
+            <div className="space-y-3">
+              <button
+                onClick={handlePreview}
+                disabled={isGenerating}
+                className="w-full bg-slate-850 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition disabled:opacity-50 border border-slate-750 shadow-md"
+              >
+                {isGenerating ? "Mapping Labyrinths..." : "Generate Preview Grid"}
+              </button>
+
+              <DownloadButton
+                onClick={handleDownloadPdf}
+                label={isDownloading ? "Assembling Book..." : "Download High-Res PDF"}
+              />
+            </div>
+          </div>
+
+          {/* Live Preview Column */}
+          <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850 flex flex-col justify-between items-center min-h-[450px]">
+            <div className="w-full border-b border-slate-800 pb-3 mb-4">
+              <h3 className="text-lg font-bold text-slate-300">Live Architecture Canvas</h3>
+            </div>
+            
+            {previewMaze ? (
+              <div className="w-full flex-grow flex items-center justify-center">
+                <MazePreview 
+                  grid={previewMaze.grid} 
+                  start={previewMaze.start} 
+                  end={previewMaze.end} 
                 />
               </div>
-
-              <div>
-                <label className="block text-sm text-slate-400 mb-2">KDP Trim Size</label>
-                <select
-                  value={trimSize}
-                  onChange={(e) => setTrimSize(e.target.value as typeof trimSize)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
-                >
-                  <option value="6x9">6" x 9" (Standard)</option>
-                  <option value="8.5x11">8.5" x 11" (Large Print)</option>
-                  <option value="5x8">5" x 8" (Pocket)</option>
-                </select>
+            ) : (
+              <div className="w-full flex-grow flex flex-col items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-800 rounded-xl p-8 text-center">
+                <span className="text-4xl mb-3">🧭</span>
+                Click "Generate Preview Grid" to visualize the structure before compile.
               </div>
-            </div>
+            )}
 
-            <div className="flex items-center gap-3 pt-2">
-              <input
-                type="checkbox"
-                id="solutions"
-                checked={includeSolutions}
-                onChange={(e) => setIncludeSolutions(e.target.checked)}
-                className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
-              />
-              <label htmlFor="solutions" className="text-sm text-slate-300 cursor-pointer select-none">
-                Include 2x2 grid Solution Keys at the end of the book
-              </label>
-            </div>
-          </div>
-
-          {/* Core Action Buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={handlePreview}
-              disabled={isGenerating}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition disabled:opacity-50 border border-slate-700 shadow-md"
-            >
-              {isGenerating ? "Mapping Labyrinths..." : "Generate Preview Grid"}
-            </button>
-
-            <DownloadButton
-              onClick={handleDownloadPdf}
-              label={isDownloading ? "Assembling Book..." : "Download High-Res PDF"}
-            />
+            {previewMaze && (
+              <p className="text-xs text-slate-500 mt-4 text-center">
+                Blue marker <span className="text-blue-500 font-bold">S</span> indicates Entrance. Red marker <span className="text-red-500 font-bold">E</span> indicates Exit.
+              </p>
+            )}
           </div>
         </div>
-
-        {/* Live Preview Column */}
-        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between items-center min-h-[450px]">
-          <div className="w-full border-b border-slate-800 pb-3 mb-4">
-            <h3 className="text-lg font-bold text-slate-300">Live Architecture Canvas</h3>
-          </div>
+      ) : (
+        /* Maze Publishing Guide */
+        <div className="bg-slate-900/60 p-8 rounded-[2.5rem] border border-slate-850 space-y-8 animate-fade-in text-slate-350 text-sm leading-relaxed font-semibold">
           
-          {previewMaze ? (
-            <div className="w-full flex-grow flex items-center justify-center">
-              <MazePreview 
-                grid={previewMaze.grid} 
-                start={previewMaze.start} 
-                end={previewMaze.end} 
-              />
-            </div>
-          ) : (
-            <div className="w-full flex-grow flex flex-col items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-800 rounded-xl p-8 text-center">
-              <span className="text-4xl mb-3">🧭</span>
-              Click "Generate Preview Grid" to visualize the structure before compile.
-            </div>
-          )}
-
-          {previewMaze && (
-            <p className="text-xs text-slate-500 mt-4 text-center">
-              Blue marker <span className="text-blue-500 font-bold">S</span> indicates Entrance. Red marker <span className="text-red-500 font-bold">E</span> indicates Exit.
+          <section className="space-y-3">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              Labyrinth Trim & Bleed Guidelines
+            </h3>
+            <p>
+              Unlike standard text, maze paths often stretch close to page boundaries. Make sure to adhere to KDP margins:
             </p>
-          )}
+            <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
+              <li>**Bleed Option**: If you select "Bleed" on KDP, your background design elements can touch the cut line. We recommend downloading your maze PDFs as **No Bleed** and positioning them inside standard margin zones.</li>
+              <li>**Safe Zone Buffer**: Our generator positions grids automatically within the 0.5-inch printable safety area to avoid trimming hazards.</li>
+              <li>**8.5" x 11" Large Print**: Strongly recommended for intricate maze shapes (Circle and Heart) to keep the lanes wide enough (min 0.15 inches) for standard pencils.</li>
+            </ul>
+          </section>
+
+          <section className="space-y-3">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              Solution Keys & Solutions Layout
+            </h3>
+            <p>
+              Activity books with solution guides sell at a 40% higher conversion rate. Always select **"Include 2x2 grid Solution Keys"** to append small solution diagrams at the back. Amazon reviewers look for this to verify that the puzzle is indeed solvable.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              Print-On-Demand compliance
+            </h3>
+            <p>
+              All output files are vector PDFs, which use mathematical formulas rather than pixels to define borders. They will print at maximum DPI resolution on Amazon's cream or white paper options.
+            </p>
+          </section>
+
         </div>
-      </div>
+      )}
     </div>
   );
 }

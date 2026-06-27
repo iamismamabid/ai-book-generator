@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard } from "lucide-react";
+import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X } from "lucide-react";
+import Link from "next/link";
 
 export default function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(false);
@@ -12,6 +13,27 @@ export default function PricingSection() {
   };
 
   const plans = [
+    {
+      name: "Free Tier",
+      description: "Test drive our creation engines and explore the workspace parameters.",
+      priceMonthly: 0,
+      priceAnnual: 0,
+      popular: false,
+      features: [
+        "Access to basic puzzle generators",
+        "Watermarked PDF exports (Sample only)",
+        "Easy Sudoku generator",
+        "Square-masked maze layouts",
+        "1 AI Writer Novel Outline / mo",
+        "Personal use only (No KDP sales)",
+        "Community support forum",
+      ],
+      ctaText: "Start Designing Free",
+      colorClass: "bg-slate-950/40 hover:border-slate-800",
+      borderClass: "border-slate-900",
+      icon: <HelpCircle className="w-6 h-6 text-slate-500" />,
+      ctaLink: "/studio"
+    },
     {
       name: "Starter Creator",
       description: "Perfect for hobbyists & beginner publishers starting their KDP journey.",
@@ -31,6 +53,7 @@ export default function PricingSection() {
       colorClass: "bg-slate-950/60 hover:border-slate-700",
       borderClass: "border-slate-800/80",
       icon: <Star className="w-6 h-6 text-slate-400" />,
+      ctaLink: "/studio"
     },
     {
       name: "Pro Studio",
@@ -49,10 +72,10 @@ export default function PricingSection() {
         "Priority Customer Support (under 12 hours)",
       ],
       ctaText: "Get Pro Access",
-      // White background for maximum attention in dark theme, glowing yellow-rose-sky shadow!
       colorClass: "bg-white text-slate-900 shadow-[0_20px_50px_rgba(245,158,11,0.25),_0_0_30px_rgba(56,189,248,0.15)]",
       borderClass: "border-amber-400 border-2",
       icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
+      ctaLink: "/studio"
     },
     {
       name: "Publisher Agency",
@@ -74,6 +97,7 @@ export default function PricingSection() {
       colorClass: "bg-slate-950/60 hover:border-slate-700",
       borderClass: "border-slate-800/80",
       icon: <Award className="w-6 h-6 text-slate-400" />,
+      ctaLink: "/studio"
     },
   ];
 
@@ -84,7 +108,7 @@ export default function PricingSection() {
     },
     {
       q: "Do I own the commercial copyrights for the books and puzzles I create?",
-      a: "Absolutely. When subscribing to any of our plans (including Starter and Pro), you receive full commercial rights to publish and sell the generated books, interiors, covers, and puzzles anywhere, including Amazon KDP, Etsy, or your own site. You keep 100% of the royalties.",
+      a: "Absolutely. When subscribing to any of our paid plans (Starter, Pro, Agency), you receive full commercial rights to publish and sell the generated books, interiors, covers, and puzzles anywhere, including Amazon KDP, Etsy, or your own site. You keep 100% of the royalties. The Free Tier is for personal testing only.",
     },
     {
       q: "Can I cancel, upgrade, or downgrade my subscription at any time?",
@@ -92,25 +116,44 @@ export default function PricingSection() {
     },
     {
       q: "How does the AI Novel Writer generate chapters?",
-      a: "We utilize advanced Llama-3 API nodes that run low-latency story outlines, character structures, and full text-chapter expansions based on your prompts. The exports are seamlessly integrated into the PDF compiler so you don't need to manually copy/paste text.",
+      a: "We utilize advanced Llama-3 API nodes that run low-latency story outlines, character structures, and full text-chapter expansions based on your prompts. The outlines and text outputs are saved directly to your library so you can edit and compile them into your final book layout.",
     },
     {
       q: "Is there a money-back guarantee?",
-      a: "Yes, we support a 30-day money-back guarantee for all new members. If KDP Master Studio doesn't fit your book-publishing workflow, just drop us an email within 30 days and we will issue a full refund—no questions asked.",
+      a: "Yes, we support a 30-day money-back guarantee for all new members. If Ismam Studio doesn't fit your book-publishing workflow, just drop us an email within 30 days and we will issue a full refund—no questions asked.",
+    },
+    {
+      q: "Do the puzzle books include solution keys?",
+      a: "Yes. All our puzzle engines (Sudoku, Maze, Word Search) automatically compile solutions. For example, mazes generate solution maps, Sudokus output standard 9x9 resolved grids, and word searches include highlight coordinate answers. These are neatly appended to the back of the exported PDF.",
+    },
+    {
+      q: "What trim sizes does Ismam Studio support?",
+      a: "We support all major industry standards: 6\"x9\" (most popular for novels & standard books), 8.5\"x11\" (standard for large print puzzles, coloring sheets, and children's activity books), and 5\"x8\" (standard pocket size). Our canvas editor also allows custom dimension adjustments.",
+    },
+    {
+      q: "What is the difference between bleed and no-bleed pages?",
+      a: "Bleed refers to page elements (backgrounds, lines, illustrations) that stretch beyond the trim edge of the page, ensuring no white spaces remain after cutting. Our generators calculate the safety bleed (usually adding 0.125\" to the outer edges) automatically depending on your selection.",
+    },
+    {
+      q: "Can I upload custom word lists for the Word Search generator?",
+      a: "Yes! You can upload custom word lists via CSV files or type them in manually. Our engine will dynamically check character counts, fit them inside the selected grid dimensions, and generate the final puzzles.",
+    },
+    {
+      q: "Can I use Ismam Studio on a tablet or mobile device?",
+      a: "Yes, our studio layout features a responsive viewport canvas. While desktop screens are recommended for complex drag-and-drop cover alignments, you can easily generate puzzles, draft stories, and check your dashboard library from any iPad, tablet, or phone.",
     },
   ];
 
   return (
     <section id="pricing" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-900">
       
-      {/* 🔮 Glow highlights with a yellowish, red, and light blue blend */}
+      {/* 🔮 Glow highlights */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-sky-500/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] bg-rose-500/5 rounded-full blur-[90px] pointer-events-none" />
 
       {/* Header */}
       <div className="text-center mb-16">
-        {/* Attracting marketing badge */}
         <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-sky-500/10 border border-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-[0.2em] mb-6 shadow-md">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           Limited Time Launch Offer
@@ -123,7 +166,7 @@ export default function PricingSection() {
           Create profitable books with ease. Choose a plan that matches your publishing scale.
         </p>
 
-        {/* Toggle Switch with yellowish-white gradient styling */}
+        {/* Toggle Switch */}
         <div className="mt-10 inline-flex items-center gap-2 bg-slate-950/80 p-2 rounded-full border border-slate-800 backdrop-blur-md">
           <button
             onClick={() => setIsAnnual(false)}
@@ -152,10 +195,10 @@ export default function PricingSection() {
       </div>
 
       {/* Pricing Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch mb-24 relative">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 items-stretch mb-24 relative">
         {plans.map((plan, index) => {
           const price = isAnnual ? plan.priceAnnual : plan.priceMonthly;
-          const billingText = isAnnual ? "billed annually" : "billed monthly";
+          const billingText = plan.priceMonthly === 0 ? "forever free" : isAnnual ? "billed annually" : "billed monthly";
           
           return (
             <div
@@ -165,8 +208,7 @@ export default function PricingSection() {
               } ${plan.borderClass}`}
             >
               {plan.popular && (
-                /* Marketing Gradient Tag: Yellowish + Rose (Red) + Sky (Light Blue) */
-                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-400 via-rose-500 to-sky-400 text-white text-xs font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5">
+                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-400 via-rose-500 to-sky-400 text-white text-xs font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5 z-10 shrink-0">
                   <Sparkles className="w-3.5 h-3.5" />
                   Most Popular
                 </div>
@@ -200,7 +242,7 @@ export default function PricingSection() {
                   {plan.description}
                 </p>
 
-                {/* Price Display - Stands out with white/dark contrast */}
+                {/* Price Display */}
                 <div className="mb-8 flex items-baseline gap-1">
                   <span className={`text-6xl font-black tracking-tight ${
                     plan.popular ? "text-slate-950" : "text-white"
@@ -210,7 +252,7 @@ export default function PricingSection() {
                   <span className={`font-bold text-sm ${plan.popular ? "text-slate-500" : "text-slate-400"}`}>
                     / month
                   </span>
-                  <span className={`text-xs font-bold block ml-2 self-center px-2 py-1 rounded-md ${
+                  <span className={`text-[10px] font-bold block ml-2 self-center px-2 py-1 rounded-md uppercase tracking-wider ${
                     plan.popular
                       ? "text-amber-700 bg-amber-500/10"
                       : "text-indigo-400 bg-indigo-500/10"
@@ -245,18 +287,19 @@ export default function PricingSection() {
                 </ul>
               </div>
 
-              {/* Action Button: Glowing Marketing Gradient for Popular Plan */}
+              {/* Action Button */}
               <div className="mt-8">
-                <button
-                  className={`w-full py-4.5 rounded-2xl font-black text-base transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
+                <Link
+                  href={plan.ctaLink}
+                  className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
                     plan.popular
                       ? "bg-gradient-to-r from-amber-500 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
-                      : "bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700"
+                      : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                   }`}
                 >
                   {plan.ctaText}
                   <Zap className="w-4 h-4 shrink-0 opacity-80" />
-                </button>
+                </Link>
               </div>
             </div>
           );
@@ -265,7 +308,6 @@ export default function PricingSection() {
 
       {/* 🛡️ Value Proposition Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
-        
         <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
           <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-400 border border-amber-500/10">
             <Shield className="w-6 h-6" />
@@ -295,7 +337,7 @@ export default function PricingSection() {
             <CreditCard className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">No Contract, Cancel Anytime</h4>
+            <h4 className="text-white font-black text-base mb-1">No Contract, Cancel</h4>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
               Pause or cancel your subscription directly from your billing panel with a single click.
             </p>
@@ -313,7 +355,88 @@ export default function PricingSection() {
             </p>
           </div>
         </div>
+      </div>
 
+      {/* 📊 Feature Comparison Table */}
+      <div className="mb-24 overflow-x-auto rounded-[2rem] border border-slate-900 bg-slate-950/20 backdrop-blur-md p-4 md:p-8">
+        <h3 className="text-2xl font-black text-white text-center mb-8">Detailed Feature Comparison</h3>
+        
+        <table className="w-full text-left border-collapse text-xs md:text-sm">
+          <thead>
+            <tr className="border-b border-slate-900 text-slate-400 font-bold uppercase tracking-wider">
+              <th className="py-4 px-4">Core Capabilities</th>
+              <th className="py-4 px-4 text-center">Free Tier</th>
+              <th className="py-4 px-4 text-center">Starter</th>
+              <th className="py-4 px-4 text-center">Pro Studio</th>
+              <th className="py-4 px-4 text-center">Agency</th>
+            </tr>
+          </thead>
+          <tbody className="text-slate-350 font-semibold">
+            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
+              <td className="py-4 px-4 font-bold text-white">Commercial Rights</td>
+              <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
+              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-amber-500 mx-auto" /></td>
+              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-emerald-400 mx-auto" /></td>
+            </tr>
+            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
+              <td className="py-4 px-4 font-bold text-white">Watermark-Free Exports</td>
+              <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
+              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-amber-500 mx-auto" /></td>
+              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-emerald-400 mx-auto" /></td>
+            </tr>
+            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
+              <td className="py-4 px-4 font-bold text-white">Trim Size Adjustments</td>
+              <td className="py-4 px-4 text-center">Basic (8.5x11)</td>
+              <td className="py-4 px-4 text-center">Standard sizes</td>
+              <td className="py-4 px-4 text-center">All sizes + Custom</td>
+              <td className="py-4 px-4 text-center">All + Custom + SVGs</td>
+            </tr>
+            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
+              <td className="py-4 px-4 font-bold text-white">Sudoku Puzzle Difficulty</td>
+              <td className="py-4 px-4 text-center">Easy Only</td>
+              <td className="py-4 px-4 text-center">Easy & Medium</td>
+              <td className="py-4 px-4 text-center">All (Easy, Med, Hard)</td>
+              <td className="py-4 px-4 text-center">All + Custom solutions</td>
+            </tr>
+            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
+              <td className="py-4 px-4 font-bold text-white">Maze Layout Shapes</td>
+              <td className="py-4 px-4 text-center">Square Only</td>
+              <td className="py-4 px-4 text-center">Square Only</td>
+              <td className="py-4 px-4 text-center">Square, Circle, Heart</td>
+              <td className="py-4 px-4 text-center">All + custom masking</td>
+            </tr>
+            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
+              <td className="py-4 px-4 font-bold text-white">AI Writer Chapter Limits</td>
+              <td className="py-4 px-4 text-center">1 Outline/mo</td>
+              <td className="py-4 px-4 text-center">5 Chapters/mo</td>
+              <td className="py-4 px-4 text-center">Unlimited</td>
+              <td className="py-4 px-4 text-center">Unlimited (Priority)</td>
+            </tr>
+            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
+              <td className="py-4 px-4 font-bold text-white">Pen-names / Brands</td>
+              <td className="py-4 px-4 text-center">1</td>
+              <td className="py-4 px-4 text-center">3</td>
+              <td className="py-4 px-4 text-center">Unlimited</td>
+              <td className="py-4 px-4 text-center">Unlimited</td>
+            </tr>
+            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
+              <td className="py-4 px-4 font-bold text-white">Team seats</td>
+              <td className="py-4 px-4 text-center">1 Seat</td>
+              <td className="py-4 px-4 text-center">1 Seat</td>
+              <td className="py-4 px-4 text-center">1 Seat</td>
+              <td className="py-4 px-4 text-center">Up to 3 Seats</td>
+            </tr>
+            <tr className="hover:bg-slate-900/10 transition-colors">
+              <td className="py-4 px-4 font-bold text-white">Customer Support</td>
+              <td className="py-4 px-4 text-center">Community</td>
+              <td className="py-4 px-4 text-center">Email (48h)</td>
+              <td className="py-4 px-4 text-center">Priority (&lt; 12h)</td>
+              <td className="py-4 px-4 text-center">Dedicated manager</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       {/* ❓ Frequently Asked Questions */}
@@ -346,7 +469,6 @@ export default function PricingSection() {
                   />
                 </button>
 
-                {/* Pure CSS transition grid to avoid frame motion vendor chunk import errors */}
                 <div
                   className={`grid transition-all duration-300 ease-in-out ${
                     isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"

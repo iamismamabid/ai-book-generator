@@ -88,6 +88,25 @@ const BLOG_POSTS: Post[] = [
       "### Crafting Your Title and Subtitle",
       "Do not stuff keywords randomly. Combine your primary search phrase naturally into your subtitle. For example: \n- *Title*: Ultimate Senior Word Search\n- *Subtitle*: 100 Large Print Puzzles with Solutions for Adults, Elderly & Brain Exercise\nThis informs both the Amazon search algorithm and human buyers exactly what the book is."
     ]
+  },
+  {
+    slug: "kdp-niche-validation-secrets",
+    title: "KDP Niche Validation: How to Find Profitable Niches with High Search Volume",
+    category: "Research",
+    date: "June 02, 2026",
+    readTime: "7 min read",
+    description: "Learn how to validate self-publishing niches, estimate monthly book sales, and choose search terms that guarantee conversions.",
+    content: [
+      "Before creating any book interior or cover, you must first validate that there is actual customer demand for your topic. Sinking hours into a beautiful Sudoku or Word Search book that nobody is searching for is the most common mistake made by new publishers. Here is the framework for validating profitable KDP niches.",
+      "### Step 1: Find the Best Seller Rank (BSR)",
+      "Look at the top 3-5 organic books in your target niche. Scroll down to their Product Details section and write down their Amazon Best Seller Rank (BSR). A BSR under 100,000 indicates the book sells multiple copies every day. A BSR under 10,000 indicates a highly profitable niche with dozens of daily sales.",
+      "### Step 2: Calculate Niche Profitability",
+      "Use online calculator tools to translate BSR to estimated monthly sales. For example, a paperback book with a BSR of 50,000 sells approximately 3-5 copies per day (90-150 copies per month). If the royalty per sale is $2.50, a single validated book can bring in $225 to $375 in passive monthly royalties.",
+      "### Step 3: Spotting Market Saturation",
+      "Type your target keyword in Amazon's search bar and analyze the first page results. If all top ranking books have 500+ reviews and are sponsored ads, the niche is highly competitive. Look for niches where top books have fewer than 100 reviews and were published recently (within the last 6 months)—this indicates a gap you can fill.",
+      "### Step 4: The Upcoming Ismam Studio Niche Spy",
+      "To make this process effortless, Ismam Studio is building an AI KDP Niche Hunter & Keyword Spy (Beta coming Q3 2026). This tool will fetch Amazon search volumes, analyze BSR data, and estimate competitor margins directly inside your dashboard. Stay tuned for early beta access on our pricing page!"
+    ]
   }
 ];
 

@@ -1,7 +1,7 @@
 import CryptogramGenerator from "@/components/tools/CryptogramGenerator";
 
 export const metadata = {
-  title: "Cryptogram Generator | Ismam.AI Studio",
+  title: "Cryptogram Generator | Ismam Studio",
   description: "Create print-ready cryptogram quote puzzles for KDP publishing.",
 };
 

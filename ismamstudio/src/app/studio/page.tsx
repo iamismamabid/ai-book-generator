@@ -17,9 +17,18 @@ const TRIM_SIZES = [
 
 export default function MasterStudioApp() {
   const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => { setIsMounted(true); }, []);
-
   const [activeTab, setActiveTab] = useState<'interior' | 'cover'>('interior');
+
+  useEffect(() => {
+    setIsMounted(true);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab === "cover" || tab === "interior") {
+        setActiveTab(tab);
+      }
+    }
+  }, []);
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [pageCount, setPageCount] = useState(100);
 

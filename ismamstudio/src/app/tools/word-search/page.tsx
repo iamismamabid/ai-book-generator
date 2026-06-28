@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText } from "lucide-react";
 import { jsPDF } from "jspdf";
 
@@ -390,7 +391,9 @@ export default function WordSearchStudio() {
                 </div>
                 <div className="flex bg-slate-200 dark:bg-slate-900 p-1 rounded-full border border-slate-300 dark:border-slate-800">
                     <button onClick={() => setActiveTab('interior')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'interior' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><Grid3x3 className="w-4 h-4"/> Interior</button>
-                    <button onClick={() => setActiveTab('cover')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'cover' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><Palette className="w-4 h-4"/> Cover Studio</button>
+                    <Link href="/studio?tab=cover" className="px-4 py-2 rounded-full font-bold text-xs md:text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1.5">
+                        <Palette className="w-4 h-4"/> Cover Studio
+                    </Link>
                     <button onClick={() => setActiveTab('guide')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'guide' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><BookOpen className="w-4 h-4"/> KDP Guide</button>
                 </div>
             </header>
@@ -517,117 +520,7 @@ export default function WordSearchStudio() {
                     </div>
                 )}
 
-                {/* ================= PRO COVER STUDIO (BOOKBOLT STYLE) ================= */}
-                {activeTab === 'cover' && (
-                    <div className="flex h-[calc(100vh-120px)] rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm animate-in fade-in duration-300">
-                        
-                        <div className="w-16 bg-slate-900 flex flex-col items-center py-4 gap-4 border-r border-slate-800 z-20 text-slate-400">
-                            <button onClick={() => setActiveToolTab('elements')} className={`p-3 rounded-xl transition-all ${activeToolTab === 'elements' ? 'bg-indigo-600 text-white' : 'hover:text-white'}`} title="Add Elements"><Plus className="w-5 h-5" /></button>
-                            <button onClick={() => setActiveToolTab('layers')} className={`p-3 rounded-xl transition-all ${activeToolTab === 'layers' ? 'bg-indigo-600 text-white' : 'hover:text-white'}`} title="Layers"><Layers className="w-5 h-5" /></button>
-                            <button onClick={() => setActiveToolTab('settings')} className={`p-3 rounded-xl transition-all ${activeToolTab === 'settings' ? 'bg-indigo-600 text-white' : 'hover:text-white'}`} title="Settings"><Settings className="w-5 h-5" /></button>
-                            <div className="mt-auto flex flex-col gap-4">
-                                <button onClick={() => setSnapToGrid(!snapToGrid)} className={`p-3 rounded-xl transition-all ${snapToGrid ? 'bg-emerald-500/20 text-emerald-400' : 'hover:text-white'}`} title="Toggle Snapping"><Magnet className="w-5 h-5" /></button>
-                                <button onClick={() => setShowKdpGuides(!showKdpGuides)} className={`p-3 rounded-xl transition-all ${showKdpGuides ? 'bg-pink-500/20 text-pink-400' : 'hover:text-white'}`} title="Toggle KDP Guides"><LayoutTemplate className="w-5 h-5" /></button>
-                                <div className="border-t border-slate-800 w-full pt-4 px-2">
-                                    <button onClick={handleGenerateCover} disabled={isGenerating} className="w-full flex items-center justify-center bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-500 transition-all">
-                                        {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="w-64 bg-slate-50 border-r border-slate-200 flex flex-col p-4 z-10 overflow-y-auto">
-                            {activeToolTab === 'elements' && (
-                                <div className="space-y-4">
-                                    <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400">Add to Canvas</h3>
-                                    <button onClick={addNewText} className="w-full p-3 bg-white border border-slate-200 rounded-lg hover:border-indigo-500 text-sm font-bold flex items-center gap-2"><Type className="w-4 h-4"/> Heading Text</button>
-                                    <button onClick={() => fileInputRef.current?.click()} className="w-full p-3 bg-white border border-slate-200 rounded-lg hover:border-indigo-500 text-sm font-bold flex items-center gap-2"><ImageIcon className="w-4 h-4"/> Upload Image</button>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <button onClick={() => addNewShape('rect')} className="p-3 bg-white border border-slate-200 rounded-lg hover:border-indigo-500 text-sm font-bold flex items-center justify-center"><Square className="w-4 h-4"/></button>
-                                        <button onClick={() => addNewShape('circle')} className="p-3 bg-white border border-slate-200 rounded-lg hover:border-indigo-500 text-sm font-bold flex items-center justify-center"><Circle className="w-4 h-4"/></button>
-                                    </div>
-                                    <input type="file" accept="image/png, image/jpeg" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
-                                </div>
-                            )}
-
-                            {activeToolTab === 'layers' && (
-                                <div className="space-y-2">
-                                    <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Layers</h3>
-                                    {[...coverElements].reverse().map((el) => (
-                                        <div key={el.id} onClick={() => setActiveElementId(el.id)} className={`p-2 text-xs font-semibold rounded cursor-pointer border ${activeElementId === el.id ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'}`}>
-                                            {el.name || el.type}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {activeToolTab === 'settings' && (
-                                <div className="space-y-4">
-                                    <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400">Canvas Settings</h3>
-                                    <div><label className="block text-xs font-bold text-slate-600 mb-1">Back Cover Color</label><input type="color" value={backCoverColor} onChange={(e) => setBackCoverColor(e.target.value)} className="w-full h-8 rounded border border-slate-200" /></div>
-                                    <div><label className="block text-xs font-bold text-slate-600 mb-1">Front Cover Color</label><input type="color" value={frontCoverColor} onChange={(e) => setFrontCoverColor(e.target.value)} className="w-full h-8 rounded border border-slate-200" /></div>
-                                </div>
-                            )}
-
-                            {activeElementId && (
-                                <div className="mt-auto pt-4 border-t border-slate-200">
-                                    <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-2">Properties</h3>
-                                    {coverElements.find(e => e.id === activeElementId)?.type === 'text' && (
-                                        <textarea value={coverElements.find(e => e.id === activeElementId)?.text} onChange={(e) => setCoverElements(prev => prev.map(el => el.id === activeElementId ? { ...el, text: e.target.value } : el))} className="w-full p-2 text-xs rounded border border-slate-300 mb-2" rows={2}/>
-                                    )}
-                                    <div className="flex gap-2 mb-2">
-                                        <input type="color" value={coverElements.find(e => e.id === activeElementId)?.color || '#000000'} onChange={(e) => setCoverElements(prev => prev.map(el => el.id === activeElementId ? { ...el, color: e.target.value } : el))} className="w-1/2 h-8 rounded border border-slate-300" title="Color"/>
-                                        <input type="number" value={coverElements.find(e => e.id === activeElementId)?.width || coverElements.find(e => e.id === activeElementId)?.fontSize} onChange={(e) => setCoverElements(prev => prev.map(el => el.id === activeElementId ? { ...el, width: Number(e.target.value), fontSize: Number(e.target.value) } : el))} className="w-1/2 p-1 text-xs rounded border border-slate-300" title="Size"/>
-                                    </div>
-                                    <div className="flex justify-between mt-4">
-                                        <div className="flex gap-1">
-                                            <button onClick={() => moveLayer('up')} className="p-1.5 bg-slate-200 rounded hover:bg-slate-300" title="Bring Forward"><ArrowUpToLine className="w-3 h-3" /></button>
-                                            <button onClick={() => moveLayer('down')} className="p-1.5 bg-slate-200 rounded hover:bg-slate-300" title="Send Backward"><ArrowDownToLine className="w-3 h-3" /></button>
-                                        </div>
-                                        <button onClick={() => { setCoverElements(prev => prev.filter(e => e.id !== activeElementId)); setActiveElementId(null); }} className="px-3 py-1.5 bg-red-100 text-red-600 text-xs font-bold rounded hover:bg-red-200">Delete</button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex-1 bg-slate-100 flex flex-col items-center justify-center p-8 relative shadow-inner overflow-hidden">
-                            <div 
-                                className="relative w-full max-w-2xl shadow-2xl transition-all duration-300 select-none"
-                                style={{ background: `linear-gradient(to right, ${backCoverColor} 0%, ${backCoverColor} ${backCoverPercentage}%, ${frontCoverColor} ${backCoverPercentage}%, ${frontCoverColor} 100%)`, aspectRatio: `${coverTotalWidth} / ${coverTotalHeight}`, containerType: 'inline-size' }}
-                                ref={canvasRef} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp} onClick={(e) => { if (e.target === canvasRef.current) setActiveElementId(null); }}
-                            >
-                                {showKdpGuides && (
-                                    <div className="absolute inset-0 pointer-events-none z-40">
-                                        <div className="absolute inset-0 border-[0.25cqi] border-pink-500/80"></div>
-                                        <div className="absolute inset-[0.25cqi] border-[0.1cqi] border-blue-400/80 border-dashed"></div>
-                                        <div className="absolute top-0 bottom-0 left-[50%] bg-pink-500/20 border-x border-pink-500/80 flex items-center justify-center" style={{ width: `${(spineWidth / coverTotalWidth) * 100}%`, transform: 'translateX(-50%)' }}>
-                                            <span className="text-[0.5cqi] text-pink-800 -rotate-90 whitespace-nowrap font-bold">SPINE SAFE AREA</span>
-                                        </div>
-                                        <div className="absolute bottom-[3%] left-[10%] w-[10%] h-[12%] bg-yellow-300/80 border-2 border-yellow-500 flex flex-col items-center justify-center text-yellow-900 overflow-hidden">
-                                            <ScanBarcode className="w-[2cqi] h-[2cqi] mb-1" />
-                                            <span className="text-[0.4cqi] font-bold text-center leading-tight">Barcode<br/>Location</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {coverElements.map((el, index) => {
-                                    const isSelected = activeElementId === el.id;
-                                    const commonStyles: React.CSSProperties = { position: 'absolute', left: `${el.x}%`, top: `${el.y}%`, transform: 'translate(-50%, -50%)', zIndex: index + 10, opacity: el.opacity || 1, cursor: 'move' };
-
-                                    if (el.type === 'text') {
-                                        return <div key={el.id} onPointerDown={(e) => handlePointerDown(e, el.id)} className={`flex flex-col items-center justify-center text-center whitespace-pre-wrap leading-tight ${isSelected ? 'ring-2 ring-blue-500 bg-white/10' : 'hover:ring-1 ring-white/50'}`} style={{ ...commonStyles, color: el.color, fontWeight: el.fontWeight, fontFamily: el.fontFamily, fontSize: `calc(${el.fontSize} * 0.08cqi)` }}>{el.text}</div>
-                                    } else if (el.type === 'image') {
-                                        return <div key={el.id} onPointerDown={(e) => handlePointerDown(e, el.id)} className={`${isSelected ? 'ring-2 ring-blue-500' : 'hover:ring-1 ring-white/50'}`} style={{ ...commonStyles, width: `${el.width}%` }}><img src={el.src} alt="Graphic" className="w-full h-auto pointer-events-none" /></div>
-                                    } else if (el.type === 'shape') {
-                                        return <div key={el.id} onPointerDown={(e) => handlePointerDown(e, el.id)} className={`${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : 'hover:ring-1 ring-white/50'}`} style={{ ...commonStyles, width: `${el.width}%`, aspectRatio: '1/1', backgroundColor: el.color, borderRadius: el.shapeType === 'circle' ? '50%' : '0%' }}></div>
-                                    }
-                                    
-                                    return null;
-                                })}
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* ================= KDP PUBLISHING GUIDE UI ================= */}
                 {activeTab === 'guide' && (

@@ -6,7 +6,7 @@ export default function Header() {
   return (
     <nav className="fixed top-0 inset-x-0 z-50 bg-white/70 dark:bg-slate-950/75 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-900/50 glass-card transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        
+
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2 group shrink-0">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
@@ -15,7 +15,7 @@ export default function Header() {
             </svg>
           </div>
           <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-            Ismam<span className="text-indigo-600 dark:text-indigo-400 font-black">Studio</span>
+            Book<span className="text-indigo-600 dark:text-indigo-400 font-black">bolt</span>
           </span>
         </Link>
 

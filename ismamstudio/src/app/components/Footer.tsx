@@ -16,7 +16,7 @@ export default function Footer() {
                 </svg>
               </div>
               <span className="text-xl font-black tracking-tight text-white">
-                Ismam<span className="text-indigo-400">Studio</span>
+                Book<span className="text-indigo-400">bolt</span>
               </span>
             </Link>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
@@ -80,12 +80,22 @@ export default function Footer() {
             <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-3">
               Need help? Feel free to contact our support team.
             </p>
-            <a 
-              href="mailto:support@ismamstudio.me"
-              className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
-            >
-              <Mail className="w-4 h-4" /> support@ismamstudio.me
-            </a>
+            <div className="space-y-3 flex flex-col items-start">
+              <a 
+                href="mailto:support@ismamstudio.me"
+                className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                <Mail className="w-4 h-4" /> support@ismamstudio.me
+              </a>
+              <a 
+                href="https://facebook.com/groups/bookboltpublisher"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                👥 Join Facebook Community
+              </a>
+            </div>
           </div>
 
         </div>

@@ -90,7 +90,7 @@ export default function PricingSection() {
         "Vector SVG & source files exports",
         "Advanced custom shapes & interior styling",
         "Up to 3 team member account seats",
-        "Beta access to upcoming KDP niche research tool",
+        "Full access to AI KDP Niche Hunter & Keyword Spy with priority data updates",
         "API access for automated generation",
       ],
       ctaText: "Go Agency Pro",

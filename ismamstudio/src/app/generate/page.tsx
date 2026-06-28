@@ -5,6 +5,7 @@ import { useCompletion } from "@ai-sdk/react";
 import { saveBookToDB } from "../actions";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import { 
   ArrowLeft, 
   Sparkles, 
@@ -42,8 +43,10 @@ const PROMPT_EXAMPLES = [
 
 export default function GeneratePage() {
   const router = useRouter();
+  const { isSignedIn } = useAuth();
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [genre, setGenre] = useState("fantasy");
   const [tone, setTone] = useState("mysterious");
   const [audience, setAudience] = useState("young-adult");
@@ -58,13 +61,22 @@ export default function GeneratePage() {
       setIsSaving(false); 
     },
     onFinish: async (prompt, result) => {
+      if (!isSignedIn) {
+        setIsAuthModalOpen(true);
+        return;
+      }
       setIsSaving(true);
-      const titleMatch = result.match(/\*\*Book Title:\*\*\s*"([^"]+)"/);
-      const title = titleMatch ? titleMatch[1] : "My AI Masterpiece";
-
-      const savedBook = await saveBookToDB(title, result);
-      if (savedBook?.id) {
-        router.push(`/book/${savedBook.id}`);
+      try {
+        const titleMatch = result.match(/\*\*Book Title:\*\*\s*"([^"]+)"/);
+        const title = titleMatch ? titleMatch[1] : "My AI Masterpiece";
+        const savedBook = await saveBookToDB(title, result);
+        if (savedBook?.id) {
+          router.push(`/book/${savedBook.id}`);
+        }
+      } catch (e) {
+        console.error("Failed to save book:", e);
+      } finally {
+        setIsSaving(false);
       }
     }
   });
@@ -289,7 +301,31 @@ export default function GeneratePage() {
           </div>
         )}
 
-      </div>
-    </main>
-  );
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center space-y-6 animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 mx-auto">
+              <Sparkles className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-white">Save Your Masterpiece</h3>
+              <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+                Your AI story outline has been successfully generated! Sign up for a free account to save it, edit chapters, and download KDP-ready PDFs.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Link href="/sign-in" className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-550 text-white font-black text-xs rounded-xl shadow-lg shadow-indigo-600/15">
+                Create Free Account / Sign In
+              </Link>
+              <button onClick={() => setIsAuthModalOpen(false)} className="w-full py-3.5 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-850 font-black text-xs rounded-xl">
+                Keep Reading Outline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  </main>
+);
 }

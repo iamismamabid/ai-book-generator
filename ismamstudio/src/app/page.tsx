@@ -270,6 +270,49 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 🎬 Real-time Interior Previews (Marquee) */}
+      <section className="relative z-10 w-full overflow-hidden py-10 bg-slate-950/40 border-y border-slate-900">
+        <div className="max-w-7xl mx-auto px-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <div>
+              <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider">Live KDP Vector Templates</span>
+              <h3 className="text-sm font-black text-white uppercase tracking-tight mt-0.5 font-sans">High-converting low-content & puzzle layouts</h3>
+            </div>
+            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-900 px-2.5 py-1 rounded-full border border-slate-800 self-start">Hover to Pause</span>
+          </div>
+        </div>
+        <div className="relative w-full overflow-hidden flex">
+          <div className="animate-marquee flex gap-6">
+            {[
+              { label: "Heart Labyrinth", type: "Maze", desc: "Perfect for Valentine KDP niches", emoji: "💖" },
+              { label: "Sudoku Grid", type: "Math Logic", desc: "100% compliant trim sizing", emoji: "🔢" },
+              { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
+              { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },
+              { label: "Lined Journal", type: "Low-Content", desc: "Classic horizontal writing lines", emoji: "📖" },
+              { label: "Cryptogram", type: "Quotes", desc: "Shuffled letter decryption keys", emoji: "🔐" },
+              { label: "Math sums", type: "Arithmetic", desc: "Sums, grid puzzle fill sheets", emoji: "➕" }
+            ].concat([
+              { label: "Heart Labyrinth", type: "Maze", desc: "Perfect for Valentine KDP niches", emoji: "💖" },
+              { label: "Sudoku Grid", type: "Math Logic", desc: "100% compliant trim sizing", emoji: "🔢" },
+              { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
+              { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },
+              { label: "Lined Journal", type: "Low-Content", desc: "Classic horizontal writing lines", emoji: "📖" },
+              { label: "Cryptogram", type: "Quotes", desc: "Shuffled letter decryption keys", emoji: "🔐" },
+              { label: "Math sums", type: "Arithmetic", desc: "Sums, grid puzzle fill sheets", emoji: "➕" }
+            ]).map((item, idx) => (
+              <div key={idx} className="bg-slate-950 border border-slate-850 p-5 rounded-2xl w-64 whitespace-normal shrink-0 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-2xl">{item.emoji}</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{item.type}</span>
+                </div>
+                <h4 className="text-xs font-black text-white uppercase">{item.label}</h4>
+                <p className="text-[10px] text-slate-400 font-bold mt-1.5 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ⚠️ Problem / Solution Section */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 py-12 text-center">
         <div className="bg-slate-900/40 backdrop-blur-md rounded-[3rem] border border-slate-900 p-8 md:p-12">

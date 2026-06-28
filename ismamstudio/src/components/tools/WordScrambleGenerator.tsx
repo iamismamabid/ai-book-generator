@@ -223,13 +223,17 @@ export default function WordScrambleGenerator() {
         
         // Draw Word Bank if difficulty allows
         if (difficulty !== "hard") {
-          const bankStartY = marginT + contentH - 1.2;
+          const numWords = puzzle.wordBank.length;
+          const numRows = Math.ceil(numWords / 3);
+          const rowSpacing = 0.22;
+          const boxHeight = 0.35 + numRows * rowSpacing;
+          const bankStartY = marginT + contentH - boxHeight;
           
           // Word bank container box
           doc.setDrawColor(203, 213, 225); // slate-300
           doc.setFillColor(248, 250, 252); // slate-50
           doc.setLineWidth(0.01);
-          doc.roundedRect(marginL + 0.1, bankStartY, contentW - 0.2, 1.0, 0.1, 0.1, "FD");
+          doc.roundedRect(marginL + 0.1, bankStartY, contentW - 0.2, boxHeight, 0.1, 0.1, "FD");
           
           doc.setFont("helvetica", "bold");
           doc.setFontSize(9);
@@ -247,7 +251,7 @@ export default function WordScrambleGenerator() {
           
           puzzle.wordBank.forEach((w) => {
             const wx = marginL + 0.3 + col * colW;
-            const wy = bankStartY + 0.45 + row * 0.22;
+            const wy = bankStartY + 0.45 + row * rowSpacing;
             doc.text(w, wx, wy);
             col++;
             if (col >= 3) {

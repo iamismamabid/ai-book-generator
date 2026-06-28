@@ -651,11 +651,16 @@ const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number
 
   // Word Bank (if easy/medium and not solution)
   if (difficulty !== "hard" && !isSolution) {
-    const bankStartY = pageHeight - marginB - 1.2;
+    const numWords = data.wordBank.length;
+    const numRows = Math.ceil(numWords / 3);
+    const rowSpacing = 0.2;
+    const boxHeight = 0.35 + numRows * rowSpacing;
+    const bankStartY = pageHeight - marginB - boxHeight - 0.05;
+
     doc.setDrawColor(203, 213, 225);
     doc.setFillColor(248, 250, 252);
     doc.setLineWidth(0.008);
-    doc.roundedRect(marginL + 0.1, bankStartY, contentW - 0.2, 0.9, 0.08, 0.08, "FD");
+    doc.roundedRect(marginL + 0.1, bankStartY, contentW - 0.2, boxHeight, 0.08, 0.08, "FD");
 
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(9);
@@ -672,7 +677,7 @@ const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number
 
     data.wordBank.forEach((w: string) => {
       const wx = marginL + 0.3 + col * colW;
-      const wy = bankStartY + 0.42 + row * 0.2;
+      const wy = bankStartY + 0.42 + row * rowSpacing;
       doc.text(w, wx, wy);
       col++;
       if (col >= 3) {

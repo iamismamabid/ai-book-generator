@@ -10,6 +10,7 @@ import { MazeEditor } from "./MazeEditor";
 import { WordScrambleEditor } from "./WordScrambleEditor";
 import { CryptogramEditor } from "./CryptogramEditor";
 import { MathPuzzleEditor } from "./MathPuzzleEditor";
+import LowContentEditor from "./LowContentEditor";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import {
@@ -89,8 +90,8 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     }
   }, [bookPages]);
 
-  const addPage = (type: string) => {
-    setBookPages([...bookPages, { id: Date.now(), type, config: {} }]);
+  const addPage = (type: string, initialConfig: any = {}) => {
+    setBookPages([...bookPages, { id: Date.now() + Math.random(), type, config: initialConfig }]);
     setActiveIndex(bookPages.length);
   };
 
@@ -313,6 +314,12 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
+            {bookPages[activeIndex].type === 'low_content' && (
+              <LowContentEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+              />
+            )}
             {bookPages[activeIndex].type === 'title' && (
               <TitlePageEditor
                 page={bookPages[activeIndex]}
@@ -416,20 +423,32 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1 custom-scrollbar">
               {[
-                { type: 'title', label: 'Title Page', desc: 'Starting title and author credits', icon: '📝', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
-                { type: 'blank', label: 'Blank Spacer', desc: 'Adds gutter and spacing padding', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
-                { type: 'crossword', label: 'Crossword Puzzle', desc: 'Vocabulary grids with clues', icon: '🧩', color: 'bg-amber-50 border-amber-200 text-amber-600' },
-                { type: 'word_search', label: 'Word Search', desc: 'Hidden word grids with banks', icon: '🔍', color: 'bg-pink-50 border-pink-200 text-pink-600' },
-                { type: 'sudoku', label: 'Sudoku Grid', desc: 'Easy, medium, and hard math logic', icon: '🔢', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
-                { type: 'maze', label: 'Labyrinth Maze', desc: 'Square, circle, and heart shapes', icon: '🌀', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
-                { type: 'word_scramble', label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
-                { type: 'cryptogram', label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
-                { type: 'math_puzzle', label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' }
+                { type: 'title', config: {}, label: 'Title Page', desc: 'Starting title and author credits', icon: '📝', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
+                { type: 'blank', config: {}, label: 'Blank Spacer', desc: 'Adds gutter and spacing padding', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
+                { type: 'crossword', config: {}, label: 'Crossword Puzzle', desc: 'Vocabulary grids with clues', icon: '🧩', color: 'bg-amber-50 border-amber-200 text-amber-600' },
+                { type: 'word_search', config: {}, label: 'Word Search', desc: 'Hidden word grids with banks', icon: '🔍', color: 'bg-pink-50 border-pink-200 text-pink-600' },
+                { type: 'sudoku', config: {}, label: 'Sudoku Grid', desc: 'Easy, medium, and hard math logic', icon: '🔢', color: 'bg-cyan-50 border-cyan-200 text-cyan-650' },
+                { type: 'maze', config: {}, label: 'Labyrinth Maze', desc: 'Square, circle, and heart shapes', icon: '🌀', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
+                { type: 'word_scramble', config: {}, label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
+                { type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
+                { type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
+                
+                // Low-Content journal/planner templates
+                { type: 'low_content', config: { template: 'lined_journal' }, label: 'Lined Journal', desc: 'Horizontal writing lines', icon: '📖', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
+                { type: 'low_content', config: { template: 'dot_grid' }, label: 'Dot Grid Journal', desc: 'Subtle bullet journal grid', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
+                { type: 'low_content', config: { template: 'weekly_planner' }, label: 'Weekly Planner', desc: '7-day list + notes block', icon: '📅', color: 'bg-amber-50 border-amber-200 text-amber-600' },
+                { type: 'low_content', config: { template: 'daily_planner' }, label: 'Daily Planner', desc: 'Task lists + hourly logs', icon: '☀️', color: 'bg-rose-50 border-rose-200 text-rose-600' },
+                { type: 'low_content', config: { template: 'habit_tracker' }, label: 'Habit Tracker', desc: 'Monthly tracking check grid', icon: '📈', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
+                { type: 'low_content', config: { template: 'password_keeper' }, label: 'Password Keeper', desc: 'Clean table for site details', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
+                { type: 'low_content', config: { template: 'budget_log' }, label: 'Budget Log', desc: 'Income & expenses balance list', icon: '💵', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
+                { type: 'low_content', config: { template: 'recipe_journal' }, label: 'Recipe Sheet', desc: 'Prep metrics & steps outline', icon: '🍳', color: 'bg-purple-50 border-purple-200 text-purple-600' },
+                { type: 'low_content', config: { template: 'gratitude_journal' }, label: 'Gratitude Book', desc: 'Mindful writing text prompts', icon: '✨', color: 'bg-yellow-50 border-yellow-200 text-yellow-600' },
+                { type: 'low_content', config: { template: 'guest_book' }, label: 'Guest Book Page', desc: 'Fields for signature & thoughts', icon: '✍️', color: 'bg-pink-50 border-pink-200 text-pink-600' }
               ].map((tmpl, idx) => (
                 <button
                   key={idx}
                   onClick={() => {
-                    addPage(tmpl.type);
+                    addPage(tmpl.type, tmpl.config);
                     setIsAddModalOpen(false);
                   }}
                   className="p-4 bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-md rounded-2xl text-left transition-all flex flex-col justify-between h-32 group cursor-pointer"

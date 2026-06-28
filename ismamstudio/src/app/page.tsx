@@ -544,7 +544,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 🔮 Upcoming Feature Teaser: AI Niche Hunter */}
+      {/* 🔮 AI Niche Hunter Section */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 py-12">
         <div className="bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/40 backdrop-blur-md rounded-[3rem] border border-indigo-900/35 p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-2xl">
           {/* Decorative glows */}
@@ -552,13 +552,13 @@ export default function HomePage() {
           
           <div className="space-y-4 max-w-2xl">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> Coming Q3 2026
+              <Sparkles className="w-3.5 h-3.5" /> Now Live & Active
             </span>
             <h2 className="text-3xl font-black text-white tracking-tight">
               AI KDP Niche Hunter & Keyword Spy
             </h2>
             <p className="text-slate-400 text-xs md:text-sm font-semibold leading-relaxed">
-              We are closing the final gap. Stop guessing what sells. Our upcoming spy tool will let you fetch Amazon search volumes, analyze BSR (Best Seller Rank) data, and check competitor margins directly from your Ismam Studio dashboard.
+              Stop guessing what sells. Search autocomplete suggestions, estimate monthly sales targets, and calculate royalties using precise BSR estimators.
             </p>
             <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-350 justify-center md:justify-start">
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-indigo-400" /> Real-time search volumes</span>
@@ -568,13 +568,13 @@ export default function HomePage() {
           </div>
 
           <div className="shrink-0 bg-indigo-500/10 border border-indigo-500/20 px-6 py-8 rounded-3xl text-center max-w-[200px] w-full mx-auto md:mx-0">
-            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 block mb-2">Beta Access</span>
-            <span className="text-xs text-slate-300 font-semibold block mb-4">Included free for Agency members</span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 block mb-2">Research Console</span>
+            <span className="text-xs text-slate-300 font-semibold block mb-4">Validate KDP niches instantly for free</span>
             <Link
-              href="/#pricing"
+              href="/tools/keyword-research"
               className="inline-block w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow-md transition"
             >
-              Secure Spot
+              Open Niche Hunter
             </Link>
           </div>
         </div>

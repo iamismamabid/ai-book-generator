@@ -71,6 +71,8 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       drawCryptogram(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'math_puzzle' && page.config.puzzleData) {
       drawMathPuzzle(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'low_content') {
+      drawLowContent(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'title') {
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(32);
@@ -952,6 +954,282 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
           }
         }
       }
+    }
+  }
+
+  doc.setTextColor(0);
+};
+
+const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: number) => {
+  const templateType = page.config.template || 'lined_journal';
+  const pageTitle = page.config.pageTitle || 'Journal';
+  const lineSpacing = page.config.lineSpacing || 24; 
+  const ptSpacing = lineSpacing * 0.0104; 
+
+  // 1. Draw Title
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(30, 41, 59);
+  const titleWidth = doc.getTextWidth(pageTitle.toUpperCase());
+  doc.text(pageTitle.toUpperCase(), (w - titleWidth) / 2 + xShift, 0.95);
+
+  doc.setLineWidth(0.015);
+  doc.setDrawColor(79, 70, 229);
+  doc.line((w - 1.2) / 2 + xShift, 1.1, (w + 1.2) / 2 + xShift, 1.1);
+
+  // 2. Render templates
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.008);
+
+  const startX = 0.75 + xShift;
+  const endX = w - 0.75 + xShift;
+
+  if (templateType === 'lined_journal') {
+    let currentY = 1.6;
+    while (currentY < h - 0.8) {
+      doc.line(startX, currentY, endX, currentY);
+      currentY += ptSpacing;
+    }
+  } 
+  else if (templateType === 'dot_grid') {
+    const spacing = 0.25; 
+    for (let currentY = 1.6; currentY < h - 0.8; currentY += spacing) {
+      for (let currentX = startX; currentX < endX; currentX += spacing) {
+        doc.setFillColor(148, 163, 184);
+        doc.circle(currentX, currentY, 0.01, "F");
+      }
+    }
+  } 
+  else if (templateType === 'weekly_planner') {
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Weekend", "Notes"];
+    days.forEach((day, idx) => {
+      const isNotes = day === "Notes";
+      const colIdx = idx % 2;
+      const rowIdx = Math.floor(idx / 2);
+      
+      const cardW = isNotes ? (w - 1.5) : (w - 1.8) / 2;
+      const cardH = isNotes ? 1.4 : 1.6;
+      const cX = isNotes ? (0.75 + xShift) : (0.75 + colIdx * (cardW + 0.3) + xShift);
+      const cY = 1.6 + rowIdx * 1.9;
+
+      doc.setDrawColor(203, 213, 225);
+      doc.rect(cX, cY, cardW, cardH);
+      
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(79, 70, 229);
+      doc.text(day.toUpperCase(), cX + 0.1, cY + 0.2);
+
+      doc.setDrawColor(241, 245, 249);
+      doc.line(cX + 0.1, cY + 0.3, cX + cardW - 0.1, cY + 0.3);
+    });
+  } 
+  else if (templateType === 'daily_planner') {
+    const sW = (w - 1.8) / 2;
+    const sH = h - 2.4;
+    const sX = 0.75 + xShift;
+    const sY = 1.6;
+
+    doc.rect(sX, sY, sW, sH);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(79, 70, 229);
+    doc.text("TODAY'S SCHEDULE", sX + 0.15, sY + 0.25);
+    
+    doc.setDrawColor(241, 245, 249);
+    let schedY = sY + 0.55;
+    const hours = ["7:00 AM", "9:00 AM", "11:00 AM", "1:00 PM", "3:00 PM", "5:00 PM", "7:00 PM"];
+    hours.forEach((time) => {
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(6);
+      doc.setTextColor(148, 163, 184);
+      doc.text(time, sX + 0.15, schedY + 0.03);
+      doc.line(sX + 0.85, schedY, sX + sW - 0.15, schedY);
+      schedY += 0.55;
+    });
+
+    const rX = 0.75 + sW + 0.3 + xShift;
+    const pW = sW;
+    
+    doc.setDrawColor(203, 213, 225);
+    doc.rect(rX, sY, pW, 2.2);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(79, 70, 229);
+    doc.text("TOP PRIORITIES", rX + 0.15, sY + 0.25);
+    
+    let priorityY = sY + 0.65;
+    for (let i = 0; i < 3; i++) {
+      doc.rect(rX + 0.15, priorityY - 0.08, 0.12, 0.12);
+      doc.line(rX + 0.35, priorityY, rX + pW - 0.15, priorityY);
+      priorityY += 0.55;
+    }
+
+    doc.rect(rX, sY + 2.5, pW, 1.2);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(79, 70, 229);
+    doc.text("WATER INTAKE", rX + 0.15, sY + 2.75);
+
+    const dropXStart = rX + (pW - (8 * 0.3)) / 2;
+    for (let i = 0; i < 8; i++) {
+      const dX = dropXStart + i * 0.3;
+      const dY = sY + 3.2;
+      doc.rect(dX, dY - 0.1, 0.15, 0.15); 
+    }
+  } 
+  else if (templateType === 'habit_tracker') {
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(79, 70, 229);
+    doc.text("MONTHLY HABIT LOG", startX, 1.75);
+
+    const cellW = 0.16;
+    const descW = 2.0;
+    const rowH = 0.45;
+    const startY = 1.95;
+
+    doc.setFillColor(248, 250, 252);
+    doc.rect(startX, startY, descW + (31 * cellW), rowH, "F");
+    doc.rect(startX, startY, descW + (31 * cellW), rowH);
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(6);
+    doc.setTextColor(148, 163, 184);
+    doc.text("HABIT DESCRIPTION", startX + 0.1, startY + 0.28);
+    doc.text("DAYS OF THE MONTH (1 - 31)", startX + descW + 1.2, startY + 0.28);
+
+    for (let r = 0; r < 10; r++) {
+      const cY = startY + (r + 1) * rowH;
+      doc.rect(startX, cY, descW + (31 * cellW), rowH);
+      doc.line(startX + descW, cY, startX + descW, cY + rowH);
+      
+      for (let c = 1; c <= 31; c++) {
+        const cX = startX + descW + c * cellW;
+        doc.line(cX, cY, cX, cY + rowH);
+      }
+    }
+  } 
+  else if (templateType === 'password_keeper') {
+    let currentY = 1.6;
+    for (let b = 0; b < 4; b++) {
+      doc.rect(startX, currentY, w - 1.5, 1.3);
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text("WEBSITE:", startX + 0.15, currentY + 0.35);
+      doc.text("USERNAME / EMAIL:", startX + 0.15, currentY + 0.7);
+      doc.text("PASSWORD:", startX + 0.15, currentY + 1.05);
+
+      doc.setDrawColor(241, 245, 249);
+      doc.line(startX + 1.8, currentY + 0.4, startX + w - 1.8, currentY + 0.4);
+      doc.line(startX + 1.8, currentY + 0.75, startX + w - 1.8, currentY + 0.75);
+      doc.line(startX + 1.8, currentY + 1.1, startX + w - 1.8, currentY + 1.1);
+
+      doc.setDrawColor(203, 213, 225);
+      currentY += 1.6;
+    }
+  } 
+  else if (templateType === 'budget_log') {
+    const colW = [1.2, 3.8, 2.0];
+    const headerH = 0.45;
+    const rowH = 0.4;
+    const startY = 1.6;
+
+    doc.setFillColor(248, 250, 252);
+    doc.rect(startX, startY, w - 1.5, headerH, "F");
+    doc.rect(startX, startY, w - 1.5, headerH);
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text("DATE", startX + 0.15, startY + 0.28);
+    doc.text("DESCRIPTION", startX + colW[0] + 0.15, startY + 0.28);
+    doc.text("AMOUNT / BALANCE", startX + colW[0] + colW[1] + 0.15, startY + 0.28);
+
+    doc.line(startX + colW[0], startY, startX + colW[0], startY + headerH);
+    doc.line(startX + colW[0] + colW[1], startY, startX + colW[0] + colW[1], startY + headerH);
+
+    for (let r = 0; r < 16; r++) {
+      const cY = startY + headerH + r * rowH;
+      doc.rect(startX, cY, w - 1.5, rowH);
+      doc.line(startX + colW[0], cY, startX + colW[0], cY + rowH);
+      doc.line(startX + colW[0] + colW[1], cY, startX + colW[0] + colW[1], cY + rowH);
+    }
+  } 
+  else if (templateType === 'recipe_journal') {
+    const cardW = (w - 1.8) / 3;
+    const startY = 1.6;
+    ["SERVINGS: ______", "PREP TIME: _____", "COOK TIME: _____"].forEach((lbl, idx) => {
+      const cX = startX + idx * (cardW + 0.15);
+      doc.rect(cX, startY, cardW, 0.45);
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text(lbl, cX + 0.1, startY + 0.28);
+    });
+
+    const boxW = (w - 1.8) / 2;
+    const boxH = h - 3.4;
+    const boxY = startY + 0.75;
+
+    doc.rect(startX, boxY, boxW, boxH);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(79, 70, 229);
+    doc.text("INGREDIENTS", startX + 0.15, boxY + 0.3);
+
+    for (let i = 0; i < 12; i++) {
+      doc.circle(startX + 0.2, boxY + 0.6 + i * 0.4, 0.015, "F");
+      doc.line(startX + 0.35, boxY + 0.62 + i * 0.4, startX + boxW - 0.15, boxY + 0.62 + i * 0.4);
+    }
+
+    doc.rect(startX + boxW + 0.3, boxY, boxW, boxH);
+    doc.text("DIRECTIONS / NOTES", startX + boxW + 0.45, boxY + 0.3);
+    for (let i = 0; i < 10; i++) {
+      doc.line(startX + boxW + 0.45, boxY + 0.62 + i * 0.48, startX + w - 0.9, boxY + 0.62 + i * 0.48);
+    }
+  } 
+  else if (templateType === 'gratitude_journal') {
+    const prompts = [
+      "Three things I am grateful for today:",
+      "A self-reflection / quote that inspired me:",
+      "The highlights and wins of my day:"
+    ];
+    let currentY = 1.6;
+    prompts.forEach((p) => {
+      doc.rect(startX, currentY, w - 1.5, 2.2);
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(79, 70, 229);
+      doc.text(p.toUpperCase(), startX + 0.15, currentY + 0.3);
+
+      doc.setDrawColor(241, 245, 249);
+      doc.line(startX + 0.15, currentY + 0.75, startX + w - 0.9, currentY + 0.75);
+      doc.line(startX + 0.15, currentY + 1.25, startX + w - 0.9, currentY + 1.25);
+      doc.line(startX + 0.15, currentY + 1.75, startX + w - 0.9, currentY + 1.75);
+
+      doc.setDrawColor(203, 213, 225);
+      currentY += 2.5;
+    });
+  } 
+  else if (templateType === 'guest_book') {
+    let currentY = 1.6;
+    for (let b = 0; b < 4; b++) {
+      doc.rect(startX, currentY, w - 1.5, 1.4);
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text("VISITOR NAME:", startX + 0.15, currentY + 0.35);
+      doc.text("DATE: _____________", startX + w - 2.8, currentY + 0.35);
+      doc.text("MESSAGE / THOUGHTS:", startX + 0.15, currentY + 0.75);
+
+      doc.setDrawColor(241, 245, 249);
+      doc.line(startX + 1.8, currentY + 0.4, startX + w - 3.2, currentY + 0.4);
+      doc.line(startX + 0.15, currentY + 1.05, startX + w - 0.9, currentY + 1.05);
+
+      doc.setDrawColor(203, 213, 225);
+      currentY += 1.7;
     }
   }
 

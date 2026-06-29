@@ -95,9 +95,12 @@ export default function AffiliatePage() {
 
           {/* CTA */}
           <div className="pt-4 flex justify-center">
-            <button className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-650 text-white font-black rounded-xl text-center shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-1.5 hover:opacity-90 transition">
+            <a 
+              href="mailto:affiliates@ismamstudio.me?subject=Affiliate%20Program%20Application"
+              className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black rounded-xl text-center shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-1.5 hover:opacity-90 transition"
+            >
               Apply to Partner Program <Zap className="w-4 h-4" />
-            </button>
+            </a>
           </div>
 
         </div>

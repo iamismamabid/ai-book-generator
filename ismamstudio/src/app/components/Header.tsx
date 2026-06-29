@@ -15,7 +15,7 @@ export default function Header() {
             </svg>
           </div>
           <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-            Book<span className="text-indigo-600 dark:text-indigo-400 font-black">bolt</span>
+            Ismam<span className="text-indigo-600 dark:text-indigo-400 font-black">Studio</span>
           </span>
         </Link>
 

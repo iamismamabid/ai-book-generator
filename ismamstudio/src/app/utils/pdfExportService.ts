@@ -816,6 +816,37 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
   const isSolution = page.config.isSolution || false;
 
   const contentW = pageWidth - 1.25;
+  void contentW; // reserved for future use
+
+  // ── Look-ahead page-break guard ─────────────────────────────────────────
+  // Calculate how tall the grid will be and ensure it fits above the footer.
+  // If not, force a new page BEFORE drawing anything.
+  const bottomMargin = 0.65; // safe bottom boundary in inches
+  const gridStartY = 1.6;    // all grids begin at this Y on each page
+
+  let gridH = 0;
+  if (puzzleType === "addition") {
+    // 3 rows × 0.55" + 2 gaps × 0.45"
+    gridH = 3 * 0.55 + 2 * 0.45;
+  } else if (puzzleType === "multiplication" || puzzleType === "number_fill") {
+    // 5 rows × 0.55"
+    gridH = 5 * 0.55;
+  }
+
+  const totalNeeded = gridStartY + gridH + 0.3; // grid bottom + small buffer
+
+  if (totalNeeded > pageHeight - bottomMargin) {
+    // Not enough room — add a new page and reprint the section title
+    doc.addPage();
+    const isSol = page.config.isSolution || false;
+    const titleText = `${puzzleType.replace("_", " ").toUpperCase()}${isSol ? " (SOLUTION)" : ""}`;
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(0);
+    const titleW = doc.getTextWidth(titleText);
+    doc.text(titleText, (pageWidth - titleW) / 2 + xShift, 0.8);
+  }
+  // ────────────────────────────────────────────────────────────────────────
 
   if (puzzleType === "addition") {
     // 3x3 Addition Grid

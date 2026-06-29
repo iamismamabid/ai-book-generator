@@ -9,9 +9,37 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 // 🎨 গুগল ফন্ট লোড করা হচ্ছে
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-export const metadata = {
-  title: "Ismam Studio | Your All-in-One KDP Publishing Toolkit",
-  description: "Create, format, and publish professional puzzle interiors, word searches, mazes, and gorgeous covers for Amazon KDP in minutes.",
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Ismam Studio | All-in-One KDP Book Creation Toolkit",
+  description: "Create puzzle interiors, AI-assisted novel chapters, shape-masked mazes, word searches, and gorgeous covers for Amazon KDP — in minutes. No design software needed.",
+  metadataBase: new URL("https://www.ismamstudio.me"),
+  openGraph: {
+    title: "Ismam Studio — Create & Publish KDP Books in Minutes",
+    description: "The ultimate all-in-one toolkit for Amazon KDP self-publishers. Sudoku, mazes, word searches, AI novel outlines, and full cover design — all in one place.",
+    url: "https://www.ismamstudio.me",
+    siteName: "Ismam Studio",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Ismam Studio — KDP Book Creation Toolkit",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ismam Studio — KDP Book Creation Toolkit",
+    description: "Create professional puzzle books, AI chapters & covers for Amazon KDP in minutes.",
+    images: ["/og-image.png"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

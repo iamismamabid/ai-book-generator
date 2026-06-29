@@ -32,7 +32,7 @@ export default function PricingSection() {
       colorClass: "bg-slate-950/40 hover:border-slate-800",
       borderClass: "border-slate-900",
       icon: <HelpCircle className="w-6 h-6 text-slate-500" />,
-      ctaLink: "/studio"
+      ctaLink: "/sign-up"
     },
     {
       name: "Starter Creator",
@@ -53,7 +53,7 @@ export default function PricingSection() {
       colorClass: "bg-slate-950/60 hover:border-slate-700",
       borderClass: "border-slate-800/80",
       icon: <Star className="w-6 h-6 text-slate-400" />,
-      ctaLink: "/studio"
+      ctaLink: "/sign-up?plan=starter"
     },
     {
       name: "Pro Studio",
@@ -75,7 +75,7 @@ export default function PricingSection() {
       colorClass: "bg-white text-slate-900 shadow-[0_20px_50px_rgba(245,158,11,0.25),_0_0_30px_rgba(56,189,248,0.15)]",
       borderClass: "border-amber-400 border-2",
       icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
-      ctaLink: "/studio"
+      ctaLink: "/sign-up?plan=pro"
     },
     {
       name: "Publisher Agency",
@@ -97,7 +97,7 @@ export default function PricingSection() {
       colorClass: "bg-slate-950/60 hover:border-slate-700",
       borderClass: "border-slate-800/80",
       icon: <Award className="w-6 h-6 text-slate-400" />,
-      ctaLink: "/studio"
+      ctaLink: "/sign-up?plan=agency"
     },
   ];
 
@@ -199,6 +199,8 @@ export default function PricingSection() {
         {plans.map((plan, index) => {
           const price = isAnnual ? plan.priceAnnual : plan.priceMonthly;
           const billingText = plan.priceMonthly === 0 ? "forever free" : isAnnual ? "billed annually" : "billed monthly";
+          const billingParam = isAnnual && plan.priceMonthly !== 0 ? "&billing=annual" : "";
+          const ctaHref = plan.priceMonthly === 0 ? plan.ctaLink : `${plan.ctaLink}${billingParam}`;
           
           return (
             <div
@@ -290,7 +292,7 @@ export default function PricingSection() {
               {/* Action Button */}
               <div className="mt-8">
                 <Link
-                  href={plan.ctaLink}
+                  href={ctaHref}
                   className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
                     plan.popular
                       ? "bg-gradient-to-r from-amber-500 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"

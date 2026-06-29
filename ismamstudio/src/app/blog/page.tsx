@@ -104,8 +104,8 @@ const BLOG_POSTS: Post[] = [
       "Use online calculator tools to translate BSR to estimated monthly sales. For example, a paperback book with a BSR of 50,000 sells approximately 3-5 copies per day (90-150 copies per month). If the royalty per sale is $2.50, a single validated book can bring in $225 to $375 in passive monthly royalties.",
       "### Step 3: Spotting Market Saturation",
       "Type your target keyword in Amazon's search bar and analyze the first page results. If all top ranking books have 500+ reviews and are sponsored ads, the niche is highly competitive. Look for niches where top books have fewer than 100 reviews and were published recently (within the last 6 months)—this indicates a gap you can fill.",
-      "### Step 4: The Upcoming Ismam Studio Niche Spy",
-      "To make this process effortless, Ismam Studio is building an AI KDP Niche Hunter & Keyword Spy (Beta coming Q3 2026). This tool will fetch Amazon search volumes, analyze BSR data, and estimate competitor margins directly inside your dashboard. Stay tuned for early beta access on our pricing page!"
+      "### Step 4: Use the Ismam Studio Niche Spy (Now Live!)",
+      "Ismam Studio's AI KDP Niche Hunter & Keyword Spy is now fully live inside your dashboard. Simply enter any keyword and the tool fetches real-time Amazon search volumes, analyzes competitor BSR data, and estimates potential monthly royalties — all in seconds. No spreadsheets required. Access it directly from the Research Console on your dashboard or at ismamstudio.me/tools/keyword-research."
     ]
   }
 ];

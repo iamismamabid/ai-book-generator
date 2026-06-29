@@ -826,11 +826,11 @@ export default function HomePage() {
         <div className="bg-slate-900/40 border border-slate-900/60 rounded-[3rem] p-8 md:p-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center backdrop-blur-sm">
           <div>
             <h3 className="text-4xl md:text-5xl font-black text-white bg-gradient-to-r from-indigo-400 to-indigo-200 bg-clip-text text-transparent">1,820+</h3>
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest mt-2 block">Books Compiled (Beta Phase)</span>
+            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest mt-2 block">Books Compiled</span>
           </div>
           <div>
             <h3 className="text-4xl md:text-5xl font-black text-white bg-gradient-to-r from-purple-400 to-purple-200 bg-clip-text text-transparent">450+</h3>
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest mt-2 block">Active Authors (Beta Phase)</span>
+            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest mt-2 block">Active Authors</span>
           </div>
           <div>
             <h3 className="text-4xl md:text-5xl font-black text-white bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent">99.8%</h3>

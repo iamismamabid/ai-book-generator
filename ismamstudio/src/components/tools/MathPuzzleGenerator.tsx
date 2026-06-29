@@ -295,7 +295,7 @@ export default function MathPuzzleGenerator() {
         doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
 
         // Print answer grids 2 per page
-        const gridH = 3.2;
+        const gridH = 4.2;
 
         for (let pIdx = 0; pIdx < numPages; pIdx++) {
           const row = pIdx % 2;

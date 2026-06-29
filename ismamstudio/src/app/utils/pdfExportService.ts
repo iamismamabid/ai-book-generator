@@ -712,6 +712,18 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
   let curX = marginL + 0.2;
   let curY = marginT + 0.4;
 
+  // Safe bottom: leave room for cipher labels below boxes + footer
+  // On solution pages also reserve 1.5" for the substitution key
+  const reservedBottom = isSolution ? 1.6 : 0.45;
+  const safeBottomY = pageHeight - marginB - reservedBottom;
+
+  // Helper: add overflow page and reset Y cursor
+  const addOverflowPage = () => {
+    doc.addPage();
+    curX = marginL + 0.2;
+    curY = marginT + 0.1;
+  };
+
   const wordsList = data.encrypted.split(" ");
   const originalWordsList = data.original.split(" ");
 
@@ -720,9 +732,15 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
     const wordLen = word.length;
     const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
 
+    // Word wrap: if word doesn't fit on current line, move down
     if (curX + wordWidthInches > marginL + contentW - 0.2) {
       curX = marginL + 0.2;
       curY += lineStepY;
+    }
+
+    // PAGE BREAK GUARD: boxes + cipher label below must fit before safe bottom
+    if (curY + charBoxH + 0.2 > safeBottomY) {
+      addOverflowPage();
     }
 
     for (let i = 0; i < wordLen; i++) {

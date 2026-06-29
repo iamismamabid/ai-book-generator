@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku'; 
 import { downloadSudokuPdf } from '../../lib/sudoku-pdf';
 import DownloadButton from "@/components/DownloadButton";
+import { CheckCircle2 } from "lucide-react";
 
 // FIXED: Properly enclosed the return statement inside the function body
 function SudokuPreview({ grid }: { grid: Grid }) {

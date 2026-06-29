@@ -55,6 +55,11 @@ export default function GeneratePage() {
   const { completion, input, setInput, handleInputChange, handleSubmit, isLoading } = useCompletion({
     api: '/api/generate',
     streamProtocol: 'text',
+    body: {
+      genre,
+      tone,
+      audience
+    },
     onError: (error) => {
       console.error("AI Generation Error:", error.message);
       alert(`Oops! Something went wrong: ${error.message}`);
@@ -93,13 +98,7 @@ export default function GeneratePage() {
 
   const handleCustomSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    handleSubmit(e, {
-      body: {
-        genre,
-        tone,
-        audience
-      }
-    });
+    handleSubmit(e);
   };
 
   return (

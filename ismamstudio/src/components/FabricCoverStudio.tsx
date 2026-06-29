@@ -488,13 +488,13 @@ export default function FabricCoverStudio({
     });
 
     // Override getPointer to account for CSS transform scaling of parent container
-    fCanvas.getPointer = function (e, ignoreZoom) {
+    fCanvas.getPointer = function (this: any, e: any, ignoreZoom?: boolean) {
       const rect = this.upperCanvasEl.getBoundingClientRect();
       const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
       const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
       
-      const scaleX = rect.width / this.width;
-      const scaleY = rect.height / this.height;
+      const scaleX = this.width ? rect.width / this.width : 1;
+      const scaleY = this.height ? rect.height / this.height : 1;
       
       const x = (clientX - rect.left) / (scaleX || 1);
       const y = (clientY - rect.top) / (scaleY || 1);
@@ -1219,7 +1219,7 @@ export default function FabricCoverStudio({
 
   const sendBackward = () => {
     if (!canvas || !activeObject) return;
-    activeObject.sendBackward();
+    (activeObject as any).sendBackwards();
     canvas.requestRenderAll();
     canvas.fire("object:modified", { target: activeObject });
   };

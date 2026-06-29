@@ -174,12 +174,9 @@ export default function CryptogramGenerator() {
       const wordSpacing = fontSizeType === "large" ? 0.32 : 0.24;
       const lineStepY = fontSizeType === "large" ? 0.85 : 0.7;
 
-      // 1. Draw Puzzles Page by Page
-      for (let pageIdx = 0; pageIdx < totalPuzzlePages; pageIdx++) {
-        if (pageIdx > 0) doc.addPage();
-
-        const pagePuzzles = puzzles.slice(pageIdx * itemsPerPage, (pageIdx + 1) * itemsPerPage);
-
+      // 1. Draw Puzzles dynamically with height checks to prevent overlap/footer clipping
+      let pageIdx = 0;
+      const drawPageHeaderAndFooter = (idx: number) => {
         // Header Title
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
@@ -200,78 +197,107 @@ export default function CryptogramGenerator() {
         doc.setDrawColor(226, 232, 240);
         doc.line(marginL, marginT + 0.7, marginL + contentW, marginT + 0.7);
 
-        // Draw stacked puzzles
-        const puzzleSpaceH = (pageH - marginT - marginB - 1.0) / itemsPerPage;
-
-        pagePuzzles.forEach((puzzle, innerIdx) => {
-          const puzzleStartY = marginT + 1.1 + innerIdx * puzzleSpaceH;
-
-          // Draw Puzzle Title
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(13);
-          doc.setTextColor(79, 70, 229);
-          doc.text(`Puzzle #${puzzle.index}`, marginL, puzzleStartY);
-
-          // Word-wrapped rendering of letters with boxes
-          let curX = marginL;
-          let curY = puzzleStartY + 0.35;
-
-          const wordsList = puzzle.encrypted.split(" ");
-
-          wordsList.forEach((word) => {
-            // Calculate word width
-            const wordLen = word.length;
-            const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
-
-            // Wrap to next line if word exceeds right boundary
-            if (curX + wordWidthInches > marginL + contentW - 0.2) {
-              curX = marginL;
-              curY += lineStepY;
-            }
-
-            // Draw letters of the word
-            for (let i = 0; i < wordLen; i++) {
-              const char = word[i];
-              const isLetter = /[A-Z]/.test(char);
-
-              if (isLetter) {
-                // Write-in Box
-                doc.setDrawColor(148, 163, 184); // slate-400
-                doc.setLineWidth(0.008);
-                doc.rect(curX, curY, charBoxW, charBoxH);
-
-                // Cipher Letter (Bottom)
-                doc.setFont("courier", "bold");
-                doc.setFontSize(fontSizeType === "large" ? 13 : 11);
-                doc.setTextColor(15, 23, 42); // slate-900
-                doc.text(char, curX + charBoxW / 2, curY + charBoxH + 0.16, { align: "center" });
-              } else {
-                // Non-alphabetic character (e.g. punctuation, comma, dot)
-                doc.setFont("courier", "bold");
-                doc.setFontSize(fontSizeType === "large" ? 13 : 11);
-                doc.setTextColor(15, 23, 42);
-                doc.text(char, curX + charBoxW / 2, curY + charBoxH - 0.05, { align: "center" });
-              }
-
-              curX += charBoxW + charSpacing;
-            }
-
-            // Word Space
-            curX += wordSpacing;
-          });
-        });
-
         // Page Number Footer
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
-        doc.text(`Page ${pageIdx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
-      }
+        doc.text(`Page ${idx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+      };
+
+      drawPageHeaderAndFooter(pageIdx);
+
+      let curY = marginT + 1.1;
+      let puzzlesOnCurrentPage = 0;
+
+      puzzles.forEach((puzzle) => {
+        // Calculate the height this puzzle needs based on word wrap rows
+        let tempX = marginL;
+        let rowsCount = 1;
+        const wordsList = puzzle.encrypted.split(" ");
+        
+        wordsList.forEach((word) => {
+          const wordLen = word.length;
+          const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
+          if (tempX + wordWidthInches > marginL + contentW - 0.2) {
+            tempX = marginL;
+            rowsCount++;
+          }
+          tempX += wordWidthInches + wordSpacing;
+        });
+
+        const estimatedHeight = 0.45 + (rowsCount * lineStepY) + 0.4;
+
+        // Trigger page break if we exceed vertical height limits or exceed item count limit
+        if (puzzlesOnCurrentPage > 0 && (curY + estimatedHeight > pageH - marginB || puzzlesOnCurrentPage >= itemsPerPage)) {
+          doc.addPage();
+          pageIdx++;
+          drawPageHeaderAndFooter(pageIdx);
+          curY = marginT + 1.1;
+          puzzlesOnCurrentPage = 0;
+        }
+
+        const puzzleStartY = curY;
+
+        // Draw Puzzle Title
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(79, 70, 229);
+        doc.text(`Puzzle #${puzzle.index}`, marginL, puzzleStartY);
+
+        // Word-wrapped rendering of letters with boxes
+        let curX = marginL;
+        let curBoxY = puzzleStartY + 0.4;
+
+        wordsList.forEach((word) => {
+          // Calculate word width
+          const wordLen = word.length;
+          const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
+
+          // Wrap to next line if word exceeds right boundary
+          if (curX + wordWidthInches > marginL + contentW - 0.2) {
+            curX = marginL;
+            curBoxY += lineStepY;
+          }
+
+          // Draw letters of the word
+          for (let i = 0; i < wordLen; i++) {
+            const char = word[i];
+            const isLetter = /[A-Z]/.test(char);
+
+            if (isLetter) {
+              // Write-in Box
+              doc.setDrawColor(148, 163, 184); // slate-400
+              doc.setLineWidth(0.008);
+              doc.rect(curX, curBoxY, charBoxW, charBoxH);
+
+              // Cipher Letter (Bottom)
+              doc.setFont("courier", "bold");
+              doc.setFontSize(fontSizeType === "large" ? 13 : 11);
+              doc.setTextColor(15, 23, 42); // slate-900
+              doc.text(char, curX + charBoxW / 2, curBoxY + charBoxH + 0.16, { align: "center" });
+            } else {
+              // Non-alphabetic character (e.g. punctuation, comma, dot)
+              doc.setFont("courier", "bold");
+              doc.setFontSize(fontSizeType === "large" ? 13 : 11);
+              doc.setTextColor(15, 23, 42);
+              doc.text(char, curX + charBoxW / 2, curBoxY + charBoxH - 0.05, { align: "center" });
+            }
+
+            curX += charBoxW + charSpacing;
+          }
+
+          // Word Space
+          curX += wordSpacing;
+        });
+
+        curY = curBoxY + lineStepY + 0.5; // Update curY for the next puzzle, adding space below
+        puzzlesOnCurrentPage++;
+      });
 
       // 2. Renders Answers Key at the end
       if (includeAnswers) {
         doc.addPage();
-        const ansPageIdx = totalPuzzlePages + 1;
+        const ansPageIdx = pageIdx + 2;
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);

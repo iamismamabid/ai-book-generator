@@ -98,6 +98,11 @@ export default function GeneratePage() {
 
   const handleCustomSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Guard: require sign-in BEFORE hitting the API to avoid a 401 Unauthorized error
+    if (!isSignedIn) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     handleSubmit(e);
   };
 
@@ -307,9 +312,13 @@ export default function GeneratePage() {
               <Sparkles className="w-8 h-8" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-black text-white">Save Your Masterpiece</h3>
+              <h3 className="text-xl font-black text-white">
+                {completion.length > 0 ? "Save Your Masterpiece" : "Sign In to Generate"}
+              </h3>
               <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-                Your AI story outline has been successfully generated! Sign up for a free account to save it, edit chapters, and download KDP-ready PDFs.
+                {completion.length > 0
+                  ? "Your AI story outline has been successfully generated! Sign up for a free account to save it, edit chapters, and download KDP-ready PDFs."
+                  : "Create a free Ismam Studio account to unlock the AI Novel Writer and generate unlimited chapter outlines."}
               </p>
             </div>
             <div className="flex flex-col gap-2">
@@ -317,7 +326,7 @@ export default function GeneratePage() {
                 Create Free Account / Sign In
               </Link>
               <button onClick={() => setIsAuthModalOpen(false)} className="w-full py-3.5 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-850 font-black text-xs rounded-xl">
-                Keep Reading Outline
+                {completion.length > 0 ? "Keep Reading Outline" : "Maybe Later"}
               </button>
             </div>
           </div>

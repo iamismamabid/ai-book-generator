@@ -1,0 +1,9 @@
+# Local node_modules at the root
+node_modules/
+package-lock.json
+package.json
+dist/
+.next/
+*.log
+.env
+.env.local

@@ -45,6 +45,14 @@ function PricingSectionInner() {
 
     const selectedPriceId = priceIds[planIdKey];
 
+    console.log("=== DEBUG CHECKOUT ===");
+    console.log("planKey:", planKey);
+    console.log("planIdKey:", planIdKey);
+    console.log("selectedPriceId:", selectedPriceId);
+    console.log("window.Paddle exists:", !!(window as any).Paddle);
+    console.log("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN:", process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN);
+    console.log("=======================");
+
     if (!userId) {
       // Redirect to signup and pass callback checkout parameter
       router.push(`/sign-up?redirect_url=/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}`);
@@ -52,6 +60,7 @@ function PricingSectionInner() {
     }
 
     if (selectedPriceId && (window as any).Paddle) {
+      console.log("Opening Paddle checkout for price:", selectedPriceId);
       (window as any).Paddle.Checkout.open({
         settings: {
           displayMode: "overlay",

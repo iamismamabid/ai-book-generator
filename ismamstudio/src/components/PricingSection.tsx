@@ -18,9 +18,12 @@ function PricingSectionInner() {
     script.async = true;
     script.onload = () => {
       if ((window as any).Paddle) {
+        const env = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || "sandbox";
+        if (env === "sandbox") {
+          (window as any).Paddle.Environment.set("sandbox");
+        }
         (window as any).Paddle.Initialize({
           token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "test_token_placeholder",
-          environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || "sandbox"
         });
       }
     };
@@ -48,7 +51,7 @@ function PricingSectionInner() {
 
     if (!userId) {
       // Redirect to signup and pass callback checkout parameter
-      router.push(`/sign-up?redirect_url=/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}`);
+      router.push(`/sign-up?redirect_url=${encodeURIComponent(`/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}`)}`);
       return;
     }
 

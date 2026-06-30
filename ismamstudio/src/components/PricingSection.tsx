@@ -20,7 +20,6 @@ function PricingSectionInner() {
       if ((window as any).Paddle) {
         (window as any).Paddle.Initialize({
           token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "test_token_placeholder",
-          environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || "sandbox"
         });
       }
     };

@@ -1,0 +1,237 @@
+"use client";
+
+import Link from "next/link";
+import { useState, useTransition } from "react";
+import { ArrowLeft, Gift, AlertCircle, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
+import { redeemAppSumoCode } from "../actions";
+
+interface RedeemPageInnerProps {
+  userId: string | null;
+}
+
+export default function RedeemPageInner({ userId }: RedeemPageInnerProps) {
+  const [code, setCode] = useState("");
+  const [status, setStatus] = useState<{ type: "success" | "error" | null; message: string }>({
+    type: null,
+    message: ""
+  });
+  const [redeemedTier, setRedeemedTier] = useState<{ name: string; limits: string[] } | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const getTierDetails = (redeemedCode: string) => {
+    const cleanCode = redeemedCode.toUpperCase();
+    if (cleanCode.includes("-T3-") || cleanCode.includes("TIER3") || cleanCode.includes("-TIER-3-") || cleanCode.includes("-T3")) {
+      return {
+        name: "Tier 3: Agency Lifetime Access",
+        limits: [
+          "Up to 3 team seats (shared account access)",
+          "Unlimited Sudoku, Maze, Word Search, and AI Story Generations",
+          "Vector SVG & source file exports",
+          "Advanced Custom Shapes & Custom Masking",
+          "Full access to AI KDP Niche Hunter & Keyword Spy",
+          "Dedicated support manager",
+        ],
+      };
+    } else if (cleanCode.includes("-T2-") || cleanCode.includes("TIER2") || cleanCode.includes("-TIER-2-") || cleanCode.includes("-T2")) {
+      return {
+        name: "Tier 2: Professional Lifetime Access",
+        limits: [
+          "1 User Seat",
+          "Unlimited Brand profiles & pen-names",
+          "Unlimited Sudoku (Easy, Med, Hard) and Circle/Heart Mazes",
+          "Unlimited Word Search boards & CSV imports",
+          "Unlimited AI Novel Story Chapters (Llama 3.3)",
+          "Premium Cover & Interior Canvas Studio",
+          "Priority support (under 12 hours)",
+        ],
+      };
+    } else {
+      return {
+        name: "Tier 1: Starter Lifetime Access",
+        limits: [
+          "1 User Seat",
+          "Up to 3 Brand profiles & pen-names",
+          "Standard trim sizes (6\"x9\", 8.5\"x11\")",
+          "Easy & Medium Sudoku puzzle generator",
+          "Square-masked maze layouts",
+          "Generate up to 10 AI Novel Chapters / month",
+          "Standard vector PDF exports",
+          "Email support (24-48h response)",
+        ],
+      };
+    }
+  };
+
+  const handleRedeem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code.trim()) {
+      setStatus({ type: "error", message: "Please enter your redemption code." });
+      return;
+    }
+
+    setStatus({ type: null, message: "" });
+
+    startTransition(async () => {
+      try {
+        const res = await redeemAppSumoCode(code);
+        if (res.success) {
+          const tier = getTierDetails(code);
+          setRedeemedTier(tier);
+          setStatus({
+            type: "success",
+            message: "AppSumo Lifetime Deal activated successfully!"
+          });
+          setCode("");
+        }
+      } catch (err: any) {
+        setStatus({
+          type: "error",
+          message: err.message || "An unexpected error occurred. Please try again."
+        });
+      }
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden flex items-center justify-center">
+      {/* Background Glow */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
+
+      <div className="max-w-md w-full relative z-10">
+        <div className="mb-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-indigo-400 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Home
+          </Link>
+        </div>
+
+        <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 rounded-[2.5rem] p-8 shadow-2xl">
+          {status.type === "success" && redeemedTier ? (
+            <div className="space-y-6">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400 border border-emerald-500/20 mb-4 animate-bounce">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <h1 className="text-3xl font-black tracking-tight text-white">Deal Activated!</h1>
+                <p className="text-emerald-400 text-sm font-bold mt-1 uppercase tracking-wider">{redeemedTier.name}</p>
+                <p className="text-slate-400 text-xs mt-1">Your license key has been successfully registered to your account.</p>
+              </div>
+
+              <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" />
+
+              <div className="space-y-3">
+                <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Your Activated Limits:</h3>
+                <ul className="space-y-2">
+                  {redeemedTier.limits.map((limit, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-xs font-semibold text-slate-350 leading-relaxed">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                      <span>{limit}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" />
+
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/dashboard"
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-center text-sm shadow-lg shadow-indigo-600/15 transition-all flex items-center justify-center gap-2"
+                >
+                  Go to Dashboard <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/studio"
+                  className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-3.5 rounded-xl text-center text-sm transition-all"
+                >
+                  Open Creator Studio
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col items-center text-center mb-6">
+                <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 mb-4">
+                  <Gift className="w-7 h-7" />
+                </div>
+                <h1 className="text-3xl font-black tracking-tight text-white">Redeem AppSumo Code</h1>
+                <p className="text-slate-400 text-sm mt-2">Activate your lifetime access to Ismam Studio</p>
+              </div>
+
+              <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mb-6" />
+
+              {!userId ? (
+                <div className="space-y-6">
+                  <div className="p-4 bg-slate-800/40 rounded-2xl border border-slate-850 text-slate-300 text-xs leading-relaxed space-y-3">
+                    <h3 className="font-black text-white text-sm">Required Steps First:</h3>
+                    <ul className="space-y-2 list-decimal list-inside text-slate-400 font-semibold">
+                      <li>Create a free account or sign in to your existing account first.</li>
+                      <li>Enter your AppSumo lifetime code on this page after signing in.</li>
+                      <li>Your lifetime deal access will activate immediately.</li>
+                    </ul>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link
+                      href="/sign-up?redirect_url=/redeem"
+                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl text-center text-sm shadow-lg shadow-indigo-600/15 transition-all"
+                    >
+                      Create Account
+                    </Link>
+                    <Link
+                      href="/sign-in?redirect_url=/redeem"
+                      className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-3.5 px-4 rounded-xl text-center text-sm transition-all"
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleRedeem} className="space-y-6">
+                  {status.type === "error" && (
+                    <div className="flex items-start gap-3 p-4 rounded-2xl border bg-rose-500/10 border-rose-500/20 text-rose-400">
+                      <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                      <p className="text-sm font-medium leading-normal">{status.message}</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label htmlFor="code" className="text-xs font-black uppercase text-slate-400 tracking-wider block">
+                      AppSumo Purchase Code
+                    </label>
+                    <input
+                      id="code"
+                      type="text"
+                      placeholder="e.g. AS-ISMA-T2-C9DSG-8O3LJ"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      disabled={isPending}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/15 transition-all text-sm uppercase tracking-wider"
+                  >
+                    {isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Activating Deal...
+                      </>
+                    ) : (
+                      "Activate Lifetime Deal"
+                    )}
+                  </button>
+                </form>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

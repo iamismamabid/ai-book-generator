@@ -1,11 +1,13 @@
+"use client";
+
 import { useState, useEffect, Suspense } from "react";
-import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X } from "lucide-react";
+import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function PricingSectionInner() {
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual' | 'appsumo'>('monthly');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { userId } = useAuth();
   const router = useRouter();
@@ -35,7 +37,7 @@ function PricingSectionInner() {
   }, []);
 
   const handleCheckout = (planKey: string) => {
-    const isAnnualBilling = isAnnual;
+    const isAnnualBilling = billingCycle === 'annual';
     const planIdKey = `${planKey}_${isAnnualBilling ? "annual" : "monthly"}`;
 
     const priceIds: Record<string, string | undefined> = {
@@ -49,6 +51,14 @@ function PricingSectionInner() {
 
     const selectedPriceId = priceIds[planIdKey];
 
+    console.log("=== DEBUG CHECKOUT ===");
+    console.log("planKey:", planKey);
+    console.log("planIdKey:", planIdKey);
+    console.log("selectedPriceId:", selectedPriceId);
+    console.log("window.Paddle exists:", !!(window as any).Paddle);
+    console.log("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN:", process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN);
+    console.log("=======================");
+
     if (!userId) {
       // Redirect to signup and pass callback checkout parameter
       router.push(`/sign-up?redirect_url=${encodeURIComponent(`/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}`)}`);
@@ -56,6 +66,7 @@ function PricingSectionInner() {
     }
 
     if (selectedPriceId && (window as any).Paddle) {
+      console.log("Opening Paddle checkout for price:", selectedPriceId);
       (window as any).Paddle.Checkout.open({
         settings: {
           displayMode: "overlay",
@@ -82,7 +93,7 @@ function PricingSectionInner() {
     if (checkoutParam && userId) {
       const timer = setTimeout(() => {
         const isAnnualBilling = billingParam === "annual";
-        setIsAnnual(isAnnualBilling);
+        setBillingCycle(isAnnualBilling ? 'annual' : 'monthly');
         handleCheckout(checkoutParam);
       }, 1000);
       return () => clearTimeout(timer);
@@ -123,12 +134,13 @@ function PricingSectionInner() {
       priceAnnual: 7,
       popular: false,
       features: [
-        "10+ Standard KDP Layout Templates",
-        "Generate up to 5 AI Novel Chapters / mo",
+        "Full Commercial Rights (Keep 100% royalties)",
+        "Watermark-free vector PDF exports",
+        "Up to 3 brand & pen-name profiles",
+        "Standard trim sizes (6\"x9\", 8.5\"x11\")",
         "Easy & Medium Sudoku puzzle generator",
         "Square-masked maze layouts",
-        "Standard vector PDF exports (6\"x9\", 8.5\"x11\")",
-        "Basic interior layout adjustments",
+        "Generate up to 5 AI Novel Chapters / mo",
         "Email support (24-48h response)",
       ],
       ctaText: "Start Designing",
@@ -145,13 +157,14 @@ function PricingSectionInner() {
       priceAnnual: 15,
       popular: true,
       features: [
+        "Watermark-free PDF exports (All sizes + Custom)",
+        "100% Commercial-use rights (Keep all royalties)",
+        "Unlimited Brand profiles & pen-names",
         "Unlimited Sudoku puzzles (Easy, Med, Hard)",
         "Unlimited Labyrinth designs (Circle, Heart shapes)",
         "Unlimited Word Search boards & CSV imports",
-        "Unlimited AI Novel Story Chapters (Llama 3.3 Turbo)",
+        "Unlimited AI Novel Story Chapters (Llama 3.3)",
         "Premium Cover & Interior Canvas Studio",
-        "100% Commercial-use rights (Keep all royalties)",
-        "DPI-optimized PDF Merger & bleed calculators",
         "Priority Customer Support (under 12 hours)",
       ],
       ctaText: "Get Pro Access",
@@ -169,13 +182,13 @@ function PricingSectionInner() {
       popular: false,
       features: [
         "Everything in Pro Studio plan",
-        "Unlimited Brand profiles & pen-names",
-        "Priority AI generation queues (No limits)",
-        "Vector SVG & source files exports",
-        "Advanced custom shapes & interior styling",
         "Up to 3 team member account seats",
-        "Full access to AI KDP Niche Hunter & Keyword Spy with priority data updates",
+        "Vector SVG & source file exports",
+        "Advanced custom shapes & interior styling",
+        "AI KDP Niche Hunter & Keyword Spy",
+        "Priority AI generation queues (No limits)",
         "API access for automated generation",
+        "Dedicated customer support manager",
       ],
       ctaText: "Go Agency Pro",
       colorClass: "bg-slate-950/60 hover:border-slate-700",
@@ -186,26 +199,96 @@ function PricingSectionInner() {
     },
   ];
 
+  const appsumoPlans = [
+    {
+      name: "AppSumo Tier 1",
+      description: "Standard lifetime access. Perfect for beginning KDP self-publishers.",
+      price: 49,
+      popular: false,
+      features: [
+        "Full Commercial Rights (Keep 100% royalties)",
+        "Watermark-free vector PDF exports",
+        "Up to 3 brand & pen-name profiles",
+        "Standard trim sizes (6\"x9\", 8.5\"x11\")",
+        "Easy & Medium Sudoku puzzle generator",
+        "Square-masked maze layouts",
+        "Generate up to 10 AI Novel Chapters / mo",
+        "Email support (24-48h response)",
+      ],
+      ctaText: "Get Lifetime Tier 1",
+      colorClass: "bg-slate-950/40 hover:border-slate-800",
+      borderClass: "border-slate-900",
+      icon: <Star className="w-6 h-6 text-slate-400" />,
+      ctaLink: "https://appsumo.com/products/ismam-studio",
+      planKey: "appsumo_t1"
+    },
+    {
+      name: "AppSumo Tier 2",
+      description: "Professional lifetime access. Best for active builders and authors.",
+      price: 98,
+      popular: true,
+      features: [
+        "Watermark-free PDF exports (All sizes + Custom)",
+        "100% Commercial-use rights (Keep all royalties)",
+        "Unlimited Brand profiles & pen-names",
+        "Unlimited Sudoku puzzles (Easy, Med, Hard)",
+        "Unlimited Labyrinth designs (Circle, Heart shapes)",
+        "Unlimited Word Search boards & CSV imports",
+        "Unlimited AI Novel Story Chapters (Llama 3.3)",
+        "Premium Cover & Interior Canvas Studio",
+        "Priority Customer Support (under 12 hours)",
+      ],
+      ctaText: "Get Lifetime Tier 2",
+      colorClass: "bg-white text-slate-900 shadow-[0_20px_50px_rgba(245,158,11,0.25),_0_0_30px_rgba(56,189,248,0.15)]",
+      borderClass: "border-amber-400 border-2",
+      icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
+      ctaLink: "https://appsumo.com/products/ismam-studio",
+      planKey: "appsumo_t2"
+    },
+    {
+      name: "AppSumo Tier 3",
+      description: "Agency lifetime access. Ultimate scaling tool with multi-seat access.",
+      price: 147,
+      popular: false,
+      features: [
+        "Everything in Pro Studio plan",
+        "Up to 3 team member account seats",
+        "Vector SVG & source file exports",
+        "Advanced custom shapes & interior styling",
+        "AI KDP Niche Hunter & Keyword Spy",
+        "Priority AI generation queues (No limits)",
+        "API access for automated generation",
+        "Dedicated customer support manager",
+      ],
+      ctaText: "Get Lifetime Tier 3",
+      colorClass: "bg-slate-950/60 hover:border-slate-700",
+      borderClass: "border-slate-800/80",
+      icon: <Award className="w-6 h-6 text-slate-400" />,
+      ctaLink: "https://appsumo.com/products/ismam-studio",
+      planKey: "appsumo_t3"
+    }
+  ];
+
   const faqs = [
     {
       q: "Are the generated interiors ready to upload directly to Amazon KDP?",
-      a: "Yes! All interior templates, mazes, word searches, and Sudokus automatically export as high-fidelity, print-ready vector PDFs that respect KDP guidelines, including precise trim sizes (6\"x9\", 8.5\"x11\"), interior bleed requirements, and gutter safety margins.",
+      a: "Yes! All interior templates, mazes, word searches, and Sudokus export as high-fidelity, print-ready vector PDFs that respect KDP guidelines, including precise trim sizes (6\"x9\", 8.5\"x11\"), interior bleed requirements, and gutter safety margins.",
     },
     {
       q: "Do I own the commercial copyrights for the books and puzzles I create?",
-      a: "Absolutely. When subscribing to any of our paid plans (Starter, Pro, Agency), you receive full commercial rights to publish and sell the generated books, interiors, covers, and puzzles anywhere, including Amazon KDP, Etsy, or your own site. You keep 100% of the royalties. The Free Tier is for personal testing only.",
+      a: "Absolutely. When subscribing to any of our paid plans (Starter, Pro, Agency) or AppSumo Lifetime Deals, you receive full commercial rights to publish and sell the generated books, interiors, covers, and puzzles anywhere, including Amazon KDP, Etsy, or your own site. You keep 100% of the royalties. The Free Tier is for personal testing only.",
     },
     {
       q: "Can I cancel, upgrade, or downgrade my subscription at any time?",
-      a: "Yes, you can manage your subscription easily from your billing panel. You can cancel at any time, and you will retain access to your plan until the end of your billing cycle. There are no cancellation fees or hidden lock-ins.",
+      a: "Yes, you can manage your recurring SaaS subscription easily from your billing panel. You can cancel at any time, and you will retain access to your plan until the end of your billing cycle. For AppSumo lifetime deals, tier upgrades and license management are handled directly via your AppSumo portal.",
     },
     {
-      q: "How does the AI Novel Writer generate chapters?",
-      a: "We utilize advanced Llama-3 API nodes that run low-latency story outlines, character structures, and full text-chapter expansions based on your prompts. The outlines and text outputs are saved directly to your library so you can edit and compile them into your final book layout.",
+      q: "How does the AppSumo deal work? Is there a monthly subscription?",
+      a: "By purchasing the AppSumo Lifetime Deal (LTD), you pay a one-time fee with absolutely no recurring charges or monthly subscription costs. You get lifetime access to all core generators, editors, and future updates. AppSumo buyers are covered by AppSumo's standard 60-day money-back guarantee, which overrides our standard 30-day SaaS refund policy for these promotional licenses.",
     },
     {
       q: "Is there a money-back guarantee?",
-      a: "Yes, we support a 30-day money-back guarantee for all new members. If Ismam Studio doesn't fit your book-publishing workflow, just drop us an email within 30 days and we will issue a full refund—no questions asked.",
+      a: "Yes, we support a 30-day money-back guarantee for all direct recurring monthly/annual subscription plans. For AppSumo lifetime deal buyers, the refund window is extended to AppSumo's standard 60-day refund policy, managed directly through your AppSumo billing dashboard.",
     },
     {
       q: "Do the puzzle books include solution keys?",
@@ -228,6 +311,8 @@ function PricingSectionInner() {
       a: "Yes, our studio layout features a responsive viewport canvas. While desktop screens are recommended for complex drag-and-drop cover alignments, you can easily generate puzzles, draft stories, and check your dashboard library from any iPad, tablet, or phone.",
     },
   ];
+
+  const activePlans = billingCycle === 'appsumo' ? appsumoPlans : plans;
 
   return (
     <section id="pricing" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-900">
@@ -254,38 +339,54 @@ function PricingSectionInner() {
         {/* Toggle Switch */}
         <div className="mt-10 inline-flex items-center gap-2 bg-slate-950/80 p-2 rounded-full border border-slate-800 backdrop-blur-md">
           <button
-            onClick={() => setIsAnnual(false)}
-            className={`px-6 py-3 rounded-full text-sm font-black transition-all ${
-              !isAnnual
+            onClick={() => setBillingCycle('monthly')}
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all ${
+              billingCycle === 'monthly'
                 ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            Monthly Billing
+            Monthly
           </button>
           <button
-            onClick={() => setIsAnnual(true)}
-            className={`px-6 py-3 rounded-full text-sm font-black transition-all relative flex items-center gap-2 ${
-              isAnnual
+            onClick={() => setBillingCycle('annual')}
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 ${
+              billingCycle === 'annual'
                 ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            <span>Annual Billing</span>
-            <span className="bg-gradient-to-r from-rose-500 to-amber-500 text-white font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-md animate-pulse">
+            <span>Annual</span>
+            <span className="bg-gradient-to-r from-rose-500 to-amber-500 text-white font-black text-[8px] uppercase px-1.5 py-0.5 rounded-full shadow-md animate-pulse">
               Save 20%
             </span>
+          </button>
+          <button
+            onClick={() => setBillingCycle('appsumo')}
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 ${
+              billingCycle === 'appsumo'
+                ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-450 shrink-0" />
+            <span>AppSumo LTD</span>
           </button>
         </div>
       </div>
 
       {/* Pricing Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 items-stretch mb-24 relative">
-        {plans.map((plan, index) => {
-          const price = isAnnual ? plan.priceAnnual : plan.priceMonthly;
-          const billingText = plan.priceMonthly === 0 ? "forever free" : isAnnual ? "billed annually" : "billed monthly";
-          const billingParam = isAnnual && plan.priceMonthly !== 0 ? "&billing=annual" : "";
-          const ctaHref = plan.priceMonthly === 0 ? plan.ctaLink : `${plan.ctaLink}${billingParam}`;
+      <div className={`grid grid-cols-1 items-stretch mb-24 relative ${
+        billingCycle === 'appsumo' 
+          ? "md:grid-cols-3 max-w-5xl mx-auto gap-8" 
+          : "md:grid-cols-2 xl:grid-cols-4 gap-8"
+      }`}>
+        {activePlans.map((plan, index) => {
+          const isLtd = billingCycle === 'appsumo';
+          const price = isLtd ? (plan as any).price : (billingCycle === 'annual' ? (plan as any).priceAnnual : (plan as any).priceMonthly);
+          const billingText = isLtd ? "one-time payment" : plan.priceMonthly === 0 ? "forever free" : billingCycle === 'annual' ? "billed annually" : "billed monthly";
+          const billingParam = billingCycle === 'annual' && plan.priceMonthly !== 0 ? "&billing=annual" : "";
+          const ctaHref = isLtd ? plan.ctaLink : plan.priceMonthly === 0 ? plan.ctaLink : `${plan.ctaLink}${billingParam}`;
           
           return (
             <div
@@ -306,7 +407,7 @@ function PricingSectionInner() {
                 <div className="flex items-center justify-between mb-6">
                   <div className={`p-3 rounded-2xl border shadow-inner ${
                     plan.popular 
-                      ? "bg-slate-50 border-slate-200" 
+                      ? "bg-slate-55 border-slate-200" 
                       : "bg-slate-900/80 border-slate-800"
                   }`}>
                     {plan.icon}
@@ -316,7 +417,7 @@ function PricingSectionInner() {
                       ? "text-amber-600 bg-amber-500/5 border-amber-500/10"
                       : "text-slate-500 bg-slate-950/50 border-slate-900"
                   }`}>
-                    KDP Tier
+                    {isLtd ? "Lifetime Deal" : "KDP Tier"}
                   </span>
                 </div>
 
@@ -336,9 +437,11 @@ function PricingSectionInner() {
                   }`}>
                     ${price}
                   </span>
-                  <span className={`font-bold text-sm ${plan.popular ? "text-slate-500" : "text-slate-400"}`}>
-                    / month
-                  </span>
+                  {!isLtd && (
+                    <span className={`font-bold text-sm ${plan.popular ? "text-slate-500" : "text-slate-400"}`}>
+                      / month
+                    </span>
+                  )}
                   <span className={`text-[10px] font-bold block ml-2 self-center px-2 py-1 rounded-md uppercase tracking-wider ${
                     plan.popular
                       ? "text-amber-700 bg-amber-500/10"
@@ -376,12 +479,26 @@ function PricingSectionInner() {
 
               {/* Action Button */}
               <div className="mt-8">
-                {plan.planKey === "free" ? (
+                {isLtd ? (
+                  <Link
+                    href={ctaHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
+                      plan.popular
+                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                        : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                    }`}
+                  >
+                    {plan.ctaText}
+                    <Zap className="w-4 h-4 shrink-0 opacity-80" />
+                  </Link>
+                ) : plan.planKey === "free" ? (
                   <Link
                     href={ctaHref}
                     className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
                       plan.popular
-                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                        ? "bg-gradient-to-r from-amber-400 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
                         : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                     }`}
                   >
@@ -393,7 +510,7 @@ function PricingSectionInner() {
                     onClick={() => handleCheckout(plan.planKey)}
                     className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
                       plan.popular
-                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                        ? "bg-gradient-to-r from-amber-400 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
                         : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                     }`}
                   >
@@ -407,6 +524,21 @@ function PricingSectionInner() {
         })}
       </div>
 
+      {/* AppSumo Redemption Help Card */}
+      {billingCycle === 'appsumo' && (
+        <div className="max-w-md mx-auto text-center mb-16 -mt-8 bg-indigo-500/5 border border-indigo-500/10 p-5 rounded-[2.5rem] backdrop-blur-sm">
+          <p className="text-xs font-semibold text-slate-300 mb-2">
+            Already purchased a code from AppSumo?
+          </p>
+          <Link
+            href="/redeem"
+            className="text-xs font-black text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider inline-flex items-center gap-1"
+          >
+            Redeem your purchase code here <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
+
       {/* 🛡️ Value Proposition Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
         <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
@@ -416,7 +548,7 @@ function PricingSectionInner() {
           <div>
             <h4 className="text-white font-black text-base mb-1">Commercial Rights</h4>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-              Keep 100% of your Amazon royalties. All interiors are licensed for print-on-demand.
+              Keep 100% of your Amazon royalties. All interiors are licensed for commercial sales.
             </p>
           </div>
         </div>
@@ -440,7 +572,7 @@ function PricingSectionInner() {
           <div>
             <h4 className="text-white font-black text-base mb-1">No Contract, Cancel</h4>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-              Pause or cancel your subscription directly from your billing panel with a single click.
+              Pause or cancel direct SaaS subscriptions in one click. No hidden lock-ins.
             </p>
           </div>
         </div>
@@ -450,9 +582,9 @@ function PricingSectionInner() {
             <Award className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">30-Day Guarantee</h4>
+            <h4 className="text-white font-black text-base mb-1">Reconciled Guarantee</h4>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-              Not satisfied? Drop us an email within 30 days and get an immediate 100% refund.
+              30-day SaaS guarantee / 60-day AppSumo money-back policy for complete confidence.
             </p>
           </div>
         </div>
@@ -605,12 +737,56 @@ function PricingSectionInner() {
 
 export default function PricingSection() {
   return (
-    <Suspense fallback={
-      <div className="min-h-[500px] flex items-center justify-center text-slate-400 font-semibold uppercase tracking-wider text-xs">
-        Loading Pricing Panel...
-      </div>
-    }>
+    <Suspense fallback={<PricingSkeleton />}>
       <PricingSectionInner />
     </Suspense>
+  );
+}
+
+function PricingSkeleton() {
+  return (
+    <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-900 animate-pulse">
+      {/* Header Skeleton */}
+      <div className="text-center mb-16">
+        <div className="inline-flex items-center w-40 h-7 rounded-full bg-slate-900 border border-slate-800/85 mb-6" />
+        <div className="w-72 md:w-96 h-12 bg-slate-900 rounded-2xl mx-auto mb-4" />
+        <div className="w-56 md:w-80 h-5 bg-slate-900/60 rounded-xl mx-auto" />
+
+        {/* Toggle Skeleton */}
+        <div className="mt-10 inline-flex items-center bg-slate-950/80 p-2 rounded-full border border-slate-800 w-64 h-14" />
+      </div>
+
+      {/* Grid Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 items-stretch mb-24">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-slate-950/40 border border-slate-900 rounded-[2.5rem] p-8 flex flex-col justify-between h-[500px]">
+            <div>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-12 h-12 bg-slate-900 rounded-2xl border border-slate-850" />
+                <div className="w-20 h-6 bg-slate-900/80 rounded-xl" />
+              </div>
+              <div className="w-32 h-7 bg-slate-900 rounded-xl mb-3" />
+              <div className="w-full h-10 bg-slate-900/50 rounded-xl mb-6" />
+              
+              <div className="h-px bg-slate-900 mb-8" />
+              
+              {/* Features */}
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map((j) => (
+                  <div key={j} className="flex items-center gap-3">
+                    <div className="w-4 h-4 bg-slate-900 rounded-full shrink-0" />
+                    <div className="w-32 h-4 bg-slate-900/60 rounded-md" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Button */}
+            <div className="w-full h-12 bg-slate-900 rounded-2xl mt-8" />
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

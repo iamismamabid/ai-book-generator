@@ -1,7 +1,11 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, Cookie } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Cookie Policy | Ismam Studio Help Center",
+  description: "Read the Cookie Policy of Ismam Studio. Learn how we use cookies and similar tracking technologies to improve your experience on our KDP book-creation platform.",
+};
 
 export default function CookiePolicyPage() {
   return (

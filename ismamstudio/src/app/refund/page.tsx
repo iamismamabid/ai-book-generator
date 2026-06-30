@@ -1,14 +1,18 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, CreditCard } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Refund Policy | Ismam Studio Help Center",
+  description: "Read the Refund Policy of Ismam Studio. Learn about our 30-day money-back guarantee for SaaS subscriptions and 60-day refund policy for AppSumo lifetime deals.",
+};
 
 export default function RefundPolicyPage() {
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden">
       {/* Background Glow */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="mb-8">
@@ -33,16 +37,16 @@ export default function RefundPolicyPage() {
 
           <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mb-8" />
 
-          <div className="space-y-8 text-slate-300 text-sm font-medium leading-relaxed">
+          <div className="space-y-8 text-slate-350 text-sm font-semibold leading-relaxed">
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-white">1. 30-Day Money-Back Guarantee</h2>
+              <h2 className="text-xl font-black text-white">1. 30-Day Money-Back Guarantee</h2>
               <p>
                 We believe in the quality of **Ismam Studio** and want you to be fully satisfied. We support a **30-day money-back guarantee** for all new subscriptions. If our tool does not fit your book publishing workflow, you can request a full refund within 30 days of your initial purchase.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-white">2. Eligibility for Refunds</h2>
+              <h2 className="text-xl font-black text-white">2. Eligibility for Refunds</h2>
               <p>To request a refund, please ensure:</p>
               <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
                 <li>Your request is made within exactly 30 days of the subscription payment date.</li>
@@ -51,7 +55,7 @@ export default function RefundPolicyPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-white">3. How to Request a Refund</h2>
+              <h2 className="text-xl font-black text-white">3. How to Request a Refund</h2>
               <p>
                 To request a refund, please send an email to **support@ismamstudio.me** with the subject "Refund Request - [Your Account Email]". Please include your transaction receipt or invoice ID. 
               </p>
@@ -61,7 +65,17 @@ export default function RefundPolicyPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-white">4. Abuse and Fair Play</h2>
+              <h2 className="text-xl font-black text-white">4. AppSumo Lifetime Deals (LTD)</h2>
+              <p>
+                For lifetime deal licenses purchased through AppSumo, **AppSumo's standard 60-day money-back guarantee** applies instead of our standard 30-day recurring subscription policy. 
+              </p>
+              <p>
+                All refund requests for AppSumo promotional licenses must be initiated and processed directly through your AppSumo customer portal. Ismam Studio support staff cannot process, issue, or adjust refunds for checkout transactions processed externally by AppSumo.
+              </p>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-black text-white">5. Abuse and Fair Play</h2>
               <p>
                 We monitor refund requests to prevent abuse. If we detect that a user is downloading massive quantities of high-resolution PDF interiors and requesting refunds repeatedly, we reserve the right to deny the request and terminate the account.
               </p>

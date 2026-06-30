@@ -1,7 +1,11 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, Sparkles, DollarSign, Award, Target, Zap } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Affiliate Program | Earn with Ismam Studio",
+  description: "Join the Ismam Studio Affiliate Program. Promote our KDP book-creation platform and earn a recurring 30% lifetime commission on every referral.",
+};
 
 export default function AffiliatePage() {
   return (

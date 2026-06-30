@@ -1,7 +1,11 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, Check, X, Shield, Sparkles, Zap } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Compare Plans & Features | Ismam Studio Matrix",
+  description: "View our detailed feature matrix. Compare Free, Starter, Pro, and Publisher Agency features side-by-side to find the right toolkit for your Amazon KDP self-publishing business.",
+};
 
 export default function ComparePage() {
   return (

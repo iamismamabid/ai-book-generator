@@ -755,88 +755,70 @@ export default function HomePage() {
 
       </section>
 
-      {/* 💬 Verified Testimonials Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50">
+      {/* 💬 How it Works Section */}
+      <section id="how-it-works" className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50">
         
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider mb-3">
-            <Star className="w-4 h-4 text-indigo-400 fill-indigo-400 animate-pulse" /> Self-Publishers Love Us
+            <Compass className="w-4 h-4 text-indigo-400 animate-pulse" /> Step-by-Step Workflow
           </div>
           <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">
-            Verified Publisher Reviews
+            How Ismam Studio Works
           </h2>
+          <p className="text-slate-400 text-sm md:text-base font-semibold max-w-xl mx-auto mt-4 leading-relaxed">
+            Create publication-ready KDP book interiors and covers in three simple, automated steps.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
-          {/* Review 1 */}
-          <div className="bg-slate-950/40 border border-slate-900 rounded-[2rem] p-8 flex flex-col justify-between space-y-6">
-            <p className="text-slate-400 text-sm font-semibold leading-relaxed">
-              "Ismam Studio saved me hundreds of hours. I generated 12 puzzle books in two weeks, and all passed KDP review on the first attempt! The gutter and bleed guides are incredibly precise."
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 flex items-center justify-center font-black text-xs text-slate-950">
-                SJ
+          {/* Step 1 */}
+          <div className="bg-slate-950/40 border border-slate-900 rounded-[2.5rem] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group hover:border-slate-800 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-[4rem] group-hover:bg-indigo-500/10 transition-colors" />
+            <div className="space-y-4 relative z-10">
+              <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                <Sliders className="w-6 h-6" />
               </div>
-              <div>
-                <h4 className="text-white font-black text-sm">Sarah Jenkins</h4>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">KDP Self-Publisher</span>
-              </div>
+              <h3 className="text-xl font-black text-white">1. Configure Trim & Bleed</h3>
+              <p className="text-slate-400 text-xs md:text-sm font-semibold leading-relaxed">
+                Choose standard KDP sizes (6"x9", 8.5"x11"), margin guidelines, and page sizes. Our layouts automatically compute gutter bleed margins so your book passes KDP reviews without margin violations.
+              </p>
             </div>
+            <div className="text-indigo-400/30 font-black text-6xl select-none text-right">01</div>
           </div>
 
-          {/* Review 2 */}
-          <div className="bg-slate-950/40 border border-slate-900 rounded-[2rem] p-8 flex flex-col justify-between space-y-6">
-            <p className="text-slate-400 text-sm font-semibold leading-relaxed">
-              "The shape-masked mazes (heart and circle) sell like hotcakes on Etsy. Being able to export high-quality vector PDFs is a game changer. Customer support answered my margin questions in 10 minutes."
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-400 to-sky-400 flex items-center justify-center font-black text-xs text-slate-950">
-                DL
+          {/* Step 2 */}
+          <div className="bg-slate-950/40 border border-slate-900 rounded-[2.5rem] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group hover:border-slate-800 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-[4rem] group-hover:bg-purple-500/10 transition-colors" />
+            <div className="space-y-4 relative z-10">
+              <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-400 border border-purple-500/20">
+                <Sparkles className="w-6 h-6" />
               </div>
-              <div>
-                <h4 className="text-white font-black text-sm">David L.</h4>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Etsy Shop Owner</span>
-              </div>
+              <h3 className="text-xl font-black text-white">2. Generate Puzzles & Text</h3>
+              <p className="text-slate-400 text-xs md:text-sm font-semibold leading-relaxed">
+                Use our puzzle generator engine to create infinite unique Sudokus, mazes, cryptograms, and word search grids. Outline novel chapters automatically with our advanced AI Writer powered by Llama-3.
+              </p>
             </div>
+            <div className="text-purple-400/30 font-black text-6xl select-none text-right">02</div>
           </div>
 
-          {/* Review 3 */}
-          <div className="bg-slate-950/40 border border-slate-900 rounded-[2rem] p-8 flex flex-col justify-between space-y-6">
-            <p className="text-slate-400 text-sm font-semibold leading-relaxed">
-              "The AI Writer outlined my fantasy book chapters beautifully. Merging it with custom puzzle dividers and covers inside the studio makes compiling a breeze! High-quality, fast, and extremely easy."
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center font-black text-xs text-slate-950">
-                ER
+          {/* Step 3 */}
+          <div className="bg-slate-950/40 border border-slate-900 rounded-[2.5rem] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group hover:border-slate-800 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-[4rem] group-hover:bg-emerald-500/10 transition-colors" />
+            <div className="space-y-4 relative z-10">
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                <Download className="w-6 h-6" />
               </div>
-              <div>
-                <h4 className="text-white font-black text-sm">Elena Rostova</h4>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Activity Book Author</span>
-              </div>
+              <h3 className="text-xl font-black text-white">3. Export Print-Ready PDF</h3>
+              <p className="text-slate-400 text-xs md:text-sm font-semibold leading-relaxed">
+                Compile your entire creation (puzzles, dividers, solutions, and custom covers) into a high-fidelity vector PDF. Download and upload directly to Amazon KDP, Etsy, or IngramSpark instantly.
+              </p>
             </div>
+            <div className="text-emerald-400/30 font-black text-6xl select-none text-right">03</div>
           </div>
 
         </div>
 
-      </section>
-
-      {/* 📊 Metrics / Stats Bar */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
-        <div className="bg-slate-900/40 border border-slate-900/60 rounded-[3rem] p-8 md:p-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center backdrop-blur-sm">
-          <div>
-            <h3 className="text-4xl md:text-5xl font-black text-white bg-gradient-to-r from-indigo-400 to-indigo-200 bg-clip-text text-transparent">1,820+</h3>
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest mt-2 block">Books Compiled</span>
-          </div>
-          <div>
-            <h3 className="text-4xl md:text-5xl font-black text-white bg-gradient-to-r from-purple-400 to-purple-200 bg-clip-text text-transparent">450+</h3>
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest mt-2 block">Active Authors</span>
-          </div>
-          <div>
-            <h3 className="text-4xl md:text-5xl font-black text-white bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent">99.8%</h3>
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest mt-2 block">KDP Approval Rate</span>
-          </div>
-        </div>
       </section>
 
       {/* 💳 Pricing & FAQ Section */}

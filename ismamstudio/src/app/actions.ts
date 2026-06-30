@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "../lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { Groq } from "groq-sdk";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -134,4 +134,45 @@ export async function saveBookToDB(title: string, content: string) {
 
   revalidatePath("/dashboard");
   return { id: book.id };
+}
+
+// 🎯 ৬. AppSumo কোড রিডিম করার ফাংশন
+export async function redeemAppSumoCode(code: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const user = await currentUser();
+  const email = user?.emailAddresses[0]?.emailAddress || "";
+
+  if (!code || code.trim().length < 3) {
+    throw new Error("Invalid code length.");
+  }
+
+  // কোডটি ইতিমধ্যে ব্যবহার করা হয়েছে কিনা চেক করা
+  const existingCode = await prisma.appSumoRedemption.findFirst({
+    where: { code: code.trim() }
+  });
+  if (existingCode) {
+    throw new Error("This AppSumo code has already been redeemed.");
+  }
+
+  // এই ব্যবহারকারী ইতিমধ্যে কোড রিডিম করেছেন কিনা চেক করা
+  const existingUser = await prisma.appSumoRedemption.findUnique({
+    where: { clerkId: userId }
+  });
+  if (existingUser) {
+    throw new Error("You have already redeemed an AppSumo code for this account.");
+  }
+
+  // ডেটাবেজে রিডেম্পশন সেভ করা
+  await prisma.appSumoRedemption.create({
+    data: {
+      clerkId: userId,
+      email: email,
+      code: code.trim()
+    }
+  });
+
+  revalidatePath("/dashboard");
+  return { success: true };
 }

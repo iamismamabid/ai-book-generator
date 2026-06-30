@@ -19,6 +19,7 @@ model User {
   email             String
   downloadCount     Int       @default(0)
   lastDownloadReset DateTime  @default(now())
+  appsumoCode       String?
   createdAt         DateTime  @default(now())
 
   @@map("users")
@@ -45,4 +46,14 @@ model Chapter {
   createdAt DateTime @default(now())
 
   @@map("chapters")
+}
+
+model AppSumoRedemption {
+  id        String   @id @default(uuid())
+  clerkId   String   @unique
+  email     String
+  code      String
+  createdAt DateTime @default(now())
+
+  @@map("appsumo_redemptions")
 }

@@ -11,7 +11,7 @@ export default function Footer() {
           {/* Brand Info */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="relative w-36 h-12 bg-white rounded-xl overflow-hidden shadow-lg shadow-indigo-500/10 border border-slate-200/20 group-hover:scale-105 transition-transform p-1">
+              <div className="relative w-36 h-12 group-hover:scale-105 transition-transform">
                 <Image
                   src="/logo.png"
                   alt="Ismam Studio Logo"

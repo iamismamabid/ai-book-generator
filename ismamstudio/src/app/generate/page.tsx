@@ -17,6 +17,7 @@ import {
   HelpCircle,
   Clock
 } from "lucide-react";
+import CoverStudioCTA from "@/components/CoverStudioCTA";
 
 const PROMPT_EXAMPLES = [
   {
@@ -261,6 +262,8 @@ export default function GeneratePage() {
                     ))}
                   </div>
                 </div>
+
+                <CoverStudioCTA variant="banner" />
 
               </div>
             </div>

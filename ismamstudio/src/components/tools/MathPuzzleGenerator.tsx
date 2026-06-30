@@ -6,6 +6,7 @@ import {
   ArrowLeft, Download, RefreshCw, AlertCircle, FileText, CheckCircle2, Sliders, Settings, BookOpen
 } from "lucide-react";
 import { jsPDF } from "jspdf";
+import CoverStudioCTA from "@/components/CoverStudioCTA";
 
 const TRIM_SIZES = [
   { id: "6x9", label: "6\" x 9\" (Novel)", w: 6, h: 9 },
@@ -693,6 +694,8 @@ export default function MathPuzzleGenerator() {
             {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
             Download Print PDF
           </button>
+
+          <CoverStudioCTA trimSize={trimSize.id} />
         </div>
       </div>
 

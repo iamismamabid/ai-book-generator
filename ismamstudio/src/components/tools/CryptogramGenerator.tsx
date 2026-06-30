@@ -6,6 +6,7 @@ import {
   ArrowLeft, Download, RefreshCw, AlertCircle, FileText, CheckCircle2, Sliders, Type, BookOpen
 } from "lucide-react";
 import { jsPDF } from "jspdf";
+import CoverStudioCTA from "@/components/CoverStudioCTA";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -528,6 +529,8 @@ export default function CryptogramGenerator() {
             {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
             Download Print PDF
           </button>
+
+          <CoverStudioCTA trimSize={trimSize.id} />
         </div>
       </div>
 

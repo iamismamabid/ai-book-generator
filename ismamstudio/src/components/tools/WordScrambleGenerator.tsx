@@ -6,6 +6,7 @@ import {
   ArrowLeft, Download, RefreshCw, AlertCircle, FileText, CheckCircle2, Sliders, Settings, BookOpen
 } from "lucide-react";
 import { jsPDF } from "jspdf";
+import CoverStudioCTA from "@/components/CoverStudioCTA";
 
 const DEFAULT_WORDS = [
   "AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION",
@@ -490,6 +491,8 @@ export default function WordScrambleGenerator() {
             {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
             Download Print PDF
           </button>
+
+          <CoverStudioCTA trimSize={trimSize.id} />
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText } from "lucide-react";
 import { jsPDF } from "jspdf";
+import CoverStudioCTA from "@/components/CoverStudioCTA";
 
 // 🧠 1. The Advanced Puzzle Algorithm
 function generatePuzzleGrid(wordList: string[], size: number, textCase: string) {
@@ -473,6 +474,7 @@ export default function WordSearchStudio() {
                             <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 shrink-0">
                                 <button onClick={handleGeneratePreview} className="w-full flex items-center justify-center gap-2 bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all border border-slate-200"><Eye className="w-4 h-4" /> Live Preview</button>
                                 <button onClick={handleGenerateInterior} disabled={isGenerating} className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md transition-all active:scale-95"><Download className="w-4 h-4" /> Download KDP PDF</button>
+                                <CoverStudioCTA trimSize={`${trimSize.w}x${trimSize.h}`} />
                             </div>
                         </div>
                         

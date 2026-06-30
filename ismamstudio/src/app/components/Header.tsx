@@ -10,18 +10,15 @@ export default function Header() {
 
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2 group shrink-0">
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+          <div className="relative w-36 h-12 bg-white rounded-xl overflow-hidden shadow-lg shadow-indigo-500/10 border border-slate-200/20 group-hover:scale-105 transition-transform p-1">
             <Image
               src="/logo.png"
               alt="Ismam Studio Logo"
               fill
-              className="object-cover"
+              className="object-contain"
               priority
             />
           </div>
-          <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-            Ismam<span className="text-indigo-600 dark:text-indigo-400 font-black">Studio</span>
-          </span>
         </Link>
 
         {/* Central Standard Navigation Links */}

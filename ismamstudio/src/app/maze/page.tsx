@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { generateMaze, MazeGrid, Shape } from "@/lib/maze";
 import { downloadMazePdf } from "@/lib/maze-pdf";
 import DownloadButton from "@/components/DownloadButton";
+import CoverStudioCTA from "@/components/CoverStudioCTA";
 
 function MazePreview({ 
   grid, 
@@ -260,6 +261,8 @@ export default function MazeGeneratorPage() {
                 onClick={handleDownloadPdf}
                 label={isDownloading ? "Assembling Book..." : "Download High-Res PDF"}
               />
+
+              <CoverStudioCTA trimSize={trimSize} />
             </div>
           </div>
 

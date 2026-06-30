@@ -11,17 +11,14 @@ export default function Footer() {
           {/* Brand Info */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+              <div className="relative w-36 h-12 bg-white rounded-xl overflow-hidden shadow-lg shadow-indigo-500/10 border border-slate-200/20 group-hover:scale-105 transition-transform p-1">
                 <Image
                   src="/logo.png"
                   alt="Ismam Studio Logo"
                   fill
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
-              <span className="text-xl font-black tracking-tight text-white">
-                Ismam<span className="text-indigo-400"> Studio</span>
-              </span>
             </Link>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
               Your all-in-one KDP publishing toolkit. Create puzzles, write story chapters, and compile custom book designs in minutes.

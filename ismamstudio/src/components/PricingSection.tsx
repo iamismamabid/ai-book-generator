@@ -462,9 +462,9 @@ function PricingSectionInner() {
       <div className="max-w-2xl mx-auto text-center mb-20 -mt-12 bg-slate-900/30 border border-slate-900/65 p-5 rounded-[2rem] backdrop-blur-sm">
         <span className="text-[9px] font-black uppercase text-slate-500 tracking-[0.25em] block mb-3.5">Guaranteed Safe & Secure Checkout</span>
         <div className="flex flex-wrap items-center justify-center gap-5 md:gap-7 text-[10px] text-slate-400 font-black uppercase tracking-widest">
-          <div className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-indigo-400" /> Stripe Checkout</div>
+          <div className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-indigo-400" /> Paddle Checkout</div>
           <div className="w-1 h-1 rounded-full bg-slate-800 hidden sm:block" />
-          <div className="flex items-center gap-2">💳 PayPal Payment</div>
+          <div className="flex items-center gap-2">📱 Apple Pay & Google Pay</div>
           <div className="w-1 h-1 rounded-full bg-slate-800 hidden sm:block" />
           <div className="flex items-center gap-2">✨ Visa / Mastercard / Amex</div>
         </div>

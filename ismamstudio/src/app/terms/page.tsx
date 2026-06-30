@@ -73,6 +73,17 @@ export default function TermsOfServicePage() {
                 We strive to maintain high availability but reserve the right to temporarily suspend, modify, or update parts of the system without prior notice for server maintenance or feature deployment. We are not liable for any losses due to temporary service disruptions.
               </p>
             </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-bold text-white">6. AI Content & Ownership Disclosure</h2>
+              <p>
+                Our AI Novel Writer utilizes third-party artificial intelligence engines (specifically Llama-3 API integrations) to outline novel structures, outlines, and chapter texts.
+              </p>
+              <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
+                <li>**Ownership**: You retain 100% intellectual property ownership and commercial usage rights over all outlines and chapters generated under your account, subject to third-party model license conditions.</li>
+                <li>**AI Guidelines**: AI-generated content is generated on an "as-is" basis. We do not guarantee the absolute accuracy, originality, or quality of the generated outlines, and recommend reviewing all outputs prior to commercial publication.</li>
+              </ul>
+            </section>
           </div>
         </div>
       </div>

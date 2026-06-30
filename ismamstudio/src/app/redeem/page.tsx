@@ -1,18 +1,14 @@
-"use client";
+import { auth } from "@clerk/nextjs/server";
+import RedeemPageInner from "./RedeemPageInner";
+import type { Metadata } from "next";
 
-import dynamic from "next/dynamic";
-import { Loader2 } from "lucide-react";
+export const metadata: Metadata = {
+  title: "Redeem AppSumo Code | Ismam Studio",
+  description: "Activate your lifetime access to Ismam Studio by entering your AppSumo redemption code.",
+};
 
-const RedeemPageInner = dynamic(() => import("./RedeemPageInner"), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col items-center justify-center">
-      <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-      <p className="text-slate-400 text-xs mt-3 font-semibold uppercase tracking-wider text-xs">Loading Redemption Panel...</p>
-    </div>
-  ),
-});
+export default async function RedeemPage() {
+  const { userId } = await auth();
 
-export default function RedeemPage() {
-  return <RedeemPageInner />;
+  return <RedeemPageInner userId={userId} />;
 }

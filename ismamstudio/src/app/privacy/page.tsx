@@ -1,7 +1,11 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, Shield } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | Ismam Studio Help Center",
+  description: "Read the Privacy Policy of Ismam Studio. Learn how we collect, use, and protect your personal data when you use our KDP publishing tool.",
+};
 
 export default function PrivacyPolicyPage() {
   return (

@@ -1,7 +1,11 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, FileText } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service | Ismam Studio Help Center",
+  description: "Read the Terms of Service of Ismam Studio. Learn about commercial rights, user responsibilities, and licensing terms for generated books and puzzles.",
+};
 
 export default function TermsOfServicePage() {
   return (

@@ -7,7 +7,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // 🎨 গুগল ফন্ট লোড করা হচ্ছে
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', adjustFontFallback: false });
 
 import type { Metadata } from 'next';
 

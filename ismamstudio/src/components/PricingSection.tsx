@@ -1,12 +1,90 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function PricingSection() {
+function PricingSectionInner() {
   const [isAnnual, setIsAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const { userId } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Load Paddle script dynamically and initialize
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+    script.async = true;
+    script.onload = () => {
+      if ((window as any).Paddle) {
+        (window as any).Paddle.Initialize({
+          token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "test_token_placeholder",
+          environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || "sandbox"
+        });
+      }
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleCheckout = (planKey: string) => {
+    const isAnnualBilling = isAnnual;
+    const planIdKey = `${planKey}_${isAnnualBilling ? "annual" : "monthly"}`;
+
+    const priceIds: Record<string, string | undefined> = {
+      "starter_monthly": process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY,
+      "starter_annual": process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL,
+      "pro_monthly": process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY,
+      "pro_annual": process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL,
+      "agency_monthly": process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY,
+      "agency_annual": process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL,
+    };
+
+    const selectedPriceId = priceIds[planIdKey];
+
+    if (!userId) {
+      // Redirect to signup and pass callback checkout parameter
+      router.push(`/sign-up?redirect_url=/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}`);
+      return;
+    }
+
+    if (selectedPriceId && (window as any).Paddle) {
+      (window as any).Paddle.Checkout.open({
+        settings: {
+          displayMode: "overlay",
+          theme: "dark",
+          locale: "en"
+        },
+        items: [
+          {
+            priceId: selectedPriceId,
+            quantity: 1
+          }
+        ]
+      });
+    } else {
+      // Fallback
+      router.push("/studio");
+    }
+  };
+
+  // Trigger auto-checkout if redirected from signup page with credentials
+  useEffect(() => {
+    const checkoutParam = searchParams.get("checkout");
+    const billingParam = searchParams.get("billing");
+    if (checkoutParam && userId) {
+      const timer = setTimeout(() => {
+        const isAnnualBilling = billingParam === "annual";
+        setIsAnnual(isAnnualBilling);
+        handleCheckout(checkoutParam);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, userId]);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -32,7 +110,8 @@ export default function PricingSection() {
       colorClass: "bg-slate-950/40 hover:border-slate-800",
       borderClass: "border-slate-900",
       icon: <HelpCircle className="w-6 h-6 text-slate-500" />,
-      ctaLink: "/sign-up"
+      ctaLink: "/sign-up",
+      planKey: "free"
     },
     {
       name: "Starter Creator",
@@ -53,7 +132,8 @@ export default function PricingSection() {
       colorClass: "bg-slate-950/60 hover:border-slate-700",
       borderClass: "border-slate-800/80",
       icon: <Star className="w-6 h-6 text-slate-400" />,
-      ctaLink: "/sign-up?plan=starter"
+      ctaLink: "/sign-up?plan=starter",
+      planKey: "starter"
     },
     {
       name: "Pro Studio",
@@ -75,7 +155,8 @@ export default function PricingSection() {
       colorClass: "bg-white text-slate-900 shadow-[0_20px_50px_rgba(245,158,11,0.25),_0_0_30px_rgba(56,189,248,0.15)]",
       borderClass: "border-amber-400 border-2",
       icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
-      ctaLink: "/sign-up?plan=pro"
+      ctaLink: "/sign-up?plan=pro",
+      planKey: "pro"
     },
     {
       name: "Publisher Agency",
@@ -97,7 +178,8 @@ export default function PricingSection() {
       colorClass: "bg-slate-950/60 hover:border-slate-700",
       borderClass: "border-slate-800/80",
       icon: <Award className="w-6 h-6 text-slate-400" />,
-      ctaLink: "/sign-up?plan=agency"
+      ctaLink: "/sign-up?plan=agency",
+      planKey: "agency"
     },
   ];
 
@@ -291,17 +373,31 @@ export default function PricingSection() {
 
               {/* Action Button */}
               <div className="mt-8">
-                <Link
-                  href={ctaHref}
-                  className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
-                    plan.popular
-                      ? "bg-gradient-to-r from-amber-500 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
-                      : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                  }`}
-                >
-                  {plan.ctaText}
-                  <Zap className="w-4 h-4 shrink-0 opacity-80" />
-                </Link>
+                {plan.planKey === "free" ? (
+                  <Link
+                    href={ctaHref}
+                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
+                      plan.popular
+                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                        : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                    }`}
+                  >
+                    {plan.ctaText}
+                    <Zap className="w-4 h-4 shrink-0 opacity-80" />
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => handleCheckout(plan.planKey)}
+                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
+                      plan.popular
+                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                        : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                    }`}
+                  >
+                    {plan.ctaText}
+                    <Zap className="w-4 h-4 shrink-0 opacity-80" />
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -501,5 +597,17 @@ export default function PricingSection() {
       </div>
 
     </section>
+  );
+}
+
+export default function PricingSection() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[500px] flex items-center justify-center text-slate-400 font-semibold uppercase tracking-wider text-xs">
+        Loading Pricing Panel...
+      </div>
+    }>
+      <PricingSectionInner />
+    </Suspense>
   );
 }

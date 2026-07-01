@@ -1773,6 +1773,25 @@ export default function FabricCoverStudio({
                   <button onClick={addBarcodePlaceholder} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
                     <Grid className="w-4 h-4 text-slate-500"/> Add Barcode Placeholder
                   </button>
+
+                  {/* KDP Barcode Guidelines Help Card */}
+                  <div className="p-3 bg-amber-50/60 border border-amber-200/50 rounded-xl space-y-2 mt-2">
+                    <span className="text-[9px] font-black text-amber-800 uppercase tracking-wider block">KDP Barcode Guidelines:</span>
+                    <ul className="list-disc pl-3.5 text-[9px] font-semibold text-slate-600 space-y-1 leading-normal">
+                      <li>
+                        <strong>Clear Barcode Space:</strong> Keep the lower-right corner of the back cover completely clear (blank 2.0″ wide by 1.2″ high).
+                      </li>
+                      <li>
+                        <strong>No-Design Zone:</strong> Avoid placing logos, text, or shapes in this zone. You can use the barcode placeholder to align your design.
+                      </li>
+                      <li>
+                        <strong>Single Cover PDF:</strong> Export your final cover as a single combined PDF (back, spine, and front).
+                      </li>
+                      <li>
+                        <strong>KDP Settings:</strong> When uploading to KDP, select <strong>"No, my cover file does not include a barcode"</strong> so KDP prints it automatically.
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>

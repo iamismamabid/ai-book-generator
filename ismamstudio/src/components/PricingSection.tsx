@@ -67,7 +67,30 @@ function PricingSectionInner() {
 
     if (selectedPriceId && (window as any).Paddle) {
       console.log("Opening Paddle checkout for price:", selectedPriceId);
-      (window as any).Paddle.Checkout.open({
+      
+      // Get Partnero referral / partner ID
+      let customerKey = null;
+      if (typeof window !== "undefined") {
+        const partneroQueryParam = 'aff';
+        const partneroCookieName = 'partnero_partner';
+        
+        // 1. Check URL query params
+        customerKey = new URLSearchParams(window.location.search).get(partneroQueryParam);
+        
+        // 2. Fallback to cookies
+        if (!customerKey) {
+          const cookieArr = document.cookie.split(";").map(cookie => cookie.trim());
+          for (const cookie of cookieArr) {
+            const [cookieName, cookieValue] = cookie.split("=");
+            if (partneroCookieName === cookieName) {
+              customerKey = decodeURIComponent(cookieValue);
+              break;
+            }
+          }
+        }
+      }
+
+      const checkoutOptions: any = {
         settings: {
           displayMode: "overlay",
           theme: "dark",
@@ -79,7 +102,15 @@ function PricingSectionInner() {
             quantity: 1
           }
         ]
-      });
+      };
+
+      if (customerKey) {
+        checkoutOptions.customData = {
+          customer_key: customerKey
+        };
+      }
+
+      (window as any).Paddle.Checkout.open(checkoutOptions);
     } else {
       // Fallback
       router.push("/studio");

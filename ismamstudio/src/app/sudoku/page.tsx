@@ -51,6 +51,7 @@ export default function SudokuGeneratorPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [includeSolutions, setIncludeSolutions] = useState(true);
+  const [includeCover, setIncludeCover] = useState(false);
 
   const handlePreview = () => {
     setIsGenerating(true);
@@ -63,16 +64,35 @@ export default function SudokuGeneratorPage() {
 
   const handleDownloadPdf = () => {
     setIsDownloading(true);
-    setTimeout(() => {
+    setTimeout(async () => {
+      let coverState = null;
+      if (includeCover) {
+        const saved = localStorage.getItem("kdp-cover-draft");
+        if (saved) {
+          try {
+            coverState = JSON.parse(saved);
+          } catch (e) {
+            console.error("Error loading cover draft", e);
+          }
+        }
+        if (!coverState) {
+          alert("No saved cover found! Please design a cover in the Cover Studio first.");
+          setIsDownloading(false);
+          return;
+        }
+      }
+
       const count = Math.max(1, bookCount);
       const puzzles = generateSudokuBook(count, difficulty);
-      downloadSudokuPdf(
+      await downloadSudokuPdf(
         {
           puzzles,
           difficulty,
           trimSize,
           title: `Sudoku Puzzle Book`,
           includeSolutions,
+          includeCover,
+          coverState,
         },
         `sudoku-${difficulty}-${count}puzzles.pdf`
       );
@@ -201,6 +221,26 @@ export default function SudokuGeneratorPage() {
                     <span
                       className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
                         includeSolutions ? "translate-x-6" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Cover toggle */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800/60">
+                  <div>
+                    <p className="text-sm font-bold text-slate-300">Include Cover Pages</p>
+                    <p className="text-xs text-slate-500">Adds saved Front & Back cover to PDF</p>
+                  </div>
+                  <button
+                    onClick={() => setIncludeCover(!includeCover)}
+                    className={`relative w-12 h-6 rounded-full transition-all ${
+                      includeCover ? "bg-amber-500" : "bg-slate-700"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                        includeCover ? "translate-x-6" : "translate-x-0"
                       }`}
                     />
                   </button>

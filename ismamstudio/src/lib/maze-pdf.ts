@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { MazeGrid, Shape, solveMaze } from "./maze";
+import { drawCoverPagePart } from "../app/utils/pdfExportService";
 
 interface PdfOptions {
   mazes: {
@@ -11,6 +12,8 @@ interface PdfOptions {
   title?: string;
   trimSize?: "6x9" | "8.5x11" | "5x8";
   includeSolutions?: boolean;
+  includeCover?: boolean;
+  coverState?: any;
 }
 
 const TRIM_SIZES: Record<string, [number, number]> = {
@@ -90,13 +93,15 @@ function drawMaze(
   }
 }
 
-export function generateMazePdf(options: PdfOptions): jsPDF {
+export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
   const {
     mazes,
     shape,
     title = "Maze Puzzle Book",
     trimSize = "8.5x11",
     includeSolutions = true,
+    includeCover = false,
+    coverState = null,
   } = options;
 
   const [widthInches, heightInches] = TRIM_SIZES[trimSize] || TRIM_SIZES["8.5x11"];
@@ -112,9 +117,21 @@ export function generateMazePdf(options: PdfOptions): jsPDF {
   const contentWidth = widthInches - margin * 2;
   const contentHeight = heightInches - margin * 2;
 
+  // 1. Draw Front Cover if integrated
+  let firstPageAdded = false;
+  if (includeCover && coverState) {
+    await drawCoverPagePart(doc, coverState, 'front', widthInches, heightInches);
+    firstPageAdded = true;
+  }
+
   // --------------------------------------------------
-  // PAGE 1: Welcome & Cover Title Page
+  // Welcome & Cover Title Page
   // --------------------------------------------------
+  if (firstPageAdded) {
+    doc.addPage();
+  }
+  firstPageAdded = true;
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(32);
   doc.setTextColor(15, 23, 42); // Dark slate
@@ -214,10 +231,16 @@ export function generateMazePdf(options: PdfOptions): jsPDF {
     });
   }
 
+  // 3. Draw Back Cover if integrated
+  if (includeCover && coverState) {
+    doc.addPage();
+    await drawCoverPagePart(doc, coverState, 'back', widthInches, heightInches);
+  }
+
   return doc;
 }
 
-export function downloadMazePdf(options: PdfOptions, filename = "maze-book.pdf") {
-  const doc = generateMazePdf(options);
+export async function downloadMazePdf(options: PdfOptions, filename = "maze-book.pdf") {
+  const doc = await generateMazePdf(options);
   doc.save(filename);
 }

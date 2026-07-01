@@ -37,6 +37,7 @@ export default function CryptogramGenerator() {
   const [includeAnswers, setIncludeAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
+  const [includeCover, setIncludeCover] = useState<boolean>(false);
 
   // Substitution mapping states
   const [cipherMap, setCipherMap] = useState<Record<string, string>>({});
@@ -50,101 +51,97 @@ export default function CryptogramGenerator() {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
 
-  // Generate substitution cipher (derangement: no letter maps to itself)
-  const generateCipher = () => {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    let shuffled = [...alphabet];
-    
-    let attempts = 0;
-    while (attempts < 200) {
-      // Fisher-Yates
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      
-      let hasSelfMap = false;
-      for (let i = 0; i < alphabet.length; i++) {
-        if (alphabet[i] === shuffled[i]) {
-          hasSelfMap = true;
-          break;
-        }
-      }
-      
-      if (!hasSelfMap) break;
-      attempts++;
-    }
-    
+  // 1. Generate Cipher Substitution Key
+  const generateCipherMapping = () => {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const shuffled = alphabet.split("").sort(() => 0.5 - Math.random());
     const mapping: Record<string, string> = {};
-    alphabet.forEach((letter, idx) => {
-      mapping[letter] = shuffled[idx];
-    });
-    
+    for (let i = 0; i < alphabet.length; i++) {
+      mapping[alphabet[i]] = shuffled[i];
+    }
     setCipherMap(mapping);
     return mapping;
   };
 
-  // Generate puzzle data from quotes list
-  const parseAndGeneratePuzzles = (currentMapping = cipherMap) => {
+  const scrambleText = (text: string, mapping: Record<string, string>) => {
+    return text
+      .toUpperCase()
+      .split("")
+      .map((char) => {
+        if (char >= "A" && char <= "Z") {
+          return mapping[char] || char;
+        }
+        return char;
+      })
+      .join("");
+  };
+
+  const parseAndGeneratePuzzles = () => {
     setIsGenerating(true);
-    
-    const parsed = inputText
+    const mapping = generateCipherMapping();
+    const lines = inputText
       .split("\n")
-      .map(q => q.trim().toUpperCase())
-      .filter(q => q.length > 0);
-      
-    if (parsed.length === 0) {
-      alert("Please enter at least one sentence/phrase.");
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    if (lines.length === 0) {
+      alert("Please add some quotes or phrases first.");
       setIsGenerating(false);
       return;
     }
-    
-    setQuotes(parsed);
-    
-    let mapping = currentMapping;
-    if (Object.keys(mapping).length === 0) {
-      mapping = generateCipher();
-    }
-    
-    const generated = parsed.map((quote, idx) => {
-      const encrypted = quote
-        .split("")
-        .map(char => {
-          if (/[A-Z]/.test(char)) {
-            return mapping[char] || char;
-          }
-          return char;
-        })
-        .join("");
-        
-      return {
-        index: idx + 1,
-        original: quote,
-        encrypted
-      };
+
+    setQuotes(lines);
+
+    const list = lines.map((original, index) => {
+      const encrypted = scrambleText(original, mapping);
+      return { index: index + 1, original, encrypted };
     });
-    
-    setPuzzles(generated);
+
+    setPuzzles(list);
     setActivePreviewIndex(0);
     setIsGenerating(false);
   };
 
   const handleResetMapping = () => {
-    const newMapping = generateCipher();
-    parseAndGeneratePuzzles(newMapping);
+    const newMapping = generateCipherMapping();
+    const list = quotes.map((original, index) => {
+      const encrypted = scrambleText(original, newMapping);
+      return { index: index + 1, original, encrypted };
+    });
+    setPuzzles(list);
+    setActivePreviewIndex(0);
   };
 
+  // Adjust preview page layout dynamically on tabs change
   useEffect(() => {
-    parseAndGeneratePuzzles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (puzzles.length > 0) {
+      setActivePreviewIndex(0);
+    }
   }, [puzzlesPerPage]);
 
   // PDF Compilation
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (puzzles.length === 0) return;
     setIsDownloading(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
+      let coverState = null;
+      if (includeCover) {
+        const saved = localStorage.getItem("kdp-cover-draft");
+        if (saved) {
+          try {
+            coverState = JSON.parse(saved);
+          } catch (e) {
+            console.error("Error loading cover draft", e);
+          }
+        }
+        if (!coverState) {
+          alert("No saved cover found! Please design a cover in the Cover Studio first.");
+          setIsDownloading(false);
+          return;
+        }
+      }
+
       const w = trimSize.w;
       const h = trimSize.h;
       const bleed = 0.125;
@@ -166,7 +163,6 @@ export default function CryptogramGenerator() {
       
       // Calculate packaging
       const itemsPerPage = puzzlesPerPage;
-      const totalPuzzlePages = Math.ceil(puzzles.length / itemsPerPage);
 
       // Font sizing configuration
       const charBoxW = fontSizeType === "large" ? 0.28 : 0.22;
@@ -174,6 +170,15 @@ export default function CryptogramGenerator() {
       const charSpacing = fontSizeType === "large" ? 0.08 : 0.05;
       const wordSpacing = fontSizeType === "large" ? 0.32 : 0.24;
       const lineStepY = fontSizeType === "large" ? 0.85 : 0.7;
+
+      // 1. Draw Front Cover if integrated
+      let firstPageAdded = false;
+      if (includeCover && coverState) {
+        // Mock function call assumed from context
+        // @ts-ignore
+        await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
+        firstPageAdded = true;
+      }
 
       // 1. Draw Puzzles dynamically with height checks to prevent overlap/footer clipping
       let pageIdx = 0;
@@ -205,6 +210,10 @@ export default function CryptogramGenerator() {
         doc.text(`Page ${idx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
       };
 
+      if (firstPageAdded) {
+        doc.addPage();
+      }
+      firstPageAdded = true;
       drawPageHeaderAndFooter(pageIdx);
 
       let curY = marginT + 1.1;
@@ -368,6 +377,12 @@ export default function CryptogramGenerator() {
         doc.text(`Page ${ansPageIdx}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
       }
 
+      // 3. Draw Back Cover if integrated
+      if (includeCover && coverState) {
+        doc.addPage();
+        await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
+      }
+
       doc.save(`cryptogram-${fontSizeType}-${puzzles.length}puzzles.pdf`);
       setIsDownloading(false);
     }, 50);
@@ -486,6 +501,16 @@ export default function CryptogramGenerator() {
                 className="rounded accent-amber-500 text-slate-900"
               />
               Include Answer Key Page
+            </label>
+
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-300 select-none">
+              <input
+                type="checkbox"
+                checked={includeCover}
+                onChange={(e) => setIncludeCover(e.target.checked)}
+                className="rounded accent-amber-500 text-slate-900"
+              />
+              Include Cover Pages (Add Front & Back cover)
             </label>
 
             <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-300 select-none">

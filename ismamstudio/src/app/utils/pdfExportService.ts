@@ -365,7 +365,7 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number) => {
 };
 
 // Helper: Draw Front Cover or Back Cover page
-const drawCoverPagePart = async (doc: any, coverState: any, side: 'front' | 'back', pageWidth: number, pageHeight: number) => {
+export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front' | 'back', pageWidth: number, pageHeight: number) => {
   const { 
     coverElements = [], 
     frontCoverColor = '#1E293B', 

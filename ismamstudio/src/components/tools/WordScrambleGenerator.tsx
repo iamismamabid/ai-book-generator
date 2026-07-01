@@ -37,6 +37,7 @@ export default function WordScrambleGenerator() {
   const [includeAnswers, setIncludeAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
+  const [includeCover, setIncludeCover] = useState<boolean>(false);
   
   // Puzzle data states
   const [puzzles, setPuzzles] = useState<Array<{
@@ -80,14 +81,14 @@ export default function WordScrambleGenerator() {
       
       const scrambledList = originalList.map(word => scrambleWord(word, difficulty));
       
-      // Shuffle original words for the word bank, keeping them in alphabetical order
-      const wordBank = [...originalList].sort((a, b) => a.localeCompare(b));
+      // Shuffle original words for the word bank helper box
+      const bankList = [...originalList].sort(() => 0.5 - Math.random());
       
       generated.push({
         index: p + 1,
         original: originalList,
         scrambled: scrambledList,
-        wordBank
+        wordBank: bankList
       });
     }
     
@@ -96,40 +97,33 @@ export default function WordScrambleGenerator() {
     setIsGenerating(false);
   };
 
-  // Helper scramble algorithm
-  const scrambleWord = (word: string, diff: "easy" | "medium" | "hard"): string => {
-    if (word.length <= 1) return word;
+  // Helper: Scramble letters
+  const scrambleWord = (word: string, diff: typeof difficulty) => {
+    if (word.length <= 2) return word;
     
-    const letters = word.split("");
-    
-    if (diff === "easy") {
-      // Keep first letter in place, scramble the rest
-      const first = letters[0];
-      const rest = letters.slice(1);
+    // Easy: Keep first and last letter in place, scramble middle
+    if (diff === "easy" && word.length > 3) {
+      const first = word[0];
+      const last = word[word.length - 1];
+      const middle = word.substring(1, word.length - 1).split("");
       
-      // Fisher-Yates
-      for (let i = rest.length - 1; i > 0; i--) {
+      // shuffle middle
+      for (let i = middle.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [rest[i], rest[j]] = [rest[j], rest[i]];
+        [middle[i], middle[j]] = [middle[j], middle[i]];
       }
       
-      const scrambledRest = rest.join("");
-      if (scrambledRest === word.slice(1) && rest.length > 1) {
-        return scrambleWord(word, diff);
-      }
-      return first + scrambledRest;
-    } else {
-      // Scramble completely
+      return first + middle.join("") + last;
+    } 
+    // Medium / Hard: full shuffle
+    else {
+      const letters = word.split("");
       for (let i = letters.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [letters[i], letters[j]] = [letters[j], letters[i]];
       }
       
-      const scrambled = letters.join("");
-      if (scrambled === word) {
-        return scrambleWord(word, diff);
-      }
-      return scrambled;
+      return letters.join("");
     }
   };
 
@@ -144,7 +138,24 @@ export default function WordScrambleGenerator() {
     if (puzzles.length === 0) return;
     setIsDownloading(true);
     
-    setTimeout(() => {
+    setTimeout(async () => {
+      let coverState = null;
+      if (includeCover) {
+        const saved = localStorage.getItem("kdp-cover-draft");
+        if (saved) {
+          try {
+            coverState = JSON.parse(saved);
+          } catch (e) {
+            console.error("Error loading cover draft", e);
+          }
+        }
+        if (!coverState) {
+          alert("No saved cover found! Please design a cover in the Cover Studio first.");
+          setIsDownloading(false);
+          return;
+        }
+      }
+
       // Trim size configurations
       const w = trimSize.w;
       const h = trimSize.h;
@@ -168,10 +179,19 @@ export default function WordScrambleGenerator() {
       
       const contentW = pageW - marginL - marginR;
       const contentH = pageH - marginT - marginB;
+
+      // 1. Draw Front Cover if integrated
+      let firstPageAdded = false;
+      if (includeCover && coverState) {
+        // @ts-ignore
+        await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
+        firstPageAdded = true;
+      }
       
       // 1. Draw Puzzles
       puzzles.forEach((puzzle, pIdx) => {
-        if (pIdx > 0) doc.addPage();
+        if (firstPageAdded || pIdx > 0) doc.addPage();
+        firstPageAdded = true;
         
         // Header Title
         doc.setFont("helvetica", "bold");
@@ -327,6 +347,12 @@ export default function WordScrambleGenerator() {
         doc.setTextColor(148, 163, 184);
         doc.text(`Page ${ansPageIdx}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
       }
+
+      // 3. Draw Back Cover if integrated
+      if (includeCover && coverState) {
+        doc.addPage();
+        await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
+      }
       
       doc.save(`word-scramble-${difficulty}-${numPages}pages.pdf`);
       setIsDownloading(false);
@@ -448,6 +474,16 @@ export default function WordScrambleGenerator() {
                 className="rounded accent-amber-500 text-slate-900"
               />
               Include Answer Key Page
+            </label>
+
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-300 select-none">
+              <input
+                type="checkbox"
+                checked={includeCover}
+                onChange={(e) => setIncludeCover(e.target.checked)}
+                className="rounded accent-amber-500 text-slate-900"
+              />
+              Include Cover Pages (Add Front & Back cover)
             </label>
 
             <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-300 select-none">

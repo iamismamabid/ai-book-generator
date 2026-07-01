@@ -217,7 +217,7 @@ export default function GeneratePage() {
                     <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-2">
                       What's your <span className="text-indigo-400">next masterpiece?</span>
                     </h1>
-                    <p className="text-slate-400 text-sm font-semibold">
+                    <p className="text-slate-200 text-sm font-bold leading-relaxed">
                       Describe your book idea in 2-3 sentences. Our AI will outline your KDP-compliant novel outline instantly.
                     </p>
                   </div>

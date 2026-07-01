@@ -8,6 +8,7 @@ import {
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import { drawCoverPagePart } from "@/app/utils/pdfExportService";
 
 const TRIM_SIZES = [
   { id: "6x9", label: "6\" x 9\" (Novel)", w: 6, h: 9 },
@@ -254,7 +255,6 @@ export default function MathPuzzleGenerator() {
       // 1. Draw Front Cover if integrated
       let firstPageAdded = false;
       if (incCover && coverState) {
-        // @ts-ignore
         await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
         firstPageAdded = true;
       }

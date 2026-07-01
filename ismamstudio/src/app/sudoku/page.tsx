@@ -7,6 +7,7 @@ import { downloadSudokuPdf } from '../../lib/sudoku-pdf';
 import DownloadButton from "@/components/DownloadButton";
 import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
+import ExportInteriorModal from "@/components/ExportInteriorModal";
 
 // Live preview — puzzle grid
 function SudokuPreview({ grid, isSolution = false }: { grid: Grid; isSolution?: boolean }) {

@@ -8,7 +8,7 @@ import {
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
-import { drawCoverPagePart } from "@/app/utils/pdfExportService";
+import { drawCoverPagePart, drawWatermark } from "@/app/utils/pdfExportService";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -130,10 +130,11 @@ export default function CryptogramGenerator() {
     trimSize: "6x9" | "8.5x11" | "5x8";
     hasBleed: boolean;
     showGuides: boolean;
+    isPremium?: boolean;
   }) => {
     if (puzzles.length === 0) return;
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides } = options;
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides, isPremium } = options;
 
     setTimeout(async () => {
       let finalW = 8.5;
@@ -381,6 +382,19 @@ export default function CryptogramGenerator() {
       if (incCover && coverState) {
         doc.addPage();
         await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
+      }
+
+      // Apply watermark to all interior pages if not premium
+      if (isPremium === false) {
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          const isFrontCover = incCover && coverState && i === 1;
+          const isBackCover = incCover && coverState && i === totalPages;
+          if (!isFrontCover && !isBackCover) {
+            doc.setPage(i);
+            drawWatermark(doc, pageW, pageH);
+          }
+        }
       }
 
       doc.save(`cryptogram-${fontSizeType}-${puzzles.length}puzzles.pdf`);

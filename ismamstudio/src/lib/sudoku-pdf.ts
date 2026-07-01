@@ -1,7 +1,7 @@
 // src/lib/sudoku-pdf.ts
 import { jsPDF } from "jspdf";
 import { Grid, Difficulty } from "./sudokuGenerator";
-import { drawCoverPagePart } from "../app/utils/pdfExportService";
+import { drawCoverPagePart, drawWatermark } from "../app/utils/pdfExportService";
 
 interface PdfOptions {
   puzzles: { puzzle: Grid; solution: Grid }[];
@@ -11,6 +11,7 @@ interface PdfOptions {
   includeSolutions?: boolean;
   includeCover?: boolean;
   coverState?: any;
+  isPremium?: boolean;
 }
 
 function drawSudokuGrid(
@@ -117,7 +118,7 @@ function drawSudokuGrid(
 }
 
 export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
-  const { puzzles, title, trimSize, includeSolutions = true, includeCover = false, coverState = null } = options;
+  const { puzzles, title, trimSize, includeSolutions = true, includeCover = false, coverState = null, isPremium } = options;
 
   let width = 8.5;
   let height = 11;
@@ -156,6 +157,19 @@ export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
   if (includeCover && coverState) {
     doc.addPage();
     await drawCoverPagePart(doc, coverState, 'back', width, height);
+  }
+
+  // Apply watermark to all interior pages if not premium
+  if (isPremium === false) {
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      const isFrontCover = includeCover && coverState && i === 1;
+      const isBackCover = includeCover && coverState && i === totalPages;
+      if (!isFrontCover && !isBackCover) {
+        doc.setPage(i);
+        drawWatermark(doc, width, height);
+      }
+    }
   }
 
   doc.save(filename);

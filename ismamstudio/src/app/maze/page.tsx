@@ -96,9 +96,10 @@ export default function MazeGeneratorPage() {
     coverState: any;
     includeSolutions: boolean;
     trimSize: "6x9" | "8.5x11" | "5x8";
+    isPremium?: boolean;
   }) => {
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim } = options;
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, isPremium } = options;
     try {
       const mazes = Array.from({ length: bookCount }, () => 
         generateMaze({ rows: gridSize, cols: gridSize, shape })
@@ -113,6 +114,7 @@ export default function MazeGeneratorPage() {
           title: `Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
           includeCover: incCover,
           coverState,
+          isPremium,
         },
         `maze-${shape}-${bookCount}puzzles.pdf`
       );

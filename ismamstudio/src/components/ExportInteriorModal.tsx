@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Settings2, FileDown, AlertTriangle, Loader2 } from "lucide-react";
+import { X, Settings2, FileDown, AlertTriangle, Loader2, Lock, Sparkles, ShieldCheck, Ticket } from "lucide-react";
+import { checkPremiumStatus, redeemAppSumoCode } from "@/app/actions";
+import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 
 interface ExportInteriorModalProps {
   isOpen: boolean;
@@ -25,6 +28,7 @@ export default function ExportInteriorModal({
   defaultTrimSize = "8.5x11",
   showSolutionsToggle = true,
 }: ExportInteriorModalProps) {
+  const { userId, isLoaded, isSignedIn } = useAuth();
   const [includeCover, setIncludeCover] = useState(false);
   const [includeSolutions, setIncludeSolutions] = useState(true);
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">(defaultTrimSize);
@@ -32,6 +36,50 @@ export default function ExportInteriorModal({
   const [showGuides, setShowGuides] = useState(true);
   const [coverState, setCoverState] = useState<any>(null);
   const [isExporting, setIsExporting] = useState(false);
+
+  // Subscription/AppSumo status checking
+  const [premiumStatus, setPremiumStatus] = useState<{
+    checked: boolean;
+    isPremium: boolean;
+    plan?: string;
+    isTrial?: boolean;
+    daysRemaining?: number;
+  }>({
+    checked: false,
+    isPremium: false,
+  });
+
+  // Redemption state
+  const [appsumoCode, setAppsumoCode] = useState("");
+  const [redemptionError, setRedemptionError] = useState<string | null>(null);
+  const [redemptionSuccess, setRedemptionSuccess] = useState<string | null>(null);
+  const [isRedeeming, setIsRedeeming] = useState(false);
+
+  // Check premium status on mount or when modal opens
+  const fetchPremiumStatus = async () => {
+    if (!userId) return;
+    try {
+      const res = await checkPremiumStatus();
+      setPremiumStatus({
+        checked: true,
+        isPremium: res.isPremium,
+        plan: res.plan,
+        isTrial: (res as any).isTrial || false,
+        daysRemaining: (res as any).daysRemaining,
+      });
+    } catch (e) {
+      console.error("Failed to check premium status:", e);
+      setPremiumStatus({ checked: true, isPremium: false });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && userId) {
+      fetchPremiumStatus();
+    } else if (isOpen && isLoaded && !isSignedIn) {
+      setPremiumStatus({ checked: true, isPremium: false });
+    }
+  }, [isOpen, userId, isLoaded, isSignedIn]);
 
   // Load cover state from localStorage
   useEffect(() => {
@@ -46,6 +94,28 @@ export default function ExportInteriorModal({
       }
     }
   }, [isOpen]);
+
+  const handleRedeemCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!appsumoCode.trim()) return;
+
+    setIsRedeeming(true);
+    setRedemptionError(null);
+    setRedemptionSuccess(null);
+
+    try {
+      const res = await redeemAppSumoCode(appsumoCode.trim());
+      if (res.success) {
+        setRedemptionSuccess("AppSumo Code redeemed successfully! Downloads unlocked.");
+        setPremiumStatus({ checked: true, isPremium: true });
+        setAppsumoCode("");
+      }
+    } catch (err: any) {
+      setRedemptionError(err.message || "Failed to redeem code. Please try again.");
+    } finally {
+      setIsRedeeming(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -63,6 +133,7 @@ export default function ExportInteriorModal({
         trimSize,
         hasBleed,
         showGuides,
+        isPremium: premiumStatus.isPremium,
       });
       onClose();
     } catch (err) {
@@ -74,6 +145,18 @@ export default function ExportInteriorModal({
 
   const hasSavedCover = !!coverState;
 
+  // loading state
+  if (!premiumStatus.checked) {
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center max-w-sm w-full flex flex-col items-center shadow-2xl animate-in zoom-in-95 duration-200">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-650 mb-3" />
+          <span className="text-xs font-black text-slate-800 uppercase tracking-wider">Checking Account Access...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full shadow-2xl p-6 relative animate-in zoom-in-95 duration-200">
@@ -84,7 +167,7 @@ export default function ExportInteriorModal({
           <X className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 bg-indigo-650/10 rounded-xl flex items-center justify-center text-indigo-600">
             <Settings2 className="w-5 h-5" />
           </div>
@@ -94,7 +177,47 @@ export default function ExportInteriorModal({
           </div>
         </div>
 
-        <div className="space-y-4">
+        {/* Free Plan Warning Banner */}
+        {!premiumStatus.isPremium && (
+          <div className="p-4 bg-amber-50 border border-amber-200 text-amber-850 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
+            <div className="flex gap-2 items-start">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-black text-slate-850 block">Free Account Sample Warning</span>
+                <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
+                  Exported KDP interior compile files will include a light diagonal **"SAMPLE - ISMAM STUDIO"** watermark on all pages. 
+                </p>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-amber-200/50 flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
+              <Link href="/pricing" target="_blank" className="text-indigo-600 hover:text-indigo-500">
+                Upgrade to Remove Watermark →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Free Trial Active Banner */}
+        {premiumStatus.isTrial && (
+          <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-850 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
+            <div className="flex gap-2 items-start">
+              <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-black text-slate-850 block">7-Day Premium Trial Active!</span>
+                <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
+                  You have <span className="font-black text-emerald-650">{premiumStatus.daysRemaining} days remaining</span>. High-res watermark-free vector PDF exports are fully unlocked!
+                </p>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-emerald-200/50 flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
+              <Link href="/pricing" target="_blank" className="text-indigo-600 hover:text-indigo-550">
+                View Pricing Plans & LTDs →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
           {/* Cover Integration Option */}
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-3">
             <div className="flex justify-between items-start">
@@ -178,10 +301,50 @@ export default function ExportInteriorModal({
               Show Safe Margins Guide
             </label>
           </div>
+
+          {/* Inline AppSumo Redemption Box for Free users */}
+          {!premiumStatus.isPremium && (
+            <form onSubmit={handleRedeemCode} className="p-4 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl space-y-3">
+              <div>
+                <label htmlFor="modalAppSumoCode" className="text-xs font-black text-slate-800 uppercase flex items-center gap-1.5 cursor-pointer">
+                  <Ticket className="w-4 h-4 text-emerald-600" /> Unlock Watermark-Free Downloads?
+                </label>
+                <span className="text-[9px] font-bold text-slate-400 block uppercase">Redeem AppSumo code directly to remove watermark</span>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  id="modalAppSumoCode"
+                  placeholder="e.g. SUMO-XXXX-XXXX"
+                  value={appsumoCode}
+                  onChange={(e) => setAppsumoCode(e.target.value)}
+                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600"
+                />
+                <button
+                  type="submit"
+                  disabled={isRedeeming || !appsumoCode.trim()}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-emerald-700 disabled:opacity-50 transition cursor-pointer flex items-center justify-center min-w-[80px]"
+                >
+                  {isRedeeming ? <Loader2 className="w-4 h-4 animate-spin" /> : "Redeem"}
+                </button>
+              </div>
+
+              {redemptionError && (
+                <div className="text-[10px] text-rose-600 font-bold bg-rose-50 border border-rose-100 p-2.5 rounded-xl">
+                  {redemptionError}
+                </div>
+              )}
+              {redemptionSuccess && (
+                <div className="text-[10px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-100 p-2.5 rounded-xl">
+                  {redemptionSuccess}
+                </div>
+              )}
+            </form>
+          )}
         </div>
 
         {/* Action Button */}
-        <div className="mt-6">
+        <div className="mt-5">
           <button
             onClick={handleActionExport}
             disabled={isExporting || (includeCover && !hasSavedCover)}
@@ -195,7 +358,7 @@ export default function ExportInteriorModal({
             ) : (
               <>
                 <FileDown className="w-4 h-4" />
-                Export Interior PDF
+                {premiumStatus.isPremium ? "Export Interior PDF" : "Download Watermarked PDF"}
               </>
             )}
           </button>

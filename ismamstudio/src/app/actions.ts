@@ -176,3 +176,57 @@ export async function redeemAppSumoCode(code: string) {
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+// 🎯 ৭. ইউজারের প্রিমিয়াম স্ট্যাটাস চেক করার ফাংশন
+export async function checkPremiumStatus() {
+  const { userId } = await auth();
+  if (!userId) {
+    return { isPremium: false, reason: "unauthorized" };
+  }
+
+  try {
+    // ১. ডাটাবেসে AppSumo redemption কোড চেক করা
+    const redemption = await prisma.appSumoRedemption.findUnique({
+      where: { clerkId: userId }
+    });
+
+    if (redemption) {
+      return { isPremium: true, plan: "AppSumo LTD" };
+    }
+
+    // ২. Clerk publicMetadata চেক করা (সাবস্ক্রিপশনের জন্য)
+    const user = await currentUser();
+    if (user) {
+      const publicMetadata = user.publicMetadata as any;
+      if (
+        publicMetadata.isPremium === true ||
+        publicMetadata.plan === "starter" ||
+        publicMetadata.plan === "pro" ||
+        publicMetadata.plan === "agency" ||
+        publicMetadata.subscriptionStatus === "active"
+      ) {
+        return { isPremium: true, plan: publicMetadata.plan || "Premium" };
+      }
+
+      // ৩. ৭ দিনের ফ্রী ট্রায়াল পিরিয়ড চেক করা (অ্যাকাউন্ট বয়স ৭ দিনের কম হলে)
+      const createdTime = user.createdAt; // Epoch milliseconds from Clerk
+      const currentTime = Date.now();
+      const trialDurationMs = 7 * 24 * 60 * 60 * 1000; // ৭ দিন মিলি-সেকেন্ডে
+      const elapsedMs = currentTime - createdTime;
+
+      if (elapsedMs < trialDurationMs) {
+        const daysRemaining = Math.max(0, Math.ceil((trialDurationMs - elapsedMs) / (24 * 60 * 60 * 1000)));
+        return {
+          isPremium: true,
+          plan: "Free Trial",
+          isTrial: true,
+          daysRemaining
+        };
+      }
+    }
+  } catch (error) {
+    console.error("Error in checkPremiumStatus:", error);
+  }
+
+  return { isPremium: false, reason: "free_tier" };
+}

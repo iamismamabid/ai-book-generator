@@ -12,11 +12,8 @@ import {
   Sparkles, 
   Download, 
   Shield,
-  Star,
   Layers,
   Sliders,
-  Type,
-  Maximize2,
   X,
   Key,
   Calculator,
@@ -80,9 +77,6 @@ const BOOK_SAMPLES: BookSample[] = [
 
 export default function HomePage() {
   const [activePreview, setActivePreview] = useState<string>("sudoku");
-  const [mockSelectedLayer, setMockSelectedLayer] = useState<string>("title");
-  const [mockColor, setMockColor] = useState<string>("#f59e0b");
-  const [mockScale, setMockScale] = useState<number>(90);
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 overflow-hidden relative">
@@ -128,11 +122,6 @@ export default function HomePage() {
             </div>
 
             <div className="flex items-center gap-6 pt-2">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 100% KDP bleed & safety compliant
               </span>
@@ -144,124 +133,105 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-indigo-500/10 rounded-[3rem] blur-3xl" />
             
             <div className="relative bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-[2.5rem] p-6 shadow-2xl animate-float">
-              
-              {/* Studio Canvas Title Bar */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+
+              {/* Title Bar */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-rose-500" />
                   <div className="w-3 h-3 rounded-full bg-amber-500" />
                   <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-2">Ismam Studio Simulator</span>
+                  <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-2">Labyrinth Book Designer</span>
                 </div>
-                <span className="text-[10px] font-black text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/25">
-                  6" x 9" Template
+                <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/25">
+                  8.5″ × 11″ KDP
                 </span>
               </div>
 
-              {/* Layout Simulator */}
-              <div className="grid grid-cols-12 gap-4">
-                
-                {/* Floating toolbars */}
-                <div className="col-span-3 space-y-3">
-                  <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-850 space-y-2">
-                    <span className="text-[8px] font-black uppercase text-slate-500 tracking-wider block">Layers</span>
-                    <button 
-                      onClick={() => setMockSelectedLayer("title")}
-                      className={`w-full py-1.5 px-2 rounded text-left text-[9px] font-bold flex items-center gap-1.5 transition-colors ${
-                        mockSelectedLayer === "title" ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      <Type className="w-3 h-3" /> Title Text
-                    </button>
-                    <button 
-                      onClick={() => setMockSelectedLayer("maze")}
-                      className={`w-full py-1.5 px-2 rounded text-left text-[9px] font-bold flex items-center gap-1.5 transition-colors ${
-                        mockSelectedLayer === "maze" ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      <Compass className="w-3 h-3" /> Puzzle Grid
-                    </button>
-                  </div>
-
-                  <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-850 space-y-2">
-                    <span className="text-[8px] font-black uppercase text-slate-500 tracking-wider block">Colors</span>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {["#f59e0b", "#6366f1", "#10b981", "#ec4899", "#3b82f6", "#ffffff"].map((c) => (
-                        <button 
-                          key={c}
-                          onClick={() => setMockColor(c)}
-                          className={`w-full aspect-square rounded-full border transition-transform ${
-                            mockColor === c ? "scale-110 border-white" : "border-transparent"
-                          }`}
-                          style={{ backgroundColor: c }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Simulated Canvas */}
-                <div className="col-span-9 bg-slate-950 rounded-2xl border border-slate-850 p-4 relative overflow-hidden flex flex-col items-center justify-between min-h-[220px]">
-                  
-                  {/* Bleed Safety Margin lines */}
-                  <div className="absolute inset-2.5 border border-dashed border-rose-500/35 rounded-xl pointer-events-none flex items-start justify-end p-1">
-                    <span className="text-[6px] font-bold uppercase tracking-wider text-rose-500/60">Bleed Safety Area</span>
-                  </div>
-
-                  {/* Title node */}
-                  <div 
-                    className={`transition-all duration-300 text-center cursor-pointer mt-4 ${
-                      mockSelectedLayer === "title" ? "ring-2 ring-indigo-500 p-1.5 rounded-lg" : ""
+              {/* Shape Selector Tabs */}
+              <div className="flex gap-2 mb-4">
+                {[
+                  { icon: "❤", label: "Heart", active: true },
+                  { icon: "◯", label: "Circle", active: false },
+                  { icon: "▪", label: "Square", active: false },
+                ].map((tab) => (
+                  <span
+                    key={tab.label}
+                    className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 ${
+                      tab.active
+                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                        : "bg-slate-950/60 text-slate-500 border-slate-800"
                     }`}
-                    onClick={() => setMockSelectedLayer("title")}
                   >
-                    <span 
-                      className="text-sm font-black uppercase tracking-widest block transition-colors duration-300"
-                      style={{ color: mockColor }}
-                    >
-                      THE MAZE MASTER
-                    </span>
-                    <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">
-                      100 Shape-Masked Puzzles
-                    </span>
-                  </div>
-
-                  {/* Puzzle node */}
-                  <div 
-                    className={`transition-all duration-300 flex items-center justify-center p-2 rounded-xl bg-slate-900 border border-slate-800 w-[110px] aspect-square relative cursor-pointer my-2 ${
-                      mockSelectedLayer === "maze" ? "ring-2 ring-indigo-500" : ""
-                    }`}
-                    style={{ transform: `scale(${mockScale / 100})` }}
-                    onClick={() => setMockSelectedLayer("maze")}
-                  >
-                    {/* Simulated heart maze grid */}
-                    <div className="text-[7px] leading-[1] font-mono text-indigo-400 font-bold select-none text-center">
-                      {"###   ###\n##### #####\n###########\n #########\n  #######\n   ###\n    #".split("\n").map((row, idx) => (
-                        <div key={idx}>{row}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Spine indicators */}
-                  <div className="absolute top-0 bottom-0 left-1/2 w-0.5 border-l border-dashed border-slate-850 pointer-events-none" />
-
-                </div>
-
+                    <span className={tab.label === "Heart" ? "text-rose-500" : ""}>{tab.icon}</span>
+                    {tab.label}
+                  </span>
+                ))}
               </div>
 
-              {/* Slider Controller */}
-              <div className="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold">
-                  <Sliders className="w-3.5 h-3.5" /> Object Scale: {mockScale}%
+              {/* Main Canvas Area */}
+              <div className="bg-slate-950 rounded-2xl border border-slate-800 p-4 relative overflow-hidden">
+                {/* Bleed guides */}
+                <div className="absolute inset-2 border border-dashed border-rose-500/20 rounded-xl pointer-events-none" />
+                <div className="absolute top-3 right-3 text-[6px] font-bold text-rose-500/50 uppercase tracking-wider">Bleed Safe</div>
+
+                {/* Heart Maze Grid */}
+                <div className="flex flex-col items-center justify-center py-2 gap-0.5">
+                  {[
+                    "  ██   ██  ",
+                    " █████████ ",
+                    "███████████",
+                    "███████████",
+                    " █████████ ",
+                    "  ███████  ",
+                    "   █████   ",
+                    "    ███    ",
+                    "     █     ",
+                  ].map((row, i) => (
+                    <div key={i} className="font-mono text-[9px] leading-[1.1] tracking-[0.15em] text-emerald-400/80 select-none whitespace-pre">
+                      {row}
+                    </div>
+                  ))}
+                  {/* Entry/Exit badges */}
+                  <div className="flex gap-6 mt-2">
+                    <span className="text-[7px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">▶ START</span>
+                    <span className="text-[7px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">★ FINISH</span>
+                  </div>
                 </div>
-                <input 
-                  type="range"
-                  min={70}
-                  max={110}
-                  value={mockScale}
-                  onChange={(e) => setMockScale(Number(e.target.value))}
-                  className="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded-lg cursor-pointer"
-                />
+              </div>
+
+              {/* Difficulty + Options Row */}
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <div className="flex gap-1.5">
+                  {["Easy", "Med", "Hard"].map((d, i) => (
+                    <span
+                      key={d}
+                      className={`text-[8px] font-black px-2 py-1 rounded-lg border uppercase ${
+                        i === 1
+                          ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
+                          : "bg-slate-950/60 text-slate-600 border-slate-800"
+                      }`}
+                    >
+                      {d}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5 text-[8px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                  <Compass className="w-3 h-3" /> Auto Solution Key
+                </div>
+              </div>
+
+              {/* Stats Footer */}
+              <div className="mt-3 pt-3 border-t border-slate-800 grid grid-cols-3 gap-2 text-center">
+                {[
+                  { label: "Pages", value: "50" },
+                  { label: "Trim", value: "8.5×11" },
+                  { label: "Shapes", value: "3 types" },
+                ].map((stat) => (
+                  <div key={stat.label}>
+                    <div className="text-[11px] font-black text-white">{stat.value}</div>
+                    <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">{stat.label}</div>
+                  </div>
+                ))}
               </div>
 
             </div>

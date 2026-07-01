@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="relative z-10 bg-slate-950/80 border-t border-slate-900 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-          
+
           {/* Brand Info */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 group">
@@ -88,11 +88,11 @@ export default function Footer() {
               Need help? Feel free to contact our support team.
             </p>
             <div className="space-y-3 flex flex-col items-start">
-              <a 
+              <a
                 href="mailto:support@ismamstudio.me"
                 className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
               >
-                <Mail className="w-4 h-4" /> support@ismamstudio.me
+                <Mail className="w-4 h-4" /> contact@ismamstudio.me
               </a>
             </div>
           </div>

@@ -52,6 +52,7 @@ export default function SudokuGeneratorPage() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [includeSolutions, setIncludeSolutions] = useState(true);
   const [includeCover, setIncludeCover] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const handlePreview = () => {
     setIsGenerating(true);
@@ -62,42 +63,30 @@ export default function SudokuGeneratorPage() {
     }, 50);
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async (options: {
+    includeCover: boolean;
+    coverState: any;
+    includeSolutions: boolean;
+    trimSize: "6x9" | "8.5x11" | "5x8";
+  }) => {
     setIsDownloading(true);
-    setTimeout(async () => {
-      let coverState = null;
-      if (includeCover) {
-        const saved = localStorage.getItem("kdp-cover-draft");
-        if (saved) {
-          try {
-            coverState = JSON.parse(saved);
-          } catch (e) {
-            console.error("Error loading cover draft", e);
-          }
-        }
-        if (!coverState) {
-          alert("No saved cover found! Please design a cover in the Cover Studio first.");
-          setIsDownloading(false);
-          return;
-        }
-      }
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim } = options;
 
-      const count = Math.max(1, bookCount);
-      const puzzles = generateSudokuBook(count, difficulty);
-      await downloadSudokuPdf(
-        {
-          puzzles,
-          difficulty,
-          trimSize,
-          title: `Sudoku Puzzle Book`,
-          includeSolutions,
-          includeCover,
-          coverState,
-        },
-        `sudoku-${difficulty}-${count}puzzles.pdf`
-      );
-      setIsDownloading(false);
-    }, 50);
+    const count = Math.max(1, bookCount);
+    const puzzles = generateSudokuBook(count, difficulty);
+    await downloadSudokuPdf(
+      {
+        puzzles,
+        difficulty,
+        trimSize: finalTrim,
+        title: `Sudoku Puzzle Book`,
+        includeSolutions: incSol,
+        includeCover: incCover,
+        coverState,
+      },
+      `sudoku-${difficulty}-${count}puzzles.pdf`
+    );
+    setIsDownloading(false);
   };
 
   const tabs = [
@@ -256,7 +245,7 @@ export default function SudokuGeneratorPage() {
               </button>
 
               <DownloadButton
-                onClick={handleDownloadPdf}
+                onClick={() => setIsExportModalOpen(true)}
                 label={
                   isDownloading
                     ? "Compiling PDF..."
@@ -401,6 +390,13 @@ export default function SudokuGeneratorPage() {
           </div>
         )}
       </div>
+
+      <ExportInteriorModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        defaultTrimSize={trimSize}
+        onExport={handleDownloadPdf}
+      />
     </div>
   );
 }

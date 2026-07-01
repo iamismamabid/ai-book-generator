@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
+import ExportInteriorModal from "@/components/ExportInteriorModal";
 
 const TRIM_SIZES = [
   { id: "6x9", label: "6\" x 9\" (Novel)", w: 6, h: 9 },
@@ -61,6 +62,7 @@ export default function MathPuzzleGenerator() {
   const [activePreviewIndex, setActivePreviewIndex] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   // Generate Addition Equation Systems
   const generateAdditionPuzzles = () => {
@@ -209,32 +211,31 @@ export default function MathPuzzleGenerator() {
   }, [puzzleType, difficulty, numPages]);
 
   // Export PDF function
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (options: {
+    includeCover: boolean;
+    coverState: any;
+    includeSolutions: boolean;
+    trimSize: "6x9" | "8.5x11" | "5x8";
+    hasBleed: boolean;
+    showGuides: boolean;
+  }) => {
     setIsDownloading(true);
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides } = options;
 
     setTimeout(async () => {
-      let coverState = null;
-      if (includeCover) {
-        const saved = localStorage.getItem("kdp-cover-draft");
-        if (saved) {
-          try {
-            coverState = JSON.parse(saved);
-          } catch (e) {
-            console.error("Error loading cover draft", e);
-          }
-        }
-        if (!coverState) {
-          alert("No saved cover found! Please design a cover in the Cover Studio first.");
-          setIsDownloading(false);
-          return;
-        }
+      let finalW = 8.5;
+      let finalH = 11;
+      if (finalTrim === "6x9") {
+        finalW = 6;
+        finalH = 9;
+      } else if (finalTrim === "5x8") {
+        finalW = 5;
+        finalH = 8;
       }
 
-      const w = trimSize.w;
-      const h = trimSize.h;
       const bleed = 0.125;
-      const pageW = hasBleed ? w + bleed * 2 : w;
-      const pageH = hasBleed ? h + bleed * 2 : h;
+      const pageW = finalBleed ? finalW + bleed * 2 : finalW;
+      const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
       const doc = new jsPDF({
         orientation: "portrait",
@@ -252,7 +253,7 @@ export default function MathPuzzleGenerator() {
 
       // 1. Draw Front Cover if integrated
       let firstPageAdded = false;
-      if (includeCover && coverState) {
+      if (incCover && coverState) {
         // @ts-ignore
         await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
         firstPageAdded = true;
@@ -302,7 +303,7 @@ export default function MathPuzzleGenerator() {
       }
 
       // 2. Draw Answer Keys
-      if (showAnswers) {
+      if (incSol) {
         doc.addPage();
         const ansPageIdx = numPages + 1;
 
@@ -352,7 +353,7 @@ export default function MathPuzzleGenerator() {
       }
 
       // 3. Draw Back Cover if integrated
-      if (includeCover && coverState) {
+      if (incCover && coverState) {
         doc.addPage();
         await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
       }
@@ -720,7 +721,7 @@ export default function MathPuzzleGenerator() {
           </button>
           
           <button
-            onClick={handleExportPDF}
+            onClick={() => setIsExportModalOpen(true)}
             disabled={isDownloading}
             className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 py-3.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/5 hover:-translate-y-0.5"
           >
@@ -976,6 +977,12 @@ export default function MathPuzzleGenerator() {
 
       </div>
 
+      <ExportInteriorModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        defaultTrimSize="8.5x11"
+        onExport={handleExportPDF}
+      />
     </div>
   );
 }

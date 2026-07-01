@@ -6,6 +6,7 @@ export interface ExportOptions {
   includePageNumbers?: boolean;
   gutterMargin?: boolean;
   trimSize?: { label: string; w: number; h: number };
+  isPremium?: boolean;
 }
 
 export const exportBookToPDF = async (bookPages: any[], options: ExportOptions = {}) => {
@@ -92,6 +93,11 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       const authorW = doc.getTextWidth(authorText);
       doc.text(authorText, (w - authorW) / 2 + leftMarginShift, h * 0.68);
     }
+
+    // Apply watermark if free tier
+    if (options.isPremium === false) {
+      drawWatermark(doc, w, h);
+    }
   });
 
   // 3. Add Back Cover if integrated
@@ -102,6 +108,35 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
 
   doc.save("My_KDP_Puzzle_Book.pdf");
 };
+
+// helper: Draw Watermark for Free Tier
+export function drawWatermark(doc: any, w: number, h: number) {
+  try {
+    doc.saveGraphicsState();
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(56);
+    doc.setTextColor(140, 140, 140); // darker grey for high visibility
+
+    // Try drawing with opacity/transparency
+    try {
+      if (doc.GState) {
+        const gState = new doc.GState({ opacity: 0.22 });
+        doc.setGState(gState);
+      }
+    } catch (gErr) {
+      // ignore GState errors (older browsers / standard pdf compatibility)
+    }
+
+    doc.text("SAMPLE - ISMAM STUDIO", w / 2, h / 2, {
+      align: "center",
+      angle: 45
+    });
+
+    doc.restoreGraphicsState();
+  } catch (err) {
+    console.error("Error drawing PDF watermark:", err);
+  }
+}
 
 // Helper: Draw Crossword Grid & Clues
 const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number) => {

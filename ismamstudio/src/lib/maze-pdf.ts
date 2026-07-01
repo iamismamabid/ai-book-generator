@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import { MazeGrid, Shape, solveMaze } from "./maze";
-import { drawCoverPagePart } from "../app/utils/pdfExportService";
+import { drawCoverPagePart, drawWatermark } from "../app/utils/pdfExportService";
 
 interface PdfOptions {
   mazes: {
@@ -14,6 +14,7 @@ interface PdfOptions {
   includeSolutions?: boolean;
   includeCover?: boolean;
   coverState?: any;
+  isPremium?: boolean;
 }
 
 const TRIM_SIZES: Record<string, [number, number]> = {
@@ -235,6 +236,19 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
   if (includeCover && coverState) {
     doc.addPage();
     await drawCoverPagePart(doc, coverState, 'back', widthInches, heightInches);
+  }
+
+  // Apply watermark to all interior pages if not premium
+  if (options.isPremium === false) {
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      const isFrontCover = includeCover && coverState && i === 1;
+      const isBackCover = includeCover && coverState && i === totalPages;
+      if (!isFrontCover && !isBackCover) {
+        doc.setPage(i);
+        drawWatermark(doc, widthInches, heightInches);
+      }
+    }
   }
 
   return doc;

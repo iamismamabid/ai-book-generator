@@ -9,5 +9,9 @@ export default async function Page() {
     redirect("/dashboard");
   }
 
-  return <SignUp />;
+  return (
+    <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center py-20 px-4">
+      <SignUp signInUrl="/sign-in" />
+    </div>
+  );
 }

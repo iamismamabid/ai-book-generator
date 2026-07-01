@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText } from "lucide-react";
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
-import { drawCoverPagePart } from "../../utils/pdfExportService";
+import { drawCoverPagePart, drawWatermark } from "../../utils/pdfExportService";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 
 // 🧠 1. The Advanced Puzzle Algorithm
@@ -228,8 +228,9 @@ export default function WordSearchStudio() {
         coverState: any;
         includeSolutions: boolean;
         trimSize: "6x9" | "8.5x11" | "5x8";
+        isPremium?: boolean;
     }) => {
-        const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim } = options;
+        const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, isPremium } = options;
         setIsGenerating(true);
         const { cleanedWords, titleText } = getCleanMasterList();
         if (cleanedWords.length < wordsPerPage) { alert(`Add more words!`); setIsGenerating(false); return; }
@@ -374,6 +375,19 @@ export default function WordSearchStudio() {
         if (incCover && coverState) {
             doc.addPage();
             await drawCoverPagePart(doc, coverState, 'back', finalW, finalH);
+        }
+
+        // Apply watermark to all interior pages if not premium
+        if (isPremium === false) {
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                const isFrontCover = incCover && coverState && i === 1;
+                const isBackCover = incCover && coverState && i === totalPages;
+                if (!isFrontCover && !isBackCover) {
+                    doc.setPage(i);
+                    drawWatermark(doc, finalW, finalH);
+                }
+            }
         }
 
         doc.save(`KDP_Interior_${finalW}x${finalH}.pdf`);

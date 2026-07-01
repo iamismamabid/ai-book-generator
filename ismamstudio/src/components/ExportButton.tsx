@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
 import { Download } from "lucide-react";
-import { drawCoverPagePart } from "@/app/utils/pdfExportService";
+import { drawCoverPagePart, drawWatermark } from "@/app/utils/pdfExportService";
 import ExportInteriorModal from "./ExportInteriorModal";
 
 interface ExportButtonProps {
@@ -20,8 +20,9 @@ export default function ExportButton({ title = "My Book", content = "No content 
     trimSize: "6x9" | "8.5x11" | "5x8";
     hasBleed: boolean;
     showGuides: boolean;
+    isPremium?: boolean;
   }) => {
-    const { includeCover, coverState, trimSize, hasBleed, showGuides } = options;
+    const { includeCover, coverState, trimSize, hasBleed, showGuides, isPremium } = options;
 
     let w = 8.5;
     let h = 11;
@@ -87,6 +88,10 @@ export default function ExportButton({ title = "My Book", content = "No content 
       align: "center",
     });
 
+    if (isPremium === false) {
+      drawWatermark(doc, pageW, pageH);
+    }
+
     // 3. Add Chapters / Text Content
     doc.addPage();
     doc.setFont("times", "normal");
@@ -131,6 +136,10 @@ export default function ExportButton({ title = "My Book", content = "No content 
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184);
       doc.text(`Page ${pageNum}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+
+      if (isPremium === false) {
+        drawWatermark(doc, pageW, pageH);
+      }
 
       currentLine += maxLinesPerPage;
     }

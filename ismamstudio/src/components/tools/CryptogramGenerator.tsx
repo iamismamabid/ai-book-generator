@@ -8,6 +8,7 @@ import {
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import { drawCoverPagePart } from "@/app/utils/pdfExportService";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -175,8 +176,6 @@ export default function CryptogramGenerator() {
       // 1. Draw Front Cover if integrated
       let firstPageAdded = false;
       if (incCover && coverState) {
-        // Mock function call assumed from context
-        // @ts-ignore
         await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
         firstPageAdded = true;
       }

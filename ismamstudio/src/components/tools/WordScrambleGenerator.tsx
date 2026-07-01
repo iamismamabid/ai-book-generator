@@ -8,6 +8,7 @@ import {
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import { drawCoverPagePart } from "@/app/utils/pdfExportService";
 
 const DEFAULT_WORDS = [
   "AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION",
@@ -181,7 +182,6 @@ export default function WordScrambleGenerator() {
       // 1. Draw Front Cover if integrated
       let firstPageAdded = false;
       if (incCover && coverState) {
-        // @ts-ignore
         await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
         firstPageAdded = true;
       }

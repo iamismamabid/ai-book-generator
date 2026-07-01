@@ -15,7 +15,11 @@
   }
 
   .dark-glow-card {
-    @apply bg-slate-900/80 backdrop-blur-2xl border border-slate-800/80 shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-indigo-500/50 transition-all duration-500;
+    @apply bg-slate-900/60 backdrop-blur-2xl border border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-500;
+  }
+  .dark-glow-card:hover {
+    border-color: rgba(99, 102, 241, 0.45);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4), inset 0 0 12px rgba(99, 102, 241, 0.2);
   }
 }
 

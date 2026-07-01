@@ -387,16 +387,17 @@ function PricingSectionInner() {
           const billingText = isLtd ? "one-time payment" : plan.priceMonthly === 0 ? "forever free" : billingCycle === 'annual' ? "billed annually" : "billed monthly";
           const billingParam = billingCycle === 'annual' && plan.priceMonthly !== 0 ? "&billing=annual" : "";
           const ctaHref = isLtd ? plan.ctaLink : plan.priceMonthly === 0 ? plan.ctaLink : `${plan.ctaLink}${billingParam}`;
-          
           return (
             <div
               key={index}
               className={`group relative rounded-[2.5rem] p-8 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 border backdrop-blur-md ${
                 plan.colorClass
-              } ${plan.borderClass}`}
+              } ${plan.borderClass} ${
+                !plan.popular ? "hover:border-indigo-500/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.4),_inset_0_0_12px_rgba(99,102,241,0.2)]" : ""
+              }`}
             >
               {plan.popular && (
-                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-400 via-rose-500 to-sky-400 text-white text-xs font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5 z-10 shrink-0">
+                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg border border-amber-400/25 flex items-center gap-1.5 z-10 shrink-0">
                   <Sparkles className="w-3.5 h-3.5" />
                   Most Popular
                 </div>
@@ -414,7 +415,7 @@ function PricingSectionInner() {
                   </div>
                   <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${
                     plan.popular
-                      ? "text-amber-600 bg-amber-500/5 border-amber-500/10"
+                      ? "text-slate-500 bg-slate-100 border-slate-200"
                       : "text-slate-500 bg-slate-950/50 border-slate-900"
                   }`}>
                     {isLtd ? "Lifetime Deal" : "KDP Tier"}
@@ -425,7 +426,7 @@ function PricingSectionInner() {
                   {plan.name}
                 </h3>
                 <p className={`text-sm font-semibold mb-6 leading-relaxed min-h-[40px] ${
-                  plan.popular ? "text-slate-600" : "text-slate-400"
+                  plan.popular ? "text-slate-600" : "text-slate-300"
                 }`}>
                   {plan.description}
                 </p>
@@ -438,14 +439,14 @@ function PricingSectionInner() {
                     ${price}
                   </span>
                   {!isLtd && (
-                    <span className={`font-bold text-sm ${plan.popular ? "text-slate-500" : "text-slate-400"}`}>
+                    <span className={`font-bold text-sm ${plan.popular ? "text-slate-500" : "text-slate-300"}`}>
                       / month
                     </span>
                   )}
                   <span className={`text-[10px] font-bold block ml-2 self-center px-2 py-1 rounded-md uppercase tracking-wider ${
                     plan.popular
-                      ? "text-amber-700 bg-amber-500/10"
-                      : "text-indigo-400 bg-indigo-500/10"
+                      ? "text-amber-750 bg-amber-500/10"
+                      : "text-teal-400 bg-teal-500/10"
                   }`}>
                     {billingText}
                   </span>
@@ -467,7 +468,7 @@ function PricingSectionInner() {
                       <div className={`mt-0.5 p-0.5 rounded-full border shrink-0 ${
                         plan.popular
                           ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                          : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                          : "bg-teal-500/10 text-teal-400 border-teal-500/20"
                       }`}>
                         <Check className="w-3.5 h-3.5" />
                       </div>
@@ -486,7 +487,7 @@ function PricingSectionInner() {
                     rel="noopener noreferrer"
                     className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
                       plan.popular
-                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                        ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
                         : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                     }`}
                   >
@@ -498,7 +499,7 @@ function PricingSectionInner() {
                     href={ctaHref}
                     className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
                       plan.popular
-                        ? "bg-gradient-to-r from-amber-400 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                        ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
                         : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                     }`}
                   >
@@ -510,7 +511,7 @@ function PricingSectionInner() {
                     onClick={() => handleCheckout(plan.planKey)}
                     className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
                       plan.popular
-                        ? "bg-gradient-to-r from-amber-400 via-rose-500 to-sky-400 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                        ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
                         : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                     }`}
                   >

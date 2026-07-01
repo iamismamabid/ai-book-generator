@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText } from "lucide-react";
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
+import { drawCoverPagePart } from "../../utils/pdfExportService";
 
 // 🧠 1. The Advanced Puzzle Algorithm
 function generatePuzzleGrid(wordList: string[], size: number, textCase: string) {
@@ -84,6 +85,7 @@ export default function WordSearchStudio() {
     
     const [solutionHighlighter, setSolutionHighlighter] = useState<'apple' | 'fill' | 'grayout' | 'fade'>('apple');
     const [useFirstLineAsTitle, setUseFirstLineAsTitle] = useState(false);
+    const [includeCover, setIncludeCover] = useState(false);
 
     const [words, setWords] = useState("NEXTJS\nREACT\nPRISMA\nTAILWIND\nCODING\nJAVASCRIPT\nTYPESCRIPT\nDATABASE\nSERVER\nVERCEL\nGITHUB\nAPI\nJSON\nNODE\nFRONTEND\nBACKEND");
     const [previewGrid, setPreviewGrid] = useState<string[][] | null>(null);
@@ -223,6 +225,24 @@ export default function WordSearchStudio() {
         setIsGenerating(true);
         const { cleanedWords, titleText } = getCleanMasterList();
         if (cleanedWords.length < wordsPerPage) { alert(`Add more words!`); setIsGenerating(false); return; }
+
+        let coverState = null;
+        if (includeCover) {
+            const saved = localStorage.getItem("kdp-cover-draft");
+            if (saved) {
+                try {
+                    coverState = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Error loading cover draft", e);
+                }
+            }
+            if (!coverState) {
+                alert("No saved cover found! Please design a cover in the Cover Studio first.");
+                setIsGenerating(false);
+                return;
+            }
+        }
+
         await new Promise(resolve => setTimeout(resolve, 100));
 
         const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [trimSize.w, trimSize.h] });
@@ -236,12 +256,20 @@ export default function WordSearchStudio() {
             bookPuzzles.push(generatePuzzleGrid(subset, gridSize, textCase));
         }
 
+        // 1. Draw Front Cover if integrated
+        let firstPageAdded = false;
+        if (includeCover && coverState) {
+            await drawCoverPagePart(doc, coverState, 'front', trimSize.w, trimSize.h);
+            firstPageAdded = true;
+        }
+
         // ================= FRONT SECTION =================
         const puzZones = getZones(puzzlesPerPage, safeWidth, safeHeight, margin);
         const totalPuzPages = Math.ceil(totalPuzzles / puzzlesPerPage);
 
         for (let p = 0; p < totalPuzPages; p++) {
-            if (p > 0) doc.addPage();
+            if (firstPageAdded || p > 0) doc.addPage();
+            firstPageAdded = true;
             for (let z = 0; z < puzzlesPerPage; z++) {
                 const puzIndex = (p * puzzlesPerPage) + z;
                 if (puzIndex >= totalPuzzles) break;
@@ -342,6 +370,13 @@ export default function WordSearchStudio() {
                 }
             }
         }
+
+        // 3. Draw Back Cover if integrated
+        if (includeCover && coverState) {
+            doc.addPage();
+            await drawCoverPagePart(doc, coverState, 'back', trimSize.w, trimSize.h);
+        }
+
         doc.save(`KDP_Interior_${trimSize.w}x${trimSize.h}.pdf`);
         setIsGenerating(false);
     };
@@ -454,6 +489,15 @@ export default function WordSearchStudio() {
                                         <div><label className="text-xs font-semibold text-slate-600">Solutions/Page</label><select value={solutionsPerPage} onChange={(e) => setSolutionsPerPage(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"><option value={1}>1</option><option value={2}>2</option><option value={4}>4</option></select></div>
                                         <div><label className="text-xs font-semibold text-slate-600">Sol. Align</label><select value={solutionAlign} onChange={(e) => setSolutionAlign(e.target.value as any)} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>
                                         <div className="col-span-2"><label className="text-xs font-semibold text-slate-600">Highlighter Style</label><select value={solutionHighlighter} onChange={(e) => setSolutionHighlighter(e.target.value as any)} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"><option value="apple">Apple Style (Rounded Line)</option><option value="fill">Cell Background Fill</option><option value="fade">Fade Out Non-Answers</option></select></div>
+                                    </div>
+                                </div>
+
+                                {/* 5. Cover Section */}
+                                <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    <h3 className="font-bold text-xs text-indigo-600 uppercase">Cover Settings</h3>
+                                    <div className="flex items-center gap-2">
+                                        <input type="checkbox" id="includeCover" checked={includeCover} onChange={(e) => setIncludeCover(e.target.checked)} className="w-4 h-4 rounded text-indigo-600" />
+                                        <label htmlFor="includeCover" className="text-xs font-semibold text-slate-600 cursor-pointer select-none">Include Saved Cover Pages</label>
                                     </div>
                                 </div>
 

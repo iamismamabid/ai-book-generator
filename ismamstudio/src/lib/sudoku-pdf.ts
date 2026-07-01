@@ -1,6 +1,7 @@
 // src/lib/sudoku-pdf.ts
 import { jsPDF } from "jspdf";
 import { Grid, Difficulty } from "./sudokuGenerator";
+import { drawCoverPagePart } from "../app/utils/pdfExportService";
 
 interface PdfOptions {
   puzzles: { puzzle: Grid; solution: Grid }[];
@@ -8,6 +9,8 @@ interface PdfOptions {
   trimSize: "6x9" | "8.5x11" | "5x8";
   title: string;
   includeSolutions?: boolean;
+  includeCover?: boolean;
+  coverState?: any;
 }
 
 function drawSudokuGrid(
@@ -113,8 +116,8 @@ function drawSudokuGrid(
   );
 }
 
-export function downloadSudokuPdf(options: PdfOptions, filename: string) {
-  const { puzzles, title, trimSize, includeSolutions = true } = options;
+export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
+  const { puzzles, title, trimSize, includeSolutions = true, includeCover = false, coverState = null } = options;
 
   let width = 8.5;
   let height = 11;
@@ -127,9 +130,17 @@ export function downloadSudokuPdf(options: PdfOptions, filename: string) {
     format: [width, height],
   });
 
+  // 1. Draw Front Cover if integrated
+  let firstPageAdded = false;
+  if (includeCover && coverState) {
+    await drawCoverPagePart(doc, coverState, 'front', width, height);
+    firstPageAdded = true;
+  }
+
   // ── Puzzle pages ──────────────────────────────────────────────
   puzzles.forEach((item, index) => {
-    if (index > 0) doc.addPage();
+    if (firstPageAdded || index > 0) doc.addPage();
+    firstPageAdded = true;
     drawSudokuGrid(doc, item.puzzle, width, height, false, index + 1, title);
   });
 
@@ -139,6 +150,12 @@ export function downloadSudokuPdf(options: PdfOptions, filename: string) {
       doc.addPage();
       drawSudokuGrid(doc, item.solution, width, height, true, index + 1, title);
     });
+  }
+
+  // 3. Draw Back Cover if integrated
+  if (includeCover && coverState) {
+    doc.addPage();
+    await drawCoverPagePart(doc, coverState, 'back', width, height);
   }
 
   doc.save(filename);

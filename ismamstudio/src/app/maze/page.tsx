@@ -64,6 +64,7 @@ export default function MazeGeneratorPage() {
   const [bookCount, setBookCount] = useState<number>(10);
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
   const [includeSolutions, setIncludeSolutions] = useState<boolean>(true);
+  const [includeCover, setIncludeCover] = useState<boolean>(false);
   
   const [previewMaze, setPreviewMaze] = useState<{
     grid: MazeGrid;
@@ -90,19 +91,38 @@ export default function MazeGeneratorPage() {
 
   const handleDownloadPdf = () => {
     setIsDownloading(true);
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
+        let coverState = null;
+        if (includeCover) {
+          const saved = localStorage.getItem("kdp-cover-draft");
+          if (saved) {
+            try {
+              coverState = JSON.parse(saved);
+            } catch (e) {
+              console.error("Error loading cover draft", e);
+            }
+          }
+          if (!coverState) {
+            alert("No saved cover found! Please design a cover in the Cover Studio first.");
+            setIsDownloading(false);
+            return;
+          }
+        }
+
         const mazes = Array.from({ length: bookCount }, () => 
           generateMaze({ rows: gridSize, cols: gridSize, shape })
         );
 
-        downloadMazePdf(
+        await downloadMazePdf(
           {
             mazes,
             shape,
             trimSize,
             includeSolutions,
             title: `Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
+            includeCover,
+            coverState,
           },
           `maze-${shape}-${bookCount}puzzles.pdf`
         );
@@ -243,6 +263,19 @@ export default function MazeGeneratorPage() {
                 />
                 <label htmlFor="solutions" className="text-sm text-slate-350 cursor-pointer select-none font-bold">
                   Include 2x2 grid Solution Keys at the end of the book
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2 border-t border-slate-800/60">
+                <input
+                  type="checkbox"
+                  id="cover"
+                  checked={includeCover}
+                  onChange={(e) => setIncludeCover(e.target.checked)}
+                  className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                />
+                <label htmlFor="cover" className="text-sm text-slate-350 cursor-pointer select-none font-bold">
+                  Include Cover Pages (Add Front & Back cover to PDF)
                 </label>
               </div>
             </div>

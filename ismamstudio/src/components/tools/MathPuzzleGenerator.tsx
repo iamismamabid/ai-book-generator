@@ -51,6 +51,7 @@ export default function MathPuzzleGenerator() {
   const [showAnswers, setShowAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
+  const [includeCover, setIncludeCover] = useState<boolean>(false);
 
   // Puzzle lists states
   const [additionPuzzles, setAdditionPuzzles] = useState<AdditionPuzzle[]>([]);
@@ -100,24 +101,11 @@ export default function MathPuzzleGenerator() {
   // Generate Multiplication Times Tables
   const generateMultiplicationPuzzles = () => {
     const list: MultiplicationPuzzle[] = [];
-    const factorMin = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 3;
-    const factorMax = difficulty === "easy" ? 9 : difficulty === "medium" ? 12 : 20;
+    const size = 4; // factor size: 1-9 for times tables
 
     for (let p = 0; p < numPages; p++) {
-      // 4 row headers and 4 col headers
-      const size = 4;
-      const rowFactors: number[] = [];
-      const colFactors: number[] = [];
-
-      while (rowFactors.length < size) {
-        const val = Math.floor(Math.random() * (factorMax - factorMin + 1)) + factorMin;
-        if (!rowFactors.includes(val)) rowFactors.push(val);
-      }
-
-      while (colFactors.length < size) {
-        const val = Math.floor(Math.random() * (factorMax - factorMin + 1)) + factorMin;
-        if (!colFactors.includes(val)) colFactors.push(val);
-      }
+      const rowFactors = Array.from({ length: size }, () => Math.floor(Math.random() * 9) + 1);
+      const colFactors = Array.from({ length: size }, () => Math.floor(Math.random() * 9) + 1);
 
       const grid: number[][] = [];
       for (let r = 0; r < size; r++) {
@@ -127,28 +115,31 @@ export default function MathPuzzleGenerator() {
         }
       }
 
-      // Hide percentage: easy: 35%, medium: 50%, hard: 70%
-      const hiddenRows: number[] = [];
-      const hiddenCols: number[] = [];
-      const hiddenProducts: Array<[number, number]> = [];
+      // Hiding factors & products based on difficulty
+      // easy: hide 2 row factors, 2 col factors, 4 products
+      // medium: hide 3 row factors, 3 col factors, 6 products
+      // hard: hide allfactors (4 row, 4 col), 8 products
+      const rHide = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 4;
+      const cHide = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 4;
+      const pHide = difficulty === "easy" ? 4 : difficulty === "medium" ? 6 : 8;
 
-      // Hide row headers
-      const hideHeadersCount = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 3;
-      while (hiddenRows.length < hideHeadersCount) {
+      const hiddenRows: number[] = [];
+      while (hiddenRows.length < rHide) {
         const idx = Math.floor(Math.random() * size);
         if (!hiddenRows.includes(idx)) hiddenRows.push(idx);
       }
-      while (hiddenCols.length < hideHeadersCount) {
+
+      const hiddenCols: number[] = [];
+      while (hiddenCols.length < cHide) {
         const idx = Math.floor(Math.random() * size);
         if (!hiddenCols.includes(idx)) hiddenCols.push(idx);
       }
 
-      // Hide cell products
-      const hideProductCount = difficulty === "easy" ? 4 : difficulty === "medium" ? 8 : 11;
-      while (hiddenProducts.length < hideProductCount) {
+      const hiddenProducts: Array<[number, number]> = [];
+      while (hiddenProducts.length < pHide) {
         const r = Math.floor(Math.random() * size);
         const c = Math.floor(Math.random() * size);
-        if (!hiddenProducts.some(p => p[0] === r && p[1] === c)) {
+        if (!hiddenProducts.some(cell => cell[0] === r && cell[1] === c)) {
           hiddenProducts.push([r, c]);
         }
       }
@@ -158,31 +149,31 @@ export default function MathPuzzleGenerator() {
     setMultiplicationPuzzles(list);
   };
 
-  // Generate 4x4 Number Fill (Logic Grid with sums)
+  // Generate Number Sum Fill-in Grids
   const generateNumberFillPuzzles = () => {
     const list: NumberFillPuzzle[] = [];
-    const minVal = difficulty === "easy" ? 1 : difficulty === "medium" ? 5 : 10;
-    const maxVal = difficulty === "easy" ? 9 : difficulty === "medium" ? 20 : 35;
+    const size = 4;
 
     for (let p = 0; p < numPages; p++) {
       const grid: number[][] = [];
-      const rowSums = [0, 0, 0, 0];
-      const colSums = [0, 0, 0, 0];
+      const rowSums = Array(size).fill(0);
+      const colSums = Array(size).fill(0);
 
-      for (let r = 0; r < 4; r++) {
+      // Create valid 4x4 matrix
+      for (let r = 0; r < size; r++) {
         grid[r] = [];
-        for (let c = 0; c < 4; c++) {
-          const val = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+        for (let c = 0; c < size; c++) {
+          const val = Math.floor(Math.random() * 9) + 1; // 1-9
           grid[r][c] = val;
           rowSums[r] += val;
           colSums[c] += val;
         }
       }
 
-      // Hide cells: easy: 5 cells, medium: 8, hard: 11
-      const hideCount = difficulty === "easy" ? 5 : difficulty === "medium" ? 8 : 11;
+      // Hiding cells based on difficulty
+      // easy: hide 4 cells, medium: hide 8, hard: hide 12
+      const hideCount = difficulty === "easy" ? 4 : difficulty === "medium" ? 8 : 12;
       const hiddenCells: Array<[number, number]> = [];
-
       while (hiddenCells.length < hideCount) {
         const r = Math.floor(Math.random() * 4);
         const c = Math.floor(Math.random() * 4);
@@ -218,10 +209,27 @@ export default function MathPuzzleGenerator() {
   }, [puzzleType, difficulty, numPages]);
 
   // Export PDF function
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     setIsDownloading(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
+      let coverState = null;
+      if (includeCover) {
+        const saved = localStorage.getItem("kdp-cover-draft");
+        if (saved) {
+          try {
+            coverState = JSON.parse(saved);
+          } catch (e) {
+            console.error("Error loading cover draft", e);
+          }
+        }
+        if (!coverState) {
+          alert("No saved cover found! Please design a cover in the Cover Studio first.");
+          setIsDownloading(false);
+          return;
+        }
+      }
+
       const w = trimSize.w;
       const h = trimSize.h;
       const bleed = 0.125;
@@ -242,9 +250,18 @@ export default function MathPuzzleGenerator() {
       const contentW = pageW - marginL - marginR;
       const contentH = pageH - marginT - marginB;
 
+      // 1. Draw Front Cover if integrated
+      let firstPageAdded = false;
+      if (includeCover && coverState) {
+        // @ts-ignore
+        await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
+        firstPageAdded = true;
+      }
+
       // 1. Draw Puzzle Pages
       for (let pIdx = 0; pIdx < numPages; pIdx++) {
-        if (pIdx > 0) doc.addPage();
+        if (firstPageAdded || pIdx > 0) doc.addPage();
+        firstPageAdded = true;
 
         // Title Header
         doc.setFont("helvetica", "bold");
@@ -332,6 +349,12 @@ export default function MathPuzzleGenerator() {
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
         doc.text(`Page ${ansPageIdx}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+      }
+
+      // 3. Draw Back Cover if integrated
+      if (includeCover && coverState) {
+        doc.addPage();
+        await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
       }
 
       doc.save(`math-puzzle-${puzzleType}-${numPages}pages.pdf`);
@@ -651,6 +674,16 @@ export default function MathPuzzleGenerator() {
                 className="rounded accent-amber-500 text-slate-900"
               />
               Include Answer Key Page
+            </label>
+
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-300 select-none">
+              <input
+                type="checkbox"
+                checked={includeCover}
+                onChange={(e) => setIncludeCover(e.target.checked)}
+                className="rounded accent-amber-500 text-slate-900"
+              />
+              Include Cover Pages (Add Front & Back cover)
             </label>
 
             <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-300 select-none">

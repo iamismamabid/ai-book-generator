@@ -6,6 +6,7 @@ import { generateMaze, MazeGrid, Shape } from "@/lib/maze";
 import { downloadMazePdf } from "@/lib/maze-pdf";
 import DownloadButton from "@/components/DownloadButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
+import ExportInteriorModal from "@/components/ExportInteriorModal";
 
 function MazePreview({ 
   grid, 
@@ -65,6 +66,7 @@ export default function MazeGeneratorPage() {
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
   const [includeSolutions, setIncludeSolutions] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   
   const [previewMaze, setPreviewMaze] = useState<{
     grid: MazeGrid;
@@ -89,49 +91,36 @@ export default function MazeGeneratorPage() {
     }, 50);
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async (options: {
+    includeCover: boolean;
+    coverState: any;
+    includeSolutions: boolean;
+    trimSize: "6x9" | "8.5x11" | "5x8";
+  }) => {
     setIsDownloading(true);
-    setTimeout(async () => {
-      try {
-        let coverState = null;
-        if (includeCover) {
-          const saved = localStorage.getItem("kdp-cover-draft");
-          if (saved) {
-            try {
-              coverState = JSON.parse(saved);
-            } catch (e) {
-              console.error("Error loading cover draft", e);
-            }
-          }
-          if (!coverState) {
-            alert("No saved cover found! Please design a cover in the Cover Studio first.");
-            setIsDownloading(false);
-            return;
-          }
-        }
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim } = options;
+    try {
+      const mazes = Array.from({ length: bookCount }, () => 
+        generateMaze({ rows: gridSize, cols: gridSize, shape })
+      );
 
-        const mazes = Array.from({ length: bookCount }, () => 
-          generateMaze({ rows: gridSize, cols: gridSize, shape })
-        );
-
-        await downloadMazePdf(
-          {
-            mazes,
-            shape,
-            trimSize,
-            includeSolutions,
-            title: `Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
-            includeCover,
-            coverState,
-          },
-          `maze-${shape}-${bookCount}puzzles.pdf`
-        );
-      } catch (err) {
-        console.error("Failed to download PDF:", err);
-      } finally {
-        setIsDownloading(false);
-      }
-    }, 50);
+      await downloadMazePdf(
+        {
+          mazes,
+          shape,
+          trimSize: finalTrim,
+          includeSolutions: incSol,
+          title: `Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
+          includeCover: incCover,
+          coverState,
+        },
+        `maze-${shape}-${bookCount}puzzles.pdf`
+      );
+    } catch (err) {
+      console.error("Failed to download PDF:", err);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -291,7 +280,7 @@ export default function MazeGeneratorPage() {
               </button>
 
               <DownloadButton
-                onClick={handleDownloadPdf}
+                onClick={() => setIsExportModalOpen(true)}
                 label={isDownloading ? "Assembling Book..." : "Download High-Res PDF"}
               />
 
@@ -368,6 +357,13 @@ export default function MazeGeneratorPage() {
 
         </div>
       )}
+
+      <ExportInteriorModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        defaultTrimSize={trimSize}
+        onExport={handleDownloadPdf}
+      />
     </div>
   );
 }

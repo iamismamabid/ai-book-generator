@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
+import ExportInteriorModal from "@/components/ExportInteriorModal";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -50,6 +51,7 @@ export default function CryptogramGenerator() {
   const [activePreviewIndex, setActivePreviewIndex] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   // 1. Generate Cipher Substitution Key
   const generateCipherMapping = () => {
@@ -120,33 +122,32 @@ export default function CryptogramGenerator() {
   }, [puzzlesPerPage]);
 
   // PDF Compilation
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (options: {
+    includeCover: boolean;
+    coverState: any;
+    includeSolutions: boolean;
+    trimSize: "6x9" | "8.5x11" | "5x8";
+    hasBleed: boolean;
+    showGuides: boolean;
+  }) => {
     if (puzzles.length === 0) return;
     setIsDownloading(true);
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides } = options;
 
     setTimeout(async () => {
-      let coverState = null;
-      if (includeCover) {
-        const saved = localStorage.getItem("kdp-cover-draft");
-        if (saved) {
-          try {
-            coverState = JSON.parse(saved);
-          } catch (e) {
-            console.error("Error loading cover draft", e);
-          }
-        }
-        if (!coverState) {
-          alert("No saved cover found! Please design a cover in the Cover Studio first.");
-          setIsDownloading(false);
-          return;
-        }
+      let finalW = 8.5;
+      let finalH = 11;
+      if (finalTrim === "6x9") {
+        finalW = 6;
+        finalH = 9;
+      } else if (finalTrim === "5x8") {
+        finalW = 5;
+        finalH = 8;
       }
 
-      const w = trimSize.w;
-      const h = trimSize.h;
       const bleed = 0.125;
-      const pageW = hasBleed ? w + bleed * 2 : w;
-      const pageH = hasBleed ? h + bleed * 2 : h;
+      const pageW = finalBleed ? finalW + bleed * 2 : finalW;
+      const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
       const doc = new jsPDF({
         orientation: "portrait",
@@ -173,7 +174,7 @@ export default function CryptogramGenerator() {
 
       // 1. Draw Front Cover if integrated
       let firstPageAdded = false;
-      if (includeCover && coverState) {
+      if (incCover && coverState) {
         // Mock function call assumed from context
         // @ts-ignore
         await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
@@ -305,7 +306,7 @@ export default function CryptogramGenerator() {
       });
 
       // 2. Renders Answers Key at the end
-      if (includeAnswers) {
+      if (incSol) {
         doc.addPage();
         const ansPageIdx = pageIdx + 2;
 
@@ -378,7 +379,7 @@ export default function CryptogramGenerator() {
       }
 
       // 3. Draw Back Cover if integrated
-      if (includeCover && coverState) {
+      if (incCover && coverState) {
         doc.addPage();
         await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
       }
@@ -546,8 +547,8 @@ export default function CryptogramGenerator() {
             {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin"/> : "Generate Cryptogram"}
           </button>
           
-          <button
-            onClick={handleExportPDF}
+           <button
+            onClick={() => setIsExportModalOpen(true)}
             disabled={isDownloading || puzzles.length === 0}
             className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 py-3.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/5 hover:-translate-y-0.5"
           >
@@ -680,6 +681,12 @@ export default function CryptogramGenerator() {
 
       </div>
 
+      <ExportInteriorModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        defaultTrimSize="8.5x11"
+        onExport={handleExportPDF}
+      />
     </div>
   );
 }

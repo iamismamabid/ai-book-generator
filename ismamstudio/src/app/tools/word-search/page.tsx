@@ -5,6 +5,7 @@ import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, T
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import { drawCoverPagePart } from "../../utils/pdfExportService";
+import ExportInteriorModal from "@/components/ExportInteriorModal";
 
 // 🧠 1. The Advanced Puzzle Algorithm
 function generatePuzzleGrid(wordList: string[], size: number, textCase: string) {
@@ -58,6 +59,7 @@ const TRIM_SIZES = [
 export default function WordSearchStudio() {
     const [activeTab, setActiveTab] = useState<'interior' | 'cover' | 'guide'>('interior'); 
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     
     // 🚨 INTERIOR SETTINGS STATES 🚨
     const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
@@ -221,32 +223,31 @@ export default function WordSearchStudio() {
         setPreviewGrid(grid); setCleanWordsList(cleanWords.map(cw => ({...cw, title: titleText}))); setAnswerMask(mask); setShowAnswers(false); 
     };
 
-    const handleGenerateInterior = async () => {
+    const handleGenerateInterior = async (options: {
+        includeCover: boolean;
+        coverState: any;
+        includeSolutions: boolean;
+        trimSize: "6x9" | "8.5x11" | "5x8";
+    }) => {
+        const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim } = options;
         setIsGenerating(true);
         const { cleanedWords, titleText } = getCleanMasterList();
         if (cleanedWords.length < wordsPerPage) { alert(`Add more words!`); setIsGenerating(false); return; }
 
-        let coverState = null;
-        if (includeCover) {
-            const saved = localStorage.getItem("kdp-cover-draft");
-            if (saved) {
-                try {
-                    coverState = JSON.parse(saved);
-                } catch (e) {
-                    console.error("Error loading cover draft", e);
-                }
-            }
-            if (!coverState) {
-                alert("No saved cover found! Please design a cover in the Cover Studio first.");
-                setIsGenerating(false);
-                return;
-            }
-        }
-
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [trimSize.w, trimSize.h] });
-        const margin = 0.5; const safeWidth = trimSize.w - (margin * 2); const safeHeight = trimSize.h - (margin * 2);
+        let finalW = 8.5;
+        let finalH = 11;
+        if (finalTrim === "6x9") {
+            finalW = 6;
+            finalH = 9;
+        } else if (finalTrim === "5x8") {
+            finalW = 5;
+            finalH = 8;
+        }
+
+        const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [finalW, finalH] });
+        const margin = 0.5; const safeWidth = finalW - (margin * 2); const safeHeight = finalH - (margin * 2);
 
         const bookPuzzles = [];
         for (let i = 0; i < totalPuzzles; i++) {
@@ -258,8 +259,8 @@ export default function WordSearchStudio() {
 
         // 1. Draw Front Cover if integrated
         let firstPageAdded = false;
-        if (includeCover && coverState) {
-            await drawCoverPagePart(doc, coverState, 'front', trimSize.w, trimSize.h);
+        if (incCover && coverState) {
+            await drawCoverPagePart(doc, coverState, 'front', finalW, finalH);
             firstPageAdded = true;
         }
 
@@ -285,105 +286,102 @@ export default function WordSearchStudio() {
                 if (puzzleAlign === 'right') startX = zone.x + zone.w - gridDrawSize;
                 const startY = zone.y + titleSpace;
 
+                // Draw title
                 doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
-                const displayTitle = (useFirstLineAsTitle && titleText) ? `${titleText} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
-                doc.text(displayTitle, zone.x + zone.w/2, zone.y + 0.2, { align: "center" });
+                const titleStr = useFirstLineAsTitle && pageWords.length > 0 ? `${pageWords[0].title} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
+                doc.text(titleStr, zone.x + zone.w/2, zone.y + 0.25, { align: "center" });
 
-                doc.setLineWidth(lineWidth * 0.01); doc.setDrawColor(borderColor);
-                
+                // Draw grid
+                doc.setFont(lettersFont, "normal"); doc.setFontSize(letterTextSize * (gridDrawSize / 6.5));
                 for (let r = 0; r < gridSize; r++) {
                     for (let c = 0; c < gridSize; c++) {
                         const cellX = startX + (c * cellSize); const cellY = startY + (r * cellSize);
-                        if (cellColor !== '#FFFFFF' || lineWidth > 0) {
-                            doc.setFillColor(cellColor); doc.rect(cellX, cellY, cellSize, cellSize, lineWidth > 0 ? "FD" : "F");
-                        }
-                        doc.setFont(lettersFont, "bold"); doc.setFontSize(letterTextSize * (gridDrawSize / 6.5)); doc.setTextColor('#000000');
-                        doc.text(grid[r][c], cellX + (cellSize/2), cellY + (cellSize/2), { align: "center", baseline: "middle" });
+                        doc.setFillColor(cellColor); doc.setDrawColor(borderColor); doc.setLineWidth(lineWidth * 0.01);
+                        doc.rect(cellX, cellY, cellSize, cellSize, "FD");
+                        doc.text(grid[r][c], cellX + (cellSize/2), cellY + (cellSize/2) + (cellSize * 0.05), { align: "center", baseline: "middle" });
                     }
                 }
 
-                const listTop = startY + gridDrawSize + 0.2; 
+                // Draw word list bank
                 doc.setFont(wordFont, "bold"); doc.setFontSize(wordTextSize); doc.setTextColor(wordTextColor);
-                doc.text("Words:", zone.x, listTop);
-                doc.setFont(wordFont, "normal"); 
-                const cols = puzzlesPerPage === 4 ? 2 : 4; 
-                const colW = zone.w / cols; 
-                
-                pageWords.forEach((wordObj, idx) => {
-                    const c = idx % cols; const r = Math.floor(idx / cols); 
-                    const xPos = zone.x + (c * colW) + (wordTextAlign === 'center' ? colW/2 : 0);
-                    const yPos = listTop + 0.20 + (r * 0.18);
-                    doc.text(wordObj.text, xPos, yPos, { align: wordTextAlign === 'center' ? 'center' : 'left' });
+                const colsCount = puzzlesPerPage === 4 ? 2 : 3;
+                const bankY = startY + gridDrawSize + 0.3;
+                pageWords.forEach((w, idx) => {
+                    const rowIdx = Math.floor(idx / colsCount); const colIdx = idx % colsCount;
+                    const itemX = zone.x + (colIdx * (zone.w / colsCount));
+                    const itemY = bankY + (rowIdx * 0.22);
+                    doc.text(w.text, itemX, itemY, { align: wordTextAlign });
                 });
             }
         }
 
-        // ================= BACK SECTION (SOLUTIONS) =================
-        const solZones = getZones(solutionsPerPage, safeWidth, safeHeight, margin);
-        const totalSolPages = Math.ceil(totalPuzzles / solutionsPerPage);
+        // ================= ANSWER KEYS SECTION =================
+        if (incSol) {
+            const solZones = getZones(solutionsPerPage, safeWidth, safeHeight, margin);
+            const totalSolPages = Math.ceil(totalPuzzles / solutionsPerPage);
 
-        for (let p = 0; p < totalSolPages; p++) {
-            doc.addPage();
-            for (let z = 0; z < solutionsPerPage; z++) {
-                const solIndex = (p * solutionsPerPage) + z;
-                if (solIndex >= totalPuzzles) break;
-                const zone = solZones[z];
-                const { grid, words: pageWords, mask } = bookPuzzles[solIndex];
+            for (let p = 0; p < totalSolPages; p++) {
+                doc.addPage();
+                for (let z = 0; z < solutionsPerPage; z++) {
+                    const solIndex = (p * solutionsPerPage) + z;
+                    if (solIndex >= totalPuzzles) break;
+                    const zone = solZones[z];
+                    const { grid, words: pageWords, mask } = bookPuzzles[solIndex];
 
-                const titleSpace = 0.4; 
-                const gridDrawSize = Math.min(zone.w, zone.h - titleSpace);
-                const cellSize = gridDrawSize / gridSize;
+                    const titleSpace = 0.4; 
+                    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace);
+                    const cellSize = gridDrawSize / gridSize;
 
-                let startX = zone.x;
-                if (solutionAlign === 'center') startX = zone.x + (zone.w - gridDrawSize)/2;
-                if (solutionAlign === 'right') startX = zone.x + zone.w - gridDrawSize;
-                const startY = zone.y + titleSpace;
+                    let startX = zone.x;
+                    if (solutionAlign === 'center') startX = zone.x + (zone.w - gridDrawSize)/2;
+                    if (solutionAlign === 'right') startX = zone.x + zone.w - gridDrawSize;
+                    const startY = zone.y + titleSpace;
 
-                doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
-                doc.text(`Answer #${solIndex + 1}`, zone.x + zone.w/2, zone.y + 0.2, { align: "center" });
+                    doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
+                    doc.text(`Answer #${solIndex + 1}`, zone.x + zone.w/2, zone.y + 0.2, { align: "center" });
 
-                if (solutionHighlighter === 'apple') {
-                    doc.setLineWidth(cellSize * 0.08); doc.setDrawColor(120, 120, 120); doc.setLineJoin("round"); 
-                    pageWords.forEach(w => {
-                        const sX = startX + (w.startC * cellSize) + (cellSize / 2); const sY = startY + (w.startR * cellSize) + (cellSize / 2);
-                        const eX = startX + (w.endC * cellSize) + (cellSize / 2); const eY = startY + (w.endR * cellSize) + (cellSize / 2);
-                        const a = Math.atan2(eY - sY, eX - sX); const p = cellSize * 0.40; 
-                        const c = [{x:-p,y:-p},{x:Math.hypot(eX-sX,eY-sY)+p,y:-p},{x:Math.hypot(eX-sX,eY-sY)+p,y:p},{x:-p,y:p}].map(pt => ({x: sX + (pt.x*Math.cos(a) - pt.y*Math.sin(a)), y: sY + (pt.x*Math.sin(a) + pt.y*Math.cos(a))}));
-                        doc.lines([[c[1].x-c[0].x, c[1].y-c[0].y], [c[2].x-c[1].x, c[2].y-c[1].y], [c[3].x-c[2].x, c[3].y-c[2].y]], c[0].x, c[0].y, [1, 1], 'S', true);
-                    });
-                }
+                    if (solutionHighlighter === 'apple') {
+                        doc.setLineWidth(cellSize * 0.08); doc.setDrawColor(120, 120, 120); doc.setLineJoin("round"); 
+                        pageWords.forEach(w => {
+                            const sX = startX + (w.startC * cellSize) + (cellSize / 2); const sY = startY + (w.startR * cellSize) + (cellSize / 2);
+                            const eX = startX + (w.endC * cellSize) + (cellSize / 2); const eY = startY + (w.endR * cellSize) + (cellSize / 2);
+                            const a = Math.atan2(eY - sY, eX - sX); const p = cellSize * 0.40; 
+                            const c = [{x:-p,y:-p},{x:Math.hypot(eX-sX,eY-sY)+p,y:-p},{x:Math.hypot(eX-sX,eY-sY)+p,y:p},{x:-p,y:p}].map(pt => ({x: sX + (pt.x*Math.cos(a) - pt.y*Math.sin(a)), y: sY + (pt.x*Math.sin(a) + pt.y*Math.cos(a))}));
+                            doc.lines([[c[1].x-c[0].x, c[1].y-c[0].y], [c[2].x-c[1].x, c[2].y-c[1].y], [c[3].x-c[2].x, c[3].y-c[2].y]], c[0].x, c[0].y, [1, 1], 'S', true);
+                        });
+                    }
 
-                doc.setFontSize(letterTextSize * (gridDrawSize / 6.5));
-                for (let r = 0; r < gridSize; r++) {
-                    for (let c = 0; c < gridSize; c++) {
-                        const cellX = startX + (c * cellSize); const cellY = startY + (r * cellSize);
-                        if (solutionHighlighter === 'fill' && mask[r][c]) {
-                            doc.setFillColor('#E2E8F0'); doc.rect(cellX, cellY, cellSize, cellSize, "F");
+                    doc.setFontSize(letterTextSize * (gridDrawSize / 6.5));
+                    for (let r = 0; r < gridSize; r++) {
+                        for (let c = 0; c < gridSize; c++) {
+                            const cellX = startX + (c * cellSize); const cellY = startY + (r * cellSize);
+                            if (solutionHighlighter === 'fill' && mask[r][c]) {
+                                doc.setFillColor('#E2E8F0'); doc.rect(cellX, cellY, cellSize, cellSize, "F");
+                            }
+                            if (mask[r][c]) { 
+                                doc.setFont(lettersFont, "bold"); doc.setTextColor(0, 0, 0); 
+                            } else { 
+                                doc.setFont(lettersFont, "normal"); doc.setTextColor(solutionHighlighter === 'fade' || solutionHighlighter === 'apple' ? 210 : 0); 
+                            }
+                            doc.text(grid[r][c], cellX + (cellSize / 2), cellY + (cellSize / 2), { align: "center", baseline: "middle" });
                         }
-                        if (mask[r][c]) { 
-                            doc.setFont(lettersFont, "bold"); doc.setTextColor(0, 0, 0); 
-                        } else { 
-                            doc.setFont(lettersFont, "normal"); doc.setTextColor(solutionHighlighter === 'fade' || solutionHighlighter === 'apple' ? 210 : 0); 
-                        }
-                        doc.text(grid[r][c], cellX + (cellSize / 2), cellY + (cellSize / 2), { align: "center", baseline: "middle" });
                     }
                 }
             }
         }
 
         // 3. Draw Back Cover if integrated
-        if (includeCover && coverState) {
+        if (incCover && coverState) {
             doc.addPage();
-            await drawCoverPagePart(doc, coverState, 'back', trimSize.w, trimSize.h);
+            await drawCoverPagePart(doc, coverState, 'back', finalW, finalH);
         }
 
-        doc.save(`KDP_Interior_${trimSize.w}x${trimSize.h}.pdf`);
+        doc.save(`KDP_Interior_${finalW}x${finalH}.pdf`);
         setIsGenerating(false);
     };
 
     // 🖨️ PRO COVER PDF GENERATOR
     const handleGenerateCover = async () => {
-        setIsGenerating(true);
         await new Promise(resolve => setTimeout(resolve, 100));
         const doc = new jsPDF({ orientation: "landscape", unit: "in", format: [coverTotalWidth, coverTotalHeight] });
 
@@ -517,7 +515,7 @@ export default function WordSearchStudio() {
                             
                             <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 shrink-0">
                                 <button onClick={handleGeneratePreview} className="w-full flex items-center justify-center gap-2 bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all border border-slate-200"><Eye className="w-4 h-4" /> Live Preview</button>
-                                <button onClick={handleGenerateInterior} disabled={isGenerating} className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md transition-all active:scale-95"><Download className="w-4 h-4" /> Download KDP PDF</button>
+                                <button onClick={() => setIsExportModalOpen(true)} disabled={isGenerating} className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md transition-all active:scale-95"><Download className="w-4 h-4" /> Download KDP PDF</button>
                                 <CoverStudioCTA trimSize={`${trimSize.w}x${trimSize.h}`} />
                             </div>
                         </div>
@@ -610,6 +608,13 @@ export default function WordSearchStudio() {
                     </div>
                 )}
             </div>
+
+            <ExportInteriorModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                defaultTrimSize="8.5x11"
+                onExport={handleGenerateInterior}
+            />
         </div>
     );
 }

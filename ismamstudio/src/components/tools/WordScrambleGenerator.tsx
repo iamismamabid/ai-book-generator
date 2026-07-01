@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
+import ExportInteriorModal from "@/components/ExportInteriorModal";
 
 const DEFAULT_WORDS = [
   "AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION",
@@ -50,6 +51,7 @@ export default function WordScrambleGenerator() {
   const [activePreviewIndex, setActivePreviewIndex] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   // Parse words & generate puzzles
   const parseAndGeneratePuzzles = () => {
@@ -134,36 +136,32 @@ export default function WordScrambleGenerator() {
   }, [difficulty, numPages]);
 
   // Export PDF function
-  const handleExportPDF = () => {
+  const handleExportPDF = async (options: {
+    includeCover: boolean;
+    coverState: any;
+    includeSolutions: boolean;
+    trimSize: "6x9" | "8.5x11" | "5x8";
+    hasBleed: boolean;
+    showGuides: boolean;
+  }) => {
     if (puzzles.length === 0) return;
     setIsDownloading(true);
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides } = options;
     
     setTimeout(async () => {
-      let coverState = null;
-      if (includeCover) {
-        const saved = localStorage.getItem("kdp-cover-draft");
-        if (saved) {
-          try {
-            coverState = JSON.parse(saved);
-          } catch (e) {
-            console.error("Error loading cover draft", e);
-          }
-        }
-        if (!coverState) {
-          alert("No saved cover found! Please design a cover in the Cover Studio first.");
-          setIsDownloading(false);
-          return;
-        }
+      let finalW = 8.5;
+      let finalH = 11;
+      if (finalTrim === "6x9") {
+        finalW = 6;
+        finalH = 9;
+      } else if (finalTrim === "5x8") {
+        finalW = 5;
+        finalH = 8;
       }
-
-      // Trim size configurations
-      const w = trimSize.w;
-      const h = trimSize.h;
       
-      // Bleed adjustment
       const bleed = 0.125;
-      const pageW = hasBleed ? w + bleed * 2 : w;
-      const pageH = hasBleed ? h + bleed * 2 : h;
+      const pageW = finalBleed ? finalW + bleed * 2 : finalW;
+      const pageH = finalBleed ? finalH + bleed * 2 : finalH;
       
       const doc = new jsPDF({
         orientation: "portrait",
@@ -182,7 +180,7 @@ export default function WordScrambleGenerator() {
 
       // 1. Draw Front Cover if integrated
       let firstPageAdded = false;
-      if (includeCover && coverState) {
+      if (incCover && coverState) {
         // @ts-ignore
         await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
         firstPageAdded = true;
@@ -290,7 +288,7 @@ export default function WordScrambleGenerator() {
       });
       
       // 2. Draw Answer Keys Page
-      if (includeAnswers) {
+      if (incSol) {
         doc.addPage();
         
         const ansPageIdx = puzzles.length + 1;
@@ -349,7 +347,7 @@ export default function WordScrambleGenerator() {
       }
 
       // 3. Draw Back Cover if integrated
-      if (includeCover && coverState) {
+      if (incCover && coverState) {
         doc.addPage();
         await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
       }
@@ -520,7 +518,7 @@ export default function WordScrambleGenerator() {
           </button>
           
           <button
-            onClick={handleExportPDF}
+            onClick={() => setIsExportModalOpen(true)}
             disabled={isDownloading || puzzles.length === 0}
             className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 py-3.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/5 hover:-translate-y-0.5 active:translate-y-0"
           >
@@ -655,6 +653,12 @@ export default function WordScrambleGenerator() {
 
       </div>
 
+      <ExportInteriorModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        defaultTrimSize="8.5x11"
+        onExport={handleExportPDF}
+      />
     </div>
   );
 }

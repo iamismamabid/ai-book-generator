@@ -179,74 +179,111 @@ export function CryptogramEditor({ page, updatePage }: any) {
       </div>
 
       {/* Canvas Area */}
-      <div className="flex-1 bg-white p-10 shadow-2xl border border-slate-200 min-h-[700px] flex flex-col items-center">
-        <h1 className="text-3xl font-black text-center mb-2 uppercase tracking-widest text-slate-800">
-          Cryptogram {isSolution && <span className="text-indigo-600">(Solution)</span>}
-        </h1>
-        <p className="text-xs text-slate-400 uppercase tracking-widest mb-8">
-          Decode the cipher substitution mapping
-        </p>
-
+      <div className="flex-1 bg-slate-200/50 p-8 overflow-y-auto flex items-center justify-center relative min-h-[700px]">
         {cryptogramData ? (
-          <div className="w-full max-w-xl flex-1 flex flex-col justify-between">
-            {/* Word-wrapped rendering of letters with boxes */}
-            <div className="flex flex-wrap gap-y-8 gap-x-6 justify-center mt-6">
-              {cryptogramData.encrypted.split(" ").map((word: string, wIdx: number) => {
-                const originalWord = cryptogramData.original.split(" ")[wIdx] || "";
-                return (
-                  <div key={wIdx} className="flex">
-                    {word.split("").map((char: string, cIdx: number) => {
-                      const isLetter = /[A-Z]/.test(char);
-                      const originalChar = originalWord[cIdx] || "";
-                      return (
-                        <div key={cIdx} className="flex flex-col items-center mx-0.5">
-                          {isLetter ? (
-                            <>
-                              <div className="w-8 h-9 border-2 border-slate-350 bg-slate-50 flex items-center justify-center font-bold text-xs rounded-md shadow-sm transition-all">
-                                {isSolution ? (
-                                  <span className="text-indigo-600 font-extrabold">{originalChar}</span>
-                                ) : (
-                                  ""
-                                )}
-                              </div>
-                              <span className="text-[10px] font-black text-slate-500 mt-1 uppercase font-mono">{char}</span>
-                            </>
-                          ) : (
-                            <>
-                              <div className="w-8 h-9 flex items-end justify-center font-black text-slate-800 text-sm">
-                                {char}
-                              </div>
-                              <span className="h-4"></span>
-                            </>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
+          <div 
+            className="relative bg-white shadow-[0_15px_40px_rgba(0,0,0,0.06)] rounded-sm border border-slate-300/80 flex flex-col p-12 overflow-hidden cursor-default transition-all duration-300"
+            style={{
+              width: "480px", // proportional scaling for viewing
+              height: `${480 * (11 / 8.5)}px`, // standard 8.5x11 aspect ratio
+              paddingTop: "40px",
+              paddingBottom: "40px",
+              paddingLeft: "45px",
+              paddingRight: "30px"
+            }}
+          >
+            {/* Safe Area Guides */}
+            <div className="absolute top-0 bottom-0 left-0 border-r border-dashed border-rose-400/40 pointer-events-none" style={{ width: "45px" }} />
+            <div className="absolute top-0 bottom-0 right-0 border-l border-dashed border-rose-400/40 pointer-events-none" style={{ width: "30px" }} />
+            <div className="absolute left-0 right-0 top-0 border-b border-dashed border-rose-400/40 pointer-events-none" style={{ height: "40px" }} />
+            <div className="absolute left-0 right-0 bottom-0 border-t border-dashed border-rose-400/40 pointer-events-none" style={{ height: "40px" }} />
+            <span className="absolute bottom-1 right-2 text-[8px] font-black text-rose-500 opacity-60">SAFE PRINT AREA</span>
 
-            {/* Substitution Key (Solution only) */}
-            {isSolution && (
-              <div className="mt-12 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                <h3 className="text-[10px] font-black uppercase tracking-wider text-indigo-600 mb-2">Substitution Key</h3>
-                <div className="grid grid-cols-26 gap-0.5 text-center font-mono text-[9px] font-bold text-slate-500 overflow-x-auto pb-2">
-                  <div className="flex flex-col border border-slate-200 bg-white p-1 rounded">
-                    <span>A-Z</span>
-                    <span className="text-indigo-600 border-t border-slate-100 mt-1">Key</span>
-                  </div>
-                  {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l) => (
-                    <div key={l} className="flex flex-col border border-slate-200 bg-white p-1 rounded">
-                      <span>{l}</span>
-                      <span className="text-indigo-600 border-t border-slate-100 mt-1">
-                        {cryptogramData.cipherMap[l] || "_"}
-                      </span>
-                    </div>
-                  ))}
+            {/* Preview Layout content wrapper */}
+            <div className="flex flex-col h-full justify-between">
+              
+              <div className="text-center">
+                <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-1">
+                  Cryptogram Puzzles
+                </h3>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                  Substitution Puzzle Preview
+                </p>
+                <div className="h-px bg-slate-100 my-3" />
+              </div>
+
+              {/* Encrypted Puzzle block */}
+              <div className="flex-1 flex flex-col justify-start pt-4 space-y-4">
+                <h4 className="text-xs font-black text-indigo-600 uppercase">
+                  Puzzle #{selectedQuoteIndex + 1}
+                </h4>
+                
+                {/* Grid wrap simulation */}
+                <div className="flex flex-wrap gap-x-2 gap-y-4 items-start select-none w-full">
+                  {cryptogramData.encrypted.split(" ").map((word: string, wIdx: number) => {
+                    const originalWord = cryptogramData.original.split(" ")[wIdx] || "";
+                    return (
+                      <div key={wIdx} className="flex gap-x-[3px] items-center mb-1">
+                        {word.split("").map((char: string, cIdx: number) => {
+                          const isLetter = /[A-Z]/.test(char);
+                          const originalChar = originalWord[cIdx] || "";
+                          return (
+                            <div key={cIdx} className="flex flex-col items-center">
+                              {isLetter ? (
+                                <>
+                                  {/* Empty top write-in grid slot or filled if it is solution */}
+                                  <div className="w-[15px] h-[17px] border border-slate-350 bg-slate-50/50 rounded flex items-center justify-center text-[9px] font-bold text-slate-700">
+                                    {isSolution ? (
+                                      <span className="text-indigo-600 font-extrabold">{originalChar}</span>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </div>
+                                  {/* Cipher bottom letter */}
+                                  <span className="font-mono text-[9px] font-bold text-slate-900 mt-1">{char}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="w-[15px] h-[17px] flex items-end justify-center">
+                                    <span className="font-mono text-[9px] font-black text-slate-900">{char}</span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            )}
+
+              {/* Substitution Key (Solution only) */}
+              {isSolution && (
+                <div className="mt-4 p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                  <h3 className="text-[8px] font-black uppercase tracking-wider text-indigo-600 mb-1">Substitution Key</h3>
+                  <div className="flex flex-wrap gap-1 text-center font-mono text-[8px] font-bold text-slate-500 pb-1">
+                    <div className="flex flex-col border border-slate-200 bg-white p-0.5 rounded min-w-[20px]">
+                      <span>A-Z</span>
+                      <span className="text-indigo-600 border-t border-slate-100 mt-0.5">Key</span>
+                    </div>
+                    {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l) => (
+                      <div key={l} className="flex flex-col border border-slate-200 bg-white p-0.5 rounded min-w-[12px] flex-1">
+                        <span>{l}</span>
+                        <span className="text-indigo-600 border-t border-slate-100 mt-0.5">
+                          {cryptogramData.cipherMap[l] || "_"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-center text-[9px] text-slate-300 font-bold tracking-widest pt-2 border-t border-slate-100">
+                PAGE PREVIEW ONLY
+              </div>
+
+            </div>
           </div>
         ) : (
           <div className="text-center text-slate-400 mt-20">Click generate to load cryptogram.</div>

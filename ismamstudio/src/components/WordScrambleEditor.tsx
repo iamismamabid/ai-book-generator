@@ -5,8 +5,7 @@ import { RefreshCw } from "lucide-react";
 
 const DEFAULT_WORDS = [
   "AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION",
-  "ANTIGRAVITY", "FLIGHT", "PAYLOAD", "SCHEMATICS", "HOLOGRAM",
-  "ENGINEERING", "GRAVITATIONAL", "AIRSPACE", "SAFETY", "VELOCITY"
+  "ANTIGRAVITY", "FLIGHT", "PAYLOAD"
 ];
 
 export function WordScrambleEditor({ page, updatePage }: any) {
@@ -24,42 +23,42 @@ export function WordScrambleEditor({ page, updatePage }: any) {
 
   const scrambleWord = (word: string, diff: "easy" | "medium" | "hard"): string => {
     if (word.length <= 1) return word;
-    
+
     if (diff === "easy" && word.length > 3) {
       const first = word[0];
       const last = word[word.length - 1];
       const middle = word.slice(1, -1).split("");
-      
+
       for (let i = middle.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [middle[i], middle[j]] = [middle[j], middle[i]];
       }
-      
+
       const scrambled = first + middle.join("") + last;
       if (scrambled === word) return first + middle.reverse().join("") + last;
       return scrambled;
     }
-    
+
     if (diff === "medium" && word.length > 2) {
       const first = word[0];
       const rest = word.slice(1).split("");
-      
+
       for (let i = rest.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [rest[i], rest[j]] = [rest[j], rest[i]];
       }
-      
+
       const scrambled = first + rest.join("");
       if (scrambled === word) return first + rest.reverse().join("");
       return scrambled;
     }
-    
+
     const letters = word.split("");
     for (let i = letters.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [letters[i], letters[j]] = [letters[j], letters[i]];
     }
-    
+
     const scrambled = letters.join("");
     if (scrambled === word) return letters.reverse().join("");
     return scrambled;
@@ -120,21 +119,19 @@ export function WordScrambleEditor({ page, updatePage }: any) {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleToggleMode(false)}
-                className={`py-2 rounded-lg font-bold text-xs uppercase transition ${
-                  !isSolution
+                className={`py-2 rounded-lg font-bold text-xs uppercase transition ${!isSolution
                     ? "bg-indigo-600 text-white shadow-sm"
                     : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 Puzzle
               </button>
               <button
                 onClick={() => handleToggleMode(true)}
-                className={`py-2 rounded-lg font-bold text-xs uppercase transition ${
-                  isSolution
+                className={`py-2 rounded-lg font-bold text-xs uppercase transition ${isSolution
                     ? "bg-indigo-600 text-white shadow-sm"
                     : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 Solution
               </button>
@@ -150,11 +147,10 @@ export function WordScrambleEditor({ page, updatePage }: any) {
                 <button
                   key={d}
                   onClick={() => setDifficulty(d)}
-                  className={`py-2 rounded-lg font-bold text-xs capitalize transition ${
-                    difficulty === d
+                  className={`py-2 rounded-lg font-bold text-xs capitalize transition ${difficulty === d
                       ? "bg-indigo-600 text-white shadow-sm"
                       : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
-                  }`}
+                    }`}
                 >
                   {d}
                 </button>

@@ -98,10 +98,10 @@ export default function HomePage() {
             </div>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
-              Create Best-Selling <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-amber-300 bg-clip-text text-transparent">KDP Books</span> in Minutes
+              Create Best-Selling <span className="bg-gradient-to-r from-indigo-450 via-indigo-400 to-purple-450 bg-clip-text text-transparent">KDP Books</span> in Minutes
             </h1>
             
-            <p className="text-slate-400 text-lg md:text-xl font-medium leading-relaxed max-w-2xl">
+            <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed max-w-2xl">
               Produce professional puzzle interiors, AI-assisted stories, shape-masked labyrinths, and gorgeous book covers—all in one place. Compliant with Amazon specifications.
             </p>
 
@@ -332,7 +332,7 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-4">
             Professional KDP Creation Engines
           </h2>
-          <p className="text-slate-400 text-base max-w-lg mx-auto font-semibold">
+          <p className="text-slate-300 text-base max-w-lg mx-auto font-semibold mb-8">
             Choose from a suite of specialized puzzle builders and cover editors.
           </p>
         </div>
@@ -342,17 +342,17 @@ export default function HomePage() {
           {/* 1. Book Builder & Cover Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 mb-6 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Palette className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white mb-3">Book & Cover Studio</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Design custom crossword grids and word searches, drag & drop elements, and compile front/back covers in print-ready KDP dimensions.
               </p>
             </div>
             <Link 
               href="/studio"
-              className="inline-flex items-center gap-2 text-sm font-black text-indigo-400 hover:text-indigo-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Open Creator Studio <ArrowRight className="w-4 h-4" />
             </Link>
@@ -361,17 +361,17 @@ export default function HomePage() {
           {/* 2. AI Novel Writer */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-400 mb-6 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <BookOpen className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white mb-3">AI Novel Writer</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Generate story outlines, structures, blurbs, and text expansions instantly using advanced Llama-3 model nodes.
               </p>
             </div>
             <Link 
               href="/generate"
-              className="inline-flex items-center gap-2 text-sm font-black text-purple-400 hover:text-purple-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Start Generating <ArrowRight className="w-4 h-4" />
             </Link>
@@ -380,17 +380,17 @@ export default function HomePage() {
           {/* 3. Shaped Labyrinth Designer */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 mb-6 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Compass className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white mb-3">Labyrinth Designer</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Create shape-masked maze interiors (Square, Circle, Heart shapes) in clean standard trim sizing with automated solutions key generation.
               </p>
             </div>
             <Link 
               href="/maze"
-              className="inline-flex items-center gap-2 text-sm font-black text-emerald-400 hover:text-emerald-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Design Mazes <ArrowRight className="w-4 h-4" />
             </Link>
@@ -399,17 +399,17 @@ export default function HomePage() {
           {/* 4. Sudoku Generator */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-400 mb-6 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Grid3x3 className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white mb-3">Sudoku Studio</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Compile print-ready Sudoku puzzle grids (Easy, Medium, and Hard) with mathematically guaranteed single-solution uniqueness.
               </p>
             </div>
             <Link 
               href="/sudoku"
-              className="inline-flex items-center gap-2 text-sm font-black text-amber-400 hover:text-amber-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Generate Sudokus <ArrowRight className="w-4 h-4" />
             </Link>
@@ -418,17 +418,17 @@ export default function HomePage() {
           {/* 5. Word Search Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center text-pink-400 mb-6 group-hover:bg-pink-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Download className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white mb-3">Word Search Studio</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Import custom word lists or CSVs to build unique Word Search grids. Adjust fonts, highlighter options, and export interior sheets.
               </p>
             </div>
             <Link 
               href="/tools/word-search"
-              className="inline-flex items-center gap-2 text-sm font-black text-pink-400 hover:text-pink-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Open Word Search <ArrowRight className="w-4 h-4" />
             </Link>
@@ -437,17 +437,17 @@ export default function HomePage() {
           {/* 6. Cryptogram Generator */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-400 mb-6 group-hover:bg-yellow-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-455 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Key className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white mb-3">Cryptogram Studio</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Create substitution cipher worksheets from custom quote libraries, complete with letter hints and solution keys formatted for publishing.
               </p>
             </div>
             <Link 
               href="/studio/cryptogram"
-              className="inline-flex items-center gap-2 text-sm font-black text-yellow-450 hover:text-yellow-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Generate Cryptograms <ArrowRight className="w-4 h-4" />
             </Link>
@@ -456,17 +456,17 @@ export default function HomePage() {
           {/* 7. Math Puzzle Builder */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-sky-500/10 rounded-2xl flex items-center justify-center text-sky-400 mb-6 group-hover:bg-sky-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Calculator className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white mb-3">Math Puzzle Builder</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Generate arithmetic, cross-number, and logic puzzle sheets for children, senior exercises, or educational KDP workbook niches.
               </p>
             </div>
             <Link 
               href="/studio/math-puzzle"
-              className="inline-flex items-center gap-2 text-sm font-black text-sky-405 hover:text-sky-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Generate Math Puzzles <ArrowRight className="w-4 h-4" />
             </Link>
@@ -475,17 +475,17 @@ export default function HomePage() {
           {/* 8. Word Scramble Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-400 mb-6 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Shuffle className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white mb-3">Word Scramble Studio</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Scramble custom word lists to build activity worksheets. Customize difficulty, borders, layout guides, and download PDF sheets.
               </p>
             </div>
             <Link 
               href="/studio/word-scramble"
-              className="inline-flex items-center gap-2 text-sm font-black text-rose-450 hover:text-rose-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Generate Scrambles <ArrowRight className="w-4 h-4" />
             </Link>
@@ -494,17 +494,17 @@ export default function HomePage() {
           {/* 9. Complete Book Compilation */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white mb-3">KDP Interiors Merge</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Combine your custom puzzles, word searches, and AI-written chapters into a single PDF document formatted directly for KDP upload.
               </p>
             </div>
             <Link 
               href="/studio"
-              className="inline-flex items-center gap-2 text-sm font-black text-cyan-400 hover:text-cyan-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Start Assembling <ArrowRight className="w-4 h-4" />
             </Link>
@@ -520,7 +520,7 @@ export default function HomePage() {
             <Sliders className="w-4 h-4" /> Simple Blueprint
           </div>
           <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">How It Works</h2>
-          <p className="text-slate-400 text-sm font-semibold max-w-md mx-auto">
+          <p className="text-slate-300 text-sm font-semibold max-w-md mx-auto">
             Three simple steps to publish your puzzle, activity, or story book directly to Amazon KDP.
           </p>
         </div>
@@ -531,7 +531,7 @@ export default function HomePage() {
           <div className="bg-slate-900/35 border border-slate-900 rounded-[2rem] p-8 space-y-4 hover:border-slate-800 transition-all">
             <div className="w-12 h-12 bg-indigo-500/15 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 font-black text-lg mx-auto">1</div>
             <h3 className="text-white font-bold text-lg">Pick a Creation Engine</h3>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <p className="text-slate-300 text-xs font-semibold leading-relaxed">
               Select one of our specialized tools: Sudoku Studio, Shaped Maze Designer, Word Search, or the AI Novel Chapter Writer.
             </p>
           </div>
@@ -540,7 +540,7 @@ export default function HomePage() {
           <div className="bg-slate-900/35 border border-slate-900 rounded-[2rem] p-8 space-y-4 hover:border-slate-800 transition-all">
             <div className="w-12 h-12 bg-purple-500/15 rounded-2xl flex items-center justify-center text-purple-400 border border-purple-500/20 font-black text-lg mx-auto">2</div>
             <h3 className="text-white font-bold text-lg">Build & Format</h3>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <p className="text-slate-300 text-xs font-semibold leading-relaxed">
               Customize puzzle complexity, layout shapes, or story parameters, and download print-ready vector PDF interiors.
             </p>
           </div>
@@ -549,7 +549,7 @@ export default function HomePage() {
           <div className="bg-slate-900/35 border border-slate-900 rounded-[2rem] p-8 space-y-4 hover:border-slate-800 transition-all">
             <div className="w-12 h-12 bg-amber-500/15 rounded-2xl flex items-center justify-center text-amber-400 border border-amber-500/20 font-black text-lg mx-auto">3</div>
             <h3 className="text-white font-bold text-lg">Wrap Cover & Publish</h3>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <p className="text-slate-300 text-xs font-semibold leading-relaxed">
               Design a gorgeous cover in our canvas based on page counts, compile all sections together, and upload directly to Amazon KDP!
             </p>
           </div>
@@ -570,7 +570,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-black text-white tracking-tight">
               AI KDP Niche Hunter & Keyword Spy
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm font-semibold leading-relaxed">
+            <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
               Stop guessing what sells. Search autocomplete suggestions, estimate monthly sales targets, and calculate royalties using precise BSR estimators.
             </p>
             <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-350 justify-center md:justify-start">
@@ -603,7 +603,7 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">
             Interactive Book Showcase
           </h2>
-          <p className="text-slate-400 text-sm font-semibold max-w-md mx-auto">
+          <p className="text-slate-300 text-sm font-semibold max-w-md mx-auto">
             Click on a sample category below to explore its KDP interior and layout specification.
           </p>
         </div>
@@ -650,7 +650,7 @@ export default function HomePage() {
                       {sample.badge}
                     </span>
                     <h3 className="text-2xl md:text-3xl font-black text-white">{sample.title}</h3>
-                    <p className="text-slate-400 text-sm font-semibold leading-relaxed">
+                    <p className="text-slate-300 text-sm font-semibold leading-relaxed">
                       {sample.desc}
                     </p>
                     <div className="flex items-center gap-6 pt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -735,7 +735,7 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">
             How Ismam Studio Works
           </h2>
-          <p className="text-slate-400 text-sm md:text-base font-semibold max-w-xl mx-auto mt-4 leading-relaxed">
+          <p className="text-slate-300 text-sm md:text-base font-semibold max-w-xl mx-auto mt-4 leading-relaxed">
             Create publication-ready KDP book interiors and covers in three simple, automated steps.
           </p>
         </div>
@@ -750,7 +750,7 @@ export default function HomePage() {
                 <Sliders className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-black text-white">1. Configure Trim & Bleed</h3>
-              <p className="text-slate-400 text-xs md:text-sm font-semibold leading-relaxed">
+              <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
                 Choose standard KDP sizes (6"x9", 8.5"x11"), margin guidelines, and page sizes. Our layouts automatically compute gutter bleed margins so your book passes KDP reviews without margin violations.
               </p>
             </div>
@@ -765,7 +765,7 @@ export default function HomePage() {
                 <Sparkles className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-black text-white">2. Generate Puzzles & Text</h3>
-              <p className="text-slate-400 text-xs md:text-sm font-semibold leading-relaxed">
+              <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
                 Use our puzzle generator engine to create infinite unique Sudokus, mazes, cryptograms, and word search grids. Outline novel chapters automatically with our advanced AI Writer powered by Llama-3.
               </p>
             </div>
@@ -780,7 +780,7 @@ export default function HomePage() {
                 <Download className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-black text-white">3. Export Print-Ready PDF</h3>
-              <p className="text-slate-400 text-xs md:text-sm font-semibold leading-relaxed">
+              <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
                 Compile your entire creation (puzzles, dividers, solutions, and custom covers) into a high-fidelity vector PDF. Download and upload directly to Amazon KDP, Etsy, or IngramSpark instantly.
               </p>
             </div>
@@ -802,7 +802,7 @@ export default function HomePage() {
               <Shield className="w-4 h-4" /> Secure & Compliant
             </div>
             <h3 className="text-3xl font-black text-white mb-4">Designed for Amazon KDP Specs</h3>
-            <p className="text-slate-400 text-sm leading-relaxed font-semibold">
+            <p className="text-slate-300 text-sm leading-relaxed font-semibold">
               All PDF exports automatically include precise gutters, safety bleed buffers, standard book sizes (6"x9", 8.5"x11"), and optimized vector paths ready for printing.
             </p>
           </div>

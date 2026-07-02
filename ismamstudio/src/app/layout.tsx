@@ -76,6 +76,21 @@ export default function RootLayout({
               _.parentNode.insertBefore(o,_);})(window, document, 'script', 'https://app.partnero.com/js/universal.js', 'po');
               po('settings', 'assets_host', 'https://assets.partnero.com');
               po('program', 'CNPKWOED', 'load');
+
+              // Backup Cookie Writer for Localhost and Cross-Domain Testing
+              (function() {
+                try {
+                  const urlParams = new URLSearchParams(window.location.search);
+                  const aff = urlParams.get('aff');
+                  if (aff) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (60 * 24 * 60 * 60 * 1000));
+                    document.cookie = "partnero_partner=" + encodeURIComponent(aff) + "; expires=" + date.toUTCString() + "; path=/; SameSite=Lax";
+                  }
+                } catch(e) {
+                  console.error("Partnero cookie fallback error:", e);
+                }
+              })();
             `}
           </Script>
         </body>

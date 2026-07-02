@@ -41,6 +41,12 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
+
+  verification: {
+    google: "BxkWaFUAZ5Hu_euEr87tYkNVlw7iKrDKKl6ktdk2ihs",
+  },
+
+
 };
 
 export default function RootLayout({
@@ -97,4 +103,4 @@ export default function RootLayout({
       </html>
     </ClerkProvider>
   );
-}
+}

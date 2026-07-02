@@ -819,7 +819,7 @@ export default function HomePage() {
 
               <div className="space-y-4 text-slate-300 text-sm md:text-base font-semibold leading-relaxed font-sans">
                 <p>
-                  "As a CSE student and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, requiring multiple subscriptions just to compile a single book. I knew there had to be a more efficient and affordable way."
+                  "As a CSE student and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, making it tedious to compile a single book. I knew there had to be a more efficient and integrated way."
                 </p>
                 <p>
                   "That is why I built Ismam Studio. My goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. I wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."

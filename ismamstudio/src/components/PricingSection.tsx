@@ -110,6 +110,10 @@ function PricingSectionInner() {
         };
       }
 
+      console.log("=== PADDLE CHECKOUT OPTIONS ===");
+      console.log(checkoutOptions);
+      console.log("===============================");
+
       (window as any).Paddle.Checkout.open(checkoutOptions);
     } else {
       // Fallback

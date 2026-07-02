@@ -38,6 +38,9 @@ export default function Footer() {
                 <Link href="/#features" className="text-slate-400 hover:text-indigo-400 transition-colors">Features</Link>
               </li>
               <li>
+                <Link href="/roadmap" className="text-slate-400 hover:text-indigo-400 transition-colors">Product Roadmap</Link>
+              </li>
+              <li>
                 <Link href="/#pricing" className="text-slate-400 hover:text-indigo-400 transition-colors">Pricing</Link>
               </li>
               <li>

@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
-  BookOpen, 
-  Palette, 
-  Grid3x3, 
-  Compass, 
-  CheckCircle2, 
-  ArrowRight, 
-  Sparkles, 
-  Download, 
+import {
+  BookOpen,
+  Palette,
+  Grid3x3,
+  Compass,
+  CheckCircle2,
+  ArrowRight,
+  Sparkles,
+  Download,
   Shield,
   Layers,
   Sliders,
@@ -80,7 +80,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 overflow-hidden relative">
-      
+
       {/* 🔮 Background Glow Elements */}
       <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse-glow" />
       <div className="absolute top-1/3 right-0 w-[700px] h-[700px] bg-purple-500/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 animate-pulse-glow" style={{ animationDelay: '-4s' }} />
@@ -89,31 +89,31 @@ export default function HomePage() {
       {/* 🚀 Two-Column Hero Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
+
           {/* Left Column: Headline and CTAs */}
           <div className="lg:col-span-7 text-left space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-indigo-400 text-xs font-black uppercase tracking-[0.2em] shadow-inner">
               <Sparkles className="w-4 h-4 text-indigo-400" />
               The Ultimate KDP Interior & Cover Creator
             </div>
-            
+
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
               Create Best-Selling <span className="bg-gradient-to-r from-indigo-450 via-indigo-400 to-purple-450 bg-clip-text text-transparent">KDP Books</span> in Minutes
             </h1>
-            
+
             <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed max-w-2xl">
               Produce professional puzzle interiors, AI-assisted stories, shape-masked labyrinths, and gorgeous book covers—all in one place. Compliant with Amazon specifications.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link 
+              <Link
                 href="/studio"
                 className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black text-lg hover:from-indigo-600 hover:to-purple-700 shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
               >
                 Open Creator Studio
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link 
+              <Link
                 href="/generate"
                 className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-slate-900 border border-slate-850 text-slate-350 dark:text-slate-350 font-black text-lg hover:bg-slate-850 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
               >
@@ -131,7 +131,7 @@ export default function HomePage() {
           {/* Right Column: Interactive Studio Canvas Simulator */}
           <div className="lg:col-span-5 relative">
             <div className="absolute inset-0 bg-indigo-500/10 rounded-[3rem] blur-3xl" />
-            
+
             <div className="relative bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-[2.5rem] p-6 shadow-2xl animate-float">
 
               {/* Title Bar */}
@@ -156,11 +156,10 @@ export default function HomePage() {
                 ].map((tab) => (
                   <span
                     key={tab.label}
-                    className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 ${
-                      tab.active
+                    className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 ${tab.active
                         ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
                         : "bg-slate-950/60 text-slate-500 border-slate-800"
-                    }`}
+                      }`}
                   >
                     <span className={tab.label === "Heart" ? "text-rose-500" : ""}>{tab.icon}</span>
                     {tab.label}
@@ -205,11 +204,10 @@ export default function HomePage() {
                   {["Easy", "Med", "Hard"].map((d, i) => (
                     <span
                       key={d}
-                      className={`text-[8px] font-black px-2 py-1 rounded-lg border uppercase ${
-                        i === 1
+                      className={`text-[8px] font-black px-2 py-1 rounded-lg border uppercase ${i === 1
                           ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
                           : "bg-slate-950/60 text-slate-600 border-slate-800"
-                      }`}
+                        }`}
                     >
                       {d}
                     </span>
@@ -338,7 +336,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          
+
           {/* 1. Book Builder & Cover Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
@@ -350,7 +348,7 @@ export default function HomePage() {
                 Design custom crossword grids and word searches, drag & drop elements, and compile front/back covers in print-ready KDP dimensions.
               </p>
             </div>
-            <Link 
+            <Link
               href="/studio"
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
@@ -369,7 +367,7 @@ export default function HomePage() {
                 Generate story outlines, structures, blurbs, and text expansions instantly using advanced Llama-3 model nodes.
               </p>
             </div>
-            <Link 
+            <Link
               href="/generate"
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
@@ -388,7 +386,7 @@ export default function HomePage() {
                 Create shape-masked maze interiors (Square, Circle, Heart shapes) in clean standard trim sizing with automated solutions key generation.
               </p>
             </div>
-            <Link 
+            <Link
               href="/maze"
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
@@ -407,7 +405,7 @@ export default function HomePage() {
                 Compile print-ready Sudoku puzzle grids (Easy, Medium, and Hard) with mathematically guaranteed single-solution uniqueness.
               </p>
             </div>
-            <Link 
+            <Link
               href="/sudoku"
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
@@ -426,7 +424,7 @@ export default function HomePage() {
                 Import custom word lists or CSVs to build unique Word Search grids. Adjust fonts, highlighter options, and export interior sheets.
               </p>
             </div>
-            <Link 
+            <Link
               href="/tools/word-search"
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
@@ -445,7 +443,7 @@ export default function HomePage() {
                 Create substitution cipher worksheets from custom quote libraries, complete with letter hints and solution keys formatted for publishing.
               </p>
             </div>
-            <Link 
+            <Link
               href="/studio/cryptogram"
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
@@ -464,7 +462,7 @@ export default function HomePage() {
                 Generate arithmetic, cross-number, and logic puzzle sheets for children, senior exercises, or educational KDP workbook niches.
               </p>
             </div>
-            <Link 
+            <Link
               href="/studio/math-puzzle"
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
@@ -483,7 +481,7 @@ export default function HomePage() {
                 Scramble custom word lists to build activity worksheets. Customize difficulty, borders, layout guides, and download PDF sheets.
               </p>
             </div>
-            <Link 
+            <Link
               href="/studio/word-scramble"
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
@@ -502,7 +500,7 @@ export default function HomePage() {
                 Combine your custom puzzles, word searches, and AI-written chapters into a single PDF document formatted directly for KDP upload.
               </p>
             </div>
-            <Link 
+            <Link
               href="/studio"
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
@@ -526,7 +524,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto relative z-10">
-          
+
           {/* Step 1 */}
           <div className="bg-slate-900/35 border border-slate-900 rounded-[2rem] p-8 space-y-4 hover:border-slate-800 transition-all">
             <div className="w-12 h-12 bg-indigo-500/15 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 font-black text-lg mx-auto">1</div>
@@ -562,7 +560,7 @@ export default function HomePage() {
         <div className="bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/40 backdrop-blur-md rounded-[3rem] border border-indigo-900/35 p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-2xl">
           {/* Decorative glows */}
           <div className="absolute -right-20 -top-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-          
+
           <div className="space-y-4 max-w-2xl">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" /> Now Live & Active
@@ -595,7 +593,7 @@ export default function HomePage() {
 
       {/* 📚 KDP Interior Samples & Gallery (Social Proof) */}
       <section id="examples" className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50">
-        
+
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-wider mb-3">
             <Layers className="w-4 h-4" /> Sample Gallery
@@ -610,18 +608,17 @@ export default function HomePage() {
 
         {/* Showcase Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Sample Navigation List */}
           <div className="lg:col-span-4 space-y-3">
             {BOOK_SAMPLES.map((sample) => (
               <button
                 key={sample.id}
                 onClick={() => setActivePreview(sample.id)}
-                className={`w-full p-6 text-left rounded-3xl border transition-all flex flex-col gap-2 ${
-                  activePreview === sample.id 
-                    ? "bg-gradient-to-r from-indigo-500/20 via-slate-900 to-slate-900 border-indigo-500 shadow-lg" 
+                className={`w-full p-6 text-left rounded-3xl border transition-all flex flex-col gap-2 ${activePreview === sample.id
+                    ? "bg-gradient-to-r from-indigo-500/20 via-slate-900 to-slate-900 border-indigo-500 shadow-lg"
                     : "bg-slate-950/30 border-slate-900 hover:border-slate-800"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
@@ -641,7 +638,7 @@ export default function HomePage() {
             {BOOK_SAMPLES.map((sample) => {
               if (sample.id !== activePreview) return null;
               return (
-                <div 
+                <div
                   key={sample.id}
                   className={`bg-slate-950/40 border border-slate-900 rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden bg-gradient-to-br ${sample.bgGradient} flex flex-col md:flex-row gap-8 items-center justify-between animate-fade-in`}
                 >
@@ -727,7 +724,7 @@ export default function HomePage() {
 
       {/* 💬 How it Works Section */}
       <section id="how-it-works" className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50">
-        
+
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider mb-3">
             <Compass className="w-4 h-4 text-indigo-400 animate-pulse" /> Step-by-Step Workflow
@@ -741,7 +738,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
+
           {/* Step 1 */}
           <div className="bg-slate-950/40 border border-slate-900 rounded-[2.5rem] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group hover:border-slate-800 transition-all duration-300">
             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-[4rem] group-hover:bg-indigo-500/10 transition-colors" />
@@ -797,7 +794,7 @@ export default function HomePage() {
           {/* Decorative glows */}
           <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute -right-20 -top-20 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
-          
+
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
             {/* Founder Avatar / Initial Grid */}
             <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-amber-500 p-0.5 shadow-xl shrink-0">
@@ -822,13 +819,13 @@ export default function HomePage() {
 
               <div className="space-y-4 text-slate-300 text-sm md:text-base font-semibold leading-relaxed font-sans">
                 <p>
-                  "As a CSE student and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation market is. Tools like BookBolt charge hefty monthly subscriptions, and designing cover spine dimensions manually requires expensive design suites. I simply couldn't afford it."
+                  "As a CSE student and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, requiring multiple subscriptions just to compile a single book. I knew there had to be a more efficient and affordable way."
                 </p>
                 <p>
-                  "So, I decided to build Ismam Studio. My goal was simple: to create a single, automated, and genuinely premium toolkit that empowers independent self-publishers to design unique, mathematically verified puzzle books, shape-masked labyrinths, and high-converting book covers in under 30 seconds."
+                  "That is why I built Ismam Studio. My goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. I wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."
                 </p>
                 <p>
-                  "We run on cutting-edge LLMs for novel layouts and generate unique mathematical seeds for puzzles. Whether you are a beginner starting your KDP journey or a scaling agency, this studio is built for you. No monthly traps — just lifetime power to create."
+                  "Whether you are just starting your KDP journey or scaling a publishing agency, this studio is designed to grow with you. With flexible options — including monthly, annual, and lifetime access plans — we keep premium tools accessible so you can keep 100% of your royalties and focus on what matters: creating."
                 </p>
               </div>
 
@@ -864,7 +861,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex gap-4">
-            <Link 
+            <Link
               href="/studio"
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-4 rounded-xl transition shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/25 flex items-center gap-2"
             >

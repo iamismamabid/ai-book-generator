@@ -791,6 +791,63 @@ export default function HomePage() {
 
       </section>
 
+      {/* 👨‍💻 Founder's Story & Mission (Social Proof) */}
+      <section id="founder-story" className="relative z-10 max-w-4xl mx-auto px-6 py-20 border-t border-slate-900/50">
+        <div className="bg-gradient-to-br from-indigo-950/20 via-slate-900/40 to-purple-950/20 backdrop-blur-xl rounded-[2.5rem] border border-slate-800/60 p-8 md:p-12 relative overflow-hidden shadow-2xl">
+          {/* Decorative glows */}
+          <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute -right-20 -top-20 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+          
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
+            {/* Founder Avatar / Initial Grid */}
+            <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-amber-500 p-0.5 shadow-xl shrink-0">
+              <div className="w-full h-full bg-[#0b0f19] rounded-[22px] flex flex-col items-center justify-center text-center">
+                <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">IA</span>
+                <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider mt-1 font-sans">Founder</span>
+              </div>
+            </div>
+
+            <div className="space-y-6 text-center md:text-left">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider mb-3">
+                  Our Mission & Story
+                </span>
+                <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight font-sans">
+                  Why I Built Ismam Studio
+                </h2>
+                <p className="text-slate-400 text-xs font-bold mt-1 uppercase tracking-widest font-sans">
+                  A message from Ismam Abid, Creator of Ismam Studio
+                </p>
+              </div>
+
+              <div className="space-y-4 text-slate-300 text-sm md:text-base font-semibold leading-relaxed font-sans">
+                <p>
+                  "As a CSE student and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation market is. Tools like BookBolt charge hefty monthly subscriptions, and designing cover spine dimensions manually requires expensive design suites. I simply couldn't afford it."
+                </p>
+                <p>
+                  "So, I decided to build Ismam Studio. My goal was simple: to create a single, automated, and genuinely premium toolkit that empowers independent self-publishers to design unique, mathematically verified puzzle books, shape-masked labyrinths, and high-converting book covers in under 30 seconds."
+                </p>
+                <p>
+                  "We run on cutting-edge LLMs for novel layouts and generate unique mathematical seeds for puzzles. Whether you are a beginner starting your KDP journey or a scaling agency, this studio is built for you. No monthly traps — just lifetime power to create."
+                </p>
+              </div>
+
+              <div className="h-px bg-slate-800/80" />
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-sans">
+                <div className="text-xs font-bold text-slate-500">
+                  Built with ❤️ for KDP Self-Publishers worldwide.
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-black text-slate-300 uppercase tracking-widest">Active & Improving Daily</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 💳 Pricing & FAQ Section */}
       <PricingSection />
 

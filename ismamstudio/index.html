@@ -40,6 +40,9 @@
     }
 
     function injectCustomData() {
+        if (typeof Paddle === 'undefined' || !Paddle.Checkout) {
+            return;
+        }
         const customerKey = new URLSearchParams(window.location.search).get(partneroQueryParam) || getCookie(partneroCookieName);
 
         if (customerKey) {

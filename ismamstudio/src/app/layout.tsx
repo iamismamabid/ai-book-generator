@@ -99,6 +99,7 @@ export default function RootLayout({
               })();
             `}
           </Script>
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>

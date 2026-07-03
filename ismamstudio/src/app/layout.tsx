@@ -64,7 +64,7 @@ export default function RootLayout({
             <Header />
 
             {/* Main Content Area */}
-            <div className="pt-20 min-h-[calc(100vh-80px)] flex flex-col justify-between">
+            <div className="pt-[116px] min-h-[calc(100vh-116px)] flex flex-col justify-between">
               <main className="flex-grow">
                 {children}
               </main>

@@ -53,6 +53,9 @@ export default function Footer() {
                 <Link href="/tools/spine-calculator" className="text-slate-400 hover:text-indigo-400 transition-colors">KDP Spine Calculator</Link>
               </li>
               <li>
+                <Link href="/tools/isbn-generator" className="text-slate-400 hover:text-indigo-400 transition-colors">ISBN Barcode Generator</Link>
+              </li>
+              <li>
                 <Link href="/faq" className="text-slate-400 hover:text-indigo-400 transition-colors">FAQ Help Center</Link>
               </li>
               <li>

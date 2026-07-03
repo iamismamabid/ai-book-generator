@@ -372,7 +372,7 @@ export default function HomePage() {
 
         {/* Section 2: Premium Puzzle Engines */}
         <div className="text-center mb-16 border-t border-slate-900/40 pt-16">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-450 text-xs font-black uppercase tracking-wider mb-3">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-black uppercase tracking-wider mb-3">
             💎 Premium Puzzle Tools
           </span>
           <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-4">
@@ -577,6 +577,42 @@ export default function HomePage() {
               className="inline-block w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow-md transition"
             >
               Open Niche Hunter
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 📐 KDP Spine Calculator Section */}
+      <section className="relative z-10 max-w-5xl mx-auto px-6 pb-12">
+        <div className="bg-gradient-to-r from-slate-900/40 via-purple-950/20 to-indigo-950/40 backdrop-blur-md rounded-[3rem] border border-purple-900/35 p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row-reverse items-center justify-between gap-8 relative overflow-hidden shadow-2xl">
+          {/* Decorative glows */}
+          <div className="absolute -left-20 -top-20 w-60 h-60 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="space-y-4 max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-black uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5" /> Print Specification Tool
+            </span>
+            <h2 className="text-3xl font-black text-white tracking-tight">
+              KDP Spine & Cover Calculator
+            </h2>
+            <p className="text-slate-350 text-xs md:text-sm font-semibold leading-relaxed">
+              Calculate precise book spine thickness and full cover dimensions (with bleed margins) for White, Cream, or Premium Color paper. Ensure instant Amazon approval.
+            </p>
+            <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-400 justify-center md:justify-start">
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-purple-400" /> Precise page-count scaling</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-purple-400" /> Live cover template diagram</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-purple-400" /> Standard 0.125" bleed margins</span>
+            </div>
+          </div>
+
+          <div className="shrink-0 bg-purple-500/10 border border-purple-500/20 px-6 py-8 rounded-3xl text-center max-w-[200px] w-full mx-auto md:mx-0">
+            <span className="text-[10px] font-black uppercase tracking-wider text-purple-400 block mb-2">Design Helper</span>
+            <span className="text-xs text-slate-300 font-semibold block mb-4">Get exact cover dimensions in inches</span>
+            <Link
+              href="/tools/spine-calculator"
+              className="inline-block w-full px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-black text-xs rounded-xl shadow-md transition"
+            >
+              Open Calculator
             </Link>
           </div>
         </div>

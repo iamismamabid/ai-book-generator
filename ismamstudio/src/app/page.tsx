@@ -589,8 +589,8 @@ export default function HomePage() {
           <div className="absolute -left-20 -top-20 w-60 h-60 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="space-y-4 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-black uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> Print Specification Tool
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-450 text-xs font-black uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5" /> 100% Free Tool
             </span>
             <h2 className="text-3xl font-black text-white tracking-tight">
               KDP Spine & Cover Calculator
@@ -607,12 +607,12 @@ export default function HomePage() {
 
           <div className="shrink-0 bg-purple-500/10 border border-purple-500/20 px-6 py-8 rounded-3xl text-center max-w-[200px] w-full mx-auto md:mx-0">
             <span className="text-[10px] font-black uppercase tracking-wider text-purple-400 block mb-2">Design Helper</span>
-            <span className="text-xs text-slate-300 font-semibold block mb-4">Get exact cover dimensions in inches</span>
+            <span className="text-xs text-slate-300 font-semibold block mb-4">No registration or account required</span>
             <Link
               href="/tools/spine-calculator"
-              className="inline-block w-full px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-black text-xs rounded-xl shadow-md transition"
+              className="inline-block w-full px-4 py-2.5 bg-purple-650 hover:bg-purple-600 text-white font-black text-xs rounded-xl shadow-md transition"
             >
-              Open Calculator
+              Use Free Calculator
             </Link>
           </div>
         </div>

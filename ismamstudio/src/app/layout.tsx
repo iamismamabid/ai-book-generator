@@ -6,11 +6,10 @@ import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from 'next/script';
+import type { Metadata } from 'next';
 
 // 🎨 গুগল ফন্ট লোড করা হচ্ছে
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', adjustFontFallback: false });
-
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Ismam Studio | All-in-One KDP Book Creation Toolkit",
@@ -41,12 +40,9 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
-
   verification: {
     google: "BxkWaFUAZ5Hu_euEr87tYkNVlw7iKrDKKl6ktdk2ihs",
   },
-
-
 };
 
 export default function RootLayout({
@@ -56,9 +52,13 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      {/* 🎯 html ট্যাগে ফন্টের ভেরিয়েবল ইনজেক্ট করা হলো */}
+      {/* 🎯 html ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
       <html lang="en" className={`scroll-smooth ${inter.variable}`} suppressHydrationWarning>
-        <body className="bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased font-sans selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-300">
+        {/* 🎯 body ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
+        <body
+          className="bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased font-sans selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-300"
+          suppressHydrationWarning
+        >
           <ThemeProvider>
             {/* Professional Floating Navbar */}
             <Header />

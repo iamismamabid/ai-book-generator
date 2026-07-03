@@ -26,7 +26,7 @@ export default function PremiumLanding() {
         </motion.h1>
 
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-xl text-slate-400 max-w-2xl font-light leading-relaxed mb-12">
-          An elite ghostwriter in your pocket. Generate complete, high-fidelity books in minutes with state-of-the-art Llama-3 architecture.
+          An elite ghostwriter in your pocket. Generate complete chapter outlines and write full-text book chapters in minutes with state-of-the-art Llama-3 architecture.
         </motion.p>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex gap-6">

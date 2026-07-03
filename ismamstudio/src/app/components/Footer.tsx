@@ -101,7 +101,7 @@ export default function Footer() {
                 href="mailto:support@ismamstudio.me"
                 className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
               >
-                <Mail className="w-4 h-4" /> contact@ismamstudio.me
+                <Mail className="w-4 h-4" /> support@ismamstudio.me
               </a>
             </div>
           </div>

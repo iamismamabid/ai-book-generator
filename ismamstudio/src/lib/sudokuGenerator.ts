@@ -38,17 +38,73 @@ function fillBoard(board: Grid): boolean {
   return true;
 }
 
-// Removes numbers based on chosen difficulty layer
+// Helper to count how many solutions exist for a given board layout (up to limit)
+function countSolutions(board: Grid, limit: number = 2): number {
+  let count = 0;
+
+  function checkCell(row: number, col: number): boolean {
+    if (row === 9) {
+      count++;
+      return count >= limit; // Stop searching if we reach the limit
+    }
+
+    const nextRow = col === 8 ? row + 1 : row;
+    const nextCol = col === 8 ? 0 : col + 1;
+
+    if (board[row][col] !== 0) {
+      return checkCell(nextRow, nextCol);
+    }
+
+    for (let num = 1; num <= 9; num++) {
+      if (isValid(board, row, col, num)) {
+        board[row][col] = num;
+        if (checkCell(nextRow, nextCol)) return true;
+        board[row][col] = 0;
+      }
+    }
+    return false;
+  }
+
+  // Clone the board to avoid mutation during evaluation
+  const tempBoard = board.map(row => [...row]);
+  checkCell(0, 0);
+  return count;
+}
+
+// Removes numbers based on chosen difficulty layer while guaranteeing a unique solution
 function removeNumbers(board: Grid, difficulty: Difficulty): Grid {
   const cloned = board.map(row => [...row]);
-  let attempts = difficulty === 'easy' ? 30 : difficulty === 'medium' ? 40 : 50;
+  
+  // Set target number of cell removals based on difficulty.
+  // Standard Sudoku has 81 cells. 
+  // Easy: ~38 removals (leaving 43 clues)
+  // Medium: ~46 removals (leaving 35 clues)
+  // Hard: ~52 removals (leaving 29 clues)
+  let targetRemovals = 38;
+  if (difficulty === 'medium') targetRemovals = 46;
+  if (difficulty === 'hard') targetRemovals = 52;
 
-  while (attempts > 0) {
-    const row = Math.floor(Math.random() * 9);
-    const col = Math.floor(Math.random() * 9);
-    if (cloned[row][col] !== 0) {
+  // Create a randomized order of all 81 cells to attempt removals
+  const cells = Array.from({ length: 81 }, (_, i) => i).sort(() => Math.random() - 0.5);
+
+  let removals = 0;
+  for (const index of cells) {
+    if (removals >= targetRemovals) break;
+
+    const row = Math.floor(index / 9);
+    const col = index % 9;
+
+    const temp = cloned[row][col];
+    if (temp !== 0) {
       cloned[row][col] = 0;
-      attempts--;
+
+      // Verify that removing this cell leaves a unique solution
+      if (countSolutions(cloned, 2) === 1) {
+        removals++;
+      } else {
+        // If not unique, restore the value and keep trying
+        cloned[row][col] = temp;
+      }
     }
   }
   return cloned;

@@ -826,7 +826,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-black text-white">2. Generate Puzzles & Text</h3>
               <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
-                Use our puzzle generator engine to create infinite unique Sudokus, mazes, cryptograms, and word search grids. Outline novel chapters automatically with our advanced AI Writer powered by Llama-3.
+                Use our puzzle generator engine to create infinite unique Sudokus, mazes, cryptograms, and word search grids. Auto-generate complete chapter outlines and write full-text chapters with our advanced Llama-powered AI Novel Writer.
               </p>
             </div>
             <div className="text-purple-400/30 font-black text-6xl select-none text-right">02</div>

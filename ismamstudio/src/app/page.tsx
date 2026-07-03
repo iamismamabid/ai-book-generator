@@ -314,18 +314,23 @@ export default function HomePage() {
 
       {/* 🛠️ SaaS Features Grid */}
       <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50">
+        
+        {/* Section 1: Core Publishing Tools */}
         <div className="text-center mb-16">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider mb-3">
+            ★ Core Workspace
+          </span>
           <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-4">
-            Professional KDP Creation Engines
+            Professional KDP Publishing Studios
           </h2>
-          <p className="text-slate-300 text-base max-w-lg mx-auto font-semibold mb-8">
-            Choose from a suite of specialized puzzle builders and cover editors.
+          <p className="text-slate-300 text-base max-w-lg mx-auto font-semibold">
+            All-in-one workspaces to design your covers, assemble layouts, and merge interiors.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-24">
 
-          {/* 1. Book Builder & Cover Studio */}
+          {/* 1. Book & Cover Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
@@ -344,9 +349,43 @@ export default function HomePage() {
             </Link>
           </div>
 
+          {/* 2. KDP Interiors Merge */}
+          <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
+            <div>
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+                <CheckCircle2 className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-3">KDP Interiors Merge</h3>
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
+                Combine your custom puzzles, word searches, and activity pages into a single PDF document formatted with print-ready safety margins.
+              </p>
+            </div>
+            <Link
+              href="/studio"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
+            >
+              Start Assembling <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
 
+        </div>
 
-          {/* 3. Shaped Labyrinth Designer */}
+        {/* Section 2: Premium Puzzle Engines */}
+        <div className="text-center mb-16 border-t border-slate-900/40 pt-16">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-450 text-xs font-black uppercase tracking-wider mb-3">
+            💎 Premium Puzzle Tools
+          </span>
+          <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-4">
+            Specialized Puzzle Compilation Engines
+          </h2>
+          <p className="text-slate-300 text-base max-w-lg mx-auto font-semibold">
+            Generate mathematically verified, single-solution puzzles tailored for Amazon KDP niches.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+          {/* 3. Labyrinth Designer */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
@@ -365,7 +404,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* 4. Sudoku Generator */}
+          {/* 4. Sudoku Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
@@ -403,7 +442,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* 6. Cryptogram Generator */}
+          {/* 6. Cryptogram Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-455 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
@@ -457,25 +496,6 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
             >
               Generate Scrambles <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* 9. Complete Book Compilation */}
-          <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
-            <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
-                <CheckCircle2 className="w-7 h-7" />
-              </div>
-              <h3 className="text-2xl font-black text-white mb-3">KDP Interiors Merge</h3>
-              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
-                Combine your custom puzzles, word searches, and activity pages into a single PDF document formatted with print-ready safety margins.
-              </p>
-            </div>
-            <Link
-              href="/studio"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
-            >
-              Start Assembling <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 

@@ -54,7 +54,7 @@ export default function RedeemPageInner({ userId }: RedeemPageInnerProps) {
           "Standard trim sizes (6\"x9\", 8.5\"x11\")",
           "Easy & Medium Sudoku puzzle generator",
           "Square-masked maze layouts",
-          "Generate up to 10 AI Novel Chapters / month",
+          "Generate up to 10 AI Chapters / month",
           "Standard vector PDF exports",
           "Email support (24-48h response)",
         ],

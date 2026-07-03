@@ -52,9 +52,7 @@ export default function Header() {
             <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95">
               Creator Studio
             </Link>
-            <Link href="/generate" className="hidden lg:flex items-center gap-1.5 bg-slate-900 dark:bg-slate-800 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-700 transition-all active:scale-95">
-              AI Writer
-            </Link>
+
             <div className="ml-2 pl-3 border-l border-slate-200 dark:border-slate-800 flex items-center">
               <UserButton afterSignOutUrl="/" />
             </div>

@@ -62,16 +62,6 @@ const BOOK_SAMPLES: BookSample[] = [
     badge: "Custom CSV Import",
     desc: "High-contrast word search puzzles built using custom word lists. Features large font options and clear answer grids.",
     bgGradient: "from-pink-500/10 via-pink-500/5 to-transparent",
-  },
-  {
-    id: "novel",
-    title: "Cosmic Shadows (Sci-Fi Outline)",
-    category: "Novel Outline",
-    trim: "6\" x 9\"",
-    difficulty: "Plot Outliner",
-    badge: "Structured Plotting",
-    desc: "A fully structured 12-chapter novel outline, story blurb, and character arcs configured with precise layout templates.",
-    bgGradient: "from-purple-500/10 via-purple-500/5 to-transparent",
   }
 ];
 
@@ -113,12 +103,6 @@ export default function HomePage() {
               >
                 Open Creator Studio
                 <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link
-                href="/generate"
-                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-slate-900 border border-slate-850 text-slate-350 dark:text-slate-350 font-black text-lg hover:bg-slate-850 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
-              >
-                Chapter Planner & Outliner
               </Link>
             </div>
 
@@ -360,24 +344,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* 2. Novel Outline Builder */}
-          <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
-            <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
-                <BookOpen className="w-7 h-7" />
-              </div>
-              <h3 className="text-2xl font-black text-white mb-3">Novel Outline Builder</h3>
-              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
-                Generate structured story outlines, chapter plans, book blurbs, and plot arcs instantly using specialized drafting templates.
-              </p>
-            </div>
-            <Link
-              href="/generate"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
-            >
-              Start Planning <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+
 
           {/* 3. Shaped Labyrinth Designer */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
@@ -501,7 +468,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-2xl font-black text-white mb-3">KDP Interiors Merge</h3>
               <p className="text-slate-300 text-sm leading-relaxed font-semibold">
-                Combine your custom puzzles, word searches, and chapter outlines into a single PDF document formatted with print-ready safety margins.
+                Combine your custom puzzles, word searches, and activity pages into a single PDF document formatted with print-ready safety margins.
               </p>
             </div>
             <Link
@@ -534,7 +501,7 @@ export default function HomePage() {
             <div className="w-12 h-12 bg-indigo-500/15 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 font-black text-lg mx-auto">1</div>
             <h3 className="text-white font-bold text-lg">Pick a Creation Engine</h3>
             <p className="text-slate-300 text-xs font-semibold leading-relaxed">
-              Select one of our specialized tools: Sudoku Studio, Shaped Maze Designer, Word Search, or the AI Novel Chapter Writer.
+              Select one of our specialized tools: Sudoku Studio, Shaped Maze Designer, Word Search, or other puzzle compilers.
             </p>
           </div>
 

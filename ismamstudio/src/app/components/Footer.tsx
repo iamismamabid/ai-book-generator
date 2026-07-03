@@ -114,8 +114,23 @@ export default function Footer() {
           <div>
             © {new Date().getFullYear()} Ismam Studio. All rights reserved.
           </div>
-          <div className="flex gap-4">
-            <span className="text-[10px] bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/10">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {/* Product Hunt Launch Badge */}
+            <a 
+              href="https://www.producthunt.com/products/ismam-studio?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-ismamstudio" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:opacity-90 transition-opacity"
+            >
+              <img 
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1187333&theme=light&t=1783111930255" 
+                alt="IsmamStudio - All-in-one AI toolkit for Amazon KDP self-publishers. | Product Hunt" 
+                width="180" 
+                height="39" 
+                style={{ width: '180px', height: '39px' }}
+              />
+            </a>
+            <span className="text-[10px] bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/10 shrink-0">
               100% KDP spec compliant
             </span>
           </div>

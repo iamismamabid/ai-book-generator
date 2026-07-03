@@ -198,7 +198,7 @@ function PricingSectionInner() {
         "Unlimited Sudoku puzzles (Easy, Med, Hard)",
         "Unlimited Labyrinth designs (Circle, Heart shapes)",
         "Unlimited Word Search boards & CSV imports",
-        "Unlimited AI Novel Story Chapters (Llama 3.3)",
+        "Unlimited AI Chapters (Llama 3.3)",
         "Premium Cover & Interior Canvas Studio",
         "Priority Customer Support (under 12 hours)",
       ],

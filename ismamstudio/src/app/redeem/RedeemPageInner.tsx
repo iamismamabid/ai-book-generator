@@ -40,7 +40,7 @@ export default function RedeemPageInner({ userId }: RedeemPageInnerProps) {
           "Unlimited Brand profiles & pen-names",
           "Unlimited Sudoku (Easy, Med, Hard) and Circle/Heart Mazes",
           "Unlimited Word Search boards & CSV imports",
-          "Unlimited AI Novel Story Chapters (Llama 3.3)",
+          "Unlimited AI Chapters (Llama 3.3)",
           "Premium Cover & Interior Canvas Studio",
           "Priority support (under 12 hours)",
         ],

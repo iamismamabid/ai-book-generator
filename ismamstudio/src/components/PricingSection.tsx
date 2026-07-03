@@ -327,7 +327,11 @@ function PricingSectionInner() {
     },
     {
       q: "Do the puzzle books include solution keys?",
-      a: "Yes. All our puzzle engines (Sudoku, Maze, Word Search) automatically compile solutions. For example, mazes generate solution maps, Sudokus output standard 9x9 resolved grids, and word searches include highlight coordinate answers. These are neatly appended to the back of the exported PDF.",
+      a: "Yes. All our puzzle engines (Sudoku, Maze, Word Search) automatically compile solutions. Our Sudokus are generated with a backtracking solver that mathematically guarantees a single unique solution per grid. Solution keys are neatly appended to the back of the exported PDF.",
+    },
+    {
+      q: "Do you have an ISBN Barcode Generator for book covers?",
+      a: "Yes! We provide a 100% free, print-ready ISBN Barcode Generator that creates EAN-13 barcodes with optional EAN-5 price supplements, check digit validation, and custom color settings. You can download these as high-resolution 300 DPI PNGs or vector SVGs to place directly on your cover.",
     },
     {
       q: "What trim sizes does Ismam Studio support?",

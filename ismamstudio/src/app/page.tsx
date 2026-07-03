@@ -77,6 +77,7 @@ const BOOK_SAMPLES: BookSample[] = [
 
 export default function HomePage() {
   const [activePreview, setActivePreview] = useState<string>("sudoku");
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 overflow-hidden relative">
@@ -794,7 +795,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
             {/* Mock Player */}
-            <div className="w-full md:w-1/2 aspect-video bg-slate-950 rounded-2xl border border-slate-850 flex items-center justify-center relative overflow-hidden shadow-inner cursor-pointer">
+            <div onClick={() => setIsVideoModalOpen(true)} className="w-full md:w-1/2 aspect-video bg-slate-950 rounded-2xl border border-slate-850 flex items-center justify-center relative overflow-hidden shadow-inner cursor-pointer">
               {/* Fake play button */}
               <div className="w-16 h-16 rounded-full bg-indigo-600/90 border border-indigo-500/30 text-white flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:bg-indigo-500 transition-all duration-300">
                 <svg className="w-6 h-6 fill-current text-white translate-x-0.5" viewBox="0 0 24 24">
@@ -818,7 +819,7 @@ export default function HomePage() {
               <p className="text-slate-400 text-xs font-semibold leading-relaxed">
                 See how to generate mathematically unique Sudokus, customize shape-masked labyrinth layouts, and use the Cover Canvas to align spine margins for Amazon KDP uploads in under 2 minutes.
               </p>
-              <button className="px-5 py-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 hover:border-slate-750 text-slate-300 hover:text-white font-bold text-xs rounded-xl transition flex items-center gap-2 mx-auto md:mx-0 cursor-pointer">
+              <button onClick={() => setIsVideoModalOpen(true)} className="px-5 py-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 hover:border-slate-750 text-slate-300 hover:text-white font-bold text-xs rounded-xl transition flex items-center gap-2 mx-auto md:mx-0 cursor-pointer">
                 <span>Watch Walkthrough Video</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -974,6 +975,30 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 🎬 Video Walkthrough Modal */}
+      {isVideoModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full shadow-2xl relative overflow-hidden p-1 animate-in zoom-in-95 duration-200">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsVideoModalOpen(false)}
+              className="absolute top-4 right-4 z-10 p-2 bg-slate-950/60 hover:bg-slate-950 text-slate-300 hover:text-white rounded-full transition shadow"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="aspect-video w-full rounded-2xl overflow-hidden">
+              <iframe
+                src="https://www.youtube.com/embed/2_gP4hR6v8Q?autoplay=1"
+                title="KDP Puzzle Book Tutorial"
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

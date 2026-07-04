@@ -241,13 +241,14 @@ function PricingSectionInner() {
       price: 49,
       popular: false,
       features: [
+        "1 Code Stacked (Lifetime Access)",
         "Full Commercial Rights (Keep 100% royalties)",
         "Watermark-free vector PDF exports",
         "Up to 3 brand & pen-name profiles",
         "Standard trim sizes (6\"x9\", 8.5\"x11\")",
         "Easy & Medium Sudoku puzzle generator",
         "Square-masked maze layouts",
-        "Generate up to 500 AI Chapters / mo",
+        "Generate up to 10 AI Chapters / mo",
         "Email support (24-48h response)",
       ],
       ctaText: "Get Lifetime Tier 1",
@@ -263,13 +264,14 @@ function PricingSectionInner() {
       price: 98,
       popular: true,
       features: [
+        "2 Codes Stacked (Lifetime Access)",
         "Watermark-free PDF exports (All sizes + Custom)",
         "100% Commercial-use rights (Keep all royalties)",
-        "Unlimited Brand profiles & pen-names",
+        "Up to 10 Brand profiles & pen-names",
         "Unlimited Sudoku puzzles (Easy, Med, Hard)",
         "Unlimited Labyrinth designs (Circle, Heart shapes)",
         "Unlimited Word Search boards & CSV imports",
-        "Generate up to 2,000 AI Chapters / mo",
+        "Generate up to 30 AI Chapters / mo",
         "Premium Cover & Interior Canvas Studio",
         "Priority Customer Support (under 12 hours)",
       ],
@@ -286,12 +288,14 @@ function PricingSectionInner() {
       price: 147,
       popular: false,
       features: [
+        "3 Codes Stacked (Lifetime Access)",
         "Everything in Pro Studio plan",
+        "Up to 25 Brand profiles & pen-names",
         "Up to 3 team member account seats",
         "Vector SVG & source file exports",
         "Advanced custom shapes & interior styling",
         "AI KDP Niche Hunter & Keyword Spy",
-        "Priority AI queues (Up to 5,000 chapters / mo)",
+        "Generate up to 100 AI Chapters / mo",
         "API access for automated generation",
         "Dedicated customer support manager",
       ],
@@ -301,6 +305,47 @@ function PricingSectionInner() {
       icon: <Award className="w-6 h-6 text-slate-400" />,
       ctaLink: "https://appsumo.com/products/ismam-studio",
       planKey: "appsumo_t3"
+    },
+    {
+      name: "AppSumo Tier 4",
+      description: "Advanced Agency lifetime access. Perfect for scaling publishing companies.",
+      price: 196,
+      popular: false,
+      features: [
+        "4 Codes Stacked (Lifetime Access)",
+        "Everything in Tier 3 plan",
+        "Up to 50 Brand profiles & pen-names",
+        "Up to 5 team member account seats",
+        "Generate up to 250 AI Chapters / mo",
+        "Advanced KDP Niche Hunter & Keyword Spy",
+        "Priority API access with higher rate limits",
+      ],
+      ctaText: "Get Lifetime Tier 4",
+      colorClass: "bg-slate-950/60 hover:border-slate-700",
+      borderClass: "border-slate-800/80",
+      icon: <Award className="w-6 h-6 text-slate-450" />,
+      ctaLink: "https://appsumo.com/products/ismam-studio",
+      planKey: "appsumo_t4"
+    },
+    {
+      name: "AppSumo Tier 5",
+      description: "Ultimate Lifetime Access. The ultimate package with unlimited resources.",
+      price: 245,
+      popular: false,
+      features: [
+        "5 Codes Stacked (Lifetime Access)",
+        "Everything in Tier 4 plan",
+        "Unlimited Brand profiles & pen-names",
+        "Unlimited team member account seats",
+        "Unlimited AI Chapters & Outlines",
+        "Full dedicated custom developer support",
+      ],
+      ctaText: "Get Lifetime Tier 5",
+      colorClass: "bg-slate-950/80 hover:border-slate-600",
+      borderClass: "border-indigo-500/40 border-2",
+      icon: <Award className="w-6 h-6 text-indigo-400 animate-pulse" />,
+      ctaLink: "https://appsumo.com/products/ismam-studio",
+      planKey: "appsumo_t5"
     }
   ];
 
@@ -413,7 +458,7 @@ function PricingSectionInner() {
 
       {/* Pricing Grid */}
       <div className={`grid grid-cols-1 items-stretch mb-24 relative ${billingCycle === 'appsumo'
-          ? "md:grid-cols-3 max-w-5xl mx-auto gap-8"
+          ? "md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto gap-8 justify-center"
           : "md:grid-cols-2 xl:grid-cols-4 gap-8"
         }`}>
         {activePlans.map((plan, index) => {

@@ -68,6 +68,7 @@ const BOOK_SAMPLES: BookSample[] = [
 export default function HomePage() {
   const [activePreview, setActivePreview] = useState<string>("sudoku");
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [activeVideoTab, setActiveVideoTab] = useState<"interior" | "cover">("interior");
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 overflow-hidden relative">
@@ -974,20 +975,59 @@ export default function HomePage() {
       {/* 🎬 Video Walkthrough Modal */}
       {isVideoModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full shadow-2xl relative overflow-hidden p-1 animate-in zoom-in-95 duration-200">
-            {/* Close Button */}
-            <button
-              onClick={() => setIsVideoModalOpen(false)}
-              className="absolute top-4 right-4 z-10 p-2 bg-slate-950/60 hover:bg-slate-950 text-slate-300 hover:text-white rounded-full transition shadow"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="aspect-video w-full rounded-2xl overflow-hidden">
+          <div className="bg-slate-950 border border-slate-850 rounded-[2rem] max-w-5xl w-full shadow-2xl relative overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-6 bg-slate-900/50 border-b border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-black text-white">Ismam Studio Quick-Start Guide (2:15)</h3>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">
+                  Select a walkthrough below to interactively explore Ismam Studio's layout engines in action.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsVideoModalOpen(false)}
+                className="absolute top-4 right-4 p-2 bg-slate-900 hover:bg-slate-800 text-slate-350 hover:text-white rounded-full transition shadow-lg border border-slate-850"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tab Selector */}
+            <div className="px-6 py-3 bg-slate-900/30 border-b border-slate-900 flex flex-wrap gap-2">
+              <button
+                onClick={() => setActiveVideoTab("interior")}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+                  activeVideoTab === "interior"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
+                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                }`}
+              >
+                <Grid3x3 className="w-3.5 h-3.5" />
+                Puzzle & Interior Walkthrough
+              </button>
+              <button
+                onClick={() => setActiveVideoTab("cover")}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+                  activeVideoTab === "cover"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
+                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                }`}
+              >
+                <Palette className="w-3.5 h-3.5" />
+                Cover Canvas & Trim Walkthrough
+              </button>
+            </div>
+
+            {/* Video Container */}
+            <div className="aspect-video w-full relative overflow-hidden bg-slate-950">
               <iframe
-                src="https://www.youtube.com/embed/2_gP4hR6v8Q?autoplay=1"
-                title="KDP Puzzle Book Tutorial"
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                src={
+                  activeVideoTab === "interior"
+                    ? "https://app.arcade.software/share/zwSHISc2CSSG683DpmUh"
+                    : "https://app.arcade.software/share/VevNAwGPFIYsVGMX1yML"
+                }
+                title="Ismam Studio Interactive Walkthrough"
+                className="absolute inset-0 w-full h-full border-0"
                 allowFullScreen
               />
             </div>

@@ -26,11 +26,16 @@ export async function createBook(formData: FormData) {
   const premium = await checkPremiumStatus();
   const usage = await getUserUsage();
 
-  if (premium.plan === "free" && usage.outlinesCount >= 1) {
-    throw new Error("Free Tier is limited to 1 AI Outline per month. Please upgrade.");
-  }
-  if (premium.plan === "starter" && usage.outlinesCount >= 5) {
-    throw new Error("Starter Tier is limited to 5 AI Outlines per month. Please upgrade to Pro.");
+  let maxOutlines = 1;
+  if (premium.plan === "starter") maxOutlines = 5;
+  else if (premium.plan === "pro") maxOutlines = 15;
+  else if (premium.plan === "agency") maxOutlines = 50;
+  else if (premium.plan === "tier4") maxOutlines = 100;
+  else if (premium.plan === "tier5") maxOutlines = 999999;
+  else if (premium.plan !== "free") maxOutlines = 15; // default premium fallback
+
+  if (usage.outlinesCount >= maxOutlines) {
+    throw new Error(`Your current plan tier is limited to ${maxOutlines} AI Outlines per month. Please upgrade your lifetime license.`);
   }
 
   const prompt = formData.get("prompt") as string;
@@ -88,8 +93,17 @@ export async function generateNextChapter(bookId: string, outline: string, title
   if (premium.plan === "free") {
     throw new Error("AI Chapter generation is not available on the Free Tier. Please upgrade.");
   }
-  if (premium.plan === "starter" && usage.chaptersCount >= 5) {
-    throw new Error("Starter Tier is limited to 5 AI Chapters per month. Please upgrade to Pro.");
+
+  let maxChapters = 0;
+  if (premium.plan === "starter") maxChapters = 10;
+  else if (premium.plan === "pro") maxChapters = 30;
+  else if (premium.plan === "agency") maxChapters = 100;
+  else if (premium.plan === "tier4") maxChapters = 250;
+  else if (premium.plan === "tier5") maxChapters = 999999;
+  else maxChapters = 30; // default premium fallback
+
+  if (usage.chaptersCount >= maxChapters) {
+    throw new Error(`Your current plan tier is limited to ${maxChapters} AI Chapters per month. Please upgrade your lifetime license.`);
   }
 
   const currentChapterCount = await prisma.chapter.count({

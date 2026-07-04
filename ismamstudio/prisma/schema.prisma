@@ -50,9 +50,9 @@ model Chapter {
 
 model AppSumoRedemption {
   id        String   @id @default(uuid())
-  clerkId   String   @unique
+  clerkId   String
   email     String
-  code      String
+  code      String   @unique
   createdAt DateTime @default(now())
 
   @@map("appsumo_redemptions")

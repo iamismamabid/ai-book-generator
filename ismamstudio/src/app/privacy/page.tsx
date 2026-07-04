@@ -45,7 +45,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
                 <li>Account credentials (email address, name, profile image) managed via Clerk.</li>
-                <li>Billing and transaction data (processed securely through our payment processors).</li>
+                <li>Billing and transaction data (processed securely through Stripe or Paddle).</li>
                 <li>Generated files, including book outlines, covers, and puzzle interiors.</li>
               </ul>
             </section>
@@ -55,28 +55,55 @@ export default function PrivacyPolicyPage() {
               <p>We use the collected information for the following purposes:</p>
               <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
                 <li>To provide, maintain, and optimize the book creation tools.</li>
-                <li>To manage your account and billing subscriptions.</li>
-                <li>To send periodic newsletters, updates, and promotional materials (with unsubscribe option).</li>
+                <li>To manage your account, authentication states, and billing subscriptions.</li>
+                <li>To send periodic newsletters, updates, and promotional materials (with a one-click unsubscribe option).</li>
                 <li>To protect our platform and users from fraud or malicious activities.</li>
               </ul>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-white">3. Data Retention and Safety</h2>
+              <h2 className="text-xl font-bold text-white">3. GDPR Legal Bases for Processing</h2>
+              <p>If you reside in the European Economic Area (EEA), our legal basis for collecting and using your personal data depends on the data concerned and the context in which we collect it:</p>
+              <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
+                <li><strong>Performance of a Contract:</strong> To fulfill our service agreement and provide you with studio tools.</li>
+                <li><strong>Consent:</strong> When you opt-in to marketing updates or cookies.</li>
+                <li><strong>Legitimate Interests:</strong> To improve our platform security and service quality.</li>
+              </ul>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-bold text-white">4. Third-Party Data Processors (Subprocessors)</h2>
+              <p>To deliver our services, we share data securely with the following GDPR-compliant subprocessors:</p>
+              <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
+                <li><strong>Clerk Inc.:</strong> User identity management, authentication, and security services.</li>
+                <li><strong>Supabase / Prisma:</strong> Secure hosting and management of our user databases.</li>
+                <li><strong>Vercel Inc.:</strong> Hosting of our web applications and serverless backend instances.</li>
+                <li><strong>Stripe / Paddle:</strong> Processing transactions and invoice billing securely (PCI-DSS compliant).</li>
+              </ul>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-bold text-white">5. International Data Transfers</h2>
               <p>
-                Your account details are securely managed and stored in accordance with industry-standard practices. We do not sell your personal data to third parties. Generated book covers and puzzle structures are retained in your library database for ease of access and PDF generation.
+                Our infrastructure resides primarily on secure cloud databases in Singapore, the United States, and the European Union. By using our platform, you acknowledge that your information may be transferred and processed in these locations. We protect all transfers using standard contractual clauses (SCCs) to maintain the safety of your personal data.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-white">4. Your Rights under GDPR / CCPA</h2>
+              <h2 className="text-xl font-bold text-white">6. Your Rights under GDPR / CCPA</h2>
               <p>
-                Depending on your location, you have rights regarding access to, modification of, or erasure of your personal data. You may request to delete your account and all associated books by contacting us at support@ismamstudio.me.
+                As a user, you have complete control over your personal data. Under GDPR, you have the following rights:
               </p>
+              <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
+                <li><strong>Right of Access & Rectification:</strong> You can view and update your details inside your account profile.</li>
+                <li><strong>Right to Erasure (Right to be Forgotten):</strong> You can request to delete your account and all associated books by contacting us at support@ismamstudio.me.</li>
+                <li><strong>Right to Data Portability:</strong> You can request a copy of all your generated data.</li>
+                <li><strong>Right to Restrict Processing:</strong> You can object to processing based on legitimate interests.</li>
+              </ul>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold text-white">5. Changes to This Privacy Policy</h2>
+              <h2 className="text-xl font-bold text-white">7. Changes to This Privacy Policy</h2>
               <p>
                 We reserve the right to modify this privacy policy at any time. Changes will be posted immediately on this page, and the "Last Updated" date will reflect the revision.
               </p>

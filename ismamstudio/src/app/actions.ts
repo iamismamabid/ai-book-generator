@@ -191,12 +191,12 @@ export async function redeemAppSumoCode(code: string) {
       return { success: false, error: "This AppSumo code has already been redeemed." };
     }
 
-    // এই ব্যবহারকারী ইতিমধ্যে কোড রিডিম করেছেন কিনা চেক করা
-    const existingUser = await prisma.appSumoRedemption.findUnique({
+    // এই ব্যবহারকারী ইতিমধ্যে কয়টি কোড রিডিম করেছেন তা চেক করা
+    const existingRedemptions = await prisma.appSumoRedemption.count({
       where: { clerkId: userId }
     });
-    if (existingUser) {
-      return { success: false, error: "You have already redeemed an AppSumo code for this account." };
+    if (existingRedemptions >= 5) {
+      return { success: false, error: "You have already stacked the maximum of 5 codes for this account." };
     }
 
     // ডেটাবেজে রিডেম্পশন সেভ করা
@@ -247,18 +247,36 @@ export async function getUserUsage() {
 // 🎯 ৭. ইউজারের প্রিমিয়াম স্ট্যাটাস চেক করার ফাংশন
 export async function checkPremiumStatus() {
   const { userId } = await auth();
+  const defaultFreeLimits = { tier: 0, brands: 1, aiChapters: 0, puzzles: ["easy"], maxBookCount: 5 };
+
   if (!userId) {
-    return { isPremium: false, reason: "unauthorized", plan: "free" };
+    return { isPremium: false, reason: "unauthorized", plan: "free", limits: defaultFreeLimits };
   }
 
   try {
     // ১. ডাটাবেসে AppSumo redemption কোড চেক করা
-    const redemption = await prisma.appSumoRedemption.findUnique({
+    const redemptionsCount = await prisma.appSumoRedemption.count({
       where: { clerkId: userId }
     });
 
-    if (redemption) {
-      return { isPremium: true, plan: "AppSumo LTD" };
+    if (redemptionsCount > 0) {
+      let plan = "starter";
+      let limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium"], maxBookCount: 20 };
+
+      if (redemptionsCount === 2) {
+        plan = "pro";
+        limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
+      } else if (redemptionsCount === 3) {
+        plan = "agency";
+        limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+      } else if (redemptionsCount === 4) {
+        plan = "tier4";
+        limits = { tier: 4, brands: 50, aiChapters: 250, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+      } else if (redemptionsCount >= 5) {
+        plan = "tier5";
+        limits = { tier: 5, brands: 999999, aiChapters: 999999, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+      }
+      return { isPremium: true, plan, limits };
     }
 
     // ২. Clerk publicMetadata চেক করা (সাবস্ক্রিপশনের জন্য)
@@ -272,7 +290,15 @@ export async function checkPremiumStatus() {
         publicMetadata.plan === "agency" ||
         publicMetadata.subscriptionStatus === "active"
       ) {
-        return { isPremium: true, plan: publicMetadata.plan || "pro" };
+        const userPlan = publicMetadata.plan || "pro";
+        let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
+        
+        if (userPlan === "starter") {
+          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium"], maxBookCount: 20 };
+        } else if (userPlan === "agency") {
+          limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+        }
+        return { isPremium: true, plan: userPlan, limits };
       }
 
       // ৩. ৭ দিনের ফ্রী ট্রায়াল পিরিয়ড চেক করা (অ্যাকাউন্ট বয়স ৭ দিনের কম হলে)
@@ -287,7 +313,8 @@ export async function checkPremiumStatus() {
           isPremium: true,
           plan: "Free Trial",
           isTrial: true,
-          daysRemaining
+          daysRemaining,
+          limits: { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium"], maxBookCount: 20 }
         };
       }
     }
@@ -295,5 +322,5 @@ export async function checkPremiumStatus() {
     console.error("Error in checkPremiumStatus:", error);
   }
 
-  return { isPremium: false, reason: "free_tier", plan: "free" };
+  return { isPremium: false, reason: "free_tier", plan: "free", limits: defaultFreeLimits };
 }

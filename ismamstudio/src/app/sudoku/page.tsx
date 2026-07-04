@@ -186,9 +186,10 @@ export default function SudokuGeneratorPage() {
                 <h2 className="text-lg font-bold mb-4 text-amber-300">Difficulty</h2>
                 <div className="grid grid-cols-3 gap-3">
                   {(["easy", "medium", "hard"] as Difficulty[]).map((d) => {
-                    const isLocked =
-                      (d === "hard" && (premiumStatus.plan === "free" || premiumStatus.plan === "starter")) ||
-                      (d === "medium" && premiumStatus.plan === "free");
+                    const isLocked = 
+                      premiumStatus.limits 
+                        ? !premiumStatus.limits.puzzles.includes(d) 
+                        : (d !== "easy");
 
                     return (
                       <button

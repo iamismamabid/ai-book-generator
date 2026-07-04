@@ -220,7 +220,7 @@ export default function MazeGeneratorPage() {
                 {(["square", "circle", "heart"] as Shape[]).map((s) => {
                   const isLocked =
                     (s === "circle" || s === "heart") &&
-                    (premiumStatus.plan === "free" || premiumStatus.plan === "starter");
+                    (premiumStatus.limits ? premiumStatus.limits.tier < 2 : true);
 
                   return (
                     <button

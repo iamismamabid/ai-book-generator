@@ -81,6 +81,16 @@ export default function ExportInteriorModal({
     }
   }, [isOpen, userId, isLoaded, isSignedIn]);
 
+  useEffect(() => {
+    if (premiumStatus.checked) {
+      if (premiumStatus.plan === "free") {
+        setTrimSize("8.5x11");
+      } else if (premiumStatus.plan === "starter" && trimSize === "5x8") {
+        setTrimSize("8.5x11");
+      }
+    }
+  }, [premiumStatus.checked, premiumStatus.plan]);
+
   // Load cover state from localStorage
   useEffect(() => {
     if (isOpen) {
@@ -252,9 +262,19 @@ export default function ExportInteriorModal({
               onChange={(e) => setTrimSize(e.target.value as any)}
               className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-650"
             >
-              <option value="6x9">6″ × 9″ (Standard Novel)</option>
               <option value="8.5x11">8.5″ × 11″ (Large Print / Puzzle Book)</option>
-              <option value="5x8">5″ × 8″ (Pocket Booklet)</option>
+              <option 
+                value="6x9" 
+                disabled={premiumStatus.plan === "free"}
+              >
+                6″ × 9″ {premiumStatus.plan === "free" ? "(Locked - Upgrade to Starter/Pro)" : "(Standard Novel)"}
+              </option>
+              <option 
+                value="5x8" 
+                disabled={premiumStatus.plan === "free" || premiumStatus.plan === "starter"}
+              >
+                5″ × 8″ {premiumStatus.plan === "free" || premiumStatus.plan === "starter" ? "(Locked - Upgrade to Pro)" : "(Pocket Booklet)"}
+              </option>
             </select>
           </div>
 

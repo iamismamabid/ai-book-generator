@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { generateMaze, MazeGrid, Shape } from "@/lib/maze";
 import { downloadMazePdf } from "@/lib/maze-pdf";
 import DownloadButton from "@/components/DownloadButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import { Lock } from "lucide-react";
+import { checkPremiumStatus } from "@/app/actions";
 
 function MazePreview({ 
   grid, 
@@ -62,7 +64,7 @@ export default function MazeGeneratorPage() {
   const [activeTab, setActiveTab] = useState<"generator" | "guide">("generator");
   const [shape, setShape] = useState<Shape>("square");
   const [gridSize, setGridSize] = useState<number>(15);
-  const [bookCount, setBookCount] = useState<number>(10);
+  const [bookCount, setBookCount] = useState<number>(5);
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
   const [includeSolutions, setIncludeSolutions] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
@@ -76,6 +78,40 @@ export default function MazeGeneratorPage() {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+
+  useEffect(() => {
+    async function loadPremium() {
+      try {
+        const res = await checkPremiumStatus();
+        setPremiumStatus(res as any);
+        if (res.plan === "free") {
+          setShape("square");
+          setBookCount(5);
+        } else if (res.plan === "starter") {
+          setShape("square");
+          setBookCount(20);
+        } else {
+          setShape("circle");
+          setBookCount(50);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadPremium();
+  }, []);
+
+  const maxMazes = premiumStatus.plan === "free" ? 5 : premiumStatus.plan === "starter" ? 20 : 500;
+
+  const handleBookCountChange = (val: number) => {
+    let count = Math.max(1, val);
+    if (premiumStatus.checked && count > maxMazes) {
+      count = maxMazes;
+    }
+    setBookCount(count);
+  };
 
   const handlePreview = () => {
     setIsGenerating(true);
@@ -177,19 +213,29 @@ export default function MazeGeneratorPage() {
             <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850">
               <h3 className="text-lg font-bold mb-4 text-amber-300">1. Select Maze Shape</h3>
               <div className="grid grid-cols-3 gap-3">
-                {(["square", "circle", "heart"] as Shape[]).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setShape(s)}
-                    className={`py-3 rounded-xl font-semibold capitalize transition text-sm ${
-                      shape === s
-                        ? "bg-amber-500 text-slate-950 shadow-lg font-bold"
-                        : "bg-slate-800 text-slate-350 hover:bg-slate-700"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
+                {(["square", "circle", "heart"] as Shape[]).map((s) => {
+                  const isLocked =
+                    (s === "circle" || s === "heart") &&
+                    (premiumStatus.plan === "free" || premiumStatus.plan === "starter");
+
+                  return (
+                    <button
+                      key={s}
+                      disabled={isLocked && premiumStatus.checked}
+                      onClick={() => !isLocked && setShape(s)}
+                      className={`relative py-3 rounded-xl font-semibold capitalize transition text-sm flex items-center justify-center gap-1.5 ${
+                        shape === s
+                          ? "bg-amber-500 text-slate-950 shadow-lg font-bold"
+                          : isLocked
+                          ? "bg-slate-900/40 text-slate-600 border border-slate-850/30 cursor-not-allowed"
+                          : "bg-slate-800 text-slate-350 hover:bg-slate-700"
+                      }`}
+                    >
+                      {isLocked && <Lock className="w-3.5 h-3.5 text-slate-500" />}
+                      {s}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -219,13 +265,18 @@ export default function MazeGeneratorPage() {
 
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-2">Number of Puzzles</label>
+                  <label className="block text-sm text-slate-400 mb-2">
+                    Number of Puzzles
+                    <span className="ml-1 text-[10px] text-slate-500">
+                      {premiumStatus.plan === "free" ? "(Max 5)" : premiumStatus.plan === "starter" ? "(Max 20)" : ""}
+                    </span>
+                  </label>
                   <input
                     type="number"
                     min={1}
-                    max={100}
+                    max={maxMazes}
                     value={bookCount}
-                    onChange={(e) => setBookCount(Number(e.target.value))}
+                    onChange={(e) => handleBookCountChange(Number(e.target.value))}
                     className="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2 text-white font-mono"
                   />
                 </div>

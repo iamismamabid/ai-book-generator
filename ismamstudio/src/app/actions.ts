@@ -23,6 +23,16 @@ export async function createBook(formData: FormData) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
+  const premium = await checkPremiumStatus();
+  const usage = await getUserUsage();
+
+  if (premium.plan === "free" && usage.outlinesCount >= 1) {
+    throw new Error("Free Tier is limited to 1 AI Outline per month. Please upgrade.");
+  }
+  if (premium.plan === "starter" && usage.outlinesCount >= 5) {
+    throw new Error("Starter Tier is limited to 5 AI Outlines per month. Please upgrade to Pro.");
+  }
+
   const prompt = formData.get("prompt") as string;
 
   const aiPrompt = `Generate a book outline based on this idea: "${prompt}".
@@ -71,6 +81,16 @@ export async function generateNextChapter(bookId: string, outline: string, title
   const groq = getGroqClient();
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+
+  const premium = await checkPremiumStatus();
+  const usage = await getUserUsage();
+
+  if (premium.plan === "free") {
+    throw new Error("AI Chapter generation is not available on the Free Tier. Please upgrade.");
+  }
+  if (premium.plan === "starter" && usage.chaptersCount >= 5) {
+    throw new Error("Starter Tier is limited to 5 AI Chapters per month. Please upgrade to Pro.");
+  }
 
   const currentChapterCount = await prisma.chapter.count({
     where: { bookId: bookId }
@@ -177,11 +197,39 @@ export async function redeemAppSumoCode(code: string) {
   return { success: true };
 }
 
+// 🎯 ৬.১. ইউজারের মাসিক আউটলাইন ও চ্যাপ্টার জেনারেট করার হিসাব
+export async function getUserUsage() {
+  const { userId } = await auth();
+  if (!userId) return { outlinesCount: 0, chaptersCount: 0 };
+
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const outlinesCount = await prisma.book.count({
+    where: {
+      userId,
+      createdAt: { gte: startOfMonth }
+    }
+  });
+
+  const chaptersCount = await prisma.chapter.count({
+    where: {
+      book: {
+        userId
+      },
+      createdAt: { gte: startOfMonth }
+    }
+  });
+
+  return { outlinesCount, chaptersCount };
+}
+
 // 🎯 ৭. ইউজারের প্রিমিয়াম স্ট্যাটাস চেক করার ফাংশন
 export async function checkPremiumStatus() {
   const { userId } = await auth();
   if (!userId) {
-    return { isPremium: false, reason: "unauthorized" };
+    return { isPremium: false, reason: "unauthorized", plan: "free" };
   }
 
   try {
@@ -205,7 +253,7 @@ export async function checkPremiumStatus() {
         publicMetadata.plan === "agency" ||
         publicMetadata.subscriptionStatus === "active"
       ) {
-        return { isPremium: true, plan: publicMetadata.plan || "Premium" };
+        return { isPremium: true, plan: publicMetadata.plan || "pro" };
       }
 
       // ৩. ৭ দিনের ফ্রী ট্রায়াল পিরিয়ড চেক করা (অ্যাকাউন্ট বয়স ৭ দিনের কম হলে)
@@ -228,5 +276,5 @@ export async function checkPremiumStatus() {
     console.error("Error in checkPremiumStatus:", error);
   }
 
-  return { isPremium: false, reason: "free_tier" };
+  return { isPremium: false, reason: "free_tier", plan: "free" };
 }

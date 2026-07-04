@@ -1,26 +1,59 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { generateNextChapter } from "../../actions";
+import { generateNextChapter, checkPremiumStatus, getUserUsage } from "../../actions";
+import { Lock, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export default function ChapterButton({ bookId, outline, title, currentCount }: any) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+  const [usage, setUsage] = useState({ outlinesCount: 0, chaptersCount: 0 });
+
+  useEffect(() => {
+    async function loadPremium() {
+      try {
+        const res = await checkPremiumStatus();
+        const uStatus = await getUserUsage();
+        setPremiumStatus(res as any);
+        setUsage(uStatus);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadPremium();
+  }, []);
+
+  const isFree = premiumStatus.plan === "free";
+  const isLimitReached = premiumStatus.plan === "starter" && usage.chaptersCount >= 5;
+  const isLocked = isFree || isLimitReached;
 
   const handleWrite = async () => {
+    if (isFree) {
+      alert("AI Chapter writing is a premium feature. Please upgrade to Starter or Pro to generate chapters!");
+      return;
+    }
+    if (isLimitReached) {
+      alert("You have reached the monthly limit of 5 AI Chapters on your Starter plan. Please upgrade to Pro for unlimited generation.");
+      return;
+    }
+
     setLoading(true);
     try {
-      await generateNextChapter(bookId, outline, title);
+      const res = await generateNextChapter(bookId, outline, title);
       router.refresh();
-    } catch (error) {
-      alert("AI is a bit tired. Please try again!");
+      // Update local usage state after successfully writing
+      setUsage(prev => ({ ...prev, chaptersCount: prev.chaptersCount + 1 }));
+    } catch (error: any) {
+      alert(error.message || "AI is a bit tired. Please try again!");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative flex flex-col items-center gap-6 py-12 border-t border-slate-100 mt-16">
+    <div className="relative flex flex-col items-center gap-6 py-12 border-t border-slate-100 mt-16 w-full max-w-xl mx-auto">
       
       {/* 🚀 লোডিং অবস্থায় ব্যাকগ্রাউন্ড ব্লার ইফেক্ট */}
       {loading && (
@@ -32,24 +65,44 @@ export default function ChapterButton({ bookId, outline, title, currentCount }: 
         </div>
       )}
 
-      <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">
+      <p className="text-slate-400 text-sm font-bold uppercase tracking-widest flex items-center gap-1.5">
         {currentCount === 0 ? "Begin the Legend" : `Current Progress: ${currentCount} Chapters`}
+        {premiumStatus.checked && (
+          <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">
+            Usage: {usage.chaptersCount} / {isFree ? "0" : premiumStatus.plan === "starter" ? "5" : "Unlimited"}
+          </span>
+        )}
       </p>
       
-      <button
-        onClick={handleWrite}
-        disabled={loading}
-        className={`group relative px-12 py-5 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl ${
-          loading 
-            ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
-            : "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-200 hover:-translate-y-1 active:scale-95"
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <span>{loading ? "Writing Magic..." : `🚀 Write Chapter ${currentCount + 1}`}</span>
-          {!loading && <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>}
+      {isLocked && premiumStatus.checked ? (
+        <div className="flex flex-col items-center gap-3 w-full">
+          <Link
+            href="/pricing"
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 px-10 py-5 rounded-2xl font-black text-lg transition shadow-xl"
+          >
+            <Lock className="w-5 h-5" />
+            {isFree ? "Unlock AI Chapter Writer" : "Limit Reached - Upgrade to Pro"}
+          </Link>
+          <p className="text-[11px] font-bold text-amber-600">
+            {isFree ? "AI Chapters require Starter or Pro Plan" : "Starter plan is capped at 5 AI chapters/month"}
+          </p>
         </div>
-      </button>
+      ) : (
+        <button
+          onClick={handleWrite}
+          disabled={loading}
+          className={`group relative px-12 py-5 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl ${
+            loading 
+              ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+              : "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-200 hover:-translate-y-1 active:scale-95"
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <span>{loading ? "Writing Magic..." : `🚀 Write Chapter ${currentCount + 1}`}</span>
+            {!loading && <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>}
+          </div>
+        </button>
+      )}
 
       <p className="text-slate-400 text-xs italic">
         Tip: Each chapter is logically connected to your outline.

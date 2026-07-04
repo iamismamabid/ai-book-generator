@@ -1,11 +1,13 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText } from "lucide-react";
+import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText, Lock, Sparkles } from "lucide-react";
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import { drawCoverPagePart, drawWatermark } from "../../utils/pdfExportService";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import { useRouter } from "next/navigation";
+import { checkPremiumStatus } from "@/app/actions";
 
 // 🧠 1. The Advanced Puzzle Algorithm
 function generatePuzzleGrid(wordList: string[], size: number, textCase: string) {
@@ -57,6 +59,21 @@ const TRIM_SIZES = [
 ];
 
 export default function WordSearchStudio() {
+    const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+    const router = useRouter();
+
+    useEffect(() => {
+        async function loadPremium() {
+            try {
+                const res = await checkPremiumStatus();
+                setPremiumStatus(res as any);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        loadPremium();
+    }, []);
+
     const [activeTab, setActiveTab] = useState<'interior' | 'cover' | 'guide'>('interior'); 
     const [isGenerating, setIsGenerating] = useState(false);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -428,6 +445,55 @@ export default function WordSearchStudio() {
         doc.save(`KDP_Pro_Cover_${trimSize.w}x${trimSize.h}.pdf`);
         setIsGenerating(false);
     };
+
+    if (premiumStatus.checked && (premiumStatus.plan === "free" || premiumStatus.plan === "starter")) {
+        return (
+            <div className="min-h-screen bg-[#0b0f19] text-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                {/* Glow element */}
+                <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+
+                <div className="max-w-md w-full bg-slate-900/60 border border-slate-850 p-8 rounded-[2.5rem] shadow-2xl relative z-10 space-y-6">
+                    <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto">
+                        <Lock className="w-8 h-8" />
+                    </div>
+
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent uppercase tracking-tight">
+                            Word Search Studio is Locked
+                        </h2>
+                        <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+                            Unlimited Word Search board compiling and custom CSV list imports are premium features available on our **Pro Studio** and **Publisher Agency** plans.
+                        </p>
+                    </div>
+
+                    <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-850/40 text-left space-y-2 text-[11px] font-bold text-slate-350">
+                        <div className="flex items-center gap-2 text-indigo-400 text-[10px] uppercase tracking-wider mb-1">
+                            <Sparkles className="w-3.5 h-3.5" /> Pro Plan Benefits:
+                        </div>
+                        <p>✓ Unlimited Word Search collections</p>
+                        <p>✓ Watermark-free, print-ready PDF compile</p>
+                        <p>✓ Bulk CSV upload to instantly build boards</p>
+                        <p>✓ Access to Cover Studio & Interior Canvas Builder</p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 pt-2">
+                        <Link 
+                            href="/pricing"
+                            className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-650 hover:from-indigo-650 hover:to-purple-750 text-white font-black text-xs rounded-xl shadow-lg transition-all"
+                        >
+                            Upgrade to Pro Studio
+                        </Link>
+                        <button 
+                            onClick={() => router.push("/")}
+                            className="w-full py-4 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-850 font-black text-xs rounded-xl transition"
+                        >
+                            Back to Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0b0f19] p-4 md:p-8 font-sans text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">

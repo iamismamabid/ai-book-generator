@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku'; 
 import { downloadSudokuPdf } from '../../lib/sudoku-pdf';
 import DownloadButton from "@/components/DownloadButton";
-import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText } from "lucide-react";
+import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import { checkPremiumStatus } from "../actions";
 
 // Live preview — puzzle grid
 function SudokuPreview({ grid, isSolution = false }: { grid: Grid; isSolution?: boolean }) {
@@ -45,8 +46,8 @@ function SudokuPreview({ grid, isSolution = false }: { grid: Grid; isSolution?: 
 export default function SudokuGeneratorPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"generator" | "solution" | "guide">("generator");
-  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
-  const [bookCount, setBookCount] = useState(10);
+  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
+  const [bookCount, setBookCount] = useState(5);
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
   const [currentPuzzle, setCurrentPuzzle] = useState<{ puzzle: Grid; solution: Grid } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -54,6 +55,40 @@ export default function SudokuGeneratorPage() {
   const [includeSolutions, setIncludeSolutions] = useState(true);
   const [includeCover, setIncludeCover] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  
+  const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+
+  useEffect(() => {
+    async function loadPremium() {
+      try {
+        const res = await checkPremiumStatus();
+        setPremiumStatus(res as any);
+        if (res.plan === "free") {
+          setDifficulty("easy");
+          setBookCount(5);
+        } else if (res.plan === "starter") {
+          setDifficulty("medium");
+          setBookCount(20);
+        } else {
+          setDifficulty("hard");
+          setBookCount(50);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadPremium();
+  }, []);
+
+  const maxPuzzles = premiumStatus.plan === "free" ? 5 : premiumStatus.plan === "starter" ? 20 : 500;
+
+  const handleBookCountChange = (val: number) => {
+    let count = Math.max(1, val);
+    if (premiumStatus.checked && count > maxPuzzles) {
+      count = maxPuzzles;
+    }
+    setBookCount(count);
+  };
 
   const handlePreview = () => {
     setIsGenerating(true);
@@ -146,19 +181,29 @@ export default function SudokuGeneratorPage() {
               <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850">
                 <h2 className="text-lg font-bold mb-4 text-amber-300">Difficulty</h2>
                 <div className="grid grid-cols-3 gap-3">
-                  {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => setDifficulty(d)}
-                      className={`py-3 rounded-lg font-semibold capitalize transition ${
-                        difficulty === d
-                          ? "bg-amber-500 text-slate-950"
-                          : "bg-slate-800 text-slate-350 hover:bg-slate-700"
-                      }`}
-                    >
-                      {d}
-                    </button>
-                  ))}
+                  {(["easy", "medium", "hard"] as Difficulty[]).map((d) => {
+                    const isLocked =
+                      (d === "hard" && (premiumStatus.plan === "free" || premiumStatus.plan === "starter")) ||
+                      (d === "medium" && premiumStatus.plan === "free");
+
+                    return (
+                      <button
+                        key={d}
+                        disabled={isLocked && premiumStatus.checked}
+                        onClick={() => !isLocked && setDifficulty(d)}
+                        className={`relative py-3 rounded-lg font-semibold capitalize transition flex items-center justify-center gap-1.5 ${
+                          difficulty === d
+                            ? "bg-amber-500 text-slate-950"
+                            : isLocked
+                            ? "bg-slate-900/40 text-slate-600 border border-slate-850/30 cursor-not-allowed"
+                            : "bg-slate-800 text-slate-350 hover:bg-slate-700"
+                        }`}
+                      >
+                        {isLocked && <Lock className="w-3.5 h-3.5 text-slate-500" />}
+                        {d}
+                      </button>
+                    );
+                  })}
                 </div>
                 <p className="text-xs text-slate-500 mt-3">
                   {difficulty === "easy"   && "~40 numbers shown — good for beginners"}
@@ -174,13 +219,16 @@ export default function SudokuGeneratorPage() {
                 <div>
                   <label className="block text-sm text-slate-400 mb-2">
                     Number of puzzles
-                    <span className="ml-2 text-xs text-slate-600">(no upper limit)</span>
+                    <span className="ml-2 text-xs text-slate-500">
+                      {premiumStatus.plan === "free" ? "(Free plan limit: 5)" : premiumStatus.plan === "starter" ? "(Starter plan limit: 20)" : "(Unlimited)"}
+                    </span>
                   </label>
                   <input
                     type="number"
                     min={1}
+                    max={maxPuzzles}
                     value={bookCount}
-                    onChange={(e) => setBookCount(Math.max(1, Number(e.target.value)))}
+                    onChange={(e) => handleBookCountChange(Number(e.target.value))}
                     className="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2 text-white font-mono focus:outline-none focus:border-amber-500"
                   />
                 </div>

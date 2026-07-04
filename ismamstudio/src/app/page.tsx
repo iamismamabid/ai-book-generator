@@ -83,7 +83,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
           {/* Left Column: Headline and CTAs */}
-          <div className="lg:col-span-7 text-left space-y-8">
+          <div className="lg:col-span-6 text-left space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-indigo-400 text-xs font-black uppercase tracking-[0.2em] shadow-inner">
               <Sparkles className="w-4 h-4 text-indigo-400" />
               The Ultimate Publishing Suite for KDP Self-Publishers
@@ -117,110 +117,62 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right Column: Interactive Studio Canvas Simulator */}
-          <div className="lg:col-span-5 relative">
+          {/* Right Column: Interactive Arcade Walkthrough Showcase */}
+          <div className="lg:col-span-6 relative">
             <div className="absolute inset-0 bg-indigo-500/10 rounded-[3rem] blur-3xl" />
 
-            <div className="relative bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-[2.5rem] p-6 shadow-2xl animate-float">
-
-              {/* Title Bar */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-rose-500" />
-                  <div className="w-3 h-3 rounded-full bg-amber-500" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider ml-2">Labyrinth Book Designer</span>
+            <div className="relative bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 rounded-[2.5rem] p-4 shadow-2xl overflow-hidden animate-float">
+              {/* Header with Switcher Tabs */}
+              <div className="flex items-center justify-between border-b border-slate-800/60 pb-3 mb-4">
+                <div className="flex items-center gap-1 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-850">
+                  <button
+                    onClick={() => setActiveVideoTab("interior")}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                      activeVideoTab === "interior"
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
+                        : "text-slate-500 hover:text-slate-350"
+                    }`}
+                  >
+                    <Grid3x3 className="w-3.5 h-3.5" />
+                    Interior Studio
+                  </button>
+                  <button
+                    onClick={() => setActiveVideoTab("cover")}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                      activeVideoTab === "cover"
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
+                        : "text-slate-500 hover:text-slate-350"
+                    }`}
+                  >
+                    <Palette className="w-3.5 h-3.5" />
+                    Cover Studio
+                  </button>
                 </div>
-                <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/25">
-                  8.5″ × 11″ KDP
+                
+                <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                  Interactive Preview
                 </span>
               </div>
 
-              {/* Shape Selector Tabs */}
-              <div className="flex gap-2 mb-4">
-                {[
-                  { icon: "❤", label: "Heart", active: true },
-                  { icon: "◯", label: "Circle", active: false },
-                  { icon: "▪", label: "Square", active: false },
-                ].map((tab) => (
-                  <span
-                    key={tab.label}
-                    className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 ${tab.active
-                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                      : "bg-slate-950/60 text-slate-500 border-slate-800"
-                      }`}
-                  >
-                    <span className={tab.label === "Heart" ? "text-rose-500" : ""}>{tab.icon}</span>
-                    {tab.label}
-                  </span>
-                ))}
+              {/* Showcase Player */}
+              <div className="aspect-video w-full rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-inner relative group">
+                <iframe
+                  src={
+                    activeVideoTab === "interior"
+                      ? "https://app.arcade.software/share/zwSHISc2CSSG683DpmUh"
+                      : "https://app.arcade.software/share/VevNAwGPFIYsVGMX1yML"
+                  }
+                  title="Ismam Studio Interactive Walkthrough"
+                  className="absolute inset-0 w-full h-full border-0"
+                  allowFullScreen
+                />
               </div>
-
-              {/* Main Canvas Area */}
-              <div className="bg-slate-950 rounded-2xl border border-slate-800 p-4 relative overflow-hidden">
-                {/* Bleed guides */}
-                <div className="absolute inset-2 border border-dashed border-rose-500/20 rounded-xl pointer-events-none" />
-                <div className="absolute top-3 right-3 text-[6px] font-bold text-rose-500/50 uppercase tracking-wider">Bleed Safe</div>
-
-                {/* Heart Maze Grid */}
-                <div className="flex flex-col items-center justify-center py-2 gap-0.5">
-                  {[
-                    "  ██   ██  ",
-                    " █████████ ",
-                    "███████████",
-                    "███████████",
-                    " █████████ ",
-                    "  ███████  ",
-                    "   █████   ",
-                    "    ███    ",
-                    "     █     ",
-                  ].map((row, i) => (
-                    <div key={i} className="font-mono text-[9px] leading-[1.1] tracking-[0.15em] text-emerald-400/80 select-none whitespace-pre">
-                      {row}
-                    </div>
-                  ))}
-                  {/* Entry/Exit badges */}
-                  <div className="flex gap-6 mt-2">
-                    <span className="text-[7px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">▶ START</span>
-                    <span className="text-[7px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">★ FINISH</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Difficulty + Options Row */}
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <div className="flex gap-1.5">
-                  {["Easy", "Med", "Hard"].map((d, i) => (
-                    <span
-                      key={d}
-                      className={`text-[8px] font-black px-2 py-1 rounded-lg border uppercase ${i === 1
-                        ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
-                        : "bg-slate-950/60 text-slate-600 border-slate-800"
-                        }`}
-                    >
-                      {d}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center gap-1.5 text-[8px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
-                  <Compass className="w-3 h-3" /> Auto Solution Key
-                </div>
-              </div>
-
-              {/* Stats Footer */}
-              <div className="mt-3 pt-3 border-t border-slate-800 grid grid-cols-3 gap-2 text-center">
-                {[
-                  { label: "Pages", value: "50" },
-                  { label: "Trim", value: "8.5×11" },
-                  { label: "Shapes", value: "3 types" },
-                ].map((stat) => (
-                  <div key={stat.label}>
-                    <div className="text-[11px] font-black text-white">{stat.value}</div>
-                    <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-
+              
+              {/* Footer Tip */}
+              <p className="text-[10px] text-center text-slate-500 mt-3 font-semibold font-sans">
+                💡 Click on the hotspots inside the interactive video to try the layout engine!
+              </p>
             </div>
           </div>
 

@@ -166,7 +166,9 @@ function PricingSectionInner() {
       name: "Starter Creator",
       description: "Perfect for hobbyists & beginner publishers starting their KDP journey.",
       priceMonthly: 9,
+      priceMonthlyOriginal: 11,
       priceAnnual: 7,
+      priceAnnualOriginal: 9,
       popular: false,
       features: [
         "Full Commercial Rights (Keep 100% royalties)",
@@ -189,7 +191,9 @@ function PricingSectionInner() {
       name: "Pro Studio",
       description: "Everything you need to compile, format, and sell low/medium content books.",
       priceMonthly: 19,
+      priceMonthlyOriginal: 24,
       priceAnnual: 15,
+      priceAnnualOriginal: 19,
       popular: true,
       features: [
         "Watermark-free PDF exports (All sizes + Custom)",
@@ -213,7 +217,9 @@ function PricingSectionInner() {
       name: "Publisher Agency",
       description: "Scale your publishing business with multiple brands and API access.",
       priceMonthly: 39,
+      priceMonthlyOriginal: 49,
       priceAnnual: 31,
+      priceAnnualOriginal: 39,
       popular: false,
       features: [
         "Everything in Pro Studio plan",
@@ -513,11 +519,20 @@ function PricingSectionInner() {
 
                 {/* Price Display */}
                 <div className="mb-8 flex items-baseline gap-2 flex-wrap">
-                  {(plan as any).originalPrice && (
-                    <span className={`text-2xl font-black line-through self-end pb-1.5 opacity-55 ${plan.popular ? "text-slate-550" : "text-slate-450"}`}>
-                      ${(plan as any).originalPrice}
-                    </span>
-                  )}
+                  {(() => {
+                    const originalPrice = isLtd
+                      ? (plan as any).originalPrice
+                      : (billingCycle === 'annual' ? (plan as any).priceAnnualOriginal : (plan as any).priceMonthlyOriginal);
+
+                    if (originalPrice) {
+                      return (
+                        <span className={`text-2xl font-black line-through self-end pb-1.5 opacity-55 ${plan.popular ? "text-slate-550" : "text-slate-450"}`}>
+                          ${originalPrice}
+                        </span>
+                      );
+                    }
+                    return null;
+                  })()}
                   <span className={`text-6xl font-black tracking-tight ${plan.popular ? "text-slate-950" : "text-white"
                     }`}>
                     ${price}

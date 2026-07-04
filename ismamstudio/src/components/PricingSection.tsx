@@ -239,6 +239,7 @@ function PricingSectionInner() {
       name: "AppSumo Tier 1",
       description: "Standard lifetime access. Perfect for beginning KDP self-publishers.",
       price: 49,
+      originalPrice: 61,
       popular: false,
       features: [
         "1 Code Stacked (Lifetime Access)",
@@ -262,6 +263,7 @@ function PricingSectionInner() {
       name: "AppSumo Tier 2",
       description: "Professional lifetime access. Best for active builders and authors.",
       price: 98,
+      originalPrice: 122,
       popular: true,
       features: [
         "2 Codes Stacked (Lifetime Access)",
@@ -286,6 +288,7 @@ function PricingSectionInner() {
       name: "AppSumo Tier 3",
       description: "Agency lifetime access. Ultimate scaling tool with multi-seat access.",
       price: 147,
+      originalPrice: 183,
       popular: false,
       features: [
         "3 Codes Stacked (Lifetime Access)",
@@ -310,6 +313,7 @@ function PricingSectionInner() {
       name: "AppSumo Tier 4",
       description: "Advanced Agency lifetime access. Perfect for scaling publishing companies.",
       price: 196,
+      originalPrice: 245,
       popular: false,
       features: [
         "4 Codes Stacked (Lifetime Access)",
@@ -331,6 +335,7 @@ function PricingSectionInner() {
       name: "AppSumo Tier 5",
       description: "Ultimate Lifetime Access. The ultimate package with unlimited resources.",
       price: 245,
+      originalPrice: 306,
       popular: false,
       features: [
         "5 Codes Stacked (Lifetime Access)",
@@ -344,7 +349,6 @@ function PricingSectionInner() {
       colorClass: "bg-slate-950/80 hover:border-slate-600",
       borderClass: "border-indigo-500/40 border-2",
       icon: <Award className="w-6 h-6 text-indigo-400 animate-pulse" />,
-      ctaLink: "https://appsumo.com/products/ismam-studio",
       planKey: "appsumo_t5"
     }
   ];
@@ -507,7 +511,12 @@ function PricingSectionInner() {
                 </p>
 
                 {/* Price Display */}
-                <div className="mb-8 flex items-baseline gap-1">
+                <div className="mb-8 flex items-baseline gap-2 flex-wrap">
+                  {(plan as any).originalPrice && (
+                    <span className={`text-2xl font-black line-through self-end pb-1.5 opacity-55 ${plan.popular ? "text-slate-550" : "text-slate-450"}`}>
+                      ${(plan as any).originalPrice}
+                    </span>
+                  )}
                   <span className={`text-6xl font-black tracking-tight ${plan.popular ? "text-slate-950" : "text-white"
                     }`}>
                     ${price}

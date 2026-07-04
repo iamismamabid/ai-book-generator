@@ -349,6 +349,7 @@ function PricingSectionInner() {
       colorClass: "bg-slate-950/80 hover:border-slate-600",
       borderClass: "border-indigo-500/40 border-2",
       icon: <Award className="w-6 h-6 text-indigo-400 animate-pulse" />,
+      ctaLink: "https://appsumo.com/products/ismam-studio",
       planKey: "appsumo_t5"
     }
   ];

@@ -145,8 +145,8 @@ export default function HomePage() {
                   <span
                     key={tab.label}
                     className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 ${tab.active
-                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                        : "bg-slate-950/60 text-slate-500 border-slate-800"
+                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                      : "bg-slate-950/60 text-slate-500 border-slate-800"
                       }`}
                   >
                     <span className={tab.label === "Heart" ? "text-rose-500" : ""}>{tab.icon}</span>
@@ -193,8 +193,8 @@ export default function HomePage() {
                     <span
                       key={d}
                       className={`text-[8px] font-black px-2 py-1 rounded-lg border uppercase ${i === 1
-                          ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
-                          : "bg-slate-950/60 text-slate-600 border-slate-800"
+                        ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
+                        : "bg-slate-950/60 text-slate-600 border-slate-800"
                         }`}
                     >
                       {d}
@@ -314,7 +314,7 @@ export default function HomePage() {
 
       {/* 🛠️ SaaS Features Grid */}
       <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50">
-        
+
         {/* Section 1: Core Publishing Tools */}
         <div className="text-center mb-16">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider mb-3">
@@ -679,8 +679,8 @@ export default function HomePage() {
                 key={sample.id}
                 onClick={() => setActivePreview(sample.id)}
                 className={`w-full p-6 text-left rounded-3xl border transition-all flex flex-col gap-2 ${activePreview === sample.id
-                    ? "bg-gradient-to-r from-indigo-500/20 via-slate-900 to-slate-900 border-indigo-500 shadow-lg"
-                    : "bg-slate-950/30 border-slate-900 hover:border-slate-800"
+                  ? "bg-gradient-to-r from-indigo-500/20 via-slate-900 to-slate-900 border-indigo-500 shadow-lg"
+                  : "bg-slate-950/30 border-slate-900 hover:border-slate-800"
                   }`}
               >
                 <div className="flex items-center justify-between">

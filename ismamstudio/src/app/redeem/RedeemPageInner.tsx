@@ -4,13 +4,15 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { ArrowLeft, Gift, AlertCircle, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
 import { redeemAppSumoCode } from "../actions";
+import { useAuth } from "@clerk/nextjs";
 
 interface RedeemPageInnerProps {
-  userId: string | null;
+  initialCode?: string;
 }
 
-export default function RedeemPageInner({ userId }: RedeemPageInnerProps) {
-  const [code, setCode] = useState("");
+export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerProps) {
+  const { isLoaded, userId } = useAuth();
+  const [code, setCode] = useState(initialCode);
   const [status, setStatus] = useState<{ type: "success" | "error" | null; message: string }>({
     type: null,
     message: ""
@@ -163,7 +165,12 @@ export default function RedeemPageInner({ userId }: RedeemPageInnerProps) {
 
               <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mb-6" />
 
-              {!userId ? (
+              {!isLoaded ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+                  <p className="text-slate-400 text-xs mt-3 font-semibold uppercase tracking-wider">Checking Account...</p>
+                </div>
+              ) : !userId ? (
                 <div className="space-y-6">
                   <div className="p-4 bg-slate-800/40 rounded-2xl border border-slate-850 text-slate-300 text-xs leading-relaxed space-y-3">
                     <h3 className="font-black text-white text-sm">Required Steps First:</h3>

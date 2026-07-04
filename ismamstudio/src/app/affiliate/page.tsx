@@ -15,7 +15,7 @@ export default function AffiliatePage() {
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3" />
 
       <div className="max-w-4xl mx-auto relative z-10">
-        
+
         {/* Navigation */}
         <div className="mb-8">
           <Link
@@ -28,7 +28,7 @@ export default function AffiliatePage() {
 
         {/* Affiliate Console */}
         <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 rounded-[2.5rem] p-8 md:p-12 shadow-2xl space-y-10">
-          
+
           <div className="text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider mb-3">
@@ -99,7 +99,7 @@ export default function AffiliatePage() {
 
           {/* CTA */}
           <div className="pt-4 flex justify-center">
-            <a 
+            <a
               href="https://ismamstudio.partneroapp.com/"
               target="_blank"
               rel="noopener noreferrer"

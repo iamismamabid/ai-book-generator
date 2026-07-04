@@ -67,16 +67,16 @@ function PricingSectionInner() {
 
     if (selectedPriceId && (window as any).Paddle) {
       console.log("Opening Paddle checkout for price:", selectedPriceId);
-      
+
       // Get Partnero referral / partner ID
       let customerKey = null;
       if (typeof window !== "undefined") {
         const partneroQueryParam = 'aff';
         const partneroCookieName = 'partnero_partner';
-        
+
         // 1. Check URL query params
         customerKey = new URLSearchParams(window.location.search).get(partneroQueryParam);
-        
+
         // 2. Fallback to cookies
         if (!customerKey) {
           const cookieArr = document.cookie.split(";").map(cookie => cookie.trim());
@@ -355,7 +355,7 @@ function PricingSectionInner() {
 
   return (
     <section id="pricing" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-900">
-      
+
       {/* 🔮 Glow highlights */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-sky-500/5 rounded-full blur-[100px] pointer-events-none" />
@@ -379,21 +379,19 @@ function PricingSectionInner() {
         <div className="mt-10 inline-flex items-center gap-2 bg-slate-950/80 p-2 rounded-full border border-slate-800 backdrop-blur-md">
           <button
             onClick={() => setBillingCycle('monthly')}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all ${
-              billingCycle === 'monthly'
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all ${billingCycle === 'monthly'
                 ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
                 : "text-slate-400 hover:text-white"
-            }`}
+              }`}
           >
             Monthly
           </button>
           <button
             onClick={() => setBillingCycle('annual')}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 ${
-              billingCycle === 'annual'
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 ${billingCycle === 'annual'
                 ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
                 : "text-slate-400 hover:text-white"
-            }`}
+              }`}
           >
             <span>Annual</span>
             <span className="bg-gradient-to-r from-rose-500 to-amber-500 text-white font-black text-[8px] uppercase px-1.5 py-0.5 rounded-full shadow-md animate-pulse">
@@ -402,11 +400,10 @@ function PricingSectionInner() {
           </button>
           <button
             onClick={() => setBillingCycle('appsumo')}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 ${
-              billingCycle === 'appsumo'
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 ${billingCycle === 'appsumo'
                 ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
                 : "text-slate-400 hover:text-white"
-            }`}
+              }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-450 shrink-0" />
             <span>AppSumo LTD</span>
@@ -415,11 +412,10 @@ function PricingSectionInner() {
       </div>
 
       {/* Pricing Grid */}
-      <div className={`grid grid-cols-1 items-stretch mb-24 relative ${
-        billingCycle === 'appsumo' 
-          ? "md:grid-cols-3 max-w-5xl mx-auto gap-8" 
+      <div className={`grid grid-cols-1 items-stretch mb-24 relative ${billingCycle === 'appsumo'
+          ? "md:grid-cols-3 max-w-5xl mx-auto gap-8"
           : "md:grid-cols-2 xl:grid-cols-4 gap-8"
-      }`}>
+        }`}>
         {activePlans.map((plan, index) => {
           const isLtd = billingCycle === 'appsumo';
           const price = isLtd ? (plan as any).price : (billingCycle === 'annual' ? (plan as any).priceAnnual : (plan as any).priceMonthly);
@@ -429,11 +425,9 @@ function PricingSectionInner() {
           return (
             <div
               key={index}
-              className={`group relative rounded-[2.5rem] p-8 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 border backdrop-blur-md ${
-                plan.colorClass
-              } ${plan.borderClass} ${
-                !plan.popular ? "hover:border-indigo-500/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.4),_inset_0_0_12px_rgba(99,102,241,0.2)]" : ""
-              }`}
+              className={`group relative rounded-[2.5rem] p-8 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 border backdrop-blur-md ${plan.colorClass
+                } ${plan.borderClass} ${!plan.popular ? "hover:border-indigo-500/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.4),_inset_0_0_12px_rgba(99,102,241,0.2)]" : ""
+                }`}
             >
               {plan.popular && (
                 <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg border border-amber-400/25 flex items-center gap-1.5 z-10 shrink-0">
@@ -445,18 +439,16 @@ function PricingSectionInner() {
               <div>
                 {/* Plan Header */}
                 <div className="flex items-center justify-between mb-6">
-                  <div className={`p-3 rounded-2xl border shadow-inner ${
-                    plan.popular 
-                      ? "bg-slate-55 border-slate-200" 
+                  <div className={`p-3 rounded-2xl border shadow-inner ${plan.popular
+                      ? "bg-slate-55 border-slate-200"
                       : "bg-slate-900/80 border-slate-800"
-                  }`}>
+                    }`}>
                     {plan.icon}
                   </div>
-                  <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${
-                    plan.popular
+                  <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${plan.popular
                       ? "text-slate-500 bg-slate-100 border-slate-200"
                       : "text-slate-500 bg-slate-950/50 border-slate-900"
-                  }`}>
+                    }`}>
                     {isLtd ? "Lifetime Deal" : "KDP Tier"}
                   </span>
                 </div>
@@ -464,17 +456,15 @@ function PricingSectionInner() {
                 <h3 className={`text-2xl font-black mb-2 ${plan.popular ? "text-slate-950" : "text-white"}`}>
                   {plan.name}
                 </h3>
-                <p className={`text-sm font-semibold mb-6 leading-relaxed min-h-[40px] ${
-                  plan.popular ? "text-slate-600" : "text-slate-300"
-                }`}>
+                <p className={`text-sm font-semibold mb-6 leading-relaxed min-h-[40px] ${plan.popular ? "text-slate-600" : "text-slate-300"
+                  }`}>
                   {plan.description}
                 </p>
 
                 {/* Price Display */}
                 <div className="mb-8 flex items-baseline gap-1">
-                  <span className={`text-6xl font-black tracking-tight ${
-                    plan.popular ? "text-slate-950" : "text-white"
-                  }`}>
+                  <span className={`text-6xl font-black tracking-tight ${plan.popular ? "text-slate-950" : "text-white"
+                    }`}>
                     ${price}
                   </span>
                   {!isLtd && (
@@ -482,33 +472,29 @@ function PricingSectionInner() {
                       / month
                     </span>
                   )}
-                  <span className={`text-[10px] font-bold block ml-2 self-center px-2 py-1 rounded-md uppercase tracking-wider ${
-                    plan.popular
+                  <span className={`text-[10px] font-bold block ml-2 self-center px-2 py-1 rounded-md uppercase tracking-wider ${plan.popular
                       ? "text-amber-750 bg-amber-500/10"
                       : "text-teal-400 bg-teal-500/10"
-                  }`}>
+                    }`}>
                     {billingText}
                   </span>
                 </div>
 
                 {/* Divider */}
-                <div className={`h-px mb-8 ${
-                  plan.popular 
+                <div className={`h-px mb-8 ${plan.popular
                     ? "bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100"
                     : "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900"
-                }`} />
+                  }`} />
 
                 {/* Features Checklist */}
                 <ul className="space-y-4">
                   {plan.features.map((feature, fIndex) => (
-                    <li key={fIndex} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${
-                      plan.popular ? "text-slate-700" : "text-slate-300"
-                    }`}>
-                      <div className={`mt-0.5 p-0.5 rounded-full border shrink-0 ${
-                        plan.popular
+                    <li key={fIndex} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? "text-slate-700" : "text-slate-300"
+                      }`}>
+                      <div className={`mt-0.5 p-0.5 rounded-full border shrink-0 ${plan.popular
                           ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
                           : "bg-teal-500/10 text-teal-400 border-teal-500/20"
-                      }`}>
+                        }`}>
                         <Check className="w-3.5 h-3.5" />
                       </div>
                       <span>{feature}</span>
@@ -524,11 +510,10 @@ function PricingSectionInner() {
                     href={ctaHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
-                      plan.popular
+                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
                         ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
                         : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                    }`}
+                      }`}
                   >
                     {plan.ctaText}
                     <Zap className="w-4 h-4 shrink-0 opacity-80" />
@@ -536,11 +521,10 @@ function PricingSectionInner() {
                 ) : plan.planKey === "free" ? (
                   <Link
                     href={ctaHref}
-                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
-                      plan.popular
+                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
                         ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
                         : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                    }`}
+                      }`}
                   >
                     {plan.ctaText}
                     <Zap className="w-4 h-4 shrink-0 opacity-80" />
@@ -548,11 +532,10 @@ function PricingSectionInner() {
                 ) : (
                   <button
                     onClick={() => handleCheckout(plan.planKey)}
-                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${
-                      plan.popular
+                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
                         ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
                         : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                    }`}
+                      }`}
                   >
                     {plan.ctaText}
                     <Zap className="w-4 h-4 shrink-0 opacity-80" />
@@ -645,7 +628,7 @@ function PricingSectionInner() {
       {/* 📊 Feature Comparison Table */}
       <div className="mb-24 overflow-x-auto rounded-[2rem] border border-slate-900 bg-slate-950/20 backdrop-blur-md p-4 md:p-8">
         <h3 className="text-2xl font-black text-white text-center mb-8">Detailed Feature Comparison</h3>
-        
+
         <table className="w-full text-left border-collapse text-xs md:text-sm">
           <thead>
             <tr className="border-b border-slate-900 text-slate-400 font-bold uppercase tracking-wider">
@@ -726,7 +709,7 @@ function PricingSectionInner() {
 
       {/* ❓ Frequently Asked Questions */}
       <div className="max-w-4xl mx-auto border-t border-slate-900/60 pt-20">
-        
+
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 text-amber-400 text-xs font-black uppercase tracking-[0.25em] mb-3">
             <HelpCircle className="w-4 h-4" /> Got Questions?
@@ -748,16 +731,14 @@ function PricingSectionInner() {
                 >
                   <span className="text-base">{faq.q}</span>
                   <ChevronDown
-                    className={`w-5 h-5 text-slate-400 transition-transform duration-300 shrink-0 ml-4 ${
-                      isOpen ? "rotate-180 text-amber-400" : ""
-                    }`}
+                    className={`w-5 h-5 text-slate-400 transition-transform duration-300 shrink-0 ml-4 ${isOpen ? "rotate-180 text-amber-400" : ""
+                      }`}
                   />
                 </button>
 
                 <div
-                  className={`grid transition-all duration-300 ease-in-out ${
-                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                  }`}
+                  className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                    }`}
                 >
                   <div className="overflow-hidden">
                     <div className="px-6 pb-6 pt-1 text-slate-400 text-sm font-semibold leading-relaxed border-t border-slate-900/30">
@@ -808,9 +789,9 @@ function PricingSkeleton() {
               </div>
               <div className="w-32 h-7 bg-slate-900 rounded-xl mb-3" />
               <div className="w-full h-10 bg-slate-900/50 rounded-xl mb-6" />
-              
+
               <div className="h-px bg-slate-900 mb-8" />
-              
+
               {/* Features */}
               <div className="space-y-4">
                 {[1, 2, 3, 4, 5].map((j) => (

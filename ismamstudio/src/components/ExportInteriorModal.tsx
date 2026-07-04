@@ -119,6 +119,8 @@ export default function ExportInteriorModal({
         setRedemptionSuccess("AppSumo Code redeemed successfully! Downloads unlocked.");
         setPremiumStatus({ checked: true, isPremium: true });
         setAppsumoCode("");
+      } else {
+        setRedemptionError(res.error || "Failed to redeem code. Please try again.");
       }
     } catch (err: any) {
       setRedemptionError(err.message || "Failed to redeem code. Please try again.");

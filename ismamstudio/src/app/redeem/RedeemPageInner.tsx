@@ -84,6 +84,11 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
             message: "AppSumo Lifetime Deal activated successfully!"
           });
           setCode("");
+        } else {
+          setStatus({
+            type: "error",
+            message: res.error || "Failed to redeem code. Please try again."
+          });
         }
       } catch (err: any) {
         setStatus({

@@ -158,43 +158,48 @@ export async function saveBookToDB(title: string, content: string) {
 
 // 🎯 ৬. AppSumo কোড রিডিম করার ফাংশন
 export async function redeemAppSumoCode(code: string) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  try {
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Unauthorized. Please sign in." };
 
-  const user = await currentUser();
-  const email = user?.emailAddresses[0]?.emailAddress || "";
+    const user = await currentUser();
+    const email = user?.emailAddresses[0]?.emailAddress || "";
 
-  if (!code || code.trim().length < 3) {
-    throw new Error("Invalid code length.");
-  }
-
-  // কোডটি ইতিমধ্যে ব্যবহার করা হয়েছে কিনা চেক করা
-  const existingCode = await prisma.appSumoRedemption.findFirst({
-    where: { code: code.trim() }
-  });
-  if (existingCode) {
-    throw new Error("This AppSumo code has already been redeemed.");
-  }
-
-  // এই ব্যবহারকারী ইতিমধ্যে কোড রিডিম করেছেন কিনা চেক করা
-  const existingUser = await prisma.appSumoRedemption.findUnique({
-    where: { clerkId: userId }
-  });
-  if (existingUser) {
-    throw new Error("You have already redeemed an AppSumo code for this account.");
-  }
-
-  // ডেটাবেজে রিডেম্পশন সেভ করা
-  await prisma.appSumoRedemption.create({
-    data: {
-      clerkId: userId,
-      email: email,
-      code: code.trim()
+    if (!code || code.trim().length < 3) {
+      return { success: false, error: "Invalid code length." };
     }
-  });
 
-  revalidatePath("/dashboard");
-  return { success: true };
+    // কোডটি ইতিমধ্যে ব্যবহার করা হয়েছে কিনা চেক করা
+    const existingCode = await prisma.appSumoRedemption.findFirst({
+      where: { code: code.trim() }
+    });
+    if (existingCode) {
+      return { success: false, error: "This AppSumo code has already been redeemed." };
+    }
+
+    // এই ব্যবহারকারী ইতিমধ্যে কোড রিডিম করেছেন কিনা চেক করা
+    const existingUser = await prisma.appSumoRedemption.findUnique({
+      where: { clerkId: userId }
+    });
+    if (existingUser) {
+      return { success: false, error: "You have already redeemed an AppSumo code for this account." };
+    }
+
+    // ডেটাবেজে রিডেম্পশন সেভ করা
+    await prisma.appSumoRedemption.create({
+      data: {
+        clerkId: userId,
+        email: email,
+        code: code.trim()
+      }
+    });
+
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Redemption action error:", error);
+    return { success: false, error: error.message || "Server error occurred. Please try again." };
+  }
 }
 
 // 🎯 ৬.১. ইউজারের মাসিক আউটলাইন ও চ্যাপ্টার জেনারেট করার হিসাব

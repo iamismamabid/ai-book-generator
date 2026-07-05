@@ -1393,73 +1393,28 @@ export default function FabricCoverStudio({
     const left = layout.trimLeftPx + margin;
     const top = layout.trimBottomPx - margin - bcH;
     
-    // Background card
-    const bgRect = new fabric.Rect({
-      left: 0,
-      top: 0,
+    // Clean, solid white rectangle of size 2" x 1.2" with sharp corners and a light dashed reference border.
+    // It contains absolutely no text, no numbers, and no dummy lines so that Amazon KDP can print the barcode on it.
+    const barcodeRect = new fabric.Rect({
+      left,
+      top,
       width: bcW,
       height: bcH,
       fill: '#FFFFFF',
       stroke: '#CBD5E1',
       strokeWidth: 1,
-      rx: 4,
-      ry: 4
-    });
-    
-    // ISBN Label at the top
-    const isbnLabel = new fabric.Text("ISBN 978-3-16-148410-0", {
-      left: bcW / 2,
-      top: 6,
-      fontSize: Math.max(7, Math.round(layout.scale * 0.08)),
-      fontFamily: 'monospace',
-      fontWeight: 'bold',
-      fill: '#0F172A',
-      originX: 'center'
-    });
-    
-    // Bottom numbers label
-    const numLabel = new fabric.Text("9 783161 484100", {
-      left: bcW / 2,
-      top: bcH - 14,
-      fontSize: Math.max(7, Math.round(layout.scale * 0.08)),
-      fontFamily: 'monospace',
-      fontWeight: 'bold',
-      fill: '#0F172A',
-      originX: 'center'
-    });
-    
-    // Dummy barcode lines
-    const lines = [];
-    const numLines = 28;
-    let currentX = 14;
-    for (let i = 0; i < numLines; i++) {
-      const lineW = Math.random() > 0.4 ? 2 : 4;
-      const spacing = Math.random() > 0.4 ? 3 : 5;
-      
-      if (currentX + lineW > bcW - 14) break;
-      
-      lines.push(new fabric.Rect({
-        left: currentX,
-        top: 18,
-        width: lineW,
-        height: bcH - 34,
-        fill: '#0F172A'
-      }));
-      currentX += lineW + spacing;
-    }
-    
-    const barcodeGroup = new fabric.Group([bgRect, isbnLabel, numLabel, ...lines], {
-      left,
-      top,
+      strokeDashArray: [4, 4],
+      rx: 0,
+      ry: 0,
       id: `barcode-${Date.now()}`,
       lockScalingX: true,
       lockScalingY: true,
       lockRotation: true,
-      hasControls: false // Lock controls to keep the size perfectly standard
+      hasControls: false // Lock controls to keep the KDP-standard size perfect
     } as any);
     
-    canvas.add(barcodeGroup);
-    canvas.setActiveObject(barcodeGroup);
+    canvas.add(barcodeRect);
+    canvas.setActiveObject(barcodeRect);
     canvas.requestRenderAll();
   };
 

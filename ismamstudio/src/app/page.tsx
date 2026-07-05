@@ -17,7 +17,8 @@ import {
   X,
   Key,
   Calculator,
-  Shuffle
+  Shuffle,
+  Play
 } from "lucide-react";
 import PricingSection from "../components/PricingSection";
 
@@ -69,6 +70,8 @@ export default function HomePage() {
   const [activePreview, setActivePreview] = useState<string>("sudoku");
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [activeVideoTab, setActiveVideoTab] = useState<"interior" | "cover">("interior");
+  const [leadEmail, setLeadEmail] = useState("");
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 overflow-hidden relative">
@@ -100,11 +103,18 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/studio"
-                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black text-lg hover:from-indigo-600 hover:to-purple-700 shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-lg hover:from-orange-650 hover:to-amber-600 shadow-xl shadow-orange-500/20 hover:shadow-orange-500/30 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
               >
-                Open Creator Studio
-                <ArrowRight className="w-5 h-5" />
+                Start Creating Now
+                <ArrowRight className="w-5 h-5 text-slate-950" />
               </Link>
+              <button
+                onClick={() => setIsVideoModalOpen(true)}
+                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-750 text-white font-black text-lg shadow-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Play className="w-5 h-5 text-orange-500 fill-orange-500" />
+                Watch Walkthrough Video
+              </button>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -243,6 +253,9 @@ export default function HomePage() {
                   <span>Cover design calculations require expensive, custom layout software.</span>
                 </li>
               </ul>
+              <div className="mt-4 text-[10px] font-black text-rose-450 bg-rose-500/5 p-3 rounded-xl border border-rose-500/10 uppercase tracking-wider">
+                ⚠️ Danger: A single margin or bleed formatting error can reject your book or cost you 30+ days of reprint delays.
+              </div>
             </div>
             <div className="space-y-4">
               <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/10">The Ismam Studio Solution</span>
@@ -900,6 +913,56 @@ export default function HomePage() {
 
       {/* 💳 Pricing & FAQ Section */}
       <PricingSection />
+
+      {/* 📧 Lead Generation Section */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-12">
+        <div className="bg-gradient-to-r from-slate-900/80 to-indigo-950/20 backdrop-blur-md rounded-[3rem] border border-slate-850 p-8 md:p-12 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 animate-fade-in">
+          <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none" />
+          
+          <div className="max-w-xl space-y-4 relative z-10 text-center md:text-left">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-black uppercase tracking-wider">
+              🎁 Free KDP Checklist
+            </span>
+            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+              Get the Ultimate KDP Bestseller Checklist
+            </h3>
+            <p className="text-slate-300 text-sm leading-relaxed font-semibold">
+              Not ready to join? Download our free step-by-step formatting guidelines, bleed/gutter cheat sheet, and 50 low-competition puzzle keywords to start making sales.
+            </p>
+          </div>
+
+          <div className="w-full md:w-auto relative z-10 shrink-0">
+            {leadSubmitted ? (
+              <div className="p-4 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-emerald-400 font-black text-sm text-center animate-in zoom-in-95 duration-200">
+                🎉 Awesome! Check your inbox for the download link.
+              </div>
+            ) : (
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (leadEmail) setLeadSubmitted(true);
+                }}
+                className="flex flex-col sm:flex-row gap-3 w-full sm:max-w-md"
+              >
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter your email address"
+                  value={leadEmail}
+                  onChange={(e) => setLeadEmail(e.target.value)}
+                  className="px-5 py-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 font-semibold text-sm focus:border-indigo-500 focus:outline-none w-full min-w-[260px] shadow-inner"
+                />
+                <button
+                  type="submit"
+                  className="px-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black rounded-xl text-sm hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/10 transition-all active:scale-95 shrink-0"
+                >
+                  Send Me the Checklist
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* 🔒 Trust Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-900">

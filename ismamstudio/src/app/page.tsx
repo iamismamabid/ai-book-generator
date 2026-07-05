@@ -348,23 +348,22 @@ export default function HomePage() {
             Generate mathematically verified, single-solution puzzles tailored for Amazon KDP niches.
           </p>
         </div>
-
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
           {/* 3. Labyrinth Designer */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Compass className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-3">Labyrinth Designer</h3>
+              <h3 className="text-2xl font-black text-white group-hover:text-amber-405 transition-colors duration-350 mb-3">Labyrinth Designer</h3>
               <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Generate 50+ unique maze shapes (Square, Circle, Heart masks) with mathematically guaranteed single-solution output and KDP safety margins.
               </p>
             </div>
             <Link
               href="/maze"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 group-hover:text-amber-405 transition-colors duration-350 mt-6"
             >
               Design Mazes <ArrowRight className="w-4 h-4" />
             </Link>
@@ -376,14 +375,14 @@ export default function HomePage() {
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Grid3x3 className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-3">Sudoku Studio</h3>
+              <h3 className="text-2xl font-black text-white group-hover:text-amber-405 transition-colors duration-350 mb-3">Sudoku Studio</h3>
               <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Compile print-ready Sudoku puzzle grids (Easy, Medium, Hard) in bulk with mathematically guaranteed single-solution uniqueness.
               </p>
             </div>
             <Link
               href="/sudoku"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-405 transition-colors duration-355 mt-6"
             >
               Generate Sudokus <ArrowRight className="w-4 h-4" />
             </Link>
@@ -395,14 +394,14 @@ export default function HomePage() {
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Download className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-3">Word Search Studio</h3>
+              <h3 className="text-2xl font-black text-white group-hover:text-amber-405 transition-colors duration-355 mb-3">Word Search Studio</h3>
               <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Import custom word lists or CSVs to build unique Word Search grids. Adjust fonts, highlighter options, and export interior sheets.
               </p>
             </div>
             <Link
               href="/tools/word-search"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-405 transition-colors duration-355 mt-6"
             >
               Open Word Search <ArrowRight className="w-4 h-4" />
             </Link>
@@ -414,14 +413,14 @@ export default function HomePage() {
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-455 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Key className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-3">Cryptogram Studio</h3>
+              <h3 className="text-2xl font-black text-white group-hover:text-amber-405 transition-colors duration-355 mb-3">Cryptogram Studio</h3>
               <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Create substitution cipher worksheets from custom quote libraries, complete with letter hints and solution keys formatted for publishing.
               </p>
             </div>
             <Link
               href="/studio/cryptogram"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-405 transition-colors duration-355 mt-6"
             >
               Generate Cryptograms <ArrowRight className="w-4 h-4" />
             </Link>
@@ -433,14 +432,14 @@ export default function HomePage() {
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Calculator className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-3">Math Puzzle Builder</h3>
+              <h3 className="text-2xl font-black text-white group-hover:text-amber-405 transition-colors duration-355 mb-3">Math Puzzle Builder</h3>
               <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Generate arithmetic, cross-number, and logic puzzle sheets for children, senior exercises, or educational KDP workbook niches.
               </p>
             </div>
             <Link
               href="/studio/math-puzzle"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-405 transition-colors duration-355 mt-6"
             >
               Generate Math Puzzles <ArrowRight className="w-4 h-4" />
             </Link>
@@ -449,17 +448,17 @@ export default function HomePage() {
           {/* 8. Word Scramble Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-455 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Shuffle className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-3">Word Scramble Studio</h3>
+              <h3 className="text-2xl font-black text-white group-hover:text-amber-405 transition-colors duration-355 mb-3">Word Scramble Studio</h3>
               <p className="text-slate-300 text-sm leading-relaxed font-semibold">
                 Scramble custom word lists to build activity worksheets. Customize difficulty, borders, layout guides, and download PDF sheets.
               </p>
             </div>
             <Link
               href="/studio/word-scramble"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 hover:text-white transition-colors mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-405 transition-colors duration-355 mt-6"
             >
               Generate Scrambles <ArrowRight className="w-4 h-4" />
             </Link>

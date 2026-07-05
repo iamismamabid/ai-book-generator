@@ -933,8 +933,14 @@ export default function HomePage() {
 
           <div className="w-full md:w-auto relative z-10 shrink-0">
             {leadSubmitted ? (
-              <div className="p-4 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-emerald-400 font-black text-sm text-center animate-in zoom-in-95 duration-200">
-                🎉 Awesome! Check your inbox for the download link.
+              <div className="p-5 bg-emerald-500/10 border border-emerald-500/35 rounded-2xl text-center space-y-3 animate-in zoom-in-95 duration-200 max-w-sm">
+                <p className="text-emerald-400 font-black text-sm">🎉 Successfully Registered!</p>
+                <Link
+                  href="/kdp-checklist"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-xl text-xs transition"
+                >
+                  Download / Print Checklist
+                </Link>
               </div>
             ) : (
               <form 

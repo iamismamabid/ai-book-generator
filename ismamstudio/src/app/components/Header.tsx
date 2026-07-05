@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ThemeToggle } from '@/app/components/ThemeToggle';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
 export default function Header() {
@@ -78,8 +77,6 @@ export default function Header() {
                 </button>
               </SignInButton>
             </SignedOut>
-
-            <ThemeToggle />
           </div>
 
         </div>

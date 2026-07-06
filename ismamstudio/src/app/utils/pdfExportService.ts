@@ -536,10 +536,8 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
   doc.setTextColor(0);
 };
 
-// Helper: Draw Front Cover or Back Cover page
 export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front' | 'back', pageWidth: number, pageHeight: number) => {
   const { 
-    coverElements = [], 
     frontCoverColor = '#1E293B', 
     backCoverColor = '#0F172A',
     frontCoverType = 'solid', 
@@ -547,12 +545,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     frontCoverGradientStart = '#1E293B',
     frontCoverGradientEnd = '#0F172A',
     backCoverGradientStart = '#0F172A',
-    backCoverGradientEnd = '#020617',
-    spineWidth = 0.22,
-    trimSize = { w: 8.5, h: 11 },
-    backCoverImage = '',
-    frontCoverImage = '',
-    fullCoverImage = ''
+    backCoverGradientEnd = '#020617'
   } = coverState;
 
   // 1. Draw Page Background
@@ -591,134 +584,6 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
   } else {
     doc.rect(0, 0, pageWidth, pageHeight, "F");
   }
-
-  // 2. Draw Background Images if present
-  try {
-    if (fullCoverImage) {
-      // Let's load the full image first to get its dimensions
-      const img = await new Promise<HTMLImageElement | null>((resolve) => {
-        if (typeof window === 'undefined') {
-          resolve(null);
-          return;
-        }
-        const tempImg = new Image();
-        tempImg.crossOrigin = 'anonymous';
-        tempImg.src = fullCoverImage;
-        tempImg.onload = () => resolve(tempImg);
-        tempImg.onerror = () => resolve(null);
-      });
-
-      if (img) {
-        // Calculate crop bounds based on proportions of KDP cover layout
-        // Cover Total Width = trimSize.w * 2 + spineWidth + bleed * 2
-        const bleed = 0.125;
-        const totalW = trimSize.w * 2 + spineWidth + bleed * 2;
-        const totalH = trimSize.h + bleed * 2;
-
-        const imgW = img.width;
-        const imgH = img.height;
-
-        // Scale factors for pixels to image proportions
-        const scaleX = imgW / totalW;
-        const scaleY = imgH / totalH;
-
-        let cropX = 0;
-        let cropW = trimSize.w * scaleX;
-        const cropY = bleed * scaleY;
-        const cropH = trimSize.h * scaleY;
-
-        if (isFront) {
-          // Front cover starts after Back Cover + Spine + Bleed
-          cropX = (bleed + trimSize.w + spineWidth) * scaleX;
-        } else {
-          // Back cover starts after Bleed
-          cropX = bleed * scaleX;
-        }
-
-        const base64 = await loadAndCropImage(fullCoverImage, cropX, cropY, cropW, cropH);
-        doc.addImage(base64, 'JPEG', 0, 0, pageWidth, pageHeight);
-      }
-    } else if (isFront && frontCoverImage) {
-      doc.addImage(frontCoverImage, 'JPEG', 0, 0, pageWidth, pageHeight);
-    } else if (!isFront && backCoverImage) {
-      doc.addImage(backCoverImage, 'JPEG', 0, 0, pageWidth, pageHeight);
-    }
-  } catch (err) {
-    console.error("Error drawing cover background image in PDF", err);
-  }
-
-  // 3. Draw Vector Elements belonging to this side
-  const CANVAS_WIDTH = 800;
-  const bleed = 0.125;
-  const coverTotalWidthInches = (trimSize.w * 2) + spineWidth + (bleed * 2);
-  const scale = CANVAS_WIDTH / coverTotalWidthInches;
-  const bleedPx = bleed * scale;
-  const spineWidthPx = spineWidth * scale;
-  
-  // Split region
-  const spineLeftPx = bleedPx + trimSize.w * scale;
-  const spineRightPx = spineLeftPx + spineWidthPx;
-
-  // Filter elements on the correct side
-  const elements = coverElements.filter((el: any) => {
-    if (isFront) {
-      // Front cover is on the right side of the spine
-      return el.x >= spineRightPx;
-    } else {
-      // Back cover is on the left side of the spine
-      return el.x <= spineLeftPx;
-    }
-  });
-
-  // Dimensions of one cover page on the canvas
-  const canvasCoverWidth = trimSize.w * scale;
-  const canvasCoverHeight = trimSize.h * scale;
-
-  elements.forEach((el: any) => {
-    // Map canvas coordinates relative to side boundary
-    const sideOffsetLeft = isFront ? spineRightPx : bleedPx;
-    const rx = (el.x - sideOffsetLeft) / canvasCoverWidth;
-    const ry = (el.y - bleedPx) / canvasCoverHeight;
-
-    // Convert to target page coordinates (in inches)
-    const px = rx * pageWidth;
-    const py = ry * pageHeight;
-
-    // Width/height scaling
-    const rw = (el.width / canvasCoverWidth) * pageWidth;
-    const rh = (el.height / canvasCoverHeight) * pageHeight;
-    const rRad = (el.radius / canvasCoverWidth) * pageWidth;
-    
-    // Draw text
-    if (el.type === 'text') {
-      const fontSizePt = el.fontSize * (pageHeight * 72 / (canvasCoverHeight));
-      doc.setFont(el.fontFamily || "Helvetica", el.fontStyle || "normal");
-      doc.setFontSize(fontSizePt);
-      doc.setTextColor(el.fill || "#FFFFFF");
-      doc.text(el.text, px, py);
-    } 
-    // Draw shapes
-    else if (el.type === 'rect') {
-      doc.setFillColor(el.fill || "#F59E0B");
-      doc.setDrawColor(el.stroke || "#FFFFFF");
-      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
-      doc.rect(px, py, rw, rh, el.strokeWidth > 0 ? "FD" : "F");
-    } 
-    else if (el.type === 'circle') {
-      doc.setFillColor(el.fill || "#3B82F6");
-      doc.setDrawColor(el.stroke || "#FFFFFF");
-      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
-      doc.circle(px, py, rRad, el.strokeWidth > 0 ? "FD" : "F");
-    } 
-    else if (el.type === 'line') {
-      doc.setDrawColor(el.stroke || "#FFFFFF");
-      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0.05);
-      const points = el.points || [0, 0, 100, 0];
-      const lx2 = px + (points[2] / canvasCoverWidth) * pageWidth;
-      const ly2 = py + (points[3] / canvasCoverHeight) * pageHeight;
-      doc.line(px, py, lx2, ly2);
-    }
-  });
 
   // Reset text color to default
   doc.setTextColor(0);

@@ -425,22 +425,26 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
   const gradStart = isFront ? frontCoverGradientStart : backCoverGradientStart;
   const gradEnd = isFront ? frontCoverGradientEnd : backCoverGradientEnd;
 
-  doc.setFillColor(bgColor);
-  // Approximation of gradient with a fallback solid or thin color step rectangles
   if (isGradient) {
-    const steps = 300;
-    const stepHeight = pageHeight / steps;
-    const startRGB = hexToRgb(gradStart);
-    const endRGB = hexToRgb(gradEnd);
-
-    if (startRGB && endRGB) {
-      for (let i = 0; i < steps; i++) {
-        const ratio = i / steps;
-        const r = Math.round(startRGB.r + ratio * (endRGB.r - startRGB.r));
-        const g = Math.round(startRGB.g + ratio * (endRGB.g - startRGB.g));
-        const b = Math.round(startRGB.b + ratio * (endRGB.b - startRGB.b));
-        doc.setFillColor(r, g, b);
-        doc.rect(0, i * stepHeight, pageWidth, stepHeight + 0.02, "F");
+    if (typeof window !== 'undefined') {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = pageWidth * 300; // 300 DPI quality
+        canvas.height = pageHeight * 300;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          gradient.addColorStop(0, gradStart);
+          gradient.addColorStop(1, gradEnd);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+          doc.addImage(dataUrl, 'JPEG', 0, 0, pageWidth, pageHeight);
+        } else {
+          doc.rect(0, 0, pageWidth, pageHeight, "F");
+        }
+      } catch (err) {
+        doc.rect(0, 0, pageWidth, pageHeight, "F");
       }
     } else {
       doc.rect(0, 0, pageWidth, pageHeight, "F");

@@ -2590,7 +2590,7 @@ export default function FabricCoverStudio({
 
         {activeToolTab === 'presets' && (
           <div className="space-y-4">
-            <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Cover Styles</h3>
+            <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Preset Styles</h3>
             <div className="space-y-2">
               {BACKGROUNDS.map((bg, i) => (
                 <button 
@@ -2609,6 +2609,142 @@ export default function FabricCoverStudio({
                   <Check className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               ))}
+            </div>
+
+            <div className="h-px bg-slate-200 my-4" />
+
+            <div className="space-y-4">
+              <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Custom Gradient & Colors</h3>
+              
+              {/* Back Cover Customization */}
+              <div className="space-y-2 border-b border-slate-200 pb-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-slate-600 block">Back Cover Background</label>
+                  <div className="flex bg-slate-200/80 p-0.5 rounded-lg border border-slate-300/40 text-[9px] font-black uppercase">
+                    <button 
+                      onClick={() => setBackCoverType('solid')}
+                      className={`px-2 py-1 rounded-md transition-all ${backCoverType === 'solid' ? 'bg-white shadow text-slate-900' : 'text-slate-500'}`}
+                    >
+                      Solid
+                    </button>
+                    <button 
+                      onClick={() => setBackCoverType('gradient')}
+                      className={`px-2 py-1 rounded-md transition-all ${backCoverType === 'gradient' ? 'bg-white shadow text-slate-900' : 'text-slate-500'}`}
+                    >
+                      Gradient
+                    </button>
+                  </div>
+                </div>
+
+                {backCoverType === 'solid' ? (
+                  <div className="flex gap-2">
+                    <input 
+                      type="color" 
+                      value={backCoverColor} 
+                      onChange={(e) => setBackCoverColor(e.target.value)} 
+                      className="w-9 h-9 rounded-xl cursor-pointer border border-slate-200 p-0.5 bg-white shadow-sm" 
+                    />
+                    <input 
+                      type="text" 
+                      value={backCoverColor} 
+                      onChange={(e) => setBackCoverColor(e.target.value)} 
+                      className="flex-1 text-xs font-bold uppercase p-2 border border-slate-200 rounded-xl text-center font-mono" 
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 bg-white p-2 border rounded-xl">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 block mb-0.5 uppercase">Color 1</label>
+                      <div className="flex gap-1 items-center">
+                        <input 
+                          type="color" 
+                          value={backCoverGradientStart} 
+                          onChange={(e) => setBackCoverGradientStart(e.target.value)} 
+                          className="w-7 h-7 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white" 
+                        />
+                        <span className="text-[9px] font-black text-slate-400 uppercase truncate">{backCoverGradientStart}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 block mb-0.5 uppercase">Color 2</label>
+                      <div className="flex gap-1 items-center">
+                        <input 
+                          type="color" 
+                          value={backCoverGradientEnd} 
+                          onChange={(e) => setBackCoverGradientEnd(e.target.value)} 
+                          className="w-7 h-7 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white" 
+                        />
+                        <span className="text-[9px] font-black text-slate-400 uppercase truncate">{backCoverGradientEnd}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Front Cover Customization */}
+              <div className="space-y-2 pt-1">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-slate-600 block">Front Cover Background</label>
+                  <div className="flex bg-slate-200/80 p-0.5 rounded-lg border border-slate-300/40 text-[9px] font-black uppercase">
+                    <button 
+                      onClick={() => setFrontCoverType('solid')}
+                      className={`px-2 py-1 rounded-md transition-all ${frontCoverType === 'solid' ? 'bg-white shadow text-slate-900' : 'text-slate-500'}`}
+                    >
+                      Solid
+                    </button>
+                    <button 
+                      onClick={() => setFrontCoverType('gradient')}
+                      className={`px-2 py-1 rounded-md transition-all ${frontCoverType === 'gradient' ? 'bg-white shadow text-slate-900' : 'text-slate-500'}`}
+                    >
+                      Gradient
+                    </button>
+                  </div>
+                </div>
+
+                {frontCoverType === 'solid' ? (
+                  <div className="flex gap-2">
+                    <input 
+                      type="color" 
+                      value={frontCoverColor} 
+                      onChange={(e) => setFrontCoverColor(e.target.value)} 
+                      className="w-9 h-9 rounded-xl cursor-pointer border border-slate-200 p-0.5 bg-white shadow-sm" 
+                    />
+                    <input 
+                      type="text" 
+                      value={frontCoverColor} 
+                      onChange={(e) => setFrontCoverColor(e.target.value)} 
+                      className="flex-1 text-xs font-bold uppercase p-2 border border-slate-200 rounded-xl text-center font-mono" 
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 bg-white p-2 border rounded-xl">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 block mb-0.5 uppercase">Color 1</label>
+                      <div className="flex gap-1 items-center">
+                        <input 
+                          type="color" 
+                          value={frontCoverGradientStart} 
+                          onChange={(e) => setFrontCoverGradientStart(e.target.value)} 
+                          className="w-7 h-7 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white" 
+                        />
+                        <span className="text-[9px] font-black text-slate-400 uppercase truncate">{frontCoverGradientStart}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 block mb-0.5 uppercase">Color 2</label>
+                      <div className="flex gap-1 items-center">
+                        <input 
+                          type="color" 
+                          value={frontCoverGradientEnd} 
+                          onChange={(e) => setFrontCoverGradientEnd(e.target.value)} 
+                          className="w-7 h-7 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white" 
+                        />
+                        <span className="text-[9px] font-black text-slate-400 uppercase truncate">{frontCoverGradientEnd}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

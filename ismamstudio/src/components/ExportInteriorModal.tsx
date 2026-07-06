@@ -160,7 +160,7 @@ export default function ExportInteriorModal({
   // loading state
   if (!premiumStatus.checked) {
     return (
-      <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center max-w-sm w-full flex flex-col items-center shadow-2xl animate-in zoom-in-95 duration-200">
           <Loader2 className="w-8 h-8 animate-spin text-indigo-650 mb-3" />
           <span className="text-xs font-black text-slate-800 uppercase tracking-wider">Checking Account Access...</span>
@@ -170,7 +170,7 @@ export default function ExportInteriorModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full shadow-2xl p-6 relative animate-in zoom-in-95 duration-200">
         <button
           onClick={onClose}

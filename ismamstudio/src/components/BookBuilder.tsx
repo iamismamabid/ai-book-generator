@@ -400,11 +400,9 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           )}
         </div>
       </motion.div>
-
-
-      {/* ADD PAGE MODAL DIALOG TEMPLATES */}
+      {/* ADD PAGE MODAL DIALOG TEMPLATES */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full shadow-2xl p-6 relative animate-in zoom-in-95 duration-200">
             <button
               onClick={() => setIsAddModalOpen(false)}
@@ -473,11 +471,11 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
       {/* PREMIUM EXPORT DIALOG MODAL */}
       {isExportModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full shadow-2xl p-6 relative animate-in zoom-in-95 duration-200">
             <button
               onClick={() => setIsExportModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-655 transition"
             >
               <X className="w-4 h-4" />
             </button>

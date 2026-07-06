@@ -792,8 +792,7 @@ export default function FabricCoverStudio({
 
     canvas.renderAll();
   }, [
-    canvas, backCoverColor, backCoverType, backCoverGradientStart, backCoverGradientEnd,
-    frontCoverColor, frontCoverType, frontCoverGradientStart, frontCoverGradientEnd,
+    canvas,
     fullCoverImage, backCoverImage, frontCoverImage,
     showKdpGuides, isGenerating, layout
   ]);
@@ -1554,7 +1553,7 @@ export default function FabricCoverStudio({
         setFullCoverImage('');
         fullCoverImageEl.current = null;
       }
-      canvas.requestRenderAll();
+      canvas.renderAll();
       canvas.fire("object:modified");
     };
   };

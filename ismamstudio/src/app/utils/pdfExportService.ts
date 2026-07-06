@@ -21,20 +21,25 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
   const w = trimSize.w;
   const h = trimSize.h;
   
-  // Initialize portrait PDF
-  const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [w, h] });
-
-  // 1. Add Front Cover if integrated
+  let doc: any;
   let firstPageAdded = false;
+
   if (includeCover && coverState) {
-    await drawCoverPagePart(doc, coverState, 'front', w, h);
+    const bleed = 0.125;
+    const coverW = w * 2 + (coverState.spineWidth || 0.22) + bleed * 2;
+    const coverH = h + bleed * 2;
+    // Create doc with landscape widescreen cover dimensions
+    doc = new jsPDF({ orientation: "landscape", unit: "in", format: [coverW, coverH] });
+    await drawFullWidescreenCover(doc, coverState, coverW, coverH);
     firstPageAdded = true;
+  } else {
+    doc = new jsPDF({ orientation: "portrait", unit: "in", format: [w, h] });
   }
 
   // 2. Add Interior Pages
   bookPages.forEach((page, index) => {
     if (firstPageAdded || index > 0) {
-      doc.addPage();
+      doc.addPage([w, h], "portrait");
     }
     firstPageAdded = true;
 
@@ -100,11 +105,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     }
   });
 
-  // 3. Add Back Cover if integrated
-  if (includeCover && coverState) {
-    doc.addPage();
-    await drawCoverPagePart(doc, coverState, 'back', w, h);
-  }
+  // 3. Cover is fully widescreen on Page 1, so no need to add a back cover page at the end.
 
   doc.save("My_KDP_Puzzle_Book.pdf");
 };
@@ -396,6 +397,145 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number) => {
   }
 
   // Reset text color
+  doc.setTextColor(0);
+};
+
+// Helper: Draw Full Widescreen Cover Page (Back Cover + Spine + Front Cover)
+export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWidth: number, pageHeight: number) => {
+  const { 
+    coverElements = [], 
+    frontCoverColor = '#1E293B', 
+    backCoverColor = '#0F172A',
+    frontCoverType = 'solid', 
+    backCoverType = 'solid',
+    frontCoverGradientStart = '#1E293B',
+    frontCoverGradientEnd = '#0F172A',
+    backCoverGradientStart = '#0F172A',
+    backCoverGradientEnd = '#020617',
+    spineWidth = 0.22,
+    trimSize = { w: 8.5, h: 11 },
+    backCoverImage = '',
+    frontCoverImage = '',
+    fullCoverImage = ''
+  } = coverState;
+
+  const bleed = 0.125;
+  const halfW = pageWidth / 2;
+
+  // 1. Draw Back Cover Background (Left half)
+  doc.setFillColor(backCoverColor);
+  if (backCoverType === 'gradient' && typeof window !== 'undefined') {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = halfW * 300;
+      canvas.height = pageHeight * 300;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, backCoverGradientStart);
+        gradient.addColorStop(1, backCoverGradientEnd);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        doc.addImage(dataUrl, 'JPEG', 0, 0, halfW, pageHeight);
+      } else {
+        doc.rect(0, 0, halfW, pageHeight, "F");
+      }
+    } catch (err) {
+      doc.rect(0, 0, halfW, pageHeight, "F");
+    }
+  } else {
+    doc.rect(0, 0, halfW, pageHeight, "F");
+  }
+
+  // 2. Draw Front Cover Background (Right half)
+  doc.setFillColor(frontCoverColor);
+  if (frontCoverType === 'gradient' && typeof window !== 'undefined') {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = halfW * 300;
+      canvas.height = pageHeight * 300;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, frontCoverGradientStart);
+        gradient.addColorStop(1, frontCoverGradientEnd);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        doc.addImage(dataUrl, 'JPEG', halfW, 0, halfW, pageHeight);
+      } else {
+        doc.rect(halfW, 0, halfW, pageHeight, "F");
+      }
+    } catch (err) {
+      doc.rect(halfW, 0, halfW, pageHeight, "F");
+    }
+  } else {
+    doc.rect(halfW, 0, halfW, pageHeight, "F");
+  }
+
+  // 3. Draw Spine Background in the middle
+  const spineLeft = bleed + trimSize.w;
+  doc.setFillColor(frontCoverColor); // fallback
+  doc.rect(spineLeft, 0, spineWidth, pageHeight, "F");
+
+  // 4. Draw Background Images if present
+  try {
+    if (fullCoverImage) {
+      doc.addImage(fullCoverImage, 'JPEG', 0, 0, pageWidth, pageHeight);
+    } else {
+      if (backCoverImage) {
+        doc.addImage(backCoverImage, 'JPEG', 0, 0, halfW, pageHeight);
+      }
+      if (frontCoverImage) {
+        doc.addImage(frontCoverImage, 'JPEG', halfW, 0, halfW, pageHeight);
+      }
+    }
+  } catch (err) {
+    console.error("Error drawing cover backgrounds", err);
+  }
+
+  // 5. Draw Vector Elements
+  const CANVAS_WIDTH = 800;
+  const coverTotalWidthInches = (trimSize.w * 2) + spineWidth + (bleed * 2);
+  const scale = CANVAS_WIDTH / coverTotalWidthInches;
+  const canvasHeight = (trimSize.h + bleed * 2) * scale;
+
+  coverElements.forEach((el: any) => {
+    // Scale canvas to inches coordinates
+    const px = (el.x / CANVAS_WIDTH) * pageWidth;
+    const py = (el.y / canvasHeight) * pageHeight;
+
+    const rw = (el.width / CANVAS_WIDTH) * pageWidth;
+    const rh = (el.height / canvasHeight) * pageHeight;
+    const rRad = (el.radius / CANVAS_WIDTH) * pageWidth;
+
+    if (el.type === 'text') {
+      const fontSizePt = el.fontSize * (pageHeight * 72 / canvasHeight);
+      doc.setFont(el.fontFamily || "Helvetica", el.fontStyle || "normal");
+      doc.setFontSize(fontSizePt);
+      doc.setTextColor(el.fill || "#FFFFFF");
+      doc.text(el.text, px, py);
+    } else if (el.type === 'rect') {
+      doc.setFillColor(el.fill || "#F59E0B");
+      doc.setDrawColor(el.stroke || "#FFFFFF");
+      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
+      doc.rect(px, py, rw, rh, el.strokeWidth > 0 ? "FD" : "F");
+    } else if (el.type === 'circle') {
+      doc.setFillColor(el.fill || "#3B82F6");
+      doc.setDrawColor(el.stroke || "#FFFFFF");
+      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
+      doc.circle(px, py, rRad, el.strokeWidth > 0 ? "FD" : "F");
+    } else if (el.type === 'line') {
+      doc.setDrawColor(el.stroke || "#FFFFFF");
+      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0.05);
+      const points = el.points || [0, 0, 100, 0];
+      const lx2 = px + (points[2] / CANVAS_WIDTH) * pageWidth;
+      const ly2 = py + (points[3] / canvasHeight) * pageHeight;
+      doc.line(px, py, lx2, ly2);
+    }
+  });
+
   doc.setTextColor(0);
 };
 

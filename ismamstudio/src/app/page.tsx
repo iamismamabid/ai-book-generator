@@ -74,7 +74,7 @@ export default function HomePage() {
   const [leadSubmitted, setLeadSubmitted] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 overflow-hidden relative">
+    <div className="min-h-screen bg-[#0b0f19] text-slate-100 overflow-hidden relative" suppressHydrationWarning>
 
       {/* 🔮 Background Glow Elements */}
       <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse-glow" />

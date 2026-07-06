@@ -4,7 +4,7 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
 export default function Header() {
   return (
-    <header className="fixed top-0 inset-x-0 z-50 flex flex-col transition-all duration-300">
+    <header className="fixed top-0 inset-x-0 z-50 flex flex-col transition-all duration-300" suppressHydrationWarning>
       {/* 📣 Announcement Bar */}
       <Link 
         href="/tools/spine-calculator" 
@@ -17,8 +17,8 @@ export default function Header() {
         <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
       </Link>
 
-      <nav className="bg-white/70 dark:bg-slate-950/75 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-900/50 glass-card transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <nav className="bg-white/70 dark:bg-slate-950/75 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-900/50 glass-card transition-colors duration-300" suppressHydrationWarning>
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between" suppressHydrationWarning>
 
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">

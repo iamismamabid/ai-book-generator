@@ -744,7 +744,7 @@ export default function FabricCoverStudio({
       }
     });
 
-    canvas.requestRenderAll();
+    canvas.renderAll();
   }, [
     canvas, backCoverColor, backCoverType, backCoverGradientStart, backCoverGradientEnd,
     frontCoverColor, frontCoverType, frontCoverGradientStart, frontCoverGradientEnd,

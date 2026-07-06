@@ -527,7 +527,7 @@ export default function FabricCoverStudio({
     const fCanvas = new fabric.Canvas(canvasRef.current, {
       width: layout.canvasWidth,
       height: layout.canvasHeight,
-      backgroundColor: backCoverColor,
+      backgroundColor: 'transparent',
       preserveObjectStacking: true
     });
 

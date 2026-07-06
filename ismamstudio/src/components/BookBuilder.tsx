@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle, GripVertical } from "lucide-react";
+import { Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle, GripVertical, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
@@ -492,18 +492,28 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
             <div className="space-y-4">
               {/* Cover Integration */}
-              <div className="flex justify-between items-center p-3.5 bg-slate-50 rounded-2xl border border-slate-200/50">
-                <div>
-                  <label className="text-xs font-black text-slate-800 block">Include Front & Back Cover</label>
-                  <span className="text-[9px] font-bold text-slate-400 block uppercase">Compile designs from Cover Studio</span>
+              <div className="space-y-2 p-3.5 bg-slate-50 rounded-2xl border border-slate-200/50">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <label className="text-xs font-black text-slate-800 block">Include Front & Back Cover</label>
+                    <span className="text-[9px] font-bold text-slate-400 block uppercase">Compile designs from Cover Studio</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={includeCover}
+                    disabled={!coverState || coverState.coverElements?.length === 0}
+                    onChange={(e) => setIncludeCover(e.target.checked)}
+                    className="w-4 h-4 accent-indigo-600 cursor-pointer disabled:opacity-50"
+                  />
                 </div>
-                <input
-                  type="checkbox"
-                  checked={includeCover}
-                  disabled={!coverState || coverState.coverElements?.length === 0}
-                  onChange={(e) => setIncludeCover(e.target.checked)}
-                  className="w-4 h-4 accent-indigo-600 cursor-pointer disabled:opacity-50"
-                />
+                {includeCover && (
+                  <div className="flex gap-2 items-start bg-indigo-50 border border-indigo-200 text-indigo-850 p-2.5 rounded-xl text-[10px] font-semibold leading-normal mt-2">
+                    <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the Book & Cover Studio.
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Page Numbers */}

@@ -428,7 +428,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
   doc.setFillColor(bgColor);
   // Approximation of gradient with a fallback solid or thin color step rectangles
   if (isGradient) {
-    const steps = 15;
+    const steps = 300;
     const stepHeight = pageHeight / steps;
     const startRGB = hexToRgb(gradStart);
     const endRGB = hexToRgb(gradEnd);

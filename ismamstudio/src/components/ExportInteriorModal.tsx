@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Settings2, FileDown, AlertTriangle, Loader2, Lock, Sparkles, ShieldCheck, Ticket } from "lucide-react";
+import { X, Settings2, FileDown, AlertTriangle, Loader2, Lock, Sparkles, ShieldCheck, Ticket, Info } from "lucide-react";
 import { checkPremiumStatus, redeemAppSumoCode } from "@/app/actions";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
@@ -252,6 +252,15 @@ export default function ExportInteriorModal({
               <div className="flex gap-2 items-center bg-amber-50 border border-amber-200 text-amber-800 p-2.5 rounded-xl text-[10px] font-semibold">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>No saved cover found! Create a cover in the Cover Studio to use this feature.</span>
+              </div>
+            )}
+
+            {includeCover && hasSavedCover && (
+              <div className="flex gap-2 items-start bg-indigo-50 border border-indigo-200 text-indigo-850 p-2.5 rounded-xl text-[10px] font-semibold leading-normal">
+                <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the Book & Cover Studio.
+                </span>
               </div>
             )}
           </div>

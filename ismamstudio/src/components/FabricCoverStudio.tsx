@@ -186,24 +186,68 @@ export default function FabricCoverStudio({
     fullCoverImage
   } = coverBackground;
 
-  // Local helper setters that update the combined coverBackground state object
-  const setBackCoverColor = (val: string) => setCoverBackground(prev => ({ ...prev, backCoverColor: val }));
-  const setBackCoverType = (val: 'solid' | 'gradient') => setCoverBackground(prev => ({ ...prev, backCoverType: val }));
-  const setBackCoverGradientStart = (val: string) => setCoverBackground(prev => ({ ...prev, backCoverGradientStart: val }));
-  const setBackCoverGradientEnd = (val: string) => setCoverBackground(prev => ({ ...prev, backCoverGradientEnd: val }));
-  const setFrontCoverColor = (val: string) => setCoverBackground(prev => ({ ...prev, frontCoverColor: val }));
-  const setFrontCoverType = (val: 'solid' | 'gradient') => setCoverBackground(prev => ({ ...prev, frontCoverType: val }));
-  const setFrontCoverGradientStart = (val: string) => setCoverBackground(prev => ({ ...prev, frontCoverGradientStart: val }));
-  const setFrontCoverGradientEnd = (val: string) => setCoverBackground(prev => ({ ...prev, frontCoverGradientEnd: val }));
-  const setBackCoverImage = (val: string) => setCoverBackground(prev => ({ ...prev, backCoverImage: val }));
-  const setFrontCoverImage = (val: string) => setCoverBackground(prev => ({ ...prev, frontCoverImage: val }));
-  const setFullCoverImage = (val: string) => setCoverBackground(prev => ({ ...prev, fullCoverImage: val }));
-
-  // Keep a ref to coverBackground to prevent stale closure inside saveState
+  // Keep a ref to coverBackground to prevent stale closure inside saveState and ensure instant rendering
   const coverBackgroundRef = useRef(coverBackground);
   useEffect(() => {
     coverBackgroundRef.current = coverBackground;
   }, [coverBackground]);
+
+  // Local helper setters that update the combined coverBackground state object and the ref for instant sync
+  const setBackCoverColor = (val: string) => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, backCoverColor: val };
+    setCoverBackground(prev => ({ ...prev, backCoverColor: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setBackCoverType = (val: 'solid' | 'gradient') => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, backCoverType: val };
+    setCoverBackground(prev => ({ ...prev, backCoverType: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setBackCoverGradientStart = (val: string) => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, backCoverGradientStart: val };
+    setCoverBackground(prev => ({ ...prev, backCoverGradientStart: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setBackCoverGradientEnd = (val: string) => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, backCoverGradientEnd: val };
+    setCoverBackground(prev => ({ ...prev, backCoverGradientEnd: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setFrontCoverColor = (val: string) => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, frontCoverColor: val };
+    setCoverBackground(prev => ({ ...prev, frontCoverColor: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setFrontCoverType = (val: 'solid' | 'gradient') => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, frontCoverType: val };
+    setCoverBackground(prev => ({ ...prev, frontCoverType: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setFrontCoverGradientStart = (val: string) => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, frontCoverGradientStart: val };
+    setCoverBackground(prev => ({ ...prev, frontCoverGradientStart: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setFrontCoverGradientEnd = (val: string) => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, frontCoverGradientEnd: val };
+    setCoverBackground(prev => ({ ...prev, frontCoverGradientEnd: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setBackCoverImage = (val: string) => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, backCoverImage: val };
+    setCoverBackground(prev => ({ ...prev, backCoverImage: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setFrontCoverImage = (val: string) => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, frontCoverImage: val };
+    setCoverBackground(prev => ({ ...prev, frontCoverImage: val }));
+    if (canvas) canvas.renderAll();
+  };
+  const setFullCoverImage = (val: string) => {
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, fullCoverImage: val };
+    setCoverBackground(prev => ({ ...prev, fullCoverImage: val }));
+    if (canvas) canvas.renderAll();
+  };
 
   // Ref to hold saveState function to call it when coverBackground updates
   const saveStateRef = useRef<() => void>(() => {});
@@ -617,36 +661,38 @@ export default function FabricCoverStudio({
 
       ctx.save();
       
+      const bg = coverBackgroundRef.current;
+      
       // 1. Draw Back Cover background
-      if (backCoverType === 'gradient') {
+      if (bg.backCoverType === 'gradient') {
         const grad = ctx.createLinearGradient(0, 0, layout.spineLeftPx, 0);
-        grad.addColorStop(0, backCoverGradientStart);
-        grad.addColorStop(1, backCoverGradientEnd);
+        grad.addColorStop(0, bg.backCoverGradientStart);
+        grad.addColorStop(1, bg.backCoverGradientEnd);
         ctx.fillStyle = grad;
       } else {
-        ctx.fillStyle = backCoverColor;
+        ctx.fillStyle = bg.backCoverColor;
       }
       ctx.fillRect(0, 0, layout.spineLeftPx, layout.canvasHeight);
 
       // 2. Draw Spine background (smooth connecting gradient or solid color)
-      if (backCoverType === 'gradient' && frontCoverType === 'gradient') {
+      if (bg.backCoverType === 'gradient' && bg.frontCoverType === 'gradient') {
         const grad = ctx.createLinearGradient(layout.spineLeftPx, 0, layout.spineRightPx, 0);
-        grad.addColorStop(0, backCoverGradientEnd);
-        grad.addColorStop(1, frontCoverGradientStart);
+        grad.addColorStop(0, bg.backCoverGradientEnd);
+        grad.addColorStop(1, bg.frontCoverGradientStart);
         ctx.fillStyle = grad;
       } else {
-        ctx.fillStyle = backCoverColor;
+        ctx.fillStyle = bg.backCoverColor;
       }
       ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
 
       // 3. Draw Front Cover background
-      if (frontCoverType === 'gradient') {
+      if (bg.frontCoverType === 'gradient') {
         const grad = ctx.createLinearGradient(layout.spineRightPx, 0, layout.canvasWidth, 0);
-        grad.addColorStop(0, frontCoverGradientStart);
-        grad.addColorStop(1, frontCoverGradientEnd);
+        grad.addColorStop(0, bg.frontCoverGradientStart);
+        grad.addColorStop(1, bg.frontCoverGradientEnd);
         ctx.fillStyle = grad;
       } else {
-        ctx.fillStyle = frontCoverColor;
+        ctx.fillStyle = bg.frontCoverColor;
       }
       ctx.fillRect(layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
 
@@ -1478,7 +1524,9 @@ export default function FabricCoverStudio({
         fullCoverImage: ''
       };
     }
+    coverBackgroundRef.current = newBg;
     setCoverBackground(newBg);
+    if (canvas) canvas.renderAll();
   };
 
   const applyBackgroundImage = (url: string, target: 'full' | 'front' | 'back') => {

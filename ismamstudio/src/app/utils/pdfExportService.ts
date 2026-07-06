@@ -21,25 +21,18 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
   const w = trimSize.w;
   const h = trimSize.h;
   
-  let doc: any;
+  const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [w, h] });
   let firstPageAdded = false;
 
   if (includeCover && coverState) {
-    const bleed = 0.125;
-    const coverW = w * 2 + (coverState.spineWidth || 0.22) + bleed * 2;
-    const coverH = h + bleed * 2;
-    // Create doc with landscape widescreen cover dimensions
-    doc = new jsPDF({ orientation: "landscape", unit: "in", format: [coverW, coverH] });
-    await drawFullWidescreenCover(doc, coverState, coverW, coverH);
+    await drawCoverPagePart(doc, coverState, 'front', w, h);
     firstPageAdded = true;
-  } else {
-    doc = new jsPDF({ orientation: "portrait", unit: "in", format: [w, h] });
   }
 
   // 2. Add Interior Pages
   bookPages.forEach((page, index) => {
     if (firstPageAdded || index > 0) {
-      doc.addPage([w, h], "portrait");
+      doc.addPage();
     }
     firstPageAdded = true;
 
@@ -105,7 +98,11 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     }
   });
 
-  // 3. Cover is fully widescreen on Page 1, so no need to add a back cover page at the end.
+  // 3. Add Back Cover if integrated
+  if (includeCover && coverState) {
+    doc.addPage();
+    await drawCoverPagePart(doc, coverState, 'back', w, h);
+  }
 
   doc.save("My_KDP_Puzzle_Book.pdf");
 };
@@ -564,6 +561,8 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
   const isGradient = isFront ? frontCoverType === 'gradient' : backCoverType === 'gradient';
   const gradStart = isFront ? frontCoverGradientStart : backCoverGradientStart;
   const gradEnd = isFront ? frontCoverGradientEnd : backCoverGradientEnd;
+
+  doc.setFillColor(bgColor);
 
   if (isGradient) {
     if (typeof window !== 'undefined') {

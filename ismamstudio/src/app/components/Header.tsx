@@ -8,9 +8,9 @@ export default function Header() {
       {/* 📣 Announcement Bar */}
       <Link 
         href="/tools/spine-calculator" 
-        className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white text-center py-2 px-4 text-xs font-black tracking-wider hover:opacity-95 transition-opacity flex items-center justify-center gap-2 group z-50 shadow-md"
+        className="w-full bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 text-slate-950 text-center py-2 px-4 text-xs font-black tracking-wider hover:opacity-95 transition-opacity flex items-center justify-center gap-2 group z-50 shadow-md"
       >
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/20 text-white text-[9px] font-black uppercase tracking-widest animate-pulse">
+        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/10 text-slate-950 text-[9px] font-black uppercase tracking-widest animate-pulse">
           Free Tool
         </span>
         <span>New: Amazon KDP Spine & Cover Calculator is now 100% free! Calculate print specs instantly.</span>

@@ -32,7 +32,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
   // 2. Add Interior Pages
   bookPages.forEach((page, index) => {
     if (firstPageAdded || index > 0) {
-      doc.addPage();
+      doc.addPage([w, h], "portrait");
     }
     firstPageAdded = true;
 
@@ -100,7 +100,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
 
   // 3. Add Back Cover if integrated
   if (includeCover && coverState) {
-    doc.addPage();
+    doc.addPage([w, h], "portrait");
     await drawCoverPagePart(doc, coverState, 'back', w, h);
   }
 

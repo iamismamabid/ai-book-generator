@@ -548,10 +548,9 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     backCoverGradientEnd = '#020617'
   } = coverState;
 
-  // Get exact page dimensions from jsPDF internal properties
-  const pgW = doc.internal.pageSize.getWidth();
-  const pgH = doc.internal.pageSize.getHeight();
-  console.log("drawCoverPagePart - pgW:", pgW, "pgH:", pgH, "side:", side, "coverState:", coverState);
+  // Use the passed-in pageWidth/pageHeight directly - these are authoritative
+  const pgW = pageWidth;
+  const pgH = pageHeight;
 
   // 1. Draw Page Background
   const isFront = side === 'front';
@@ -560,36 +559,31 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
   const gradStart = isFront ? frontCoverGradientStart : backCoverGradientStart;
   const gradEnd = isFront ? frontCoverGradientEnd : backCoverGradientEnd;
 
-  doc.setFillColor(bgColor);
-
   if (isGradient) {
-    if (typeof window !== 'undefined') {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 128;
-        canvas.height = 256;
-        console.log("drawCoverPagePart - gradient canvas:", canvas.width, "x", canvas.height, "gradStart:", gradStart, "gradEnd:", gradEnd, "target:", pgW, "x", pgH);
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          gradient.addColorStop(0, gradStart);
-          gradient.addColorStop(1, gradEnd);
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL('image/png');
-          doc.addImage(dataUrl, 'PNG', 0, 0, pgW, pgH);
-        } else {
-          console.warn("drawCoverPagePart - 2d context is null");
-          doc.rect(0, 0, pgW, pgH, "F");
-        }
-      } catch (err) {
-        console.error("drawCoverPagePart - canvas error:", err);
-        doc.rect(0, 0, pgW, pgH, "F");
+    // Pure vector gradient: draw N vertical strips with interpolated colors
+    // This creates a horizontal gradient (left-to-right) matching the Cover Studio
+    const startRgb = hexToRgb(gradStart);
+    const endRgb = hexToRgb(gradEnd);
+    
+    if (startRgb && endRgb) {
+      const strips = 64;
+      const stripW = pgW / strips;
+      for (let i = 0; i < strips; i++) {
+        const t = i / (strips - 1);
+        const r = Math.round(startRgb.r + (endRgb.r - startRgb.r) * t);
+        const g = Math.round(startRgb.g + (endRgb.g - startRgb.g) * t);
+        const b = Math.round(startRgb.b + (endRgb.b - startRgb.b) * t);
+        doc.setFillColor(r, g, b);
+        // Add tiny overlap (+0.01) to prevent hairline gaps between strips
+        doc.rect(i * stripW, 0, stripW + 0.01, pgH, "F");
       }
     } else {
+      // Fallback: if color parsing fails, use solid color
+      doc.setFillColor(bgColor);
       doc.rect(0, 0, pgW, pgH, "F");
     }
   } else {
+    doc.setFillColor(bgColor);
     doc.rect(0, 0, pgW, pgH, "F");
   }
 

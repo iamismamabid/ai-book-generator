@@ -397,6 +397,14 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number) => {
   doc.setTextColor(0);
 };
 
+// Helper: Map standard font families to jsPDF built-in fonts
+const getSafeFontFamily = (font: string): string => {
+  const f = (font || "").toLowerCase();
+  if (f.includes("times") || f.includes("serif") || f.includes("georgia")) return "times";
+  if (f.includes("courier") || f.includes("mono")) return "courier";
+  return "helvetica"; // Default to helvetica (sans-serif) to match Arial/Inter/Roboto
+};
+
 // Helper: Draw Full Widescreen Cover Page (Back Cover + Spine + Front Cover)
 export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWidth: number, pageHeight: number) => {
   const { 
@@ -522,14 +530,14 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
 
     if (el.type === 'text') {
       const fontSizePt = el.fontSize * (pageHeight * 72 / (canvasHeight || 738));
-      doc.setFont(el.fontFamily || "Helvetica", el.fontStyle || "normal");
+      doc.setFont(getSafeFontFamily(el.fontFamily), el.fontStyle || "normal");
       doc.setFontSize(isNaN(fontSizePt) ? 12 : fontSizePt);
       doc.setTextColor(el.fill || "#FFFFFF");
       
       const align = el.align || 'left';
       const textX = align === 'center' ? px + rw / 2 : (align === 'right' ? px + rw : px);
       if (!isNaN(textX)) {
-        doc.text(el.text || "", textX, py, { align });
+        doc.text(el.text || "", textX, py, { align, baseline: 'top' });
       }
     } else if (el.type === 'rect') {
       doc.setFillColor(el.fill || "#F59E0B");
@@ -686,14 +694,14 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
 
     if (el.type === 'text') {
       const fontSizePt = el.fontSize * (pgH * 72 / (canvasHeight || 738));
-      doc.setFont(el.fontFamily || "Helvetica", el.fontStyle || "normal");
+      doc.setFont(getSafeFontFamily(el.fontFamily), el.fontStyle || "normal");
       doc.setFontSize(isNaN(fontSizePt) ? 12 : fontSizePt);
       doc.setTextColor(el.fill || "#FFFFFF");
       
       const align = el.align || 'left';
       const textX = align === 'center' ? px + rw / 2 : (align === 'right' ? px + rw : px);
       if (!isNaN(textX)) {
-        doc.text(el.text || "", textX, py, { align });
+        doc.text(el.text || "", textX, py, { align, baseline: 'top' });
       }
     } else if (el.type === 'rect') {
       doc.setFillColor(el.fill || "#F59E0B");

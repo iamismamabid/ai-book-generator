@@ -560,25 +560,31 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
   const gradEnd = isFront ? frontCoverGradientEnd : backCoverGradientEnd;
 
   if (isGradient) {
-    // Pure vector gradient: draw N vertical strips with interpolated colors
-    // This creates a horizontal gradient (left-to-right) matching the Cover Studio
-    const startRgb = hexToRgb(gradStart);
-    const endRgb = hexToRgb(gradEnd);
-    
-    if (startRgb && endRgb) {
-      const strips = 500; // Increased to 500 for a perfectly smooth, high-quality gradient without banding
-      const stripW = pgW / strips;
-      for (let i = 0; i < strips; i++) {
-        const t = i / (strips - 1);
-        const r = Math.round(startRgb.r + (endRgb.r - startRgb.r) * t);
-        const g = Math.round(startRgb.g + (endRgb.g - startRgb.g) * t);
-        const b = Math.round(startRgb.b + (endRgb.b - startRgb.b) * t);
-        doc.setFillColor(r, g, b);
-        // Add tiny overlap to prevent hairline gaps between strips
-        doc.rect(i * stripW, 0, stripW + 0.003, pgH, "F");
+    if (typeof window !== 'undefined') {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Draw horizontal gradient (left to right) matching Cover Studio
+          const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+          gradient.addColorStop(0, gradStart);
+          gradient.addColorStop(1, gradEnd);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/png');
+          doc.addImage(dataUrl, 'PNG', 0, 0, pgW, pgH);
+        } else {
+          doc.setFillColor(bgColor);
+          doc.rect(0, 0, pgW, pgH, "F");
+        }
+      } catch (err) {
+        console.error("drawCoverPagePart - gradient error:", err);
+        doc.setFillColor(bgColor);
+        doc.rect(0, 0, pgW, pgH, "F");
       }
     } else {
-      // Fallback: if color parsing fails, use solid color
       doc.setFillColor(bgColor);
       doc.rect(0, 0, pgW, pgH, "F");
     }

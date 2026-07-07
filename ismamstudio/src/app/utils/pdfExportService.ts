@@ -538,6 +538,9 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
 
 export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front' | 'back', pageWidth: number, pageHeight: number) => {
   const { 
+    coverElements = [],
+    spineWidth = 0.22,
+    trimSize = { w: 8.5, h: 11 },
     frontCoverColor = '#1E293B', 
     backCoverColor = '#0F172A',
     frontCoverType = 'solid', 
@@ -592,6 +595,69 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     doc.setFillColor(bgColor);
     doc.rect(0, 0, pgW, pgH, "F");
   }
+
+  // 2. Draw Background Images if present
+  try {
+    const bgImage = isFront ? coverState.frontCoverImage : coverState.backCoverImage;
+    if (bgImage) {
+      doc.addImage(bgImage, 'JPEG', 0, 0, pgW, pgH);
+    }
+  } catch (err) {
+    console.error("Error drawing cover part background image", err);
+  }
+
+  // 3. Draw Vector Elements
+  const bleed = 0.125;
+  const CANVAS_WIDTH = 800;
+  const coverTotalWidthInches = (trimSize.w * 2) + spineWidth + (bleed * 2);
+  const scale = CANVAS_WIDTH / coverTotalWidthInches;
+  const canvasHeight = (trimSize.h + bleed * 2) * scale;
+  const spineLeftPx = (bleed + trimSize.w) * scale;
+  const spineRightPx = spineLeftPx + (spineWidth * scale);
+
+  coverElements.forEach((el: any) => {
+    // Check if element belongs to this side of the cover
+    if (side === 'back' && el.x >= spineLeftPx) return;
+    if (side === 'front' && el.x < spineRightPx) return;
+
+    // Calculate relative x coordinate on this page
+    const relativeX = side === 'front' ? el.x - spineRightPx : el.x;
+    
+    // Scale canvas to inches coordinates of this single page
+    const px = (relativeX / CANVAS_WIDTH) * coverTotalWidthInches;
+    const py = (el.y / canvasHeight) * pgH;
+
+    const rw = (el.width / CANVAS_WIDTH) * coverTotalWidthInches;
+    const rh = (el.height / canvasHeight) * pgH;
+    const rRad = (el.radius / CANVAS_WIDTH) * coverTotalWidthInches;
+
+    if (el.type === 'text') {
+      const fontSizePt = el.fontSize * (pgH * 72 / canvasHeight);
+      doc.setFont(el.fontFamily || "Helvetica", el.fontStyle || "normal");
+      doc.setFontSize(fontSizePt);
+      doc.setTextColor(el.fill || "#FFFFFF");
+      doc.text(el.text, px, py);
+    } else if (el.type === 'rect') {
+      doc.setFillColor(el.fill || "#F59E0B");
+      doc.setDrawColor(el.stroke || "#FFFFFF");
+      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
+      doc.rect(px, py, rw, rh, el.strokeWidth > 0 ? "FD" : "F");
+    } else if (el.type === 'circle') {
+      doc.setFillColor(el.fill || "#3B82F6");
+      doc.setDrawColor(el.stroke || "#FFFFFF");
+      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
+      doc.circle(px, py, rRad, el.strokeWidth > 0 ? "FD" : "F");
+    } else if (el.type === 'line') {
+      doc.setDrawColor(el.stroke || "#FFFFFF");
+      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0.05);
+      const points = el.points || [0, 0, 100, 0];
+      const lx1 = px;
+      const ly1 = py;
+      const lx2 = px + (points[2] / CANVAS_WIDTH) * coverTotalWidthInches;
+      const ly2 = py + (points[3] / canvasHeight) * pgH;
+      doc.line(lx1, ly1, lx2, ly2);
+    }
+  });
 
   // Reset text color to default
   doc.setTextColor(0);

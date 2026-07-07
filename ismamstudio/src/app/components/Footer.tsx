@@ -47,6 +47,9 @@ export default function Footer() {
                 <Link href="/blog" className="text-slate-400 hover:text-indigo-400 transition-colors">Blog</Link>
               </li>
               <li>
+                <Link href="/tools" className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Browse Free Tools</Link>
+              </li>
+              <li>
                 <Link href="/tools/keyword-research" className="text-slate-400 hover:text-indigo-400 transition-colors">KDP Keyword Explorer</Link>
               </li>
               <li>

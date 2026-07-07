@@ -548,6 +548,10 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     backCoverGradientEnd = '#020617'
   } = coverState;
 
+  // Get exact page dimensions from jsPDF internal properties
+  const pgW = doc.internal.pageSize.getWidth();
+  const pgH = doc.internal.pageSize.getHeight();
+
   // 1. Draw Page Background
   const isFront = side === 'front';
   const bgColor = isFront ? frontCoverColor : backCoverColor;
@@ -561,8 +565,8 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     if (typeof window !== 'undefined') {
       try {
         const canvas = document.createElement('canvas');
-        canvas.width = pageWidth * 300; // 300 DPI quality
-        canvas.height = pageHeight * 300;
+        canvas.width = pgW * 300; // 300 DPI quality
+        canvas.height = pgH * 300;
         const ctx = canvas.getContext('2d');
         if (ctx) {
           const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -571,18 +575,18 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
           ctx.fillStyle = gradient;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-          doc.addImage(dataUrl, 'JPEG', 0, 0, pageWidth, pageHeight);
+          doc.addImage(dataUrl, 'JPEG', 0, 0, pgW, pgH);
         } else {
-          doc.rect(0, 0, pageWidth, pageHeight, "F");
+          doc.rect(0, 0, pgW, pgH, "F");
         }
       } catch (err) {
-        doc.rect(0, 0, pageWidth, pageHeight, "F");
+        doc.rect(0, 0, pgW, pgH, "F");
       }
     } else {
-      doc.rect(0, 0, pageWidth, pageHeight, "F");
+      doc.rect(0, 0, pgW, pgH, "F");
     }
   } else {
-    doc.rect(0, 0, pageWidth, pageHeight, "F");
+    doc.rect(0, 0, pgW, pgH, "F");
   }
 
   // Reset text color to default

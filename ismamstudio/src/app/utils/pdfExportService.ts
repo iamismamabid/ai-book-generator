@@ -567,6 +567,74 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
           ctx.lineWidth = el.strokeWidth * scaleX;
           ctx.stroke();
         }
+      } else if (el.type === 'triangle') {
+        ctx.beginPath();
+        ctx.moveTo(cx + cw / 2, cy);
+        ctx.lineTo(cx, cy + ch);
+        ctx.lineTo(cx + cw, cy + ch);
+        ctx.closePath();
+        ctx.fillStyle = el.fill || "#10B981";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'hexagon') {
+        ctx.beginPath();
+        ctx.moveTo(cx + cw * 0.5, cy);
+        ctx.lineTo(cx + cw, cy + ch * 0.25);
+        ctx.lineTo(cx + cw, cy + ch * 0.75);
+        ctx.lineTo(cx + cw * 0.5, cy + ch);
+        ctx.lineTo(cx, cy + ch * 0.75);
+        ctx.lineTo(cx, cy + ch * 0.25);
+        ctx.closePath();
+        ctx.fillStyle = el.fill || "#8B5CF6";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'star') {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(cw / 238, ch / 226);
+        ctx.translate(-231, -75);
+        ctx.beginPath();
+        ctx.moveTo(350, 75);
+        ctx.lineTo(379, 161);
+        ctx.lineTo(469, 161);
+        ctx.lineTo(397, 215);
+        ctx.lineTo(423, 301);
+        ctx.lineTo(350, 250);
+        ctx.lineTo(277, 301);
+        ctx.lineTo(303, 215);
+        ctx.lineTo(231, 161);
+        ctx.lineTo(321, 161);
+        ctx.closePath();
+        ctx.fillStyle = el.fill || "#10B981";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = (el.strokeWidth * scaleX) / (cw / 238);
+          ctx.stroke();
+        }
+        ctx.restore();
+      } else if (el.type === 'heart') {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(cw / 80, ch / 80);
+        ctx.translate(-10, -10);
+        const path = new Path2D("M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z");
+        ctx.fillStyle = el.fill || "#EF4444";
+        ctx.fill(path);
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = (el.strokeWidth * scaleX) / (cw / 80);
+          ctx.stroke(path);
+        }
+        ctx.restore();
       } else if (el.type === 'line') {
         ctx.beginPath();
         ctx.moveTo(cx, cy);
@@ -577,7 +645,7 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         ctx.strokeStyle = el.stroke || "#FFFFFF";
         ctx.lineWidth = (el.strokeWidth || 2) * scaleX;
         ctx.stroke();
-      } else if (el.type === 'text') {
+      } else if (el.type === 'text' || el.type === 'textbox') {
         const fontSizePx = el.fontSize * scaleY;
         ctx.font = `${el.fontStyle || 'normal'} ${fontSizePx}px ${el.fontFamily || 'Arial'}`;
         ctx.fillStyle = el.fill || "#FFFFFF";
@@ -586,6 +654,23 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
 
         const textX = ctx.textAlign === 'center' ? cx + cw / 2 : (ctx.textAlign === 'right' ? cx + cw : cx);
         ctx.fillText(el.text || '', textX, cy);
+      } else if (el.type === 'clipart') {
+        if (el.src) {
+          try {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = el.src;
+            await new Promise((resolve) => {
+              img.onload = () => {
+                ctx.drawImage(img, cx, cy, cw, ch);
+                resolve(true);
+              };
+              img.onerror = () => resolve(false);
+            });
+          } catch (e) {
+            console.error("Failed to load clipart image inside drawing loop:", e);
+          }
+        }
       }
     }
 
@@ -755,6 +840,74 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
           ctx.lineWidth = el.strokeWidth * scaleX;
           ctx.stroke();
         }
+      } else if (el.type === 'triangle') {
+        ctx.beginPath();
+        ctx.moveTo(cx + cw / 2, cy);
+        ctx.lineTo(cx, cy + ch);
+        ctx.lineTo(cx + cw, cy + ch);
+        ctx.closePath();
+        ctx.fillStyle = el.fill || "#10B981";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'hexagon') {
+        ctx.beginPath();
+        ctx.moveTo(cx + cw * 0.5, cy);
+        ctx.lineTo(cx + cw, cy + ch * 0.25);
+        ctx.lineTo(cx + cw, cy + ch * 0.75);
+        ctx.lineTo(cx + cw * 0.5, cy + ch);
+        ctx.lineTo(cx, cy + ch * 0.75);
+        ctx.lineTo(cx, cy + ch * 0.25);
+        ctx.closePath();
+        ctx.fillStyle = el.fill || "#8B5CF6";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'star') {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(cw / 238, ch / 226);
+        ctx.translate(-231, -75);
+        ctx.beginPath();
+        ctx.moveTo(350, 75);
+        ctx.lineTo(379, 161);
+        ctx.lineTo(469, 161);
+        ctx.lineTo(397, 215);
+        ctx.lineTo(423, 301);
+        ctx.lineTo(350, 250);
+        ctx.lineTo(277, 301);
+        ctx.lineTo(303, 215);
+        ctx.lineTo(231, 161);
+        ctx.lineTo(321, 161);
+        ctx.closePath();
+        ctx.fillStyle = el.fill || "#10B981";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = (el.strokeWidth * scaleX) / (cw / 238);
+          ctx.stroke();
+        }
+        ctx.restore();
+      } else if (el.type === 'heart') {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(cw / 80, ch / 80);
+        ctx.translate(-10, -10);
+        const path = new Path2D("M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z");
+        ctx.fillStyle = el.fill || "#EF4444";
+        ctx.fill(path);
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = (el.strokeWidth * scaleX) / (cw / 80);
+          ctx.stroke(path);
+        }
+        ctx.restore();
       } else if (el.type === 'line') {
         ctx.beginPath();
         ctx.moveTo(cx, cy);
@@ -765,7 +918,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         ctx.strokeStyle = el.stroke || "#FFFFFF";
         ctx.lineWidth = (el.strokeWidth || 2) * scaleX;
         ctx.stroke();
-      } else if (el.type === 'text') {
+      } else if (el.type === 'text' || el.type === 'textbox') {
         const fontSizePx = el.fontSize * scaleY;
         ctx.font = `${el.fontStyle || 'normal'} ${fontSizePx}px ${el.fontFamily || 'Arial'}`;
         ctx.fillStyle = el.fill || "#FFFFFF";
@@ -774,6 +927,23 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
 
         const textX = ctx.textAlign === 'center' ? cx + cw / 2 : (ctx.textAlign === 'right' ? cx + cw : cx);
         ctx.fillText(el.text || '', textX, cy);
+      } else if (el.type === 'clipart') {
+        if (el.src) {
+          try {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = el.src;
+            await new Promise((resolve) => {
+              img.onload = () => {
+                ctx.drawImage(img, cx, cy, cw, ch);
+                resolve(true);
+              };
+              img.onerror = () => resolve(false);
+            });
+          } catch (e) {
+            console.error("Failed to load clipart image inside drawing loop:", e);
+          }
+        }
       }
     }
 

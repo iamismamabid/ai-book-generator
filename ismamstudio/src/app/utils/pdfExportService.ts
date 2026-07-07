@@ -566,7 +566,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     const endRgb = hexToRgb(gradEnd);
     
     if (startRgb && endRgb) {
-      const strips = 64;
+      const strips = 500; // Increased to 500 for a perfectly smooth, high-quality gradient without banding
       const stripW = pgW / strips;
       for (let i = 0; i < strips; i++) {
         const t = i / (strips - 1);
@@ -574,8 +574,8 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         const g = Math.round(startRgb.g + (endRgb.g - startRgb.g) * t);
         const b = Math.round(startRgb.b + (endRgb.b - startRgb.b) * t);
         doc.setFillColor(r, g, b);
-        // Add tiny overlap (+0.01) to prevent hairline gaps between strips
-        doc.rect(i * stripW, 0, stripW + 0.01, pgH, "F");
+        // Add tiny overlap to prevent hairline gaps between strips
+        doc.rect(i * stripW, 0, stripW + 0.003, pgH, "F");
       }
     } else {
       // Fallback: if color parsing fails, use solid color

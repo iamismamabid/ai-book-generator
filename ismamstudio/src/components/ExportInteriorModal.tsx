@@ -35,6 +35,7 @@ export default function ExportInteriorModal({
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">(defaultTrimSize);
   const [hasBleed, setHasBleed] = useState(false);
   const [showGuides, setShowGuides] = useState(true);
+  const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [coverState, setCoverState] = useState<any>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -147,6 +148,7 @@ export default function ExportInteriorModal({
       await onExport({
         includeCover,
         coverState,
+        includePageNumbers,
         includeSolutions,
         trimSize,
         hasBleed,

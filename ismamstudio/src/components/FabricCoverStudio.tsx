@@ -94,6 +94,16 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       type = 'triangle';
     } else if (obj.type === 'polygon' && obj.isHexagon) {
       type = 'hexagon';
+    } else if (obj.type === 'polygon' && obj.isPentagon) {
+      type = 'pentagon';
+    } else if (obj.type === 'polygon' && obj.isOctagon) {
+      type = 'octagon';
+    } else if (obj.type === 'polygon' && obj.isDiamond) {
+      type = 'diamond';
+    } else if (obj.type === 'polygon' && obj.isTrapezoid) {
+      type = 'trapezoid';
+    } else if (obj.type === 'ellipse') {
+      type = 'ellipse';
     } else if (obj.type === 'polygon') {
       type = 'star';
     } else if (obj.type === 'path' && obj.isHeart) {
@@ -129,14 +139,14 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       if (type === 'textbox') {
         base.isTextbox = true;
       }
-    } else if (type === 'rect' || type === 'triangle' || type === 'hexagon' || type === 'star' || type === 'heart') {
+    } else if (type === 'rect' || type === 'triangle' || type === 'hexagon' || type === 'star' || type === 'heart' || type === 'pentagon' || type === 'octagon' || type === 'ellipse' || type === 'diamond' || type === 'trapezoid') {
       base.width = (obj.width || 100) * (obj.scaleX || 1);
       base.height = (obj.height || 100) * (obj.scaleY || 1);
       base.scaleX = 1;
       base.scaleY = 1;
       if (type === 'rect') {
         base.cornerRadius = obj.rx;
-      } else if (type === 'star') {
+      } else if (type === 'star' || type === 'pentagon' || type === 'octagon' || type === 'diamond' || type === 'trapezoid') {
         base.points = obj.points;
       }
     } else if (type === 'circle') {
@@ -938,6 +948,106 @@ export default function FabricCoverStudio({
           opacity: el.opacity ?? 1
         } as any);
         (obj as any).isHeart = true;
+      } else if (el.type === 'pentagon') {
+        const points = [
+          { x: 50, y: 0 },
+          { x: 100, y: 38 },
+          { x: 81, y: 100 },
+          { x: 19, y: 100 },
+          { x: 0, y: 38 }
+        ];
+        obj = new fabric.Polygon(points, {
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          fill: el.fill || 'transparent',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: (el.width || 100) / 100,
+          scaleY: (el.height || 100) / 100,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1
+        } as any);
+        (obj as any).isPentagon = true;
+      } else if (el.type === 'octagon') {
+        const points = [
+          { x: 29, y: 0 },
+          { x: 71, y: 0 },
+          { x: 100, y: 29 },
+          { x: 100, y: 71 },
+          { x: 71, y: 100 },
+          { x: 29, y: 100 },
+          { x: 0, y: 71 },
+          { x: 0, y: 29 }
+        ];
+        obj = new fabric.Polygon(points, {
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          fill: el.fill || 'transparent',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: (el.width || 100) / 100,
+          scaleY: (el.height || 100) / 100,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1
+        } as any);
+        (obj as any).isOctagon = true;
+      } else if (el.type === 'ellipse') {
+        obj = new fabric.Ellipse({
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          rx: (el.width || 100) / 2,
+          ry: (el.height || 60) / 2,
+          fill: el.fill || 'transparent',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: el.scaleX || 1,
+          scaleY: el.scaleY || 1,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1
+        } as any);
+      } else if (el.type === 'diamond') {
+        const points = [
+          { x: 50, y: 0 },
+          { x: 100, y: 50 },
+          { x: 50, y: 100 },
+          { x: 0, y: 50 }
+        ];
+        obj = new fabric.Polygon(points, {
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          fill: el.fill || 'transparent',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: (el.width || 100) / 100,
+          scaleY: (el.height || 100) / 100,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1
+        } as any);
+        (obj as any).isDiamond = true;
+      } else if (el.type === 'trapezoid') {
+        const points = [
+          { x: 25, y: 0 },
+          { x: 75, y: 0 },
+          { x: 100, y: 100 },
+          { x: 0, y: 100 }
+        ];
+        obj = new fabric.Polygon(points, {
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          fill: el.fill || 'transparent',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: (el.width || 100) / 100,
+          scaleY: (el.height || 100) / 100,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1
+        } as any);
+        (obj as any).isTrapezoid = true;
       } else if (el.type === 'clipart') {
         const secureSrc = el.src.includes('?') 
           ? `${el.src}&ts=${Date.now()}` 
@@ -1106,9 +1216,9 @@ export default function FabricCoverStudio({
       top: layout.canvasHeight / 2 - 50,
       width: 100,
       height: 100,
-      fill: "#F59E0B",
-      stroke: "#FFFFFF",
-      strokeWidth: 2
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
     });
     canvas.add(rect);
     canvas.setActiveObject(rect);
@@ -1121,9 +1231,9 @@ export default function FabricCoverStudio({
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
       radius: 50,
-      fill: "#3B82F6",
-      stroke: "#FFFFFF",
-      strokeWidth: 2
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
     });
     canvas.add(circle);
     canvas.setActiveObject(circle);
@@ -1137,9 +1247,9 @@ export default function FabricCoverStudio({
       top: layout.canvasHeight / 2 - 50,
       width: 100,
       height: 100,
-      fill: "#10B981",
-      stroke: "#FFFFFF",
-      strokeWidth: 2
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
     });
     canvas.add(triangle);
     canvas.setActiveObject(triangle);
@@ -1159,9 +1269,9 @@ export default function FabricCoverStudio({
     const hexagon = new fabric.Polygon(points, {
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
-      fill: "#8B5CF6",
-      stroke: "#FFFFFF",
-      strokeWidth: 2
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
     });
     (hexagon as any).isHexagon = true;
     hexagon.scaleToWidth(100);
@@ -1176,9 +1286,9 @@ export default function FabricCoverStudio({
     const heart = new fabric.Path(heartPath, {
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
-      fill: "#EF4444",
-      stroke: "#FFFFFF",
-      strokeWidth: 2
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
     });
     (heart as any).isHeart = true;
     heart.scaleToWidth(100);
@@ -1186,7 +1296,6 @@ export default function FabricCoverStudio({
     canvas.setActiveObject(heart);
     canvas.requestRenderAll();
   };
-
 
   const addStar = () => {
     if (!canvas) return;
@@ -1205,9 +1314,9 @@ export default function FabricCoverStudio({
     const star = new fabric.Polygon(points, {
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
-      fill: "#10B981",
-      stroke: "#FFFFFF",
-      strokeWidth: 2
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
     });
     star.scaleToWidth(100);
     canvas.add(star);
@@ -1220,11 +1329,120 @@ export default function FabricCoverStudio({
     const line = new fabric.Line([0, 0, 150, 0], {
       left: layout.frontCoverCenterPx - 75,
       top: layout.canvasHeight / 2,
-      stroke: "#FFFFFF",
+      stroke: "#4F46E5",
       strokeWidth: 4
     });
     canvas.add(line);
     canvas.setActiveObject(line);
+    canvas.requestRenderAll();
+  };
+
+  const addPentagon = () => {
+    if (!canvas) return;
+    const points = [
+      { x: 50, y: 0 },
+      { x: 100, y: 38 },
+      { x: 81, y: 100 },
+      { x: 19, y: 100 },
+      { x: 0, y: 38 }
+    ];
+    const pentagon = new fabric.Polygon(points, {
+      left: layout.frontCoverCenterPx - 50,
+      top: layout.canvasHeight / 2 - 50,
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
+    });
+    (pentagon as any).isPentagon = true;
+    pentagon.scaleToWidth(100);
+    canvas.add(pentagon);
+    canvas.setActiveObject(pentagon);
+    canvas.requestRenderAll();
+  };
+
+  const addOctagon = () => {
+    if (!canvas) return;
+    const points = [
+      { x: 29, y: 0 },
+      { x: 71, y: 0 },
+      { x: 100, y: 29 },
+      { x: 100, y: 71 },
+      { x: 71, y: 100 },
+      { x: 29, y: 100 },
+      { x: 0, y: 71 },
+      { x: 0, y: 29 }
+    ];
+    const octagon = new fabric.Polygon(points, {
+      left: layout.frontCoverCenterPx - 50,
+      top: layout.canvasHeight / 2 - 50,
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
+    });
+    (octagon as any).isOctagon = true;
+    octagon.scaleToWidth(100);
+    canvas.add(octagon);
+    canvas.setActiveObject(octagon);
+    canvas.requestRenderAll();
+  };
+
+  const addEllipse = () => {
+    if (!canvas) return;
+    const ellipse = new fabric.Ellipse({
+      left: layout.frontCoverCenterPx - 50,
+      top: layout.canvasHeight / 2 - 30,
+      rx: 50,
+      ry: 30,
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
+    });
+    canvas.add(ellipse);
+    canvas.setActiveObject(ellipse);
+    canvas.requestRenderAll();
+  };
+
+  const addDiamond = () => {
+    if (!canvas) return;
+    const points = [
+      { x: 50, y: 0 },
+      { x: 100, y: 50 },
+      { x: 50, y: 100 },
+      { x: 0, y: 50 }
+    ];
+    const diamond = new fabric.Polygon(points, {
+      left: layout.frontCoverCenterPx - 50,
+      top: layout.canvasHeight / 2 - 50,
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
+    });
+    (diamond as any).isDiamond = true;
+    diamond.scaleToWidth(100);
+    canvas.add(diamond);
+    canvas.setActiveObject(diamond);
+    canvas.requestRenderAll();
+  };
+
+  const addTrapezoid = () => {
+    if (!canvas) return;
+    const points = [
+      { x: 25, y: 0 },
+      { x: 75, y: 0 },
+      { x: 100, y: 100 },
+      { x: 0, y: 100 }
+    ];
+    const trapezoid = new fabric.Polygon(points, {
+      left: layout.frontCoverCenterPx - 50,
+      top: layout.canvasHeight / 2 - 50,
+      fill: "transparent",
+      stroke: "#4F46E5",
+      strokeWidth: 3
+    });
+    (trapezoid as any).isTrapezoid = true;
+    trapezoid.scaleToWidth(100);
+    canvas.add(trapezoid);
+    canvas.setActiveObject(trapezoid);
     canvas.requestRenderAll();
   };
 
@@ -1768,6 +1986,36 @@ export default function FabricCoverStudio({
                     </svg>
                     Hexagon
                   </button>
+                  <button onClick={addPentagon} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2l9.5 6.9-3.6 11.1H6.1L2.5 8.9 12 2z" />
+                    </svg>
+                    Pentagon
+                  </button>
+                  <button onClick={addOctagon} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <svg className="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 2h8l6 6v8l-6 6H8l-6-6V8l6-6z" />
+                    </svg>
+                    Octagon
+                  </button>
+                  <button onClick={addEllipse} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <ellipse cx="12" cy="12" rx="10" ry="6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+                    </svg>
+                    Ellipse
+                  </button>
+                  <button onClick={addDiamond} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <svg className="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2L2 12l10 10 10-10L12 2z" />
+                    </svg>
+                    Diamond
+                  </button>
+                  <button onClick={addTrapezoid} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
+                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 4h12l4 16H2L6 4z" />
+                    </svg>
+                    Trapezoid
+                  </button>
                   <button onClick={addStar} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
                     <Star className="w-4 h-4 text-yellow-500 fill-yellow-500/20"/> Star
                   </button>
@@ -1995,33 +2243,52 @@ export default function FabricCoverStudio({
                 {/* Color & Border Settings (Applicable to shapes and text) */}
                 <div className="space-y-3 bg-white p-3 rounded-xl border border-slate-200">
                   <div>
-                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Fill Color</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="color"
-                        value={objectColor}
-                        onChange={(e) => {
-                          setObjectColor(e.target.value);
-                          updateActiveObjectProperty("fill", e.target.value, false);
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-[9px] font-black text-slate-400 uppercase">Fill Color</label>
+                      <button
+                        onClick={() => {
+                          const isTrans = objectColor === "transparent";
+                          const newVal = isTrans ? "#FFFFFF" : "transparent";
+                          setObjectColor(newVal);
+                          updateActiveObjectProperty("fill", newVal, true);
                         }}
-                        onBlur={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
-                      />
-                      <input
-                        type="text"
-                        value={objectColor}
-                        onChange={(e) => {
-                          setObjectColor(e.target.value);
-                          updateActiveObjectProperty("fill", e.target.value, false);
-                        }}
-                        onBlur={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        className="flex-1 text-xs font-bold uppercase p-1.5 border border-slate-200 rounded-lg text-center font-mono"
-                      />
+                        className={`text-[9px] font-black uppercase px-2 py-0.5 rounded transition cursor-pointer ${
+                          objectColor === "transparent" 
+                            ? "bg-indigo-600 text-white" 
+                            : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                        }`}
+                      >
+                        No Fill
+                      </button>
                     </div>
+                    {objectColor !== "transparent" && (
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={objectColor.startsWith("#") ? objectColor : "#FFFFFF"}
+                          onChange={(e) => {
+                            setObjectColor(e.target.value);
+                            updateActiveObjectProperty("fill", e.target.value, false);
+                          }}
+                          onBlur={() => {
+                            if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                          }}
+                          className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
+                        />
+                        <input
+                          type="text"
+                          value={objectColor}
+                          onChange={(e) => {
+                            setObjectColor(e.target.value);
+                            updateActiveObjectProperty("fill", e.target.value, false);
+                          }}
+                          onBlur={() => {
+                            if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                          }}
+                          className="flex-1 text-xs font-bold uppercase p-1.5 border border-slate-200 rounded-lg text-center font-mono"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div>

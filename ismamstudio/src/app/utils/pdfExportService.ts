@@ -591,7 +591,7 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
       }
 
       if (el.type === 'rect') {
-        ctx.fillStyle = el.fill || "#F59E0B";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#F59E0B";
         const rx = el.cornerRadius ? el.cornerRadius * scaleX : 0;
         if (rx > 0) {
           ctx.beginPath();
@@ -618,7 +618,17 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
       } else if (el.type === 'circle') {
         ctx.beginPath();
         ctx.arc(0, 0, cRadius, 0, 2 * Math.PI);
-        ctx.fillStyle = el.fill || "#3B82F6";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#3B82F6";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'ellipse') {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, cw / 2, ch / 2, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
@@ -631,14 +641,14 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         ctx.lineTo(-cw / 2, ch / 2);
         ctx.lineTo(cw / 2, ch / 2);
         ctx.closePath();
-        ctx.fillStyle = el.fill || "#10B981";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#10B981";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
           ctx.lineWidth = el.strokeWidth * scaleX;
           ctx.stroke();
         }
-      } else if (el.type === 'hexagon') {
+      } else if (el.type === 'hexagon' || (el.type === 'polygon' && el.isHexagon)) {
         ctx.beginPath();
         ctx.moveTo(0, -ch * 0.5);
         ctx.lineTo(cw * 0.5, -ch * 0.25);
@@ -647,14 +657,75 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         ctx.lineTo(-cw * 0.5, ch * 0.25);
         ctx.lineTo(-cw * 0.5, -ch * 0.25);
         ctx.closePath();
-        ctx.fillStyle = el.fill || "#8B5CF6";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#8B5CF6";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
           ctx.lineWidth = el.strokeWidth * scaleX;
           ctx.stroke();
         }
-      } else if (el.type === 'star') {
+      } else if (el.type === 'pentagon' || (el.type === 'polygon' && el.isPentagon)) {
+        ctx.beginPath();
+        ctx.moveTo(0, -ch * 0.5);
+        ctx.lineTo(cw * 0.475, -ch * 0.155);
+        ctx.lineTo(cw * 0.294, ch * 0.405);
+        ctx.lineTo(-cw * 0.294, ch * 0.405);
+        ctx.lineTo(-cw * 0.475, -ch * 0.155);
+        ctx.closePath();
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'octagon' || (el.type === 'polygon' && el.isOctagon)) {
+        ctx.beginPath();
+        ctx.moveTo(-cw * 0.207, -ch * 0.5);
+        ctx.lineTo(cw * 0.207, -ch * 0.5);
+        ctx.lineTo(cw * 0.5, -ch * 0.207);
+        ctx.lineTo(cw * 0.5, ch * 0.207);
+        ctx.lineTo(cw * 0.207, ch * 0.5);
+        ctx.lineTo(-cw * 0.207, ch * 0.5);
+        ctx.lineTo(-cw * 0.5, ch * 0.207);
+        ctx.lineTo(-cw * 0.5, -ch * 0.207);
+        ctx.closePath();
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'diamond' || (el.type === 'polygon' && el.isDiamond)) {
+        ctx.beginPath();
+        ctx.moveTo(0, -ch * 0.5);
+        ctx.lineTo(cw * 0.5, 0);
+        ctx.lineTo(0, ch * 0.5);
+        ctx.lineTo(-cw * 0.5, 0);
+        ctx.closePath();
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'trapezoid' || (el.type === 'polygon' && el.isTrapezoid)) {
+        ctx.beginPath();
+        ctx.moveTo(-cw * 0.25, -ch * 0.5);
+        ctx.lineTo(cw * 0.25, -ch * 0.5);
+        ctx.lineTo(cw * 0.5, ch * 0.5);
+        ctx.lineTo(-cw * 0.5, ch * 0.5);
+        ctx.closePath();
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'star' || el.type === 'polygon') {
         ctx.save();
         ctx.scale(cw / 238, ch / 226);
         ctx.translate(-350, -188);
@@ -670,7 +741,7 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         ctx.lineTo(231, 161);
         ctx.lineTo(321, 161);
         ctx.closePath();
-        ctx.fillStyle = el.fill || "#10B981";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#10B981";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
@@ -683,7 +754,7 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         ctx.scale(cw / 80, ch / 80);
         ctx.translate(-50, -50);
         const path = new Path2D("M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z");
-        ctx.fillStyle = el.fill || "#EF4444";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#EF4444";
         ctx.fill(path);
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
@@ -907,7 +978,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
       }
 
       if (el.type === 'rect') {
-        ctx.fillStyle = el.fill || "#F59E0B";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#F59E0B";
         const rx = el.cornerRadius ? el.cornerRadius * scaleX : 0;
         if (rx > 0) {
           ctx.beginPath();
@@ -934,7 +1005,17 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
       } else if (el.type === 'circle') {
         ctx.beginPath();
         ctx.arc(0, 0, cRadius, 0, 2 * Math.PI);
-        ctx.fillStyle = el.fill || "#3B82F6";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#3B82F6";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'ellipse') {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, cw / 2, ch / 2, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
@@ -947,7 +1028,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         ctx.lineTo(-cw / 2, ch / 2);
         ctx.lineTo(cw / 2, ch / 2);
         ctx.closePath();
-        ctx.fillStyle = el.fill || "#10B981";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#10B981";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
@@ -963,7 +1044,68 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         ctx.lineTo(-cw * 0.5, ch * 0.25);
         ctx.lineTo(-cw * 0.5, -ch * 0.25);
         ctx.closePath();
-        ctx.fillStyle = el.fill || "#8B5CF6";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#8B5CF6";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'pentagon' || (el.type === 'polygon' && el.isPentagon)) {
+        ctx.beginPath();
+        ctx.moveTo(0, -ch * 0.5);
+        ctx.lineTo(cw * 0.475, -ch * 0.155);
+        ctx.lineTo(cw * 0.294, ch * 0.405);
+        ctx.lineTo(-cw * 0.294, ch * 0.405);
+        ctx.lineTo(-cw * 0.475, -ch * 0.155);
+        ctx.closePath();
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'octagon' || (el.type === 'polygon' && el.isOctagon)) {
+        ctx.beginPath();
+        ctx.moveTo(-cw * 0.207, -ch * 0.5);
+        ctx.lineTo(cw * 0.207, -ch * 0.5);
+        ctx.lineTo(cw * 0.5, -ch * 0.207);
+        ctx.lineTo(cw * 0.5, ch * 0.207);
+        ctx.lineTo(cw * 0.207, ch * 0.5);
+        ctx.lineTo(-cw * 0.207, ch * 0.5);
+        ctx.lineTo(-cw * 0.5, ch * 0.207);
+        ctx.lineTo(-cw * 0.5, -ch * 0.207);
+        ctx.closePath();
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'diamond' || (el.type === 'polygon' && el.isDiamond)) {
+        ctx.beginPath();
+        ctx.moveTo(0, -ch * 0.5);
+        ctx.lineTo(cw * 0.5, 0);
+        ctx.lineTo(0, ch * 0.5);
+        ctx.lineTo(-cw * 0.5, 0);
+        ctx.closePath();
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'trapezoid' || (el.type === 'polygon' && el.isTrapezoid)) {
+        ctx.beginPath();
+        ctx.moveTo(-cw * 0.25, -ch * 0.5);
+        ctx.lineTo(cw * 0.25, -ch * 0.5);
+        ctx.lineTo(cw * 0.5, ch * 0.5);
+        ctx.lineTo(-cw * 0.5, ch * 0.5);
+        ctx.closePath();
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
@@ -986,7 +1128,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         ctx.lineTo(231, 161);
         ctx.lineTo(321, 161);
         ctx.closePath();
-        ctx.fillStyle = el.fill || "#10B981";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#10B981";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
@@ -999,7 +1141,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         ctx.scale(cw / 80, ch / 80);
         ctx.translate(-50, -50);
         const path = new Path2D("M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z");
-        ctx.fillStyle = el.fill || "#EF4444";
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "#EF4444";
         ctx.fill(path);
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";

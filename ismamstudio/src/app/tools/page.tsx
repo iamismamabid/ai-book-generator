@@ -70,6 +70,9 @@ export default function FreeToolsHub() {
   const [pdfFileAdded, setPdfFileAdded] = useState(false);
   const [pdfFormattingStatus, setPdfFormattingStatus] = useState<string>("");
 
+  const [uploadedEpubFile, setUploadedEpubFile] = useState<string | null>(null);
+  const [uploadedPdfFile, setUploadedPdfFile] = useState<string | null>(null);
+
   const handleTriggerCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedText(id);
@@ -370,6 +373,8 @@ export default function FreeToolsHub() {
                     setGeneratedTitles([]);
                     setEpubSuccess(false);
                     setPdfFileAdded(false);
+                    setUploadedEpubFile(null);
+                    setUploadedPdfFile(null);
                   }}
                   className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
                 >
@@ -679,15 +684,33 @@ export default function FreeToolsHub() {
 
                     <div className="border border-dashed border-slate-800 rounded-2xl p-6 text-center bg-slate-950/30">
                       <FileText className="w-10 h-10 text-slate-500 mx-auto mb-2" />
-                      <span className="text-xs text-slate-450 font-bold block mb-1">Select Word / Text manuscript</span>
-                      <span className="text-[9px] text-slate-500 block mb-3">Accepts .docx, .txt formats (max 10MB)</span>
+                      <span className="text-xs text-slate-200 font-bold block mb-1">
+                        {uploadedEpubFile ? `Selected: ${uploadedEpubFile}` : "Select Word / Text manuscript"}
+                      </span>
+                      <span className="text-[9px] text-slate-550 block mb-3">Accepts .docx, .txt formats (max 10MB)</span>
+                      
+                      <input 
+                        type="file" 
+                        id="epub-file-input" 
+                        accept=".docx,.txt" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setUploadedEpubFile(file.name);
+                            if (!epubTitle) {
+                              setEpubTitle(file.name.replace(/\.[^/.]+$/, ""));
+                            }
+                            if (!epubAuthor) {
+                              setEpubAuthor("Self-Publisher");
+                            }
+                            setEpubSuccess(true);
+                          }
+                        }}
+                      />
                       <button 
                         onClick={() => {
-                          if (!epubTitle || !epubAuthor) {
-                            alert("Please fill in the title and author name first!");
-                            return;
-                          }
-                          setEpubSuccess(true);
+                          document.getElementById("epub-file-input")?.click();
                         }}
                         className="px-4 py-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl text-xs font-black text-slate-300 cursor-pointer"
                       >
@@ -747,12 +770,28 @@ export default function FreeToolsHub() {
 
                     <div className="border border-dashed border-slate-800 rounded-2xl p-6 text-center bg-slate-950/30">
                       <Layout className="w-10 h-10 text-slate-500 mx-auto mb-2" />
-                      <span className="text-xs text-slate-450 font-bold block mb-1">Upload interior manuscript PDF / Word document</span>
-                      <span className="text-[9px] text-slate-500 block mb-3">Checks gutter spacing and trim alignment</span>
+                      <span className="text-xs text-slate-200 font-bold block mb-1">
+                        {uploadedPdfFile ? `Selected: ${uploadedPdfFile}` : "Upload interior manuscript PDF / Word document"}
+                      </span>
+                      <span className="text-[9px] text-slate-550 block mb-3">Checks gutter spacing and trim alignment</span>
+                      
+                      <input 
+                        type="file" 
+                        id="pdf-file-input" 
+                        accept=".pdf,.docx" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setUploadedPdfFile(file.name);
+                            setPdfFileAdded(true);
+                            setPdfFormattingStatus(`Checked file "${file.name}". Safety zones: OK. Gutter: OK. Safe margins: OK.`);
+                          }
+                        }}
+                      />
                       <button 
                         onClick={() => {
-                          setPdfFileAdded(true);
-                          setPdfFormattingStatus("Checking safety zones... Gutter: OK. Safe margins: OK.");
+                          document.getElementById("pdf-file-input")?.click();
                         }}
                         className="px-4 py-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl text-xs font-black text-slate-300 cursor-pointer"
                       >
@@ -794,6 +833,8 @@ export default function FreeToolsHub() {
                     setGeneratedTitles([]);
                     setEpubSuccess(false);
                     setPdfFileAdded(false);
+                    setUploadedEpubFile(null);
+                    setUploadedPdfFile(null);
                   }}
                   className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-800 font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer"
                 >

@@ -129,12 +129,16 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       if (type === 'textbox') {
         base.isTextbox = true;
       }
-    } else if (type === 'rect') {
+    } else if (type === 'rect' || type === 'triangle' || type === 'hexagon' || type === 'star' || type === 'heart') {
       base.width = (obj.width || 100) * (obj.scaleX || 1);
       base.height = (obj.height || 100) * (obj.scaleY || 1);
       base.scaleX = 1;
       base.scaleY = 1;
-      base.cornerRadius = obj.rx;
+      if (type === 'rect') {
+        base.cornerRadius = obj.rx;
+      } else if (type === 'star') {
+        base.points = obj.points;
+      }
     } else if (type === 'circle') {
       base.radius = (obj.radius || 50) * (obj.scaleX || 1);
       base.scaleX = 1;
@@ -149,8 +153,6 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       base.points = [obj.x1, obj.y1, obj.x2, obj.y2];
       base.scaleX = 1;
       base.scaleY = 1;
-    } else if (type === 'star') {
-      base.points = obj.points;
     }
 
     return base;
@@ -902,12 +904,25 @@ export default function FabricCoverStudio({
           fill: el.fill || '#8B5CF6',
           stroke: el.stroke,
           strokeWidth: el.strokeWidth || 0,
-          scaleX: el.scaleX || 1,
-          scaleY: el.scaleY || 1,
+          scaleX: (el.width || 100) / 100,
+          scaleY: (el.height || 100) / 100,
           angle: el.rotation || 0,
           opacity: el.opacity ?? 1
         } as any);
         (obj as any).isHexagon = true;
+      } else if (el.type === 'star') {
+        obj = new fabric.Polygon(el.points || [], {
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          fill: el.fill || '#10B981',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: (el.width || 238) / 238,
+          scaleY: (el.height || 226) / 226,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1
+        } as any);
       } else if (el.type === 'heart') {
         const heartPath = "M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z";
         obj = new fabric.Path(heartPath, {
@@ -917,8 +932,8 @@ export default function FabricCoverStudio({
           fill: el.fill || '#EF4444',
           stroke: el.stroke,
           strokeWidth: el.strokeWidth || 0,
-          scaleX: el.scaleX || 1,
-          scaleY: el.scaleY || 1,
+          scaleX: (el.width || 80) / 80,
+          scaleY: (el.height || 80) / 80,
           angle: el.rotation || 0,
           opacity: el.opacity ?? 1
         } as any);

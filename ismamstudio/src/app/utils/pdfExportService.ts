@@ -107,6 +107,32 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
   doc.save("My_KDP_Puzzle_Book.pdf");
 };
 
+// helper: Wrap text inside canvas 2D context
+function wrapCanvasText(ctx: any, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+  const paragraphs = text.split('\n');
+  let currentY = y;
+
+  for (const para of paragraphs) {
+    const words = para.split(' ');
+    let line = '';
+
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0) {
+        ctx.fillText(line, x, currentY);
+        line = words[n] + ' ';
+        currentY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, currentY);
+    currentY += lineHeight;
+  }
+}
+
 // helper: Draw Watermark for Free Tier
 export function drawWatermark(doc: any, w: number, h: number) {
   try {
@@ -541,25 +567,57 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
       const elH = typeof el.height === 'number' ? el.height : 100;
       const elRadius = typeof el.radius === 'number' ? el.radius : 50;
 
-      const cx = elX * scaleX;
-      const cy = elY * scaleY;
-      const cw = elW * scaleX;
-      const ch = elH * scaleY;
-      const cRadius = elRadius * scaleX;
+      const width = el.type === 'circle' ? elRadius * 2 : elW;
+      const height = el.type === 'circle' ? elRadius * 2 : elH;
 
-      if (isNaN(cx) || isNaN(cy) || isNaN(cw) || isNaN(ch)) continue;
+      const centerX = elX + width / 2;
+      const centerY = elY + height / 2;
+
+      const scaledCenterX = centerX * scaleX;
+      const scaledCenterY = centerY * scaleY;
+      const cw = width * scaleX;
+      const ch = height * scaleY;
+      const cRadius = (width / 2) * scaleX;
+
+      if (isNaN(scaledCenterX) || isNaN(scaledCenterY) || isNaN(cw) || isNaN(ch)) continue;
+
+      ctx.save();
+      ctx.translate(scaledCenterX, scaledCenterY);
+      if (el.rotation) {
+        ctx.rotate((el.rotation * Math.PI) / 180);
+      }
+      if (typeof el.opacity === 'number') {
+        ctx.globalAlpha = el.opacity;
+      }
 
       if (el.type === 'rect') {
         ctx.fillStyle = el.fill || "#F59E0B";
-        ctx.fillRect(cx, cy, cw, ch);
-        if (el.strokeWidth && el.strokeWidth > 0) {
-          ctx.strokeStyle = el.stroke || "#FFFFFF";
-          ctx.lineWidth = el.strokeWidth * scaleX;
-          ctx.strokeRect(cx, cy, cw, ch);
+        const rx = el.cornerRadius ? el.cornerRadius * scaleX : 0;
+        if (rx > 0) {
+          ctx.beginPath();
+          ctx.moveTo(-cw / 2 + rx, -ch / 2);
+          ctx.arcTo(cw / 2, -ch / 2, cw / 2, ch / 2, rx);
+          ctx.arcTo(cw / 2, ch / 2, -cw / 2, ch / 2, rx);
+          ctx.arcTo(-cw / 2, ch / 2, -cw / 2, -ch / 2, rx);
+          ctx.arcTo(-cw / 2, -ch / 2, cw / 2, -ch / 2, rx);
+          ctx.closePath();
+          ctx.fill();
+          if (el.strokeWidth && el.strokeWidth > 0) {
+            ctx.strokeStyle = el.stroke || "#FFFFFF";
+            ctx.lineWidth = el.strokeWidth * scaleX;
+            ctx.stroke();
+          }
+        } else {
+          ctx.fillRect(-cw / 2, -ch / 2, cw, ch);
+          if (el.strokeWidth && el.strokeWidth > 0) {
+            ctx.strokeStyle = el.stroke || "#FFFFFF";
+            ctx.lineWidth = el.strokeWidth * scaleX;
+            ctx.strokeRect(-cw / 2, -ch / 2, cw, ch);
+          }
         }
       } else if (el.type === 'circle') {
         ctx.beginPath();
-        ctx.arc(cx + cRadius, cy + cRadius, cRadius, 0, 2 * Math.PI);
+        ctx.arc(0, 0, cRadius, 0, 2 * Math.PI);
         ctx.fillStyle = el.fill || "#3B82F6";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
@@ -569,9 +627,9 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         }
       } else if (el.type === 'triangle') {
         ctx.beginPath();
-        ctx.moveTo(cx + cw / 2, cy);
-        ctx.lineTo(cx, cy + ch);
-        ctx.lineTo(cx + cw, cy + ch);
+        ctx.moveTo(0, -ch / 2);
+        ctx.lineTo(-cw / 2, ch / 2);
+        ctx.lineTo(cw / 2, ch / 2);
         ctx.closePath();
         ctx.fillStyle = el.fill || "#10B981";
         ctx.fill();
@@ -582,12 +640,12 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         }
       } else if (el.type === 'hexagon') {
         ctx.beginPath();
-        ctx.moveTo(cx + cw * 0.5, cy);
-        ctx.lineTo(cx + cw, cy + ch * 0.25);
-        ctx.lineTo(cx + cw, cy + ch * 0.75);
-        ctx.lineTo(cx + cw * 0.5, cy + ch);
-        ctx.lineTo(cx, cy + ch * 0.75);
-        ctx.lineTo(cx, cy + ch * 0.25);
+        ctx.moveTo(0, -ch * 0.5);
+        ctx.lineTo(cw * 0.5, -ch * 0.25);
+        ctx.lineTo(cw * 0.5, ch * 0.25);
+        ctx.lineTo(0, ch * 0.5);
+        ctx.lineTo(-cw * 0.5, ch * 0.25);
+        ctx.lineTo(-cw * 0.5, -ch * 0.25);
         ctx.closePath();
         ctx.fillStyle = el.fill || "#8B5CF6";
         ctx.fill();
@@ -598,9 +656,8 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         }
       } else if (el.type === 'star') {
         ctx.save();
-        ctx.translate(cx, cy);
         ctx.scale(cw / 238, ch / 226);
-        ctx.translate(-231, -75);
+        ctx.translate(-350, -188);
         ctx.beginPath();
         ctx.moveTo(350, 75);
         ctx.lineTo(379, 161);
@@ -617,30 +674,34 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
-          ctx.lineWidth = (el.strokeWidth * scaleX) / (cw / 238);
+          ctx.lineWidth = el.strokeWidth;
           ctx.stroke();
         }
         ctx.restore();
       } else if (el.type === 'heart') {
         ctx.save();
-        ctx.translate(cx, cy);
         ctx.scale(cw / 80, ch / 80);
-        ctx.translate(-10, -10);
+        ctx.translate(-50, -50);
         const path = new Path2D("M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z");
         ctx.fillStyle = el.fill || "#EF4444";
         ctx.fill(path);
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
-          ctx.lineWidth = (el.strokeWidth * scaleX) / (cw / 80);
+          ctx.lineWidth = el.strokeWidth;
           ctx.stroke(path);
         }
         ctx.restore();
       } else if (el.type === 'line') {
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
         const points = el.points || [0, 0, 100, 0];
-        const lx2 = cx + (points[2] - (points[0] || 0)) * scaleX;
-        const ly2 = cy + (points[3] - (points[1] || 0)) * scaleY;
+        const midX = (points[0] + points[2]) / 2;
+        const midY = (points[1] + points[3]) / 2;
+        const lx1 = (points[0] - midX) * scaleX;
+        const ly1 = (points[1] - midY) * scaleY;
+        const lx2 = (points[2] - midX) * scaleX;
+        const ly2 = (points[3] - midY) * scaleY;
+
+        ctx.beginPath();
+        ctx.moveTo(lx1, ly1);
         ctx.lineTo(lx2, ly2);
         ctx.strokeStyle = el.stroke || "#FFFFFF";
         ctx.lineWidth = (el.strokeWidth || 2) * scaleX;
@@ -652,8 +713,16 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         ctx.textAlign = el.align || 'left';
         ctx.textBaseline = 'top';
 
-        const textX = ctx.textAlign === 'center' ? cx + cw / 2 : (ctx.textAlign === 'right' ? cx + cw : cx);
-        ctx.fillText(el.text || '', textX, cy);
+        const textX = ctx.textAlign === 'center' ? 0 : (ctx.textAlign === 'right' ? cw / 2 : -cw / 2);
+        const textY = -ch / 2;
+
+        const textStr = el.text || '';
+        const lines = textStr.split('\n');
+        const lineHeight = fontSizePx * 1.25;
+
+        for (let i = 0; i < lines.length; i++) {
+          ctx.fillText(lines[i], textX, textY + i * lineHeight);
+        }
       } else if (el.type === 'clipart') {
         if (el.src) {
           try {
@@ -662,7 +731,7 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
             img.src = el.src;
             await new Promise((resolve) => {
               img.onload = () => {
-                ctx.drawImage(img, cx, cy, cw, ch);
+                ctx.drawImage(img, -cw / 2, -ch / 2, cw, ch);
                 resolve(true);
               };
               img.onerror = () => resolve(false);
@@ -672,6 +741,7 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
           }
         }
       }
+      ctx.restore();
     }
 
     const dataUrl = canvas.toDataURL('image/png');
@@ -759,10 +829,10 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
       let gradient: CanvasGradient;
       if (isFront) {
         // Front cover gradient starts at spine (x=0) and ends at right bleed edge
-        gradient = ctx.createLinearGradient(0, 0, (trimW + bleed) * 300, 0);
+        gradient = ctx.createLinearGradient(0, 0, (pgW + bleed) * 300, 0);
       } else {
         // Back cover gradient starts at left bleed edge (x=-bleed) and ends at spine (x=trimW)
-        gradient = ctx.createLinearGradient(-bleed * 300, 0, trimW * 300, 0);
+        gradient = ctx.createLinearGradient(-bleed * 300, 0, pgW * 300, 0);
       }
       gradient.addColorStop(0, gradStart);
       gradient.addColorStop(1, gradEnd);
@@ -784,10 +854,10 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
           img.onload = () => {
             if (isFront) {
               // Front cover image extends to the right bleed edge
-              ctx.drawImage(img, 0, -bleed * 300, (trimW + bleed) * 300, (trimH + bleed * 2) * 300);
+              ctx.drawImage(img, 0, -bleed * 300, (pgW + bleed) * 300, (pgH + bleed * 2) * 300);
             } else {
               // Back cover image starts at the left bleed edge
-              ctx.drawImage(img, -bleed * 300, -bleed * 300, (bleed + trimW) * 300, (trimH + bleed * 2) * 300);
+              ctx.drawImage(img, -bleed * 300, -bleed * 300, (bleed + pgW) * 300, (pgH + bleed * 2) * 300);
             }
             resolve(true);
           };
@@ -810,29 +880,60 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
       if (side === 'back' && elX >= spineLeftPx) continue;
       if (side === 'front' && elX < spineRightPx) continue;
 
-      // Calculate relative coordinates in cropped region
-      const relativeX = elX - srcX;
-      const relativeY = elY - srcY;
-      
-      const cx = relativeX * scaleX;
-      const cy = relativeY * scaleY;
-      const cw = elW * scaleX;
-      const ch = elH * scaleY;
-      const cRadius = elRadius * scaleX;
+      const width = el.type === 'circle' ? elRadius * 2 : elW;
+      const height = el.type === 'circle' ? elRadius * 2 : elH;
 
-      if (isNaN(cx) || isNaN(cy) || isNaN(cw) || isNaN(ch)) continue;
+      const centerX = elX + width / 2;
+      const centerY = elY + height / 2;
+
+      const relativeCenterX = centerX - srcX;
+      const relativeCenterY = centerY - srcY;
+
+      const scaledCenterX = relativeCenterX * scaleX;
+      const scaledCenterY = relativeCenterY * scaleY;
+      const cw = width * scaleX;
+      const ch = height * scaleY;
+      const cRadius = (width / 2) * scaleX;
+
+      if (isNaN(scaledCenterX) || isNaN(scaledCenterY) || isNaN(cw) || isNaN(ch)) continue;
+
+      ctx.save();
+      ctx.translate(scaledCenterX, scaledCenterY);
+      if (el.rotation) {
+        ctx.rotate((el.rotation * Math.PI) / 180);
+      }
+      if (typeof el.opacity === 'number') {
+        ctx.globalAlpha = el.opacity;
+      }
 
       if (el.type === 'rect') {
         ctx.fillStyle = el.fill || "#F59E0B";
-        ctx.fillRect(cx, cy, cw, ch);
-        if (el.strokeWidth && el.strokeWidth > 0) {
-          ctx.strokeStyle = el.stroke || "#FFFFFF";
-          ctx.lineWidth = el.strokeWidth * scaleX;
-          ctx.strokeRect(cx, cy, cw, ch);
+        const rx = el.cornerRadius ? el.cornerRadius * scaleX : 0;
+        if (rx > 0) {
+          ctx.beginPath();
+          ctx.moveTo(-cw / 2 + rx, -ch / 2);
+          ctx.arcTo(cw / 2, -ch / 2, cw / 2, ch / 2, rx);
+          ctx.arcTo(cw / 2, ch / 2, -cw / 2, ch / 2, rx);
+          ctx.arcTo(-cw / 2, ch / 2, -cw / 2, -ch / 2, rx);
+          ctx.arcTo(-cw / 2, -ch / 2, cw / 2, -ch / 2, rx);
+          ctx.closePath();
+          ctx.fill();
+          if (el.strokeWidth && el.strokeWidth > 0) {
+            ctx.strokeStyle = el.stroke || "#FFFFFF";
+            ctx.lineWidth = el.strokeWidth * scaleX;
+            ctx.stroke();
+          }
+        } else {
+          ctx.fillRect(-cw / 2, -ch / 2, cw, ch);
+          if (el.strokeWidth && el.strokeWidth > 0) {
+            ctx.strokeStyle = el.stroke || "#FFFFFF";
+            ctx.lineWidth = el.strokeWidth * scaleX;
+            ctx.strokeRect(-cw / 2, -ch / 2, cw, ch);
+          }
         }
       } else if (el.type === 'circle') {
         ctx.beginPath();
-        ctx.arc(cx + cRadius, cy + cRadius, cRadius, 0, 2 * Math.PI);
+        ctx.arc(0, 0, cRadius, 0, 2 * Math.PI);
         ctx.fillStyle = el.fill || "#3B82F6";
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
@@ -842,9 +943,9 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         }
       } else if (el.type === 'triangle') {
         ctx.beginPath();
-        ctx.moveTo(cx + cw / 2, cy);
-        ctx.lineTo(cx, cy + ch);
-        ctx.lineTo(cx + cw, cy + ch);
+        ctx.moveTo(0, -ch / 2);
+        ctx.lineTo(-cw / 2, ch / 2);
+        ctx.lineTo(cw / 2, ch / 2);
         ctx.closePath();
         ctx.fillStyle = el.fill || "#10B981";
         ctx.fill();
@@ -853,14 +954,14 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
           ctx.lineWidth = el.strokeWidth * scaleX;
           ctx.stroke();
         }
-      } else if (el.type === 'hexagon') {
+      } else if (el.type === 'hexagon' || (el.type === 'polygon' && el.isHexagon)) {
         ctx.beginPath();
-        ctx.moveTo(cx + cw * 0.5, cy);
-        ctx.lineTo(cx + cw, cy + ch * 0.25);
-        ctx.lineTo(cx + cw, cy + ch * 0.75);
-        ctx.lineTo(cx + cw * 0.5, cy + ch);
-        ctx.lineTo(cx, cy + ch * 0.75);
-        ctx.lineTo(cx, cy + ch * 0.25);
+        ctx.moveTo(0, -ch * 0.5);
+        ctx.lineTo(cw * 0.5, -ch * 0.25);
+        ctx.lineTo(cw * 0.5, ch * 0.25);
+        ctx.lineTo(0, ch * 0.5);
+        ctx.lineTo(-cw * 0.5, ch * 0.25);
+        ctx.lineTo(-cw * 0.5, -ch * 0.25);
         ctx.closePath();
         ctx.fillStyle = el.fill || "#8B5CF6";
         ctx.fill();
@@ -869,11 +970,10 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
           ctx.lineWidth = el.strokeWidth * scaleX;
           ctx.stroke();
         }
-      } else if (el.type === 'star') {
+      } else if (el.type === 'star' || el.type === 'polygon') {
         ctx.save();
-        ctx.translate(cx, cy);
         ctx.scale(cw / 238, ch / 226);
-        ctx.translate(-231, -75);
+        ctx.translate(-350, -188);
         ctx.beginPath();
         ctx.moveTo(350, 75);
         ctx.lineTo(379, 161);
@@ -890,30 +990,34 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         ctx.fill();
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
-          ctx.lineWidth = (el.strokeWidth * scaleX) / (cw / 238);
+          ctx.lineWidth = el.strokeWidth;
           ctx.stroke();
         }
         ctx.restore();
       } else if (el.type === 'heart') {
         ctx.save();
-        ctx.translate(cx, cy);
         ctx.scale(cw / 80, ch / 80);
-        ctx.translate(-10, -10);
+        ctx.translate(-50, -50);
         const path = new Path2D("M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z");
         ctx.fillStyle = el.fill || "#EF4444";
         ctx.fill(path);
         if (el.strokeWidth && el.strokeWidth > 0) {
           ctx.strokeStyle = el.stroke || "#FFFFFF";
-          ctx.lineWidth = (el.strokeWidth * scaleX) / (cw / 80);
+          ctx.lineWidth = el.strokeWidth;
           ctx.stroke(path);
         }
         ctx.restore();
       } else if (el.type === 'line') {
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
         const points = el.points || [0, 0, 100, 0];
-        const lx2 = cx + (points[2] - (points[0] || 0)) * scaleX;
-        const ly2 = cy + (points[3] - (points[1] || 0)) * scaleY;
+        const midX = (points[0] + points[2]) / 2;
+        const midY = (points[1] + points[3]) / 2;
+        const lx1 = (points[0] - midX) * scaleX;
+        const ly1 = (points[1] - midY) * scaleY;
+        const lx2 = (points[2] - midX) * scaleX;
+        const ly2 = (points[3] - midY) * scaleY;
+
+        ctx.beginPath();
+        ctx.moveTo(lx1, ly1);
         ctx.lineTo(lx2, ly2);
         ctx.strokeStyle = el.stroke || "#FFFFFF";
         ctx.lineWidth = (el.strokeWidth || 2) * scaleX;
@@ -925,8 +1029,20 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         ctx.textAlign = el.align || 'left';
         ctx.textBaseline = 'top';
 
-        const textX = ctx.textAlign === 'center' ? cx + cw / 2 : (ctx.textAlign === 'right' ? cx + cw : cx);
-        ctx.fillText(el.text || '', textX, cy);
+        const textX = ctx.textAlign === 'center' ? 0 : (ctx.textAlign === 'right' ? cw / 2 : -cw / 2);
+        const textY = -ch / 2;
+
+        const textStr = el.text || '';
+        const lineHeight = fontSizePx * 1.25;
+
+        if (el.type === 'textbox') {
+          wrapCanvasText(ctx, textStr, textX, textY, cw, lineHeight);
+        } else {
+          const lines = textStr.split('\n');
+          for (let i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], textX, textY + i * lineHeight);
+          }
+        }
       } else if (el.type === 'clipart') {
         if (el.src) {
           try {
@@ -935,7 +1051,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
             img.src = el.src;
             await new Promise((resolve) => {
               img.onload = () => {
-                ctx.drawImage(img, cx, cy, cw, ch);
+                ctx.drawImage(img, -cw / 2, -ch / 2, cw, ch);
                 resolve(true);
               };
               img.onerror = () => resolve(false);
@@ -945,6 +1061,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
           }
         }
       }
+      ctx.restore();
     }
 
     const dataUrl = canvas.toDataURL('image/png');

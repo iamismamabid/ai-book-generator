@@ -512,7 +512,10 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
       doc.setFont(el.fontFamily || "Helvetica", el.fontStyle || "normal");
       doc.setFontSize(fontSizePt);
       doc.setTextColor(el.fill || "#FFFFFF");
-      doc.text(el.text, px, py);
+      
+      const align = el.align || 'left';
+      const textX = align === 'center' ? px + rw / 2 : (align === 'right' ? px + rw : px);
+      doc.text(el.text, textX, py, { align });
     } else if (el.type === 'rect') {
       doc.setFillColor(el.fill || "#F59E0B");
       doc.setDrawColor(el.stroke || "#FFFFFF");
@@ -522,14 +525,16 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
       doc.setFillColor(el.fill || "#3B82F6");
       doc.setDrawColor(el.stroke || "#FFFFFF");
       doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
-      doc.circle(px, py, rRad, el.strokeWidth > 0 ? "FD" : "F");
+      doc.circle(px + rRad, py + rRad, rRad, el.strokeWidth > 0 ? "FD" : "F");
     } else if (el.type === 'line') {
       doc.setDrawColor(el.stroke || "#FFFFFF");
       doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0.05);
       const points = el.points || [0, 0, 100, 0];
-      const lx2 = px + (points[2] / CANVAS_WIDTH) * pageWidth;
-      const ly2 = py + (points[3] / canvasHeight) * pageHeight;
-      doc.line(px, py, lx2, ly2);
+      const lx1 = px;
+      const ly1 = py;
+      const lx2 = px + (points[2] - (points[0] || 0)) * (pageWidth / CANVAS_WIDTH);
+      const ly2 = py + (points[3] - (points[1] || 0)) * (pageHeight / canvasHeight);
+      doc.line(lx1, ly1, lx2, ly2);
     }
   });
 
@@ -615,6 +620,10 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
   const spineLeftPx = (bleed + trimSize.w) * scale;
   const spineRightPx = spineLeftPx + (spineWidth * scale);
 
+  const coverPartWidthPx = spineLeftPx;
+  const scaleX = pgW / coverPartWidthPx;
+  const scaleY = pgH / canvasHeight;
+
   coverElements.forEach((el: any) => {
     // Check if element belongs to this side of the cover
     if (side === 'back' && el.x >= spineLeftPx) return;
@@ -624,19 +633,22 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     const relativeX = side === 'front' ? el.x - spineRightPx : el.x;
     
     // Scale canvas to inches coordinates of this single page
-    const px = (relativeX / CANVAS_WIDTH) * coverTotalWidthInches;
-    const py = (el.y / canvasHeight) * pgH;
+    const px = relativeX * scaleX;
+    const py = el.y * scaleY;
 
-    const rw = (el.width / CANVAS_WIDTH) * coverTotalWidthInches;
-    const rh = (el.height / canvasHeight) * pgH;
-    const rRad = (el.radius / CANVAS_WIDTH) * coverTotalWidthInches;
+    const rw = el.width * scaleX;
+    const rh = el.height * scaleY;
+    const rRad = el.radius * scaleX;
 
     if (el.type === 'text') {
       const fontSizePt = el.fontSize * (pgH * 72 / canvasHeight);
       doc.setFont(el.fontFamily || "Helvetica", el.fontStyle || "normal");
       doc.setFontSize(fontSizePt);
       doc.setTextColor(el.fill || "#FFFFFF");
-      doc.text(el.text, px, py);
+      
+      const align = el.align || 'left';
+      const textX = align === 'center' ? px + rw / 2 : (align === 'right' ? px + rw : px);
+      doc.text(el.text, textX, py, { align });
     } else if (el.type === 'rect') {
       doc.setFillColor(el.fill || "#F59E0B");
       doc.setDrawColor(el.stroke || "#FFFFFF");
@@ -646,15 +658,15 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
       doc.setFillColor(el.fill || "#3B82F6");
       doc.setDrawColor(el.stroke || "#FFFFFF");
       doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
-      doc.circle(px, py, rRad, el.strokeWidth > 0 ? "FD" : "F");
+      doc.circle(px + rRad, py + rRad, rRad, el.strokeWidth > 0 ? "FD" : "F");
     } else if (el.type === 'line') {
       doc.setDrawColor(el.stroke || "#FFFFFF");
       doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0.05);
       const points = el.points || [0, 0, 100, 0];
       const lx1 = px;
       const ly1 = py;
-      const lx2 = px + (points[2] / CANVAS_WIDTH) * coverTotalWidthInches;
-      const ly2 = py + (points[3] / canvasHeight) * pgH;
+      const lx2 = px + (points[2] - (points[0] || 0)) * scaleX;
+      const ly2 = py + (points[3] - (points[1] || 0)) * scaleY;
       doc.line(lx1, ly1, lx2, ly2);
     }
   });

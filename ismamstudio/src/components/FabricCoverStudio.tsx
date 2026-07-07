@@ -125,8 +125,8 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       base.fontFamily = obj.fontFamily;
       base.fontStyle = obj.fontStyle;
       base.align = obj.textAlign;
+      base.width = (obj.width || 240) * (obj.scaleX || 1);
       if (type === 'textbox') {
-        base.width = (obj.width || 240) * (obj.scaleX || 1);
         base.isTextbox = true;
       }
     } else if (type === 'rect') {

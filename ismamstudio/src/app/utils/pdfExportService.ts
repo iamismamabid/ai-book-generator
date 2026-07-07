@@ -499,23 +499,38 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
   const canvasHeight = (trimSize.h + bleed * 2) * scale;
 
   coverElements.forEach((el: any) => {
-    // Scale canvas to inches coordinates
-    const px = (el.x / CANVAS_WIDTH) * pageWidth;
-    const py = (el.y / canvasHeight) * pageHeight;
+    // Fallbacks for element properties to guarantee NO NaN values
+    const elX = typeof el.x === 'number' ? el.x : 0;
+    const elY = typeof el.y === 'number' ? el.y : 0;
+    const elW = typeof el.width === 'number' ? el.width : 240;
+    const elH = typeof el.height === 'number' ? el.height : 100;
+    const elRadius = typeof el.radius === 'number' ? el.radius : 50;
 
-    const rw = (el.width / CANVAS_WIDTH) * pageWidth;
-    const rh = (el.height / canvasHeight) * pageHeight;
-    const rRad = (el.radius / CANVAS_WIDTH) * pageWidth;
+    // Scale canvas to inches coordinates
+    const px = (elX / CANVAS_WIDTH) * pageWidth;
+    const py = (elY / (canvasHeight || 738)) * pageHeight;
+
+    const rw = (elW / CANVAS_WIDTH) * pageWidth;
+    const rh = (elH / (canvasHeight || 738)) * pageHeight;
+    const rRad = (elRadius / CANVAS_WIDTH) * pageWidth;
+
+    // If coordinates are invalid, skip to prevent jsPDF crash
+    if (isNaN(px) || isNaN(py) || isNaN(rw) || isNaN(rh)) {
+      console.warn("drawFullWidescreenCover - skipping element due to NaN coordinates:", el);
+      return;
+    }
 
     if (el.type === 'text') {
-      const fontSizePt = el.fontSize * (pageHeight * 72 / canvasHeight);
+      const fontSizePt = el.fontSize * (pageHeight * 72 / (canvasHeight || 738));
       doc.setFont(el.fontFamily || "Helvetica", el.fontStyle || "normal");
-      doc.setFontSize(fontSizePt);
+      doc.setFontSize(isNaN(fontSizePt) ? 12 : fontSizePt);
       doc.setTextColor(el.fill || "#FFFFFF");
       
       const align = el.align || 'left';
       const textX = align === 'center' ? px + rw / 2 : (align === 'right' ? px + rw : px);
-      doc.text(el.text, textX, py, { align });
+      if (!isNaN(textX)) {
+        doc.text(el.text || "", textX, py, { align });
+      }
     } else if (el.type === 'rect') {
       doc.setFillColor(el.fill || "#F59E0B");
       doc.setDrawColor(el.stroke || "#FFFFFF");
@@ -533,8 +548,10 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
       const lx1 = px;
       const ly1 = py;
       const lx2 = px + (points[2] - (points[0] || 0)) * (pageWidth / CANVAS_WIDTH);
-      const ly2 = py + (points[3] - (points[1] || 0)) * (pageHeight / canvasHeight);
-      doc.line(lx1, ly1, lx2, ly2);
+      const ly2 = py + (points[3] - (points[1] || 0)) * (pageHeight / (canvasHeight || 738));
+      if (!isNaN(lx2) && !isNaN(ly2)) {
+        doc.line(lx1, ly1, lx2, ly2);
+      }
     }
   });
 
@@ -614,41 +631,70 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
   // 3. Draw Vector Elements
   const bleed = 0.125;
   const CANVAS_WIDTH = 800;
-  const coverTotalWidthInches = (trimSize.w * 2) + spineWidth + (bleed * 2);
-  const scale = CANVAS_WIDTH / coverTotalWidthInches;
-  const canvasHeight = (trimSize.h + bleed * 2) * scale;
-  const spineLeftPx = (bleed + trimSize.w) * scale;
+
+  // Robustly extract trim size dimensions to support legacy drafts
+  let trimW = 8.5;
+  let trimH = 11;
+  if (trimSize && typeof trimSize === 'object') {
+    if (typeof trimSize.w === 'number') trimW = trimSize.w;
+    if (typeof trimSize.h === 'number') trimH = trimSize.h;
+    else if (typeof trimSize.label === 'string') {
+      if (trimSize.label.includes('6" x 9"')) { trimW = 6; trimH = 9; }
+      else if (trimSize.label.includes('5.5" x 8.5"')) { trimW = 5.5; trimH = 8.5; }
+      else if (trimSize.label.includes('5" x 8"')) { trimW = 5; trimH = 8; }
+    }
+  }
+
+  const coverTotalWidthInches = (trimW * 2) + spineWidth + (bleed * 2);
+  const scale = CANVAS_WIDTH / (coverTotalWidthInches || 12.475);
+  const canvasHeight = (trimH + bleed * 2) * scale;
+  const spineLeftPx = (bleed + trimW) * scale;
   const spineRightPx = spineLeftPx + (spineWidth * scale);
 
   const coverPartWidthPx = spineLeftPx;
-  const scaleX = pgW / coverPartWidthPx;
-  const scaleY = pgH / canvasHeight;
+  const scaleX = pgW / (coverPartWidthPx || 392.78);
+  const scaleY = pgH / (canvasHeight || 738);
 
   coverElements.forEach((el: any) => {
+    // Fallbacks for element properties to guarantee NO NaN values
+    const elX = typeof el.x === 'number' ? el.x : 0;
+    const elY = typeof el.y === 'number' ? el.y : 0;
+    const elW = typeof el.width === 'number' ? el.width : 240;
+    const elH = typeof el.height === 'number' ? el.height : 100;
+    const elRadius = typeof el.radius === 'number' ? el.radius : 50;
+
     // Check if element belongs to this side of the cover
-    if (side === 'back' && el.x >= spineLeftPx) return;
-    if (side === 'front' && el.x < spineRightPx) return;
+    if (side === 'back' && elX >= spineLeftPx) return;
+    if (side === 'front' && elX < spineRightPx) return;
 
     // Calculate relative x coordinate on this page
-    const relativeX = side === 'front' ? el.x - spineRightPx : el.x;
+    const relativeX = side === 'front' ? elX - spineRightPx : elX;
     
     // Scale canvas to inches coordinates of this single page
     const px = relativeX * scaleX;
-    const py = el.y * scaleY;
+    const py = elY * scaleY;
 
-    const rw = el.width * scaleX;
-    const rh = el.height * scaleY;
-    const rRad = el.radius * scaleX;
+    const rw = elW * scaleX;
+    const rh = elH * scaleY;
+    const rRad = elRadius * scaleX;
+
+    // If coordinates are invalid, skip to prevent jsPDF crash
+    if (isNaN(px) || isNaN(py) || isNaN(rw) || isNaN(rh)) {
+      console.warn("drawCoverPagePart - skipping element due to NaN coordinates:", el);
+      return;
+    }
 
     if (el.type === 'text') {
-      const fontSizePt = el.fontSize * (pgH * 72 / canvasHeight);
+      const fontSizePt = el.fontSize * (pgH * 72 / (canvasHeight || 738));
       doc.setFont(el.fontFamily || "Helvetica", el.fontStyle || "normal");
-      doc.setFontSize(fontSizePt);
+      doc.setFontSize(isNaN(fontSizePt) ? 12 : fontSizePt);
       doc.setTextColor(el.fill || "#FFFFFF");
       
       const align = el.align || 'left';
       const textX = align === 'center' ? px + rw / 2 : (align === 'right' ? px + rw : px);
-      doc.text(el.text, textX, py, { align });
+      if (!isNaN(textX)) {
+        doc.text(el.text || "", textX, py, { align });
+      }
     } else if (el.type === 'rect') {
       doc.setFillColor(el.fill || "#F59E0B");
       doc.setDrawColor(el.stroke || "#FFFFFF");
@@ -667,7 +713,9 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
       const ly1 = py;
       const lx2 = px + (points[2] - (points[0] || 0)) * scaleX;
       const ly2 = py + (points[3] - (points[1] || 0)) * scaleY;
-      doc.line(lx1, ly1, lx2, ly2);
+      if (!isNaN(lx2) && !isNaN(ly2)) {
+        doc.line(lx1, ly1, lx2, ly2);
+      }
     }
   });
 

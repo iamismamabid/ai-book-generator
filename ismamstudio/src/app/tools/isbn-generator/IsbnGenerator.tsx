@@ -625,7 +625,7 @@ export default function IsbnGenerator() {
               <Sparkles className="w-3.5 h-3.5" /> 100% Free Tool
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-              ISBN Barcode Generator for Book Covers
+              Free ISBN Barcode Generator for Book Covers
             </h1>
             <p className="text-slate-400 text-sm font-semibold mt-1">
               Generate print-ready ISBN-13 barcodes for your book's back cover. 300 DPI export, check digit validation, optional price supplement.

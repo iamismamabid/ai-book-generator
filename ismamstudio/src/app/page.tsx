@@ -557,9 +557,9 @@ export default function HomePage() {
               <Sparkles className="w-3.5 h-3.5" /> 100% Free Tool
             </span>
             <h2 className="text-3xl font-black text-white tracking-tight">
-              KDP Spine & Cover Calculator
+              Free KDP Spine & Cover Calculator
             </h2>
-            <p className="text-slate-350 text-xs md:text-sm font-semibold leading-relaxed">
+            <p className="text-slate-355 text-xs md:text-sm font-semibold leading-relaxed">
               Calculate precise book spine thickness and full cover dimensions (with bleed margins) for White, Cream, or Premium Color paper. Ensure instant Amazon approval.
             </p>
             <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-400 justify-center md:justify-start">
@@ -593,7 +593,7 @@ export default function HomePage() {
               <Sparkles className="w-3.5 h-3.5" /> 100% Free Tool
             </span>
             <h2 className="text-3xl font-black text-white tracking-tight">
-              ISBN Barcode Generator
+              Free ISBN Barcode Generator
             </h2>
             <p className="text-slate-355 text-xs md:text-sm font-semibold leading-relaxed">
               Generate print-ready Bookland EAN-13 barcodes for your book's back cover. High-resolution exports, check digit validation, and optional EAN-5 price supplements.

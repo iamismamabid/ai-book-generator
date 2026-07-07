@@ -424,146 +424,178 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
     fullCoverImage = ''
   } = coverState;
 
-  const bleed = 0.125;
-  const halfW = pageWidth / 2;
+  if (typeof window === 'undefined') return;
 
-  // 1. Draw Back Cover Background (Left half)
-  doc.setFillColor(backCoverColor);
-  if (backCoverType === 'gradient' && typeof window !== 'undefined') {
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = halfW * 300;
-      canvas.height = pageHeight * 300;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, backCoverGradientStart);
-        gradient.addColorStop(1, backCoverGradientEnd);
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-        doc.addImage(dataUrl, 'JPEG', 0, 0, halfW, pageHeight);
-      } else {
-        doc.rect(0, 0, halfW, pageHeight, "F");
-      }
-    } catch (err) {
-      doc.rect(0, 0, halfW, pageHeight, "F");
-    }
-  } else {
-    doc.rect(0, 0, halfW, pageHeight, "F");
-  }
-
-  // 2. Draw Front Cover Background (Right half)
-  doc.setFillColor(frontCoverColor);
-  if (frontCoverType === 'gradient' && typeof window !== 'undefined') {
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = halfW * 300;
-      canvas.height = pageHeight * 300;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, frontCoverGradientStart);
-        gradient.addColorStop(1, frontCoverGradientEnd);
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-        doc.addImage(dataUrl, 'JPEG', halfW, 0, halfW, pageHeight);
-      } else {
-        doc.rect(halfW, 0, halfW, pageHeight, "F");
-      }
-    } catch (err) {
-      doc.rect(halfW, 0, halfW, pageHeight, "F");
-    }
-  } else {
-    doc.rect(halfW, 0, halfW, pageHeight, "F");
-  }
-
-  // 3. Draw Spine Background in the middle
-  const spineLeft = bleed + trimSize.w;
-  doc.setFillColor(frontCoverColor); // fallback
-  doc.rect(spineLeft, 0, spineWidth, pageHeight, "F");
-
-  // 4. Draw Background Images if present
   try {
+    const canvas = document.createElement('canvas');
+    // Render at 300 DPI for high quality
+    canvas.width = Math.round(pageWidth * 300);
+    canvas.height = Math.round(pageHeight * 300);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Scale calculation from widescreen canvas (800xHeight)
+    const CANVAS_WIDTH = 800;
+    const bleed = 0.125;
+    const coverTotalWidthInches = (trimSize.w * 2) + spineWidth + (bleed * 2);
+    const scale_canvas = CANVAS_WIDTH / coverTotalWidthInches;
+    const canvasHeight = (trimSize.h + bleed * 2) * scale_canvas;
+
+    const scaleX = width / CANVAS_WIDTH;
+    const scaleY = height / canvasHeight;
+
+    const spineLeftPx = (bleed + trimSize.w) * scale_canvas;
+    const spineRightPx = spineLeftPx + (spineWidth * scale_canvas);
+
+    // 1. Draw Back Cover Background
+    const backLeft = 0;
+    const backWidth = spineLeftPx * scaleX;
+    if (backCoverType === 'gradient') {
+      const gradient = ctx.createLinearGradient(backLeft, 0, backLeft + backWidth, 0);
+      gradient.addColorStop(0, backCoverGradientStart);
+      gradient.addColorStop(1, backCoverGradientEnd);
+      ctx.fillStyle = gradient;
+    } else {
+      ctx.fillStyle = backCoverColor;
+    }
+    ctx.fillRect(backLeft, 0, backWidth, height);
+
+    // 2. Draw Spine Background
+    const spineLeft = spineLeftPx * scaleX;
+    const spineWidthCanvas = (spineRightPx - spineLeftPx) * scaleX;
+    ctx.fillStyle = frontCoverColor;
+    ctx.fillRect(spineLeft, 0, spineWidthCanvas, height);
+
+    // 3. Draw Front Cover Background
+    const frontLeft = spineRightPx * scaleX;
+    const frontWidth = width - frontLeft;
+    if (frontCoverType === 'gradient') {
+      const gradient = ctx.createLinearGradient(frontLeft, 0, frontLeft + frontWidth, 0);
+      gradient.addColorStop(0, frontCoverGradientStart);
+      gradient.addColorStop(1, frontCoverGradientEnd);
+      ctx.fillStyle = gradient;
+    } else {
+      ctx.fillStyle = frontCoverColor;
+    }
+    ctx.fillRect(frontLeft, 0, frontWidth, height);
+
+    // 4. Draw Background Images if present
     if (fullCoverImage) {
-      doc.addImage(fullCoverImage, 'JPEG', 0, 0, pageWidth, pageHeight);
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = fullCoverImage;
+        await new Promise((resolve) => {
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(true);
+          };
+          img.onerror = () => resolve(false);
+        });
+      } catch (e) {
+        console.error("Error drawing full cover image:", e);
+      }
     } else {
       if (backCoverImage) {
-        doc.addImage(backCoverImage, 'JPEG', 0, 0, halfW, pageHeight);
+        try {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.src = backCoverImage;
+          await new Promise((resolve) => {
+            img.onload = () => {
+              ctx.drawImage(img, backLeft, 0, backWidth, height);
+              resolve(true);
+            };
+            img.onerror = () => resolve(false);
+          });
+        } catch (e) {
+          console.error("Error drawing back cover image:", e);
+        }
       }
       if (frontCoverImage) {
-        doc.addImage(frontCoverImage, 'JPEG', halfW, 0, halfW, pageHeight);
+        try {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.src = frontCoverImage;
+          await new Promise((resolve) => {
+            img.onload = () => {
+              ctx.drawImage(img, frontLeft, 0, frontWidth, height);
+              resolve(true);
+            };
+            img.onerror = () => resolve(false);
+          });
+        } catch (e) {
+          console.error("Error drawing front cover image:", e);
+        }
       }
     }
+
+    // 5. Draw Vector Elements
+    for (const el of coverElements) {
+      const elX = typeof el.x === 'number' ? el.x : 0;
+      const elY = typeof el.y === 'number' ? el.y : 0;
+      const elW = typeof el.width === 'number' ? el.width : 240;
+      const elH = typeof el.height === 'number' ? el.height : 100;
+      const elRadius = typeof el.radius === 'number' ? el.radius : 50;
+
+      const cx = elX * scaleX;
+      const cy = elY * scaleY;
+      const cw = elW * scaleX;
+      const ch = elH * scaleY;
+      const cRadius = elRadius * scaleX;
+
+      if (isNaN(cx) || isNaN(cy) || isNaN(cw) || isNaN(ch)) continue;
+
+      if (el.type === 'rect') {
+        ctx.fillStyle = el.fill || "#F59E0B";
+        ctx.fillRect(cx, cy, cw, ch);
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.strokeRect(cx, cy, cw, ch);
+        }
+      } else if (el.type === 'circle') {
+        ctx.beginPath();
+        ctx.arc(cx + cRadius, cy + cRadius, cRadius, 0, 2 * Math.PI);
+        ctx.fillStyle = el.fill || "#3B82F6";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'line') {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        const points = el.points || [0, 0, 100, 0];
+        const lx2 = cx + (points[2] - (points[0] || 0)) * scaleX;
+        const ly2 = cy + (points[3] - (points[1] || 0)) * scaleY;
+        ctx.lineTo(lx2, ly2);
+        ctx.strokeStyle = el.stroke || "#FFFFFF";
+        ctx.lineWidth = (el.strokeWidth || 2) * scaleX;
+        ctx.stroke();
+      } else if (el.type === 'text') {
+        const fontSizePx = el.fontSize * scaleY;
+        ctx.font = `${el.fontStyle || 'normal'} ${fontSizePx}px ${el.fontFamily || 'Arial'}`;
+        ctx.fillStyle = el.fill || "#FFFFFF";
+        ctx.textAlign = el.align || 'left';
+        ctx.textBaseline = 'top';
+
+        const textX = ctx.textAlign === 'center' ? cx + cw / 2 : (ctx.textAlign === 'right' ? cx + cw : cx);
+        ctx.fillText(el.text || '', textX, cy);
+      }
+    }
+
+    const dataUrl = canvas.toDataURL('image/png');
+    doc.addImage(dataUrl, 'PNG', 0, 0, pageWidth, pageHeight);
   } catch (err) {
-    console.error("Error drawing cover backgrounds", err);
+    console.error("Error drawing widescreen cover with canvas:", err);
+    doc.setFillColor(frontCoverColor);
+    doc.rect(0, 0, pageWidth, pageHeight, "F");
   }
-
-  // 5. Draw Vector Elements
-  const CANVAS_WIDTH = 800;
-  const coverTotalWidthInches = (trimSize.w * 2) + spineWidth + (bleed * 2);
-  const scale = CANVAS_WIDTH / coverTotalWidthInches;
-  const canvasHeight = (trimSize.h + bleed * 2) * scale;
-
-  coverElements.forEach((el: any) => {
-    // Fallbacks for element properties to guarantee NO NaN values
-    const elX = typeof el.x === 'number' ? el.x : 0;
-    const elY = typeof el.y === 'number' ? el.y : 0;
-    const elW = typeof el.width === 'number' ? el.width : 240;
-    const elH = typeof el.height === 'number' ? el.height : 100;
-    const elRadius = typeof el.radius === 'number' ? el.radius : 50;
-
-    // Scale canvas to inches coordinates
-    const px = (elX / CANVAS_WIDTH) * pageWidth;
-    const py = (elY / (canvasHeight || 738)) * pageHeight;
-
-    const rw = (elW / CANVAS_WIDTH) * pageWidth;
-    const rh = (elH / (canvasHeight || 738)) * pageHeight;
-    const rRad = (elRadius / CANVAS_WIDTH) * pageWidth;
-
-    // If coordinates are invalid, skip to prevent jsPDF crash
-    if (isNaN(px) || isNaN(py) || isNaN(rw) || isNaN(rh)) {
-      console.warn("drawFullWidescreenCover - skipping element due to NaN coordinates:", el);
-      return;
-    }
-
-    if (el.type === 'text') {
-      const fontSizePt = el.fontSize * (pageHeight * 72 / (canvasHeight || 738));
-      doc.setFont(getSafeFontFamily(el.fontFamily), el.fontStyle || "normal");
-      doc.setFontSize(isNaN(fontSizePt) ? 12 : fontSizePt);
-      doc.setTextColor(el.fill || "#FFFFFF");
-      
-      const align = el.align || 'left';
-      const textX = align === 'center' ? px + rw / 2 : (align === 'right' ? px + rw : px);
-      if (!isNaN(textX)) {
-        doc.text(el.text || "", textX, py, { align, baseline: 'top' });
-      }
-    } else if (el.type === 'rect') {
-      doc.setFillColor(el.fill || "#F59E0B");
-      doc.setDrawColor(el.stroke || "#FFFFFF");
-      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
-      doc.rect(px, py, rw, rh, el.strokeWidth > 0 ? "FD" : "F");
-    } else if (el.type === 'circle') {
-      doc.setFillColor(el.fill || "#3B82F6");
-      doc.setDrawColor(el.stroke || "#FFFFFF");
-      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
-      doc.circle(px + rRad, py + rRad, rRad, el.strokeWidth > 0 ? "FD" : "F");
-    } else if (el.type === 'line') {
-      doc.setDrawColor(el.stroke || "#FFFFFF");
-      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0.05);
-      const points = el.points || [0, 0, 100, 0];
-      const lx1 = px;
-      const ly1 = py;
-      const lx2 = px + (points[2] - (points[0] || 0)) * (pageWidth / CANVAS_WIDTH);
-      const ly2 = py + (points[3] - (points[1] || 0)) * (pageHeight / (canvasHeight || 738));
-      if (!isNaN(lx2) && !isNaN(ly2)) {
-        doc.line(lx1, ly1, lx2, ly2);
-      }
-    }
-  });
-
-  doc.setTextColor(0);
 };
 
 export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front' | 'back', pageWidth: number, pageHeight: number) => {
@@ -581,154 +613,153 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     backCoverGradientEnd = '#020617'
   } = coverState;
 
-  // Use the passed-in pageWidth/pageHeight directly - these are authoritative
   const pgW = pageWidth;
   const pgH = pageHeight;
 
-  // 1. Draw Page Background
-  const isFront = side === 'front';
-  const bgColor = isFront ? frontCoverColor : backCoverColor;
-  const isGradient = isFront ? frontCoverType === 'gradient' : backCoverType === 'gradient';
-  const gradStart = isFront ? frontCoverGradientStart : backCoverGradientStart;
-  const gradEnd = isFront ? frontCoverGradientEnd : backCoverGradientEnd;
+  if (typeof window === 'undefined') return;
 
-  if (isGradient) {
-    if (typeof window !== 'undefined') {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 512;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          // Draw horizontal gradient (left to right) matching Cover Studio
-          const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-          gradient.addColorStop(0, gradStart);
-          gradient.addColorStop(1, gradEnd);
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL('image/png');
-          doc.addImage(dataUrl, 'PNG', 0, 0, pgW, pgH);
-        } else {
-          doc.setFillColor(bgColor);
-          doc.rect(0, 0, pgW, pgH, "F");
-        }
-      } catch (err) {
-        console.error("drawCoverPagePart - gradient error:", err);
-        doc.setFillColor(bgColor);
-        doc.rect(0, 0, pgW, pgH, "F");
-      }
-    } else {
-      doc.setFillColor(bgColor);
-      doc.rect(0, 0, pgW, pgH, "F");
-    }
-  } else {
-    doc.setFillColor(bgColor);
-    doc.rect(0, 0, pgW, pgH, "F");
-  }
-
-  // 2. Draw Background Images if present
   try {
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(pgW * 300);
+    canvas.height = Math.round(pgH * 300);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // 1. Draw Page Background
+    const isFront = side === 'front';
+    const bgColor = isFront ? frontCoverColor : backCoverColor;
+    const isGradient = isFront ? frontCoverType === 'gradient' : backCoverType === 'gradient';
+    const gradStart = isFront ? frontCoverGradientStart : backCoverGradientStart;
+    const gradEnd = isFront ? frontCoverGradientEnd : backCoverGradientEnd;
+
+    if (isGradient) {
+      const gradient = ctx.createLinearGradient(0, 0, width, 0);
+      gradient.addColorStop(0, gradStart);
+      gradient.addColorStop(1, gradEnd);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    } else {
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    // 2. Draw Background Image
     const bgImage = isFront ? coverState.frontCoverImage : coverState.backCoverImage;
     if (bgImage) {
-      doc.addImage(bgImage, 'JPEG', 0, 0, pgW, pgH);
-    }
-  } catch (err) {
-    console.error("Error drawing cover part background image", err);
-  }
-
-  // 3. Draw Vector Elements
-  const bleed = 0.125;
-  const CANVAS_WIDTH = 800;
-
-  // Robustly extract trim size dimensions to support legacy drafts
-  let trimW = 8.5;
-  let trimH = 11;
-  if (trimSize && typeof trimSize === 'object') {
-    if (typeof trimSize.w === 'number') trimW = trimSize.w;
-    if (typeof trimSize.h === 'number') trimH = trimSize.h;
-    else if (typeof trimSize.label === 'string') {
-      if (trimSize.label.includes('6" x 9"')) { trimW = 6; trimH = 9; }
-      else if (trimSize.label.includes('5.5" x 8.5"')) { trimW = 5.5; trimH = 8.5; }
-      else if (trimSize.label.includes('5" x 8"')) { trimW = 5; trimH = 8; }
-    }
-  }
-
-  const coverTotalWidthInches = (trimW * 2) + spineWidth + (bleed * 2);
-  const scale = CANVAS_WIDTH / (coverTotalWidthInches || 12.475);
-  const canvasHeight = (trimH + bleed * 2) * scale;
-  const spineLeftPx = (bleed + trimW) * scale;
-  const spineRightPx = spineLeftPx + (spineWidth * scale);
-
-  const coverPartWidthPx = spineLeftPx;
-  const scaleX = pgW / (coverPartWidthPx || 392.78);
-  const scaleY = pgH / (canvasHeight || 738);
-
-  coverElements.forEach((el: any) => {
-    // Fallbacks for element properties to guarantee NO NaN values
-    const elX = typeof el.x === 'number' ? el.x : 0;
-    const elY = typeof el.y === 'number' ? el.y : 0;
-    const elW = typeof el.width === 'number' ? el.width : 240;
-    const elH = typeof el.height === 'number' ? el.height : 100;
-    const elRadius = typeof el.radius === 'number' ? el.radius : 50;
-
-    // Check if element belongs to this side of the cover
-    if (side === 'back' && elX >= spineLeftPx) return;
-    if (side === 'front' && elX < spineRightPx) return;
-
-    // Calculate relative x coordinate on this page
-    const relativeX = side === 'front' ? elX - spineRightPx : elX;
-    
-    // Scale canvas to inches coordinates of this single page
-    const px = relativeX * scaleX;
-    const py = elY * scaleY;
-
-    const rw = elW * scaleX;
-    const rh = elH * scaleY;
-    const rRad = elRadius * scaleX;
-
-    // If coordinates are invalid, skip to prevent jsPDF crash
-    if (isNaN(px) || isNaN(py) || isNaN(rw) || isNaN(rh)) {
-      console.warn("drawCoverPagePart - skipping element due to NaN coordinates:", el);
-      return;
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = bgImage;
+        await new Promise((resolve) => {
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(true);
+          };
+          img.onerror = () => resolve(false);
+        });
+      } catch (imgErr) {
+        console.error("Failed to draw cover part background image:", imgErr);
+      }
     }
 
-    if (el.type === 'text') {
-      const fontSizePt = el.fontSize * (pgH * 72 / (canvasHeight || 738));
-      doc.setFont(getSafeFontFamily(el.fontFamily), el.fontStyle || "normal");
-      doc.setFontSize(isNaN(fontSizePt) ? 12 : fontSizePt);
-      doc.setTextColor(el.fill || "#FFFFFF");
+    // 3. Draw Vector Elements
+    const bleed = 0.125;
+    const CANVAS_WIDTH = 800;
+
+    // Robustly extract trim size dimensions to support legacy drafts
+    let trimW = 8.5;
+    let trimH = 11;
+    if (trimSize && typeof trimSize === 'object') {
+      if (typeof trimSize.w === 'number') trimW = trimSize.w;
+      if (typeof trimSize.h === 'number') trimH = trimSize.h;
+      else if (typeof trimSize.label === 'string') {
+        if (trimSize.label.includes('6" x 9"')) { trimW = 6; trimH = 9; }
+        else if (trimSize.label.includes('5.5" x 8.5"')) { trimW = 5.5; trimH = 8.5; }
+        else if (trimSize.label.includes('5" x 8"')) { trimW = 5; trimH = 8; }
+      }
+    }
+
+    const coverTotalWidthInches = (trimW * 2) + spineWidth + (bleed * 2);
+    const scale = CANVAS_WIDTH / (coverTotalWidthInches || 12.475);
+    const canvasHeight = (trimH + bleed * 2) * scale;
+    const spineLeftPx = (bleed + trimW) * scale;
+    const spineRightPx = spineLeftPx + (spineWidth * scale);
+
+    const coverPartWidthPx = spineLeftPx;
+    const scaleX = width / (coverPartWidthPx || 392.78);
+    const scaleY = height / (canvasHeight || 738);
+
+    for (const el of coverElements) {
+      const elX = typeof el.x === 'number' ? el.x : 0;
+      const elY = typeof el.y === 'number' ? el.y : 0;
+      const elW = typeof el.width === 'number' ? el.width : 240;
+      const elH = typeof el.height === 'number' ? el.height : 100;
+      const elRadius = typeof el.radius === 'number' ? el.radius : 50;
+
+      // Check if element belongs to this side of the cover
+      if (side === 'back' && elX >= spineLeftPx) continue;
+      if (side === 'front' && elX < spineRightPx) continue;
+
+      const relativeX = side === 'front' ? elX - spineRightPx : elX;
       
-      const align = el.align || 'left';
-      const textX = align === 'center' ? px + rw / 2 : (align === 'right' ? px + rw : px);
-      if (!isNaN(textX)) {
-        doc.text(el.text || "", textX, py, { align, baseline: 'top' });
-      }
-    } else if (el.type === 'rect') {
-      doc.setFillColor(el.fill || "#F59E0B");
-      doc.setDrawColor(el.stroke || "#FFFFFF");
-      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
-      doc.rect(px, py, rw, rh, el.strokeWidth > 0 ? "FD" : "F");
-    } else if (el.type === 'circle') {
-      doc.setFillColor(el.fill || "#3B82F6");
-      doc.setDrawColor(el.stroke || "#FFFFFF");
-      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0);
-      doc.circle(px + rRad, py + rRad, rRad, el.strokeWidth > 0 ? "FD" : "F");
-    } else if (el.type === 'line') {
-      doc.setDrawColor(el.stroke || "#FFFFFF");
-      doc.setLineWidth(el.strokeWidth ? el.strokeWidth / 72 : 0.05);
-      const points = el.points || [0, 0, 100, 0];
-      const lx1 = px;
-      const ly1 = py;
-      const lx2 = px + (points[2] - (points[0] || 0)) * scaleX;
-      const ly2 = py + (points[3] - (points[1] || 0)) * scaleY;
-      if (!isNaN(lx2) && !isNaN(ly2)) {
-        doc.line(lx1, ly1, lx2, ly2);
+      const cx = relativeX * scaleX;
+      const cy = elY * scaleY;
+      const cw = elW * scaleX;
+      const ch = elH * scaleY;
+      const cRadius = elRadius * scaleX;
+
+      if (isNaN(cx) || isNaN(cy) || isNaN(cw) || isNaN(ch)) continue;
+
+      if (el.type === 'rect') {
+        ctx.fillStyle = el.fill || "#F59E0B";
+        ctx.fillRect(cx, cy, cw, ch);
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.strokeRect(cx, cy, cw, ch);
+        }
+      } else if (el.type === 'circle') {
+        ctx.beginPath();
+        ctx.arc(cx + cRadius, cy + cRadius, cRadius, 0, 2 * Math.PI);
+        ctx.fillStyle = el.fill || "#3B82F6";
+        ctx.fill();
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#FFFFFF";
+          ctx.lineWidth = el.strokeWidth * scaleX;
+          ctx.stroke();
+        }
+      } else if (el.type === 'line') {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        const points = el.points || [0, 0, 100, 0];
+        const lx2 = cx + (points[2] - (points[0] || 0)) * scaleX;
+        const ly2 = cy + (points[3] - (points[1] || 0)) * scaleY;
+        ctx.lineTo(lx2, ly2);
+        ctx.strokeStyle = el.stroke || "#FFFFFF";
+        ctx.lineWidth = (el.strokeWidth || 2) * scaleX;
+        ctx.stroke();
+      } else if (el.type === 'text') {
+        const fontSizePx = el.fontSize * scaleY;
+        ctx.font = `${el.fontStyle || 'normal'} ${fontSizePx}px ${el.fontFamily || 'Arial'}`;
+        ctx.fillStyle = el.fill || "#FFFFFF";
+        ctx.textAlign = el.align || 'left';
+        ctx.textBaseline = 'top';
+
+        const textX = ctx.textAlign === 'center' ? cx + cw / 2 : (ctx.textAlign === 'right' ? cx + cw : cx);
+        ctx.fillText(el.text || '', textX, cy);
       }
     }
-  });
 
-  // Reset text color to default
-  doc.setTextColor(0);
+    const dataUrl = canvas.toDataURL('image/png');
+    doc.addImage(dataUrl, 'PNG', 0, 0, pgW, pgH);
+  } catch (err) {
+    console.error("Error drawing cover page part with canvas:", err);
+    doc.setFillColor(isFront ? frontCoverColor : backCoverColor);
+    doc.rect(0, 0, pgW, pgH, "F");
+  }
 };
 
 // Helper: Hex color parser supporting 3 and 6 characters

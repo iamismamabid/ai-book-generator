@@ -628,15 +628,57 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     const width = canvas.width;
     const height = canvas.height;
 
-    // 1. Draw Page Background
+    // Robustly extract trim size dimensions to support legacy drafts
+    let trimW = 8.5;
+    let trimH = 11;
+    if (trimSize && typeof trimSize === 'object') {
+      if (typeof trimSize.w === 'number') trimW = trimSize.w;
+      if (typeof trimSize.h === 'number') trimH = trimSize.h;
+      else if (typeof trimSize.label === 'string') {
+        if (trimSize.label.includes('6" x 9"')) { trimW = 6; trimH = 9; }
+        else if (trimSize.label.includes('5.5" x 8.5"')) { trimW = 5.5; trimH = 8.5; }
+        else if (trimSize.label.includes('5" x 8"')) { trimW = 5; trimH = 8; }
+      }
+    }
+
+    const bleed = 0.125;
+    const CANVAS_WIDTH = 800;
+
+    const coverTotalWidthInches = (trimW * 2) + spineWidth + (bleed * 2);
+    const scale = CANVAS_WIDTH / (coverTotalWidthInches || 12.475);
+    const canvasHeight = (trimH + bleed * 2) * scale;
+    
+    const trimLeftPx = bleed * scale;
+    const trimTopPx = bleed * scale;
+    const spineLeftPx = (bleed + trimW) * scale;
+    const spineRightPx = spineLeftPx + (spineWidth * scale);
+
+    // Calculate crop window relative to widescreen canvas
     const isFront = side === 'front';
+    const srcX = isFront ? spineRightPx : trimLeftPx;
+    const srcY = trimTopPx;
+    const srcW = trimW * scale;
+    const srcH = trimH * scale;
+
+    const scaleX = width / srcW;
+    const scaleY = height / srcH;
+
+    // 1. Draw Page Background
     const bgColor = isFront ? frontCoverColor : backCoverColor;
     const isGradient = isFront ? frontCoverType === 'gradient' : backCoverType === 'gradient';
     const gradStart = isFront ? frontCoverGradientStart : backCoverGradientStart;
     const gradEnd = isFront ? frontCoverGradientEnd : backCoverGradientEnd;
 
     if (isGradient) {
-      const gradient = ctx.createLinearGradient(0, 0, width, 0);
+      // Draw gradient aligned to the canvas representation
+      let gradient: CanvasGradient;
+      if (isFront) {
+        // Front cover gradient starts at spine (x=0) and ends at right bleed edge
+        gradient = ctx.createLinearGradient(0, 0, (trimW + bleed) * 300, 0);
+      } else {
+        // Back cover gradient starts at left bleed edge (x=-bleed) and ends at spine (x=trimW)
+        gradient = ctx.createLinearGradient(-bleed * 300, 0, trimW * 300, 0);
+      }
       gradient.addColorStop(0, gradStart);
       gradient.addColorStop(1, gradEnd);
       ctx.fillStyle = gradient;
@@ -655,7 +697,13 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         img.src = bgImage;
         await new Promise((resolve) => {
           img.onload = () => {
-            ctx.drawImage(img, 0, 0, width, height);
+            if (isFront) {
+              // Front cover image extends to the right bleed edge
+              ctx.drawImage(img, 0, -bleed * 300, (trimW + bleed) * 300, (trimH + bleed * 2) * 300);
+            } else {
+              // Back cover image starts at the left bleed edge
+              ctx.drawImage(img, -bleed * 300, -bleed * 300, (bleed + trimW) * 300, (trimH + bleed * 2) * 300);
+            }
             resolve(true);
           };
           img.onerror = () => resolve(false);
@@ -666,32 +714,6 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     }
 
     // 3. Draw Vector Elements
-    const bleed = 0.125;
-    const CANVAS_WIDTH = 800;
-
-    // Robustly extract trim size dimensions to support legacy drafts
-    let trimW = 8.5;
-    let trimH = 11;
-    if (trimSize && typeof trimSize === 'object') {
-      if (typeof trimSize.w === 'number') trimW = trimSize.w;
-      if (typeof trimSize.h === 'number') trimH = trimSize.h;
-      else if (typeof trimSize.label === 'string') {
-        if (trimSize.label.includes('6" x 9"')) { trimW = 6; trimH = 9; }
-        else if (trimSize.label.includes('5.5" x 8.5"')) { trimW = 5.5; trimH = 8.5; }
-        else if (trimSize.label.includes('5" x 8"')) { trimW = 5; trimH = 8; }
-      }
-    }
-
-    const coverTotalWidthInches = (trimW * 2) + spineWidth + (bleed * 2);
-    const scale = CANVAS_WIDTH / (coverTotalWidthInches || 12.475);
-    const canvasHeight = (trimH + bleed * 2) * scale;
-    const spineLeftPx = (bleed + trimW) * scale;
-    const spineRightPx = spineLeftPx + (spineWidth * scale);
-
-    const coverPartWidthPx = spineLeftPx;
-    const scaleX = width / (coverPartWidthPx || 392.78);
-    const scaleY = height / (canvasHeight || 738);
-
     for (const el of coverElements) {
       const elX = typeof el.x === 'number' ? el.x : 0;
       const elY = typeof el.y === 'number' ? el.y : 0;
@@ -699,14 +721,16 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
       const elH = typeof el.height === 'number' ? el.height : 100;
       const elRadius = typeof el.radius === 'number' ? el.radius : 50;
 
-      // Check if element belongs to this side of the cover
+      // Check if element belongs to this side of the cover using the exact guidelines
       if (side === 'back' && elX >= spineLeftPx) continue;
       if (side === 'front' && elX < spineRightPx) continue;
 
-      const relativeX = side === 'front' ? elX - spineRightPx : elX;
+      // Calculate relative coordinates in cropped region
+      const relativeX = elX - srcX;
+      const relativeY = elY - srcY;
       
       const cx = relativeX * scaleX;
-      const cy = elY * scaleY;
+      const cy = relativeY * scaleY;
       const cw = elW * scaleX;
       const ch = elH * scaleY;
       const cRadius = elRadius * scaleX;

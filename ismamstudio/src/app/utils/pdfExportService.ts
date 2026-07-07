@@ -551,6 +551,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
   // Get exact page dimensions from jsPDF internal properties
   const pgW = doc.internal.pageSize.getWidth();
   const pgH = doc.internal.pageSize.getHeight();
+  console.log("drawCoverPagePart - pgW:", pgW, "pgH:", pgH, "side:", side, "coverState:", coverState);
 
   // 1. Draw Page Background
   const isFront = side === 'front';
@@ -567,6 +568,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         const canvas = document.createElement('canvas');
         canvas.width = pgW * 300; // 300 DPI quality
         canvas.height = pgH * 300;
+        console.log("drawCoverPagePart - canvas width:", canvas.width, "height:", canvas.height, "gradStart:", gradStart, "gradEnd:", gradEnd);
         const ctx = canvas.getContext('2d');
         if (ctx) {
           const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -577,9 +579,11 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
           const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
           doc.addImage(dataUrl, 'JPEG', 0, 0, pgW, pgH);
         } else {
+          console.warn("drawCoverPagePart - 2d context is null");
           doc.rect(0, 0, pgW, pgH, "F");
         }
       } catch (err) {
+        console.error("drawCoverPagePart - canvas error:", err);
         doc.rect(0, 0, pgW, pgH, "F");
       }
     } else {

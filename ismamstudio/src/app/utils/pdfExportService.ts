@@ -566,9 +566,9 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     if (typeof window !== 'undefined') {
       try {
         const canvas = document.createElement('canvas');
-        canvas.width = pgW * 300; // 300 DPI quality
-        canvas.height = pgH * 300;
-        console.log("drawCoverPagePart - canvas width:", canvas.width, "height:", canvas.height, "gradStart:", gradStart, "gradEnd:", gradEnd);
+        canvas.width = 128;
+        canvas.height = 256;
+        console.log("drawCoverPagePart - gradient canvas:", canvas.width, "x", canvas.height, "gradStart:", gradStart, "gradEnd:", gradEnd, "target:", pgW, "x", pgH);
         const ctx = canvas.getContext('2d');
         if (ctx) {
           const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -576,8 +576,8 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
           gradient.addColorStop(1, gradEnd);
           ctx.fillStyle = gradient;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-          doc.addImage(dataUrl, 'JPEG', 0, 0, pgW, pgH);
+          const dataUrl = canvas.toDataURL('image/png');
+          doc.addImage(dataUrl, 'PNG', 0, 0, pgW, pgH);
         } else {
           console.warn("drawCoverPagePart - 2d context is null");
           doc.rect(0, 0, pgW, pgH, "F");

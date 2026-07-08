@@ -198,6 +198,57 @@ const BLOG_POSTS: Post[] = [
       "### Try the Free KDP Royalty Calculator",
       "Want to run pricing scenarios instantly? Check out our Free KDP Royalty Calculator. Adjust sliders for page counts and retail price to see your printing costs and royalty margins across different marketplaces immediately. Access the calculator at ismamstudio.me/tools."
     ]
+  },
+  {
+    slug: "generate-free-puzzle-book-interiors",
+    title: "How to Generate Free Puzzle Book Interiors (Sudoku, Mazes & Word Search)",
+    category: "Tutorial",
+    date: "July 08, 2026",
+    readTime: "7 min read",
+    description: "Looking for free puzzle interiors for Amazon KDP? Learn how to generate print-ready Sudoku grid and maze PDFs with answer keys for free.",
+    content: [
+      "Puzzle books are some of the fastest-selling books on Amazon, but buying interior templates can get expensive. Fortunately, you do not have to pay for high-quality puzzle layouts. By using the right online generators, you can create and customize unlimited puzzle grids for free. Here is the best method to generate print-ready interiors.",
+      "### Why Generate Your Puzzles Custom?",
+      "Purchasing pre-made puzzle packs from stock websites means you risk publishing the exact same puzzles as hundreds of other creators. Amazon can flag duplicate interiors as spam, leading to account suspension. Generating your puzzles dynamically ensures that your word grids, mazes, and sudoku numbers are completely unique to your book.",
+      "### Generating Free Interiors",
+      "Using the Puzzle Book Generator on Ismam Studio, you can choose from Sudoku, Mazes, Cryptograms, and Word Searches. The tool lets you specify grid sizes, select difficulty tiers, and format page layouts automatically. It compiles the puzzles alongside their answer key solutions into a single high-resolution vector PDF that meets KDP margins.",
+      "### Download Your Free Puzzle Templates",
+      "Start generating your custom interior pages today. With unlimited exports, check digit validation, and automatic sizing, you can build a complete activity book for free. Try the generator at ismamstudio.me/tools."
+    ]
+  },
+  {
+    slug: "create-free-coloring-books-templates",
+    title: "How to Create Free Coloring Books with Online Templates",
+    category: "Design",
+    date: "July 08, 2026",
+    readTime: "6 min read",
+    description: "Learn how to source free vector graphics and use online templates to build professional coloring books for kids and adults.",
+    content: [
+      "Coloring books represent a high-margin publishing niche. Sourcing custom illustrations from freelance designers can cost hundreds of dollars, but you can build beautiful coloring books for free by leveraging free vector assets and online styling tools. Here is our step-by-step layout guide.",
+      "### Sourcing Free Vector Content",
+      "To ensure your coloring book is legal to publish, you must source graphics with commercial-use licenses. Websites like Pixabay, Vecteezy, and Unsplash offer thousands of black-and-white outline drawings. Look for SVG or vector formats so they do not pixelate when resized to standard KDP dimensions.",
+      "### Aligning Pages and Layouts",
+      "When designing coloring pages, print them on single-sided sheets (meaning every right-hand page is blank). This prevents color marker bleed-through from ruining the next drawing. Leave at least 0.375 inches of safe margins on all sides so the outlines are not cut off during printing.",
+      "### Compile for Free",
+      "Use the KDP Interior PDF Formatter on Ismam Studio to drag-and-drop your coloring sheets, select your trim size (usually 8.5\" x 11\"), check margins, and compile them into a print-ready PDF book. Get started for free at ismamstudio.me/tools."
+    ]
+  },
+  {
+    slug: "kdp-upload-checklist-avoid-rejections",
+    title: "The Ultimate KDP Upload Checklist: Avoid Common Rejections",
+    category: "Marketing",
+    date: "July 08, 2026",
+    readTime: "5 min read",
+    description: "Ensure a smooth Amazon publishing process. Read the checklist covering metadata, bleed settings, spine size, and account setup.",
+    content: [
+      "Preparing to upload your book to Amazon KDP is an exciting milestone. However, the review process can be stressful if your files are rejected due to formatting glitches. To save time and ensure your book goes live on the first try, use this interactive checklist before submitting.",
+      "### 1. Metadata and Description Check",
+      "Ensure your book title and author name match your front cover text exactly. Any discrepancy will result in immediate rejection. Ensure your description is formatted in clean, valid HTML to guarantee it renders correctly across mobile and desktop browsers.",
+      "### 2. Spine and Bleed Calculations",
+      "Double-check your spine calculations. The spine width depends on your exact page count and paper type. White paper has a thickness of 0.00225 inches. If your book page count is under 72 pages, do not place text on the spine as it is too thin.",
+      "### 3. Interactive Compliance Checklist",
+      "Use our Free KDP Upload Checklist tool on Ismam Studio to verify your files before uploading. It guides you through safe margin settings, bleed configurations, and metadata requirements, ensuring instant Amazon approval. Try it now at ismamstudio.me/tools."
+    ]
   }
 ];
 

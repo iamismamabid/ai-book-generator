@@ -26,6 +26,63 @@ const CLIPARTS = [
   { name: "FAA Flight Orbit", src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=300&q=80" }
 ];
 
+const KDP_ICONS_LIBRARY = [
+  {
+    category: "Planners & Trackers",
+    icons: [
+      { name: "Checkbox", path: "M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm4 9l3 3 6-6", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Clock", path: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zm0-15v5h4", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Calendar", path: "M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-14 2h14v2H5V6zm0 4h14v10H5V10z", fill: "transparent", stroke: "#000000", strokeWidth: 1.5, viewBox: 24 },
+      { name: "Sun", path: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Cloud", path: "M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Empty Grid", path: "M3 3h18v18H3zm0 6h18M3 15h18M9 3v18M15 3v18", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 }
+    ]
+  },
+  {
+    category: "Contact & Bio",
+    icons: [
+      { name: "Envelope", path: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Phone", path: "M5 2h14a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 18a1 1 0 1 0 0-2 1 1 0 0 0 0 2z", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Globe", path: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2 M2 12h20 M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Instagram", path: "M17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5zm-5 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm5.5-.25a1 1 0 1 1 0 2 1 1 0 0 1 0-2z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", fill: "transparent", stroke: "#000000", strokeWidth: 1.5, viewBox: 24 },
+      { name: "Facebook", path: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Twitter", path: "M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 }
+    ]
+  },
+  {
+    category: "Cover Marketing",
+    icons: [
+      { name: "Award Seal", path: "M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14z M8.21 13.89L7 23l5-3 5 3-1.21-9.12", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Flag", path: "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22v-7", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Ribbon Banner", path: "M15 5H9a2 2 0 0 0-2 2v14l5-4 5 4V7a2 2 0 0 0-2-2z", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Badge Starburst", path: "M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4-3.9-3.8 5.4-.8z", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Marketing Tag", path: "M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z M7 7h.01", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 }
+    ]
+  },
+  {
+    category: "Decorative Flourishes",
+    icons: [
+      { name: "Chapter Divider", path: "M 5 12 H 40 L 45 7 L 50 12 L 45 17 L 40 12 H 95", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 100 },
+      { name: "Corner Flourish", path: "M 10 10 H 50 A 40 40 0 0 1 10 50 Z M 15 15 H 40 A 25 25 0 0 1 15 40 Z", fill: "transparent", stroke: "#000000", strokeWidth: 1.5, viewBox: 100 },
+      { name: "Elegant Swirl", path: "M 10 50 C 20 20, 80 20, 90 50 C 80 80, 20 80, 10 50 C 40 40, 60 40, 50 50", fill: "transparent", stroke: "#000000", strokeWidth: 1.5, viewBox: 100 },
+      { name: "Line Divider", path: "M 5 12 H 95", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 100 }
+    ]
+  },
+  {
+    category: "Educational & Kids",
+    icons: [
+      { name: "Arrow Right", path: "M5 12h14 M12 5l7 7-7 7", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Arrow Up Right", path: "M7 17L17 7 M7 7h10v10", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Graduation Cap", path: "M22 10v6M2 10l10-5 10 5-10 5z M6 12.5V16a6 6 0 0 0 12 0v-3.5", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Open Book", path: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z", fill: "transparent", stroke: "#000000", strokeWidth: 1.5, viewBox: 24 },
+      { name: "Math Divide", path: "M12 6m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0 M12 18m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0 M5 12h14", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Pencil", path: "M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z", fill: "transparent", stroke: "#000000", strokeWidth: 2, viewBox: 24 },
+      { name: "Tracing A (Dotted)", path: "M4 20L12 4l8 16M7 14h10", fill: "transparent", stroke: "#000000", strokeWidth: 2, strokeDashArray: [4, 4], viewBox: 24 },
+      { name: "Tracing B (Dotted)", path: "M4 2v20 M4 2h8a5 5 0 0 1 0 10H4 M4 12h9a5 5 0 0 1 0 10H4", fill: "transparent", stroke: "#000000", strokeWidth: 2, strokeDashArray: [4, 4], viewBox: 24 }
+    ]
+  }
+];
+
 const BACKGROUNDS = [
   { name: "Midnight Space", back: "#05070F", front: "#0F172A", type: 'gradient', backStart: '#020617', backEnd: '#0f172a', frontStart: '#0f172a', frontEnd: '#1e1b4b' },
   { name: "Watercolor Sunset", back: "#FEF08A", front: "#FECDD3", type: 'gradient', backStart: '#fef08a', backEnd: '#fde047', frontStart: '#fde047', frontEnd: '#fecdd3' },
@@ -112,6 +169,8 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       type = 'star';
     } else if (obj.type === 'path' && obj.isHeart) {
       type = 'heart';
+    } else if (obj.type === 'path') {
+      type = 'path';
     }
 
 
@@ -152,6 +211,12 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
         base.cornerRadius = obj.rx;
       } else if (type === 'star' || type === 'pentagon' || type === 'octagon' || type === 'diamond' || type === 'trapezoid') {
         base.points = obj.points;
+      } else if (type === 'path') {
+        base.pathData = obj.svgPathData || '';
+        base.viewBox = obj.viewBox || 24;
+        if (obj.strokeDashArray) {
+          base.strokeDashArray = obj.strokeDashArray;
+        }
       }
     } else if (type === 'circle') {
       base.radius = (obj.radius || 50) * (obj.scaleX || 1);
@@ -289,6 +354,7 @@ export default function FabricCoverStudio({
   const [clipboard, setClipboard] = useState<any>(null);
   const [isObjectLocked, setIsObjectLocked] = useState(false);
   const [activeToolTab, setActiveToolTab] = useState<'elements' | 'graphics' | 'presets' | 'uploads' | 'settings'>('elements');
+  const [graphicsSubTab, setGraphicsSubTab] = useState<'kdp-icons' | 'unsplash'>('kdp-icons');
 
   // History Undo/Redo States
   const [history, setHistory] = useState<string[]>([]);
@@ -1068,6 +1134,25 @@ export default function FabricCoverStudio({
           opacity: el.opacity ?? 1
         } as any);
         (obj as any).isHeart = true;
+      } else if (el.type === 'path') {
+        const vb = el.viewBox || 24;
+        obj = new fabric.Path(el.pathData, {
+          id: el.id,
+          left: el.x,
+          top: el.y,
+          fill: el.fill || 'transparent',
+          stroke: el.stroke,
+          strokeWidth: el.strokeWidth || 0,
+          scaleX: (el.width || vb) / vb,
+          scaleY: (el.height || vb) / vb,
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1,
+          strokeDashArray: el.strokeDashArray || null,
+          strokeLineCap: 'round',
+          strokeLineJoin: 'round'
+        } as any);
+        (obj as any).svgPathData = el.pathData;
+        (obj as any).viewBox = vb;
       } else if (el.type === 'pentagon') {
         const points = [
           { x: 50, y: 0 },
@@ -1592,6 +1677,35 @@ export default function FabricCoverStudio({
       canvas.setActiveObject(img);
       canvas.requestRenderAll();
     }, { crossOrigin: 'anonymous' });
+  };
+
+  const addVectorIcon = (pathString: string, fill: string, stroke: string, strokeWidth: number, strokeDashArray?: number[], viewBox = 24) => {
+    if (!canvas) return;
+    
+    const path = new fabric.Path(pathString, {
+      left: layout.frontCoverCenterPx - 40,
+      top: layout.canvasHeight / 2 - 40,
+      fill: fill || "transparent",
+      stroke: stroke || "#000000",
+      strokeWidth: strokeWidth ?? 2,
+      strokeLineCap: 'round',
+      strokeLineJoin: 'round',
+      strokeDashArray: strokeDashArray || null
+    });
+    
+    // Scale path nicely
+    path.scaleToWidth(80);
+    
+    // Set custom attributes for serialization
+    (path as any).svgPathData = pathString;
+    (path as any).viewBox = viewBox;
+    if (strokeDashArray) {
+      (path as any).strokeDashArray = strokeDashArray;
+    }
+    
+    canvas.add(path);
+    canvas.setActiveObject(path);
+    canvas.requestRenderAll();
   };
 
   const bringToFront = () => {
@@ -2874,119 +2988,182 @@ export default function FabricCoverStudio({
 
         {activeToolTab === 'graphics' && (
           <div className="space-y-4">
-            <div>
-              <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-2">Unsplash Image Search</h3>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Search covers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearchUnsplash()}
-                  className="flex-1 text-xs font-semibold p-2.5 border border-slate-200 rounded-xl focus:border-amber-400 outline-none bg-white"
-                />
-                <button
-                  onClick={handleSearchUnsplash}
-                  disabled={isSearching}
-                  className="px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black"
-                >
-                  {isSearching ? "..." : "Search"}
-                </button>
-              </div>
-              {searchError && (
-                <p className="text-[9px] text-red-500 font-semibold mt-1 bg-red-55/40 p-2 rounded-lg leading-normal">
-                  {searchError}
-                </p>
-              )}
+            {/* Sub-tabs for KDP Icons & Unsplash Photos */}
+            <div className="flex bg-slate-200/60 p-0.5 rounded-lg border border-slate-300/40 text-[10px] font-black uppercase">
+              <button 
+                onClick={() => setGraphicsSubTab('kdp-icons')}
+                className={`flex-1 py-1 rounded-md text-center transition-all ${graphicsSubTab === 'kdp-icons' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}
+              >
+                KDP Icons
+              </button>
+              <button 
+                onClick={() => setGraphicsSubTab('unsplash')}
+                className={`flex-1 py-1 rounded-md text-center transition-all ${graphicsSubTab === 'unsplash' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}
+              >
+                Search Photos
+              </button>
             </div>
 
-            {/* Display Unsplash Results if Search matches */}
-            {searchResults.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-slate-200">
-                <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Search Results</h3>
-                <div className="grid grid-cols-2 gap-2 max-h-[250px] overflow-y-auto pr-1">
-                  {searchResults.map((clip, i) => (
-                    <div
-                      key={i}
-                      className="group relative aspect-square rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-amber-400 hover:shadow-sm transition-all p-1"
-                    >
-                      <img src={clip.thumb} alt={clip.name} crossOrigin="anonymous" className="w-full h-full object-cover rounded-lg" />
-                      
-                      {/* Hover Actions Menu */}
-                      <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1.5 p-2 z-10">
-                        <button
-                          onClick={() => addClipart(clip.full)}
-                          className="w-full py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[9px] font-black uppercase tracking-wider"
-                        >
-                          Add Layer
-                        </button>
-                        <button
-                          onClick={() => applyBackgroundImage(clip.full, 'full')}
-                          className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
-                        >
-                          Full BG
-                        </button>
-                        <button
-                          onClick={() => applyBackgroundImage(clip.full, 'front')}
-                          className="w-full py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
-                        >
-                          Front BG
-                        </button>
-                        <button
-                          onClick={() => applyBackgroundImage(clip.full, 'back')}
-                          className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
-                        >
-                          Back BG
-                        </button>
+            {graphicsSubTab === 'kdp-icons' ? (
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                {KDP_ICONS_LIBRARY.map((category, catIdx) => (
+                  <details 
+                    key={catIdx} 
+                    className="group border border-slate-200 rounded-xl overflow-hidden bg-white [&_summary::-webkit-details-marker]:hidden" 
+                    open={catIdx === 0}
+                  >
+                    <summary className="flex items-center justify-between p-3 cursor-pointer select-none bg-slate-55 border-b border-slate-100 hover:bg-slate-100/50 transition-colors">
+                      <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{category.category}</span>
+                      <span className="text-slate-400 group-open:rotate-180 transition-transform duration-200">
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </span>
+                    </summary>
+                    <div className="p-3 bg-white">
+                      <div className="grid grid-cols-4 gap-2">
+                        {category.icons.map((icon, iconIdx) => (
+                          <button
+                            key={iconIdx}
+                            onClick={() => addVectorIcon(icon.path, icon.fill, icon.stroke, icon.strokeWidth, (icon as any).strokeDashArray, icon.viewBox)}
+                            title={icon.name}
+                            className="aspect-square flex items-center justify-center p-1.5 rounded-lg border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-650 transition-all active:scale-95 text-slate-500 cursor-pointer"
+                          >
+                            <svg 
+                              viewBox={`0 0 ${icon.viewBox || 24} ${icon.viewBox || 24}`} 
+                              className="w-7 h-7 stroke-current fill-none" 
+                              style={{ fill: icon.fill !== 'transparent' ? 'currentColor' : 'none' }}
+                            >
+                              <path 
+                                d={icon.path} 
+                                strokeWidth={icon.strokeWidth || 2} 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeDasharray={icon.strokeDashArray ? icon.strokeDashArray.join(' ') : undefined} 
+                              />
+                            </svg>
+                          </button>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  </details>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-2">Unsplash Image Search</h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Search covers..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSearchUnsplash()}
+                      className="flex-1 text-xs font-semibold p-2.5 border border-slate-200 rounded-xl focus:border-amber-400 outline-none bg-white"
+                    />
+                    <button
+                      onClick={handleSearchUnsplash}
+                      disabled={isSearching}
+                      className="px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black"
+                    >
+                      {isSearching ? "..." : "Search"}
+                    </button>
+                  </div>
+                  {searchError && (
+                    <p className="text-[9px] text-red-500 font-semibold mt-1 bg-red-55/40 p-2 rounded-lg leading-normal">
+                      {searchError}
+                    </p>
+                  )}
+                </div>
+
+                {/* Display Unsplash Results if Search matches */}
+                {searchResults.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-slate-200">
+                    <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Search Results</h3>
+                    <div className="grid grid-cols-2 gap-2 max-h-[250px] overflow-y-auto pr-1">
+                      {searchResults.map((clip, i) => (
+                        <div
+                          key={i}
+                          className="group relative aspect-square rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-amber-400 hover:shadow-sm transition-all p-1"
+                        >
+                          <img src={clip.thumb} alt={clip.name} crossOrigin="anonymous" className="w-full h-full object-cover rounded-lg" />
+                          
+                          {/* Hover Actions Menu */}
+                          <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1.5 p-2 z-10">
+                            <button
+                              onClick={() => addClipart(clip.full)}
+                              className="w-full py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[9px] font-black uppercase tracking-wider"
+                            >
+                              Add Layer
+                            </button>
+                            <button
+                              onClick={() => applyBackgroundImage(clip.full, 'full')}
+                              className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                            >
+                              Full BG
+                            </button>
+                            <button
+                              onClick={() => applyBackgroundImage(clip.full, 'front')}
+                              className="w-full py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                            >
+                              Front BG
+                            </button>
+                            <button
+                              onClick={() => applyBackgroundImage(clip.full, 'back')}
+                              className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                            >
+                              Back BG
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-slate-200 space-y-2">
+                  <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Premium Schematics</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {CLIPARTS.map((clip, i) => (
+                      <div 
+                        key={i} 
+                        className="group relative aspect-square rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-amber-400 hover:shadow-sm transition-all p-1"
+                      >
+                        <img src={clip.src} alt={clip.name} crossOrigin="anonymous" className="w-full h-full object-cover rounded-lg" />
+                        <span className="absolute bottom-1 left-1 right-1 bg-black/60 text-[8px] text-white text-center font-bold px-1 py-0.5 rounded truncate group-hover:hidden">{clip.name}</span>
+                        
+                        {/* Hover Actions Menu */}
+                        <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1.5 p-2 z-10">
+                          <button
+                            onClick={() => addClipart(clip.src)}
+                            className="w-full py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[9px] font-black uppercase tracking-wider"
+                          >
+                            Add Layer
+                          </button>
+                          <button
+                            onClick={() => applyBackgroundImage(clip.src, 'full')}
+                            className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                          >
+                            Full BG
+                          </button>
+                          <button
+                            onClick={() => applyBackgroundImage(clip.src, 'front')}
+                            className="w-full py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                          >
+                            Front BG
+                          </button>
+                          <button
+                            onClick={() => applyBackgroundImage(clip.src, 'back')}
+                            className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                          >
+                            Back BG
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
-
-            <div className="pt-2 border-t border-slate-200 space-y-2">
-              <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Premium Schematics</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {CLIPARTS.map((clip, i) => (
-                  <div 
-                    key={i} 
-                    className="group relative aspect-square rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-amber-400 hover:shadow-sm transition-all p-1"
-                  >
-                    <img src={clip.src} alt={clip.name} crossOrigin="anonymous" className="w-full h-full object-cover rounded-lg" />
-                    <span className="absolute bottom-1 left-1 right-1 bg-black/60 text-[8px] text-white text-center font-bold px-1 py-0.5 rounded truncate group-hover:hidden">{clip.name}</span>
-                    
-                    {/* Hover Actions Menu */}
-                    <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1.5 p-2 z-10">
-                      <button
-                        onClick={() => addClipart(clip.src)}
-                        className="w-full py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[9px] font-black uppercase tracking-wider"
-                      >
-                        Add Layer
-                      </button>
-                      <button
-                        onClick={() => applyBackgroundImage(clip.src, 'full')}
-                        className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
-                      >
-                        Full BG
-                      </button>
-                      <button
-                        onClick={() => applyBackgroundImage(clip.src, 'front')}
-                        className="w-full py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
-                      >
-                        Front BG
-                      </button>
-                      <button
-                        onClick={() => applyBackgroundImage(clip.src, 'back')}
-                        className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
-                      >
-                        Back BG
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 

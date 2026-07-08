@@ -811,6 +811,25 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
             console.error("Failed to load clipart image inside drawing loop:", e);
           }
         }
+      } else if (el.type === 'path') {
+        ctx.save();
+        const vb = el.viewBox || 24;
+        ctx.scale(cw / vb, ch / vb);
+        ctx.translate(-vb / 2, -vb / 2);
+        const path = new Path2D(el.pathData);
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
+        ctx.fill(path);
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#000000";
+          ctx.lineWidth = el.strokeWidth;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          if (el.strokeDashArray) {
+            ctx.setLineDash(el.strokeDashArray);
+          }
+          ctx.stroke(path);
+        }
+        ctx.restore();
       }
       ctx.restore();
     }
@@ -1202,6 +1221,25 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
             console.error("Failed to load clipart image inside drawing loop:", e);
           }
         }
+      } else if (el.type === 'path') {
+        ctx.save();
+        const vb = el.viewBox || 24;
+        ctx.scale(cw / vb, ch / vb);
+        ctx.translate(-vb / 2, -vb / 2);
+        const path = new Path2D(el.pathData);
+        ctx.fillStyle = (el.fill !== undefined && el.fill !== null) ? el.fill : "transparent";
+        ctx.fill(path);
+        if (el.strokeWidth && el.strokeWidth > 0) {
+          ctx.strokeStyle = el.stroke || "#000000";
+          ctx.lineWidth = el.strokeWidth;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          if (el.strokeDashArray) {
+            ctx.setLineDash(el.strokeDashArray);
+          }
+          ctx.stroke(path);
+        }
+        ctx.restore();
       }
       ctx.restore();
     }

@@ -6,13 +6,17 @@ import {
   Type, Square, Circle as CircleIcon, Star, Ruler, 
   Trash2, Undo2, Redo2, Loader2, Download, Check, Settings,
   Sparkles, Shapes, Upload, LayoutTemplate, Grid, ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight,
-  Plus, Eraser, Lock, Unlock, Copy, Scissors, Clipboard, ChevronsUp, ChevronsDown
+  Plus, Eraser, Lock, Unlock, Copy, Scissors, Clipboard, ChevronsUp, ChevronsDown,
+  Bold, Italic, Underline, AlignJustify
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
 import { initFabricSnapping } from "@/hooks/useFabricSnap";
 
-const FONT_FAMILIES = ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Outfit", "Inter"];
+const FONT_FAMILIES = [
+  "Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Outfit", "Inter",
+  "Playfair Display", "Montserrat", "Oswald", "Lora", "Merriweather", "Bebas Neue", "Pacifico", "Cinzel", "Sacramento", "Arimo"
+];
 
 const CLIPARTS = [
   { name: "Quantum Propulsion", src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=300&q=80" },
@@ -204,6 +208,19 @@ export default function FabricCoverStudio({
     coverBackgroundRef.current = coverBackground;
   }, [coverBackground]);
 
+  // Dynamically load Google Fonts for the cover studio
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Bebas+Neue&family=Cinzel:wght@400..900&family=Great+Vibes&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300..900;1,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oswald:wght@200..700&family=Pacifico&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Sacramento&family=Outfit:wght@100..900&family=Inter:wght@100..900&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+    return () => {
+      if (document.head && document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+    };
+  }, []);
+
   // Local helper setters that update the combined coverBackground state object and the ref for instant sync
   const setBackCoverColor = (val: string) => {
     coverBackgroundRef.current = { ...coverBackgroundRef.current, backCoverColor: val };
@@ -293,6 +310,16 @@ export default function FabricCoverStudio({
   const [objectText, setObjectText] = useState("");
   const [objectFontSize, setObjectFontSize] = useState(32);
   const [objectFontFamily, setObjectFontFamily] = useState("Arial");
+
+  // Contextual toolbar properties
+  const [objectFontWeight, setObjectFontWeight] = useState("normal");
+  const [objectFontStyle, setObjectFontStyle] = useState("normal");
+  const [objectUnderline, setObjectUnderline] = useState(false);
+  const [objectTextAlign, setObjectTextAlign] = useState("left");
+  const [objectWidth, setObjectWidth] = useState(100);
+  const [objectHeight, setObjectHeight] = useState(100);
+  const [objectFlipX, setObjectFlipX] = useState(false);
+  const [objectFlipY, setObjectFlipY] = useState(false);
 
   // Spine Text Alignment States
   const [spineTextVAlign, setSpineTextVAlign] = useState<'top' | 'center' | 'bottom'>('center');
@@ -392,13 +419,25 @@ export default function FabricCoverStudio({
       setObjectHasShadow(false);
     }
 
-    if (activeObject.type === 'i-text' || activeObject.type === 'text') {
+    // Sync Dimensions & Flips
+    setObjectWidth(Math.round((activeObject.width || 0) * (activeObject.scaleX || 1)));
+    setObjectHeight(Math.round((activeObject.height || 0) * (activeObject.scaleY || 1)));
+    setObjectFlipX(!!activeObject.flipX);
+    setObjectFlipY(!!activeObject.flipY);
+
+    if (activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox') {
       const textObj = activeObject as fabric.IText;
       setObjectText(textObj.text || "");
       setObjectFontSize(textObj.fontSize || 32);
       setObjectFontFamily(textObj.fontFamily || "Arial");
       setObjectCharSpacing(textObj.charSpacing || 0);
       setObjectLineHeight(textObj.lineHeight || 1.16);
+
+      // Sync text style states
+      setObjectFontWeight(textObj.fontWeight || "normal");
+      setObjectFontStyle(textObj.fontStyle || "normal");
+      setObjectUnderline(!!textObj.underline);
+      setObjectTextAlign(textObj.textAlign || "left");
     }
   }, [activeObject]);
 
@@ -429,6 +468,65 @@ export default function FabricCoverStudio({
     if (saveHistory) {
       canvas.fire("object:modified", { target: activeObject });
     }
+  };
+
+  const toggleBold = () => {
+    if (!canvas || !activeObject) return;
+    const newVal = objectFontWeight === "bold" ? "normal" : "bold";
+    setObjectFontWeight(newVal);
+    updateActiveObjectProperty("fontWeight", newVal);
+  };
+
+  const toggleItalic = () => {
+    if (!canvas || !activeObject) return;
+    const newVal = objectFontStyle === "italic" ? "normal" : "italic";
+    setObjectFontStyle(newVal);
+    updateActiveObjectProperty("fontStyle", newVal);
+  };
+
+  const toggleUnderline = () => {
+    if (!canvas || !activeObject) return;
+    const newVal = !objectUnderline;
+    setObjectUnderline(newVal);
+    updateActiveObjectProperty("underline", newVal);
+  };
+
+  const handleTextAlignment = (align: string) => {
+    if (!canvas || !activeObject) return;
+    setObjectTextAlign(align);
+    updateActiveObjectProperty("textAlign", align);
+  };
+
+  const toggleFlipX = () => {
+    if (!canvas || !activeObject) return;
+    const newVal = !objectFlipX;
+    setObjectFlipX(newVal);
+    updateActiveObjectProperty("flipX", newVal);
+  };
+
+  const toggleFlipY = () => {
+    if (!canvas || !activeObject) return;
+    const newVal = !objectFlipY;
+    setObjectFlipY(newVal);
+    updateActiveObjectProperty("flipY", newVal);
+  };
+
+  const handleExactWidth = (val: number) => {
+    if (!canvas || !activeObject || val <= 0) return;
+    setObjectWidth(val);
+    const baseWidth = activeObject.width || 1;
+    activeObject.set({ scaleX: val / baseWidth });
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const handleExactHeight = (val: number) => {
+    if (!canvas || !activeObject || val <= 0) return;
+    setObjectHeight(val);
+    const baseHeight = activeObject.height || 1;
+    activeObject.set({ scaleY: val / baseHeight });
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
   };
 
   // Keyboard Shortcuts via stable handler refs (initialized empty to avoid TDZ errors)
@@ -575,12 +673,34 @@ export default function FabricCoverStudio({
       setLayers([...fCanvas.getObjects()].reverse());
     };
 
+    // Helper to sync dimensions during scaling/moving
+    const syncActiveObjectDimensions = () => {
+      const active = fCanvas.getActiveObject();
+      if (active) {
+        setObjectWidth(Math.round((active.width || 0) * (active.scaleX || 1)));
+        setObjectHeight(Math.round((active.height || 0) * (active.scaleY || 1)));
+      }
+    };
+
+    fCanvas.on("object:scaling", syncActiveObjectDimensions);
+    fCanvas.on("object:moving", syncActiveObjectDimensions);
+
     // Selection events
     fCanvas.on("selection:created", (e) => {
-      setActiveObject(e.selected ? e.selected[0] : null);
+      const obj = e.selected ? e.selected[0] : null;
+      setActiveObject(obj);
+      if (obj) {
+        setObjectWidth(Math.round((obj.width || 0) * (obj.scaleX || 1)));
+        setObjectHeight(Math.round((obj.height || 0) * (obj.scaleY || 1)));
+      }
     });
     fCanvas.on("selection:updated", (e) => {
-      setActiveObject(e.selected ? e.selected[0] : null);
+      const obj = e.selected ? e.selected[0] : null;
+      setActiveObject(obj);
+      if (obj) {
+        setObjectWidth(Math.round((obj.width || 0) * (obj.scaleX || 1)));
+        setObjectHeight(Math.round((obj.height || 0) * (obj.scaleY || 1)));
+      }
     });
     fCanvas.on("selection:cleared", () => {
       setActiveObject(null);
@@ -3407,6 +3527,268 @@ export default function FabricCoverStudio({
             <span className="text-[10px] font-black uppercase tracking-wider">Clear All</span>
           </button>
         </div>
+
+        {/* Contextual top toolbar for KDP essential formatting */}
+        {activeObject && (
+          <div className="mb-4 flex flex-wrap items-center gap-2 bg-white py-2 px-4 rounded-xl border border-slate-200 shadow-sm z-10 select-none max-w-full">
+            <span className="text-[9px] font-black text-slate-400 uppercase mr-1">Edit selected:</span>
+            
+            {/* If it's a Text/IText/Textbox object */}
+            {(activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox') && (
+              <>
+                {/* Font Selector */}
+                <select
+                  value={objectFontFamily}
+                  onChange={(e) => {
+                    setObjectFontFamily(e.target.value);
+                    updateActiveObjectProperty("fontFamily", e.target.value);
+                  }}
+                  className="text-xs font-bold p-1 bg-white border border-slate-200 rounded-md outline-none focus:border-indigo-500 cursor-pointer font-sans"
+                  style={{ fontFamily: objectFontFamily }}
+                >
+                  {FONT_FAMILIES.map((font, idx) => (
+                    <option key={idx} value={font} style={{ fontFamily: font }}>{font}</option>
+                  ))}
+                </select>
+
+                {/* Font Size Number Input */}
+                <div className="flex items-center border border-slate-200 rounded-md overflow-hidden bg-white">
+                  <input
+                    type="number"
+                    min="6"
+                    max="300"
+                    value={objectFontSize}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 12;
+                      setObjectFontSize(val);
+                      updateActiveObjectProperty("fontSize", val, false);
+                    }}
+                    onBlur={() => {
+                      if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                    }}
+                    className="w-12 text-center text-xs font-bold p-1 outline-none font-sans"
+                  />
+                  <span className="text-[10px] text-slate-400 font-bold pr-1 select-none">pt</span>
+                </div>
+
+                {/* Text Styling Toggles (Bold, Italic, Underline) */}
+                <div className="flex border border-slate-200 rounded-md overflow-hidden bg-white">
+                  <button
+                    onClick={toggleBold}
+                    title="Bold"
+                    className={`p-1 px-2 text-xs font-bold transition-colors ${
+                      objectFontWeight === "bold" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Bold className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={toggleItalic}
+                    title="Italic"
+                    className={`p-1 px-2 text-xs font-bold transition-colors ${
+                      objectFontStyle === "italic" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Italic className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={toggleUnderline}
+                    title="Underline"
+                    className={`p-1 px-2 text-xs font-bold transition-colors ${
+                      objectUnderline ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Underline className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Text Alignment */}
+                <div className="flex border border-slate-200 rounded-md overflow-hidden bg-white">
+                  <button
+                    onClick={() => handleTextAlignment("left")}
+                    title="Align Left"
+                    className={`p-1 px-2 text-xs transition-colors ${
+                      objectTextAlign === "left" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <AlignLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleTextAlignment("center")}
+                    title="Align Center"
+                    className={`p-1 px-2 text-xs transition-colors ${
+                      objectTextAlign === "center" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <AlignCenter className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleTextAlignment("right")}
+                    title="Align Right"
+                    className={`p-1 px-2 text-xs transition-colors ${
+                      objectTextAlign === "right" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <AlignRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleTextAlignment("justify")}
+                    title="Justify"
+                    className={`p-1 px-2 text-xs transition-colors ${
+                      objectTextAlign === "justify" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <AlignJustify className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Colors (if fill is applicable and not a barcode/image) */}
+            {activeObject.type !== 'image' && !activeObject.id?.startsWith('barcode') && (
+              <div className="flex items-center gap-1">
+                {/* Fill Color */}
+                <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-md border border-slate-200">
+                  <span className="text-[8px] font-black text-slate-400 uppercase pl-0.5">Fill:</span>
+                  <input
+                    type="color"
+                    value={objectColor === "transparent" ? "#ffffff" : objectColor.startsWith("#") ? objectColor : "#ffffff"}
+                    disabled={objectColor === "transparent"}
+                    onChange={(e) => {
+                      setObjectColor(e.target.value);
+                      updateActiveObjectProperty("fill", e.target.value, false);
+                    }}
+                    onBlur={() => {
+                      if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                    }}
+                    className="w-5 h-5 rounded cursor-pointer border border-slate-300 p-0"
+                  />
+                  <button
+                    onClick={() => {
+                      const isTrans = objectColor === "transparent";
+                      const newVal = isTrans ? "#FFFFFF" : "transparent";
+                      setObjectColor(newVal);
+                      updateActiveObjectProperty("fill", newVal, true);
+                    }}
+                    className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded transition ${
+                      objectColor === "transparent" ? "bg-slate-800 text-white" : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                    }`}
+                  >
+                    None
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Flips & Opacity */}
+            <div className="flex items-center gap-1.5">
+              {/* Opacity */}
+              <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-md border border-slate-200">
+                <span className="text-[8px] font-black text-slate-400 uppercase pl-0.5">Opacity:</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={objectOpacity}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setObjectOpacity(val);
+                    updateActiveObjectProperty("opacity", val, false);
+                  }}
+                  onMouseUp={() => {
+                    if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                  }}
+                  className="w-16 accent-indigo-650 cursor-pointer h-1"
+                />
+                <span className="text-[9px] font-bold text-slate-600 w-6 text-right">{Math.round(objectOpacity * 100)}%</span>
+              </div>
+
+              {/* Flip X / Y */}
+              <div className="flex border border-slate-200 rounded-md overflow-hidden bg-white">
+                <button
+                  onClick={toggleFlipX}
+                  title="Flip Horizontally"
+                  className={`p-1 px-2 text-xs transition-colors flex items-center gap-1 ${
+                    objectFlipX ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="font-extrabold text-[10px]">⇄</span>
+                  <span className="text-[8px] font-black uppercase">Flip H</span>
+                </button>
+                <button
+                  onClick={toggleFlipY}
+                  title="Flip Vertically"
+                  className={`p-1 px-2 text-xs transition-colors flex items-center gap-1 ${
+                    objectFlipY ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="font-extrabold text-[10px]">⇅</span>
+                  <span className="text-[8px] font-black uppercase">Flip V</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Precise Dimensions (Width / Height) */}
+            {!activeObject.id?.startsWith('barcode') && (
+              <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-md border border-slate-200 text-[10px] font-bold">
+                <span className="text-[8px] font-black text-slate-400 uppercase pl-0.5">Size:</span>
+                <div className="flex items-center gap-0.5">
+                  <span className="text-slate-500 font-bold">W</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="2000"
+                    value={objectWidth}
+                    onChange={(e) => handleExactWidth(parseInt(e.target.value) || 0)}
+                    className="w-11 text-center p-0.5 border border-slate-250 rounded outline-none font-sans"
+                  />
+                </div>
+                <div className="flex items-center gap-0.5">
+                  <span className="text-slate-500 font-bold">H</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="2000"
+                    value={objectHeight}
+                    onChange={(e) => handleExactHeight(parseInt(e.target.value) || 0)}
+                    className="w-11 text-center p-0.5 border border-slate-250 rounded outline-none font-sans"
+                  />
+                </div>
+                <span className="text-[8px] text-slate-400 font-bold">px</span>
+              </div>
+            )}
+
+            {/* Center Alignment Buttons (Canvas Alignment) */}
+            <div className="flex border border-slate-200 rounded-md overflow-hidden bg-white">
+              <button
+                onClick={() => {
+                  if (!canvas || !activeObject) return;
+                  canvas.centerObjectH(activeObject);
+                  canvas.requestRenderAll();
+                  canvas.fire("object:modified", { target: activeObject });
+                }}
+                title="Center Horizontally on Canvas"
+                className="p-1 px-2 text-[9px] font-black uppercase tracking-wider text-slate-700 hover:bg-slate-50 border-r border-slate-100"
+              >
+                Center H
+              </button>
+              <button
+                onClick={() => {
+                  if (!canvas || !activeObject) return;
+                  canvas.centerObjectV(activeObject);
+                  canvas.requestRenderAll();
+                  canvas.fire("object:modified", { target: activeObject });
+                }}
+                title="Center Vertically on Canvas"
+                className="p-1 px-2 text-[9px] font-black uppercase tracking-wider text-slate-700 hover:bg-slate-50"
+              >
+                Center V
+              </button>
+            </div>
+
+          </div>
+        )}
 
         {/* Responsive parent container to calculate scale */}
         <div ref={containerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center relative">

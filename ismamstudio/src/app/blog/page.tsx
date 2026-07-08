@@ -147,6 +147,57 @@ const BLOG_POSTS: Post[] = [
       "### Conclusion: Which Tool Should You Choose?",
       "If you want to publish simple lined journals, Canva or Tangent Templates are decent options. However, if you want to scale a profitable puzzle book business, you need automated builders that handle interior generation, formatting, cover spine calculation, and barcode generation. Ismam Studio offers the most integrated, high-speed builder with free KDP utilities to guarantee your books are print-compliant from day one."
     ]
+  },
+  {
+    slug: "calculate-kdp-cover-size-spine-width",
+    title: "How to Calculate KDP Cover Size & Spine Width (Free Calculator)",
+    category: "Design",
+    date: "July 08, 2026",
+    readTime: "6 min read",
+    description: "Formatting covers for paperback or hardcover can be tricky. Learn how to calculate cover size and spine thickness with standard KDP bleed margins.",
+    content: [
+      "Designing a book cover for Amazon KDP requires precise calculations. If your cover is even 0.05 inches off, the KDP upload system will reject your PDF with formatting errors. To ensure a seamless upload, you need to understand spine width, bleed, and folding margins. Here is the step-by-step calculation guide.",
+      "### What is KDP Cover Bleed?",
+      "Bleed refers to the background design extending past the final trim size of your book. Amazon KDP requires a standard bleed margin of 0.125 inches on all outer edges of your cover layout. This prevents white borders when the paper is cut. The formula for the total width of a paperback cover is: Total Width = Back Cover Width + Spine Width + Front Cover Width + (2 * Bleed).",
+      "### How to Calculate Spine Width",
+      "The spine thickness depends entirely on the page count and the thickness of the paper you choose. White paper has a thickness of 0.00225 inches per page, Cream paper is 0.0025 inches per page, and Premium Color paper is 0.002347 inches per page. The spine width formula is: Spine Width = Page Count * Paper Thickness.",
+      "### Try the Free KDP Spine & Cover Calculator",
+      "Instead of calculating these formulas manually, you can use our Free KDP Spine & Cover Calculator on Ismam Studio. Enter your trim size, page count, and paper type, and the tool immediately generates the exact layout dimensions in inches and pixels at 300 DPI. Access it for free at ismamstudio.me/tools."
+    ]
+  },
+  {
+    slug: "format-kdp-book-descriptions-html",
+    title: "How to Format KDP Book Descriptions in HTML (Copy-Paste Templates)",
+    category: "SEO",
+    date: "July 08, 2026",
+    readTime: "5 min read",
+    description: "Amazon KDP doesn't support rich text editors for book descriptions, but you can use approved HTML tags. Learn formatting tags and copy-paste templates.",
+    content: [
+      "Your Amazon book description is a key factor in converting window shoppers into paying readers. A plain block of unformatted text looks unprofessional and is hard to scan. By using Amazon-approved HTML tags, you can add bold headings, bullet points, and text lists to create descriptions that command attention.",
+      "### Approved KDP HTML Tags",
+      "Amazon only supports a subset of HTML tags. If you use unapproved tags, your description might show raw HTML code or break the page layout. The safe tags to use are: <b>bold</b>, <i>italics</i>, <h1>heading 1</h1>, <h2>heading 2</h2>, <ul>bullet list</ul>, and <li>list item</li>. Avoid using advanced tags like colored text or divs, as KDP will strip them.",
+      "### Copy-Paste KDP Description Structure",
+      "A high-converting KDP description follows a simple formula: \n1. **Hook**: A bold heading (e.g. <h2>Supercharge Your Brain Today!</h2>)\n2. **Overview**: A brief paragraph detailing the book's value.\n3. **Features List**: A bulleted list outlining chapters, layouts, or puzzle sizes.\n4. **Call to Action**: A final bold line (e.g. <b>Click buy now to get your copy!</b>).",
+      "### Use the Free Description Formatter",
+      "Formatting raw HTML manually can lead to unclosed tags and rendering errors on Amazon. Use our Free Book Description Formatter to draft, format, and preview your description. It validates KDP compliance and lets you copy the raw HTML in one click. Try it now at ismamstudio.me/tools."
+    ]
+  },
+  {
+    slug: "calculate-amazon-kdp-printing-costs-royalties",
+    title: "How to Calculate Your Amazon KDP Printing Costs & Royalty Profits",
+    category: "Strategy",
+    date: "July 08, 2026",
+    readTime: "7 min read",
+    description: "Unlock KDP royalty math. Learn how Amazon calculates printing costs for paperback and hardcover, and how to price your book for maximum profits.",
+    content: [
+      "Understanding book pricing, printing costs, and royalty payouts is crucial to running a profitable self-publishing business. Amazon takes a percentage of your sales, subtracts printing costs, and deposits the net royalties. Here is exactly how that math works.",
+      "### Paperback Printing Cost Math",
+      "For standard black & white paperbacks sold in the US, Amazon charges a flat rate of $0.85 per book plus a page rate of $0.012 per page. For example, a 150-page book costs: $0.85 + (150 * $0.012) = $2.65 to print. Color paperbacks cost more, with a flat rate of $0.85 and $0.07 per page.",
+      "### Calculating Net Royalty",
+      "Amazon pays a standard 60% royalty rate for paperbacks sold on their marketplace. The formula is: Royalty = (Retail Price * 0.60) - Printing Cost. If you sell a 150-page paperback for $9.99, your royalty is: ($9.99 * 0.60) - $2.65 = $3.34 per sale. Hardcover books follow a similar calculation but with a standard 60% royalty and higher flat printing costs ($5.65).",
+      "### Try the Free KDP Royalty Calculator",
+      "Want to run pricing scenarios instantly? Check out our Free KDP Royalty Calculator. Adjust sliders for page counts and retail price to see your printing costs and royalty margins across different marketplaces immediately. Access the calculator at ismamstudio.me/tools."
+    ]
   }
 ];
 

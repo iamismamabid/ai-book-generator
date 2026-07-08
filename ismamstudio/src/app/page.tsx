@@ -108,13 +108,18 @@ export default function HomePage() {
                 Start Creating Now
                 <ArrowRight className="w-5 h-5 text-slate-950" />
               </Link>
-              <button
-                onClick={() => setIsVideoModalOpen(true)}
+              <Link
+                href="https://app.arcade.software/share/zwSHISc2CSSG683DpmUh"
+                target="_blank"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsVideoModalOpen(true);
+                }}
                 className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-750 text-white font-black text-lg shadow-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
               >
                 <Play className="w-5 h-5 text-orange-500 fill-orange-500" />
                 Watch Walkthrough Video
-              </button>
+              </Link>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -771,10 +776,18 @@ export default function HomePage() {
               <p className="text-slate-400 text-xs font-semibold leading-relaxed">
                 See how to generate mathematically unique Sudokus, customize shape-masked labyrinth layouts, and use the Cover Canvas to align spine margins for Amazon KDP uploads in under 2 minutes.
               </p>
-              <button onClick={() => setIsVideoModalOpen(true)} className="px-5 py-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 hover:border-slate-750 text-slate-300 hover:text-white font-bold text-xs rounded-xl transition flex items-center gap-2 mx-auto md:mx-0 cursor-pointer">
+              <Link 
+                href="https://app.arcade.software/share/zwSHISc2CSSG683DpmUh"
+                target="_blank"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsVideoModalOpen(true);
+                }}
+                className="px-5 py-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 hover:border-slate-750 text-slate-300 hover:text-white font-bold text-xs rounded-xl transition flex items-center gap-2 mx-auto md:mx-0 cursor-pointer"
+              >
                 <span>Watch Walkthrough Video</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>

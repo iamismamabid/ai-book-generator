@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, Clock, Calendar, ChevronRight, X, HelpCircle, Sparkles } from "lucide-react";
 
@@ -249,11 +249,61 @@ const BLOG_POSTS: Post[] = [
       "### 3. Interactive Compliance Checklist",
       "Use our Free KDP Upload Checklist tool on Ismam Studio to verify your files before uploading. It guides you through safe margin settings, bleed configurations, and metadata requirements, ensuring instant Amazon approval. Try it now at ismamstudio.me/tools."
     ]
+  },
+  {
+    slug: "how-to-use-ismam-studio-free-kdp-tools",
+    title: "How to Use Ismam Studio's Free KDP Publishing Tools (Complete Guide)",
+    category: "Tutorial",
+    date: "July 08, 2026",
+    readTime: "8 min read",
+    description: "Unleash the power of our free publishing toolkit. Learn how to use all 12 of our free calculators, formatters, and generators step-by-step.",
+    content: [
+      "Publishing books on Amazon Kindle Direct Publishing (KDP) requires juggling multiple tasks: formatting manuscript files, calculating cover template boundaries, writing marketing copy, and selecting keywords. To simplify this journey, Ismam Studio provides a comprehensive hub of 100% free publishing utilities. Here is a step-by-step guide on how to leverage these tools to publish professional-grade books without spending a dime.",
+      "### How to Find and Filter the Free Tools",
+      "To access the toolkit, click on the **'Free Tools'** link in the header navigation menu. This will take you to our centralized Free Tools Hub (ismamstudio.me/tools). You can browse all tools at once, or use the category buttons at the top to filter tools by **Design**, **Writing**, **Formatting**, or **Marketing** depending on your immediate task.",
+      "### 1. Free eBook Formatter (EPUB)",
+      "Convert raw Word (.docx) or text (.txt) manuscripts into professional Kindle-ready EPUB files. The tool structures your chapters, builds a dynamic table of contents, and packages it according to Amazon's reflowable ebook specifications automatically. Select your manuscript and click 'Upload manuscript' to format.",
+      "### 2. KDP Interior PDF Formatter",
+      "Upload your paperback manuscript, select your target trim size (6\"x9\", 8.5\"x11\", 5\"x8\"), and the formatter automatically checks margins, verifies gutter spacing, and exports a print-ready, KDP-compliant interior PDF. Select your document and click 'Select Document' to validate safety zones.",
+      "### 3. Puzzle Book Generator",
+      "Create unique puzzle content instantly. Select your puzzle category (Sudoku, Maze, Word Search), difficulty level, and download high-resolution vector interiors with compiled solutions at the back of the book. Click 'Open Tool' to launch the puzzle creation canvas.",
+      "### 4. KDP Cover Size Calculator",
+      "Calculate full-wrap cover dimensions (front, spine, back, and bleed) in inches and pixels at 300 DPI to avoid upload rejection warnings. Simply choose your paper type, trim size, and page count to generate templates.",
+      "### 5. AI Book Title Generator",
+      "Enter your book's genre and key topics to generate 10 unique, SEO-friendly, and highly clickable KDP titles per batch. Perfect for brainstorming keyword-rich subtitles.",
+      "### 6. Book Description Generator",
+      "Write conversion-focused descriptions using proven sales copywriting hooks and triggers, formatted with Amazon-approved HTML. Copy the output directly into KDP.",
+      "### 7. KDP Royalty Calculator",
+      "Input page count, retail price, paper color, and color type to estimate printing costs and net royalties across global Amazon marketplaces. Helps you calculate profitable pricing structures.",
+      "### 8. Spine Width Calculator",
+      "Determine the exact width of your paperback or hardcover spine using Amazon's official formulas based on page count and paper type. Fits covers perfectly to prevent folding offsets.",
+      "### 9. Book Description Formatter",
+      "Paste your book description, style it using headings, bold text, and bullet lists, and copy the validated KDP-compatible HTML code. Real-time visual rendering preview shows how it looks on Amazon.",
+      "### 10. KDP Upload Checklist",
+      "An interactive step-by-step checklist to ensure your manuscript, cover, metadata, and backend account configurations are fully verified. Tick off items before submitting to Amazon.",
+      "### 11. KDP Keyword Research",
+      "Plan your 7 backend keyword slots by brainstorming relevant search intent queries and identifying low-competition niches with high conversion volume.",
+      "### 12. Cover Self-Assessment",
+      "Score your book cover design on visual factors (contrast, thumbnail legibility, font harmony) and receive an automated readiness rating out of 100 before launching."
+    ]
   }
 ];
 
 export default function BlogPage() {
   const [activePost, setActivePost] = useState<Post | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const postSlug = params.get("post");
+      if (postSlug) {
+        const found = BLOG_POSTS.find((p) => p.slug === postSlug);
+        if (found) {
+          setActivePost(found);
+        }
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden">
@@ -287,10 +337,15 @@ export default function BlogPage() {
         {/* Blog Post Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {BLOG_POSTS.map((post) => (
-            <article 
+            <Link 
               key={post.slug}
-              onClick={() => setActivePost(post)}
-              className="group dark-glow-card rounded-[2.5rem] p-8 border border-slate-900 bg-slate-950/40 hover:border-slate-800 transition-all duration-300 flex flex-col justify-between cursor-pointer hover:-translate-y-1"
+              href={`/blog?post=${post.slug}`}
+              onClick={(e) => {
+                e.preventDefault();
+                setActivePost(post);
+                window.history.pushState(null, '', `/blog?post=${post.slug}`);
+              }}
+              className="group dark-glow-card rounded-[2.5rem] p-8 border border-slate-900 bg-slate-950/40 hover:border-slate-800 transition-all duration-300 flex flex-col justify-between cursor-pointer hover:-translate-y-1 block text-left"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -303,10 +358,10 @@ export default function BlogPage() {
                   </div>
                 </div>
 
-                <h2 className="text-xl md:text-2xl font-black text-white mb-3 group-hover:text-indigo-400 transition-colors">
+                <h2 className="text-xl md:text-2xl font-black text-white mb-3 group-hover:text-indigo-400 transition-colors font-sans">
                   {post.title}
                 </h2>
-                <p className="text-slate-400 text-sm font-medium leading-relaxed mb-6">
+                <p className="text-slate-400 text-sm font-medium leading-relaxed mb-6 font-sans">
                   {post.description}
                 </p>
               </div>
@@ -314,7 +369,7 @@ export default function BlogPage() {
               <div className="flex items-center gap-1.5 text-indigo-400 text-xs font-black uppercase tracking-wider group-hover:text-indigo-300">
                 Read Article <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
-            </article>
+            </Link>
           ))}
         </div>
 
@@ -323,7 +378,7 @@ export default function BlogPage() {
           <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/80 backdrop-blur-sm animate-fade-in">
             <div 
               className="absolute inset-0"
-              onClick={() => setActivePost(null)}
+              onClick={() => { setActivePost(null); window.history.pushState(null, '', '/blog'); }}
             />
             
             <div className="relative w-full max-w-3xl bg-[#0b0f19] border-l border-slate-950/50 shadow-2xl h-full flex flex-col justify-between overflow-hidden animate-slide-over">
@@ -334,7 +389,7 @@ export default function BlogPage() {
                   {activePost.category}
                 </span>
                 <button
-                  onClick={() => setActivePost(null)}
+                  onClick={() => { setActivePost(null); window.history.pushState(null, '', '/blog'); }}
                   className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
                 >
                   <X className="w-5 h-5" />

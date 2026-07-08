@@ -409,6 +409,142 @@ function PricingSectionInner() {
 
   const activePlans = billingCycle === 'appsumo' ? appsumoPlans : plans;
 
+  const renderPricingCard = (plan: any, isLtd: boolean) => {
+    const price = isLtd ? plan.price : (billingCycle === 'annual' ? plan.priceAnnual : plan.priceMonthly);
+    const billingText = isLtd ? "one-time payment" : plan.priceMonthly === 0 ? "forever free" : billingCycle === 'annual' ? "billed annually" : "billed monthly";
+    const billingParam = billingCycle === 'annual' && plan.priceMonthly !== 0 ? "&billing=annual" : "";
+    const ctaHref = isLtd ? plan.ctaLink : plan.priceMonthly === 0 ? plan.ctaLink : `${plan.ctaLink}${billingParam}`;
+    const originalPrice = isLtd ? plan.originalPrice : (billingCycle === 'annual' ? plan.priceAnnualOriginal : plan.priceMonthlyOriginal);
+
+    return (
+      <div
+        key={plan.name}
+        className={`group relative rounded-[2.5rem] p-8 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 border backdrop-blur-md ${plan.colorClass
+          } ${plan.borderClass} ${!plan.popular ? "hover:border-indigo-500/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.4),_inset_0_0_12px_rgba(99,102,241,0.2)]" : ""
+          }`}
+      >
+        {plan.popular && (
+          <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg border border-amber-400/25 flex items-center gap-1.5 z-10 shrink-0">
+            <Sparkles className="w-3.5 h-3.5" />
+            Most Popular
+          </div>
+        )}
+
+        <div>
+          {/* Plan Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className={`p-3 rounded-2xl border shadow-inner ${plan.popular
+                ? "bg-slate-55 border-slate-200"
+                : "bg-slate-900/80 border-slate-800"
+              }`}>
+              {plan.icon}
+            </div>
+            <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${plan.popular
+                ? "text-slate-500 bg-slate-100 border-slate-200"
+                : "text-slate-500 bg-slate-950/50 border-slate-900"
+              }`}>
+              {isLtd ? "Lifetime Deal" : "KDP Tier"}
+            </span>
+          </div>
+
+          <h3 className={`text-2xl font-black mb-2 ${plan.popular ? "text-slate-950" : "text-white"}`}>
+            {plan.name}
+          </h3>
+          <p className={`text-sm font-semibold mb-6 leading-relaxed min-h-[40px] ${plan.popular ? "text-slate-600" : "text-slate-300"
+            }`}>
+            {plan.description}
+          </p>
+
+          {/* Price Display */}
+          <div className="mb-8 flex items-baseline gap-2 flex-wrap">
+            {originalPrice && (
+              <span className={`text-2xl font-black line-through self-end pb-1.5 opacity-55 ${plan.popular ? "text-slate-550" : "text-slate-450"}`}>
+                ${originalPrice}
+              </span>
+            )}
+            <span className={`text-6xl font-black tracking-tight ${plan.popular ? "text-slate-950" : "text-white"
+              }`}>
+              ${price}
+            </span>
+            {!isLtd && (
+              <span className={`font-bold text-sm ${plan.popular ? "text-slate-500" : "text-slate-300"}`}>
+                / month
+              </span>
+            )}
+            <span className={`text-[10px] font-bold block ml-2 self-center px-2 py-1 rounded-md uppercase tracking-wider ${plan.popular
+                ? "text-amber-750 bg-amber-500/10"
+                : "text-teal-400 bg-teal-500/10"
+              }`}>
+              {billingText}
+            </span>
+          </div>
+
+          {/* Divider */}
+          <div className={`h-px mb-8 ${plan.popular
+              ? "bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100"
+              : "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900"
+            }`} />
+
+          {/* Features Checklist */}
+          <ul className="space-y-4">
+            {plan.features.map((feature: any, fIndex: number) => (
+              <li key={fIndex} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? "text-slate-700" : "text-slate-300"
+                }`}>
+                <div className={`mt-0.5 p-0.5 rounded-full border shrink-0 ${plan.popular
+                    ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                    : "bg-teal-500/10 text-teal-400 border-teal-500/20"
+                  }`}>
+                  <Check className="w-3.5 h-3.5" />
+                </div>
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Action Button */}
+        <div className="mt-8">
+          {isLtd ? (
+            <Link
+              href={ctaHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                  : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                }`}
+            >
+              {plan.ctaText}
+              <Zap className="w-4 h-4 shrink-0 opacity-80" />
+            </Link>
+          ) : plan.planKey === "free" ? (
+            <Link
+              href={ctaHref}
+              className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                  : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                }`}
+            >
+              {plan.ctaText}
+              <Zap className="w-4 h-4 shrink-0 opacity-80" />
+            </Link>
+          ) : (
+            <button
+              onClick={() => handleCheckout(plan.planKey)}
+              className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                  : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                }`}
+            >
+              {plan.ctaText}
+              <Zap className="w-4 h-4 shrink-0 opacity-80" />
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section id="pricing" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-900">
 
@@ -467,154 +603,28 @@ function PricingSectionInner() {
         </div>
       </div>
 
-      {/* Pricing Grid */}
-      <div className={`grid grid-cols-1 items-stretch mb-24 relative ${billingCycle === 'appsumo'
-          ? "md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto gap-8 justify-center"
-          : "md:grid-cols-2 xl:grid-cols-4 gap-8"
-        }`}>
-        {activePlans.map((plan, index) => {
-          const isLtd = billingCycle === 'appsumo';
-          const price = isLtd ? (plan as any).price : (billingCycle === 'annual' ? (plan as any).priceAnnual : (plan as any).priceMonthly);
-          const billingText = isLtd ? "one-time payment" : plan.priceMonthly === 0 ? "forever free" : billingCycle === 'annual' ? "billed annually" : "billed monthly";
-          const billingParam = billingCycle === 'annual' && plan.priceMonthly !== 0 ? "&billing=annual" : "";
-          const ctaHref = isLtd ? plan.ctaLink : plan.priceMonthly === 0 ? plan.ctaLink : `${plan.ctaLink}${billingParam}`;
-          return (
-            <div
-              key={index}
-              className={`group relative rounded-[2.5rem] p-8 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 border backdrop-blur-md ${plan.colorClass
-                } ${plan.borderClass} ${!plan.popular ? "hover:border-indigo-500/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.4),_inset_0_0_12px_rgba(99,102,241,0.2)]" : ""
-                }`}
-            >
-              {plan.popular && (
-                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg border border-amber-400/25 flex items-center gap-1.5 z-10 shrink-0">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Most Popular
-                </div>
-              )}
+      {/* Monthly Grid */}
+      <div 
+        style={{ display: billingCycle === 'monthly' ? 'grid' : 'none' }}
+        className="grid grid-cols-1 items-stretch mb-24 relative md:grid-cols-2 xl:grid-cols-4 gap-8"
+      >
+        {plans.map((plan) => renderPricingCard(plan, false))}
+      </div>
 
-              <div>
-                {/* Plan Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className={`p-3 rounded-2xl border shadow-inner ${plan.popular
-                      ? "bg-slate-55 border-slate-200"
-                      : "bg-slate-900/80 border-slate-800"
-                    }`}>
-                    {plan.icon}
-                  </div>
-                  <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${plan.popular
-                      ? "text-slate-500 bg-slate-100 border-slate-200"
-                      : "text-slate-500 bg-slate-950/50 border-slate-900"
-                    }`}>
-                    {isLtd ? "Lifetime Deal" : "KDP Tier"}
-                  </span>
-                </div>
+      {/* Annual Grid */}
+      <div 
+        style={{ display: billingCycle === 'annual' ? 'grid' : 'none' }}
+        className="grid grid-cols-1 items-stretch mb-24 relative md:grid-cols-2 xl:grid-cols-4 gap-8"
+      >
+        {plans.map((plan) => renderPricingCard(plan, false))}
+      </div>
 
-                <h3 className={`text-2xl font-black mb-2 ${plan.popular ? "text-slate-950" : "text-white"}`}>
-                  {plan.name}
-                </h3>
-                <p className={`text-sm font-semibold mb-6 leading-relaxed min-h-[40px] ${plan.popular ? "text-slate-600" : "text-slate-300"
-                  }`}>
-                  {plan.description}
-                </p>
-
-                {/* Price Display */}
-                <div className="mb-8 flex items-baseline gap-2 flex-wrap">
-                  {(() => {
-                    const originalPrice = isLtd
-                      ? (plan as any).originalPrice
-                      : (billingCycle === 'annual' ? (plan as any).priceAnnualOriginal : (plan as any).priceMonthlyOriginal);
-
-                    if (originalPrice) {
-                      return (
-                        <span className={`text-2xl font-black line-through self-end pb-1.5 opacity-55 ${plan.popular ? "text-slate-550" : "text-slate-450"}`}>
-                          ${originalPrice}
-                        </span>
-                      );
-                    }
-                    return null;
-                  })()}
-                  <span className={`text-6xl font-black tracking-tight ${plan.popular ? "text-slate-950" : "text-white"
-                    }`}>
-                    ${price}
-                  </span>
-                  {!isLtd && (
-                    <span className={`font-bold text-sm ${plan.popular ? "text-slate-500" : "text-slate-300"}`}>
-                      / month
-                    </span>
-                  )}
-                  <span className={`text-[10px] font-bold block ml-2 self-center px-2 py-1 rounded-md uppercase tracking-wider ${plan.popular
-                      ? "text-amber-750 bg-amber-500/10"
-                      : "text-teal-400 bg-teal-500/10"
-                    }`}>
-                    {billingText}
-                  </span>
-                </div>
-
-                {/* Divider */}
-                <div className={`h-px mb-8 ${plan.popular
-                    ? "bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100"
-                    : "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900"
-                  }`} />
-
-                {/* Features Checklist */}
-                <ul className="space-y-4">
-                  {plan.features.map((feature, fIndex) => (
-                    <li key={fIndex} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? "text-slate-700" : "text-slate-300"
-                      }`}>
-                      <div className={`mt-0.5 p-0.5 rounded-full border shrink-0 ${plan.popular
-                          ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                          : "bg-teal-500/10 text-teal-400 border-teal-500/20"
-                        }`}>
-                        <Check className="w-3.5 h-3.5" />
-                      </div>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Action Button */}
-              <div className="mt-8">
-                {isLtd ? (
-                  <Link
-                    href={ctaHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                        : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                      }`}
-                  >
-                    {plan.ctaText}
-                    <Zap className="w-4 h-4 shrink-0 opacity-80" />
-                  </Link>
-                ) : plan.planKey === "free" ? (
-                  <Link
-                    href={ctaHref}
-                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                        : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                      }`}
-                  >
-                    {plan.ctaText}
-                    <Zap className="w-4 h-4 shrink-0 opacity-80" />
-                  </Link>
-                ) : (
-                  <button
-                    onClick={() => handleCheckout(plan.planKey)}
-                    className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                        : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                      }`}
-                  >
-                    {plan.ctaText}
-                    <Zap className="w-4 h-4 shrink-0 opacity-80" />
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      {/* AppSumo LTD Grid */}
+      <div 
+        style={{ display: billingCycle === 'appsumo' ? 'grid' : 'none' }}
+        className="grid grid-cols-1 items-stretch mb-24 relative md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto gap-8 justify-center"
+      >
+        {appsumoPlans.map((plan) => renderPricingCard(plan, true))}
       </div>
 
       {/* AppSumo Redemption Help Card */}

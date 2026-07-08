@@ -155,7 +155,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "pdf-formatter",
-      name: "KDP Interior PDF Formatter",
+      name: "Free KDP Interior PDF Formatter",
       badge: "New",
       category: "Formatting",
       description: "Upload your manuscript, choose a trim size, validate formatting, and export a KDP-ready interior PDF.",
@@ -164,7 +164,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "puzzle-generator",
-      name: "Puzzle Book Generator",
+      name: "Free Puzzle Book Generator",
       badge: "New",
       category: "Design",
       description: "Generate a print-ready puzzle book — sudoku, word search, maze, and more — with solutions included.",
@@ -173,7 +173,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "cover-calculator",
-      name: "KDP Cover Size Calculator",
+      name: "Free KDP Cover Size Calculator",
       badge: "New",
       category: "Design",
       description: "Calculate full-wrap cover dimensions — back, spine, front, and bleed — in inches and pixels at 300 DPI.",
@@ -182,7 +182,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "title-generator",
-      name: "AI Book Title Generator",
+      name: "Free AI Book Title Generator",
       badge: "Most Popular",
       category: "Writing",
       description: "Generate catchy, marketable book titles for any genre. 10 unique KDP-optimized ideas per batch.",
@@ -191,7 +191,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "desc-generator",
-      name: "Book Description Generator",
+      name: "Free Book Description Generator",
       badge: "New",
       category: "Writing",
       description: "Write conversion-optimized book descriptions with Amazon HTML formatting included.",
@@ -200,7 +200,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "royalty-calculator",
-      name: "KDP Royalty Calculator",
+      name: "Free KDP Royalty Calculator",
       category: "Marketing",
       description: "Calculate your earnings for paperback, hardcover, and ebook across all Amazon marketplaces.",
       features: ["Printing cost estimator", "Marketplace break-downs", "Royalty percentages"],
@@ -208,7 +208,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "spine-calculator",
-      name: "Spine Width Calculator",
+      name: "Free Spine Width Calculator",
       badge: "New",
       category: "Design",
       description: "Get exact spine width and full cover dimensions for paperback and hardcover. Uses Amazon's official formulas.",
@@ -217,7 +217,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "desc-formatter",
-      name: "Book Description Formatter",
+      name: "Free Book Description Formatter",
       badge: "New",
       category: "Writing",
       description: "Format your KDP book description with Amazon-approved HTML. Bold, headings, bullet points — preview and copy.",
@@ -226,7 +226,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "upload-checklist",
-      name: "KDP Upload Checklist",
+      name: "Free KDP Upload Checklist",
       category: "Marketing",
       description: "Interactive checklist covering manuscript, cover, metadata, and account setup. Don't miss a single requirement.",
       features: ["Tick off requirements", "Formatting compliance check", "Ensure instant approvals"],
@@ -234,7 +234,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "keyword-research",
-      name: "KDP Keyword Research",
+      name: "Free KDP Keyword Research",
       badge: "New",
       category: "Marketing",
       description: "Brainstorm long-tail keywords and plan all 7 backend keyword slots. Honest tool — no fake search volumes.",
@@ -243,7 +243,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "cover-assessment",
-      name: "Cover Self-Assessment",
+      name: "Free Cover Self-Assessment",
       badge: "New",
       category: "Design",
       description: "Score your cover for thumbnail legibility, contrast, and genre fit with a guided scorecard.",

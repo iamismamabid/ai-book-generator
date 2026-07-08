@@ -1217,7 +1217,7 @@ export default function FabricCoverStudio({
       width: 100,
       height: 100,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     canvas.add(rect);
@@ -1232,7 +1232,7 @@ export default function FabricCoverStudio({
       top: layout.canvasHeight / 2 - 50,
       radius: 50,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     canvas.add(circle);
@@ -1248,7 +1248,7 @@ export default function FabricCoverStudio({
       width: 100,
       height: 100,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     canvas.add(triangle);
@@ -1270,7 +1270,7 @@ export default function FabricCoverStudio({
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     (hexagon as any).isHexagon = true;
@@ -1287,7 +1287,7 @@ export default function FabricCoverStudio({
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     (heart as any).isHeart = true;
@@ -1315,7 +1315,7 @@ export default function FabricCoverStudio({
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     star.scaleToWidth(100);
@@ -1329,7 +1329,7 @@ export default function FabricCoverStudio({
     const line = new fabric.Line([0, 0, 150, 0], {
       left: layout.frontCoverCenterPx - 75,
       top: layout.canvasHeight / 2,
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 4
     });
     canvas.add(line);
@@ -1350,7 +1350,7 @@ export default function FabricCoverStudio({
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     (pentagon as any).isPentagon = true;
@@ -1376,7 +1376,7 @@ export default function FabricCoverStudio({
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     (octagon as any).isOctagon = true;
@@ -1394,7 +1394,7 @@ export default function FabricCoverStudio({
       rx: 50,
       ry: 30,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     canvas.add(ellipse);
@@ -1414,7 +1414,7 @@ export default function FabricCoverStudio({
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     (diamond as any).isDiamond = true;
@@ -1436,7 +1436,7 @@ export default function FabricCoverStudio({
       left: layout.frontCoverCenterPx - 50,
       top: layout.canvasHeight / 2 - 50,
       fill: "transparent",
-      stroke: "#4F46E5",
+      stroke: "#000000",
       strokeWidth: 3
     });
     (trapezoid as any).isTrapezoid = true;

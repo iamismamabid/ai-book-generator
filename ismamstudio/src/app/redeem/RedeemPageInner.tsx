@@ -175,39 +175,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
 
               <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mb-6" />
 
-              {(!mounted || (!isLoaded && !userId)) ? (
-                <div className="space-y-6">
-                  <div className="p-4 bg-slate-800/40 rounded-2xl border border-slate-850 text-slate-300 text-xs leading-relaxed space-y-3">
-                    <h3 className="font-black text-white text-sm">Required Steps First:</h3>
-                    <ul className="space-y-2 list-decimal list-inside text-slate-400 font-semibold">
-                      <li>Create a free account or sign in to your existing account first.</li>
-                      <li>Enter your AppSumo lifetime code on this page after signing in.</li>
-                      <li>Your lifetime deal access will activate immediately.</li>
-                    </ul>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link
-                      href="/sign-up?redirect_url=/redeem"
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl text-center text-sm shadow-lg shadow-indigo-600/15 transition-all"
-                    >
-                      Create Account
-                    </Link>
-                    <Link
-                      href="/sign-in?redirect_url=/redeem"
-                      className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-3.5 px-4 rounded-xl text-center text-sm transition-all"
-                    >
-                      Sign In
-                    </Link>
-                  </div>
-                  {!isLoaded && mounted && (
-                    <div className="flex items-center justify-center pt-4 border-t border-slate-800/50">
-                      <Loader2 className="w-4 h-4 text-indigo-400 animate-spin mr-2" />
-                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Checking Session...</span>
-                    </div>
-                  )}
-                </div>
-              ) : !userId ? (
+              {!(mounted && isLoaded && userId) ? (
                 <div className="space-y-6">
                   <div className="p-4 bg-slate-800/40 rounded-2xl border border-slate-850 text-slate-300 text-xs leading-relaxed space-y-3">
                     <h3 className="font-black text-white text-sm">Required Steps First:</h3>

@@ -51,13 +51,7 @@ function PricingSectionInner() {
 
     const selectedPriceId = priceIds[planIdKey];
 
-    console.log("=== DEBUG CHECKOUT ===");
-    console.log("planKey:", planKey);
-    console.log("planIdKey:", planIdKey);
-    console.log("selectedPriceId:", selectedPriceId);
-    console.log("window.Paddle exists:", !!(window as any).Paddle);
-    console.log("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN:", process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN);
-    console.log("=======================");
+
 
     if (!userId) {
       // Redirect to signup and pass callback checkout parameter
@@ -66,7 +60,7 @@ function PricingSectionInner() {
     }
 
     if (selectedPriceId && (window as any).Paddle) {
-      console.log("Opening Paddle checkout for price:", selectedPriceId);
+
 
       // Get Partnero referral / partner ID
       let customerKey = null;
@@ -110,9 +104,7 @@ function PricingSectionInner() {
         };
       }
 
-      console.log("=== PADDLE CHECKOUT OPTIONS ===");
-      console.log(checkoutOptions);
-      console.log("===============================");
+
 
       (window as any).Paddle.Checkout.open(checkoutOptions);
     } else {
@@ -845,46 +837,55 @@ export default function PricingSection() {
 }
 
 function PricingSkeleton() {
+  const staticPlans = [
+    { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 AI Writer Outline / mo", "Community support forum"] },
+    { name: "Starter Creator", price: "$9", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 AI Chapters / mo", "Email support (24-48h response)"] },
+    { name: "Pro Studio", price: "$19", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Unlimited Brand profiles & pen-names", "Unlimited Sudoku puzzles (Easy, Med, Hard)", "Unlimited Labyrinth designs (Circle, Heart shapes)", "Unlimited Word Search boards & CSV imports", "Unlimited AI Chapters (Llama 3.3)", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
+    { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "AI KDP Niche Hunter & Keyword Spy", "API access for automated generation", "Dedicated customer support manager"] },
+  ];
+
   return (
-    <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-900 animate-pulse">
-      {/* Header Skeleton */}
+    <section id="pricing" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-900">
       <div className="text-center mb-16">
-        <div className="inline-flex items-center w-40 h-7 rounded-full bg-slate-900 border border-slate-800/85 mb-6" />
-        <div className="w-72 md:w-96 h-12 bg-slate-900 rounded-2xl mx-auto mb-4" />
-        <div className="w-56 md:w-80 h-5 bg-slate-900/60 rounded-xl mx-auto" />
-
-        {/* Toggle Skeleton */}
-        <div className="mt-10 inline-flex items-center bg-slate-950/80 p-2 rounded-full border border-slate-800 w-64 h-14" />
+        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-sky-500/10 border border-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-[0.2em] mb-6 shadow-md">
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />Limited Time Launch Offer
+        </div>
+        <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">
+          Simple, <span className="bg-gradient-to-r from-amber-300 via-rose-400 to-sky-300 bg-clip-text text-transparent">Value-Packed</span> Pricing
+        </h2>
+        <p className="text-slate-400 text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed">
+          Create profitable books with ease. Choose a plan that matches your publishing scale.
+        </p>
       </div>
-
-      {/* Grid Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 items-stretch mb-24">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-slate-950/40 border border-slate-900 rounded-[2.5rem] p-8 flex flex-col justify-between h-[500px]">
+        {staticPlans.map((plan) => (
+          <div key={plan.name} className={`group relative rounded-[2.5rem] p-8 flex flex-col justify-between border backdrop-blur-md ${plan.popular ? 'bg-white text-slate-900 shadow-[0_20px_50px_rgba(245,158,11,0.25)] border-amber-400 border-2' : 'bg-slate-950/40 border-slate-900'}`}>
+            {plan.popular && (
+              <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg flex items-center gap-1.5 z-10">
+                <Sparkles className="w-3.5 h-3.5" />Most Popular
+              </div>
+            )}
             <div>
-              {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="w-12 h-12 bg-slate-900 rounded-2xl border border-slate-850" />
-                <div className="w-20 h-6 bg-slate-900/80 rounded-xl" />
+              <h3 className={`text-2xl font-black mb-2 ${plan.popular ? 'text-slate-950' : 'text-white'}`}>{plan.name}</h3>
+              <div className="mb-8 flex items-baseline gap-2">
+                <span className={`text-5xl font-black tracking-tight ${plan.popular ? 'text-slate-950' : 'text-white'}`}>{plan.price}</span>
+                <span className={`font-bold text-sm ${plan.popular ? 'text-slate-500' : 'text-slate-300'}`}>{plan.period}</span>
               </div>
-              <div className="w-32 h-7 bg-slate-900 rounded-xl mb-3" />
-              <div className="w-full h-10 bg-slate-900/50 rounded-xl mb-6" />
-
-              <div className="h-px bg-slate-900 mb-8" />
-
-              {/* Features */}
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((j) => (
-                  <div key={j} className="flex items-center gap-3">
-                    <div className="w-4 h-4 bg-slate-900 rounded-full shrink-0" />
-                    <div className="w-32 h-4 bg-slate-900/60 rounded-md" />
-                  </div>
+              <div className={`h-px mb-8 ${plan.popular ? 'bg-slate-200' : 'bg-slate-800'}`} />
+              <ul className="space-y-3">
+                {plan.features.map((f, i) => (
+                  <li key={i} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? 'text-slate-700' : 'text-slate-300'}`}>
+                    <Check className={`w-4 h-4 shrink-0 mt-0.5 ${plan.popular ? 'text-amber-600' : 'text-teal-400'}`} />
+                    <span>{f}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
-
-            {/* Button */}
-            <div className="w-full h-12 bg-slate-900 rounded-2xl mt-8" />
+            <div className="mt-8">
+              <Link href="/sign-up" className={`w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 ${plan.popular ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800'}`}>
+                Get Started <Zap className="w-4 h-4 shrink-0 opacity-80" />
+              </Link>
+            </div>
           </div>
         ))}
       </div>

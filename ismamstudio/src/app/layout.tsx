@@ -70,6 +70,70 @@ export default function RootLayout({
               </main>
               <Footer />
             </div>
+
+            {/* JSON-LD Structured Data */}
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@graph": [
+                    {
+                      "@type": "SoftwareApplication",
+                      "name": "Ismam Studio",
+                      "description": "All-in-one KDP book creation toolkit. Generate puzzle interiors, AI-assisted novel chapters, shape-masked mazes, word searches, and gorgeous covers for Amazon KDP.",
+                      "url": "https://www.ismamstudio.me",
+                      "applicationCategory": "DesignApplication",
+                      "operatingSystem": "Web",
+                      "offers": [
+                        {
+                          "@type": "Offer",
+                          "price": "0",
+                          "priceCurrency": "USD",
+                          "name": "Free Tier"
+                        },
+                        {
+                          "@type": "Offer",
+                          "price": "9",
+                          "priceCurrency": "USD",
+                          "name": "Starter Creator",
+                          "billingIncrement": 1,
+                          "unitCode": "MON"
+                        },
+                        {
+                          "@type": "Offer",
+                          "price": "19",
+                          "priceCurrency": "USD",
+                          "name": "Pro Studio",
+                          "billingIncrement": 1,
+                          "unitCode": "MON"
+                        },
+                        {
+                          "@type": "Offer",
+                          "price": "39",
+                          "priceCurrency": "USD",
+                          "name": "Publisher Agency",
+                          "billingIncrement": 1,
+                          "unitCode": "MON"
+                        }
+                      ],
+                      "screenshot": "https://www.ismamstudio.me/og-image.png",
+                      "featureList": "Sudoku Generator, Shape-Masked Maze Designer, Word Search Builder, Cryptogram Studio, Math Puzzle Builder, Word Scramble Studio, AI Chapter Writer, Cover & Interior Canvas Studio, KDP Niche Hunter & Keyword Spy, Spine & Cover Calculator, ISBN Barcode Generator"
+                    },
+                    {
+                      "@type": "Organization",
+                      "name": "Ismam Studio",
+                      "url": "https://www.ismamstudio.me",
+                      "logo": "https://www.ismamstudio.me/logo.png",
+                      "email": "support@ismamstudio.me",
+                      "sameAs": [
+                        "https://www.producthunt.com/products/ismam-studio"
+                      ]
+                    }
+                  ]
+                })
+              }}
+            />
           </ThemeProvider>
 
           {/* PartneroJS Tracking Script */}

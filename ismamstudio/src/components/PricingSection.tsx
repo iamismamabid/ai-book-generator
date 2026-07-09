@@ -13,6 +13,12 @@ function PricingSectionInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Helper to clean environment variables from quotes at runtime
+  const cleanEnv = (val: string | undefined) => {
+    if (!val) return "";
+    return val.replace(/['"]/g, "").trim();
+  };
+
   // Load Paddle script dynamically and initialize
   useEffect(() => {
     const script = document.createElement("script");
@@ -20,12 +26,12 @@ function PricingSectionInner() {
     script.async = true;
     script.onload = () => {
       if ((window as any).Paddle) {
-        const env = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || "sandbox";
+        const env = cleanEnv(process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT) || "sandbox";
         if (env === "sandbox") {
           (window as any).Paddle.Environment.set("sandbox");
         }
         (window as any).Paddle.Initialize({
-          token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "test_token_placeholder",
+          token: cleanEnv(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) || "test_token_placeholder",
         });
       }
     };
@@ -41,17 +47,15 @@ function PricingSectionInner() {
     const planIdKey = `${planKey}_${isAnnualBilling ? "annual" : "monthly"}`;
 
     const priceIds: Record<string, string | undefined> = {
-      "starter_monthly": process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY,
-      "starter_annual": process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL,
-      "pro_monthly": process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY,
-      "pro_annual": process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL,
-      "agency_monthly": process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY,
-      "agency_annual": process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL,
+      "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY),
+      "starter_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL),
+      "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY),
+      "pro_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL),
+      "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY),
+      "agency_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL),
     };
 
     const selectedPriceId = priceIds[planIdKey];
-
-
 
     if (!userId) {
       // Redirect to signup and pass callback checkout parameter
@@ -406,7 +410,7 @@ function PricingSectionInner() {
     const billingText = isLtd ? "one-time payment" : plan.priceMonthly === 0 ? "forever free" : billingCycle === 'annual' ? "billed annually" : "billed monthly";
     const billingParam = billingCycle === 'annual' && plan.priceMonthly !== 0 ? "&billing=annual" : "";
     const ctaHref = isLtd ? plan.ctaLink : plan.priceMonthly === 0 ? plan.ctaLink : `${plan.ctaLink}${billingParam}`;
-    const originalPrice = isLtd ? plan.originalPrice : (billingCycle === 'annual' ? plan.priceAnnualOriginal : plan.priceMonthlyOriginal);
+    const originalPrice = isLtd ? plan.originalPrice : (billingCycle === 'annual' ? plan.priceAnnualOriginal : undefined);
 
     return (
       <div

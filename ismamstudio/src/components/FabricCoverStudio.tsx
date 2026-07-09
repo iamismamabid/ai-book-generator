@@ -2241,6 +2241,524 @@ export default function FabricCoverStudio({
       {/* 2. Left Configuration Panel */}
       <div className="w-68 bg-slate-50 border-r border-slate-200 flex flex-col p-5 z-10 overflow-y-auto">
         
+        {/* Contextual Edit Panel (Consolidated Sidebar Editor) */}
+        {activeObject && (
+          <div className="mb-5 bg-white p-3.5 rounded-2xl border border-slate-205 space-y-4 shadow-sm shrink-0">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Edit Selected</span>
+              <button 
+                onClick={() => {
+                  canvas?.discardActiveObject();
+                  setActiveObject(null);
+                  canvas?.requestRenderAll();
+                }}
+                className="text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase"
+              >
+                Deselect
+              </button>
+            </div>
+
+            {/* Text Options */}
+            {(activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox') && (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Content</label>
+                  <textarea
+                    value={objectText}
+                    onChange={(e) => {
+                      setObjectText(e.target.value);
+                      updateActiveObjectProperty("text", e.target.value);
+                    }}
+                    className="w-full text-xs font-semibold p-2 border border-slate-200 rounded-lg outline-none focus:border-indigo-500 font-sans"
+                    rows={2}
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Family</label>
+                  <select
+                    value={objectFontFamily}
+                    onChange={(e) => {
+                      setObjectFontFamily(e.target.value);
+                      updateActiveObjectProperty("fontFamily", e.target.value);
+                    }}
+                    className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-500 font-sans"
+                    style={{ fontFamily: objectFontFamily }}
+                  >
+                    {FONT_FAMILIES.map((font, idx) => (
+                      <option key={idx} value={font} style={{ fontFamily: font }}>{font}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Size</label>
+                    <input
+                      type="number"
+                      min="6"
+                      max="300"
+                      value={objectFontSize}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 12;
+                        setObjectFontSize(val);
+                        updateActiveObjectProperty("fontSize", val, false);
+                      }}
+                      onBlur={() => {
+                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
+                      }}
+                      className="w-full text-xs font-bold p-1.5 border border-slate-200 rounded-lg outline-none font-sans text-center"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Alignment</label>
+                    <div className="flex border border-slate-200 rounded-lg overflow-hidden bg-white">
+                      {(['left', 'center', 'right'] as const).map((align) => (
+                        <button
+                          key={align}
+                          onClick={() => handleTextAlignment(align)}
+                          className={`flex-1 py-1.5 text-[9px] transition-colors ${
+                            objectTextAlign === align ? "bg-indigo-600 text-white font-bold" : "bg-white text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          {align[0].toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bold, Italic, Underline */}
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Style</label>
+                  <div className="flex border border-slate-200 rounded-lg overflow-hidden bg-white">
+                    <button
+                      onClick={toggleBold}
+                      className={`flex-1 py-1.5 text-xs font-bold transition-colors ${
+                        objectFontWeight === "bold" ? "bg-indigo-650 text-white" : "bg-white text-slate-750 hover:bg-slate-50"
+                      }`}
+                    >
+                      B
+                    </button>
+                    <button
+                      onClick={toggleItalic}
+                      className={`flex-1 py-1.5 text-xs italic transition-colors border-x border-slate-100 ${
+                        objectFontStyle === "italic" ? "bg-indigo-650 text-white" : "bg-white text-slate-755 hover:bg-slate-50"
+                      }`}
+                    >
+                      I
+                    </button>
+                    <button
+                      onClick={toggleUnderline}
+                      className={`flex-1 py-1.5 text-xs underline transition-colors ${
+                        objectUnderline ? "bg-indigo-650 text-white" : "bg-white text-slate-755 hover:bg-slate-50"
+                      }`}
+                    >
+                      U
+                    </button>
+                  </div>
+                </div>
+
+                {/* Spacing & Height */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                    <span>Char Spacing</span>
+                    <span className="text-slate-600 font-bold">{objectCharSpacing}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="-50"
+                    max="300"
+                    step="5"
+                    value={objectCharSpacing}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setObjectCharSpacing(val);
+                      updateActiveObjectProperty("charSpacing", val, false);
+                    }}
+                    className="w-full accent-indigo-650 h-1 cursor-pointer"
+                  />
+                </div>
+
+                {/* Spine alignment (if applicable) */}
+                {activeObject.id?.startsWith('spine') && (
+                  <div className="pt-2 border-t border-slate-100 space-y-2">
+                    <span className="text-[9px] font-black text-slate-400 uppercase block">Spine Text Alignment</span>
+                    {pageCount < 80 ? (
+                      <p className="text-[8px] font-black text-amber-600 bg-amber-50/50 p-2 rounded-lg border border-amber-200/50 leading-normal">
+                        ⚠️ Spine text requires 80+ pages. (Current: {pageCount})
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex gap-1">
+                          {(['top', 'center', 'bottom'] as const).map((align) => (
+                            <button
+                              key={align}
+                              onClick={() => {
+                                setSpineTextVAlign(align);
+                                alignTextToSpine(align, spineTextRotation);
+                              }}
+                              className={`flex-1 py-1 text-[9px] font-black rounded capitalize border transition-all ${
+                                spineTextVAlign === align 
+                                  ? 'bg-indigo-600 text-white border-indigo-600' 
+                                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                              }`}
+                            >
+                              {align}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Colors (Fill & Border) */}
+            {activeObject.type !== 'image' && !activeObject.id?.startsWith('barcode') && (
+              <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                <div className="flex justify-between items-center">
+                  <label className="text-[9px] font-black text-slate-400 uppercase">Fill Color</label>
+                  <button
+                    onClick={() => {
+                      const isTrans = objectColor === "transparent";
+                      const newVal = isTrans ? "#FFFFFF" : "transparent";
+                      setObjectColor(newVal);
+                      updateActiveObjectProperty("fill", newVal, true);
+                    }}
+                    className={`text-[8px] font-black uppercase px-2 py-0.5 rounded cursor-pointer ${
+                      objectColor === "transparent" ? "bg-indigo-650 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                    }`}
+                  >
+                    None
+                  </button>
+                </div>
+                {objectColor !== "transparent" && (
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={objectColor.startsWith("#") ? objectColor : "#FFFFFF"}
+                      onChange={(e) => {
+                        setObjectColor(e.target.value);
+                        updateActiveObjectProperty("fill", e.target.value, false);
+                      }}
+                      className="w-7 h-7 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
+                    />
+                    <input
+                      type="text"
+                      value={objectColor}
+                      onChange={(e) => {
+                        setObjectColor(e.target.value);
+                        updateActiveObjectProperty("fill", e.target.value, false);
+                      }}
+                      className="flex-1 text-xs font-semibold uppercase px-2 py-1 border border-slate-200 rounded-lg text-center font-mono"
+                    />
+                  </div>
+                )}
+
+                {/* Border Settings */}
+                {activeObject.type !== 'i-text' && activeObject.type !== 'text' && activeObject.type !== 'textbox' && (
+                  <div className="space-y-2 pt-2 border-t border-slate-100">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[9px] font-black text-slate-400 uppercase">Border Color</label>
+                      <button
+                        onClick={() => {
+                          const isTrans = objectStrokeColor === "transparent";
+                          const newVal = isTrans ? "#000000" : "transparent";
+                          setObjectStrokeColor(newVal);
+                          updateActiveObjectProperty("stroke", newVal, true);
+                        }}
+                        className={`text-[8px] font-black uppercase px-2 py-0.5 rounded cursor-pointer ${
+                          objectStrokeColor === "transparent" ? "bg-indigo-650 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                        }`}
+                      >
+                        None
+                      </button>
+                    </div>
+                    {objectStrokeColor !== "transparent" && (
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={objectStrokeColor.startsWith("#") ? objectStrokeColor : "#000000"}
+                          onChange={(e) => {
+                            setObjectStrokeColor(e.target.value);
+                            updateActiveObjectProperty("stroke", e.target.value, false);
+                          }}
+                          className="w-7 h-7 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
+                        />
+                        <input
+                          type="text"
+                          value={objectStrokeColor}
+                          onChange={(e) => {
+                            setObjectStrokeColor(e.target.value);
+                            updateActiveObjectProperty("stroke", e.target.value, false);
+                          }}
+                          className="flex-1 text-xs font-semibold uppercase px-2 py-1 border border-slate-200 rounded-lg text-center font-mono"
+                        />
+                      </div>
+                    )}
+                    {objectStrokeColor !== "transparent" && (
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                          <span>Border Weight</span>
+                          <span>{objectStrokeWidth}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="20"
+                          value={objectStrokeWidth}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setObjectStrokeWidth(val);
+                            updateActiveObjectProperty("strokeWidth", val, false);
+                          }}
+                          className="w-full accent-indigo-650 h-1 cursor-pointer"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* General Properties */}
+            <div className="space-y-3 pt-2.5 border-t border-slate-100">
+              <div className="space-y-1">
+                <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                  <span>Opacity</span>
+                  <span>{Math.round(objectOpacity * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={objectOpacity}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setObjectOpacity(val);
+                    updateActiveObjectProperty("opacity", val, false);
+                  }}
+                  className="w-full accent-indigo-650 h-1 cursor-pointer"
+                />
+              </div>
+
+              {/* Exact dimensions */}
+              {!activeObject.id?.startsWith('barcode') && (
+                <div className="grid grid-cols-2 gap-2 text-[10px] font-bold">
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Width (px)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={objectWidth}
+                      onChange={(e) => handleExactWidth(parseInt(e.target.value) || 0)}
+                      className="w-full p-1.5 border border-slate-200 rounded-lg outline-none font-sans text-center"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Height (px)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={objectHeight}
+                      onChange={(e) => handleExactHeight(parseInt(e.target.value) || 0)}
+                      className="w-full p-1.5 border border-slate-200 rounded-lg outline-none font-sans text-center"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Flips */}
+              {activeObject.type !== 'i-text' && activeObject.type !== 'text' && activeObject.type !== 'textbox' && (
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Flip Object</label>
+                  <div className="flex border border-slate-200 rounded-lg overflow-hidden bg-white text-center">
+                    <button
+                      onClick={toggleFlipX}
+                      className={`flex-1 py-1.5 text-[9px] font-black uppercase transition-colors ${
+                        objectFlipX ? "bg-indigo-650 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      Flip H
+                    </button>
+                    <button
+                      onClick={toggleFlipY}
+                      className={`flex-1 py-1.5 text-[9px] font-black uppercase transition-colors border-l border-slate-100 ${
+                        objectFlipY ? "bg-indigo-650 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      Flip V
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Shadows */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={objectHasShadow}
+                    onChange={(e) => {
+                      setObjectHasShadow(e.target.checked);
+                      updateActiveObjectShadow(e.target.checked, objectShadowColor, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY);
+                    }}
+                    className="rounded text-indigo-500 accent-indigo-500 cursor-pointer"
+                  />
+                  <span className="text-[9px] font-black text-slate-400 uppercase">Enable Layer Shadow</span>
+                </label>
+                
+                {objectHasShadow && (
+                  <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <div className="col-span-2">
+                      <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Shadow Color</label>
+                      <div className="flex gap-1.5">
+                        <input
+                          type="color"
+                          value={objectShadowColor.startsWith('rgba') ? '#000000' : objectShadowColor}
+                          onChange={(e) => {
+                            setObjectShadowColor(e.target.value);
+                            updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY, false);
+                          }}
+                          className="w-5 h-5 rounded cursor-pointer border border-slate-200"
+                        />
+                        <input
+                          type="text"
+                          value={objectShadowColor}
+                          onChange={(e) => {
+                            setObjectShadowColor(e.target.value);
+                            updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY, false);
+                          }}
+                          className="flex-1 text-[8px] font-bold p-0.5 border border-slate-250 rounded font-mono text-center"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Blur ({objectShadowBlur}px)</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="30"
+                        value={objectShadowBlur}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setObjectShadowBlur(val);
+                          updateActiveObjectShadow(true, objectShadowColor, val, objectShadowOffsetX, objectShadowOffsetY, false);
+                        }}
+                        className="w-full accent-indigo-650 cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Offset X ({objectShadowOffsetX}px)</label>
+                      <input
+                        type="range"
+                        min="-15"
+                        max="15"
+                        value={objectShadowOffsetX}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setObjectShadowOffsetX(val);
+                          updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, val, objectShadowOffsetY, false);
+                        }}
+                        className="w-full accent-indigo-650 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Alignments */}
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                <button
+                  onClick={() => {
+                    if (!canvas || !activeObject) return;
+                    canvas.centerObjectH(activeObject);
+                    canvas.requestRenderAll();
+                    canvas.fire("object:modified", { target: activeObject });
+                  }}
+                  className="py-1 border border-slate-200 rounded-lg text-[9px] font-black uppercase hover:bg-slate-50 transition-all text-slate-700 cursor-pointer"
+                >
+                  Center H
+                </button>
+                <button
+                  onClick={() => {
+                    if (!canvas || !activeObject) return;
+                    canvas.centerObjectV(activeObject);
+                    canvas.requestRenderAll();
+                    canvas.fire("object:modified", { target: activeObject });
+                  }}
+                  className="py-1 border border-slate-200 rounded-lg text-[9px] font-black uppercase hover:bg-slate-50 transition-all text-slate-700 cursor-pointer"
+                >
+                  Center V
+                </button>
+              </div>
+
+              {/* Layer Placement */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    if (canvas && activeObject) {
+                      activeObject.bringToFront();
+                      canvas.requestRenderAll();
+                    }
+                  }}
+                  className="py-1 border border-slate-200 rounded-lg text-[9px] font-black uppercase hover:bg-slate-50 transition-all text-slate-700 cursor-pointer"
+                >
+                  Bring Front
+                </button>
+                <button
+                  onClick={() => {
+                    if (canvas && activeObject) {
+                      activeObject.sendToBack();
+                      canvas.requestRenderAll();
+                    }
+                  }}
+                  className="py-1 border border-slate-200 rounded-lg text-[9px] font-black uppercase hover:bg-slate-50 transition-all text-slate-700 cursor-pointer"
+                >
+                  Send Back
+                </button>
+              </div>
+
+              {/* Lock & Edit Actions */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                <button 
+                  onClick={toggleLockSelected}
+                  className={`w-full py-1.5 rounded-lg text-[10px] font-black border flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                    isObjectLocked 
+                      ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {isObjectLocked ? "🔓 Unlock Layer" : "🔒 Lock Layer"}
+                </button>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button 
+                    onClick={copySelected}
+                    disabled={isObjectLocked}
+                    className="py-1 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
+                  >
+                    Copy
+                  </button>
+                  <button 
+                    onClick={duplicateSelected}
+                    disabled={isObjectLocked}
+                    className="py-1 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
+                  >
+                    Duplicate
+                  </button>
+                  <button 
+                    onClick={deleteSelected}
+                    className="col-span-2 py-1 bg-red-50 hover:bg-red-100 border border-red-100 text-red-650 text-[9px] font-black rounded-lg uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    Delete Layer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeToolTab === 'elements' && (
           <div className="space-y-5">
             <div className="flex justify-between items-center">
@@ -2369,563 +2887,6 @@ export default function FabricCoverStudio({
                 </div>
               </div>
             </div>
-
-
-            {activeObject && (
-              <div className="pt-4 border-t border-slate-200 space-y-4">
-                <h4 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Object Settings</h4>
-                
-                {/* Text Specific Editing */}
-                {(activeObject.type === 'i-text' || activeObject.type === 'text') && (
-                  <div className="space-y-3 bg-white p-3 rounded-xl border border-slate-200">
-                    <div>
-                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Content</label>
-                      <textarea
-                        value={objectText}
-                        onChange={(e) => {
-                          setObjectText(e.target.value);
-                          updateActiveObjectProperty("text", e.target.value);
-                        }}
-                        className="w-full text-xs font-semibold p-2 border border-slate-200 rounded-lg outline-none focus:border-indigo-500 font-sans"
-                        rows={2}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Family</label>
-                      <select
-                        value={objectFontFamily}
-                        onChange={(e) => {
-                          setObjectFontFamily(e.target.value);
-                          updateActiveObjectProperty("fontFamily", e.target.value);
-                        }}
-                        className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg"
-                      >
-                        {FONT_FAMILIES.map((font, idx) => (
-                          <option key={idx} value={font}>{font}</option>
-                        ))}
-                      </select>
-                    </div>
-                     <div>
-                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Size ({objectFontSize}px)</label>
-                      <input
-                        type="range"
-                        min="10"
-                        max="120"
-                        value={objectFontSize}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value);
-                          setObjectFontSize(val);
-                          updateActiveObjectProperty("fontSize", val, false);
-                        }}
-                        onMouseUp={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        onTouchEnd={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        onBlur={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        className="w-full accent-indigo-650 cursor-pointer"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Letter Spacing ({objectCharSpacing})</label>
-                      <input
-                        type="range"
-                        min="-50"
-                        max="300"
-                        step="5"
-                        value={objectCharSpacing}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value);
-                          setObjectCharSpacing(val);
-                          updateActiveObjectProperty("charSpacing", val, false);
-                        }}
-                        onMouseUp={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        onTouchEnd={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        onBlur={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        className="w-full accent-indigo-650 cursor-pointer"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Line Height ({objectLineHeight.toFixed(2)})</label>
-                      <input
-                        type="range"
-                        min="0.5"
-                        max="2.5"
-                        step="0.05"
-                        value={objectLineHeight}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          setObjectLineHeight(val);
-                          updateActiveObjectProperty("lineHeight", val, false);
-                        }}
-                        onMouseUp={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        onTouchEnd={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        onBlur={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        className="w-full accent-indigo-650 cursor-pointer"
-                      />
-                    </div>
-                    
-                    <div className="pt-2 border-t border-slate-100 space-y-2">
-                      <span className="text-[9px] font-black text-slate-400 uppercase block">Spine Text Alignment</span>
-                      {pageCount < 80 ? (
-                        <p className="text-[8px] font-black text-amber-600 bg-amber-50/50 p-2 rounded-lg border border-amber-200/50 leading-normal">
-                          ⚠️ KDP Alert: Spine text is only allowed for books with 80+ pages. (Current page count: {pageCount})
-                        </p>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="flex gap-1">
-                            {(['top', 'center', 'bottom'] as const).map((align) => (
-                              <button
-                                key={align}
-                                onClick={() => {
-                                  setSpineTextVAlign(align);
-                                  alignTextToSpine(align, spineTextRotation);
-                                }}
-                                className={`flex-1 py-1 text-[9px] font-black rounded capitalize border transition-all ${
-                                  spineTextVAlign === align 
-                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
-                                    : 'bg-white border-slate-200 text-slate-655 hover:bg-slate-50'
-                                }`}
-                              >
-                                {align}
-                              </button>
-                            ))}
-                          </div>
-                          <div className="flex gap-1 items-center">
-                            <span className="text-[9px] font-black text-slate-400 uppercase flex-1">Rotation:</span>
-                            <button
-                              onClick={() => {
-                                setSpineTextRotation(90);
-                                alignTextToSpine(spineTextVAlign, 90);
-                              }}
-                              className={`px-2 py-0.5 text-[9px] font-black rounded border transition-all ${
-                                spineTextRotation === 90
-                                  ? 'bg-indigo-600 text-white border-indigo-600'
-                                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                              }`}
-                            >
-                              90°
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSpineTextRotation(270);
-                                alignTextToSpine(spineTextVAlign, 270);
-                              }}
-                              className={`px-2 py-0.5 text-[9px] font-black rounded border transition-all ${
-                                spineTextRotation === 270
-                                  ? 'bg-indigo-600 text-white border-indigo-600'
-                                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                              }`}
-                            >
-                              270°
-                            </button>
-                            <button
-                              onClick={() => alignTextToSpine()}
-                              className="ml-auto py-0.5 px-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[9px] rounded uppercase tracking-wider transition-colors shadow-sm"
-                            >
-                              Align
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Color & Border Settings (Applicable to shapes and text) */}
-                <div className="space-y-3 bg-white p-3 rounded-xl border border-slate-200">
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="text-[9px] font-black text-slate-400 uppercase">Fill Color</label>
-                      <button
-                        onClick={() => {
-                          const isTrans = objectColor === "transparent";
-                          const newVal = isTrans ? "#FFFFFF" : "transparent";
-                          setObjectColor(newVal);
-                          updateActiveObjectProperty("fill", newVal, true);
-                        }}
-                        className={`text-[9px] font-black uppercase px-2 py-0.5 rounded transition cursor-pointer ${
-                          objectColor === "transparent" 
-                            ? "bg-indigo-600 text-white" 
-                            : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                        }`}
-                      >
-                        No Fill
-                      </button>
-                    </div>
-                    {objectColor !== "transparent" && (
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={objectColor.startsWith("#") ? objectColor : "#FFFFFF"}
-                          onChange={(e) => {
-                            setObjectColor(e.target.value);
-                            updateActiveObjectProperty("fill", e.target.value, false);
-                          }}
-                          onBlur={() => {
-                            if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                          }}
-                          className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
-                        />
-                        <input
-                          type="text"
-                          value={objectColor}
-                          onChange={(e) => {
-                            setObjectColor(e.target.value);
-                            updateActiveObjectProperty("fill", e.target.value, false);
-                          }}
-                          onBlur={() => {
-                            if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                          }}
-                          className="flex-1 text-xs font-bold uppercase p-1.5 border border-slate-200 rounded-lg text-center font-mono"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Stroke Color</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="color"
-                        value={objectStrokeColor}
-                        onChange={(e) => {
-                          setObjectStrokeColor(e.target.value);
-                          updateActiveObjectProperty("stroke", e.target.value, false);
-                        }}
-                        onBlur={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
-                      />
-                      <input
-                        type="text"
-                        value={objectStrokeColor}
-                        onChange={(e) => {
-                          setObjectStrokeColor(e.target.value);
-                          updateActiveObjectProperty("stroke", e.target.value, false);
-                        }}
-                        onBlur={() => {
-                          if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                        }}
-                        className="flex-1 text-xs font-bold uppercase p-1.5 border border-slate-200 rounded-lg text-center font-mono"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Stroke Width ({objectStrokeWidth}px)</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="15"
-                      value={objectStrokeWidth}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        setObjectStrokeWidth(val);
-                        updateActiveObjectProperty("strokeWidth", val, false);
-                      }}
-                      onMouseUp={() => {
-                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                      }}
-                      onTouchEnd={() => {
-                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                      }}
-                      onBlur={() => {
-                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                      }}
-                      className="w-full accent-indigo-650 cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Opacity slider */}
-                  <div>
-                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Layer Opacity ({Math.round(objectOpacity * 100)}%)</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={objectOpacity}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        setObjectOpacity(val);
-                        updateActiveObjectProperty("opacity", val, false);
-                      }}
-                      onMouseUp={() => {
-                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                      }}
-                      onTouchEnd={() => {
-                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                      }}
-                      onBlur={() => {
-                        if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                      }}
-                      className="w-full accent-indigo-650 cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Shadow settings */}
-                  <div className="space-y-2 pt-2 border-t border-slate-150">
-                    <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={objectHasShadow}
-                        onChange={(e) => {
-                          setObjectHasShadow(e.target.checked);
-                          updateActiveObjectShadow(e.target.checked, objectShadowColor, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY);
-                        }}
-                        className="rounded text-indigo-500 accent-indigo-500 cursor-pointer"
-                      />
-                      <span className="text-[9px] font-black text-slate-400 uppercase">Enable Layer Shadow</span>
-                    </label>
-                    
-                    {objectHasShadow && (
-                      <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                        <div className="col-span-2">
-                          <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Shadow Color</label>
-                          <div className="flex gap-1.5">
-                            <input
-                              type="color"
-                              value={objectShadowColor.startsWith('rgba') ? '#000000' : objectShadowColor}
-                              onChange={(e) => {
-                                setObjectShadowColor(e.target.value);
-                                updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY, false);
-                              }}
-                              onBlur={() => {
-                                if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                              }}
-                              className="w-5 h-5 rounded cursor-pointer border border-slate-200"
-                            />
-                            <input
-                              type="text"
-                              value={objectShadowColor}
-                              onChange={(e) => {
-                                setObjectShadowColor(e.target.value);
-                                updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY, false);
-                              }}
-                              onBlur={() => {
-                                if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                              }}
-                              className="flex-1 text-[8px] font-bold p-0.5 border border-slate-250 rounded font-mono text-center"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Blur ({objectShadowBlur}px)</label>
-                          <input
-                            type="range"
-                            min="0"
-                            max="30"
-                            value={objectShadowBlur}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value);
-                              setObjectShadowBlur(val);
-                              updateActiveObjectShadow(true, objectShadowColor, val, objectShadowOffsetX, objectShadowOffsetY, false);
-                            }}
-                            onMouseUp={() => {
-                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                            }}
-                            onTouchEnd={() => {
-                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                            }}
-                            onBlur={() => {
-                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                            }}
-                            className="w-full accent-indigo-650 cursor-pointer"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Offset X ({objectShadowOffsetX}px)</label>
-                          <input
-                            type="range"
-                            min="-15"
-                            max="15"
-                            value={objectShadowOffsetX}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value);
-                              setObjectShadowOffsetX(val);
-                              updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, val, objectShadowOffsetY, false);
-                            }}
-                            onMouseUp={() => {
-                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                            }}
-                            onTouchEnd={() => {
-                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                            }}
-                            onBlur={() => {
-                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                            }}
-                            className="w-full accent-indigo-650 cursor-pointer"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <label className="text-[8px] font-black text-slate-400 block mb-0.5 uppercase">Offset Y ({objectShadowOffsetY}px)</label>
-                          <input
-                            type="range"
-                            min="-15"
-                            max="15"
-                            value={objectShadowOffsetY}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value);
-                              setObjectShadowOffsetY(val);
-                              updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, objectShadowOffsetX, val, false);
-                            }}
-                            onMouseUp={() => {
-                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                            }}
-                            onTouchEnd={() => {
-                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                            }}
-                            onBlur={() => {
-                              if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                            }}
-                            className="w-full accent-indigo-650 cursor-pointer"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Alignment Actions */}
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase block">Align to Front Cover</label>
-                  <div className="flex gap-1.5">
-                    <button 
-                      onClick={() => handleAlignment('left')} 
-                      className="flex-1 py-1.5 bg-white border border-slate-200 text-[10px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50"
-                    >
-                      Left
-                    </button>
-                    <button 
-                      onClick={() => handleAlignment('center')} 
-                      className="flex-1 py-1.5 bg-white border border-slate-200 text-[10px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50"
-                    >
-                      Center
-                    </button>
-                    <button 
-                      onClick={() => handleAlignment('right')} 
-                      className="flex-1 py-1.5 bg-white border border-slate-200 text-[10px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50"
-                    >
-                      Right
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-2 pt-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase block">Layer Security</label>
-                  <button 
-                    onClick={toggleLockSelected}
-                    className={`w-full p-2.5 rounded-xl text-xs font-black border flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                      isObjectLocked 
-                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {isObjectLocked ? (
-                      <>
-                        <Lock className="w-4 h-4 text-amber-600" />
-                        <span>Unlock Layer (Locked)</span>
-                      </>
-                    ) : (
-                      <>
-                        <Unlock className="w-4 h-4 text-slate-400" />
-                        <span>Lock Layer (Editable)</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Edit & Clipboard Actions */}
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase block">Edit Actions</label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <button 
-                      onClick={copySelected}
-                      disabled={isObjectLocked}
-                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
-                    >
-                      <Copy className="w-3 h-3 text-indigo-500" /> Copy
-                    </button>
-                    <button 
-                      onClick={cutSelected}
-                      disabled={isObjectLocked}
-                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
-                    >
-                      <Scissors className="w-3 h-3 text-indigo-500" /> Cut
-                    </button>
-                    <button 
-                      onClick={duplicateSelected}
-                      disabled={isObjectLocked}
-                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
-                    >
-                      <Plus className="w-3 h-3 text-indigo-500" /> Duplicate
-                    </button>
-                    <button 
-                      onClick={deleteSelected}
-                      className="py-2 bg-red-50 hover:bg-red-100 border border-red-100 text-red-650 text-[9px] font-black rounded-lg uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
-                    >
-                      <Trash2 className="w-3 h-3" /> Delete
-                    </button>
-                  </div>
-                </div>
-
-                {/* Layer Arrangement (Depth Control) */}
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase block">Layer depth & arrangement</label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <button 
-                      onClick={bringToFront}
-                      disabled={isObjectLocked}
-                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
-                      title="Bring all the way to front"
-                    >
-                      <ChevronsUp className="w-3 h-3 text-slate-500" /> To Front
-                    </button>
-                    <button 
-                      onClick={bringForward}
-                      disabled={isObjectLocked}
-                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
-                      title="Bring one layer forward"
-                    >
-                      <ChevronUp className="w-3 h-3 text-slate-500" /> Forward
-                    </button>
-                    <button 
-                      onClick={sendBackward}
-                      disabled={isObjectLocked}
-                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
-                      title="Send one layer backward"
-                    >
-                      <ChevronDown className="w-3 h-3 text-slate-500" /> Backward
-                    </button>
-                    <button 
-                      onClick={sendToBack}
-                      disabled={isObjectLocked}
-                      className="py-2 bg-white border border-slate-200 text-[9px] font-black rounded-lg hover:border-indigo-500 hover:bg-slate-50 uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
-                      title="Send all the way to back"
-                    >
-                      <ChevronsDown className="w-3 h-3 text-slate-500" /> To Back
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
 
             <div className="pt-4 border-t border-slate-200">
               <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -3779,268 +3740,6 @@ export default function FabricCoverStudio({
             <span className="text-[10px] font-black uppercase tracking-wider">Clear All</span>
           </button>
         </div>
-
-        {/* Contextual top toolbar for KDP essential formatting */}
-        {activeObject && (
-          <div className="mb-4 flex flex-wrap items-center gap-2 bg-white py-2 px-4 rounded-xl border border-slate-200 shadow-sm z-10 select-none max-w-full">
-            <span className="text-[9px] font-black text-slate-400 uppercase mr-1">Edit selected:</span>
-            
-            {/* If it's a Text/IText/Textbox object */}
-            {(activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox') && (
-              <>
-                {/* Font Selector */}
-                <select
-                  value={objectFontFamily}
-                  onChange={(e) => {
-                    setObjectFontFamily(e.target.value);
-                    updateActiveObjectProperty("fontFamily", e.target.value);
-                  }}
-                  className="text-xs font-bold p-1 bg-white border border-slate-200 rounded-md outline-none focus:border-indigo-500 cursor-pointer font-sans"
-                  style={{ fontFamily: objectFontFamily }}
-                >
-                  {FONT_FAMILIES.map((font, idx) => (
-                    <option key={idx} value={font} style={{ fontFamily: font }}>{font}</option>
-                  ))}
-                </select>
-
-                {/* Font Size Number Input */}
-                <div className="flex items-center border border-slate-200 rounded-md overflow-hidden bg-white">
-                  <input
-                    type="number"
-                    min="6"
-                    max="300"
-                    value={objectFontSize}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value) || 12;
-                      setObjectFontSize(val);
-                      updateActiveObjectProperty("fontSize", val, false);
-                    }}
-                    onBlur={() => {
-                      if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                    }}
-                    className="w-12 text-center text-xs font-bold p-1 outline-none font-sans"
-                  />
-                  <span className="text-[10px] text-slate-400 font-bold pr-1 select-none">pt</span>
-                </div>
-
-                {/* Text Styling Toggles (Bold, Italic, Underline) */}
-                <div className="flex border border-slate-200 rounded-md overflow-hidden bg-white">
-                  <button
-                    onClick={toggleBold}
-                    title="Bold"
-                    className={`p-1 px-2 text-xs font-bold transition-colors ${
-                      objectFontWeight === "bold" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Bold className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={toggleItalic}
-                    title="Italic"
-                    className={`p-1 px-2 text-xs font-bold transition-colors ${
-                      objectFontStyle === "italic" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Italic className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={toggleUnderline}
-                    title="Underline"
-                    className={`p-1 px-2 text-xs font-bold transition-colors ${
-                      objectUnderline ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Underline className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Text Alignment */}
-                <div className="flex border border-slate-200 rounded-md overflow-hidden bg-white">
-                  <button
-                    onClick={() => handleTextAlignment("left")}
-                    title="Align Left"
-                    className={`p-1 px-2 text-xs transition-colors ${
-                      objectTextAlign === "left" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <AlignLeft className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleTextAlignment("center")}
-                    title="Align Center"
-                    className={`p-1 px-2 text-xs transition-colors ${
-                      objectTextAlign === "center" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <AlignCenter className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleTextAlignment("right")}
-                    title="Align Right"
-                    className={`p-1 px-2 text-xs transition-colors ${
-                      objectTextAlign === "right" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <AlignRight className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleTextAlignment("justify")}
-                    title="Justify"
-                    className={`p-1 px-2 text-xs transition-colors ${
-                      objectTextAlign === "justify" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <AlignJustify className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* Colors (if fill is applicable and not a barcode/image) */}
-            {activeObject.type !== 'image' && !activeObject.id?.startsWith('barcode') && (
-              <div className="flex items-center gap-1">
-                {/* Fill Color */}
-                <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-md border border-slate-200">
-                  <span className="text-[8px] font-black text-slate-400 uppercase pl-0.5">Fill:</span>
-                  <input
-                    type="color"
-                    value={objectColor === "transparent" ? "#ffffff" : objectColor.startsWith("#") ? objectColor : "#ffffff"}
-                    disabled={objectColor === "transparent"}
-                    onChange={(e) => {
-                      setObjectColor(e.target.value);
-                      updateActiveObjectProperty("fill", e.target.value, false);
-                    }}
-                    onBlur={() => {
-                      if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                    }}
-                    className="w-5 h-5 rounded cursor-pointer border border-slate-300 p-0"
-                  />
-                  <button
-                    onClick={() => {
-                      const isTrans = objectColor === "transparent";
-                      const newVal = isTrans ? "#FFFFFF" : "transparent";
-                      setObjectColor(newVal);
-                      updateActiveObjectProperty("fill", newVal, true);
-                    }}
-                    className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded transition ${
-                      objectColor === "transparent" ? "bg-slate-800 text-white" : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                    }`}
-                  >
-                    None
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Flips & Opacity */}
-            <div className="flex items-center gap-1.5">
-              {/* Opacity */}
-              <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-md border border-slate-200">
-                <span className="text-[8px] font-black text-slate-400 uppercase pl-0.5">Opacity:</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={objectOpacity}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    setObjectOpacity(val);
-                    updateActiveObjectProperty("opacity", val, false);
-                  }}
-                  onMouseUp={() => {
-                    if (canvas && activeObject) canvas.fire("object:modified", { target: activeObject });
-                  }}
-                  className="w-16 accent-indigo-650 cursor-pointer h-1"
-                />
-                <span className="text-[9px] font-bold text-slate-600 w-6 text-right">{Math.round(objectOpacity * 100)}%</span>
-              </div>
-
-              {/* Flip X / Y */}
-              <div className="flex border border-slate-200 rounded-md overflow-hidden bg-white">
-                <button
-                  onClick={toggleFlipX}
-                  title="Flip Horizontally"
-                  className={`p-1 px-2 text-xs transition-colors flex items-center gap-1 ${
-                    objectFlipX ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <span className="font-extrabold text-[10px]">⇄</span>
-                  <span className="text-[8px] font-black uppercase">Flip H</span>
-                </button>
-                <button
-                  onClick={toggleFlipY}
-                  title="Flip Vertically"
-                  className={`p-1 px-2 text-xs transition-colors flex items-center gap-1 ${
-                    objectFlipY ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <span className="font-extrabold text-[10px]">⇅</span>
-                  <span className="text-[8px] font-black uppercase">Flip V</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Precise Dimensions (Width / Height) */}
-            {!activeObject.id?.startsWith('barcode') && (
-              <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-md border border-slate-200 text-[10px] font-bold">
-                <span className="text-[8px] font-black text-slate-400 uppercase pl-0.5">Size:</span>
-                <div className="flex items-center gap-0.5">
-                  <span className="text-slate-500 font-bold">W</span>
-                  <input
-                    type="number"
-                    min="1"
-                    max="2000"
-                    value={objectWidth}
-                    onChange={(e) => handleExactWidth(parseInt(e.target.value) || 0)}
-                    className="w-11 text-center p-0.5 border border-slate-250 rounded outline-none font-sans"
-                  />
-                </div>
-                <div className="flex items-center gap-0.5">
-                  <span className="text-slate-500 font-bold">H</span>
-                  <input
-                    type="number"
-                    min="1"
-                    max="2000"
-                    value={objectHeight}
-                    onChange={(e) => handleExactHeight(parseInt(e.target.value) || 0)}
-                    className="w-11 text-center p-0.5 border border-slate-250 rounded outline-none font-sans"
-                  />
-                </div>
-                <span className="text-[8px] text-slate-400 font-bold">px</span>
-              </div>
-            )}
-
-            {/* Center Alignment Buttons (Canvas Alignment) */}
-            <div className="flex border border-slate-200 rounded-md overflow-hidden bg-white">
-              <button
-                onClick={() => {
-                  if (!canvas || !activeObject) return;
-                  canvas.centerObjectH(activeObject);
-                  canvas.requestRenderAll();
-                  canvas.fire("object:modified", { target: activeObject });
-                }}
-                title="Center Horizontally on Canvas"
-                className="p-1 px-2 text-[9px] font-black uppercase tracking-wider text-slate-700 hover:bg-slate-50 border-r border-slate-100"
-              >
-                Center H
-              </button>
-              <button
-                onClick={() => {
-                  if (!canvas || !activeObject) return;
-                  canvas.centerObjectV(activeObject);
-                  canvas.requestRenderAll();
-                  canvas.fire("object:modified", { target: activeObject });
-                }}
-                title="Center Vertically on Canvas"
-                className="p-1 px-2 text-[9px] font-black uppercase tracking-wider text-slate-700 hover:bg-slate-50"
-              >
-                Center V
-              </button>
-            </div>
-
-          </div>
-        )}
 
         {/* Responsive parent container to calculate scale */}
         <div ref={containerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center relative">

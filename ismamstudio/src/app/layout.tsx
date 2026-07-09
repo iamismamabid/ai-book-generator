@@ -134,10 +134,22 @@ export default function RootLayout({
                 })
               }}
             />
-          </ThemeProvider>
+            {/* Google Analytics (gtag.js) */}
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-B08V9NL031"
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-B08V9NL031');
+              `}
+            </Script>
 
-          {/* PartneroJS Tracking Script */}
-          <Script id="partnero-js" strategy="afterInteractive">
+            {/* PartneroJS Tracking Script */}
+            <Script id="partnero-js" strategy="afterInteractive">
             {`
               (function(p,t,n,e,r,o){ p['__partnerObject']=r;function f(){
               var c={ a:arguments,q:[]};var r=this.push(c);return "number"!=typeof r?r:f.bind(c.q);}
@@ -164,6 +176,7 @@ export default function RootLayout({
             `}
           </Script>
           <SpeedInsights />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

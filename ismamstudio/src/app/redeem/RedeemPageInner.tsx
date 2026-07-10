@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, useTransition } from "react";
 import { ArrowLeft, Gift, AlertCircle, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
-import { redeemAppSumoCode } from "../actions";
+import { redeemAppSumoCode, checkPremiumStatus } from "../actions";
 import { useAuth } from "@clerk/nextjs";
 
 interface RedeemPageInnerProps {
@@ -20,10 +20,23 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
   });
   const [redeemedTier, setRedeemedTier] = useState<{ name: string; limits: string[] } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [activePlan, setActivePlan] = useState<{ isPremium: boolean; plan: string; limits?: any } | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (userId) {
+      checkPremiumStatus()
+        .then((res) => {
+          setActivePlan(res);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch premium status:", err);
+        });
+    }
+  }, [userId]);
 
   const getTierDetails = (redeemedCode: string) => {
     const cleanCode = redeemedCode.toUpperCase();
@@ -84,6 +97,14 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
         if (res.success) {
           const tier = getTierDetails(code);
           setRedeemedTier(tier);
+          
+          try {
+            const updatedPlan = await checkPremiumStatus();
+            setActivePlan(updatedPlan);
+          } catch (planErr) {
+            console.error("Failed to refresh plan status:", planErr);
+          }
+
           setStatus({
             type: "success",
             message: "AppSumo Lifetime Deal activated successfully!"
@@ -202,43 +223,67 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleRedeem} className="space-y-6">
-                  {status.type === "error" && (
-                    <div className="flex items-start gap-3 p-4 rounded-2xl border bg-rose-500/10 border-rose-500/20 text-rose-400">
-                      <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                      <p className="text-sm font-medium leading-normal">{status.message}</p>
+                <div className="space-y-6">
+                  {/* Current Active Deal Card */}
+                  {activePlan && activePlan.isPremium && !(activePlan as any).isTrial && (
+                    <div className="p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 space-y-2 text-left">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider">
+                          Current Active Deal
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-black uppercase tracking-wider">
+                          Activated
+                        </span>
+                      </div>
+                      <div className="text-sm font-black text-white">
+                        {planTitles[activePlan.plan] || activePlan.plan}
+                      </div>
+                      {getUpgradeInstruction(activePlan.plan) && (
+                        <p className="text-[11px] font-medium text-slate-400 leading-relaxed mt-1">
+                          {getUpgradeInstruction(activePlan.plan)}
+                        </p>
+                      )}
                     </div>
                   )}
 
-                  <div className="space-y-2">
-                    <label htmlFor="code" className="text-xs font-black uppercase text-slate-400 tracking-wider block">
-                      AppSumo Purchase Code
-                    </label>
-                    <input
-                      id="code"
-                      type="text"
-                      placeholder="e.g. AS-ISMA-T2-C9DSG-8O3LJ"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value)}
-                      disabled={isPending}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isPending}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/15 transition-all text-sm uppercase tracking-wider"
-                  >
-                    {isPending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Activating Deal...
-                      </>
-                    ) : (
-                      "Activate Lifetime Deal"
+                  <form onSubmit={handleRedeem} className="space-y-6">
+                    {status.type === "error" && (
+                      <div className="flex items-start gap-3 p-4 rounded-2xl border bg-rose-500/10 border-rose-500/20 text-rose-400">
+                        <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                        <p className="text-sm font-medium leading-normal">{status.message}</p>
+                      </div>
                     )}
-                  </button>
-                </form>
+
+                    <div className="space-y-2">
+                      <label htmlFor="code" className="text-xs font-black uppercase text-slate-400 tracking-wider block">
+                        AppSumo Purchase Code
+                      </label>
+                      <input
+                        id="code"
+                        type="text"
+                        placeholder="e.g. AS-ISMA-T2-C9DSG-8O3LJ"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        disabled={isPending}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 px-4 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isPending}
+                      className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/15 transition-all text-sm uppercase tracking-wider"
+                    >
+                      {isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Activating Deal...
+                        </>
+                      ) : (
+                        "Activate Lifetime Deal"
+                      )}
+                    </button>
+                  </form>
+                </div>
               )}
             </>
           )}
@@ -247,3 +292,30 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
     </div>
   );
 }
+
+const planTitles: Record<string, string> = {
+  starter: "Lifetime Tier 1: Starter",
+  pro: "Lifetime Tier 2: Pro",
+  agency: "Lifetime Tier 3: Agency",
+  tier4: "Lifetime Tier 4: Pro Plus",
+  tier5: "Lifetime Tier 5: Agency Max",
+};
+
+const getUpgradeInstruction = (rawPlan: string) => {
+  if (rawPlan === "starter") {
+    return "To upgrade your account to Tier 2 (Pro), please purchase another AppSumo code and redeem it below. Tier 2 unlocks unlimited brand profiles, hard Sudoku difficulty, and advanced maze shapes.";
+  }
+  if (rawPlan === "pro") {
+    return "To upgrade your account to Tier 3 (Agency), please purchase another AppSumo code and redeem it below. Tier 3 unlocks multi-user team seats and agency-level limits.";
+  }
+  if (rawPlan === "agency") {
+    return "You have unlocked the maximum recommended stack (Tier 3)! All core features and limits are fully active.";
+  }
+  if (rawPlan === "tier4") {
+    return "To upgrade your account to Tier 5 (Agency Max), please purchase another AppSumo code and redeem it below.";
+  }
+  if (rawPlan === "tier5") {
+    return "You have unlocked the absolute maximum stack (Tier 5)! All limits are fully maximized.";
+  }
+  return "";
+};

@@ -31,6 +31,47 @@ export default async function DashboardPage() {
   };
   const planName = planNames[premiumStatus.plan] || premiumStatus.plan || "Free Tier";
   const isPremium = premiumStatus.isPremium;
+  const tier = premiumStatus.limits?.tier || 0;
+
+  // Stacking guidance hints
+  let upgradeHint = null;
+  if (tier === 0) {
+    upgradeHint = (
+      <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline block mt-0.5">
+        Redeem AppSumo Code →
+      </Link>
+    );
+  } else if (tier === 1) {
+    upgradeHint = (
+      <Link href="/redeem" className="text-[10px] font-bold text-indigo-650 hover:text-indigo-850 underline block mt-0.5 animate-pulse">
+        Stack another code for Tier 2 (Pro) →
+      </Link>
+    );
+  } else if (tier === 2) {
+    upgradeHint = (
+      <Link href="/redeem" className="text-[10px] font-bold text-indigo-650 hover:text-indigo-850 underline block mt-0.5 animate-pulse">
+        Stack another code for Tier 3 (Agency) →
+      </Link>
+    );
+  } else if (tier === 3) {
+    upgradeHint = (
+      <span className="text-[9px] font-bold text-emerald-650 block mt-0.5">
+        Max Tier Unlocked! ✨
+      </span>
+    );
+  } else if (tier === 4) {
+    upgradeHint = (
+      <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline block mt-0.5">
+        Stack another code for Tier 5 (Agency Max) →
+      </Link>
+    );
+  } else {
+    upgradeHint = (
+      <span className="text-[9px] font-bold text-emerald-650 block mt-0.5">
+        Maximum Limits Active! 🚀
+      </span>
+    );
+  }
 
   // ১. ডাটাবেস থেকে ইউজারের সব বই নিয়ে আসা
   let books: any[] = [];
@@ -57,15 +98,13 @@ export default async function DashboardPage() {
           <p className="text-slate-500 font-medium mb-4">Start your writing journey today by creating your first AI book.</p>
           
           {/* Plan badge for empty state */}
-          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-slate-100 shadow-sm mb-8">
-            <span className={`w-2 h-2 rounded-full ${isPremium ? "bg-emerald-500 animate-pulse" : "bg-slate-350"}`} />
-            <span className="text-xs font-bold text-slate-500">Active Plan: </span>
-            <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{planName}</span>
-            {!isPremium && (
-              <Link href="/pricing" className="text-xs font-black text-indigo-600 hover:text-indigo-700 underline ml-1.5">
-                Upgrade
-              </Link>
-            )}
+          <div className="flex flex-col items-center gap-1 px-5 py-2.5 rounded-2xl bg-white border border-slate-100 shadow-sm mb-8">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${isPremium ? "bg-emerald-500 animate-pulse" : "bg-slate-350"}`} />
+              <span className="text-xs font-bold text-slate-500">Active Plan: </span>
+              <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{planName}</span>
+            </div>
+            {upgradeHint}
           </div>
 
           <Link 
@@ -95,12 +134,8 @@ export default async function DashboardPage() {
             <div className="text-left">
               <span className="text-slate-400 font-black block leading-none mb-1 uppercase tracking-wider text-[8px]">Active Plan</span>
               <span className="text-slate-850 font-black uppercase tracking-wide text-xs">{planName}</span>
+              {upgradeHint}
             </div>
-            {!isPremium && (
-              <Link href="/pricing" className="text-xs font-black text-indigo-600 hover:text-indigo-700 underline ml-1">
-                Upgrade
-              </Link>
-            )}
           </div>
 
           <Link 

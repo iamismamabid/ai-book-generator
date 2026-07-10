@@ -39,45 +39,41 @@ export default function RefundPolicyPage() {
 
           <div className="space-y-8 text-slate-350 text-sm font-semibold leading-relaxed">
             <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">1. 7-Day Money-Back Guarantee</h2>
+              <h2 className="text-xl font-black text-white">1. Refund & Cancellation Policy</h2>
               <p>
-                We believe in the quality of **Ismam Studio** and want you to be fully satisfied. We support a **7-day money-back guarantee** for all new subscriptions. If our tool does not fit your book publishing workflow, you can request a full refund within 7 days of your initial purchase.
+                We stand behind the quality of our Creator Studio and want you to feel confident in your purchase. To protect both our users and our platform, we offer a **7-day conditional money-back guarantee** based on fair use.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">2. Eligibility for Refunds</h2>
-              <p>To request a refund, please ensure:</p>
-              <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
-                <li>Your request is made within exactly 7 days of the subscription payment date.</li>
-                <li>This is your first time subscribing to the Platform. Repeat subscriptions are not eligible for the 7-day refund guarantee.</li>
+              <h2 className="text-xl font-black text-white">2. Eligibility for Refund</h2>
+              <p>
+                You are eligible for a full refund within **7 days** of your initial subscription purchase, provided you have downloaded or exported **fewer than 5 complete puzzle books, interiors, or manuscript PDFs**.
+              </p>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-black text-white">3. When Refunds Are Not Applicable</h2>
+              <ul className="space-y-4">
+                <li>
+                  <strong className="text-white block mb-1">A. Usage Limit Exceeded</strong>
+                  If you have successfully generated and downloaded **5 or more complete books or manuscripts**, you are no longer eligible for a refund. Generating and exporting this volume of print-ready assets indicates that the core commercial value of the platform has been utilized.
+                </li>
+                <li>
+                  <strong className="text-white block mb-1">B. Subscription Renewals</strong>
+                  The 7-day guarantee applies only to your first, initial purchase. Subsequent monthly or annual subscription renewals are non-refundable.
+                </li>
+                <li>
+                  <strong className="text-white block mb-1">C. Third-Party Marketplaces</strong>
+                  If you purchased a lifetime deal or subscription through a third-party partner (e.g., AppSumo), your purchase is governed entirely by that specific platform’s refund policy (e.g., the standard 60-day AppSumo guarantee). Please process those specific refunds directly through their respective user portals.
+                </li>
               </ul>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">3. How to Request a Refund</h2>
+              <h2 className="text-xl font-black text-white">4. How to Request a Refund</h2>
               <p>
-                To request a refund, please send an email to **support@ismamstudio.me** with the subject "Refund Request - [Your Account Email]". Please include your transaction receipt or invoice ID. 
-              </p>
-              <p>
-                Our billing team will review your request and process eligible refunds within 3–5 business days. Once processed, the funds will be returned to your original payment method.
-              </p>
-            </section>
-
-            <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">4. AppSumo Lifetime Deals (LTD)</h2>
-              <p>
-                For lifetime deal licenses purchased through AppSumo, **AppSumo's standard 60-day money-back guarantee** applies instead of our standard 7-day recurring subscription policy. 
-              </p>
-              <p>
-                All refund requests for AppSumo promotional licenses must be initiated and processed directly through your AppSumo customer portal. Ismam Studio support staff cannot process, issue, or adjust refunds for checkout transactions processed externally by AppSumo.
-              </p>
-            </section>
-
-            <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">5. Abuse and Fair Play</h2>
-              <p>
-                We monitor refund requests to prevent abuse. If we detect that a user is downloading massive quantities of high-resolution PDF interiors and requesting refunds repeatedly, we reserve the right to deny the request and terminate the account.
+                If you meet the criteria above and wish to request a refund, please contact our support team at **support@ismamstudio.me** within 7 days of your original transaction.
               </p>
             </section>
           </div>

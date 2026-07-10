@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
-import { deleteBook } from "../actions";
+import { checkPremiumStatus, deleteBook } from "../actions";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -19,6 +19,19 @@ export default async function DashboardPage() {
   console.log("Database URL Check:", process.env.DATABASE_URL); 
   console.log("----------------------------------------");
 
+  // Fetch Premium / AppSumo status
+  const premiumStatus = await checkPremiumStatus();
+  const planNames: Record<string, string> = {
+    free: "Free Tier",
+    starter: "Lifetime Tier 1: Starter",
+    pro: "Lifetime Tier 2: Pro",
+    agency: "Lifetime Tier 3: Agency",
+    tier4: "Lifetime Tier 4: Pro Plus",
+    tier5: "Lifetime Tier 5: Agency Max",
+  };
+  const planName = planNames[premiumStatus.plan] || premiumStatus.plan || "Free Tier";
+  const isPremium = premiumStatus.isPremium;
+
   // ১. ডাটাবেস থেকে ইউজারের সব বই নিয়ে আসা
   let books: any[] = [];
   try {
@@ -34,14 +47,27 @@ export default async function DashboardPage() {
   if (books.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-6 pt-32">
-        <div className="flex flex-col items-center justify-center py-32 bg-white/40 backdrop-blur-md rounded-[3rem] border-2 border-dashed border-slate-200">
+        <div className="flex flex-col items-center justify-center py-24 bg-white/40 backdrop-blur-md rounded-[3rem] border-2 border-dashed border-slate-200">
           <div className="w-24 h-24 bg-indigo-50 rounded-full mb-6 flex items-center justify-center">
             <svg className="w-12 h-12 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.168.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.132.477-4.5 1.253" />
             </svg>
           </div>
           <h2 className="text-2xl font-black text-slate-900 mb-2">Your library is empty</h2>
-          <p className="text-slate-500 font-medium mb-8">Start your writing journey today by creating your first AI book.</p>
+          <p className="text-slate-500 font-medium mb-4">Start your writing journey today by creating your first AI book.</p>
+          
+          {/* Plan badge for empty state */}
+          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-slate-100 shadow-sm mb-8">
+            <span className={`w-2 h-2 rounded-full ${isPremium ? "bg-emerald-500 animate-pulse" : "bg-slate-350"}`} />
+            <span className="text-xs font-bold text-slate-500">Active Plan: </span>
+            <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{planName}</span>
+            {!isPremium && (
+              <Link href="/pricing" className="text-xs font-black text-indigo-600 hover:text-indigo-700 underline ml-1.5">
+                Upgrade
+              </Link>
+            )}
+          </div>
+
           <Link 
             href="/generate" 
             className="bg-indigo-600 text-white px-10 py-4 rounded-full font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1 active:scale-95"
@@ -56,18 +82,35 @@ export default async function DashboardPage() {
   // ৩. Main Dashboard: যদি বই থাকে
   return (
     <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-16">
         <div>
           <h1 className="text-5xl font-black text-slate-900 tracking-tight mb-2">My Library</h1>
           <p className="text-slate-500 font-medium text-lg">You have {books.length} masterpieces in your collection</p>
         </div>
-        <Link 
-          href="/generate" 
-          className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
-          New Book
-        </Link>
+        
+        {/* Actions & Plan badge */}
+        <div className="flex items-center flex-wrap gap-4">
+          <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-white border border-slate-100 shadow-sm">
+            <span className={`w-2 h-2 rounded-full ${isPremium ? "bg-emerald-500 animate-pulse" : "bg-slate-350"}`} />
+            <div className="text-left">
+              <span className="text-slate-400 font-black block leading-none mb-1 uppercase tracking-wider text-[8px]">Active Plan</span>
+              <span className="text-slate-850 font-black uppercase tracking-wide text-xs">{planName}</span>
+            </div>
+            {!isPremium && (
+              <Link href="/pricing" className="text-xs font-black text-indigo-600 hover:text-indigo-700 underline ml-1">
+                Upgrade
+              </Link>
+            )}
+          </div>
+
+          <Link 
+            href="/generate" 
+            className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+            New Book
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">

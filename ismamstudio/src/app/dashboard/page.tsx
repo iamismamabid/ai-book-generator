@@ -98,11 +98,16 @@ export default async function DashboardPage() {
           <p className="text-slate-500 font-medium mb-4">Start your writing journey today by creating your first AI book.</p>
           
           {/* Plan badge for empty state */}
-          <div className="flex flex-col items-center gap-1 px-5 py-2.5 rounded-2xl bg-white border border-slate-100 shadow-sm mb-8">
+          <div className="flex flex-col items-center gap-1.5 px-6 py-3.5 rounded-3xl bg-white border border-slate-100 shadow-sm mb-8">
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${isPremium ? "bg-emerald-500 animate-pulse" : "bg-slate-350"}`} />
-              <span className="text-xs font-bold text-slate-500">Active Plan: </span>
-              <span className="text-xs font-black text-slate-800 uppercase tracking-wider">{planName}</span>
+              <span className="text-xs font-bold text-slate-500">Account Status: </span>
+              <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${isPremium ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                {isPremium ? "Activated" : "Free"}
+              </span>
+            </div>
+            <div className="text-xs font-semibold text-slate-500">
+              Active Plan: <span className="font-black text-slate-800 uppercase tracking-wide">{planName}</span>
             </div>
             {upgradeHint}
           </div>
@@ -129,10 +134,15 @@ export default async function DashboardPage() {
         
         {/* Actions & Plan badge */}
         <div className="flex items-center flex-wrap gap-4">
-          <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-white border border-slate-100 shadow-sm">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white border border-slate-100 shadow-sm">
             <span className={`w-2 h-2 rounded-full ${isPremium ? "bg-emerald-500 animate-pulse" : "bg-slate-350"}`} />
             <div className="text-left">
-              <span className="text-slate-400 font-black block leading-none mb-1 uppercase tracking-wider text-[8px]">Active Plan</span>
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-slate-400 font-black uppercase tracking-wider text-[8px] leading-none">Account Status:</span>
+                <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border leading-none ${isPremium ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                  {isPremium ? "Activated" : "Free"}
+                </span>
+              </div>
               <span className="text-slate-850 font-black uppercase tracking-wide text-xs">{planName}</span>
               {upgradeHint}
             </div>

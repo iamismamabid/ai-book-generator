@@ -371,11 +371,11 @@ function PricingSectionInner() {
     },
     {
       q: "How does the AppSumo deal work? Is there a monthly subscription?",
-      a: "By purchasing the AppSumo Lifetime Deal (LTD), you pay a one-time fee with absolutely no recurring charges or monthly subscription costs. You get lifetime access to all core generators, editors, and future updates. AppSumo buyers are covered by AppSumo's standard 60-day money-back guarantee, which overrides our standard 30-day SaaS refund policy for these promotional licenses.",
+      a: "By purchasing the AppSumo Lifetime Deal (LTD), you pay a one-time fee with absolutely no recurring charges or monthly subscription costs. You get lifetime access to all core generators, editors, and future updates. AppSumo buyers are covered by AppSumo's standard 60-day money-back guarantee, which overrides our standard 7-day SaaS refund policy for these promotional licenses.",
     },
     {
       q: "Is there a money-back guarantee?",
-      a: "Yes, we support a 30-day money-back guarantee for all direct recurring monthly/annual subscription plans. For AppSumo lifetime deal buyers, the refund window is extended to AppSumo's standard 60-day refund policy, managed directly through your AppSumo billing dashboard.",
+      a: "Yes, we support a 7-day money-back guarantee for all direct recurring monthly/annual subscription plans. For AppSumo lifetime deal buyers, the refund window is extended to AppSumo's standard 60-day refund policy, managed directly through your AppSumo billing dashboard.",
     },
     {
       q: "Do the puzzle books include solution keys?",
@@ -683,7 +683,7 @@ function PricingSectionInner() {
           <div>
             <h4 className="text-white font-black text-base mb-1">Reconciled Guarantee</h4>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-              30-day SaaS guarantee / 60-day AppSumo money-back policy for complete confidence.
+              7-day SaaS guarantee / 60-day AppSumo money-back policy for complete confidence.
             </p>
           </div>
         </div>

@@ -64,7 +64,7 @@ export default function FAQPage() {
         "name": "How does the AppSumo deal work? Is there a monthly subscription?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "By purchasing the AppSumo Lifetime Deal (LTD), you pay a one-time fee with absolutely no recurring charges or monthly subscription costs. You get lifetime access to all core generators, editors, and future updates. AppSumo buyers are covered by AppSumo's standard 60-day money-back guarantee, which overrides our standard 30-day SaaS refund policy for these promotional licenses."
+          "text": "By purchasing the AppSumo Lifetime Deal (LTD), you pay a one-time fee with absolutely no recurring charges or monthly subscription costs. You get lifetime access to all core generators, editors, and future updates. AppSumo buyers are covered by AppSumo's standard 60-day money-back guarantee, which overrides our standard 7-day SaaS refund policy for these promotional licenses."
         }
       }
     ]

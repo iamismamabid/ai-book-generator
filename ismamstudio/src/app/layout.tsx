@@ -135,10 +135,7 @@ export default function RootLayout({
                       "name": "Ismam Studio",
                       "url": "https://www.ismamstudio.me",
                       "logo": "https://www.ismamstudio.me/logo.png",
-                      "email": "support@ismamstudio.me",
-                      "sameAs": [
-                        "https://www.producthunt.com/products/ismam-studio"
-                      ]
+                      "email": "support@ismamstudio.me"
                     }
                   ]
                 })

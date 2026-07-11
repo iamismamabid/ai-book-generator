@@ -104,29 +104,6 @@ export default async function BlogPostPage({ params }: Props) {
             })}
           </div>
 
-          {/* Product Hunt Launch Card */}
-          <div className="border border-slate-800 rounded-2xl p-6 bg-white shadow-md mt-12 text-slate-900 max-w-lg">
-            <div className="flex items-center gap-4 mb-4">
-              <img 
-                alt="IsmamStudio Logo" 
-                src="https://ph-files.imgix.net/86d2b216-a589-494f-a277-fb45cfeb325c.png?auto=compress,format&codec=mozjpeg&cs=strip&fit=crop&h=80&w=80" 
-                className="w-16 h-16 rounded-lg object-cover shrink-0"
-              />
-              <div className="min-w-0">
-                <h3 className="margin-0 text-lg font-bold text-slate-900 leading-snug">IsmamStudio</h3>
-                <p className="margin-1 text-sm text-slate-500 leading-normal line-clamp-2">All-in-one AI toolkit for Amazon KDP self-publishers.</p>
-              </div>
-            </div>
-            <a 
-              href="https://www.producthunt.com/products/ismam-studio?embed=true&utm_source=embed&utm_medium=post_embed" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#ff6154] text-white hover:bg-[#e05246] rounded-lg text-sm font-semibold transition-colors"
-            >
-              Check it out on Product Hunt →
-            </a>
-          </div>
-
           {/* Footer Call-To-Action inside the article */}
           <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400 text-xs font-semibold">

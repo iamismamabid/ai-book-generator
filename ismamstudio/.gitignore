@@ -41,3 +41,7 @@ yarn-error.log*
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# AppSumo secret code files
+/appsumo_codes.txt
+/codes.txt

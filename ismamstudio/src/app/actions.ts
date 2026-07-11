@@ -179,19 +179,25 @@ export async function redeemAppSumoCode(code: string) {
     const user = await currentUser();
     const email = user?.emailAddresses[0]?.emailAddress || "";
 
-    if (!code || code.trim().length < 3) {
+    const cleanCode = code.trim();
+    if (!cleanCode || cleanCode.length < 3) {
       return { success: false, error: "Invalid code length." };
     }
 
-    // কোডটি ইতিমধ্যে ব্যবহার করা হয়েছে কিনা চেক করা
-    const existingCode = await prisma.appSumoRedemption.findFirst({
-      where: { code: code.trim() }
+    // ১. চেক করা কোডটি ভ্যালিড কোডের তালিকায় আছে কিনা
+    const validCode = await prisma.appSumoValidCode.findUnique({
+      where: { code: cleanCode }
     });
-    if (existingCode) {
+
+    if (!validCode) {
+      return { success: false, error: "This is not a valid AppSumo code. Please verify your code." };
+    }
+
+    if (validCode.isRedeemed) {
       return { success: false, error: "This AppSumo code has already been redeemed." };
     }
 
-    // এই ব্যবহারকারী ইতিমধ্যে কয়টি কোড রিডিম করেছেন তা চেক করা
+    // ২. এই ব্যবহারকারী ইতিমধ্যে কয়টি কোড রিডিম করেছেন তা চেক করা
     const existingRedemptions = await prisma.appSumoRedemption.count({
       where: { clerkId: userId }
     });
@@ -199,14 +205,23 @@ export async function redeemAppSumoCode(code: string) {
       return { success: false, error: "You have already stacked the maximum of 5 codes for this account." };
     }
 
-    // ডেটাবেজে রিডেম্পশন সেভ করা
-    await prisma.appSumoRedemption.create({
-      data: {
-        clerkId: userId,
-        email: email,
-        code: code.trim()
-      }
-    });
+    // ৩. ট্রানজেকশন এর মাধ্যমে রিডেম্পশন সেভ করা এবং ভ্যালিড কোডটি 'Redeemed' হিসেবে মার্ক করা
+    await prisma.$transaction([
+      prisma.appSumoRedemption.create({
+        data: {
+          clerkId: userId,
+          email: email,
+          code: cleanCode
+        }
+      }),
+      prisma.appSumoValidCode.update({
+        where: { code: cleanCode },
+        data: {
+          isRedeemed: true,
+          redeemedAt: new Date()
+        }
+      })
+    ]);
 
     revalidatePath("/dashboard");
     return { success: true };

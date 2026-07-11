@@ -57,3 +57,13 @@ model AppSumoRedemption {
 
   @@map("appsumo_redemptions")
 }
+
+model AppSumoValidCode {
+  id         String    @id @default(uuid())
+  code       String    @unique
+  isRedeemed Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  redeemedAt DateTime?
+
+  @@map("appsumo_valid_codes")
+}

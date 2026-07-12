@@ -65,7 +65,8 @@ export default function ExportButton({ title = "My Book", content = "No content 
     }
     firstPageAdded = true;
 
-    // Optional safe margins guides
+    // Optional safe margins guides (Disabled to keep final PDF clean)
+    /*
     if (showGuides) {
       doc.setDrawColor(244, 63, 94);
       doc.setLineDashPattern([0.1, 0.05], 0);
@@ -73,6 +74,7 @@ export default function ExportButton({ title = "My Book", content = "No content 
       doc.rect(marginL, marginT, contentW, contentH);
       doc.setLineDashPattern([], 0);
     }
+    */
 
     // Draw Title Page
     doc.setFont("helvetica", "bold");
@@ -111,7 +113,8 @@ export default function ExportButton({ title = "My Book", content = "No content 
         pageNum++;
       }
 
-      // Draw guides
+      // Draw guides (Disabled to keep final PDF clean)
+      /*
       if (showGuides) {
         doc.setDrawColor(244, 63, 94);
         doc.setLineDashPattern([0.1, 0.05], 0);
@@ -119,6 +122,7 @@ export default function ExportButton({ title = "My Book", content = "No content 
         doc.rect(marginL, marginT, contentW, contentH);
         doc.setLineDashPattern([], 0);
       }
+      */
 
       // Draw lines for current page
       doc.setFont("times", "normal");

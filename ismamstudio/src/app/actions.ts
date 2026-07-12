@@ -179,6 +179,21 @@ export async function updateChapter(chapterId: string, newContent: string) {
   return { success: true };
 }
 
+// 🎯 ৪.২. বইয়ের টাইটেল ও সাবটাইটেল আপডেট করার ফাংশন
+export async function updateBookTitleAndSubtitle(bookId: string, title: string, subtitle: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  await prisma.book.update({
+    where: { id: bookId },
+    data: { title, subtitle },
+  });
+
+  revalidatePath(`/book/${bookId}`);
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
 // 🎯 ৫. স্ট্রিমিং শেষে বই সেভ করার ফাংশন
 export async function saveBookToDB(title: string, content: string) {
   const { userId } = await auth();

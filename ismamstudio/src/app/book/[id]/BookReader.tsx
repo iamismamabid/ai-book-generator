@@ -7,6 +7,7 @@ import ExportButton from "@/components/ExportButton";
 import { SudokuGenerator } from "@/components/SudokuGenerator";
 import ChapterButton from "./ChapterButton";
 import EditableChapter from "./EditableChapter";
+import { updateBookTitleAndSubtitle } from "../../actions";
 
 interface Chapter {
   id: string;
@@ -18,6 +19,7 @@ interface Chapter {
 interface Book {
   id: string;
   title: string;
+  subtitle?: string | null;
   content: string;
   chapters: Chapter[];
 }
@@ -33,6 +35,19 @@ export default function BookReader({ book, pages }: BookReaderProps) {
   const [fontFamily, setFontFamily] = useState<"serif" | "sans">("serif");
   const [fontSize, setFontSize] = useState<"sm" | "md" | "lg">("md");
   const [isTocOpen, setIsTocOpen] = useState(true);
+
+  // Title & Subtitle editing states
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(book.title);
+  const [editedSubtitle, setEditedSubtitle] = useState(book.subtitle || "An AI Generated Journey");
+  const [isSavingTitle, setIsSavingTitle] = useState(false);
+
+  const handleSaveTitle = async () => {
+    setIsSavingTitle(true);
+    await updateBookTitleAndSubtitle(book.id, editedTitle, editedSubtitle);
+    setIsEditingTitle(false);
+    setIsSavingTitle(false);
+  };
 
   const fullContent = [
     book.content,
@@ -173,7 +188,7 @@ export default function BookReader({ book, pages }: BookReaderProps) {
 
         {/* Global Export Buttons */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-          <ExportButton title={book.title} content={book.content} chapters={book.chapters} />
+          <ExportButton title={editedTitle} subtitle={editedSubtitle} content={book.content} chapters={book.chapters} />
           <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full font-sans font-bold text-xs flex items-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-95">
             <CreditCard className="w-4 h-4" /> Publish & Sell
           </button>
@@ -233,14 +248,67 @@ export default function BookReader({ book, pages }: BookReaderProps) {
           {/* 1. Title Page Section */}
           <section
             id="title-page"
-            className={`relative min-h-[1100px] w-full pb-28 rounded-sm flex flex-col items-center justify-center p-20 text-center border-l-[12px] border-indigo-600 transition-colors duration-300 ${themeClassMap[theme]}`}
+            className={`relative min-h-[1100px] w-full pb-28 rounded-sm flex flex-col items-center justify-center p-20 text-center border-l-[12px] border-indigo-600 transition-colors duration-300 group ${themeClassMap[theme]}`}
           >
             {/* Book Crease Shadow (Right Side) */}
             <div className="absolute top-0 bottom-0 right-0 w-[30px] bg-gradient-to-l from-black/[0.06] dark:from-black/30 via-black/[0.01] to-transparent pointer-events-none z-10" />
 
-            <h1 className="text-5xl font-black mb-6 leading-tight font-serif">{book.title}</h1>
-            <div className="w-20 h-1 bg-indigo-600 mb-6 mx-auto"></div>
-            <p className="text-base text-slate-500 font-sans tracking-widest uppercase">An AI Generated Journey</p>
+            {isEditingTitle ? (
+              <div className="w-full max-w-lg space-y-5 z-20 font-sans">
+                <div className="text-left">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Book Title</label>
+                  <input
+                    type="text"
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    className="w-full mt-1.5 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white font-serif text-xl focus:border-indigo-500 outline-none transition"
+                  />
+                </div>
+                <div className="text-left">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Subtitle / Tagline</label>
+                  <input
+                    type="text"
+                    value={editedSubtitle}
+                    onChange={(e) => setEditedSubtitle(e.target.value)}
+                    className="w-full mt-1.5 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-sm focus:border-indigo-500 outline-none transition"
+                  />
+                </div>
+                <div className="flex gap-3 justify-center pt-2">
+                  <button
+                    onClick={handleSaveTitle}
+                    disabled={isSavingTitle}
+                    className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition"
+                  >
+                    {isSavingTitle ? "Saving..." : "Save Title"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditingTitle(false);
+                      setEditedTitle(book.title);
+                      setEditedSubtitle(book.subtitle || "An AI Generated Journey");
+                    }}
+                    className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsEditingTitle(true)}
+                  className="absolute right-6 top-6 opacity-0 group-hover:opacity-100 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 p-3 rounded-xl shadow-lg hover:text-indigo-600 transition-all z-20 pointer-events-auto"
+                  title="Edit Title & Subtitle"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+                <h1 className="text-5xl font-black mb-6 leading-tight font-serif">{editedTitle}</h1>
+                <div className="w-20 h-1 bg-indigo-600 mb-6 mx-auto"></div>
+                <p className="text-base text-slate-500 font-sans tracking-widest uppercase">{editedSubtitle}</p>
+              </>
+            )}
           </section>
 
           {/* 2. Introduction Pages Section */}

@@ -20,6 +20,7 @@ export default async function ProfessionalBookPage({ params }: { params: Promise
   const displayBook = book ?? {
     id,
     title: "The AI Generation Journey",
+    subtitle: "An AI Generated Journey",
     content: "This is a placeholder book because the database record was not found. ".repeat(150),
     chapters: []
   };

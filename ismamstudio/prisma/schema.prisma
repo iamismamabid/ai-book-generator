@@ -29,6 +29,7 @@ model Book {
   id        String    @id @default(uuid())
   userId    String
   title     String
+  subtitle  String?   @default("An AI Generated Journey")
   content   String
   chapters  Chapter[] 
   createdAt DateTime  @default(now())

@@ -15,12 +15,14 @@ interface Chapter {
 
 interface ExportButtonProps {
   title?: string;
+  subtitle?: string;
   content?: string; // Book Blurb / Intro
   chapters?: Chapter[];
 }
 
 export default function ExportButton({
   title = "My Book",
+  subtitle = "An AI Generated Journey",
   content = "No content available.",
   chapters = [],
 }: ExportButtonProps) {
@@ -191,7 +193,8 @@ export default function ExportButton({
     doc.setFont("times", "italic");
     doc.setFontSize(14);
     doc.setTextColor(100, 116, 139); // slate-500
-    doc.text("An AI Generated Masterpiece", titleMarginL + titleContentW / 2, pageH * 0.46, { align: "center" });
+    const subtitleLines = doc.splitTextToSize(subtitle, titleContentW);
+    doc.text(subtitleLines, titleMarginL + titleContentW / 2, pageH * 0.46, { align: "center" });
 
     if (isPremium === false) {
       drawWatermark(doc, pageW, pageH);

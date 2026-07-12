@@ -438,6 +438,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
               { type: 'word_scramble', config: {}, label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
               { type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
               { type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
+              { type: 'math_puzzle', config: { puzzleType: 'number_fill' }, label: 'Kakuro (Sums Grid)', desc: 'Diagonal cross-sum addition logic', icon: '🔢', color: 'bg-orange-50 border-orange-200 text-orange-600' },
               
               // Low-Content journal/planner templates
               { type: 'low_content', config: { template: 'lined_journal' }, label: 'Lined Journal', desc: 'Horizontal writing lines', icon: '📖', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
@@ -759,7 +760,13 @@ function SortablePageItem({
         <div className="flex flex-col">
           <span className="text-xs font-black">Page {index + 1}</span>
           <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider mt-0.5">
-            {page.type.replace('_', ' ')} {isSol && <span className="text-indigo-600 font-extrabold">(SOL)</span>}
+            {page.type === 'math_puzzle' 
+              ? (page.config?.puzzleType === 'number_fill' 
+                  ? 'Kakuro Sums' 
+                  : page.config?.puzzleType === 'multiplication' 
+                    ? 'Multiplication' 
+                    : 'Math Puzzle')
+              : page.type.replace('_', ' ')} {isSol && <span className="text-indigo-600 font-extrabold">(SOL)</span>}
           </span>
         </div>
       </div>

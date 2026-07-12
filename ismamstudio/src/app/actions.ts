@@ -112,12 +112,38 @@ export async function generateNextChapter(bookId: string, outline: string, title
 
   const nextOrder = currentChapterCount + 1;
 
-  const prompt = `You are a professional author writing a book titled "${title}".
-  The book outline is: ${outline}.
+  // ১.১. মেমোরির জন্য পূর্ববর্তী চ্যাপ্টারের তথ্য রিট্রিভ করা
+  let previousChapterText = "";
+  if (nextOrder > 1) {
+    const prevChapter = await prisma.chapter.findFirst({
+      where: { bookId: bookId, order: nextOrder - 1 }
+    });
+    if (prevChapter) {
+      previousChapterText = prevChapter.content;
+    }
+  }
+
+  let prompt = `You are a professional author writing a book titled "${title}".
+  The book outline and plan is:
+  ${outline}
   
   Your task: Write Chapter ${nextOrder} of this book. 
-  Ensure the story flows naturally from previous events. 
-  Write only the chapter content in a creative and engaging style.`;
+  Ensure the story flows naturally from previous events.`;
+
+  if (previousChapterText) {
+    prompt += `
+  
+  To maintain narrative consistency and style memory, here is the full text of the preceding chapter (Chapter ${nextOrder - 1}):
+  ---
+  ${previousChapterText}
+  ---
+  
+  Ensure your new Chapter ${nextOrder} continues the exact character arcs, unresolved plot points, and writing style of the preceding chapter. Do not repeat the events of Chapter ${nextOrder - 1}, but start Chapter ${nextOrder} directly following them.`;
+  }
+
+  prompt += `
+  
+  Write only the chapter content in a creative, engaging, and publish-ready style. Do not add introductions, titles, or metadata. Write only the story text itself.`;
 
   const completion = await groq.chat.completions.create({
     messages: [{ role: "user", content: prompt }],

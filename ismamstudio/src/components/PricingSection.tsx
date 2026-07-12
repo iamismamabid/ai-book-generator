@@ -556,9 +556,9 @@ function PricingSectionInner() {
           Limited Time Launch Offer
         </div>
 
-        <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">
+        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">
           Simple, <span className="bg-gradient-to-r from-amber-300 via-rose-400 to-sky-300 bg-clip-text text-transparent">Value-Packed</span> Pricing
-        </h2>
+        </h1>
         <p className="text-slate-400 text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed">
           Create profitable books with ease. Choose a plan that matches your publishing scale.
         </p>

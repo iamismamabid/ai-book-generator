@@ -4,6 +4,9 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Free KDP Spine Calculator & Cover Dimensions Generator | Ismam Studio",
   description: "Calculate your book's spine thickness and full cover dimensions with bleed margins for Amazon KDP printing. 100% free specification calculator.",
+  alternates: {
+    canonical: "https://www.ismamstudio.me/tools/spine-calculator",
+  },
   keywords: [
     "kdp spine calculator", 
     "free kdp calculator", 

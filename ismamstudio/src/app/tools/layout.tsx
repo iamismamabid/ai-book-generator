@@ -3,6 +3,9 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "100% Free KDP Publishing Tools & Generators | Ismam Studio",
   description: "Free tools for Amazon KDP publishers. Calculate spine sizes, format book descriptions in HTML, generate puzzle interiors, valid EPUB formatting, and estimate royalties.",
+  alternates: {
+    canonical: "https://www.ismamstudio.me/tools",
+  },
   keywords: [
     "free kdp tools",
     "kdp book builder",

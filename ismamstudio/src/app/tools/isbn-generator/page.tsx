@@ -4,6 +4,9 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Free ISBN Barcode Generator for Book Covers | Ismam Studio",
   description: "Create print-ready ISBN-13 barcodes for your book's back cover. 300 DPI export, EAN-5 price supplement codes, and check digit validation. 100% free tool.",
+  alternates: {
+    canonical: "https://www.ismamstudio.me/tools/isbn-generator",
+  },
   keywords: [
     "isbn barcode generator",
     "free isbn generator",

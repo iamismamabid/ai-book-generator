@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CreditCard, BookOpen, Settings, Type, Layout, Menu, ChevronLeft, ChevronRight } from "lucide-react";
 import ExportButton from "@/components/ExportButton";
-import { SudokuGenerator } from "@/components/SudokuGenerator";
+
 import ChapterButton from "./ChapterButton";
 import EditableChapter from "./EditableChapter";
 import { updateBookTitleAndSubtitle } from "../../actions";
@@ -378,10 +378,7 @@ export default function BookReader({ book, pages }: BookReaderProps) {
             />
           </div>
 
-          {/* 6. Puzzles Integration */}
-          <div className="print:hidden mt-16 w-full font-sans">
-            <SudokuGenerator />
-          </div>
+
         </div>
       </div>
     </div>

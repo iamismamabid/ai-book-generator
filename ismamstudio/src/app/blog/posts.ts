@@ -272,7 +272,9 @@ export const BLOG_POSTS: Post[] = [
       "### Formatting black and white grids",
       "Since KDP print costs are much lower for black and white ink, design your Kakuro grids using high-contrast slate borders and clean white boxes. Avoid heavy solid black fills to prevent ink bleed and smudging on standard KDP cream paper.",
       "### Target keywords for Kakuro",
-      "Use backend keywords: 'kakuro cross sums', 'math logic puzzles for adults', and 'japanese number games.' This ensures your books surface when users search for non-Sudoku logic puzzles."
+      "Use backend keywords: 'kakuro cross sums', 'math logic puzzles for adults', and 'japanese number games.' This ensures your books surface when users search for non-Sudoku logic puzzles.",
+      "### Start creating your number logic book",
+      "Ismam Studio's Math Puzzle Studio is the best starting point for building number-based puzzle books. It handles grid logic and number constraints automatically. Try it free at ismamstudio.me/studio/math-puzzle."
     ]
   },
   {
@@ -289,7 +291,9 @@ export const BLOG_POSTS: Post[] = [
       "### Grid legibility for print",
       "Nonograms use small grid squares (often 20x20 or 30x30). To keep the grid readable: \n- Use bold lines to separate every 5x5 block of squares.\n- Keep the numbers along the columns and rows aligned in a clean, legible font.\n- Print only one nonogram per page on a standard 8.5\" x 11\" sheet.",
       "### Capturing nonogram keywords",
-      "Optimize your KDP metadata with terms like: 'japanese picture puzzles', 'griddlers logic book', and 'nonograms paint by numbers.' This drives high-intent buyers straight to your book."
+      "Optimize your KDP metadata with terms like: 'japanese picture puzzles', 'griddlers logic book', and 'nonograms paint by numbers.' This drives high-intent buyers straight to your book.",
+      "### Build your puzzle book today",
+      "While you design your nonogram grids manually or with a specialist tool, Ismam Studio helps you format, export to KDP-compliant PDF, and publish your completed book in minutes. Start for free at ismamstudio.me/studio."
     ]
   },
   {
@@ -306,7 +310,9 @@ export const BLOG_POSTS: Post[] = [
       "### Compliance and line drawing contrast",
       "Ensure all dot numbers are printed in a clean, highly legible font. The dots themselves must be thick and dark. Keep the final lines of the completed drawing invisible or very faint so the player gets the satisfaction of revealing the hidden image.",
       "### Keywords for dot-to-dot books",
-      "Use backend keywords: 'connect the dots for kids', 'extreme dot to dot for adults', and 'counting games for kindergarten.' This helps your activity sheets rank organically in multiple educational sub-categories."
+      "Use backend keywords: 'connect the dots for kids', 'extreme dot to dot for adults', and 'counting games for kindergarten.' This helps your activity sheets rank organically in multiple educational sub-categories.",
+      "### From concept to published book",
+      "Once your dot-to-dot pages are designed, use Ismam Studio's Maze Studio to export structured, KDP-ready activity pages. Our free publishing tools handle the formatting so you can focus on creating. Get started at ismamstudio.me/maze."
     ]
   }
 ];

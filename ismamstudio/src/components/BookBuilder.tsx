@@ -10,6 +10,7 @@ import { MazeEditor } from "./MazeEditor";
 import { WordScrambleEditor } from "./WordScrambleEditor";
 import { CryptogramEditor } from "./CryptogramEditor";
 import { MathPuzzleEditor } from "./MathPuzzleEditor";
+import { KakuroEditor } from "./KakuroEditor";
 import LowContentEditor from "./LowContentEditor";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
 import { useBookValidation } from "@/hooks/useBookValidation";
@@ -171,7 +172,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     const newSolPages: any[] = [];
     bookPages.forEach((page) => {
       // Check if it's a puzzle and not already a solution page
-      if (['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle'].includes(page.type) && !page.config.isSolution) {
+      if (['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle', 'kakuro'].includes(page.type) && !page.config.isSolution) {
         newSolPages.push({
           id: Date.now() + Math.random(),
           type: page.type,
@@ -317,6 +318,12 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
             )}
             {bookPages[activeIndex].type === 'math_puzzle' && (
               <MathPuzzleEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+              />
+            )}
+            {bookPages[activeIndex].type === 'kakuro' && (
+              <KakuroEditor
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />

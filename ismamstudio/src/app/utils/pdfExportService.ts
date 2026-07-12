@@ -62,6 +62,8 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       drawWordSearch(doc, page, leftMarginShift, w);
     } else if (page.type === 'sudoku' && page.config.gridData) {
       drawSudoku(doc, page, leftMarginShift, w);
+    } else if (page.type === 'kakuro' && page.config.gridData) {
+      drawKakuro(doc, page, leftMarginShift, w);
     } else if (page.type === 'maze' && page.config.gridData) {
       drawMaze(doc, page, leftMarginShift, w);
     } else if (page.type === 'word_scramble' && page.config.scrambledData) {
@@ -360,6 +362,109 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number) => {
     // Horizontal lines
     doc.line(startX, startY + i * cellSize, startX + gridWidth, startY + i * cellSize);
   }
+
+  // Reset text color
+  doc.setTextColor(0);
+};
+
+// Helper: Draw Kakuro Grid
+const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
+  const puzzle = page.config.gridData;
+  if (!puzzle) return;
+  const { grid, rows, cols } = puzzle;
+  const isSolution = page.config.isSolution || false;
+
+  // Sizing and alignment
+  const marginX = 0.75;
+  const marginY = 1.6;
+  const maxW = pageWidth - (marginX * 2);
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const maxH = pageHeight - (marginY * 2);
+
+  // Calculate cell size that fits both width and height constraints
+  const cellSize = Math.min(maxW / cols, maxH / rows);
+  const gridW = cellSize * cols;
+  const gridH = cellSize * rows;
+
+  const startX = (pageWidth - gridW) / 2 + xShift;
+  const startY = marginY + (maxH - gridH) / 2;
+
+  // Render Grid cells
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cell = grid[r][c];
+      const x = startX + c * cellSize;
+      const y = startY + r * cellSize;
+
+      if (cell.type === "white") {
+        // Draw white playable cell
+        doc.setLineWidth(0.005);
+        doc.setDrawColor(180, 180, 190);
+        doc.setFillColor(255, 255, 255);
+        doc.rect(x, y, cellSize, cellSize, "FD");
+
+        // Display numbers inside
+        if (isSolution) {
+          doc.setTextColor(79, 70, 229); // Solution in Indigo
+          doc.setFont("Helvetica", "bold");
+          doc.setFontSize(Math.floor(cellSize * 32));
+          doc.text(String(cell.value), x + cellSize / 2, y + cellSize * 0.65, { align: "center" });
+        } else if (cell.displayValue) {
+          doc.setTextColor(51, 65, 85); // Clues/helpers in dark slate
+          doc.setFont("Helvetica", "normal");
+          doc.setFontSize(Math.floor(cellSize * 30));
+          doc.text(cell.displayValue, x + cellSize / 2, y + cellSize * 0.65, { align: "center" });
+        }
+      } else {
+        // Draw black / clue cell
+        doc.setLineWidth(0.005);
+        doc.setDrawColor(60, 60, 70);
+        doc.setFillColor(30, 30, 35); // Dark gray fill
+        doc.rect(x, y, cellSize, cellSize, "FD");
+
+        const hasRow = cell.rowClue !== undefined;
+        const hasCol = cell.colClue !== undefined;
+        const hasClues = hasRow || hasCol;
+
+        if (hasClues) {
+          // Draw diagonal line from top-left to bottom-right
+          doc.setLineWidth(0.008);
+          doc.setDrawColor(100, 100, 110);
+          doc.line(x, y, x + cellSize, y + cellSize);
+
+          // Clue text styling
+          doc.setFont("Helvetica", "bold");
+          doc.setFontSize(Math.floor(cellSize * 18));
+          doc.setTextColor(248, 250, 252); // White clue text
+
+          // 1. Row Clue (Top-Right triangle)
+          if (hasRow) {
+            doc.text(
+              String(cell.rowClue),
+              x + cellSize * 0.72,
+              y + cellSize * 0.38,
+              { align: "center" }
+            );
+          }
+
+          // 2. Col Clue (Bottom-Left triangle)
+          if (hasCol) {
+            doc.text(
+              String(cell.colClue),
+              x + cellSize * 0.28,
+              y + cellSize * 0.8,
+              { align: "center" }
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // Draw outer thick borders
+  doc.setLineWidth(0.015);
+  doc.setDrawColor(25, 25, 35);
+  doc.rect(startX, startY, gridW, gridH);
 
   // Reset text color
   doc.setTextColor(0);

@@ -1,0 +1,390 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { 
+  ArrowLeft, Download, RefreshCw, AlertCircle, FileText, CheckCircle2, Sliders, Settings, BookOpen
+} from "lucide-react";
+import CoverStudioCTA from "@/components/CoverStudioCTA";
+import ExportInteriorModal from "@/components/ExportInteriorModal";
+import { generateKakuro, KakuroPuzzle } from "@/lib/kakuro";
+import { downloadKakuroPdf } from "@/lib/kakuro-pdf";
+import { checkPremiumStatus } from "@/app/actions";
+
+const TRIM_SIZES = [
+  { id: "6x9", label: "6\" x 9\" (Novel)", w: 6, h: 9 },
+  { id: "8.5x11", label: "8.5\" x 11\" (Large Print)", w: 8.5, h: 11 },
+  { id: "5x8", label: "5\" x 8\" (Compact)", w: 5, h: 8 }
+];
+
+export default function KakuroGenerator() {
+  const router = useRouter();
+
+  // Settings
+  const [sizeId, setSizeId] = useState<string>("6x6");
+  const [difficulty, setDifficulty] = useState<string>("medium");
+  const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
+  const [numPages, setNumPages] = useState<number>(5);
+  const [showAnswers, setShowAnswers] = useState<boolean>(true);
+  const [hasBleed, setHasBleed] = useState<boolean>(false);
+  const [showGuides, setShowGuides] = useState<boolean>(true);
+  const [includeCover, setIncludeCover] = useState<boolean>(false);
+
+  // Puzzle lists states
+  const [puzzles, setPuzzles] = useState<{ puzzle: KakuroPuzzle; solution: KakuroPuzzle }[]>([]);
+  const [activePreviewIndex, setActivePreviewIndex] = useState<number>(0);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+  const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+
+  useEffect(() => {
+    async function loadPremium() {
+      try {
+        const res = await checkPremiumStatus();
+        setPremiumStatus(res as any);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadPremium();
+  }, []);
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    const generated: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[] = [];
+
+    for (let p = 0; p < numPages; p++) {
+      // Create puzzle (with hidden numbers) and solution (with full values revealed)
+      const sol = generateKakuro(sizeId, difficulty);
+      // Clone it to keep puzzle separate
+      const puz = JSON.parse(JSON.stringify(sol)) as KakuroPuzzle;
+      // Clear solved values that are not displayValues in the puzzle version
+      puz.grid.forEach(row => {
+        row.forEach(cell => {
+          if (cell.type === "white" && !cell.displayValue) {
+            delete cell.value;
+          }
+        });
+      });
+
+      generated.push({ puzzle: puz, solution: sol });
+    }
+
+    setPuzzles(generated);
+    setActivePreviewIndex(0);
+    setIsGenerating(false);
+  };
+
+  useEffect(() => {
+    handleGenerate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sizeId, difficulty, numPages]);
+
+  const handleDownload = async (coverState: any = null) => {
+    setIsDownloading(true);
+    try {
+      await downloadKakuroPdf({
+        puzzles,
+        difficulty,
+        trimSize: trimSize.id as any,
+        title: "Kakuro",
+        includeSolutions: showAnswers,
+        includeCover,
+        coverState,
+        isPremium: premiumStatus.isPremium
+      }, `Kakuro_${sizeId}_${difficulty}_${numPages}_Pages.pdf`);
+    } catch (e) {
+      console.error(e);
+    }
+    setIsDownloading(false);
+    setIsExportModalOpen(false);
+  };
+
+  const previewItem = puzzles[activePreviewIndex];
+
+  return (
+    <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-8 px-6 relative overflow-hidden">
+      {/* Background Glows */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-orange-500/5 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[130px] translate-x-1/3 translate-y-1/3 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10 space-y-6">
+        {/* Navigation & Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/tools")}
+              className="p-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white rounded-2xl transition shadow-inner group"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2">
+                Kakuro Puzzle Generator <span className="bg-gradient-to-r from-orange-400 to-amber-500 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">Premium</span>
+              </h1>
+              <p className="text-slate-400 text-xs font-semibold leading-relaxed mt-0.5">
+                Generate high-quality crossword-style arithmetic puzzles compliant with KDP margin bounds.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsExportModalOpen(true)}
+            className="px-6 py-3.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-650 text-white font-black rounded-2xl text-xs hover:scale-[1.02] shadow-lg shadow-indigo-600/20 active:scale-98 transition flex items-center justify-center gap-2 border border-indigo-500/20"
+          >
+            <Download className="w-4 h-4" /> Download PDF Interior
+          </button>
+        </div>
+
+        {/* Dashboard Workspace Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Settings Console (Cols: 4) */}
+          <div className="lg:col-span-4 bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 p-6 rounded-[2rem] shadow-2xl space-y-6">
+            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+              <Sliders className="w-4 h-4 text-indigo-400" />
+              <h2 className="text-sm font-black uppercase tracking-wider text-slate-350">Generator Console</h2>
+            </div>
+
+            {/* Grid Size Select */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase text-slate-450 tracking-wider">Grid Size</label>
+              <select
+                value={sizeId}
+                onChange={(e) => setSizeId(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-bold text-slate-200 focus:border-indigo-500 outline-none transition"
+              >
+                <option value="4x4">4x4 Grid (Standard)</option>
+                <option value="6x6">6x6 Grid (Medium)</option>
+                <option value="8x8">8x8 Grid (Large)</option>
+                <option value="9x11">9x11 Grid (Book size)</option>
+                <option value="9x17">9x17 Grid (Giant)</option>
+              </select>
+            </div>
+
+            {/* Difficulty Level select */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase text-slate-450 tracking-wider">Difficulty Level</label>
+              <div className="grid grid-cols-2 gap-2">
+                {["easy", "intermediate", "hard", "challenging", "expert"].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDifficulty(d)}
+                    className={`py-2.5 rounded-xl text-xs font-black capitalize transition-all ${
+                      difficulty === d
+                        ? "bg-indigo-650 text-white shadow-lg shadow-indigo-650/15"
+                        : "bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white border border-slate-850"
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="h-px bg-slate-850" />
+
+            {/* Print Settings (Trim size) */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Settings className="w-4 h-4 text-slate-400" />
+                <h3 className="text-xs font-black uppercase tracking-wider text-slate-350">Print & PDF Sizing</h3>
+              </div>
+
+              {/* Trim Size Select */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase text-slate-450 tracking-wider">Book Trim Size</label>
+                <select
+                  value={trimSize.id}
+                  onChange={(e) => setTrimSize(TRIM_SIZES.find(t => t.id === e.target.value) || TRIM_SIZES[0])}
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-bold text-slate-200 focus:border-indigo-500 outline-none transition"
+                >
+                  {TRIM_SIZES.map((size) => (
+                    <option key={size.id} value={size.id}>{size.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Pages count input */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-black uppercase text-slate-450 tracking-wider">Number of Pages</label>
+                  <span className="text-[10px] font-black text-indigo-400">{numPages} Puzzles</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="50"
+                  value={numPages}
+                  onChange={(e) => setNumPages(parseInt(e.target.value))}
+                  className="w-full accent-indigo-600 cursor-pointer h-1 bg-slate-850 rounded-lg appearance-none"
+                />
+              </div>
+
+              {/* Show Solutions Toggle */}
+              <div className="flex justify-between items-center p-3 bg-slate-950 rounded-2xl border border-slate-850/50">
+                <div>
+                  <label className="text-xs font-black text-slate-300 block">Include Solutions</label>
+                  <span className="text-[9px] font-bold text-slate-500 block uppercase">Append answers at back</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={showAnswers}
+                  onChange={(e) => setShowAnswers(e.target.checked)}
+                  className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={() => handleGenerate()}
+              className="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow"
+            >
+              <RefreshCw className="w-4 h-4" /> Refresh Grid Patterns
+            </button>
+          </div>
+
+          {/* Canvas Previewer (Cols: 8) */}
+          <div className="lg:col-span-8 flex flex-col gap-6">
+            
+            {/* Realtime Canvas */}
+            <div className="bg-slate-900/40 border border-slate-800/60 rounded-[2.5rem] p-8 md:p-12 shadow-2xl flex flex-col items-center justify-between min-h-[580px] relative">
+              
+              {/* Guides layout visual overlay */}
+              {showGuides && (
+                <div className="absolute inset-8 border border-dashed border-slate-800/40 rounded-2xl pointer-events-none flex items-center justify-center">
+                  <span className="absolute top-2 left-2 text-[8px] font-black uppercase text-slate-600 tracking-wider">KDP Margins Margin Safe</span>
+                </div>
+              )}
+
+              {/* Upper Pagination */}
+              <div className="flex justify-between items-center w-full relative z-10">
+                <button
+                  disabled={activePreviewIndex === 0}
+                  onClick={() => setActivePreviewIndex(prev => prev - 1)}
+                  className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-black disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+                >
+                  PREVIOUS PAGE
+                </button>
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest bg-slate-950 px-4 py-2 rounded-xl border border-slate-850">
+                  Page {activePreviewIndex + 1} of {numPages}
+                </span>
+                <button
+                  disabled={activePreviewIndex === puzzles.length - 1}
+                  onClick={() => setActivePreviewIndex(prev => prev + 1)}
+                  className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-black disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+                >
+                  NEXT PAGE
+                </button>
+              </div>
+
+              {/* The Kakuro Grid Preview */}
+              {previewItem ? (
+                <div className="my-8 flex flex-col items-center gap-6 w-full">
+                  <div
+                    className="grid gap-0 border-[3.5px] border-slate-900 bg-slate-900 shadow-2xl overflow-hidden"
+                    style={{
+                      gridTemplateRows: `repeat(${previewItem.puzzle.rows}, minmax(0, 1fr))`,
+                      gridTemplateColumns: `repeat(${previewItem.puzzle.cols}, minmax(0, 1fr))`,
+                      width: "100%",
+                      maxWidth: sizeId === "9x17" ? "240px" : "320px",
+                      aspectRatio: `${previewItem.puzzle.cols}/${previewItem.puzzle.rows}`
+                    }}
+                  >
+                    {previewItem.puzzle.grid.map((row, r) =>
+                      row.map((cell, c) => {
+                        if (cell.type === "white") {
+                          const val = cell.displayValue;
+                          return (
+                            <div
+                              key={`${r}-${c}`}
+                              className="aspect-square border border-slate-200 flex items-center justify-center text-xs md:text-sm font-bold text-slate-800 bg-white select-none"
+                            >
+                              {val || ""}
+                            </div>
+                          );
+                        } else {
+                          const hasRow = cell.rowClue !== undefined;
+                          const hasCol = cell.colClue !== undefined;
+                          const hasClues = hasRow || hasCol;
+
+                          return (
+                            <div
+                              key={`${r}-${c}`}
+                              className="aspect-square bg-slate-800 border border-slate-900 relative overflow-hidden flex items-center justify-center"
+                            >
+                              {hasClues && (
+                                <>
+                                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                    <line x1="0" y1="0" x2="100" y2="100" stroke="#475569" strokeWidth="2.5" />
+                                  </svg>
+
+                                  {hasRow && (
+                                    <span className="absolute top-0.5 right-1 text-[8px] md:text-[9px] font-black text-slate-100 leading-none">
+                                      {cell.rowClue}
+                                    </span>
+                                  )}
+
+                                  {hasCol && (
+                                    <span className="absolute bottom-0.5 left-1 text-[8px] md:text-[9px] font-black text-slate-100 leading-none">
+                                      {cell.colClue}
+                                    </span>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          );
+                        }
+                      })
+                    )}
+                  </div>
+
+                  {/* Rules and guidelines description */}
+                  <div className="max-w-md text-center bg-slate-950/40 p-4 border border-slate-850/50 rounded-2xl flex gap-2.5 items-start">
+                    <BookOpen className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-slate-400 font-semibold text-left leading-relaxed">
+                      <strong>Kakuro Guidelines:</strong> Kakuro is like a crossword puzzle with numbers. Each &quot;word&quot; must add up to the number provided in the clue above it or to the left. Words can only use the numbers 1 through 9, and a given number can only be used once in a word. Every kakuro puzzle has one and only solution, and can be solved through logic alone.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-slate-400 font-black uppercase text-xs tracking-widest my-20">Click refresh to load templates</div>
+              )}
+
+              {/* Lower Options Panel */}
+              <div className="flex gap-4 relative z-10 w-full">
+                <button
+                  onClick={() => setShowGuides(prev => !prev)}
+                  className={`flex-1 py-3 border rounded-xl text-xs font-black transition cursor-pointer ${
+                    showGuides
+                      ? "bg-slate-900 border-indigo-500/35 text-indigo-400"
+                      : "bg-slate-950 border-slate-850 text-slate-450 hover:text-slate-200"
+                  }`}
+                >
+                  {showGuides ? "HIDE PRINT MARGINS" : "SHOW PRINT MARGINS"}
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Actions / Cover Studio Link */}
+            <CoverStudioCTA />
+          </div>
+
+        </div>
+      </div>
+
+      {/* Export modal and pdf settings */}
+      {isExportModalOpen && (
+        <ExportInteriorModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          onExport={handleDownload}
+          isDownloading={isDownloading}
+          trimSize={trimSize}
+          pageCount={numPages}
+        />
+      )}
+    </div>
+  );
+}

@@ -48,7 +48,10 @@ function getCtaLink(slug: string) {
   if (slug.includes("scramble")) {
     return { href: "/studio/word-scramble", label: "Open Word Scramble Studio" };
   }
-  if (slug.includes("math-puzzle") || slug.includes("kakuro")) {
+  if (slug.includes("kakuro")) {
+    return { href: "/studio/kakuro", label: "Open Kakuro Studio" };
+  }
+  if (slug.includes("math-puzzle")) {
     return { href: "/studio/math-puzzle", label: "Open Math Puzzle Studio" };
   }
   if (slug.includes("keyword") || slug.includes("niche")) {

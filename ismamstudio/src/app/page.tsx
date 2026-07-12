@@ -19,7 +19,8 @@ import {
   Calculator,
   Shuffle,
   Play,
-  Star
+  Star,
+  Hash
 } from "lucide-react";
 import PricingSection from "../components/PricingSection";
 
@@ -466,6 +467,25 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Generate Scrambles <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* 8.5. Kakuro Generator */}
+          <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
+            <div>
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+                <Hash className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">Kakuro Generator</h3>
+              <p className="text-slate-300 text-sm leading-relaxed font-semibold">
+                Design crossword-style number sums logic puzzles. Select grids from 4x4 up to 9x17, adjust difficulty from easy to expert, and export print-ready PDFs.
+              </p>
+            </div>
+            <Link
+              href="/studio/kakuro"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+            >
+              Generate Kakuros <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 

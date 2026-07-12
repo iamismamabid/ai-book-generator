@@ -79,7 +79,7 @@ export default async function ProfessionalBookPage({ params }: { params: Promise
           {pages.map((pageContent, index) => (
             <section 
               key={index} 
-              className="relative aspect-[1/1.414] bg-white shadow-xl p-16 md:p-24 border border-slate-200 overflow-hidden"
+              className="relative min-h-[1100px] pb-28 bg-white shadow-xl p-16 md:p-24 border border-slate-200"
               style={{ boxShadow: "5px 0 15px -5px rgba(0,0,0,0.1) inset" }} 
             >
               <span className="absolute bottom-10 left-1/2 -translate-x-1/2 text-slate-400 font-sans text-sm">
@@ -97,7 +97,7 @@ export default async function ProfessionalBookPage({ params }: { params: Promise
           {displayBook.chapters.map((chapter: any, idx: number) => (
             <section 
               key={chapter.id}
-              className="relative aspect-[1/1.414] bg-white shadow-xl p-16 md:p-24 border border-slate-200 overflow-hidden mt-12"
+              className="relative min-h-[1100px] pb-28 bg-white shadow-xl p-16 md:p-24 border border-slate-200 mt-12"
               style={{ boxShadow: "5px 0 15px -5px rgba(0,0,0,0.1) inset" }}
             >
               <h2 className="text-3xl font-black mb-6 leading-tight text-slate-900 border-b pb-4">{chapter.title}</h2>

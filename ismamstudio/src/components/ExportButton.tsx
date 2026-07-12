@@ -18,6 +18,10 @@ interface ExportButtonProps {
   subtitle?: string;
   content?: string; // Book Blurb / Intro
   chapters?: Chapter[];
+  customFont?: "times" | "helvetica" | "courier";
+  customFontSize?: number;
+  customLineSpacing?: number;
+  customTextColor?: string;
 }
 
 export default function ExportButton({
@@ -25,6 +29,10 @@ export default function ExportButton({
   subtitle = "An AI Generated Journey",
   content = "No content available.",
   chapters = [],
+  customFont = "times",
+  customFontSize = 18,
+  customLineSpacing = 1.8,
+  customTextColor = "#1e293b",
 }: ExportButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -59,10 +67,28 @@ export default function ExportButton({
       format: [pageW, pageH],
     });
 
-    // Typography & Margins defaults
+    // Typography & Margins custom layout parameters
+    const docFont = customFont;
+    
+    // Map CSS px size to PDF font size (pt)
+    const docFontSize = Math.max(8, Math.min(20, Math.round(customFontSize * 0.65)));
+    
+    // Map line height spacing (in)
+    const lineSpacing = customLineSpacing * 0.13;
+
+    // Convert hex text color to RGB values
+    let r = 30, g = 41, b = 59;
+    if (customTextColor) {
+      const cleanHex = customTextColor.replace("#", "");
+      if (cleanHex.length === 6) {
+        r = parseInt(cleanHex.substring(0, 2), 16);
+        g = parseInt(cleanHex.substring(2, 4), 16);
+        b = parseInt(cleanHex.substring(4, 6), 16);
+      }
+    }
+
     const marginT = 0.85;
     const marginB = 0.85;
-    const lineSpacing = 0.23; // standard line gap in inches
 
     let pageNum = 1;
     let currentLineIndex = 0;
@@ -144,9 +170,9 @@ export default function ExportButton({
           const activeWidth = isFirstLine ? contentW - indent : contentW;
           const activeX = isFirstLine ? marginL + indent : marginL;
 
-          doc.setFont("times", "normal");
-          doc.setFontSize(11);
-          doc.setTextColor(30, 41, 59); // slate-800
+          doc.setFont(docFont, "normal");
+          doc.setFontSize(docFontSize);
+          doc.setTextColor(r, g, b);
 
           const splitResult = doc.splitTextToSize(remainingText, activeWidth);
           const lineToPrint = splitResult[0];
@@ -179,20 +205,20 @@ export default function ExportButton({
     const titleMarginL = 0.85;
     const titleContentW = pageW - titleMarginL - 0.5;
 
-    doc.setFont("times", "bold");
+    doc.setFont(docFont, "bold");
     doc.setFontSize(28);
-    doc.setTextColor(15, 23, 42); // slate-900
+    doc.setTextColor(r, g, b);
     const titleLines = doc.splitTextToSize(title, titleContentW);
     doc.text(titleLines, titleMarginL + titleContentW / 2, pageH * 0.3, { align: "center" });
 
     // Decorative divider line
-    doc.setDrawColor(79, 70, 229); // indigo-600
+    doc.setDrawColor(r, g, b);
     doc.setLineWidth(0.015);
     doc.line(titleMarginL + titleContentW * 0.4, pageH * 0.4, titleMarginL + titleContentW * 0.6, pageH * 0.4);
 
-    doc.setFont("times", "italic");
+    doc.setFont(docFont, "italic");
     doc.setFontSize(14);
-    doc.setTextColor(100, 116, 139); // slate-500
+    doc.setTextColor(r, g, b);
     const subtitleLines = doc.splitTextToSize(subtitle, titleContentW);
     doc.text(subtitleLines, titleMarginL + titleContentW / 2, pageH * 0.46, { align: "center" });
 
@@ -206,9 +232,9 @@ export default function ExportButton({
     currentLineIndex = 0;
 
     // Title: Introduction
-    doc.setFont("times", "bold");
+    doc.setFont(docFont, "bold");
     doc.setFontSize(20);
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(r, g, b);
     doc.text("Introduction", 0.85, marginT + 0.2);
     currentLineIndex = 3; // Leave space under heading
 
@@ -233,16 +259,16 @@ export default function ExportButton({
       const contentW = pageW - marginL - marginR;
 
       // Bold stylized Chapter Title starting lower on the page (1.8 inches down)
-      doc.setFont("times", "bold");
+      doc.setFont(docFont, "bold");
       doc.setFontSize(22);
-      doc.setTextColor(15, 23, 42);
+      doc.setTextColor(r, g, b);
       
       const chapterTitleText = chapter.title.toUpperCase();
       const splitTitle = doc.splitTextToSize(chapterTitleText, contentW);
       doc.text(splitTitle, marginL + contentW / 2, 1.8, { align: "center" });
 
       // Decorative divider under chapter header
-      doc.setDrawColor(203, 213, 225); // slate-300
+      doc.setDrawColor(r, g, b);
       doc.setLineWidth(0.005);
       doc.line(marginL + contentW * 0.35, 2.3, marginL + contentW * 0.65, 2.3);
 

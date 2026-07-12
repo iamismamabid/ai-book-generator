@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CreditCard, BookOpen, Settings, Type, Layout, Menu, ChevronLeft, ChevronRight } from "lucide-react";
 import ExportButton from "@/components/ExportButton";
-
 import ChapterButton from "./ChapterButton";
 import EditableChapter from "./EditableChapter";
 import { updateBookTitleAndSubtitle } from "../../actions";
@@ -31,10 +30,16 @@ interface BookReaderProps {
 
 export default function BookReader({ book, pages }: BookReaderProps) {
   // E-Reader Configuration States
-  const [theme, setTheme] = useState<"white" | "cream" | "dark">("cream");
-  const [fontFamily, setFontFamily] = useState<"serif" | "sans">("serif");
-  const [fontSize, setFontSize] = useState<"sm" | "md" | "lg">("md");
+  const [theme, setTheme] = useState<"white" | "cream" | "dark" | "custom">("cream");
+  const [fontFamily, setFontFamily] = useState<"georgia" | "garamond" | "sans" | "courier">("georgia");
+  const [fontSize, setFontSize] = useState<number>(18); // px (slider 14px to 26px)
+  const [lineHeight, setLineHeight] = useState<number>(1.8); // spacing (slider 1.4 to 2.4)
   const [isTocOpen, setIsTocOpen] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Custom colors state
+  const [customBgColor, setCustomBgColor] = useState("#FAF6EE");
+  const [customTextColor, setCustomTextColor] = useState("#433422");
 
   // Title & Subtitle editing states
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -49,35 +54,60 @@ export default function BookReader({ book, pages }: BookReaderProps) {
     setIsSavingTitle(false);
   };
 
-  const fullContent = [
-    book.content,
-    ...book.chapters.map((c) => `\n\n${c.title}\n\n${c.content}`),
-  ].join("\n");
+  // Convert font family state to PDF font name
+  const getPdfFontName = () => {
+    switch (fontFamily) {
+      case "sans":
+        return "helvetica";
+      case "courier":
+        return "courier";
+      default:
+        return "times";
+    }
+  };
 
-  // Dynamic Theme mappings for the pages
-  const themeClassMap = {
-    white: "bg-white text-slate-800 border-slate-200/60 shadow-xl shadow-black/5",
-    cream: "bg-[#FAF6EE] text-[#433422] border-[#EADFC9]/50 shadow-xl shadow-[#382E1E]/5",
-    dark: "bg-[#141b27] text-slate-200 border-[#222c3c] shadow-xl shadow-black/30",
+  // Resolve custom styles for the pages
+  const getPageStyle = () => {
+    const themeColors = {
+      white: { bg: "#ffffff", text: "#1e293b", border: "#e2e8f0" },
+      cream: { bg: "#FAF6EE", text: "#433422", border: "#EADFC9" },
+      dark: { bg: "#141b27", text: "#e2e8f0", border: "#222c3c" },
+    };
+
+    const colors = theme === "custom" 
+      ? { bg: customBgColor, text: customTextColor, border: `${customTextColor}25` } 
+      : themeColors[theme];
+
+    return {
+      backgroundColor: colors.bg,
+      color: colors.text,
+      borderColor: colors.border,
+      fontFamily: getFontFamilyStyle(),
+      fontSize: `${fontSize}px`,
+      lineHeight: lineHeight,
+    };
+  };
+
+  const getFontFamilyStyle = () => {
+    switch (fontFamily) {
+      case "georgia":
+        return "Georgia, serif";
+      case "garamond":
+        return "Garamond, Georgia, serif";
+      case "sans":
+        return "Inter, system-ui, sans-serif";
+      case "courier":
+        return "'Courier New', Courier, monospace";
+      default:
+        return "Georgia, serif";
+    }
   };
 
   const bodyThemeMap = {
     white: "bg-slate-50 text-slate-900",
     cream: "bg-[#F3EFE4] text-[#382E1E]",
     dark: "bg-[#0b0f19] text-slate-100",
-  };
-
-  // Font family mappings
-  const fontClassMap = {
-    serif: "font-serif tracking-normal font-medium",
-    sans: "font-sans tracking-wide font-normal",
-  };
-
-  // Font size mappings
-  const fontSizeClassMap = {
-    sm: "text-sm md:text-base leading-[1.6]",
-    md: "text-base md:text-lg leading-[1.8]",
-    lg: "text-lg md:text-xl leading-[1.9]",
+    custom: "bg-slate-100",
   };
 
   const handleScrollTo = (id: string) => {
@@ -88,7 +118,7 @@ export default function BookReader({ book, pages }: BookReaderProps) {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${bodyThemeMap[theme]}`}>
+    <div className={`min-h-screen transition-colors duration-300 ${theme === "custom" ? `bg-slate-150` : bodyThemeMap[theme]}`}>
       {/* ── STICKY CONTROL HEADER ───────────────────────────────── */}
       <nav className="print:hidden sticky top-0 z-50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-900/50 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4 w-full md:w-auto">
@@ -116,84 +146,151 @@ export default function BookReader({ book, pages }: BookReaderProps) {
             <Menu className="w-4 h-4" />
           </button>
 
-          <div className="h-5 w-px bg-slate-200 dark:bg-slate-800" />
-
-          {/* Theme Buttons */}
-          <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200/60 dark:border-slate-850">
-            <button
-              onClick={() => setTheme("white")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
-                theme === "white" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              White
-            </button>
-            <button
-              onClick={() => setTheme("cream")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
-                theme === "cream" ? "bg-[#FAF6EE] text-[#433422] shadow-sm" : "text-[#705c45] hover:text-[#5a4833]"
-              }`}
-            >
-              Cream
-            </button>
-            <button
-              onClick={() => setTheme("dark")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
-                theme === "dark" ? "bg-[#141b27] text-slate-100 shadow-sm" : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Sepia
-            </button>
-          </div>
-
-          <div className="h-5 w-px bg-slate-200 dark:bg-slate-800" />
-
-          {/* Font Family Selector */}
-          <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200/60 dark:border-slate-850">
-            <button
-              onClick={() => setFontFamily("serif")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all font-serif ${
-                fontFamily === "serif" ? "bg-white dark:bg-slate-850 text-slate-900 dark:text-white shadow-sm" : "text-slate-500"
-              }`}
-            >
-              Serif
-            </button>
-            <button
-              onClick={() => setFontFamily("sans")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all font-sans ${
-                fontFamily === "sans" ? "bg-white dark:bg-slate-850 text-slate-900 dark:text-white shadow-sm" : "text-slate-500"
-              }`}
-            >
-              Sans
-            </button>
-          </div>
-
-          <div className="h-5 w-px bg-slate-200 dark:bg-slate-800" />
-
-          {/* Font Size Selector */}
-          <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200/60 dark:border-slate-850">
-            {(["sm", "md", "lg"] as const).map((sz) => (
-              <button
-                key={sz}
-                onClick={() => setFontSize(sz)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase transition-all ${
-                  fontSize === sz ? "bg-white dark:bg-slate-850 text-slate-900 dark:text-white shadow-sm" : "text-slate-500"
-                }`}
-              >
-                {sz}
-              </button>
-            ))}
-          </div>
+          {/* Toggle Style Settings Panel */}
+          <button
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            className={`p-2 rounded-xl border transition-all ${
+              isSettingsOpen 
+                ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400" 
+                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+            }`}
+            title="E-Reader Style Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Global Export Buttons */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-          <ExportButton title={editedTitle} subtitle={editedSubtitle} content={book.content} chapters={book.chapters} />
+          <ExportButton 
+            title={editedTitle} 
+            subtitle={editedSubtitle} 
+            content={book.content} 
+            chapters={book.chapters} 
+            customFont={getPdfFontName()}
+            customFontSize={fontSize}
+            customLineSpacing={lineHeight}
+            customTextColor={theme === "custom" ? customTextColor : theme === "dark" ? "#e2e8f0" : "#1e293b"}
+          />
           <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full font-sans font-bold text-xs flex items-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-95">
             <CreditCard className="w-4 h-4" /> Publish & Sell
           </button>
         </div>
       </nav>
+
+      {/* ── CUSTOM STYLE CONTROL PANEL ───────────────────────────── */}
+      {isSettingsOpen && (
+        <div className="print:hidden max-w-4xl mx-auto mt-4 p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xl flex flex-col gap-6 font-sans">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Font Family Selection */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Font Family</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: "georgia", label: "Georgia", fontClass: "font-serif" },
+                  { id: "garamond", label: "Garamond", fontClass: "font-serif" },
+                  { id: "sans", label: "Inter Sans", fontClass: "font-sans" },
+                  { id: "courier", label: "Courier", fontClass: "font-mono" },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setFontFamily(f.id as any)}
+                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all ${f.fontClass} ${
+                      fontFamily === f.id
+                        ? "bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-950/30 dark:border-indigo-900 dark:text-indigo-400"
+                        : "bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Font Size & Spacing */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Font Size</label>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{fontSize}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="14"
+                  max="26"
+                  value={fontSize}
+                  onChange={(e) => setFontSize(parseInt(e.target.value))}
+                  className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Line Spacing</label>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{lineHeight}</span>
+                </div>
+                <input
+                  type="range"
+                  min="1.4"
+                  max="2.4"
+                  step="0.1"
+                  value={lineHeight}
+                  onChange={(e) => setLineHeight(parseFloat(e.target.value))}
+                  className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+              </div>
+            </div>
+
+            {/* Color Mode */}
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Page Color Mode</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: "white", label: "Pure White" },
+                  { id: "cream", label: "Soft Cream" },
+                  { id: "dark", label: "Slate Dark" },
+                  { id: "custom", label: "Custom Hex" },
+                ].map((tm) => (
+                  <button
+                    key={tm.id}
+                    onClick={() => setTheme(tm.id as any)}
+                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                      theme === tm.id
+                        ? "bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-950/30 dark:border-indigo-900 dark:text-indigo-400"
+                        : "bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300"
+                    }`}
+                  >
+                    {tm.label}
+                  </button>
+                ))}
+              </div>
+
+              {theme === "custom" && (
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={customBgColor}
+                      onChange={(e) => setCustomBgColor(e.target.value)}
+                      className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 dark:border-slate-700 p-0 overflow-hidden"
+                    />
+                    <span className="text-[9px] font-black uppercase text-slate-400">Paper Bg</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={customTextColor}
+                      onChange={(e) => setCustomTextColor(e.target.value)}
+                      className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 dark:border-slate-700 p-0 overflow-hidden"
+                    />
+                    <span className="text-[9px] font-black uppercase text-slate-400">Ink Color</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── MAIN WORKSPACE CONTAINER ───────────────────────────── */}
       <div className="max-w-[1600px] mx-auto flex items-start gap-8 px-6 pt-8 pb-20 relative">
@@ -248,7 +345,8 @@ export default function BookReader({ book, pages }: BookReaderProps) {
           {/* 1. Title Page Section */}
           <section
             id="title-page"
-            className={`relative min-h-[1100px] w-full pb-28 rounded-sm flex flex-col items-center justify-center p-20 text-center border-l-[12px] border-indigo-600 transition-colors duration-300 group ${themeClassMap[theme]}`}
+            style={getPageStyle()}
+            className="relative min-h-[1100px] w-full pb-28 rounded-sm flex flex-col items-center justify-center p-20 text-center border border-l-[12px] border-indigo-600 transition-colors duration-300 group"
           >
             {/* Book Crease Shadow (Right Side) */}
             <div className="absolute top-0 bottom-0 right-0 w-[30px] bg-gradient-to-l from-black/[0.06] dark:from-black/30 via-black/[0.01] to-transparent pointer-events-none z-10" />
@@ -304,7 +402,7 @@ export default function BookReader({ book, pages }: BookReaderProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </button>
-                <h1 className="text-5xl font-black mb-6 leading-tight font-serif">{editedTitle}</h1>
+                <h1 className="text-5xl font-black mb-6 leading-tight">{editedTitle}</h1>
                 <div className="w-20 h-1 bg-indigo-600 mb-6 mx-auto"></div>
                 <p className="text-base text-slate-500 font-sans tracking-widest uppercase">{editedSubtitle}</p>
               </>
@@ -316,17 +414,18 @@ export default function BookReader({ book, pages }: BookReaderProps) {
             {pages.map((pageContent, index) => (
               <section
                 key={index}
-                className={`relative min-h-[1100px] w-full pb-28 p-16 md:p-24 border rounded-sm overflow-hidden transition-colors duration-300 ${themeClassMap[theme]}`}
+                style={getPageStyle()}
+                className="relative min-h-[1100px] w-full pb-28 p-16 md:p-24 border rounded-sm overflow-hidden transition-colors duration-300"
               >
                 {/* Book Crease Shadow (Right Side) */}
                 <div className="absolute top-0 bottom-0 right-0 w-[30px] bg-gradient-to-l from-black/[0.06] dark:from-black/30 via-black/[0.01] to-transparent pointer-events-none z-10" />
 
                 {index === 0 && (
-                  <h3 className="text-2xl font-black font-serif mb-6 pb-3 border-b border-slate-200/50">Introduction</h3>
+                  <h3 className="text-2xl font-black mb-6 pb-3 border-b border-slate-200/50">Introduction</h3>
                 )}
 
-                <div className={`${fontClassMap[fontFamily]} ${fontSizeClassMap[fontSize]}`}>
-                  <div className="whitespace-pre-wrap first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left first-letter:text-indigo-600 leading-[1.8]">
+                <div>
+                  <div className="whitespace-pre-wrap first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left first-letter:text-indigo-600">
                     {pageContent}
                   </div>
                 </div>
@@ -343,16 +442,17 @@ export default function BookReader({ book, pages }: BookReaderProps) {
             <section
               key={chapter.id}
               id={`chapter-${chapter.id}`}
-              className={`relative min-h-[1100px] w-full pb-28 p-16 md:p-24 border rounded-sm overflow-hidden transition-colors duration-300 ${themeClassMap[theme]}`}
+              style={getPageStyle()}
+              className="relative min-h-[1100px] w-full pb-28 p-16 md:p-24 border rounded-sm overflow-hidden transition-colors duration-300"
             >
               {/* Book Crease Shadow (Right Side) */}
               <div className="absolute top-0 bottom-0 right-0 w-[30px] bg-gradient-to-l from-black/[0.06] dark:from-black/30 via-black/[0.01] to-transparent pointer-events-none z-10" />
 
-              <h2 className="text-3xl font-black mb-6 leading-tight border-b pb-4 border-slate-200/50 font-serif">
+              <h2 className="text-3xl font-black mb-6 leading-tight border-b pb-4 border-slate-200/50">
                 {chapter.title}
               </h2>
 
-              <div className={`${fontClassMap[fontFamily]} ${fontSizeClassMap[fontSize]}`}>
+              <div>
                 <EditableChapter chapter={chapter} />
               </div>
 
@@ -377,8 +477,6 @@ export default function BookReader({ book, pages }: BookReaderProps) {
               currentCount={book.chapters.length}
             />
           </div>
-
-
         </div>
       </div>
     </div>

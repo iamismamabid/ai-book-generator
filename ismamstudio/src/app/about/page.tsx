@@ -1,7 +1,17 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, Users, Shield, Cpu, BookOpen } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us | Ismam Studio — KDP Book Creator Mission",
+  description: "Learn about the mission behind Ismam Studio: empowering Amazon KDP self-publishers with mathematically precise puzzle builders and cover canvases.",
+  openGraph: {
+    title: "About Us | Ismam Studio — KDP Book Creator Mission",
+    description: "Learn about the mission behind Ismam Studio: empowering Amazon KDP self-publishers with mathematically precise puzzle builders and cover canvases.",
+    url: "https://www.ismamstudio.me/about",
+    type: "website",
+  }
+};
 
 export default function AboutPage() {
   return (

@@ -31,6 +31,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// Map blog post slugs to relevant internal creator tools
+function getCtaLink(slug: string) {
+  if (slug.includes("sudoku")) {
+    return { href: "/sudoku", label: "Open Sudoku Generator" };
+  }
+  if (slug.includes("word-search")) {
+    return { href: "/tools/word-search", label: "Open Word Search Generator" };
+  }
+  if (slug.includes("maze") || slug.includes("dot-to-dot")) {
+    return { href: "/maze", label: "Open Maze Generator" };
+  }
+  if (slug.includes("cryptogram")) {
+    return { href: "/studio/cryptogram", label: "Open Cryptogram Studio" };
+  }
+  if (slug.includes("scramble")) {
+    return { href: "/studio/word-scramble", label: "Open Word Scramble Studio" };
+  }
+  if (slug.includes("math-puzzle") || slug.includes("kakuro")) {
+    return { href: "/studio/math-puzzle", label: "Open Math Puzzle Studio" };
+  }
+  if (slug.includes("keyword") || slug.includes("niche")) {
+    return { href: "/tools/keyword-research", label: "Open Keyword Research Tool" };
+  }
+  if (slug.includes("tool")) {
+    return { href: "/tools", label: "Browse Free KDP Tools" };
+  }
+  return { href: "/studio", label: "Open Creator Studio" };
+}
+
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = BLOG_POSTS.find((p) => p.slug === slug);
@@ -39,8 +68,41 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
+  const cta = getCtaLink(post.slug);
+
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden">
+      {/* JSON-LD Article & Author Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": post.title,
+            "description": post.description,
+            "author": {
+              "@type": "Person",
+              "name": "Ismam Studio Editorial Team"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "Ismam Studio",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://www.ismamstudio.me/logo.png"
+              }
+            },
+            "datePublished": post.date,
+            "url": `https://www.ismamstudio.me/blog/${post.slug}`,
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": `https://www.ismamstudio.me/blog/${post.slug}`
+            }
+          })
+        }}
+      />
+
       {/* Background Glow */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none" />
@@ -107,13 +169,13 @@ export default async function BlogPostPage({ params }: Props) {
           {/* Footer Call-To-Action inside the article */}
           <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400 text-xs font-semibold">
-              <HelpCircle className="w-4 h-4 text-indigo-400 animate-pulse" /> Launching your own book soon?
+              <HelpCircle className="w-4 h-4 text-indigo-400 animate-pulse" /> Ready to publish your puzzle book?
             </div>
             <Link
-              href="/studio"
+              href={cta.href}
               className="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black text-sm rounded-xl hover:from-indigo-600 hover:to-purple-700 transition shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-1.5"
             >
-              Open Creator Studio <ChevronRight className="w-4 h-4" />
+              {cta.label} <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
 

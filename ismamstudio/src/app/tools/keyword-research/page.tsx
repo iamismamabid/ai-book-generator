@@ -4,6 +4,9 @@ import KeywordResearchPage from "./KeywordResearchClient";
 export const metadata: Metadata = {
   title: "KDP Keyword Research & Niche Hunter Tool | Ismam Studio",
   description: "Find high-volume, low-competition keywords for Amazon KDP. Calculate book BSR to estimated monthly sales, search volumes, and validate niches.",
+  alternates: {
+    canonical: "https://www.ismamstudio.me/tools/keyword-research",
+  },
   openGraph: {
     title: "KDP Keyword Research & Niche Hunter Tool | Ismam Studio",
     description: "Find high-volume, low-competition keywords for Amazon KDP. Calculate book BSR to estimated monthly sales, search volumes, and validate niches.",

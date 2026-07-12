@@ -15,6 +15,13 @@ export const metadata: Metadata = {
   title: "Ismam Studio | All-in-One KDP Book Creation Toolkit",
   description: "Create puzzle interiors, AI-assisted novel chapters, shape-masked mazes, word searches, and gorgeous covers for Amazon KDP — in minutes. No design software needed.",
   metadataBase: new URL("https://www.ismamstudio.me"),
+  alternates: {
+    canonical: "https://www.ismamstudio.me",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: "Ismam Studio — Create & Publish KDP Books in Minutes",
     description: "The ultimate all-in-one toolkit for Amazon KDP self-publishers. Sudoku, mazes, word searches, AI novel outlines, and full cover design — all in one place.",

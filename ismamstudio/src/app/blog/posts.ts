@@ -314,5 +314,27 @@ export const BLOG_POSTS: Post[] = [
       "### From concept to published book",
       "Once your dot-to-dot pages are designed, use Ismam Studio's Maze Studio to export structured, KDP-ready activity pages. Our free publishing tools handle the formatting so you can focus on creating. Get started at ismamstudio.me/maze."
     ]
+  },
+  {
+    slug: "ultimate-guide-to-kindle-direct-publishing-amazon",
+    title: "The Ultimate Guide to Kindle Direct Publishing (KDP) & Self-Publishing on Amazon",
+    category: "Guide",
+    date: "July 12, 2026",
+    readTime: "9 min read",
+    description: "Learn how to get self published on Amazon using Kindle Direct Publishing (KDP). A step-by-step masterclass covering formatting, cover sizing, and SEO.",
+    content: [
+      "Aspiring writers and side-hustlers alike are increasingly turning to self-publishing to share their creations with the world. Navigating the world of amazon and self publishing can seem daunting at first, but with the right tools, anyone can become a published author. At the center of this industry is kindle direct publishing (KDP), Amazon's free self-publishing platform that allows authors to upload paperback, hardcover, and ebook manuscripts directly to the Amazon bookstore.",
+      "Whether you are writing a sci-fi novel, a children's book, or a medium-content puzzle collection, understanding the core principles of amazon kindle direct publishing is crucial to securing organic views and passive monthly royalties.",
+      "### Step 1: Getting Set Up on Kindle Direct Publishing",
+      "To start your journey to get self published on amazon, visit the KDP website and log in using your existing Amazon credentials or create a dedicated publisher account. You will need to complete your profile by providing payout details (such as direct deposit settings) and completing the standard tax interview. Once complete, you are fully authorized to launch unlimited titles across global marketplaces.",
+      "### Step 2: Preparing Your Print-Ready Manuscript",
+      "Amazon kindle book publishing has strict quality standards for interior layouts. \n- **Trim Sizes**: Choose standard sizes like 6\" x 9\" for novels and 8.5\" x 11\" for puzzle and coloring books.\n- **Margins and Gutter**: Paperback books require gutter margins (binding offsets) ranging from 0.375 inches up to 0.875 inches depending on the page count, ensuring text doesn't slide into the fold.\n- **Formatting**: For novels, upload cleanly formatted DOCX or PDF files. For puzzle books and word searches, utilize specialized vector compilers like Ismam Studio to auto-align grids and page counts.",
+      "### Step 3: Designing KDP-Compliant Covers",
+      "Amazon calculates your wrap cover's spine width dynamically based on paper type and exact page counts. Use a spine calculator to determine dimensions to the exact pixel. Keep your title, subtitle, and author name clearly legible in thumbnail views, utilizing high-contrast color palettes (e.g. bold cream font over deep navy blue backgrounds).",
+      "### Step 4: SEO and Backend Keywords",
+      "KDP offers 7 backend keyword slots. Do not repeat your book title; instead, fill these slots with long-tail search phrases that readers actively query, such as 'how to publish on kindle', 'best self publishing platforms', or 'independent author guidelines.' Combined with a keyword-optimized subtitle, this builds immediate search authority without running expensive ads.",
+      "### Start Publishing for Free Today",
+      "Ismam Studio's Creator Studio is designed to handle all formatting, cover-spine calculations, and interior puzzle compiler needs for KDP publishers. Explore our suite of 100% free publishing utilities at ismamstudio.me/tools."
+    ]
   }
 ];

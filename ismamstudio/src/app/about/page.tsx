@@ -5,6 +5,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About Us | Ismam Studio — KDP Book Creator Mission",
   description: "Learn about the mission behind Ismam Studio: empowering Amazon KDP self-publishers with mathematically precise puzzle builders and cover canvases.",
+  alternates: {
+    canonical: "https://www.ismamstudio.me/about",
+  },
   openGraph: {
     title: "About Us | Ismam Studio — KDP Book Creator Mission",
     description: "Learn about the mission behind Ismam Studio: empowering Amazon KDP self-publishers with mathematically precise puzzle builders and cover canvases.",

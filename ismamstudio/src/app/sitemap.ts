@@ -1,7 +1,16 @@
 import { MetadataRoute } from 'next'
+import { BLOG_POSTS } from './blog/posts'
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = 'https://www.ismamstudio.me';
+
+    // Dynamically generate blog post URLs from BLOG_POSTS array
+    const blogPostUrls: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+    }));
 
     return [
         // ── Core Pages ──────────────────────────────────────────
@@ -29,42 +38,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
             changeFrequency: 'weekly',
             priority: 0.8,
         },
-        {
-            url: `${baseUrl}/blog/kdp-puzzle-publishing-guide`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/blog/low-content-vs-medium-content`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/blog/rules-for-high-converting-covers`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/blog/target-low-competition-kdp-keywords`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/blog/kdp-niche-validation-secrets`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/blog/how-to-use-ismam-studio-free-kdp-tools`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
+        // ── Blog Posts (dynamically generated from BLOG_POSTS) ───
+        ...blogPostUrls,
         {
             url: `${baseUrl}/faq`,
             lastModified: new Date(),

@@ -235,8 +235,8 @@ export default function BookReader({ book, pages }: BookReaderProps) {
             id="title-page"
             className={`relative min-h-[1100px] w-full pb-28 rounded-sm flex flex-col items-center justify-center p-20 text-center border-l-[12px] border-indigo-600 transition-colors duration-300 ${themeClassMap[theme]}`}
           >
-            {/* Book Crease Shadow */}
-            <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[35px] bg-gradient-to-r from-transparent via-black/[0.08] dark:via-black/25 to-transparent pointer-events-none z-10" />
+            {/* Book Crease Shadow (Right Side) */}
+            <div className="absolute top-0 bottom-0 right-0 w-[30px] bg-gradient-to-l from-black/[0.06] dark:from-black/30 via-black/[0.01] to-transparent pointer-events-none z-10" />
 
             <h1 className="text-5xl font-black mb-6 leading-tight font-serif">{book.title}</h1>
             <div className="w-20 h-1 bg-indigo-600 mb-6 mx-auto"></div>
@@ -250,8 +250,8 @@ export default function BookReader({ book, pages }: BookReaderProps) {
                 key={index}
                 className={`relative min-h-[1100px] w-full pb-28 p-16 md:p-24 border rounded-sm overflow-hidden transition-colors duration-300 ${themeClassMap[theme]}`}
               >
-                {/* Book Crease Shadow */}
-                <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[35px] bg-gradient-to-r from-transparent via-black/[0.08] dark:via-black/25 to-transparent pointer-events-none z-10" />
+                {/* Book Crease Shadow (Right Side) */}
+                <div className="absolute top-0 bottom-0 right-0 w-[30px] bg-gradient-to-l from-black/[0.06] dark:from-black/30 via-black/[0.01] to-transparent pointer-events-none z-10" />
 
                 {index === 0 && (
                   <h3 className="text-2xl font-black font-serif mb-6 pb-3 border-b border-slate-200/50">Introduction</h3>
@@ -277,8 +277,8 @@ export default function BookReader({ book, pages }: BookReaderProps) {
               id={`chapter-${chapter.id}`}
               className={`relative min-h-[1100px] w-full pb-28 p-16 md:p-24 border rounded-sm overflow-hidden transition-colors duration-300 ${themeClassMap[theme]}`}
             >
-              {/* Book Crease Shadow */}
-              <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[35px] bg-gradient-to-r from-transparent via-black/[0.08] dark:via-black/25 to-transparent pointer-events-none z-10" />
+              {/* Book Crease Shadow (Right Side) */}
+              <div className="absolute top-0 bottom-0 right-0 w-[30px] bg-gradient-to-l from-black/[0.06] dark:from-black/30 via-black/[0.01] to-transparent pointer-events-none z-10" />
 
               <h2 className="text-3xl font-black mb-6 leading-tight border-b pb-4 border-slate-200/50 font-serif">
                 {chapter.title}

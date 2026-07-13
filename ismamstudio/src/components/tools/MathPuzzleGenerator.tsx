@@ -9,6 +9,7 @@ import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import { drawCoverPagePart, drawWatermark } from "@/app/utils/pdfExportService";
+import { checkPremiumStatus } from "@/app/actions";
 
 const TRIM_SIZES = [
   { id: "6x9", label: "6\" x 9\" (Novel)", w: 6, h: 9 },
@@ -50,6 +51,19 @@ export default function MathPuzzleGenerator() {
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [numPages, setNumPages] = useState<number>(3);
+  const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+
+  useEffect(() => {
+    async function loadPremium() {
+      try {
+        const res = await checkPremiumStatus();
+        setPremiumStatus(res as any);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadPremium();
+  }, []);
   const [showAnswers, setShowAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
@@ -662,15 +676,22 @@ export default function MathPuzzleGenerator() {
             <div>
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex justify-between mb-1.5">
                 <span>Number of Pages</span>
-                <span className="text-amber-400 font-bold">{numPages}</span>
+                <span className="text-amber-400 font-bold">
+                  {premiumStatus.isPremium ? "Premium: Unlimited (Max 1000)" : "Free Limit: 3"}
+                </span>
               </label>
               <input
-                type="range"
+                type="number"
                 min="1"
-                max="30"
+                max={premiumStatus.isPremium ? 1000 : 3}
                 value={numPages}
-                onChange={(e) => setNumPages(Number(e.target.value))}
-                className="w-full accent-amber-500 cursor-ew-resize bg-slate-800 rounded-lg h-1.5"
+                onChange={(e) => {
+                  let val = Math.max(1, parseInt(e.target.value) || 1);
+                  const maxLimit = premiumStatus.isPremium ? 1000 : 3;
+                  if (val > maxLimit) val = maxLimit;
+                  setNumPages(val);
+                }}
+                className="w-full px-4 py-2.5 bg-slate-850 border border-slate-800 rounded-xl text-xs font-mono text-amber-400 focus:border-indigo-500 outline-none transition"
               />
             </div>
           </div>

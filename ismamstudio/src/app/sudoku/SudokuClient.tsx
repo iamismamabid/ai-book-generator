@@ -80,11 +80,7 @@ export default function SudokuGeneratorPage() {
     loadPremium();
   }, []);
 
-  const maxPuzzles = 
-    premiumStatus.plan === "free" ? 5 : 
-    premiumStatus.plan === "starter" ? 20 : 
-    premiumStatus.plan === "pro" ? 50 : 
-    500;
+  const maxPuzzles = premiumStatus.isPremium ? 1000 : 5;
 
   const handleBookCountChange = (val: number) => {
     let count = Math.max(1, val);
@@ -225,7 +221,7 @@ export default function SudokuGeneratorPage() {
                   <label className="block text-sm text-slate-400 mb-2">
                     Number of puzzles
                     <span className="ml-2 text-xs text-slate-500">
-                      {premiumStatus.plan === "free" ? "(Free limit: 5)" : premiumStatus.plan === "starter" ? "(Starter limit: 20)" : premiumStatus.plan === "pro" ? "(Pro limit: 50)" : "(Agency limit: 500)"}
+                      {premiumStatus.isPremium ? "(Premium: Unlimited)" : "(Free limit: 5)"}
                     </span>
                   </label>
                   <input

@@ -103,11 +103,7 @@ export default function MazeGeneratorPage() {
     loadPremium();
   }, []);
 
-  const maxMazes = 
-    premiumStatus.plan === "free" ? 5 : 
-    premiumStatus.plan === "starter" ? 20 : 
-    premiumStatus.plan === "pro" ? 50 : 
-    500;
+  const maxMazes = premiumStatus.isPremium ? 1000 : 5;
 
   const handleBookCountChange = (val: number) => {
     let count = Math.max(1, val);
@@ -272,7 +268,7 @@ export default function MazeGeneratorPage() {
                   <label className="block text-sm text-slate-400 mb-2">
                     Number of Puzzles
                     <span className="ml-1 text-[10px] text-slate-500">
-                      {premiumStatus.plan === "free" ? "(Max 5)" : premiumStatus.plan === "starter" ? "(Max 20)" : premiumStatus.plan === "pro" ? "(Max 50)" : "(Max 500)"}
+                      {premiumStatus.isPremium ? "(Premium: Unlimited)" : "(Max 5)"}
                     </span>
                   </label>
                   <input

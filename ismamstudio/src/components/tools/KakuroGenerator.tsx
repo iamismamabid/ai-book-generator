@@ -210,15 +210,22 @@ export default function KakuroGenerator() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-black uppercase text-slate-450 tracking-wider">Number of Pages</label>
-                  <span className="text-[10px] font-black text-indigo-400">{numPages} Puzzles</span>
+                  <span className="text-[10px] font-black text-indigo-400">
+                    {premiumStatus.isPremium ? "Premium: Unlimited (Max 1000)" : "Free Limit: 5"}
+                  </span>
                 </div>
                 <input
-                  type="range"
+                  type="number"
                   min="1"
-                  max="50"
+                  max={premiumStatus.isPremium ? 1000 : 5}
                   value={numPages}
-                  onChange={(e) => setNumPages(parseInt(e.target.value))}
-                  className="w-full accent-indigo-600 cursor-pointer h-1 bg-slate-850 rounded-lg appearance-none"
+                  onChange={(e) => {
+                    let val = Math.max(1, parseInt(e.target.value) || 1);
+                    const maxLimit = premiumStatus.isPremium ? 1000 : 5;
+                    if (val > maxLimit) val = maxLimit;
+                    setNumPages(val);
+                  }}
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-mono text-indigo-400 focus:border-indigo-500 outline-none transition"
                 />
               </div>
 

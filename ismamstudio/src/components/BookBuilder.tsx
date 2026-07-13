@@ -10,6 +10,7 @@ import { MazeEditor } from "./MazeEditor";
 import { WordScrambleEditor } from "./WordScrambleEditor";
 import { CryptogramEditor } from "./CryptogramEditor";
 import { MathPuzzleEditor } from "./MathPuzzleEditor";
+import { KakuroEditor } from "./KakuroEditor";
 import LowContentEditor from "./LowContentEditor";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
 import { useBookValidation } from "@/hooks/useBookValidation";
@@ -171,7 +172,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     const newSolPages: any[] = [];
     bookPages.forEach((page) => {
       // Check if it's a puzzle and not already a solution page
-      if (['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle'].includes(page.type) && !page.config.isSolution) {
+      if (['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle', 'kakuro'].includes(page.type) && !page.config.isSolution) {
         newSolPages.push({
           id: Date.now() + Math.random(),
           type: page.type,
@@ -321,6 +322,12 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
+            {bookPages[activeIndex].type === 'kakuro' && (
+              <KakuroEditor
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+              />
+            )}
 
             {bookPages[activeIndex].type === 'low_content' && (
               <LowContentEditor
@@ -439,6 +446,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
               { type: 'word_scramble', config: {}, label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
               { type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
               { type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
+              { type: 'kakuro', config: { sizeId: '6x6', difficulty: 'medium' }, label: 'Kakuro Puzzle', desc: 'Crossword-style number sums logic grids', icon: '🔢', color: 'bg-orange-50 border-orange-200 text-orange-600' },
               
               // Low-Content journal/planner templates
               { type: 'low_content', config: { template: 'lined_journal' }, label: 'Lined Journal', desc: 'Horizontal writing lines', icon: '📖', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },

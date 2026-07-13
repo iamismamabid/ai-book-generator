@@ -27,6 +27,7 @@ export default function Header() {
                 src="/logo.png"
                 alt="Ismam Studio Logo"
                 fill
+                sizes="144px"
                 className="object-contain"
                 priority
               />

@@ -149,7 +149,7 @@ export default function RootLayout({
               }}
             />
             {/* Google Tag Manager */}
-            <Script id="google-tag-manager" strategy="afterInteractive">
+            <Script id="google-tag-manager" strategy="lazyOnload">
               {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
               new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
               j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -160,9 +160,9 @@ export default function RootLayout({
             {/* Google Analytics (gtag.js) */}
             <Script
               src="https://www.googletagmanager.com/gtag/js?id=G-B08V9NL031"
-              strategy="afterInteractive"
+              strategy="lazyOnload"
             />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script id="google-analytics" strategy="lazyOnload">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
@@ -172,7 +172,7 @@ export default function RootLayout({
             </Script>
 
             {/* PartneroJS Tracking Script */}
-            <Script id="partnero-js" strategy="afterInteractive">
+            <Script id="partnero-js" strategy="lazyOnload">
             {`
               (function(p,t,n,e,r,o){ p['__partnerObject']=r;function f(){
               var c={ a:arguments,q:[]};var r=this.push(c);return "number"!=typeof r?r:f.bind(c.q);}

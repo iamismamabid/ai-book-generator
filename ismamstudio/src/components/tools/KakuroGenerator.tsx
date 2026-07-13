@@ -30,9 +30,8 @@ export default function KakuroGenerator() {
   const [showGuides, setShowGuides] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
 
-  // Puzzle lists states
-  const [puzzles, setPuzzles] = useState<{ puzzle: KakuroPuzzle; solution: KakuroPuzzle }[]>([]);
-  const [activePreviewIndex, setActivePreviewIndex] = useState<number>(0);
+  // Preview puzzle state
+  const [previewPuzzle, setPreviewPuzzle] = useState<{ puzzle: KakuroPuzzle; solution: KakuroPuzzle } | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
@@ -50,16 +49,11 @@ export default function KakuroGenerator() {
     loadPremium();
   }, []);
 
-  const handleGenerate = () => {
+  const handleGeneratePreview = () => {
     setIsGenerating(true);
-    const generated: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[] = [];
-
-    for (let p = 0; p < numPages; p++) {
-      // Create puzzle (with hidden numbers) and solution (with full values revealed)
+    try {
       const sol = generateKakuro(sizeId, difficulty);
-      // Clone it to keep puzzle separate
       const puz = JSON.parse(JSON.stringify(sol)) as KakuroPuzzle;
-      // Clear solved values that are not displayValues in the puzzle version
       puz.grid.forEach(row => {
         row.forEach(cell => {
           if (cell.type === "white" && !cell.displayValue) {
@@ -67,25 +61,37 @@ export default function KakuroGenerator() {
           }
         });
       });
-
-      generated.push({ puzzle: puz, solution: sol });
+      setPreviewPuzzle({ puzzle: puz, solution: sol });
+    } catch (e) {
+      console.error(e);
     }
-
-    setPuzzles(generated);
-    setActivePreviewIndex(0);
     setIsGenerating(false);
   };
 
   useEffect(() => {
-    handleGenerate();
+    handleGeneratePreview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sizeId, difficulty, numPages]);
+  }, [sizeId, difficulty]);
 
   const handleDownload = async (coverState: any = null) => {
     setIsDownloading(true);
     try {
+      const generatedPuzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[] = [];
+      for (let p = 0; p < numPages; p++) {
+        const sol = generateKakuro(sizeId, difficulty);
+        const puz = JSON.parse(JSON.stringify(sol)) as KakuroPuzzle;
+        puz.grid.forEach(row => {
+          row.forEach(cell => {
+            if (cell.type === "white" && !cell.displayValue) {
+              delete cell.value;
+            }
+          });
+        });
+        generatedPuzzles.push({ puzzle: puz, solution: sol });
+      }
+
       await downloadKakuroPdf({
-        puzzles,
+        puzzles: generatedPuzzles,
         difficulty,
         trimSize: trimSize.id as any,
         title: "Kakuro",
@@ -101,7 +107,7 @@ export default function KakuroGenerator() {
     setIsExportModalOpen(false);
   };
 
-  const previewItem = puzzles[activePreviewIndex];
+  const previewItem = previewPuzzle;
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-8 px-6 relative overflow-hidden">
@@ -245,10 +251,10 @@ export default function KakuroGenerator() {
             </div>
 
             <button
-              onClick={() => handleGenerate()}
+              onClick={() => handleGeneratePreview()}
               className="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow"
             >
-              <RefreshCw className="w-4 h-4" /> Refresh Grid Patterns
+              <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} /> Refresh Preview Grid
             </button>
           </div>
 
@@ -267,22 +273,14 @@ export default function KakuroGenerator() {
 
               {/* Upper Pagination */}
               <div className="flex justify-between items-center w-full relative z-10">
+                <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest bg-slate-950 px-4 py-2 rounded-xl border border-slate-850">
+                  Previewing Random Grid Layout
+                </div>
                 <button
-                  disabled={activePreviewIndex === 0}
-                  onClick={() => setActivePreviewIndex(prev => prev - 1)}
-                  className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-black disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+                  onClick={handleGeneratePreview}
+                  className="px-4 py-2 bg-indigo-650 hover:bg-indigo-600 text-white rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 shadow"
                 >
-                  PREVIOUS PAGE
-                </button>
-                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest bg-slate-950 px-4 py-2 rounded-xl border border-slate-850">
-                  Page {activePreviewIndex + 1} of {numPages}
-                </span>
-                <button
-                  disabled={activePreviewIndex === puzzles.length - 1}
-                  onClick={() => setActivePreviewIndex(prev => prev + 1)}
-                  className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-black disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
-                >
-                  NEXT PAGE
+                  <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} /> Refresh Preview
                 </button>
               </div>
 

@@ -232,51 +232,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Problem / Solution Section */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 py-16 text-center">
-        <div className="bg-white rounded-[3rem] border border-slate-200/70 shadow-sm p-8 md:p-12">
-          <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-8">KDP Publishing Is Hard...</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-100">Traditional Formatting Pitfalls</span>
-              <ul className="space-y-3 font-semibold text-xs md:text-sm text-slate-500 leading-relaxed">
-                <li className="flex items-start gap-2.5">
-                  <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                  <span>Formatting interiors takes hours of manual ruler calculations.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                  <span>Puzzle generators yield duplicate grids rejected by Amazon KDP.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                  <span>Cover design calculations require expensive, custom layout software.</span>
-                </li>
-              </ul>
-              <div className="mt-4 text-[10px] font-black text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100 uppercase tracking-wider leading-relaxed">
-                ⚠️ Danger: A single margin or bleed formatting error can reject your book or cost you 30+ days of reprint delays.
-              </div>
-            </div>
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">The KDPage Solution</span>
-              <ul className="space-y-3 font-semibold text-xs md:text-sm text-slate-600 leading-relaxed">
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                  <span>All-in-one suite. Go from zero to publication-ready PDF in 30 seconds.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                  <span>Mathematically unique, single-solution puzzles every compile.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                  <span>Dynamic cover canvas with live bleed guides and margins.</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* SaaS Features Grid */}
       <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-100">

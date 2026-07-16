@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import CustomCursor from '@/app/components/CustomCursor';
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -77,6 +78,7 @@ export default function RootLayout({
           </noscript>
 
           <ThemeProvider>
+            <CustomCursor />
             {/* Professional Floating Navbar */}
             <Header />
 

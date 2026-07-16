@@ -58,7 +58,21 @@ export function generateSudoku(difficulty: 'easy' | 'medium' | 'hard' = 'medium'
   return { puzzle, solution };
 }
 
-export function generatePuzzleGrid(wordList: string[], size: number, textCase: string) {
+export interface PlacedWord {
+  text: string;
+  startR: number;
+  startC: number;
+  endR: number;
+  endC: number;
+}
+
+export interface WordSearchGridData {
+  grid: string[][];
+  words: PlacedWord[];
+  mask: boolean[][];
+}
+
+export function generatePuzzleGrid(wordList: string[], size: number, textCase: string): WordSearchGridData {
   const grid = Array(size).fill(null).map(() => Array(size).fill(''));
   const mask = Array(size).fill(null).map(() => Array(size).fill(false)); 
   const directions = [[0, 1], [1, 0], [1, 1], [-1, 1]];
@@ -98,4 +112,34 @@ export function generatePuzzleGrid(wordList: string[], size: number, textCase: s
     }
   }
   return { grid, words: placedWords, mask };
+}
+
+// --- WORD SEARCH BOOK BATCH GENERATOR ---
+// Used when no custom word list is supplied (e.g. bulk/batch generation),
+// mirroring how generateSudoku() fills a book without external input.
+const DEFAULT_WORD_SEARCH_BANK = [
+  "APPLE", "BEACH", "CASTLE", "DESERT", "EAGLE", "FOREST", "GARDEN", "HARBOR",
+  "ISLAND", "JUNGLE", "KITTEN", "LANTERN", "MOUNTAIN", "NOODLE", "OCEAN", "PUZZLE",
+  "QUARTZ", "RIVER", "SUNSET", "TURTLE", "UMBRELLA", "VALLEY", "WINTER", "ZEBRA",
+  "BRIDGE", "CANDLE", "DOLPHIN", "ENGINE", "FEATHER", "GALAXY", "HORIZON", "IGLOO",
+  "JACKET", "KOALA", "LEMON", "MELODY", "NEBULA", "ORCHID", "PLANET", "QUILT",
+];
+
+export function getWordSearchDifficultyConfig(difficulty: 'easy' | 'medium' | 'hard') {
+  if (difficulty === 'easy') return { gridSize: 10, wordsPerPuzzle: 8 };
+  if (difficulty === 'hard') return { gridSize: 15, wordsPerPuzzle: 16 };
+  return { gridSize: 12, wordsPerPuzzle: 12 };
+}
+
+export function generateWordSearchBook(
+  count: number,
+  difficulty: 'easy' | 'medium' | 'hard' = 'medium',
+  wordBank: string[] = DEFAULT_WORD_SEARCH_BANK
+): WordSearchGridData[] {
+  const { gridSize, wordsPerPuzzle } = getWordSearchDifficultyConfig(difficulty);
+
+  return Array.from({ length: count }, () => {
+    const words = [...wordBank].sort(() => 0.5 - Math.random()).slice(0, wordsPerPuzzle);
+    return generatePuzzleGrid(words, gridSize, 'uppercase');
+  });
 }

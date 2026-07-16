@@ -245,71 +245,170 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number) =
 };
 
 // Helper: Draw Word Search Grid
-const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number) => {
-  const data = page.config.gridData;
-  const isSolution = page.config.isSolution || false;
-  const size = 12;
-  const cellSize = 0.35;
-  const startX = (pageWidth - size * cellSize) / 2 + xShift;
-  const startY = 1.4;
+// --- SHARED WORD SEARCH PDF PRIMITIVES ---
+// Single implementation of grid + word-list rendering, reused by the
+// BookBuilder export flow below, the standalone Word Search Studio
+// (src/app/tools/word-search/WordSearchClient.tsx), and the bulk generator
+// (src/lib/wordSearch-pdf.ts) so all three flows render identically styled
+// puzzles instead of maintaining separate copies.
+export interface WordSearchStyle {
+  font?: string;
+  letterFontSize?: number;
+  lineWidth?: number;
+  cellColor?: string;
+  borderColor?: string;
+  wordFont?: string;
+  wordFontSize?: number;
+  wordTextColor?: string;
+  wordTextAlign?: 'left' | 'center';
+  wordColumns?: number;
+  wordRowStep?: number;
+  highlightColor?: string;
+  highlightTextColor?: string;
+  solutionHighlighter?: 'apple' | 'fill' | 'fade';
+  letterBold?: boolean;
+}
 
-  doc.setFont("Helvetica", "bold");
-  doc.setFontSize(11);
-  
-  // Draw Letters
+const WORD_SEARCH_DEFAULT_STYLE: Required<WordSearchStyle> = {
+  font: 'helvetica',
+  letterFontSize: 11,
+  lineWidth: 0.01,
+  cellColor: '#FFFFFF',
+  borderColor: '#F1F5F9',
+  wordFont: 'helvetica',
+  wordFontSize: 9.5,
+  wordTextColor: '#000000',
+  wordTextAlign: 'left',
+  wordColumns: 3,
+  wordRowStep: 0.2,
+  highlightColor: '#E0E7FF',
+  highlightTextColor: '#4F46E5',
+  solutionHighlighter: 'fill',
+  letterBold: true,
+};
+
+export function drawWordSearchGrid(
+  doc: any,
+  data: { grid: string[][]; words: any[]; mask: boolean[][] },
+  zone: { x: number; y: number; size: number },
+  isSolution: boolean,
+  style: Partial<WordSearchStyle> = {}
+) {
+  const s = { ...WORD_SEARCH_DEFAULT_STYLE, ...style };
+  const gridSize = data.grid.length;
+  const cellSize = zone.size / gridSize;
+
+  // "Apple style" solution connector lines are drawn beneath the letters.
+  if (isSolution && s.solutionHighlighter === 'apple') {
+    doc.setLineWidth(cellSize * 0.08);
+    doc.setDrawColor(120, 120, 120);
+    doc.setLineJoin("round");
+    data.words.forEach((w: any) => {
+      const sX = zone.x + (w.startC * cellSize) + (cellSize / 2);
+      const sY = zone.y + (w.startR * cellSize) + (cellSize / 2);
+      const eX = zone.x + (w.endC * cellSize) + (cellSize / 2);
+      const eY = zone.y + (w.endR * cellSize) + (cellSize / 2);
+      const angle = Math.atan2(eY - sY, eX - sX);
+      const pad = cellSize * 0.40;
+      const len = Math.hypot(eX - sX, eY - sY);
+      const c = [{ x: -pad, y: -pad }, { x: len + pad, y: -pad }, { x: len + pad, y: pad }, { x: -pad, y: pad }]
+        .map(pt => ({
+          x: sX + (pt.x * Math.cos(angle) - pt.y * Math.sin(angle)),
+          y: sY + (pt.x * Math.sin(angle) + pt.y * Math.cos(angle)),
+        }));
+      doc.lines(
+        [[c[1].x - c[0].x, c[1].y - c[0].y], [c[2].x - c[1].x, c[2].y - c[1].y], [c[3].x - c[2].x, c[3].y - c[2].y]],
+        c[0].x, c[0].y, [1, 1], 'S', true
+      );
+    });
+  }
+
+  doc.setFontSize(s.letterFontSize);
+
   data.grid.forEach((row: string[], r: number) => {
     row.forEach((letter: string, c: number) => {
-      const x = startX + (c * cellSize);
-      const y = startY + (r * cellSize);
-      
-      // Draw light box boundary
-      doc.setDrawColor(241, 245, 249);
-      doc.rect(x, y, cellSize, cellSize);
-      
+      const x = zone.x + (c * cellSize);
+      const y = zone.y + (r * cellSize);
       const isWordLetter = isSolution && data.mask && data.mask[r][c];
 
+      doc.setDrawColor(s.borderColor);
+      doc.setLineWidth(s.lineWidth);
+      doc.setFillColor(s.cellColor);
+      doc.rect(x, y, cellSize, cellSize, "FD");
+
+      if (isSolution && s.solutionHighlighter === 'fill' && isWordLetter) {
+        doc.setFillColor(s.highlightColor);
+        doc.roundedRect(x + cellSize * 0.06, y + cellSize * 0.06, cellSize * 0.88, cellSize * 0.88, cellSize * 0.12, cellSize * 0.12, "F");
+      }
+
+      // Masked (answer) letters are always bold; other cells follow style.letterBold.
+      doc.setFont(s.font, isWordLetter || s.letterBold ? "bold" : "normal");
+
       if (isWordLetter) {
-        doc.setFillColor(224, 231, 255); // Indigo 100
-        doc.roundedRect(x + 0.02, y + 0.02, cellSize - 0.04, cellSize - 0.04, 0.04, 0.04, "F");
-        doc.setTextColor(79, 70, 229); // Indigo 600
+        doc.setTextColor(s.highlightTextColor);
+      } else if (isSolution && (s.solutionHighlighter === 'fade' || s.solutionHighlighter === 'apple')) {
+        doc.setTextColor(210, 210, 210);
       } else {
         doc.setTextColor(30, 41, 59);
       }
 
-      // Draw centered letter
       const letterWidth = doc.getTextWidth(letter);
-      doc.text(letter, x + (cellSize - letterWidth) / 2, y + 0.23);
+      doc.text(letter, x + (cellSize - letterWidth) / 2, y + cellSize * 0.65);
     });
   });
 
-  // Reset colors
   doc.setTextColor(0);
+}
 
-  // Words list to find
-  doc.setFont("Helvetica", "bold");
-  doc.setFontSize(11);
-  const wordsY = startY + (size * cellSize) + 0.4;
-  doc.text("WORDS TO FIND:", startX + 0.5, wordsY);
+export function drawWordSearchWordList(
+  doc: any,
+  words: any[],
+  zone: { x: number; y: number; w: number },
+  opts: { isSolution?: boolean; showHeading?: boolean; style?: Partial<WordSearchStyle> } = {}
+) {
+  const s = { ...WORD_SEARCH_DEFAULT_STYLE, ...opts.style };
+  const isSolution = opts.isSolution || false;
 
-  doc.setFont("Helvetica", "normal");
-  doc.setFontSize(9.5);
-  let wordOffset = 0.25;
-  let col = 0;
-  data.words.forEach((w: any) => {
-    const xPos = startX + 0.5 + col * 1.5;
-    if (isSolution) {
-      doc.setTextColor(148, 163, 184); // Slate 400
-    }
-    doc.text(w.text, xPos, wordsY + wordOffset);
-    col++;
-    if (col >= 3) {
-      col = 0;
-      wordOffset += 0.2;
-    }
+  let headingOffset = 0;
+  if (opts.showHeading) {
+    doc.setFont(s.wordFont, "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text("WORDS TO FIND:", zone.x, zone.y);
+    headingOffset = 0.25;
+  }
+
+  doc.setFont(s.wordFont, "bold");
+  doc.setFontSize(s.wordFontSize);
+  doc.setTextColor(isSolution ? "#94A3B8" : s.wordTextColor);
+
+  const colWidth = zone.w / s.wordColumns;
+  words.forEach((w: any, idx: number) => {
+    const rowIdx = Math.floor(idx / s.wordColumns);
+    const colIdx = idx % s.wordColumns;
+    const x = zone.x + (colIdx * colWidth);
+    const y = zone.y + headingOffset + ((rowIdx + 1) * s.wordRowStep);
+    doc.text(w.text, x, y, { align: s.wordTextAlign });
   });
 
-  // Reset text color
   doc.setTextColor(0);
+}
+
+const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number) => {
+  const data = page.config.gridData;
+  const isSolution = page.config.isSolution || false;
+  const gridSize = data.grid.length;
+  const cellSize = 0.35;
+  const gridPx = gridSize * cellSize;
+  const startX = (pageWidth - gridPx) / 2 + xShift;
+  const startY = 1.4;
+
+  drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridPx }, isSolution);
+
+  drawWordSearchWordList(doc, data.words, { x: startX + 0.5, y: startY + gridPx + 0.4, w: gridPx - 0.5 }, {
+    isSolution,
+    showHeading: true,
+  });
 };
 
 // Helper: Draw Sudoku Grid

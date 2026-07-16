@@ -4,53 +4,11 @@ import Link from "next/link";
 import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText, Lock, Sparkles } from "lucide-react";
 import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
-import { drawCoverPagePart, drawWatermark } from "../../utils/pdfExportService";
+import { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList } from "../../utils/pdfExportService";
+import { generatePuzzleGrid } from "../../utils/puzzleEngine";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import { useRouter } from "next/navigation";
 import { checkPremiumStatus } from "@/app/actions";
-
-// 🧠 1. The Advanced Puzzle Algorithm
-function generatePuzzleGrid(wordList: string[], size: number, textCase: string) {
-    const grid = Array(size).fill(null).map(() => Array(size).fill(''));
-    const mask = Array(size).fill(null).map(() => Array(size).fill(false)); 
-    const directions = [[0, 1], [1, 0], [1, 1], [-1, 1]];
-    const placedWords: any[] = [];
-
-    wordList.forEach(word => {
-        let placed = false; let attempts = 0;
-        const targetWord = textCase === 'lowercase' ? word.toLowerCase() : word.toUpperCase();
-        while (!placed && attempts < 200) { 
-            const dir = directions[Math.floor(Math.random() * directions.length)];
-            const minRow = dir[0] === -1 ? targetWord.length - 1 : 0; const maxRow = dir[0] === 1 ? size - targetWord.length : size - 1;
-            const minCol = 0; const maxCol = dir[1] === 1 ? size - targetWord.length : size - 1;
-            const row = Math.floor(Math.random() * (maxRow - minRow + 1)) + minRow;
-            const col = Math.floor(Math.random() * (maxCol - minCol + 1)) + minCol;
-
-            let canPlace = true;
-            for (let i = 0; i < targetWord.length; i++) {
-                const r = row + (dir[0] * i); const c = col + (dir[1] * i);
-                if (r < 0 || r >= size || c < 0 || c >= size || (grid[r][c] !== '' && grid[r][c] !== targetWord[i])) { canPlace = false; break; }
-            }
-            if (canPlace) {
-                for (let i = 0; i < targetWord.length; i++) {
-                    const r = row + (dir[0] * i); const c = col + (dir[1] * i);
-                    grid[r][c] = targetWord[i]; mask[r][c] = true; 
-                }
-                placed = true;
-                placedWords.push({ text: targetWord, startR: row, startC: col, endR: row + (dir[0] * (targetWord.length - 1)), endC: col + (dir[1] * (targetWord.length - 1)) });
-            }
-            attempts++;
-        }
-    });
-    
-    const alphabet = textCase === 'lowercase' ? "abcdefghijklmnopqrstuvwxyz" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) { 
-            if (grid[r][c] === '') grid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)]; 
-        }
-    }
-    return { grid, words: placedWords, mask };
-}
 
 const TRIM_SIZES = [
     { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
@@ -293,11 +251,10 @@ export default function WordSearchStudio() {
                 const puzIndex = (p * puzzlesPerPage) + z;
                 if (puzIndex >= totalPuzzles) break;
                 const zone = puzZones[z];
-                const { grid, words: pageWords } = bookPuzzles[puzIndex];
+                const { grid, words: pageWords, mask } = bookPuzzles[puzIndex];
 
                 const titleSpace = 0.4; const wordListSpace = puzzlesPerPage === 4 ? 0.8 : 1.5;
                 const gridDrawSize = Math.min(zone.w, zone.h - titleSpace - wordListSpace);
-                const cellSize = gridDrawSize / gridSize;
 
                 let startX = zone.x;
                 if (puzzleAlign === 'center') startX = zone.x + (zone.w - gridDrawSize)/2;
@@ -306,29 +263,24 @@ export default function WordSearchStudio() {
 
                 // Draw title
                 doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
-                const titleStr = useFirstLineAsTitle && pageWords.length > 0 ? `${pageWords[0].title} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
+                const titleStr = useFirstLineAsTitle && titleText ? `${titleText} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
                 doc.text(titleStr, zone.x + zone.w/2, zone.y + 0.25, { align: "center" });
 
-                // Draw grid
-                doc.setFont(lettersFont, "normal"); doc.setFontSize(letterTextSize * (gridDrawSize / 6.5));
-                for (let r = 0; r < gridSize; r++) {
-                    for (let c = 0; c < gridSize; c++) {
-                        const cellX = startX + (c * cellSize); const cellY = startY + (r * cellSize);
-                        doc.setFillColor(cellColor); doc.setDrawColor(borderColor); doc.setLineWidth(lineWidth * 0.01);
-                        doc.rect(cellX, cellY, cellSize, cellSize, "FD");
-                        doc.text(grid[r][c], cellX + (cellSize/2), cellY + (cellSize/2) + (cellSize * 0.05), { align: "center", baseline: "middle" });
-                    }
-                }
+                // Draw grid + word bank via the shared word search PDF primitives
+                // (also used by pdfExportService.ts and the bulk generator)
+                drawWordSearchGrid(doc, { grid, words: pageWords, mask }, { x: startX, y: startY, size: gridDrawSize }, false, {
+                    font: lettersFont,
+                    letterFontSize: letterTextSize * (gridDrawSize / 6.5),
+                    lineWidth: lineWidth * 0.01,
+                    cellColor,
+                    borderColor,
+                    letterBold: false,
+                });
 
-                // Draw word list bank
-                doc.setFont(wordFont, "bold"); doc.setFontSize(wordTextSize); doc.setTextColor(wordTextColor);
-                const colsCount = puzzlesPerPage === 4 ? 2 : 3;
-                const bankY = startY + gridDrawSize + 0.3;
-                pageWords.forEach((w, idx) => {
-                    const rowIdx = Math.floor(idx / colsCount); const colIdx = idx % colsCount;
-                    const itemX = zone.x + (colIdx * (zone.w / colsCount));
-                    const itemY = bankY + (rowIdx * 0.22);
-                    doc.text(w.text, itemX, itemY, { align: wordTextAlign });
+                const wordRowStep = 0.22;
+                const wordColumns = puzzlesPerPage === 4 ? 2 : 3;
+                drawWordSearchWordList(doc, pageWords, { x: zone.x, y: startY + gridDrawSize + 0.3 - wordRowStep, w: zone.w }, {
+                    style: { wordFont, wordFontSize: wordTextSize, wordTextColor, wordTextAlign, wordColumns, wordRowStep },
                 });
             }
         }
@@ -346,9 +298,8 @@ export default function WordSearchStudio() {
                     const zone = solZones[z];
                     const { grid, words: pageWords, mask } = bookPuzzles[solIndex];
 
-                    const titleSpace = 0.4; 
+                    const titleSpace = 0.4;
                     const gridDrawSize = Math.min(zone.w, zone.h - titleSpace);
-                    const cellSize = gridDrawSize / gridSize;
 
                     let startX = zone.x;
                     if (solutionAlign === 'center') startX = zone.x + (zone.w - gridDrawSize)/2;
@@ -358,32 +309,16 @@ export default function WordSearchStudio() {
                     doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
                     doc.text(`Answer #${solIndex + 1}`, zone.x + zone.w/2, zone.y + 0.2, { align: "center" });
 
-                    if (solutionHighlighter === 'apple') {
-                        doc.setLineWidth(cellSize * 0.08); doc.setDrawColor(120, 120, 120); doc.setLineJoin("round"); 
-                        pageWords.forEach(w => {
-                            const sX = startX + (w.startC * cellSize) + (cellSize / 2); const sY = startY + (w.startR * cellSize) + (cellSize / 2);
-                            const eX = startX + (w.endC * cellSize) + (cellSize / 2); const eY = startY + (w.endR * cellSize) + (cellSize / 2);
-                            const a = Math.atan2(eY - sY, eX - sX); const p = cellSize * 0.40; 
-                            const c = [{x:-p,y:-p},{x:Math.hypot(eX-sX,eY-sY)+p,y:-p},{x:Math.hypot(eX-sX,eY-sY)+p,y:p},{x:-p,y:p}].map(pt => ({x: sX + (pt.x*Math.cos(a) - pt.y*Math.sin(a)), y: sY + (pt.x*Math.sin(a) + pt.y*Math.cos(a))}));
-                            doc.lines([[c[1].x-c[0].x, c[1].y-c[0].y], [c[2].x-c[1].x, c[2].y-c[1].y], [c[3].x-c[2].x, c[3].y-c[2].y]], c[0].x, c[0].y, [1, 1], 'S', true);
-                        });
-                    }
-
-                    doc.setFontSize(letterTextSize * (gridDrawSize / 6.5));
-                    for (let r = 0; r < gridSize; r++) {
-                        for (let c = 0; c < gridSize; c++) {
-                            const cellX = startX + (c * cellSize); const cellY = startY + (r * cellSize);
-                            if (solutionHighlighter === 'fill' && mask[r][c]) {
-                                doc.setFillColor('#E2E8F0'); doc.rect(cellX, cellY, cellSize, cellSize, "F");
-                            }
-                            if (mask[r][c]) { 
-                                doc.setFont(lettersFont, "bold"); doc.setTextColor(0, 0, 0); 
-                            } else { 
-                                doc.setFont(lettersFont, "normal"); doc.setTextColor(solutionHighlighter === 'fade' || solutionHighlighter === 'apple' ? 210 : 0); 
-                            }
-                            doc.text(grid[r][c], cellX + (cellSize / 2), cellY + (cellSize / 2), { align: "center", baseline: "middle" });
-                        }
-                    }
+                    // Highlighted answer grid via the shared word search PDF primitive
+                    // (also used by pdfExportService.ts and the bulk generator)
+                    drawWordSearchGrid(doc, { grid, words: pageWords, mask }, { x: startX, y: startY, size: gridDrawSize }, true, {
+                        font: lettersFont,
+                        letterFontSize: letterTextSize * (gridDrawSize / 6.5),
+                        highlightColor: '#E2E8F0',
+                        highlightTextColor: '#000000',
+                        solutionHighlighter: solutionHighlighter === 'grayout' ? 'fade' : solutionHighlighter,
+                        letterBold: false,
+                    });
                 }
             }
         }

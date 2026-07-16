@@ -98,7 +98,7 @@ export default function CustomCursor() {
       {/* Inner Dot */}
       <div
         ref={dotRef}
-        className={`fixed pointer-events-none rounded-full z-[9999] -translate-x-1/2 -translate-y-1/2 transition-all duration-150 ease-out bg-[#800000] shadow-[0_0_8px_rgba(128,0,0,0.5)] ${
+        className={`fixed pointer-events-none rounded-full z-[2147483647] -translate-x-1/2 -translate-y-1/2 transition-all duration-150 ease-out bg-[#800000] shadow-[0_0_8px_rgba(128,0,0,0.5)] ${
           isVisible ? "opacity-100 scale-100" : "opacity-0 scale-50"
         } ${isHovered ? "w-3 h-3 bg-[#800000] shadow-[0_0_12px_rgba(128,0,0,0.8)]" : "w-2 h-2"}`}
         style={{ left: "-100px", top: "-100px" }}
@@ -107,7 +107,7 @@ export default function CustomCursor() {
       {/* Outer Ring */}
       <div
         ref={outerRingRef}
-        className={`fixed pointer-events-none rounded-full z-[9998] -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out border-2 border-black/40 bg-black/0 ${
+        className={`fixed pointer-events-none rounded-full z-[2147483646] -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out border-2 border-black/40 bg-black/0 ${
           isVisible ? "opacity-100 scale-100" : "opacity-0 scale-50"
         } ${
           isHovered

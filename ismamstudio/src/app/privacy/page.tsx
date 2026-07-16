@@ -3,8 +3,8 @@ import { ArrowLeft, Shield } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Ismam Studio Help Center",
-  description: "Read the Privacy Policy of Ismam Studio. Learn how we collect, use, and protect your personal data when you use our KDP publishing tool.",
+  title: "Privacy Policy | KDPage Help Center",
+  description: "Read the Privacy Policy of KDPage. Learn how we collect, use, and protect your personal data when you use our KDP publishing tool.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -96,7 +96,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
                 <li><strong>Right of Access & Rectification:</strong> You can view and update your details inside your account profile.</li>
-                <li><strong>Right to Erasure (Right to be Forgotten):</strong> You can request to delete your account and all associated books by contacting us at support@ismamstudio.me.</li>
+                <li><strong>Right to Erasure (Right to be Forgotten):</strong> You can request to delete your account and all associated books by contacting us at support@kdpage.com.</li>
                 <li><strong>Right to Data Portability:</strong> You can request a copy of all your generated data.</li>
                 <li><strong>Right to Restrict Processing:</strong> You can object to processing based on legitimate interests.</li>
               </ul>

@@ -2,8 +2,8 @@ import RedeemPageInner from "./RedeemPageInner";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Redeem AppSumo Code | Ismam Studio",
-  description: "Activate your lifetime access to Ismam Studio by entering your AppSumo redemption code.",
+  title: "Redeem AppSumo Code | KDPage",
+  description: "Activate your lifetime access to KDPage by entering your AppSumo redemption code.",
 };
 
 export default async function RedeemPage(props: { searchParams?: Promise<{ code?: string }> }) {

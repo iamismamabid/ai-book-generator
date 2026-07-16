@@ -4,8 +4,8 @@ import PricingSection from "@/components/PricingSection";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing Plans | Ismam Studio Book Creator",
-  description: "Explore Ismam Studio pricing options. Choose from our Free plan, Starter Creator, Pro Studio, or Publisher Agency monthly/annual subscription plans, or purchase our limited-time AppSumo Lifetime Deals.",
+  title: "Pricing Plans | KDPage Book Creator",
+  description: "Explore KDPage pricing options. Choose from our Free plan, Starter Creator, Pro Studio, or Publisher Agency monthly/annual subscription plans, or purchase our limited-time AppSumo Lifetime Deals.",
 };
 
 export default function PricingPage() {

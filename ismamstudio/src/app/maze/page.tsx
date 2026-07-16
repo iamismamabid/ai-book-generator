@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Free KDP Maze Generator | Design Shape-Masked Labyrinths",
   description: "Generate stunning custom shape-masked mazes for children and adults. Fully compliant with Amazon KDP print margin specifications. Download vector PDFs.",
   alternates: {
-    canonical: "https://www.ismamstudio.me/maze",
+    canonical: "https://www.kdpage.com/maze",
   },
   openGraph: {
     title: "Free KDP Maze Generator | Design Shape-Masked Labyrinths",
     description: "Generate stunning custom shape-masked mazes for children and adults. Fully compliant with Amazon KDP print margin specifications. Download vector PDFs.",
-    url: "https://www.ismamstudio.me/maze",
+    url: "https://www.kdpage.com/maze",
     type: "website",
   }
 };

@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import KdpChecklistPage from "./KdpChecklistClient";
 
 export const metadata: Metadata = {
-  title: "The Ultimate KDP Bestseller Checklist | Ismam Studio Guide",
+  title: "The Ultimate KDP Bestseller Checklist | KDPage Guide",
   description: "Check off crucial publishing tasks before uploading. Verify your interior margins, spine dimensions, barcode spacing, and metadata keywords.",
   alternates: {
-    canonical: "https://www.ismamstudio.me/kdp-checklist",
+    canonical: "https://www.kdpage.com/kdp-checklist",
   },
   openGraph: {
-    title: "The Ultimate KDP Bestseller Checklist | Ismam Studio Guide",
+    title: "The Ultimate KDP Bestseller Checklist | KDPage Guide",
     description: "Check off crucial publishing tasks before uploading. Verify your interior margins, spine dimensions, barcode spacing, and metadata keywords.",
-    url: "https://www.ismamstudio.me/kdp-checklist",
+    url: "https://www.kdpage.com/kdp-checklist",
     type: "website",
   }
 };

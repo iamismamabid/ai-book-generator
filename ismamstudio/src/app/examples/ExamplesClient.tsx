@@ -187,7 +187,7 @@ export default function ExamplesPage() {
 
                 <div className="w-full text-center border-t border-slate-100 pt-1 flex justify-between items-center text-[5px] font-black text-slate-500">
                   <span>Page 14</span>
-                  <span>Ismam Studio</span>
+                  <span>KDPage</span>
                 </div>
               </div>
             </div>

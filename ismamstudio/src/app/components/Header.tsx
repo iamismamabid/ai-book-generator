@@ -25,7 +25,7 @@ export default function Header() {
             <div className="relative w-36 h-12 group-hover:scale-105 transition-transform">
               <Image
                 src="/logo.png"
-                alt="Ismam Studio Logo"
+                alt="KDPage Logo"
                 fill
                 sizes="144px"
                 className="object-contain"

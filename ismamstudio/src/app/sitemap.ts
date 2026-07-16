@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { BLOG_POSTS } from './blog/posts'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://www.ismamstudio.me';
+    const baseUrl = 'https://www.kdpage.com';
 
     // Dynamically generate blog post URLs from BLOG_POSTS array
     const blogPostUrls: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({

@@ -210,7 +210,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
                   <Gift className="w-7 h-7" />
                 </div>
                 <h1 className="text-3xl font-black tracking-tight text-white">Redeem AppSumo Code</h1>
-                <p className="text-slate-400 text-sm mt-2">Activate your lifetime access to Ismam Studio</p>
+                <p className="text-slate-400 text-sm mt-2">Activate your lifetime access to KDPage</p>
               </div>
 
               <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mb-6" />

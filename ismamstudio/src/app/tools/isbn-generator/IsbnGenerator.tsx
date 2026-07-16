@@ -1083,7 +1083,7 @@ export default function IsbnGenerator() {
           <div className="absolute -right-20 -top-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="space-y-3 max-w-2xl">
             <h2 className="text-3xl font-black text-white tracking-tight">
-              Build your entire book with Ismam Studio
+              Build your entire book with KDPage
             </h2>
             <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
               ISBN barcodes, KDP covers, interiors, calculators — 100+ free tools for self-publishers.

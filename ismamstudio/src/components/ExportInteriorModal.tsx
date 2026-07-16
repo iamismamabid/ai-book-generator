@@ -204,7 +204,7 @@ export default function ExportInteriorModal({
                   <div>
                     <span className="font-black text-slate-900 block">Free Account Sample Warning</span>
                     <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
-                      Exported KDP interior compile files will include a light diagonal **"SAMPLE - ISMAM STUDIO"** watermark on all pages. 
+                      Exported KDP interior compile files will include a light diagonal **"SAMPLE - KDPAGE"** watermark on all pages. 
                     </p>
                   </div>
                 </div>

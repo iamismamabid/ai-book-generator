@@ -42,7 +42,7 @@ export const BLOG_POSTS: Post[] = [
       "### What are Medium-Content Books?",
       "Medium-content books contain unique, engaging interiors customized for the reader. This category includes Sudoku collections, word search booklets, shaped labyrinth books, coloring pages, and guided workbooks. Because they require specialized layout design, the barrier to entry is higher, resulting in less competition and higher pricing power.",
       "### Which is More Profitable?",
-      "Medium-content books are significantly more profitable. A standard 120-page Sudoku puzzle book can easily retail for $7.99 to $9.99, generating a royalty of $2.50 to $3.50 per sale. In contrast, a simple lined journal retails for $5.99, generating less than $1.50 in royalties. By utilizing automated builders like Ismam Studio, you can compile medium-content books in the same amount of time it takes to save a blank journal, maximizing your return on time invested."
+      "Medium-content books are significantly more profitable. A standard 120-page Sudoku puzzle book can easily retail for $7.99 to $9.99, generating a royalty of $2.50 to $3.50 per sale. In contrast, a simple lined journal retails for $5.99, generating less than $1.50 in royalties. By utilizing automated builders like KDPage, you can compile medium-content books in the same amount of time it takes to save a blank journal, maximizing your return on time invested."
     ]
   },
   {
@@ -98,21 +98,21 @@ export const BLOG_POSTS: Post[] = [
       "Use online calculator tools to translate BSR to estimated monthly sales. For example, a paperback book with a BSR of 50,000 sells approximately 3-5 copies per day (90-150 copies per month). If the royalty per sale is $2.50, a single validated book can bring in $225 to $375 in passive monthly royalties.",
       "### Step 3: Spotting Market Saturation",
       "Type your target keyword in Amazon's search bar and analyze the first page results. If all top ranking books have 500+ reviews and are sponsored ads, the niche is highly competitive. Look for niches where top books have fewer than 100 reviews and were published recently (within the last 6 months)—this indicates a gap you can fill.",
-      "### Step 4: Use the Ismam Studio Niche Spy (Now Live!)",
-      "Ismam Studio's AI KDP Niche Hunter & Keyword Spy is now fully live inside your dashboard. Simply enter any keyword and the tool fetches real-time Amazon search volumes, analyzes competitor BSR data, and estimates potential monthly royalties — all in seconds. No spreadsheets required. Access it directly from the Research Console on your dashboard or at ismamstudio.me/tools/keyword-research."
+      "### Step 4: Use the KDPage Niche Spy (Now Live!)",
+      "KDPage's AI KDP Niche Hunter & Keyword Spy is now fully live inside your dashboard. Simply enter any keyword and the tool fetches real-time Amazon search volumes, analyzes competitor BSR data, and estimates potential monthly royalties — all in seconds. No spreadsheets required. Access it directly from the Research Console on your dashboard or at kdpage.com/tools/keyword-research."
     ]
   },
   {
     slug: "how-to-use-ismam-studio-free-kdp-tools",
-    title: "How to Use Ismam Studio's Free KDP Publishing Tools (Complete Guide)",
+    title: "How to Use KDPage's Free KDP Publishing Tools (Complete Guide)",
     category: "Tutorial",
     date: "July 08, 2026",
     readTime: "8 min read",
     description: "Unleash the power of our free publishing toolkit. Learn how to use all 12 of our free calculators, formatters, and generators step-by-step.",
     content: [
-      "Publishing books on Amazon Kindle Direct Publishing (KDP) requires juggling multiple tasks: formatting manuscript files, calculating cover template boundaries, writing marketing copy, and selecting keywords. To simplify this journey, Ismam Studio provides a comprehensive hub of 100% free publishing utilities. Here is a step-by-step guide on how to leverage these tools to publish professional-grade books without spending a dime.",
+      "Publishing books on Amazon Kindle Direct Publishing (KDP) requires juggling multiple tasks: formatting manuscript files, calculating cover template boundaries, writing marketing copy, and selecting keywords. To simplify this journey, KDPage provides a comprehensive hub of 100% free publishing utilities. Here is a step-by-step guide on how to leverage these tools to publish professional-grade books without spending a dime.",
       "### How to Find and Filter the Free Tools",
-      "To access the toolkit, click on the **'Free Tools'** link in the header navigation menu. This will take you to our centralized Free Tools Hub (ismamstudio.me/tools). You can browse all tools at once, or use the category buttons at the top to filter tools by **Design**, **Writing**, **Formatting**, or **Marketing** depending on your immediate task.",
+      "To access the toolkit, click on the **'Free Tools'** link in the header navigation menu. This will take you to our centralized Free Tools Hub (kdpage.com/tools). You can browse all tools at once, or use the category buttons at the top to filter tools by **Design**, **Writing**, **Formatting**, or **Marketing** depending on your immediate task.",
       "### 1. Free eBook Formatter (EPUB)",
       "Convert raw Word (.docx) or text (.txt) manuscripts into professional Kindle-ready EPUB files. The tool structures your chapters, builds a dynamic table of contents, and packages it according to Amazon's reflowable ebook specifications automatically. Select your manuscript and click 'Upload manuscript' to format.",
       "### 2. KDP Interior PDF Formatter",
@@ -151,7 +151,7 @@ export const BLOG_POSTS: Post[] = [
       "### Why Sudoku KDP remains profitable",
       "Sudoku puzzles have a passionate, recurring customer base. Many readers finish one book per week, meaning they are constantly looking for new volumes. However, publishing a generic book is no longer enough. You must target sub-niches: 'Sudoku KDP for Seniors (Large Print)', 'Mini Pocket Sudoku for Commuters', or 'Multi-level Sudoku for Teens.'",
       "### Generating Sudoku grids with solutions",
-      "To avoid customer complaints, your Sudoku grids must have exactly one unique solution. Using automated generators like Ismam Studio ensures that every grid is mathematically sound. Additionally, KDP buyers expect solutions at the back of the book. Format your answers in a 4x4 or 6x6 grid grid preview to save page count and lower printing costs.",
+      "To avoid customer complaints, your Sudoku grids must have exactly one unique solution. Using automated generators like KDPage ensures that every grid is mathematically sound. Additionally, KDP buyers expect solutions at the back of the book. Format your answers in a 4x4 or 6x6 grid grid preview to save page count and lower printing costs.",
       "### Keywords and Metadata Optimization",
       "When setting up your KDP metadata, include search queries like: 'sudoku large print book', 'easy to hard sudoku collection', and 'logic brain games for adults.' This ensures Amazon's algorithm indexes your book for multiple search intents."
     ]
@@ -274,7 +274,7 @@ export const BLOG_POSTS: Post[] = [
       "### Target keywords for Kakuro",
       "Use backend keywords: 'kakuro cross sums', 'math logic puzzles for adults', and 'japanese number games.' This ensures your books surface when users search for non-Sudoku logic puzzles.",
       "### Start creating your number logic book",
-      "Ismam Studio's Math Puzzle Studio is the best starting point for building number-based puzzle books. It handles grid logic and number constraints automatically. Try it free at ismamstudio.me/studio/math-puzzle."
+      "KDPage's Math Puzzle Studio is the best starting point for building number-based puzzle books. It handles grid logic and number constraints automatically. Try it free at kdpage.com/studio/math-puzzle."
     ]
   },
   {
@@ -293,7 +293,7 @@ export const BLOG_POSTS: Post[] = [
       "### Capturing nonogram keywords",
       "Optimize your KDP metadata with terms like: 'japanese picture puzzles', 'griddlers logic book', and 'nonograms paint by numbers.' This drives high-intent buyers straight to your book.",
       "### Build your puzzle book today",
-      "While you design your nonogram grids manually or with a specialist tool, Ismam Studio helps you format, export to KDP-compliant PDF, and publish your completed book in minutes. Start for free at ismamstudio.me/studio."
+      "While you design your nonogram grids manually or with a specialist tool, KDPage helps you format, export to KDP-compliant PDF, and publish your completed book in minutes. Start for free at kdpage.com/studio."
     ]
   },
   {
@@ -312,7 +312,7 @@ export const BLOG_POSTS: Post[] = [
       "### Keywords for dot-to-dot books",
       "Use backend keywords: 'connect the dots for kids', 'extreme dot to dot for adults', and 'counting games for kindergarten.' This helps your activity sheets rank organically in multiple educational sub-categories.",
       "### From concept to published book",
-      "Once your dot-to-dot pages are designed, use Ismam Studio's Maze Studio to export structured, KDP-ready activity pages. Our free publishing tools handle the formatting so you can focus on creating. Get started at ismamstudio.me/maze."
+      "Once your dot-to-dot pages are designed, use KDPage's Maze Studio to export structured, KDP-ready activity pages. Our free publishing tools handle the formatting so you can focus on creating. Get started at kdpage.com/maze."
     ]
   },
   {
@@ -328,13 +328,13 @@ export const BLOG_POSTS: Post[] = [
       "### Step 1: Getting Set Up on Kindle Direct Publishing",
       "To start your journey to get self published on amazon, visit the KDP website and log in using your existing Amazon credentials or create a dedicated publisher account. You will need to complete your profile by providing payout details (such as direct deposit settings) and completing the standard tax interview. Once complete, you are fully authorized to launch unlimited titles across global marketplaces.",
       "### Step 2: Preparing Your Print-Ready Manuscript",
-      "Amazon kindle book publishing has strict quality standards for interior layouts. \n- **Trim Sizes**: Choose standard sizes like 6\" x 9\" for novels and 8.5\" x 11\" for puzzle and coloring books.\n- **Margins and Gutter**: Paperback books require gutter margins (binding offsets) ranging from 0.375 inches up to 0.875 inches depending on the page count, ensuring text doesn't slide into the fold.\n- **Formatting**: For novels, upload cleanly formatted DOCX or PDF files. For puzzle books and word searches, utilize specialized vector compilers like Ismam Studio to auto-align grids and page counts.",
+      "Amazon kindle book publishing has strict quality standards for interior layouts. \n- **Trim Sizes**: Choose standard sizes like 6\" x 9\" for novels and 8.5\" x 11\" for puzzle and coloring books.\n- **Margins and Gutter**: Paperback books require gutter margins (binding offsets) ranging from 0.375 inches up to 0.875 inches depending on the page count, ensuring text doesn't slide into the fold.\n- **Formatting**: For novels, upload cleanly formatted DOCX or PDF files. For puzzle books and word searches, utilize specialized vector compilers like KDPage to auto-align grids and page counts.",
       "### Step 3: Designing KDP-Compliant Covers",
       "Amazon calculates your wrap cover's spine width dynamically based on paper type and exact page counts. Use a spine calculator to determine dimensions to the exact pixel. Keep your title, subtitle, and author name clearly legible in thumbnail views, utilizing high-contrast color palettes (e.g. bold cream font over deep navy blue backgrounds).",
       "### Step 4: SEO and Backend Keywords",
       "KDP offers 7 backend keyword slots. Do not repeat your book title; instead, fill these slots with long-tail search phrases that readers actively query, such as 'how to publish on kindle', 'best self publishing platforms', or 'independent author guidelines.' Combined with a keyword-optimized subtitle, this builds immediate search authority without running expensive ads.",
       "### Start Publishing for Free Today",
-      "Ismam Studio's Creator Studio is designed to handle all formatting, cover-spine calculations, and interior puzzle compiler needs for KDP publishers. Explore our suite of 100% free publishing utilities at ismamstudio.me/tools."
+      "KDPage's Creator Studio is designed to handle all formatting, cover-spine calculations, and interior puzzle compiler needs for KDP publishers. Explore our suite of 100% free publishing utilities at kdpage.com/tools."
     ]
   }
 ];

@@ -3,8 +3,8 @@ import { ArrowLeft, Sparkles, DollarSign, Award, Target, Zap } from "lucide-reac
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Affiliate Program | Earn with Ismam Studio",
-  description: "Join the Ismam Studio Affiliate Program. Promote our KDP book-creation platform and earn a recurring 30% lifetime commission on every referral.",
+  title: "Affiliate Program | Earn with KDPage",
+  description: "Join the KDPage Affiliate Program. Promote our KDP book-creation platform and earn a recurring 30% lifetime commission on every referral.",
 };
 
 export default function AffiliatePage() {
@@ -38,7 +38,7 @@ export default function AffiliatePage() {
                 Earn 30% Lifetime Commission
               </h1>
               <p className="text-slate-400 text-sm font-semibold mt-1">
-                Partner with Ismam Studio and promote the most complete KDP publishing toolkit.
+                Partner with KDPage and promote the most complete KDP publishing toolkit.
               </p>
             </div>
             <div className="w-20 h-20 bg-indigo-600/10 rounded-3xl flex items-center justify-center text-indigo-400 border border-indigo-500/25 shrink-0">
@@ -100,7 +100,7 @@ export default function AffiliatePage() {
           {/* CTA */}
           <div className="pt-4 flex justify-center">
             <a
-              href="https://ismamstudio.partneroapp.com/"
+              href="https://kdpage.partneroapp.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black rounded-xl text-center shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-1.5 hover:opacity-90 transition"

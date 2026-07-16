@@ -3,15 +3,15 @@ import { ArrowLeft, Users, Shield, Cpu, BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us | Ismam Studio — KDP Book Creator Mission",
-  description: "Learn about the mission behind Ismam Studio: empowering Amazon KDP self-publishers with mathematically precise puzzle builders and cover canvases.",
+  title: "About Us | KDPage — KDP Book Creator Mission",
+  description: "Learn about the mission behind KDPage: empowering Amazon KDP self-publishers with mathematically precise puzzle builders and cover canvases.",
   alternates: {
-    canonical: "https://www.ismamstudio.me/about",
+    canonical: "https://www.kdpage.com/about",
   },
   openGraph: {
-    title: "About Us | Ismam Studio — KDP Book Creator Mission",
-    description: "Learn about the mission behind Ismam Studio: empowering Amazon KDP self-publishers with mathematically precise puzzle builders and cover canvases.",
-    url: "https://www.ismamstudio.me/about",
+    title: "About Us | KDPage — KDP Book Creator Mission",
+    description: "Learn about the mission behind KDPage: empowering Amazon KDP self-publishers with mathematically precise puzzle builders and cover canvases.",
+    url: "https://www.kdpage.com/about",
     type: "website",
   }
 };
@@ -41,7 +41,7 @@ export default function AboutPage() {
               <Users className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white">About Ismam Studio</h1>
+              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white">About KDPage</h1>
               <p className="text-slate-400 text-sm font-semibold mt-1">Our mission: Empower KDP authors to create without friction.</p>
             </div>
           </div>
@@ -55,7 +55,7 @@ export default function AboutPage() {
               Self-publishing on Amazon KDP offers immense passive income opportunities, but formatting interiors and designing wrap-around covers can be an absolute nightmare. Authors spend hours adjusting margins, calculating spine sizes, and wrestling with design tools just to have their uploads rejected by Amazon's review team.
             </p>
             <p className="text-slate-300 text-sm md:text-base leading-relaxed font-medium">
-              We built **Ismam Studio** to simplify this entire workflow. By combining specialized vector puzzle generators (Sudoku, Mazes, Word Search) with an intelligent cover canvas and AI story outlines, we allow creators to go from idea to publication-ready PDFs in less than 30 seconds.
+              We built **KDPage** to simplify this entire workflow. By combining specialized vector puzzle generators (Sudoku, Mazes, Word Search) with an intelligent cover canvas and AI story outlines, we allow creators to go from idea to publication-ready PDFs in less than 30 seconds.
             </p>
           </div>
 
@@ -96,7 +96,7 @@ export default function AboutPage() {
           <div className="mt-8 bg-indigo-950/20 border border-indigo-500/10 rounded-2xl p-6">
             <h3 className="text-white font-black text-base mb-2">Designed by Publishers, for Publishers</h3>
             <p className="text-slate-400 text-xs md:text-sm font-semibold leading-relaxed">
-              We continually update our tools based on KDP guidelines and customer reviews. If you have any feedback or feature requests, feel free to email our founder at <strong className="text-indigo-400">support@ismamstudio.me</strong>.
+              We continually update our tools based on KDP guidelines and customer reviews. If you have any feedback or feature requests, feel free to email our founder at <strong className="text-indigo-400">support@kdpage.com</strong>.
             </p>
           </div>
 

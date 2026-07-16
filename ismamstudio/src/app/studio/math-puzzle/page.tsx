@@ -1,7 +1,7 @@
 import MathPuzzleGenerator from "@/components/tools/MathPuzzleGenerator";
 
 export const metadata = {
-  title: "Math Puzzle Generator | Ismam Studio",
+  title: "Math Puzzle Generator | KDPage",
   description: "Create print-ready addition, multiplication, and arithmetic logic puzzle books for KDP.",
 };
 

@@ -1,10 +1,10 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "100% Free KDP Publishing Tools & Generators | Ismam Studio",
+  title: "100% Free KDP Publishing Tools & Generators | KDPage",
   description: "Free tools for Amazon KDP publishers. Calculate spine sizes, format book descriptions in HTML, generate puzzle interiors, valid EPUB formatting, and estimate royalties.",
   alternates: {
-    canonical: "https://www.ismamstudio.me/tools",
+    canonical: "https://www.kdpage.com/tools",
   },
   keywords: [
     "free kdp tools",
@@ -16,9 +16,9 @@ export const metadata: Metadata = {
     "book description formatter"
   ],
   openGraph: {
-    title: "100% Free KDP Publishing Tools & Generators | Ismam Studio",
+    title: "100% Free KDP Publishing Tools & Generators | KDPage",
     description: "Instant KDP tools including spine calculator, barcode generator, EPUB formatter, royalty estimator, and description formatter.",
-    url: "https://www.ismamstudio.me/tools",
+    url: "https://www.kdpage.com/tools",
     type: "website"
   }
 };

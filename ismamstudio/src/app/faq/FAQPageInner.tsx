@@ -6,16 +6,16 @@ import { useState } from "react";
 
 const faqs = [
   {
-    question: "What is Ismam Studio and who is it for?",
-    answer: "Ismam Studio is an all-in-one book interior creator designed specifically for self-published authors, educators, and content creators looking to generate print-ready books for Amazon KDP (Kindle Direct Publishing). It helps you build puzzle books (Sudoku, Mazes, Cryptograms, Math grids, Word searches, Scrambles) and write chapter outlines in minutes."
+    question: "What is KDPage and who is it for?",
+    answer: "KDPage is an all-in-one book interior creator designed specifically for self-published authors, educators, and content creators looking to generate print-ready books for Amazon KDP (Kindle Direct Publishing). It helps you build puzzle books (Sudoku, Mazes, Cryptograms, Math grids, Word searches, Scrambles) and write chapter outlines in minutes."
   },
   {
-    question: "How is Ismam Studio different from other puzzle creators?",
-    answer: "Unlike basic generators that produce plain grids or require complex design software, Ismam Studio offers an interactive, real-time visual canvas with zero limits. It formats files specifically to meet Amazon KDP trim sizes, automatically pairs puzzles with matching solution keys on A4/standard trim layouts, and features an integrated Cover Studio so you can build your entire book in the same workflow."
+    question: "How is KDPage different from other puzzle creators?",
+    answer: "Unlike basic generators that produce plain grids or require complex design software, KDPage offers an interactive, real-time visual canvas with zero limits. It formats files specifically to meet Amazon KDP trim sizes, automatically pairs puzzles with matching solution keys on A4/standard trim layouts, and features an integrated Cover Studio so you can build your entire book in the same workflow."
   },
   {
-    question: "Does Ismam Studio integrate with other self-publishing platforms?",
-    answer: "Yes. Ismam Studio outputs standard, high-resolution vector PDF interiors that are fully compliant with Amazon KDP print specifications. These files can also be uploaded to other print-on-demand networks like IngramSpark, Lulu, Barnes & Noble Press, and Draft2Digital without needing additional formatting."
+    question: "Does KDPage integrate with other self-publishing platforms?",
+    answer: "Yes. KDPage outputs standard, high-resolution vector PDF interiors that are fully compliant with Amazon KDP print specifications. These files can also be uploaded to other print-on-demand networks like IngramSpark, Lulu, Barnes & Noble Press, and Draft2Digital without needing additional formatting."
   },
   {
     question: "Can I use the generated puzzles and books for commercial purposes?",
@@ -26,7 +26,7 @@ const faqs = [
     answer: "No! With our paid tiers, you have unlimited puzzle and page generation. You can compile large compilations, custom activity books, or test different difficulty levels without worrying about monthly generation caps or page count restrictions."
   },
   {
-    question: "What file formats does Ismam Studio export?",
+    question: "What file formats does KDPage export?",
     answer: "We export print-ready PDF files for book interiors and high-quality PNG/JPG layouts for covers. The PDFs are generated with clean vector lines, ensuring crisp, clear print quality even at high page numbers when printed by Amazon."
   },
   {
@@ -65,7 +65,7 @@ export default function FAQPageInner() {
             </div>
             <div>
               <h1 className="text-3xl font-black tracking-tight text-white">Frequently Asked Questions</h1>
-              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mt-1">Ismam Studio Help & Support</p>
+              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mt-1">KDPage Help & Support</p>
             </div>
           </div>
 

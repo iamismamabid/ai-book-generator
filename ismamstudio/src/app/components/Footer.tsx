@@ -14,7 +14,7 @@ export default function Footer() {
               <div className="relative w-36 h-12 group-hover:scale-105 transition-transform">
                 <Image
                   src="/logo.png"
-                  alt="Ismam Studio Logo"
+                  alt="KDPage Logo"
                   fill
                   sizes="144px"
                   className="object-contain"
@@ -102,10 +102,10 @@ export default function Footer() {
             </p>
             <div className="space-y-3 flex flex-col items-start">
               <a
-                href="mailto:support@ismamstudio.me"
+                href="mailto:support@kdpage.com"
                 className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
               >
-                <Mail className="w-4 h-4" /> support@ismamstudio.me
+                <Mail className="w-4 h-4" /> support@kdpage.com
               </a>
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function Footer() {
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-500 text-xs font-bold uppercase tracking-wider text-center">
           <div>
-            © {new Date().getFullYear()} Ismam Studio. All rights reserved.
+            © {new Date().getFullYear()} KDPage. All rights reserved.
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <span className="text-[10px] bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/10 shrink-0">

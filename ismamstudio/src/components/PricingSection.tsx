@@ -273,7 +273,7 @@ function PricingSectionInner() {
       a: "Yes! We provide a 100% free, print-ready ISBN Barcode Generator that creates EAN-13 barcodes with optional EAN-5 price supplements, check digit validation, and custom color settings. You can download these as high-resolution 300 DPI PNGs or vector SVGs to place directly on your cover.",
     },
     {
-      q: "What trim sizes does Ismam Studio support?",
+      q: "What trim sizes does KDPage support?",
       a: "We support all major industry standards: 6\"x9\" (most popular for novels & standard books), 8.5\"x11\" (standard for large print puzzles, coloring sheets, and children's activity books), and 5\"x8\" (standard pocket size). Our canvas editor also allows custom dimension adjustments.",
     },
     {
@@ -285,7 +285,7 @@ function PricingSectionInner() {
       a: "Yes! You can upload custom word lists via CSV files or type them in manually. Our engine will dynamically check character counts, fit them inside the selected grid dimensions, and generate the final puzzles.",
     },
     {
-      q: "Can I use Ismam Studio on a tablet or mobile device?",
+      q: "Can I use KDPage on a tablet or mobile device?",
       a: "Yes, our studio layout features a responsive viewport canvas. While desktop screens are recommended for complex drag-and-drop cover alignments, you can easily generate puzzles, draft stories, and check your dashboard library from any iPad, tablet, or phone.",
     },
   ];

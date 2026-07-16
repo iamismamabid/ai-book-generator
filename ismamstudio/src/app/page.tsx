@@ -173,7 +173,7 @@ export default function HomePage() {
                       ? "https://app.arcade.software/share/zwSHISc2CSSG683DpmUh"
                       : "https://app.arcade.software/share/VevNAwGPFIYsVGMX1yML"
                   }
-                  title="Ismam Studio Interactive Walkthrough"
+                  title="KDPage Interactive Walkthrough"
                   className="absolute inset-0 w-full h-full border-0"
                   allowFullScreen
                 />
@@ -258,7 +258,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">The Ismam Studio Solution</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">The KDPage Solution</span>
               <ul className="space-y-3 font-semibold text-xs md:text-sm text-slate-600 leading-relaxed">
                 <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
@@ -661,7 +661,7 @@ export default function HomePage() {
 
                     <div className="w-full text-center border-t border-slate-100 pt-1 flex justify-between items-center text-[5px] font-bold text-slate-400">
                       <span>Page 14</span>
-                      <span>Ismam Studio KDP Compliant</span>
+                      <span>KDPage KDP Compliant</span>
                     </div>
                   </div>
 
@@ -682,7 +682,7 @@ export default function HomePage() {
             <Compass className="w-4 h-4 text-indigo-500 animate-pulse" /> Step-by-Step Workflow
           </div>
           <h2 className="text-3xl md:text-5xl font-black text-slate-800 tracking-tight">
-            How Ismam Studio Works
+            How KDPage Works
           </h2>
           <p className="text-slate-600 text-sm md:text-base font-semibold max-w-xl mx-auto mt-4 leading-relaxed">
             Create publication-ready KDP book interiors and covers in three simple, automated steps.
@@ -762,10 +762,10 @@ export default function HomePage() {
                   Our Mission & Story
                 </span>
                 <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight font-sans">
-                  Why I Built Ismam Studio
+                  Why I Built KDPage
                 </h2>
                 <p className="text-slate-400 text-xs font-bold mt-1 uppercase tracking-widest font-sans">
-                  A message from Ismam Abid, Creator of Ismam Studio
+                  A message from Ismam Abid, Creator of KDPage
                 </p>
               </div>
 
@@ -774,7 +774,7 @@ export default function HomePage() {
                   "As a CSE student and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, making it tedious to compile a single book. I knew there had to be a more efficient and integrated way."
                 </p>
                 <p>
-                  "That is why I built Ismam Studio. My goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. I wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."
+                  "That is why I built KDPage. My goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. I wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."
                 </p>
                 <p>
                   "Whether you are just starting your KDP journey or scaling a publishing agency, this studio is designed to grow with you. With flexible options — including monthly, annual, and lifetime access plans — we keep premium tools accessible so you can keep 100% of your royalties and focus on what matters: creating."

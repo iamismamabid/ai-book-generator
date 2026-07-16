@@ -412,7 +412,7 @@ export default function SudokuGeneratorPage() {
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-indigo-400" /> Solution Page Strategy
               </h3>
-              <p>Every professional Sudoku book includes an answer key. Ismam Studio automatically appends all solution pages <strong>after</strong> the puzzle pages — exactly how Amazon reviewers and readers expect to find them. Toggle this on/off in the book settings.</p>
+              <p>Every professional Sudoku book includes an answer key. KDPage automatically appends all solution pages <strong>after</strong> the puzzle pages — exactly how Amazon reviewers and readers expect to find them. Toggle this on/off in the book settings.</p>
               <p className="text-slate-400">For a 100-puzzle book with solutions, your final PDF will be <strong>200 pages</strong> — factor this into your spine width calculation in the Cover Studio.</p>
             </section>
 
@@ -430,7 +430,7 @@ export default function SudokuGeneratorPage() {
               <ol className="list-decimal list-inside pl-4 space-y-2 text-slate-400 font-bold">
                 <li>Configure difficulty, puzzle count, and trim size. Toggle solution pages on. Click <strong>Download PDF</strong>.</li>
                 <li>Note the total page count displayed in the summary badge below the download button.</li>
-                <li>Open the <strong>Ismam Studio Cover Canvas</strong>, insert your page count to auto-calculate spine width, then design your covers.</li>
+                <li>Open the <strong>KDPage Cover Canvas</strong>, insert your page count to auto-calculate spine width, then design your covers.</li>
                 <li>Upload both files to Amazon KDP with niche keywords (e.g., "large print sudoku for seniors") and set your royalty price.</li>
               </ol>
             </section>

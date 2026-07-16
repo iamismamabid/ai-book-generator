@@ -20,7 +20,7 @@ export default function BlogPage() {
               <Sparkles className="w-3.5 h-3.5" /> Publisher Academy
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-              Ismam Studio <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">KDP Blog</span>
+              KDPage <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">KDP Blog</span>
             </h1>
             <p className="text-slate-400 text-sm font-semibold mt-2">
               Expert guides, design trends, and SEO strategies to help you launch profitable self-publishing books.

@@ -35,7 +35,7 @@ export default function KdpChecklistPage() {
             </div>
             <div>
               <h1 className="text-3xl font-black tracking-tight text-white print:text-black">The Ultimate KDP Bestseller Checklist</h1>
-              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mt-1 print:text-slate-600">Ismam Studio Publishing Guide</p>
+              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mt-1 print:text-slate-600">KDPage Publishing Guide</p>
             </div>
           </div>
 

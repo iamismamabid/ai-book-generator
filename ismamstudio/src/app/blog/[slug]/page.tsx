@@ -20,13 +20,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return {};
 
   return {
-    title: `${post.title} | Ismam Studio Blog`,
+    title: `${post.title} | KDPage Blog`,
     description: post.description,
     openGraph: {
       title: post.title,
       description: post.description,
       type: "article",
-      url: `https://www.ismamstudio.me/blog/${post.slug}`,
+      url: `https://www.kdpage.com/blog/${post.slug}`,
     }
   };
 }
@@ -86,21 +86,21 @@ export default async function BlogPostPage({ params }: Props) {
             "description": post.description,
             "author": {
               "@type": "Person",
-              "name": "Ismam Studio Editorial Team"
+              "name": "KDPage Editorial Team"
             },
             "publisher": {
               "@type": "Organization",
-              "name": "Ismam Studio",
+              "name": "KDPage",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://www.ismamstudio.me/logo.png"
+                "url": "https://www.kdpage.com/logo.png"
               }
             },
             "datePublished": post.date,
-            "url": `https://www.ismamstudio.me/blog/${post.slug}`,
+            "url": `https://www.kdpage.com/blog/${post.slug}`,
             "mainEntityOfPage": {
               "@type": "WebPage",
-              "@id": `https://www.ismamstudio.me/blog/${post.slug}`
+              "@id": `https://www.kdpage.com/blog/${post.slug}`
             }
           })
         }}

@@ -1,7 +1,7 @@
 import WordScrambleGenerator from "@/components/tools/WordScrambleGenerator";
 
 export const metadata = {
-  title: "Word Scramble Generator | Ismam Studio",
+  title: "Word Scramble Generator | KDPage",
   description: "Create print-ready word scramble puzzle books for Amazon KDP.",
 };
 

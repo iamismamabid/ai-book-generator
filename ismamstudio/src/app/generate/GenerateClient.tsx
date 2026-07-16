@@ -379,7 +379,7 @@ export default function GeneratePage() {
               <p className="text-slate-400 text-xs font-semibold leading-relaxed">
                 {activeCompletion.length > 0
                   ? "Your story outline has been successfully compiled! Sign up for a free account to save it, edit chapters, and download KDP-ready PDFs."
-                  : "Create a free Ismam Studio account to unlock the Novel Chapter Planner and compile unlimited outlines."}
+                  : "Create a free KDPage account to unlock the Novel Chapter Planner and compile unlimited outlines."}
               </p>
             </div>
             <div className="flex flex-col gap-2">

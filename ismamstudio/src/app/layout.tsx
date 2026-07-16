@@ -12,34 +12,34 @@ import type { Metadata } from 'next';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', adjustFontFallback: false });
 
 export const metadata: Metadata = {
-  title: "Ismam Studio | All-in-One KDP Book Creation Toolkit",
+  title: "KDPage | All-in-One KDP Book Creation Toolkit",
   description: "Create puzzle interiors, AI-assisted novel chapters, shape-masked mazes, word searches, and gorgeous covers for Amazon KDP — in minutes. No design software needed.",
-  metadataBase: new URL("https://www.ismamstudio.me"),
+  metadataBase: new URL("https://www.kdpage.com"),
   alternates: {
-    canonical: "https://www.ismamstudio.me",
+    canonical: "https://www.kdpage.com",
   },
   robots: {
     index: true,
     follow: true,
   },
   openGraph: {
-    title: "Ismam Studio — Create & Publish KDP Books in Minutes",
+    title: "KDPage — Create & Publish KDP Books in Minutes",
     description: "The ultimate all-in-one toolkit for Amazon KDP self-publishers. Sudoku, mazes, word searches, AI novel outlines, and full cover design — all in one place.",
-    url: "https://www.ismamstudio.me",
-    siteName: "Ismam Studio",
+    url: "https://www.kdpage.com",
+    siteName: "KDPage",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Ismam Studio — KDP Book Creation Toolkit",
+        alt: "KDPage — KDP Book Creation Toolkit",
       },
     ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ismam Studio — KDP Book Creation Toolkit",
+    title: "KDPage — KDP Book Creation Toolkit",
     description: "Create professional puzzle books, AI chapters & covers for Amazon KDP in minutes.",
     images: ["/og-image.png"],
   },
@@ -97,9 +97,9 @@ export default function RootLayout({
                   "@graph": [
                     {
                       "@type": "SoftwareApplication",
-                      "name": "Ismam Studio",
+                      "name": "KDPage",
                       "description": "All-in-one KDP book creation toolkit. Generate puzzle interiors, AI-assisted novel chapters, shape-masked mazes, word searches, and gorgeous covers for Amazon KDP.",
-                      "url": "https://www.ismamstudio.me",
+                      "url": "https://www.kdpage.com",
                       "applicationCategory": "DesignApplication",
                       "operatingSystem": "Web",
                       "offers": [
@@ -134,15 +134,15 @@ export default function RootLayout({
                           "unitCode": "MON"
                         }
                       ],
-                      "screenshot": "https://www.ismamstudio.me/og-image.png",
+                      "screenshot": "https://www.kdpage.com/og-image.png",
                       "featureList": "Sudoku Generator, Shape-Masked Maze Designer, Word Search Builder, Cryptogram Studio, Math Puzzle Builder, Word Scramble Studio, AI Chapter Writer, Cover & Interior Canvas Studio, KDP Niche Hunter & Keyword Spy, Spine & Cover Calculator, ISBN Barcode Generator"
                     },
                     {
                       "@type": "Organization",
-                      "name": "Ismam Studio",
-                      "url": "https://www.ismamstudio.me",
-                      "logo": "https://www.ismamstudio.me/logo.png",
-                      "email": "support@ismamstudio.me"
+                      "name": "KDPage",
+                      "url": "https://www.kdpage.com",
+                      "logo": "https://www.kdpage.com/logo.png",
+                      "email": "support@kdpage.com"
                     }
                   ]
                 })

@@ -153,7 +153,7 @@ export function drawWatermark(doc: any, w: number, h: number) {
       // ignore GState errors (older browsers / standard pdf compatibility)
     }
 
-    doc.text("SAMPLE - ISMAM STUDIO", w / 2, h / 2, {
+    doc.text("SAMPLE - KDPAGE", w / 2, h / 2, {
       align: "center",
       angle: 45
     });

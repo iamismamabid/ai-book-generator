@@ -3,8 +3,8 @@ import { ArrowLeft, FileText } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Ismam Studio Help Center",
-  description: "Read the Terms of Service of Ismam Studio. Learn about commercial rights, user responsibilities, and licensing terms for generated books and puzzles.",
+  title: "Terms of Service | KDPage Help Center",
+  description: "Read the Terms of Service of KDPage. Learn about commercial rights, user responsibilities, and licensing terms for generated books and puzzles.",
 };
 
 export default function TermsOfServicePage() {
@@ -41,7 +41,7 @@ export default function TermsOfServicePage() {
             <section className="space-y-3">
               <h2 className="text-xl font-bold text-white">1. Acceptance of Terms</h2>
               <p>
-                By registering, accessing, or using the services provided by **Ismam Studio** (referred to as "the Platform", "we", "us", or "our"), you agree to be bound by these Terms of Service. If you do not agree to all of these terms, please do not use the Platform.
+                By registering, accessing, or using the services provided by **KDPage** (referred to as "the Platform", "we", "us", or "our"), you agree to be bound by these Terms of Service. If you do not agree to all of these terms, please do not use the Platform.
               </p>
             </section>
 

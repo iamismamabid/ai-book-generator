@@ -3,8 +3,8 @@ import { ArrowLeft, CreditCard } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Refund Policy | Ismam Studio Help Center",
-  description: "Read the Refund Policy of Ismam Studio. Learn about our 7-day money-back guarantee for SaaS subscriptions and 60-day refund policy for AppSumo lifetime deals.",
+  title: "Refund Policy | KDPage Help Center",
+  description: "Read the Refund Policy of KDPage. Learn about our 7-day money-back guarantee for SaaS subscriptions and 60-day refund policy for AppSumo lifetime deals.",
 };
 
 export default function RefundPolicyPage() {
@@ -73,7 +73,7 @@ export default function RefundPolicyPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-black text-white">4. How to Request a Refund</h2>
               <p>
-                If you meet the criteria above and wish to request a refund, please contact our support team at **support@ismamstudio.me** within 7 days of your original transaction.
+                If you meet the criteria above and wish to request a refund, please contact our support team at **support@kdpage.com** within 7 days of your original transaction.
               </p>
             </section>
           </div>

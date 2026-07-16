@@ -1452,7 +1452,7 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
     doc.addImage(dataUrl, 'PNG', 0, 0, pgW, pgH);
   } catch (err) {
     console.error("Error drawing cover page part with canvas:", err);
-    doc.setFillColor(isFront ? frontCoverColor : backCoverColor);
+    doc.setFillColor(side === 'front' ? frontCoverColor : backCoverColor);
     doc.rect(0, 0, pgW, pgH, "F");
   }
 };

@@ -369,7 +369,7 @@ export default function WordScrambleGenerator() {
 
       // Apply watermark to all interior pages if not premium
       if (isPremium === false) {
-        const totalPages = doc.internal.getNumberOfPages();
+        const totalPages = doc.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
           const isFrontCover = incCover && coverState && i === 1;
           const isBackCover = incCover && coverState && i === totalPages;

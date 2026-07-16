@@ -1,26 +1,41 @@
 :root {
+  /* Brand */
   --color-primary: #4f46e5; /* Indigo 600 */
   --color-primary-dark: #6366f1; /* Indigo 500 */
   --color-accent: #f59e0b; /* Amber 500 */
-  --color-bg-light: #f8fafc;
-  --color-bg-dark: #0b0f19;
   --font-family: 'Inter', sans-serif;
+
+  /* Surfaces - soft, non-stark tones (avoid pure #fff / #000) */
+  --surface-canvas: #f8fafc;   /* app background, light mode */
+  --surface-card: #ffffff;
+  --surface-border: #e2e8f0;
+  --text-muted: #64748b;
+
+  /* Generous, premium corner radii */
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+
+  /* Soft, layered elevation shadows (replace harsh drop-shadows) */
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.03), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-soft-lg: 0 4px 12px rgba(15, 23, 42, 0.05), 0 16px 40px rgba(15, 23, 42, 0.08);
+  --shadow-glow-primary: 0 8px 24px rgba(79, 70, 229, 0.18);
+
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: light;
 }
 
-/* Light mode defaults */
-@media (prefers-color-scheme: light) {
-  body {
-    background-color: var(--color-bg-light);
-    color: #111827; /* slate-900 */
-    font-family: var(--font-family);
-  }
-}
+/* Class-driven dark theme (toggled by ThemeProvider via .dark on <html>) */
+.dark {
+  --surface-canvas: #0b0f19;  /* deep charcoal, not pure black */
+  --surface-card: #111827;    /* elevated charcoal panel */
+  --surface-border: #1e293b;
+  --text-muted: #94a3b8;
 
-/* Dark mode defaults */
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: var(--color-bg-dark);
-    color: #f1f5f9; /* slate-100 */
-    font-family: var(--font-family);
-  }
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-soft-lg: 0 4px 16px rgba(0, 0, 0, 0.3), 0 20px 48px rgba(0, 0, 0, 0.45);
+  --shadow-glow-primary: 0 8px 28px rgba(99, 102, 241, 0.25);
+
+  color-scheme: dark;
 }

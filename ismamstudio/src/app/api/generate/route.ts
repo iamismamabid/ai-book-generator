@@ -2,6 +2,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { auth } from "@clerk/nextjs/server";
 import { checkPremiumStatus, getUserUsage } from "../../actions";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 // 🚨 Next.js-কে নির্দেশ দেওয়া যেন সে ডাটা আটকে (Buffer) না রাখে
 export const dynamic = 'force-dynamic'; 
@@ -53,6 +54,21 @@ export async function POST(req: Request) {
   **Chapter 3:** Brief description.`;
 
   // ৬. Vercel AI SDK দিয়ে স্ট্রিমিং শুরু করা
+
+  // Track the outline generation server-side
+  const posthogClient = getPostHogClient();
+  posthogClient.capture({
+    distinctId: userId,
+    event: 'server_book_outline_requested',
+    properties: {
+      genre: genre || 'General Fiction',
+      tone: tone || 'Engaging',
+      audience: audience || 'General Readers',
+      plan: premium.plan,
+    },
+  });
+  await posthogClient.flush();
+
   const result = await streamText({
     model: groq('llama-3.3-70b-versatile'),
     prompt: systemPrompt,

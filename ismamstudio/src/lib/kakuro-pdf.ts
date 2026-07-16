@@ -182,7 +182,7 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
 
   // Apply watermark to all interior pages if not premium
   if (isPremium === false) {
-    const totalPages = doc.internal.getNumberOfPages();
+    const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       const isFrontCover = includeCover && coverState && i === 1;
       const isBackCover = includeCover && coverState && i === totalPages;

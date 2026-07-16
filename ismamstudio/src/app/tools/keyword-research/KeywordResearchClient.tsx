@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Search, Sparkles, BarChart3, TrendingUp, HelpCircle, CheckCircle2, Shield, Zap } from "lucide-react";
+import { 
+  ArrowLeft, Search, Sparkles, BarChart3, TrendingUp, HelpCircle, 
+  CheckCircle2, Shield, Zap, Copy, Check, Filter, Layers, Info 
+} from "lucide-react";
 
 interface KeywordResult {
   keyword: string;
@@ -16,6 +19,9 @@ export default function KeywordResearchPage() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<KeywordResult[] | null>(null);
+  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [copiedSlot, setCopiedSlot] = useState<number | null>(null);
+  const [backendSlots, setBackendSlots] = useState<string[]>(["", "", "", "", "", "", ""]);
 
   // BSR Calculator states
   const [bsr, setBsr] = useState<number>(50000);
@@ -25,14 +31,12 @@ export default function KeywordResearchPage() {
     royalties: 375
   });
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query) return;
+  const handleSearch = (searchTerm: string) => {
     setIsSearching(true);
+    setQuery(searchTerm);
 
-    // Dynamic mock logic based on search queries to return relevant, highly-realistic KDP keywords
     setTimeout(() => {
-      const lower = query.toLowerCase();
+      const lower = searchTerm.toLowerCase();
       let mockList: KeywordResult[] = [];
 
       if (lower.includes("sudoku")) {
@@ -50,15 +54,26 @@ export default function KeywordResearchPage() {
           { keyword: "toddler maze book large print", volume: 6200, competition: "Medium", score: 74, estSales: 130 },
           { keyword: "hard labyrinths for teens", volume: 1800, competition: "Low", score: 81, estSales: 45 }
         ];
-      } else if (lower.includes("word search")) {
+      } else if (lower.includes("word search") || lower.includes("wordsearch")) {
         mockList = [
           { keyword: "word search for seniors large print", volume: 22000, competition: "High", score: 55, estSales: 750 },
           { keyword: "retro word search 90s theme", volume: 3800, competition: "Low", score: 91, estSales: 95 },
           { keyword: "word search for kids ages 6-8", volume: 9500, competition: "Medium", score: 79, estSales: 240 },
           { keyword: "bible word search book puzzle", volume: 14000, competition: "High", score: 49, estSales: 380 }
         ];
+      } else if (lower.includes("cryptogram") || lower.includes("crypto")) {
+        mockList = [
+          { keyword: "cryptogram puzzle books for adults large print", volume: 4200, competition: "Low", score: 88, estSales: 90 },
+          { keyword: "inspirational quotes cryptograms", volume: 2800, competition: "Low", score: 84, estSales: 65 },
+          { keyword: "funny cryptograms books", volume: 1500, competition: "Low", score: 78, estSales: 30 }
+        ];
+      } else if (lower.includes("kakuro") || lower.includes("cross sum")) {
+        mockList = [
+          { keyword: "kakuro puzzle books for adults", volume: 1900, competition: "Low", score: 82, estSales: 40 },
+          { keyword: "extreme kakuro grids", volume: 900, competition: "Low", score: 73, estSales: 15 },
+          { keyword: "kakuro and sudoku cross sums", volume: 1200, competition: "Low", score: 79, estSales: 25 }
+        ];
       } else {
-        // Generic fallback
         mockList = [
           { keyword: `${lower} puzzle book for adults`, volume: 5400, competition: "Medium", score: 73, estSales: 140 },
           { keyword: `easy ${lower} activity workbook`, volume: 3100, competition: "Low", score: 88, estSales: 85 },
@@ -69,14 +84,19 @@ export default function KeywordResearchPage() {
 
       setResults(mockList);
       setIsSearching(false);
-    }, 800);
+    }, 600);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query) return;
+    handleSearch(query);
   };
 
   const handleCalculateBsr = (val: number) => {
     setBsr(val);
     if (!val || val <= 0) return;
 
-    // Simple BSR logarithmic estimation curve
     let daily = 0;
     if (val < 100) daily = 1000;
     else if (val < 1000) daily = 120;
@@ -94,6 +114,67 @@ export default function KeywordResearchPage() {
       monthly: Math.max(2, monthly),
       royalties
     });
+  };
+
+  // Toggle keyword selection for 7 backend slots
+  const toggleKeywordSelection = (kw: string) => {
+    if (selectedKeywords.includes(kw)) {
+      setSelectedKeywords(selectedKeywords.filter(k => k !== kw));
+    } else {
+      setSelectedKeywords([...selectedKeywords, kw]);
+    }
+  };
+
+  // Pack selected keywords into 7 KDP backend slots (50 character limit each)
+  useEffect(() => {
+    if (selectedKeywords.length === 0) {
+      setBackendSlots(["", "", "", "", "", "", ""]);
+      return;
+    }
+
+    // Extract all unique words, remove common fillers
+    const fillerWords = new Set([
+      "a", "an", "the", "book", "books", "puzzle", "puzzles", 
+      "by", "for", "in", "to", "and", "or", "of", "with", "at", "from"
+    ]);
+
+    const words: string[] = [];
+    selectedKeywords.forEach(phrase => {
+      phrase.toLowerCase().split(/\s+/).forEach(word => {
+        const cleaned = word.replace(/[^a-z0-9]/g, "");
+        if (cleaned && !fillerWords.has(cleaned) && !words.includes(cleaned)) {
+          words.push(cleaned);
+        }
+      });
+    });
+
+    // Pack words into 7 slots
+    const slots: string[] = ["", "", "", "", "", "", ""];
+    let currentSlotIdx = 0;
+
+    words.forEach(word => {
+      if (currentSlotIdx >= 7) return;
+
+      const currentSlotContent = slots[currentSlotIdx];
+      const proposedContent = currentSlotContent ? `${currentSlotContent} ${word}` : word;
+
+      if (proposedContent.length <= 50) {
+        slots[currentSlotIdx] = proposedContent;
+      } else {
+        currentSlotIdx++;
+        if (currentSlotIdx < 7) {
+          slots[currentSlotIdx] = word;
+        }
+      }
+    });
+
+    setBackendSlots(slots);
+  }, [selectedKeywords]);
+
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSlot(index);
+    setTimeout(() => setCopiedSlot(null), 2000);
   };
 
   return (
@@ -115,47 +196,64 @@ export default function KeywordResearchPage() {
             </h1>
           </div>
           <Link
-            href="/"
+            href="/tools"
             className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-indigo-400 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Home
+            <ArrowLeft className="w-4 h-4" /> Back to Tools
           </Link>
         </div>
 
-        {/* 2 Column Layout: Keyword Spy left, BSR calculator right */}
+        {/* Niche Quick Filters */}
+        <div className="bg-slate-900/40 p-4 rounded-2xl border border-slate-850 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-2 flex items-center gap-1">
+            <Filter className="w-3.5 h-3.5" /> Puzzle Niches:
+          </span>
+          {["Sudoku", "Word Search", "Mazes", "Cryptograms", "Kakuro"].map(niche => (
+            <button
+              key={niche}
+              onClick={() => handleSearch(niche)}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 border border-slate-800 text-slate-300 hover:border-indigo-500 hover:text-white transition cursor-pointer"
+            >
+              {niche}
+            </button>
+          ))}
+        </div>
+
+        {/* 2 Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Keyword Search Module */}
           <div className="lg:col-span-2 bg-slate-900/55 backdrop-blur-xl border border-slate-800/80 rounded-[2rem] p-6 md:p-8 shadow-2xl space-y-6">
             <h2 className="text-xl font-black text-white flex items-center gap-2">
-              <Search className="w-5 h-5 text-indigo-455" /> Amazon Keyword Spy
+              <Search className="w-5 h-5 text-indigo-400" /> Amazon Keyword Spy
             </h2>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-              Find long-tail autocompletes, estimated search volumes, and competition indicators directly.
+              Find long-tail autocompletes, estimated search volumes, and competition indicators directly. Select terms to pack your 7 backend slots.
             </p>
 
-            <form onSubmit={handleSearch} className="flex gap-2">
+            <form onSubmit={handleSearchSubmit} className="flex gap-2">
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="e.g. Sudoku for Seniors, Lined Journal..."
-                className="flex-1 text-xs font-semibold p-3.5 border border-slate-800 rounded-xl bg-slate-950 focus:border-indigo-450 focus:bg-slate-900 transition-all text-slate-100"
+                className="flex-1 text-xs font-semibold p-3.5 border border-slate-800 rounded-xl bg-slate-950 focus:border-indigo-400 focus:bg-slate-900 transition-all text-slate-100"
               />
               <button
                 type="submit"
-                className="px-6 py-3.5 bg-indigo-650 hover:bg-indigo-600 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-indigo-600/10 cursor-pointer"
+                className="px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-md cursor-pointer"
               >
                 {isSearching ? "Searching..." : "Spy Niche"}
               </button>
             </form>
 
-            {/* Results */}
+            {/* Results Table */}
             {results && (
               <div className="overflow-x-auto pt-4 animate-fade-in">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-800 text-slate-450 font-bold uppercase tracking-wider">
+                    <tr className="border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                      <th className="py-3 px-3 w-10 text-center">Select</th>
                       <th className="py-3 px-3">Keyword</th>
                       <th className="py-3 px-3 text-center">Search Vol</th>
                       <th className="py-3 px-3 text-center">Competition</th>
@@ -164,29 +262,46 @@ export default function KeywordResearchPage() {
                     </tr>
                   </thead>
                   <tbody className="text-slate-300 font-semibold">
-                    {results.map((res, idx) => (
-                      <tr key={idx} className="border-b border-slate-850 hover:bg-slate-900/10 transition-colors">
-                        <td className="py-3 px-3 font-bold text-white">{res.keyword}</td>
-                        <td className="py-3 px-3 text-center">{res.volume.toLocaleString()}</td>
-                        <td className="py-3 px-3 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
-                            res.competition === "Low" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
-                            res.competition === "Medium" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
-                            "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                          }`}>
-                            {res.competition}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-center font-bold text-slate-100">{res.estSales} units</td>
-                        <td className="py-3 px-3 text-center">
-                          <span className={`font-black ${
-                            res.score >= 80 ? "text-emerald-400" :
-                            res.score >= 60 ? "text-amber-400" :
-                            "text-rose-400"
-                          }`}>{res.score}/100</span>
-                        </td>
-                      </tr>
-                    ))}
+                    {results.map((res, idx) => {
+                      const isSelected = selectedKeywords.includes(res.keyword);
+                      return (
+                        <tr 
+                          key={idx} 
+                          onClick={() => toggleKeywordSelection(res.keyword)}
+                          className={`border-b border-slate-850 hover:bg-slate-900/20 transition-colors cursor-pointer ${
+                            isSelected ? "bg-indigo-500/5 text-white" : ""
+                          }`}
+                        >
+                          <td className="py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleKeywordSelection(res.keyword)}
+                              className="rounded border-slate-800 accent-indigo-500 cursor-pointer"
+                            />
+                          </td>
+                          <td className="py-3 px-3 font-bold text-white">{res.keyword}</td>
+                          <td className="py-3 px-3 text-center">{res.volume.toLocaleString()}</td>
+                          <td className="py-3 px-3 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                              res.competition === "Low" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
+                              res.competition === "Medium" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                              "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                            }`}>
+                              {res.competition}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-center font-bold text-slate-100">{res.estSales} units</td>
+                          <td className="py-3 px-3 text-center">
+                            <span className={`font-black ${
+                              res.score >= 80 ? "text-emerald-400" :
+                              res.score >= 60 ? "text-yellow-400" :
+                              "text-rose-400"
+                            }`}>{res.score}/100</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -197,14 +312,14 @@ export default function KeywordResearchPage() {
           <div className="bg-slate-900/55 backdrop-blur-xl border border-slate-800/80 rounded-[2rem] p-6 md:p-8 shadow-2xl space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
               <h2 className="text-xl font-black text-white flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-indigo-455" /> BSR Sales Calculator
+                <BarChart3 className="w-5 h-5 text-indigo-400" /> BSR Sales Calculator
               </h2>
               <p className="text-slate-400 text-xs font-semibold leading-relaxed">
                 Enter any paperback BSR from Amazon's product detail page to estimate monthly book sales and royalty income.
               </p>
 
               <div className="space-y-2 pt-2">
-                <label className="text-[10px] font-black text-slate-450 uppercase tracking-wider block">Best Seller Rank (BSR)</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Best Seller Rank (BSR)</label>
                 <input
                   type="number"
                   value={bsr}
@@ -217,27 +332,83 @@ export default function KeywordResearchPage() {
               {calculatedSales && (
                 <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-850 space-y-3 pt-4 animate-fade-in">
                   <div className="flex justify-between items-center border-b border-slate-850 pb-2">
-                    <span className="text-xs font-bold text-slate-400 uppercase">Est. Daily Sales</span>
+                    <span className="text-xs font-bold text-slate-450 uppercase">Est. Daily Sales</span>
                     <span className="text-sm font-black text-indigo-400">{calculatedSales.daily} units</span>
                   </div>
                   <div className="flex justify-between items-center border-b border-slate-850 pb-2">
-                    <span className="text-xs font-bold text-slate-400 uppercase">Est. Monthly Sales</span>
+                    <span className="text-xs font-bold text-slate-450 uppercase">Est. Monthly Sales</span>
                     <span className="text-sm font-black text-purple-400">{calculatedSales.monthly} units</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-400 uppercase">Est. Monthly Royalties</span>
+                    <span className="text-xs font-bold text-slate-450 uppercase">Est. Monthly Royalties</span>
                     <span className="text-sm font-black text-emerald-400">${calculatedSales.royalties.toFixed(2)}</span>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2 pt-4 border-t border-slate-800">
-              <TrendingUp className="w-4 h-4 text-slate-350" /> Logarithmic estimation curves updated Q2 2026
+            <div className="text-[9px] text-slate-550 font-bold uppercase tracking-wider flex items-center gap-2 pt-4 border-t border-slate-800">
+              <TrendingUp className="w-4 h-4 text-slate-450" /> Logarithmic estimation curves updated Q2 2026
             </div>
           </div>
 
         </div>
+
+        {/* 7 KDP Backend Slots Generator */}
+        <div className="bg-slate-900/55 backdrop-blur-xl border border-slate-800/80 rounded-[2rem] p-6 md:p-8 shadow-2xl space-y-6">
+          <div className="flex items-center gap-3">
+            <Layers className="w-6 h-6 text-indigo-400" />
+            <div>
+              <h2 className="text-xl font-black text-white">KDP 7 Backend Keywords Packer</h2>
+              <p className="text-slate-450 text-xs font-semibold">
+                Amazon KDP lets you upload 7 backend keyword slots. This tool packs selected keywords without repeating words, respecting the 50-character limit.
+              </p>
+            </div>
+          </div>
+
+          {selectedKeywords.length === 0 ? (
+            <div className="p-8 text-center bg-slate-950/40 rounded-2xl border border-slate-850 border-dashed text-slate-500 font-semibold text-xs flex flex-col items-center gap-2">
+              <Info className="w-6 h-6 text-indigo-450" />
+              <span>No keywords selected. Tick checkboxes in the search results table to auto-generate KDP slots.</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+              {backendSlots.map((slot, index) => (
+                <div key={index} className="bg-slate-950/60 p-4 rounded-xl border border-slate-850 relative group flex flex-col justify-between min-h-[120px]">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[9px] font-black text-indigo-400 uppercase">Slot {index + 1}</span>
+                      <span className={`text-[9px] font-bold ${slot.length > 45 ? "text-amber-500" : "text-slate-500"}`}>
+                        {slot.length}/50
+                      </span>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-200 break-words leading-relaxed">
+                      {slot || <span className="text-slate-600 italic">Empty</span>}
+                    </p>
+                  </div>
+                  
+                  {slot && (
+                    <button
+                      onClick={() => copyToClipboard(slot, index)}
+                      className="mt-3 w-full py-1.5 bg-slate-900 hover:bg-indigo-600 hover:text-white border border-slate-800 text-[10px] font-black uppercase rounded-lg flex items-center justify-center gap-1 transition cursor-pointer"
+                    >
+                      {copiedSlot === index ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-400" /> Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" /> Copy Slot
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

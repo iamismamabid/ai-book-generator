@@ -220,9 +220,35 @@ export async function redeemAppSumoCode(code: string) {
     const user = await currentUser();
     const email = user?.emailAddresses[0]?.emailAddress || "";
 
-    const cleanCode = code.trim();
+    const cleanCode = code.trim().toUpperCase();
     if (!cleanCode || cleanCode.length < 3) {
       return { success: false, error: "Invalid code length." };
+    }
+
+    // ০. প্রোডাক্ট হান্ট প্রোমো কোড (PH10OFF) চেক করা
+    if (cleanCode === "PH10OFF") {
+      // চেক করা যে ইউজার ইতিমধ্যে এই প্রোমো কোড রিডিম করেছে কিনা
+      const alreadyRedeemed = await prisma.appSumoRedemption.findFirst({
+        where: {
+          clerkId: userId,
+          code: { startsWith: "PH10OFF" }
+        }
+      });
+
+      if (alreadyRedeemed) {
+        return { success: false, error: "You have already redeemed this Product Hunt promo code." };
+      }
+
+      await prisma.appSumoRedemption.create({
+        data: {
+          clerkId: userId,
+          email: email,
+          code: `PH10OFF-${userId}`
+        }
+      });
+
+      revalidatePath("/dashboard");
+      return { success: true };
     }
 
     // ১. চেক করা কোডটি ভ্যালিড কোডের তালিকায় আছে কিনা

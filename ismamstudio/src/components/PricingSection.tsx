@@ -1,5 +1,6 @@
 "use client";
 
+import posthog from "posthog-js";
 import { useState, useEffect, Suspense } from "react";
 import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -44,6 +45,10 @@ function PricingSectionInner() {
 
   const handleCheckout = (planKey: string) => {
     const isAnnualBilling = billingCycle === 'annual';
+    posthog.capture("checkout_initiated", {
+      plan: planKey,
+      billing_cycle: isAnnualBilling ? "annual" : "monthly",
+    });
     const planIdKey = `${planKey}_${isAnnualBilling ? "annual" : "monthly"}`;
 
     const priceIds: Record<string, string | undefined> = {

@@ -1,5 +1,6 @@
 "use client";
 
+import posthog from "posthog-js";
 import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CreditCard, BookOpen, Settings, Type, Layout, Menu, ChevronLeft, ChevronRight } from "lucide-react";
@@ -49,7 +50,12 @@ export default function BookReader({ book, pages }: BookReaderProps) {
 
   const handleSaveTitle = async () => {
     setIsSavingTitle(true);
-    await updateBookTitleAndSubtitle(book.id, editedTitle, editedSubtitle);
+    try {
+      await updateBookTitleAndSubtitle(book.id, editedTitle, editedSubtitle);
+      posthog.capture("book_title_edited", { book_id: book.id });
+    } catch (err) {
+      posthog.captureException(err);
+    }
     setIsEditingTitle(false);
     setIsSavingTitle(false);
   };

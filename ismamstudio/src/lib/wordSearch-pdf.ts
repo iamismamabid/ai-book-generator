@@ -100,7 +100,7 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
   }
 
   if (options.isPremium === false) {
-    const totalPages = doc.internal.getNumberOfPages();
+    const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       const isFrontCover = includeCover && coverState && i === 1;
       const isBackCover = includeCover && coverState && i === totalPages;

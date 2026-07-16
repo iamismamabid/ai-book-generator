@@ -32,6 +32,8 @@
     "lucide-react": "^1.21.0",
     "next": "^15.1.7",
     "pdf-lib": "^1.17.1",
+    "posthog-js": "^1.399.3",
+    "posthog-node": "^5.41.0",
     "prisma": "^6.19.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

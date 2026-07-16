@@ -200,11 +200,21 @@ export default function FreeToolsHub() {
     },
     {
       id: "royalty-calculator",
-      name: "Free KDP Royalty Calculator",
+      name: "KDP Royalty & Market Viability Estimator",
+      badge: "New",
       category: "Marketing",
-      description: "Calculate your earnings for paperback, hardcover, and ebook across all Amazon marketplaces.",
-      features: ["Printing cost estimator", "Marketplace break-downs", "Royalty percentages"],
-      isInteractive: true
+      description: "Analyze printing costs, promo discounts, Kindle Unlimited reads, advertising PPC, and category competition.",
+      features: ["PPC Marketing Simulator", "Category competition index", "Spine width calculator included"],
+      link: "/tools/royalty-estimator"
+    },
+    {
+      id: "bulk-generator",
+      name: "KDP Bulk Book Batch Studio",
+      badge: "Popular",
+      category: "Formatting",
+      description: "Queue dozens of puzzle book interiors, import configurations via CSV, and compile ready-to-upload files in bulk.",
+      features: ["CSV configuration upload", "Sequenced background builder", "Multi-book download list"],
+      link: "/tools/bulk-generator"
     },
     {
       id: "spine-calculator",

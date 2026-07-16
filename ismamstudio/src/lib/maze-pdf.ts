@@ -240,7 +240,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
 
   // Apply watermark to all interior pages if not premium
   if (options.isPremium === false) {
-    const totalPages = doc.internal.getNumberOfPages();
+    const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       const isFrontCover = includeCover && coverState && i === 1;
       const isBackCover = includeCover && coverState && i === totalPages;

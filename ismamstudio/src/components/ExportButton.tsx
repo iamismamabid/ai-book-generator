@@ -1,5 +1,6 @@
 "use client";
 
+import posthog from "posthog-js";
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
 import { Download } from "lucide-react";
@@ -293,6 +294,13 @@ export default function ExportButton({
 
     // Save PDF
     doc.save(`${title.replace(/\s+/g, "_")}_Interior.pdf`);
+    posthog.capture("book_exported_pdf", {
+      trim_size: trimSize,
+      include_cover: includeCover,
+      has_bleed: hasBleed,
+      chapter_count: chapters.length,
+      is_premium: isPremium,
+    });
   };
 
   return (

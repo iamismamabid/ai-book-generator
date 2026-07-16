@@ -1,5 +1,6 @@
 "use client";
 
+import posthog from "posthog-js";
 import Link from "next/link";
 import { useState, useEffect, useTransition } from "react";
 import { ArrowLeft, Gift, AlertCircle, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
@@ -40,7 +41,21 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
 
   const getTierDetails = (redeemedCode: string) => {
     const cleanCode = redeemedCode.toUpperCase();
-    if (cleanCode.includes("-T3-") || cleanCode.includes("TIER3") || cleanCode.includes("-TIER-3-") || cleanCode.includes("-T3")) {
+    if (cleanCode.includes("PH10OFF")) {
+      return {
+        name: "Product Hunt Starter Lifetime Access",
+        limits: [
+          "1 User Seat",
+          "Up to 3 Brand profiles & pen-names",
+          "Standard trim sizes (6\"x9\", 8.5\"x11\")",
+          "Easy & Medium Sudoku puzzle generator",
+          "Square-masked maze layouts",
+          "Generate up to 10 AI Chapters / month",
+          "Standard vector PDF exports",
+          "Email support (24-48h response)",
+        ],
+      };
+    } else if (cleanCode.includes("-T3-") || cleanCode.includes("TIER3") || cleanCode.includes("-TIER-3-") || cleanCode.includes("-T3")) {
       return {
         name: "Tier 3: Agency Lifetime Access",
         limits: [
@@ -97,10 +112,14 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
         if (res.success) {
           const tier = getTierDetails(code);
           setRedeemedTier(tier);
-          
+
           try {
             const updatedPlan = await checkPremiumStatus();
             setActivePlan(updatedPlan);
+            posthog.capture("appsumo_code_redeemed", {
+              tier_name: tier.name,
+              new_plan: updatedPlan.plan,
+            });
           } catch (planErr) {
             console.error("Failed to refresh plan status:", planErr);
           }

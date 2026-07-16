@@ -1,5 +1,6 @@
 "use client";
 
+import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
 import { useCompletion } from "@ai-sdk/react";
 import { saveBookToDB, checkPremiumStatus, getUserUsage } from "../actions";
@@ -100,9 +101,17 @@ export default function GeneratePage() {
         const title = titleMatch ? titleMatch[1] : "My AI Masterpiece";
         const savedBook = await saveBookToDB(title, result);
         if (savedBook?.id) {
+          posthog.capture("book_outline_generated", {
+            book_id: savedBook.id,
+            genre,
+            tone,
+            audience,
+            plan: premiumStatus.plan,
+          });
           router.push(`/book/${savedBook.id}`);
         }
       } catch (e) {
+        posthog.captureException(e);
         console.error("Failed to save book:", e);
       } finally {
         setIsSaving(false);
@@ -120,6 +129,12 @@ export default function GeneratePage() {
       alert("Monthly limit reached. Please upgrade your plan.");
       return;
     }
+    posthog.capture("book_outline_generation_started", {
+      genre,
+      tone,
+      audience,
+      plan: premiumStatus.plan,
+    });
     handleSubmit(e);
   };
 
@@ -166,6 +181,7 @@ export default function GeneratePage() {
             </div>
             <Link
               href="/pricing"
+              onClick={() => posthog.capture("upgrade_plan_clicked", { source: "generation_limit_banner", plan: premiumStatus.plan })}
               className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs px-5 py-2.5 rounded-xl transition font-black uppercase tracking-wider"
             >
               Upgrade Plan

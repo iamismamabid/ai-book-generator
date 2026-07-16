@@ -298,7 +298,26 @@ export function drawWordSearchGrid(
   const gridSize = data.grid.length;
   const cellSize = zone.size / gridSize;
 
-  // "Apple style" solution connector lines are drawn beneath the letters.
+  // 1. Draw all cell backgrounds and borders first
+  data.grid.forEach((row: string[], r: number) => {
+    row.forEach((letter: string, c: number) => {
+      const x = zone.x + (c * cellSize);
+      const y = zone.y + (r * cellSize);
+      const isWordLetter = isSolution && data.mask && data.mask[r][c];
+
+      doc.setDrawColor(s.borderColor);
+      doc.setLineWidth(s.lineWidth);
+      doc.setFillColor(s.cellColor);
+      doc.rect(x, y, cellSize, cellSize, "FD");
+
+      if (isSolution && s.solutionHighlighter === 'fill' && isWordLetter) {
+        doc.setFillColor(s.highlightColor);
+        doc.roundedRect(x + cellSize * 0.06, y + cellSize * 0.06, cellSize * 0.88, cellSize * 0.88, cellSize * 0.12, cellSize * 0.12, "F");
+      }
+    });
+  });
+
+  // 2. "Apple style" solution connector lines are drawn next (above backgrounds, below letters)
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.setLineWidth(cellSize * 0.08);
     doc.setDrawColor(120, 120, 120);
@@ -323,23 +342,13 @@ export function drawWordSearchGrid(
     });
   }
 
+  // 3. Draw all letters on top
   doc.setFontSize(s.letterFontSize);
-
   data.grid.forEach((row: string[], r: number) => {
     row.forEach((letter: string, c: number) => {
       const x = zone.x + (c * cellSize);
       const y = zone.y + (r * cellSize);
       const isWordLetter = isSolution && data.mask && data.mask[r][c];
-
-      doc.setDrawColor(s.borderColor);
-      doc.setLineWidth(s.lineWidth);
-      doc.setFillColor(s.cellColor);
-      doc.rect(x, y, cellSize, cellSize, "FD");
-
-      if (isSolution && s.solutionHighlighter === 'fill' && isWordLetter) {
-        doc.setFillColor(s.highlightColor);
-        doc.roundedRect(x + cellSize * 0.06, y + cellSize * 0.06, cellSize * 0.88, cellSize * 0.88, cellSize * 0.12, cellSize * 0.12, "F");
-      }
 
       // Masked (answer) letters are always bold; other cells follow style.letterBold.
       doc.setFont(s.font, isWordLetter || s.letterBold ? "bold" : "normal");

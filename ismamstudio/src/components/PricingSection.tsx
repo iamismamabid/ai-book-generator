@@ -8,7 +8,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function PricingSectionInner() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual' | 'appsumo'>('monthly');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { userId } = useAuth();
   const router = useRouter();
@@ -241,125 +241,7 @@ function PricingSectionInner() {
     },
   ];
 
-  const appsumoPlans = [
-    {
-      name: "AppSumo Tier 1",
-      description: "Standard lifetime access. Perfect for beginning KDP self-publishers.",
-      price: 49,
-      originalPrice: 61,
-      popular: false,
-      features: [
-        "1 Code Stacked (Lifetime Access)",
-        "Full Commercial Rights (Keep 100% royalties)",
-        "Watermark-free vector PDF exports",
-        "Up to 3 brand & pen-name profiles",
-        "Standard trim sizes (6\"x9\", 8.5\"x11\")",
-        "Easy & Medium Sudoku puzzle generator",
-        "Square-masked maze layouts",
-        "Generate up to 10 AI Chapters / mo",
-        "Email support (24-48h response)",
-      ],
-      ctaText: "Get Lifetime Tier 1",
-      colorClass: "bg-slate-950/40 hover:border-slate-800",
-      borderClass: "border-slate-900",
-      icon: <Star className="w-6 h-6 text-slate-400" />,
-      ctaLink: "https://appsumo.com/products/ismam-studio",
-      planKey: "appsumo_t1"
-    },
-    {
-      name: "AppSumo Tier 2",
-      description: "Professional lifetime access. Best for active builders and authors.",
-      price: 98,
-      originalPrice: 122,
-      popular: true,
-      features: [
-        "2 Codes Stacked (Lifetime Access)",
-        "Watermark-free PDF exports (All sizes + Custom)",
-        "100% Commercial-use rights (Keep all royalties)",
-        "Up to 10 Brand profiles & pen-names",
-        "Unlimited Sudoku puzzles (Easy, Med, Hard)",
-        "Unlimited Labyrinth designs (Circle, Heart shapes)",
-        "Unlimited Word Search boards & CSV imports",
-        "Generate up to 30 AI Chapters / mo",
-        "Premium Cover & Interior Canvas Studio",
-        "Priority Customer Support (under 12 hours)",
-      ],
-      ctaText: "Get Lifetime Tier 2",
-      colorClass: "bg-white text-slate-900 shadow-[0_20px_50px_rgba(245,158,11,0.25),_0_0_30px_rgba(56,189,248,0.15)]",
-      borderClass: "border-amber-400 border-2",
-      icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
-      ctaLink: "https://appsumo.com/products/ismam-studio",
-      planKey: "appsumo_t2"
-    },
-    {
-      name: "AppSumo Tier 3",
-      description: "Agency lifetime access. Ultimate scaling tool with multi-seat access.",
-      price: 147,
-      originalPrice: 183,
-      popular: false,
-      features: [
-        "3 Codes Stacked (Lifetime Access)",
-        "Everything in Pro Studio plan",
-        "Up to 25 Brand profiles & pen-names",
-        "Up to 3 team member account seats",
-        "Vector SVG & source file exports",
-        "Advanced custom shapes & interior styling",
-        "AI KDP Niche Hunter & Keyword Spy",
-        "Generate up to 100 AI Chapters / mo",
-        "API access for automated generation",
-        "Dedicated customer support manager",
-      ],
-      ctaText: "Get Lifetime Tier 3",
-      colorClass: "bg-slate-950/60 hover:border-slate-700",
-      borderClass: "border-slate-800/80",
-      icon: <Award className="w-6 h-6 text-slate-400" />,
-      ctaLink: "https://appsumo.com/products/ismam-studio",
-      planKey: "appsumo_t3"
-    },
-    {
-      name: "AppSumo Tier 4",
-      description: "Advanced Agency lifetime access. Perfect for scaling publishing companies.",
-      price: 196,
-      originalPrice: 245,
-      popular: false,
-      features: [
-        "4 Codes Stacked (Lifetime Access)",
-        "Everything in Tier 3 plan",
-        "Up to 50 Brand profiles & pen-names",
-        "Up to 5 team member account seats",
-        "Generate up to 250 AI Chapters / mo",
-        "Advanced KDP Niche Hunter & Keyword Spy",
-        "Priority API access with higher rate limits",
-      ],
-      ctaText: "Get Lifetime Tier 4",
-      colorClass: "bg-slate-950/60 hover:border-slate-700",
-      borderClass: "border-slate-800/80",
-      icon: <Award className="w-6 h-6 text-slate-500" />,
-      ctaLink: "https://appsumo.com/products/ismam-studio",
-      planKey: "appsumo_t4"
-    },
-    {
-      name: "AppSumo Tier 5",
-      description: "Ultimate Lifetime Access. The ultimate package with unlimited resources.",
-      price: 245,
-      originalPrice: 306,
-      popular: false,
-      features: [
-        "5 Codes Stacked (Lifetime Access)",
-        "Everything in Tier 4 plan",
-        "Unlimited Brand profiles & pen-names",
-        "Unlimited team member account seats",
-        "Unlimited AI Chapters & Outlines",
-        "Full dedicated custom developer support",
-      ],
-      ctaText: "Get Lifetime Tier 5",
-      colorClass: "bg-slate-950/80 hover:border-slate-600",
-      borderClass: "border-indigo-500/40 border-2",
-      icon: <Award className="w-6 h-6 text-indigo-400 animate-pulse" />,
-      ctaLink: "https://appsumo.com/products/ismam-studio",
-      planKey: "appsumo_t5"
-    }
-  ];
+
 
   const faqs = [
     {
@@ -407,8 +289,6 @@ function PricingSectionInner() {
       a: "Yes, our studio layout features a responsive viewport canvas. While desktop screens are recommended for complex drag-and-drop cover alignments, you can easily generate puzzles, draft stories, and check your dashboard library from any iPad, tablet, or phone.",
     },
   ];
-
-  const activePlans = billingCycle === 'appsumo' ? appsumoPlans : plans;
 
   const renderPricingCard = (plan: any, isLtd: boolean) => {
     const price = isLtd ? plan.price : (billingCycle === 'annual' ? plan.priceAnnual : plan.priceMonthly);
@@ -591,16 +471,6 @@ function PricingSectionInner() {
               Save 20%
             </span>
           </button>
-          <button
-            onClick={() => setBillingCycle('appsumo')}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 ${billingCycle === 'appsumo'
-                ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
-                : "text-slate-400 hover:text-white"
-              }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <span>AppSumo LTD</span>
-          </button>
         </div>
       </div>
 
@@ -620,28 +490,7 @@ function PricingSectionInner() {
         {plans.map((plan) => renderPricingCard(plan, false))}
       </div>
 
-      {/* AppSumo LTD Grid */}
-      <div 
-        style={{ display: billingCycle === 'appsumo' ? 'grid' : 'none' }}
-        className="grid grid-cols-1 items-stretch mb-24 relative md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto gap-8 justify-center"
-      >
-        {appsumoPlans.map((plan) => renderPricingCard(plan, true))}
-      </div>
 
-      {/* AppSumo Redemption Help Card */}
-      {billingCycle === 'appsumo' && (
-        <div className="max-w-md mx-auto text-center mb-16 -mt-8 bg-indigo-500/5 border border-indigo-500/10 p-5 rounded-[2.5rem] backdrop-blur-sm">
-          <p className="text-xs font-semibold text-slate-300 mb-2">
-            Already purchased a code from AppSumo?
-          </p>
-          <Link
-            href="/redeem"
-            className="text-xs font-black text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider inline-flex items-center gap-1"
-          >
-            Redeem your purchase code here <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      )}
 
       {/* 🛡️ Value Proposition Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">

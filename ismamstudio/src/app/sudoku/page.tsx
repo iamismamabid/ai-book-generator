@@ -181,7 +181,7 @@ export default function SudokuGeneratorPage() {
             <div className="space-y-5">
 
               {/* Difficulty */}
-              <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850">
+              <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900">
                 <h2 className="text-lg font-bold mb-4 text-amber-300">Difficulty</h2>
                 <div className="grid grid-cols-3 gap-3">
                   {(["easy", "medium", "hard"] as Difficulty[]).map((d) => {
@@ -198,8 +198,8 @@ export default function SudokuGeneratorPage() {
                         className={`relative py-3 rounded-lg font-semibold capitalize transition flex items-center justify-center gap-1.5 ${difficulty === d
                             ? "bg-amber-500 text-slate-950"
                             : isLocked
-                              ? "bg-slate-900/40 text-slate-600 border border-slate-850/30 cursor-not-allowed"
-                              : "bg-slate-800 text-slate-350 hover:bg-slate-700"
+                              ? "bg-slate-900/40 text-slate-600 border border-slate-900/30 cursor-not-allowed"
+                              : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                           }`}
                       >
                         {isLocked && <Lock className="w-3.5 h-3.5 text-slate-500" />}
@@ -216,7 +216,7 @@ export default function SudokuGeneratorPage() {
               </div>
 
               {/* Book settings */}
-              <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850 space-y-4">
+              <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 space-y-4">
                 <h2 className="text-lg font-bold text-amber-300">Book Settings</h2>
 
                 <div>
@@ -232,7 +232,7 @@ export default function SudokuGeneratorPage() {
                     max={maxPuzzles}
                     value={bookCount}
                     onChange={(e) => handleBookCountChange(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2 text-white font-mono focus:outline-none focus:border-amber-500"
+                    className="w-full bg-slate-950 border border-slate-900 rounded-lg px-4 py-2 text-white font-mono focus:outline-none focus:border-amber-500"
                   />
                 </div>
 
@@ -241,7 +241,7 @@ export default function SudokuGeneratorPage() {
                   <select
                     value={trimSize}
                     onChange={(e) => setTrimSize(e.target.value as typeof trimSize)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2 text-white font-bold focus:outline-none focus:border-amber-500"
+                    className="w-full bg-slate-950 border border-slate-900 rounded-lg px-4 py-2 text-white font-bold focus:outline-none focus:border-amber-500"
                   >
                     <option value="6x9">6″ × 9″ (most popular)</option>
                     <option value="8.5x11">8.5″ × 11″ (large print)</option>
@@ -289,7 +289,7 @@ export default function SudokuGeneratorPage() {
               <button
                 onClick={handlePreview}
                 disabled={isGenerating}
-                className="w-full bg-slate-800 hover:bg-slate-750 text-white font-bold py-3 rounded-xl transition disabled:opacity-50 border border-slate-750"
+                className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition disabled:opacity-50 border border-slate-700"
               >
                 {isGenerating ? "Generating..." : "Preview Single Puzzle"}
               </button>
@@ -304,7 +304,7 @@ export default function SudokuGeneratorPage() {
               />
 
               {/* Summary badge */}
-              <div className="bg-slate-900/40 border border-slate-850 rounded-xl p-3 text-xs text-slate-500 font-semibold">
+              <div className="bg-slate-900/40 border border-slate-900 rounded-xl p-3 text-xs text-slate-500 font-semibold">
                 📄 PDF will contain <span className="text-amber-400 font-black">{bookCount}</span> puzzle page{bookCount !== 1 ? "s" : ""}
                 {includeSolutions && (
                   <> + <span className="text-indigo-400 font-black">{bookCount}</span> solution page{bookCount !== 1 ? "s" : ""}</>
@@ -316,7 +316,7 @@ export default function SudokuGeneratorPage() {
             </div>
 
             {/* Preview panel */}
-            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850 flex flex-col gap-4">
+            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 flex flex-col gap-4">
               <h2 className="text-lg font-bold text-slate-300">Live Preview — Puzzle</h2>
               {currentPuzzle ? (
                 <SudokuPreview grid={currentPuzzle.puzzle} isSolution={false} />
@@ -333,7 +333,7 @@ export default function SudokuGeneratorPage() {
         {/* ── SOLUTION TAB ───────────────────────────────────────── */}
         {activeTab === "solution" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850 space-y-5">
+            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 space-y-5">
               <div>
                 <h2 className="text-lg font-bold text-indigo-300 mb-1">Solution Key Preview</h2>
                 <p className="text-xs text-slate-500 font-semibold">
@@ -358,7 +358,7 @@ export default function SudokuGeneratorPage() {
                 </div>
               )}
 
-              <div className="border-t border-slate-850 pt-4">
+              <div className="border-t border-slate-900 pt-4">
                 <p className="text-xs text-slate-500 font-semibold mb-3">Solution pages in your PDF export:</p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-300 font-bold">Include solution pages</span>
@@ -377,7 +377,7 @@ export default function SudokuGeneratorPage() {
             </div>
 
             {/* Solution grid preview */}
-            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850 flex flex-col gap-4">
+            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 flex flex-col gap-4">
               <h2 className="text-lg font-bold text-indigo-300">Solution Grid</h2>
               {currentPuzzle ? (
                 <SudokuPreview grid={currentPuzzle.solution} isSolution={true} />
@@ -393,7 +393,7 @@ export default function SudokuGeneratorPage() {
 
         {/* ── KDP GUIDE TAB ──────────────────────────────────────── */}
         {activeTab === "guide" && (
-          <div className="bg-slate-900/60 p-8 rounded-[2.5rem] border border-slate-850 space-y-8 animate-fade-in text-slate-350 text-sm leading-relaxed font-semibold">
+          <div className="bg-slate-900/60 p-8 rounded-[2.5rem] border border-slate-900 space-y-8 animate-fade-in text-slate-300 text-sm leading-relaxed font-semibold">
 
             <section className="space-y-3">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">

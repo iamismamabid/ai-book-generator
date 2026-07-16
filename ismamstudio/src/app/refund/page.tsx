@@ -37,7 +37,7 @@ export default function RefundPolicyPage() {
 
           <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mb-8" />
 
-          <div className="space-y-8 text-slate-350 text-sm font-semibold leading-relaxed">
+          <div className="space-y-8 text-slate-300 text-sm font-semibold leading-relaxed">
             <section className="space-y-3">
               <h2 className="text-xl font-black text-white">1. Refund & Cancellation Policy</h2>
               <p>

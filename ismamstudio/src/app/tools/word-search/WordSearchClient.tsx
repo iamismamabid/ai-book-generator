@@ -387,7 +387,7 @@ export default function WordSearchStudio() {
                 {/* Glow element */}
                 <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
 
-                <div className="max-w-md w-full bg-slate-900/60 border border-slate-850 p-8 rounded-[2.5rem] shadow-2xl relative z-10 space-y-6">
+                <div className="max-w-md w-full bg-slate-900/60 border border-slate-900 p-8 rounded-[2.5rem] shadow-2xl relative z-10 space-y-6">
                     <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto">
                         <Lock className="w-8 h-8" />
                     </div>
@@ -401,7 +401,7 @@ export default function WordSearchStudio() {
                         </p>
                     </div>
 
-                    <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-850/40 text-left space-y-2 text-[11px] font-bold text-slate-350">
+                    <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-900/40 text-left space-y-2 text-[11px] font-bold text-slate-300">
                         <div className="flex items-center gap-2 text-indigo-400 text-[10px] uppercase tracking-wider mb-1">
                             <Sparkles className="w-3.5 h-3.5" /> Pro Plan Benefits:
                         </div>
@@ -414,13 +414,13 @@ export default function WordSearchStudio() {
                     <div className="flex flex-col gap-2 pt-2">
                         <Link 
                             href="/pricing"
-                            className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-650 hover:from-indigo-650 hover:to-purple-750 text-white font-black text-xs rounded-xl shadow-lg transition-all"
+                            className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs rounded-xl shadow-lg transition-all"
                         >
                             Upgrade to Pro Studio
                         </Link>
                         <button 
                             onClick={() => router.push("/")}
-                            className="w-full py-4 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-850 font-black text-xs rounded-xl transition"
+                            className="w-full py-4 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-900 font-black text-xs rounded-xl transition"
                         >
                             Back to Home
                         </button>
@@ -583,7 +583,7 @@ export default function WordSearchStudio() {
 
                 {/* ================= KDP PUBLISHING GUIDE UI ================= */}
                 {activeTab === 'guide' && (
-                    <div className="bg-white dark:bg-slate-900/60 p-8 md:p-12 rounded-[2.5rem] border border-slate-200 dark:border-slate-850 space-y-8 animate-fade-in text-slate-600 dark:text-slate-350 text-sm leading-relaxed font-semibold max-w-4xl mx-auto mt-6 shadow-sm">
+                    <div className="bg-white dark:bg-slate-900/60 p-8 md:p-12 rounded-[2.5rem] border border-slate-200 dark:border-slate-900 space-y-8 animate-fade-in text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-semibold max-w-4xl mx-auto mt-6 shadow-sm">
                         <section className="space-y-3">
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 <BookOpen className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> KDP Word Search Specifications

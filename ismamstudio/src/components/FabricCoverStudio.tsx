@@ -2171,46 +2171,46 @@ export default function FabricCoverStudio({
     <div className="flex flex-1 overflow-hidden h-full">
       {/* 1. Far Left Tool Picker Toolbar */}
       <div className="w-16 bg-slate-950 flex flex-col items-center py-6 gap-5 border-r border-slate-900 z-20 text-slate-400">
-        <button 
-          onClick={() => setActiveToolTab('elements')} 
+        <button
+          onClick={() => setActiveToolTab('elements')}
           title="Shapes & Text"
-          className={`p-3 rounded-xl transition-all ${
+          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'elements' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
           <Plus className="w-5 h-5"/>
         </button>
-        <button 
-          onClick={() => setActiveToolTab('graphics')} 
+        <button
+          onClick={() => setActiveToolTab('graphics')}
           title="Clipart Library"
-          className={`p-3 rounded-xl transition-all ${
+          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'graphics' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
           <Shapes className="w-5 h-5"/>
         </button>
-        <button 
-          onClick={() => setActiveToolTab('presets')} 
+        <button
+          onClick={() => setActiveToolTab('presets')}
           title="Background Presets"
-          className={`p-3 rounded-xl transition-all ${
+          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'presets' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
           <Sparkles className="w-5 h-5"/>
         </button>
-        <button 
-          onClick={() => setActiveToolTab('uploads')} 
+        <button
+          onClick={() => setActiveToolTab('uploads')}
           title="Upload Custom Graphics"
-          className={`p-3 rounded-xl transition-all ${
+          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'uploads' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
           <Upload className="w-5 h-5"/>
         </button>
-        <button 
-          onClick={() => setActiveToolTab('settings')} 
+        <button
+          onClick={() => setActiveToolTab('settings')}
           title="Cover Specs"
-          className={`p-3 rounded-xl transition-all ${
+          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'settings' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
@@ -2218,20 +2218,20 @@ export default function FabricCoverStudio({
         </button>
 
         <div className="mt-auto flex flex-col gap-4 border-t border-slate-900 pt-5 w-full px-2">
-          <button 
-            onClick={() => setShowKdpGuides(!showKdpGuides)} 
+          <button
+            onClick={() => setShowKdpGuides(!showKdpGuides)}
             title="Toggle KDP Layout Guides"
-            className={`p-3 mx-auto rounded-xl transition-all ${
+            className={`p-3 mx-auto rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
               showKdpGuides ? 'text-pink-400 bg-pink-500/10 border border-pink-500/20' : 'text-slate-500 hover:text-white'
             }`}
           >
             <LayoutTemplate className="w-5 h-5"/>
           </button>
-          <button 
-            onClick={handleGenerateCover} 
-            disabled={isGenerating} 
+          <button
+            onClick={handleGenerateCover}
+            disabled={isGenerating}
             title="Compile & Download PDF Cover"
-            className="p-3 mx-auto rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 transition-all shadow-md shadow-indigo-600/25 active:scale-95 disabled:opacity-50"
+            className="p-3 mx-auto rounded-2xl bg-indigo-600 text-white hover:bg-indigo-500 transition-all duration-200 ease-out active:scale-[0.94] shadow-md shadow-indigo-600/25 disabled:opacity-50"
           >
             {isGenerating ? <Loader2 className="w-5 h-5 animate-spin"/> : <Download className="w-5 h-5"/>}
           </button>
@@ -2239,11 +2239,11 @@ export default function FabricCoverStudio({
       </div>
 
       {/* 2. Left Configuration Panel */}
-      <div className="w-68 bg-slate-50 border-r border-slate-200 flex flex-col p-5 z-10 overflow-y-auto">
+      <div className="w-72 bg-slate-50 border-r border-slate-200 flex flex-col p-5 z-10 overflow-y-auto">
         
         {/* Contextual Edit Panel (Consolidated Sidebar Editor) */}
         {activeObject && (
-          <div className="mb-5 bg-white p-3.5 rounded-2xl border border-slate-205 space-y-4 shadow-sm shrink-0">
+          <div className="mb-5 bg-white p-3.5 rounded-2xl border border-slate-200 space-y-4 shadow-sm shrink-0">
             <div className="flex justify-between items-center border-b border-slate-100 pb-2">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Edit Selected</span>
               <button 
@@ -2333,7 +2333,7 @@ export default function FabricCoverStudio({
                     <button
                       onClick={toggleBold}
                       className={`flex-1 py-1.5 text-xs font-bold transition-colors ${
-                        objectFontWeight === "bold" ? "bg-indigo-650 text-white" : "bg-white text-slate-750 hover:bg-slate-50"
+                        objectFontWeight === "bold" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
                       }`}
                     >
                       B
@@ -2341,7 +2341,7 @@ export default function FabricCoverStudio({
                     <button
                       onClick={toggleItalic}
                       className={`flex-1 py-1.5 text-xs italic transition-colors border-x border-slate-100 ${
-                        objectFontStyle === "italic" ? "bg-indigo-650 text-white" : "bg-white text-slate-755 hover:bg-slate-50"
+                        objectFontStyle === "italic" ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
                       }`}
                     >
                       I
@@ -2349,7 +2349,7 @@ export default function FabricCoverStudio({
                     <button
                       onClick={toggleUnderline}
                       className={`flex-1 py-1.5 text-xs underline transition-colors ${
-                        objectUnderline ? "bg-indigo-650 text-white" : "bg-white text-slate-755 hover:bg-slate-50"
+                        objectUnderline ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
                       }`}
                     >
                       U
@@ -2374,7 +2374,7 @@ export default function FabricCoverStudio({
                       setObjectCharSpacing(val);
                       updateActiveObjectProperty("charSpacing", val, false);
                     }}
-                    className="w-full accent-indigo-650 h-1 cursor-pointer"
+                    className="w-full accent-indigo-600 h-1 cursor-pointer"
                   />
                 </div>
 
@@ -2426,7 +2426,7 @@ export default function FabricCoverStudio({
                       updateActiveObjectProperty("fill", newVal, true);
                     }}
                     className={`text-[8px] font-black uppercase px-2 py-0.5 rounded cursor-pointer ${
-                      objectColor === "transparent" ? "bg-indigo-650 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                      objectColor === "transparent" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                     }`}
                   >
                     None
@@ -2468,7 +2468,7 @@ export default function FabricCoverStudio({
                           updateActiveObjectProperty("stroke", newVal, true);
                         }}
                         className={`text-[8px] font-black uppercase px-2 py-0.5 rounded cursor-pointer ${
-                          objectStrokeColor === "transparent" ? "bg-indigo-650 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                          objectStrokeColor === "transparent" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                         }`}
                       >
                         None
@@ -2512,7 +2512,7 @@ export default function FabricCoverStudio({
                             setObjectStrokeWidth(val);
                             updateActiveObjectProperty("strokeWidth", val, false);
                           }}
-                          className="w-full accent-indigo-650 h-1 cursor-pointer"
+                          className="w-full accent-indigo-600 h-1 cursor-pointer"
                         />
                       </div>
                     )}
@@ -2539,7 +2539,7 @@ export default function FabricCoverStudio({
                     setObjectOpacity(val);
                     updateActiveObjectProperty("opacity", val, false);
                   }}
-                  className="w-full accent-indigo-650 h-1 cursor-pointer"
+                  className="w-full accent-indigo-600 h-1 cursor-pointer"
                 />
               </div>
 
@@ -2577,7 +2577,7 @@ export default function FabricCoverStudio({
                     <button
                       onClick={toggleFlipX}
                       className={`flex-1 py-1.5 text-[9px] font-black uppercase transition-colors ${
-                        objectFlipX ? "bg-indigo-650 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                        objectFlipX ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
                       }`}
                     >
                       Flip H
@@ -2585,7 +2585,7 @@ export default function FabricCoverStudio({
                     <button
                       onClick={toggleFlipY}
                       className={`flex-1 py-1.5 text-[9px] font-black uppercase transition-colors border-l border-slate-100 ${
-                        objectFlipY ? "bg-indigo-650 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                        objectFlipY ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
                       }`}
                     >
                       Flip V
@@ -2630,7 +2630,7 @@ export default function FabricCoverStudio({
                             setObjectShadowColor(e.target.value);
                             updateActiveObjectShadow(true, e.target.value, objectShadowBlur, objectShadowOffsetX, objectShadowOffsetY, false);
                           }}
-                          className="flex-1 text-[8px] font-bold p-0.5 border border-slate-250 rounded font-mono text-center"
+                          className="flex-1 text-[8px] font-bold p-0.5 border border-slate-200 rounded font-mono text-center"
                         />
                       </div>
                     </div>
@@ -2646,7 +2646,7 @@ export default function FabricCoverStudio({
                           setObjectShadowBlur(val);
                           updateActiveObjectShadow(true, objectShadowColor, val, objectShadowOffsetX, objectShadowOffsetY, false);
                         }}
-                        className="w-full accent-indigo-650 cursor-pointer"
+                        className="w-full accent-indigo-600 cursor-pointer"
                       />
                     </div>
                     <div>
@@ -2661,7 +2661,7 @@ export default function FabricCoverStudio({
                           setObjectShadowOffsetX(val);
                           updateActiveObjectShadow(true, objectShadowColor, objectShadowBlur, val, objectShadowOffsetY, false);
                         }}
-                        className="w-full accent-indigo-650 cursor-pointer"
+                        className="w-full accent-indigo-600 cursor-pointer"
                       />
                     </div>
                   </div>
@@ -2749,7 +2749,7 @@ export default function FabricCoverStudio({
                   </button>
                   <button 
                     onClick={deleteSelected}
-                    className="col-span-2 py-1 bg-red-50 hover:bg-red-100 border border-red-100 text-red-650 text-[9px] font-black rounded-lg uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
+                    className="col-span-2 py-1 bg-red-50 hover:bg-red-100 border border-red-100 text-red-600 text-[9px] font-black rounded-lg uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
                   >
                     Delete Layer
                   </button>
@@ -3008,7 +3008,7 @@ export default function FabricCoverStudio({
                               }
                             }}
                             title="Delete Layer"
-                            className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-655 active:scale-95"
+                            className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-600 active:scale-95"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -3061,7 +3061,7 @@ export default function FabricCoverStudio({
                             key={iconIdx}
                             onClick={() => addVectorIcon(icon.path, icon.fill, icon.stroke, icon.strokeWidth, (icon as any).strokeDashArray, icon.viewBox)}
                             title={icon.name}
-                            className="aspect-square flex items-center justify-center p-1.5 rounded-lg border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-650 transition-all active:scale-95 text-slate-500 cursor-pointer"
+                            className="aspect-square flex items-center justify-center p-1.5 rounded-lg border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition-all active:scale-95 text-slate-500 cursor-pointer"
                           >
                             <svg 
                               viewBox={`0 0 ${icon.viewBox || 24} ${icon.viewBox || 24}`} 
@@ -3133,7 +3133,7 @@ export default function FabricCoverStudio({
                             </button>
                             <button
                               onClick={() => applyBackgroundImage(clip.full, 'full')}
-                              className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                              className="w-full py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
                             >
                               Full BG
                             </button>
@@ -3145,7 +3145,7 @@ export default function FabricCoverStudio({
                             </button>
                             <button
                               onClick={() => applyBackgroundImage(clip.full, 'back')}
-                              className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                              className="w-full py-1 bg-teal-600 hover:bg-teal-600 text-white rounded text-[9px] font-black uppercase tracking-wider"
                             >
                               Back BG
                             </button>
@@ -3177,7 +3177,7 @@ export default function FabricCoverStudio({
                           </button>
                           <button
                             onClick={() => applyBackgroundImage(clip.src, 'full')}
-                            className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                            className="w-full py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
                           >
                             Full BG
                           </button>
@@ -3189,7 +3189,7 @@ export default function FabricCoverStudio({
                           </button>
                           <button
                             onClick={() => applyBackgroundImage(clip.src, 'back')}
-                            className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                            className="w-full py-1 bg-teal-600 hover:bg-teal-600 text-white rounded text-[9px] font-black uppercase tracking-wider"
                           >
                             Back BG
                           </button>
@@ -3436,7 +3436,7 @@ export default function FabricCoverStudio({
                         </button>
                         <button
                           onClick={() => applyBackgroundImage(src, 'full')}
-                          className="w-full py-1 bg-indigo-650 hover:bg-indigo-550 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                          className="w-full py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
                         >
                           Full BG
                         </button>
@@ -3448,7 +3448,7 @@ export default function FabricCoverStudio({
                         </button>
                         <button
                           onClick={() => applyBackgroundImage(src, 'back')}
-                          className="w-full py-1 bg-teal-650 hover:bg-teal-555 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                          className="w-full py-1 bg-teal-600 hover:bg-teal-600 text-white rounded text-[9px] font-black uppercase tracking-wider"
                         >
                           Back BG
                         </button>
@@ -3509,9 +3509,9 @@ export default function FabricCoverStudio({
               </div>
 
               {/* KDP Gutter Reference Card */}
-              <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-250/50 space-y-1.5 mt-2">
+              <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-200/50 space-y-1.5 mt-2">
                 <span className="text-[9px] font-black text-amber-800 uppercase block tracking-wider">📐 KDP Interior Guidelines</span>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[9px] text-slate-650 font-semibold leading-normal">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[9px] text-slate-600 font-semibold leading-normal">
                   <span>Page Count:</span>
                   <span className="font-bold text-slate-800">{pageCount} pages</span>
                   
@@ -3534,19 +3534,19 @@ export default function FabricCoverStudio({
                     {fullCoverImage && (
                       <div className="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-[10px]">
                         <span className="font-semibold text-indigo-950 truncate max-w-[150px]">Full Cover BG Image</span>
-                        <button onClick={() => setFullCoverImage('')} className="text-red-500 hover:text-red-750 font-bold uppercase transition-colors">Clear</button>
+                        <button onClick={() => setFullCoverImage('')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Clear</button>
                       </div>
                     )}
                     {backCoverImage && (
                       <div className="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-[10px]">
                         <span className="font-semibold text-indigo-950 truncate max-w-[150px]">Back Cover BG Image</span>
-                        <button onClick={() => setBackCoverImage('')} className="text-red-500 hover:text-red-755 font-bold uppercase transition-colors">Clear</button>
+                        <button onClick={() => setBackCoverImage('')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Clear</button>
                       </div>
                     )}
                     {frontCoverImage && (
                       <div className="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-[10px]">
                         <span className="font-semibold text-indigo-950 truncate max-w-[150px]">Front Cover BG Image</span>
-                        <button onClick={() => setFrontCoverImage('')} className="text-red-500 hover:text-red-755 font-bold uppercase transition-colors">Clear</button>
+                        <button onClick={() => setFrontCoverImage('')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Clear</button>
                       </div>
                     )}
                   </div>
@@ -3690,29 +3690,29 @@ export default function FabricCoverStudio({
       </div>
 
       {/* 3. FABRIC WORKSPACE */}
-      <div className="flex-1 bg-slate-200/50 flex flex-col items-center justify-center p-8 relative overflow-hidden shadow-inner">
+      <div className="flex-1 bg-slate-100 flex flex-col items-center justify-center p-10 relative overflow-hidden">
         {/* Spine details helper */}
-        <div className="absolute top-4 bg-slate-950/80 px-4 py-2 rounded-full border border-slate-800 text-[10px] font-black uppercase text-amber-400 tracking-widest shadow-md z-15">
+        <div className="absolute top-4 bg-slate-950/80 px-4 py-2 rounded-full border border-slate-800 text-[10px] font-black uppercase text-amber-400 tracking-widest shadow-md z-20">
           Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"
         </div>
 
         {/* Global Canvas Control Bar */}
         <div className="mb-4 flex items-center gap-3 bg-white py-2 px-4 rounded-full border border-slate-200 shadow-sm z-10 select-none">
-          <button 
-            onClick={handleUndo} 
-            disabled={historyStep <= 0} 
-            title="Undo (Ctrl+Z)" 
-            className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all flex items-center gap-1.5"
+          <button
+            onClick={handleUndo}
+            disabled={historyStep <= 0}
+            title="Undo (Ctrl+Z)"
+            className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
           >
             <Undo2 className="w-4 h-4"/>
             <span className="text-[10px] font-black uppercase tracking-wider">Undo</span>
           </button>
-          
-          <button 
-            onClick={handleRedo} 
-            disabled={historyStep === history.length - 1} 
-            title="Redo (Ctrl+Y)" 
-            className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all flex items-center gap-1.5"
+
+          <button
+            onClick={handleRedo}
+            disabled={historyStep === history.length - 1}
+            title="Redo (Ctrl+Y)"
+            className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
           >
             <Redo2 className="w-4 h-4"/>
             <span className="text-[10px] font-black uppercase tracking-wider">Redo</span>
@@ -3720,21 +3720,21 @@ export default function FabricCoverStudio({
 
           <div className="w-px h-5 bg-slate-200 mx-1" />
 
-          <button 
-            onClick={deleteSelected} 
+          <button
+            onClick={deleteSelected}
             disabled={!activeObject}
-            title="Erase / Delete Selected Layer (Delete)" 
-            className="p-2 rounded-lg text-red-650 hover:bg-red-50 disabled:opacity-30 transition-all flex items-center gap-1.5"
+            title="Erase / Delete Selected Layer (Delete)"
+            className="p-2 rounded-full text-red-600 hover:bg-red-50 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
           >
             <Trash2 className="w-4 h-4"/>
             <span className="text-[10px] font-black uppercase tracking-wider">Erase</span>
           </button>
 
-          <button 
-            onClick={handleClearCanvas} 
+          <button
+            onClick={handleClearCanvas}
             disabled={layers.length === 0}
-            title="Clear All Layers" 
-            className="p-2 rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-30 transition-all flex items-center gap-1.5"
+            title="Clear All Layers"
+            className="p-2 rounded-full text-slate-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
           >
             <Eraser className="w-4 h-4"/>
             <span className="text-[10px] font-black uppercase tracking-wider">Clear All</span>
@@ -3744,20 +3744,21 @@ export default function FabricCoverStudio({
         {/* Responsive parent container to calculate scale */}
         <div ref={containerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center relative">
           {/* Scaled canvas container */}
-          <div 
+          <div
             style={{
               transform: `scale(${scaleRatio})`,
               transformOrigin: 'center center',
-              transition: 'transform 0.1s ease'
+              transition: 'transform 0.1s ease',
+              boxShadow: "var(--shadow-soft-lg)"
             }}
-            className="relative shadow-[0_15px_50px_rgba(0,0,0,0.15)] bg-white rounded-sm ring-1 ring-slate-300 overflow-hidden cursor-default flex-shrink-0"
+            className="relative bg-white rounded-sm ring-1 ring-slate-300 overflow-hidden cursor-default flex-shrink-0"
           >
             <canvas ref={canvasRef} />
           </div>
         </div>
 
         {/* Instructions Bar */}
-        <div className="mt-4 flex gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white py-2 px-6 rounded-full border border-slate-200 shadow-sm">
+        <div className="mt-4 flex gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white py-2.5 px-6 rounded-full border border-slate-200 shadow-sm">
           <span>Left: Back Cover</span>
           <span className="text-amber-500">Center: Spine</span>
           <span>Right: Front Cover</span>

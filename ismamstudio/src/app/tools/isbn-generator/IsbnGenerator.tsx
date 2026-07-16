@@ -683,7 +683,7 @@ export default function IsbnGenerator() {
                 />
                 
                 {meta.conversionMsg && (
-                  <div className="text-[11px] text-emerald-450 font-bold flex items-center gap-1">
+                  <div className="text-[11px] text-emerald-500 font-bold flex items-center gap-1">
                     <Info className="w-3.5 h-3.5" />
                     {meta.conversionMsg}
                   </div>
@@ -704,9 +704,9 @@ export default function IsbnGenerator() {
                     type="checkbox"
                     checked={addPriceCode}
                     onChange={(e) => setAddPriceCode(e.target.checked)}
-                    className="w-4 h-4 rounded text-indigo-650 bg-slate-950 border-slate-900 focus:ring-indigo-500 focus:ring-offset-slate-950"
+                    className="w-4 h-4 rounded text-indigo-600 bg-slate-950 border-slate-900 focus:ring-indigo-500 focus:ring-offset-slate-950"
                   />
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-350 select-none">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-300 select-none">
                     Add price barcode (EAN-5 supplement)
                   </span>
                 </label>
@@ -714,7 +714,7 @@ export default function IsbnGenerator() {
                 {addPriceCode && (
                   <div className="grid grid-cols-2 gap-4 animate-fadeIn">
                     <div className="space-y-1.5">
-                      <span className="block text-[10px] font-black uppercase tracking-wider text-slate-450">
+                      <span className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
                         Currency
                       </span>
                       <select
@@ -731,7 +731,7 @@ export default function IsbnGenerator() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <span className="block text-[10px] font-black uppercase tracking-wider text-slate-450">
+                      <span className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
                         Price
                       </span>
                       <input
@@ -758,8 +758,8 @@ export default function IsbnGenerator() {
                       onClick={() => setBarcodeSize(sz)}
                       className={`py-2 px-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${
                         barcodeSize === sz
-                          ? "bg-indigo-650/20 border-indigo-500 text-white"
-                          : "bg-slate-950/40 border-slate-900 text-slate-455 hover:bg-slate-900 hover:text-slate-200"
+                          ? "bg-indigo-600/20 border-indigo-500 text-white"
+                          : "bg-slate-950/40 border-slate-900 text-slate-500 hover:bg-slate-900 hover:text-slate-200"
                       }`}
                     >
                       {sz}
@@ -771,7 +771,7 @@ export default function IsbnGenerator() {
               {/* Color Customizer */}
               <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-900">
                 <div className="space-y-1.5">
-                  <span className="block text-[10px] font-black uppercase tracking-wider text-slate-450">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
                     Bar color
                   </span>
                   <div className="flex gap-2 items-center bg-slate-950 border border-slate-900 rounded-xl px-3 py-2">
@@ -786,7 +786,7 @@ export default function IsbnGenerator() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="block text-[10px] font-black uppercase tracking-wider text-slate-450">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
                     Background
                   </span>
                   <div className="flex gap-2 items-center bg-slate-950 border border-slate-900 rounded-xl px-3 py-2">
@@ -808,9 +808,9 @@ export default function IsbnGenerator() {
                     type="checkbox"
                     checked={showTextBelow}
                     onChange={(e) => setShowTextBelow(e.target.checked)}
-                    className="w-4 h-4 rounded text-indigo-650 bg-slate-950 border-slate-900 focus:ring-indigo-500 focus:ring-offset-slate-950"
+                    className="w-4 h-4 rounded text-indigo-600 bg-slate-950 border-slate-900 focus:ring-indigo-500 focus:ring-offset-slate-950"
                   />
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-350 select-none">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-300 select-none">
                     Show ISBN text below barcode
                   </span>
                 </label>
@@ -860,7 +860,7 @@ export default function IsbnGenerator() {
                     >
                       {copiedText ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-450" /> Copied
+                          <Check className="w-3.5 h-3.5 text-emerald-500" /> Copied
                         </>
                       ) : (
                         <>
@@ -992,7 +992,7 @@ export default function IsbnGenerator() {
         <section className="bg-slate-900/20 border border-slate-900/50 rounded-[2.5rem] p-8 md:p-12 space-y-8">
           <div className="text-center md:text-left space-y-2">
             <h2 className="text-2xl font-black text-white">Where to Get an ISBN</h2>
-            <p className="text-slate-450 text-sm font-semibold">
+            <p className="text-slate-500 text-sm font-semibold">
               ISBNs are distributed by official national agencies. Each country has its own authorized provider.
             </p>
           </div>
@@ -1009,7 +1009,7 @@ export default function IsbnGenerator() {
               <div key={agency.country} className="bg-slate-950/60 border border-slate-900 p-5 rounded-2xl space-y-1">
                 <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider block">{agency.country}</span>
                 <span className="text-white font-bold text-sm block">{agency.provider}</span>
-                <span className="text-xs text-slate-450 font-mono block mt-2 hover:text-indigo-400 transition-colors">
+                <span className="text-xs text-slate-500 font-mono block mt-2 hover:text-indigo-400 transition-colors">
                   {agency.url}
                 </span>
               </div>
@@ -1071,7 +1071,7 @@ export default function IsbnGenerator() {
 
             <div className="space-y-2">
               <h3 className="font-bold text-indigo-400">What is the EAN-5 price supplement?</h3>
-              <p className="text-slate-455 font-semibold leading-relaxed">
+              <p className="text-slate-500 font-semibold leading-relaxed">
                 The EAN-5 is a small 5-digit barcode printed to the right of the main barcode. It encodes the book's suggested retail price, starting with a currency prefix (5=USD, 4=GBP, etc.).
               </p>
             </div>
@@ -1091,7 +1091,7 @@ export default function IsbnGenerator() {
           </div>
           <Link
             href="/studio"
-            className="shrink-0 px-6 py-3.5 bg-indigo-650 hover:bg-indigo-600 text-white font-black text-sm rounded-2xl shadow-md transition active:scale-95"
+            className="shrink-0 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-600 text-white font-black text-sm rounded-2xl shadow-md transition active:scale-95"
           >
             Explore All Tools
           </Link>

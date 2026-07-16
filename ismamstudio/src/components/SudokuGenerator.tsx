@@ -20,7 +20,7 @@ function SudokuPreview({ grid }: { grid: Grid }) {
           return (
             <div
               key={`${r}-${c}`}
-              className={`aspect-square flex items-center justify-center text-lg font-bold border border-slate-600/50
+              className={`interactive-cell aspect-square flex items-center justify-center text-lg font-bold border border-slate-600/50
                 ${thickRight ? "border-r-4 border-r-slate-700" : ""}
                 ${thickBottom ? "border-b-4 border-b-slate-700" : ""}
                 ${val !== 0 ? "text-amber-500 bg-slate-800/80" : "bg-slate-900"}
@@ -71,7 +71,7 @@ export function SudokuGenerator() {
   };
 
   return (
-    <div className="bg-slate-950 text-white p-8 rounded-xl mt-12 shadow-2xl">
+    <div className="bg-slate-950 text-white p-8 rounded-3xl mt-12" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-2">Sudoku Generator Tool</h2>
         <p className="text-slate-400">
@@ -88,7 +88,7 @@ export function SudokuGenerator() {
                 <button
                   key={d}
                   onClick={() => setDifficulty(d)}
-                  className={`py-3 rounded-lg font-semibold capitalize transition ${
+                  className={`py-3 rounded-2xl font-semibold capitalize transition-all duration-200 ease-out active:scale-[0.97] ${
                     difficulty === d
                       ? "bg-amber-500 text-slate-950"
                       : "bg-slate-800 text-slate-300 hover:bg-slate-700"
@@ -109,13 +109,13 @@ export function SudokuGenerator() {
               max={200}
               value={bookCount}
               onChange={(e) => setBookCount(Number(e.target.value))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 mb-4 text-white"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 mb-4 text-white focus:border-indigo-500 outline-none transition-colors duration-200"
             />
             <label className="block text-sm text-slate-400 mb-2">Trim size</label>
             <select
               value={trimSize}
               onChange={(e) => setTrimSize(e.target.value as typeof trimSize)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white focus:border-indigo-500 outline-none transition-colors duration-200"
             >
               <option value="6x9">6" x 9" (most popular)</option>
               <option value="8.5x11">8.5" x 11" (large print)</option>
@@ -126,7 +126,7 @@ export function SudokuGenerator() {
           <button
             onClick={handlePreview}
             disabled={isGenerating}
-            className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition disabled:opacity-50"
+            className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-50"
           >
             {isGenerating ? "Generating..." : "Preview a puzzle"}
           </button>
@@ -135,7 +135,8 @@ export function SudokuGenerator() {
           <button
             onClick={handleDownloadPdf}
             disabled={isDownloading}
-            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold py-3.5 rounded-2xl transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"
+            style={{ boxShadow: "0 8px 24px rgba(245, 158, 11, 0.18)" }}
           >
             {isDownloading ? (
               <>
@@ -153,7 +154,7 @@ export function SudokuGenerator() {
           {currentPuzzle ? (
             <SudokuPreview grid={currentPuzzle.puzzle} />
           ) : (
-            <div className="aspect-square flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-xl">
+            <div className="aspect-square flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-2xl">
               Click "Preview a puzzle" to see a sample
             </div>
           )}

@@ -232,7 +232,7 @@ export function CryptogramEditor({ page, updatePage }: any) {
                               {isLetter ? (
                                 <>
                                   {/* Empty top write-in grid slot or filled if it is solution */}
-                                  <div className="w-[15px] h-[17px] border border-slate-350 bg-slate-50/50 rounded flex items-center justify-center text-[9px] font-bold text-slate-700">
+                                  <div className="w-[15px] h-[17px] border border-slate-300 bg-slate-50/50 rounded flex items-center justify-center text-[9px] font-bold text-slate-700">
                                     {isSolution ? (
                                       <span className="text-indigo-600 font-extrabold">{originalChar}</span>
                                     ) : (

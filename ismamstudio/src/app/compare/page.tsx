@@ -56,56 +56,56 @@ export default function ComparePage() {
                 </tr>
               </thead>
               <tbody className="text-slate-300 font-semibold">
-                <tr className="border-b border-slate-850 hover:bg-slate-900/10 transition-colors">
+                <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">Commercial Rights</td>
                   <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
                   <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
                   <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-amber-500 mx-auto" /></td>
                   <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-emerald-400 mx-auto" /></td>
                 </tr>
-                <tr className="border-b border-slate-850 hover:bg-slate-900/10 transition-colors">
+                <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">Watermark-Free Exports</td>
                   <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
                   <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
                   <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-amber-500 mx-auto" /></td>
                   <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-emerald-400 mx-auto" /></td>
                 </tr>
-                <tr className="border-b border-slate-850 hover:bg-slate-900/10 transition-colors">
+                <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">Trim Size Adjustments</td>
                   <td className="py-4 px-4 text-center">Basic (8.5x11)</td>
                   <td className="py-4 px-4 text-center">Standard sizes</td>
                   <td className="py-4 px-4 text-center">All sizes + Custom</td>
                   <td className="py-4 px-4 text-center">All + Custom + SVGs</td>
                 </tr>
-                <tr className="border-b border-slate-850 hover:bg-slate-900/10 transition-colors">
+                <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">Sudoku Puzzle Difficulty</td>
                   <td className="py-4 px-4 text-center">Easy Only</td>
                   <td className="py-4 px-4 text-center">Easy & Medium</td>
                   <td className="py-4 px-4 text-center">All (Easy, Med, Hard)</td>
                   <td className="py-4 px-4 text-center">All + Custom solutions</td>
                 </tr>
-                <tr className="border-b border-slate-850 hover:bg-slate-900/10 transition-colors">
+                <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">Maze Layout Shapes</td>
                   <td className="py-4 px-4 text-center">Square Only</td>
                   <td className="py-4 px-4 text-center">Square Only</td>
                   <td className="py-4 px-4 text-center">Square, Circle, Heart</td>
                   <td className="py-4 px-4 text-center">All + custom masking</td>
                 </tr>
-                <tr className="border-b border-slate-850 hover:bg-slate-900/10 transition-colors">
+                <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">AI Writer Chapter Limits</td>
                   <td className="py-4 px-4 text-center">1 Outline/mo</td>
                   <td className="py-4 px-4 text-center">5 Chapters/mo</td>
                   <td className="py-4 px-4 text-center">Unlimited</td>
                   <td className="py-4 px-4 text-center">Unlimited (Priority)</td>
                 </tr>
-                <tr className="border-b border-slate-850 hover:bg-slate-900/10 transition-colors">
+                <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">Pen-names / Brands</td>
                   <td className="py-4 px-4 text-center">1</td>
                   <td className="py-4 px-4 text-center">3</td>
                   <td className="py-4 px-4 text-center">Unlimited</td>
                   <td className="py-4 px-4 text-center">Unlimited</td>
                 </tr>
-                <tr className="border-b border-slate-850 hover:bg-slate-900/10 transition-colors">
+                <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">Team seats</td>
                   <td className="py-4 px-4 text-center">1 Seat</td>
                   <td className="py-4 px-4 text-center">1 Seat</td>
@@ -126,7 +126,7 @@ export default function ComparePage() {
           <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
             <Link
               href="/studio"
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-650 text-white font-black rounded-xl text-center shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-1.5 hover:opacity-90"
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black rounded-xl text-center shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-1.5 hover:opacity-90"
             >
               Start Free Trial <Zap className="w-4 h-4" />
             </Link>

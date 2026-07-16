@@ -204,7 +204,7 @@ export default function KeywordResearchPage() {
         </div>
 
         {/* Niche Quick Filters */}
-        <div className="bg-slate-900/40 p-4 rounded-2xl border border-slate-850 flex flex-wrap items-center gap-2">
+        <div className="bg-slate-900/40 p-4 rounded-2xl border border-slate-900 flex flex-wrap items-center gap-2">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-2 flex items-center gap-1">
             <Filter className="w-3.5 h-3.5" /> Puzzle Niches:
           </span>
@@ -268,7 +268,7 @@ export default function KeywordResearchPage() {
                         <tr 
                           key={idx} 
                           onClick={() => toggleKeywordSelection(res.keyword)}
-                          className={`border-b border-slate-850 hover:bg-slate-900/20 transition-colors cursor-pointer ${
+                          className={`border-b border-slate-900 hover:bg-slate-900/20 transition-colors cursor-pointer ${
                             isSelected ? "bg-indigo-500/5 text-white" : ""
                           }`}
                         >
@@ -324,31 +324,31 @@ export default function KeywordResearchPage() {
                   type="number"
                   value={bsr}
                   onChange={(e) => handleCalculateBsr(Number(e.target.value))}
-                  className="w-full text-xs font-semibold p-3.5 border border-slate-800 rounded-xl bg-slate-950 focus:border-indigo-450 focus:bg-slate-900 transition-all text-slate-100"
+                  className="w-full text-xs font-semibold p-3.5 border border-slate-800 rounded-xl bg-slate-950 focus:border-indigo-500 focus:bg-slate-900 transition-all text-slate-100"
                   placeholder="e.g. 52000"
                 />
               </div>
 
               {calculatedSales && (
-                <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-850 space-y-3 pt-4 animate-fade-in">
-                  <div className="flex justify-between items-center border-b border-slate-850 pb-2">
-                    <span className="text-xs font-bold text-slate-450 uppercase">Est. Daily Sales</span>
+                <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-900 space-y-3 pt-4 animate-fade-in">
+                  <div className="flex justify-between items-center border-b border-slate-900 pb-2">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Est. Daily Sales</span>
                     <span className="text-sm font-black text-indigo-400">{calculatedSales.daily} units</span>
                   </div>
-                  <div className="flex justify-between items-center border-b border-slate-850 pb-2">
-                    <span className="text-xs font-bold text-slate-450 uppercase">Est. Monthly Sales</span>
+                  <div className="flex justify-between items-center border-b border-slate-900 pb-2">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Est. Monthly Sales</span>
                     <span className="text-sm font-black text-purple-400">{calculatedSales.monthly} units</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-450 uppercase">Est. Monthly Royalties</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase">Est. Monthly Royalties</span>
                     <span className="text-sm font-black text-emerald-400">${calculatedSales.royalties.toFixed(2)}</span>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="text-[9px] text-slate-550 font-bold uppercase tracking-wider flex items-center gap-2 pt-4 border-t border-slate-800">
-              <TrendingUp className="w-4 h-4 text-slate-450" /> Logarithmic estimation curves updated Q2 2026
+            <div className="text-[9px] text-slate-600 font-bold uppercase tracking-wider flex items-center gap-2 pt-4 border-t border-slate-800">
+              <TrendingUp className="w-4 h-4 text-slate-500" /> Logarithmic estimation curves updated Q2 2026
             </div>
           </div>
 
@@ -360,21 +360,21 @@ export default function KeywordResearchPage() {
             <Layers className="w-6 h-6 text-indigo-400" />
             <div>
               <h2 className="text-xl font-black text-white">KDP 7 Backend Keywords Packer</h2>
-              <p className="text-slate-450 text-xs font-semibold">
+              <p className="text-slate-500 text-xs font-semibold">
                 Amazon KDP lets you upload 7 backend keyword slots. This tool packs selected keywords without repeating words, respecting the 50-character limit.
               </p>
             </div>
           </div>
 
           {selectedKeywords.length === 0 ? (
-            <div className="p-8 text-center bg-slate-950/40 rounded-2xl border border-slate-850 border-dashed text-slate-500 font-semibold text-xs flex flex-col items-center gap-2">
-              <Info className="w-6 h-6 text-indigo-450" />
+            <div className="p-8 text-center bg-slate-950/40 rounded-2xl border border-slate-900 border-dashed text-slate-500 font-semibold text-xs flex flex-col items-center gap-2">
+              <Info className="w-6 h-6 text-indigo-500" />
               <span>No keywords selected. Tick checkboxes in the search results table to auto-generate KDP slots.</span>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
               {backendSlots.map((slot, index) => (
-                <div key={index} className="bg-slate-950/60 p-4 rounded-xl border border-slate-850 relative group flex flex-col justify-between min-h-[120px]">
+                <div key={index} className="bg-slate-950/60 p-4 rounded-xl border border-slate-900 relative group flex flex-col justify-between min-h-[120px]">
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-[9px] font-black text-indigo-400 uppercase">Slot {index + 1}</span>

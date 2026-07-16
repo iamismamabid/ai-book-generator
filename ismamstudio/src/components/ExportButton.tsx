@@ -307,7 +307,7 @@ export default function ExportButton({
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-650 shadow-md transition-all active:scale-95 pointer-events-auto cursor-pointer"
+        className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-600 shadow-md transition-all active:scale-95 pointer-events-auto cursor-pointer"
       >
         <Download className="w-4 h-4" /> Export PDF
       </button>

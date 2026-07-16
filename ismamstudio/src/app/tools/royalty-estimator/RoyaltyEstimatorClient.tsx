@@ -178,7 +178,7 @@ export default function RoyaltyEstimatorClient() {
           
           {/* Left Columns - Form Configurations */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-slate-900/60 border border-slate-850 rounded-[2rem] p-6 md:p-8 space-y-6">
+            <div className="bg-slate-900/60 border border-slate-900 rounded-[2rem] p-6 md:p-8 space-y-6">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-indigo-400" /> Book Specifications
               </h2>
@@ -323,7 +323,7 @@ export default function RoyaltyEstimatorClient() {
             </div>
 
             {/* Promo & Marketing simulation */}
-            <div className="bg-slate-900/60 border border-slate-850 rounded-[2rem] p-6 md:p-8 space-y-6">
+            <div className="bg-slate-900/60 border border-slate-900 rounded-[2rem] p-6 md:p-8 space-y-6">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-emerald-400" /> KDP Promotion & PPC Ad Simulator
               </h2>
@@ -345,7 +345,7 @@ export default function RoyaltyEstimatorClient() {
                         className={`w-full py-2.5 px-4 text-xs text-left font-semibold rounded-xl border transition ${
                           promoType === t.id
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                            : "bg-slate-950 border-slate-800 text-slate-450 hover:text-slate-300"
+                            : "bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-300"
                         }`}
                       >
                         {t.name}
@@ -429,29 +429,29 @@ export default function RoyaltyEstimatorClient() {
             </div>
 
             {/* Spine calculations & trim specifications */}
-            <div className="bg-slate-900/60 border border-slate-850 rounded-[2rem] p-6 md:p-8 space-y-4">
+            <div className="bg-slate-900/60 border border-slate-900 rounded-[2rem] p-6 md:p-8 space-y-4">
               <h2 className="text-lg font-black text-white flex items-center gap-2">
                 <Layers className="w-5 h-5 text-indigo-400" /> Automated Cover Spine Math
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl text-center">
-                  <span className="text-[9px] font-black text-slate-550 block uppercase">Paper Spine Width</span>
+                <div className="p-4 bg-slate-950/60 border border-slate-900 rounded-2xl text-center">
+                  <span className="text-[9px] font-black text-slate-600 block uppercase">Paper Spine Width</span>
                   <span className="text-sm font-black text-indigo-400">{spineWidth.toFixed(4)}"</span>
                 </div>
-                <div className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl text-center">
-                  <span className="text-[9px] font-black text-slate-550 block uppercase">Minimum Pages</span>
+                <div className="p-4 bg-slate-950/60 border border-slate-900 rounded-2xl text-center">
+                  <span className="text-[9px] font-black text-slate-600 block uppercase">Minimum Pages</span>
                   <span className="text-sm font-black text-indigo-400">{bindingType === "hardcover" ? "75 pages" : "24 pages"}</span>
                 </div>
-                <div className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl text-center">
-                  <span className="text-[9px] font-black text-slate-550 block uppercase">Bleed Requirement</span>
+                <div className="p-4 bg-slate-950/60 border border-slate-900 rounded-2xl text-center">
+                  <span className="text-[9px] font-black text-slate-600 block uppercase">Bleed Requirement</span>
                   <span className="text-sm font-black text-indigo-400">0.125" borders</span>
                 </div>
-                <div className="p-4 bg-slate-950/60 border border-slate-850 rounded-2xl text-center">
-                  <span className="text-[9px] font-black text-slate-550 block uppercase">Wrap Safety margins</span>
+                <div className="p-4 bg-slate-950/60 border border-slate-900 rounded-2xl text-center">
+                  <span className="text-[9px] font-black text-slate-600 block uppercase">Wrap Safety margins</span>
                   <span className="text-sm font-black text-indigo-400">0.25" margins</span>
                 </div>
               </div>
-              <p className="text-[10px] text-slate-450 leading-relaxed font-semibold">
+              <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
                 Spine formulas based on Amazon KDP template specifications (White Paper: 0.002252" per page, Cream Paper: 0.0025" per page, Color: 0.002347" per page).
               </p>
             </div>
@@ -462,7 +462,7 @@ export default function RoyaltyEstimatorClient() {
           <div className="space-y-6">
             
             {/* Financial summary card */}
-            <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-805 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden">
+            <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
               
               <h3 className="text-md font-black text-white flex items-center gap-2 mb-6">
@@ -471,17 +471,17 @@ export default function RoyaltyEstimatorClient() {
 
               <div className="space-y-4 text-xs font-semibold">
                 <div className="flex justify-between border-b border-slate-900 pb-3">
-                  <span className="text-slate-450">Base Trim Cost</span>
+                  <span className="text-slate-500">Base Trim Cost</span>
                   <span className="text-white font-bold">${printCost.toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-between border-b border-slate-900 pb-3">
-                  <span className="text-slate-450">Gross Royalty</span>
+                  <span className="text-slate-500">Gross Royalty</span>
                   <span className="text-emerald-400 font-bold">${(promoType !== "none" ? promoRoyalty : baseRoyalty).toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-between border-b border-slate-900 pb-3">
-                  <span className="text-slate-450">Ad Cost (Per Book Sold)</span>
+                  <span className="text-slate-500">Ad Cost (Per Book Sold)</span>
                   <span className="text-red-400 font-bold">${adSpendPerSale.toFixed(2)}</span>
                 </div>
 
@@ -507,7 +507,7 @@ export default function RoyaltyEstimatorClient() {
             </div>
 
             {/* Niche Viability Score Card */}
-            <div className="bg-slate-900/60 border border-slate-850 rounded-[2.5rem] p-6 shadow-2xl space-y-6">
+            <div className="bg-slate-900/60 border border-slate-900 rounded-[2.5rem] p-6 shadow-2xl space-y-6">
               <h3 className="text-md font-black text-white flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-indigo-400" /> Niche Viability Scoring
               </h3>
@@ -523,7 +523,7 @@ export default function RoyaltyEstimatorClient() {
                       className={`py-1.5 text-[10px] font-black uppercase rounded-lg border transition ${
                         competitiveness === comp
                           ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/30"
-                          : "bg-slate-950 border-slate-800 text-slate-450"
+                          : "bg-slate-950 border-slate-800 text-slate-500"
                       }`}
                     >
                       {comp}
@@ -533,7 +533,7 @@ export default function RoyaltyEstimatorClient() {
               </div>
 
               {/* Score Display */}
-              <div className="bg-slate-950/60 border border-slate-850 rounded-2xl p-4 text-center space-y-2">
+              <div className="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 text-center space-y-2">
                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">AI Market Viability Score</span>
                 <div className="flex justify-center items-baseline gap-1">
                   <span className={`text-4xl font-black ${
@@ -548,15 +548,15 @@ export default function RoyaltyEstimatorClient() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-2.5 p-3.5 bg-slate-950/40 rounded-xl border border-slate-850">
+              <div className="flex items-start gap-2.5 p-3.5 bg-slate-950/40 rounded-xl border border-slate-900">
                 <ShieldAlert className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
                 <p className="text-[11px] text-slate-400 font-medium leading-normal">
                   {viability.desc}
                 </p>
               </div>
 
-              <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 border-t border-slate-850 pt-4">
-                <Award className="w-4 h-4 text-slate-450" /> Amazon KDP Trends Updated July 2026
+              <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 border-t border-slate-900 pt-4">
+                <Award className="w-4 h-4 text-slate-500" /> Amazon KDP Trends Updated July 2026
               </div>
 
             </div>

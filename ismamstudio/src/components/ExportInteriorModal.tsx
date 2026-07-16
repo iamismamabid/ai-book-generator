@@ -172,7 +172,7 @@ export default function ExportInteriorModal({
       {!premiumStatus.checked ? (
         <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center max-w-sm w-full flex flex-col items-center shadow-2xl animate-in zoom-in-95 duration-200">
-            <Loader2 className="w-8 h-8 animate-spin text-indigo-650 mb-3" />
+            <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mb-3" />
             <span className="text-xs font-black text-slate-800 uppercase tracking-wider">Checking Account Access...</span>
           </div>
         </div>
@@ -187,7 +187,7 @@ export default function ExportInteriorModal({
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 bg-indigo-650/10 rounded-xl flex items-center justify-center text-indigo-600">
+              <div className="w-10 h-10 bg-indigo-600/10 rounded-xl flex items-center justify-center text-indigo-600">
                 <Settings2 className="w-5 h-5" />
               </div>
               <div>
@@ -198,11 +198,11 @@ export default function ExportInteriorModal({
 
             {/* Free Plan Warning Banner */}
             {!premiumStatus.isPremium && (
-              <div className="p-4 bg-amber-50 border border-amber-200 text-amber-850 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
+              <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
                 <div className="flex gap-2 items-start">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-black text-slate-855 block">Free Account Sample Warning</span>
+                    <span className="font-black text-slate-900 block">Free Account Sample Warning</span>
                     <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
                       Exported KDP interior compile files will include a light diagonal **"SAMPLE - ISMAM STUDIO"** watermark on all pages. 
                     </p>
@@ -218,18 +218,18 @@ export default function ExportInteriorModal({
 
             {/* Premium Activated Indicator */}
             {premiumStatus.isPremium && (
-              <div className="p-4 bg-emerald-50 border border-emerald-250/50 text-emerald-950 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
+              <div className="p-4 bg-emerald-50 border border-emerald-200/50 text-emerald-950 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
                 <div className="flex gap-2 items-start">
                   <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-black text-slate-900 block">Premium Export Mode Activated</span>
                     <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
-                      You have <span className="font-black text-emerald-650">{premiumStatus.daysRemaining} days remaining</span>. High-res watermark-free vector PDF exports are fully unlocked!
+                      You have <span className="font-black text-emerald-600">{premiumStatus.daysRemaining} days remaining</span>. High-res watermark-free vector PDF exports are fully unlocked!
                     </p>
                   </div>
                 </div>
                 <div className="pt-2 border-t border-emerald-200/50 flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
-                  <Link href="/pricing" target="_blank" className="text-indigo-600 hover:text-indigo-555">
+                  <Link href="/pricing" target="_blank" className="text-indigo-600 hover:text-indigo-600">
                     View Pricing Plans & LTDs →
                   </Link>
                 </div>
@@ -263,7 +263,7 @@ export default function ExportInteriorModal({
                 )}
 
                 {includeCover && hasSavedCover && (
-                  <div className="flex gap-2 items-start bg-indigo-50 border border-indigo-200 text-indigo-855 p-2.5 rounded-xl text-[10px] font-semibold leading-normal">
+                  <div className="flex gap-2 items-start bg-indigo-50 border border-indigo-200 text-indigo-900 p-2.5 rounded-xl text-[10px] font-semibold leading-normal">
                     <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
                     <span>
                       <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the Book & Cover Studio.
@@ -278,7 +278,7 @@ export default function ExportInteriorModal({
                 <select
                   value={trimSize}
                   onChange={(e) => setTrimSize(e.target.value as any)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-650"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-600"
                 >
                   <option value="8.5x11">8.5″ × 11″ (Large Print / Puzzle Book)</option>
                   <option 
@@ -372,7 +372,7 @@ export default function ExportInteriorModal({
                       placeholder="e.g. active-XXXXX"
                       value={appsumoCode}
                       onChange={(e) => setAppsumoCode(e.target.value)}
-                      className="flex-grow bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-indigo-650"
+                      className="flex-grow bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-indigo-600"
                     />
                     <button
                       type="submit"
@@ -388,7 +388,7 @@ export default function ExportInteriorModal({
                     </div>
                   )}
                   {redemptionSuccess && (
-                    <div className="text-[9px] font-semibold text-emerald-650 bg-emerald-50 border border-emerald-100 p-2 rounded-lg leading-normal">
+                    <div className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 p-2 rounded-lg leading-normal">
                       {redemptionSuccess}
                     </div>
                   )}

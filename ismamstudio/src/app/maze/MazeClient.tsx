@@ -210,7 +210,7 @@ export default function MazeGeneratorPage() {
           {/* Controls Column */}
           <div className="space-y-6">
             {/* Shape Selector */}
-            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850">
+            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900">
               <h3 className="text-lg font-bold mb-4 text-amber-300">1. Select Maze Shape</h3>
               <div className="grid grid-cols-3 gap-3">
                 {(["square", "circle", "heart"] as Shape[]).map((s) => {
@@ -227,8 +227,8 @@ export default function MazeGeneratorPage() {
                         shape === s
                           ? "bg-amber-500 text-slate-950 shadow-lg font-bold"
                           : isLocked
-                          ? "bg-slate-900/40 text-slate-600 border border-slate-850/30 cursor-not-allowed"
-                          : "bg-slate-800 text-slate-350 hover:bg-slate-700"
+                          ? "bg-slate-900/40 text-slate-600 border border-slate-900/30 cursor-not-allowed"
+                          : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                       }`}
                     >
                       {isLocked && <Lock className="w-3.5 h-3.5 text-slate-500" />}
@@ -240,7 +240,7 @@ export default function MazeGeneratorPage() {
             </div>
 
             {/* Size & Book Specs */}
-            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850 space-y-4">
+            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 space-y-4">
               <h3 className="text-lg font-bold text-amber-300">2. Configuration settings</h3>
               
               <div>
@@ -277,7 +277,7 @@ export default function MazeGeneratorPage() {
                     max={maxMazes}
                     value={bookCount}
                     onChange={(e) => handleBookCountChange(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2 text-white font-mono"
+                    className="w-full bg-slate-950 border border-slate-900 rounded-lg px-4 py-2 text-white font-mono"
                   />
                 </div>
 
@@ -286,7 +286,7 @@ export default function MazeGeneratorPage() {
                   <select
                     value={trimSize}
                     onChange={(e) => setTrimSize(e.target.value as typeof trimSize)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2 text-white"
+                    className="w-full bg-slate-950 border border-slate-900 rounded-lg px-4 py-2 text-white"
                   >
                     <option value="6x9">6" x 9" (Standard)</option>
                     <option value="8.5x11">8.5" x 11" (Large Print)</option>
@@ -303,7 +303,7 @@ export default function MazeGeneratorPage() {
                   onChange={(e) => setIncludeSolutions(e.target.checked)}
                   className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                 />
-                <label htmlFor="solutions" className="text-sm text-slate-350 cursor-pointer select-none font-bold">
+                <label htmlFor="solutions" className="text-sm text-slate-300 cursor-pointer select-none font-bold">
                   Include 2x2 grid Solution Keys at the end of the book
                 </label>
               </div>
@@ -316,7 +316,7 @@ export default function MazeGeneratorPage() {
                   onChange={(e) => setIncludeCover(e.target.checked)}
                   className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                 />
-                <label htmlFor="cover" className="text-sm text-slate-350 cursor-pointer select-none font-bold">
+                <label htmlFor="cover" className="text-sm text-slate-300 cursor-pointer select-none font-bold">
                   Include Cover Pages (Add Front & Back cover to PDF)
                 </label>
               </div>
@@ -327,7 +327,7 @@ export default function MazeGeneratorPage() {
               <button
                 onClick={handlePreview}
                 disabled={isGenerating}
-                className="w-full bg-slate-850 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition disabled:opacity-50 border border-slate-750 shadow-md"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition disabled:opacity-50 border border-slate-700 shadow-md"
               >
                 {isGenerating ? "Mapping Labyrinths..." : "Generate Preview Grid"}
               </button>
@@ -342,7 +342,7 @@ export default function MazeGeneratorPage() {
           </div>
 
           {/* Live Preview Column */}
-          <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-850 flex flex-col justify-between items-center min-h-[450px]">
+          <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 flex flex-col justify-between items-center min-h-[450px]">
             <div className="w-full border-b border-slate-800 pb-3 mb-4">
               <h3 className="text-lg font-bold text-slate-300">Live Architecture Canvas</h3>
             </div>
@@ -371,7 +371,7 @@ export default function MazeGeneratorPage() {
         </div>
       ) : (
         /* Maze Publishing Guide */
-        <div className="bg-slate-900/60 p-8 rounded-[2.5rem] border border-slate-850 space-y-8 animate-fade-in text-slate-350 text-sm leading-relaxed font-semibold">
+        <div className="bg-slate-900/60 p-8 rounded-[2.5rem] border border-slate-900 space-y-8 animate-fade-in text-slate-300 text-sm leading-relaxed font-semibold">
           
           <section className="space-y-3">
             <h3 className="text-xl font-bold text-white flex items-center gap-2">

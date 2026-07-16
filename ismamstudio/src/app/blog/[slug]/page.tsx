@@ -154,7 +154,7 @@ export default async function BlogPostPage({ params }: Props) {
               }
               if (paragraph.startsWith("- ")) {
                 return (
-                  <ul key={index} className="list-disc list-inside pl-4 space-y-2 text-slate-450">
+                  <ul key={index} className="list-disc list-inside pl-4 space-y-2 text-slate-500">
                     {paragraph.split("\n").map((li, lIdx) => (
                       <li key={lIdx}>{li.replace("- ", "")}</li>
                     ))}

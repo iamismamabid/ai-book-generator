@@ -320,7 +320,7 @@ export default function BulkGeneratorClient() {
         {/* Navigation & Header */}
         <div className="flex justify-between items-center border-b border-slate-900 pb-6">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-450 text-xs font-black uppercase tracking-wider mb-2 animate-pulse">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-black uppercase tracking-wider mb-2 animate-pulse">
               <Sparkles className="w-3.5 h-3.5" /> Batch Processing Studio
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
@@ -340,9 +340,9 @@ export default function BulkGeneratorClient() {
           
           {/* Left Column: Queue Manager */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-slate-900/60 border border-slate-850 rounded-[2rem] p-6 md:p-8 space-y-6">
+            <div className="bg-slate-900/60 border border-slate-900 rounded-[2rem] p-6 md:p-8 space-y-6">
               
-              <div className="flex justify-between items-center border-b border-slate-850 pb-4">
+              <div className="flex justify-between items-center border-b border-slate-900 pb-4">
                 <h2 className="text-lg font-black text-white flex items-center gap-2">
                   <FileSpreadsheet className="w-5 h-5 text-yellow-500" /> Queue Manager ({items.length} Books)
                 </h2>
@@ -368,7 +368,7 @@ export default function BulkGeneratorClient() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-850 text-slate-450 uppercase tracking-widest font-black text-[9px]">
+                    <tr className="border-b border-slate-900 text-slate-500 uppercase tracking-widest font-black text-[9px]">
                       <th className="py-3 px-3">Title</th>
                       <th className="py-3 px-3 text-center">Type</th>
                       <th className="py-3 px-3 text-center">Difficulty</th>
@@ -387,19 +387,19 @@ export default function BulkGeneratorClient() {
                       </tr>
                     ) : (
                       items.map((item) => (
-                        <tr key={item.id} className="border-b border-slate-850 hover:bg-slate-900/10 transition">
+                        <tr key={item.id} className="border-b border-slate-900 hover:bg-slate-900/10 transition">
                           <td className="py-3 px-3 font-bold text-white max-w-[200px] truncate">{item.title}</td>
                           <td className="py-3 px-3 text-center">
-                            <span className="bg-slate-950 border border-slate-800 text-[10px] px-2 py-0.5 rounded-lg text-slate-350">
+                            <span className="bg-slate-950 border border-slate-800 text-[10px] px-2 py-0.5 rounded-lg text-slate-300">
                               {item.type}
                             </span>
                           </td>
                           <td className="py-3 px-3 text-center text-slate-400 capitalize">{item.difficulty}</td>
                           <td className="py-3 px-3 text-center font-bold text-slate-100">{item.count}</td>
-                          <td className="py-3 px-3 text-center font-mono text-slate-450">{item.trimSize}</td>
+                          <td className="py-3 px-3 text-center font-mono text-slate-500">{item.trimSize}</td>
                           <td className="py-3 px-3 text-center">
                             <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
-                              item.status === "Pending" ? "bg-slate-950 text-slate-450 border border-slate-850" :
+                              item.status === "Pending" ? "bg-slate-950 text-slate-500 border border-slate-900" :
                               item.status === "Generating" ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 animate-pulse" :
                               item.status === "Completed" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
                               "bg-rose-500/10 text-rose-400 border border-rose-500/20"
@@ -419,7 +419,7 @@ export default function BulkGeneratorClient() {
                               <button
                                 onClick={() => handleRemove(item.id)}
                                 disabled={isProcessing && currentProcessingId === item.id}
-                                className="p-1 bg-rose-500/10 border border-rose-500/20 text-rose-450 rounded hover:bg-rose-500 hover:text-white transition disabled:opacity-30 cursor-pointer"
+                                className="p-1 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded hover:bg-rose-500 hover:text-white transition disabled:opacity-30 cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -434,7 +434,7 @@ export default function BulkGeneratorClient() {
             </div>
 
             {/* Manual Add Form */}
-            <form onSubmit={handleManualAdd} className="bg-slate-900/60 border border-slate-850 rounded-[2rem] p-6 md:p-8 space-y-4">
+            <form onSubmit={handleManualAdd} className="bg-slate-900/60 border border-slate-900 rounded-[2rem] p-6 md:p-8 space-y-4">
               <h3 className="text-sm font-black text-white flex items-center gap-2">
                 <Plus className="w-4 h-4 text-yellow-500" /> Add Book Manually
               </h3>
@@ -489,7 +489,7 @@ export default function BulkGeneratorClient() {
               </div>
               <button
                 type="submit"
-                className="w-full py-2 bg-slate-950 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 transition text-slate-350 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer"
+                className="w-full py-2 bg-slate-950 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 transition text-slate-300 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer"
               >
                 Add to Batch Queue
               </button>
@@ -501,18 +501,18 @@ export default function BulkGeneratorClient() {
           <div className="space-y-6">
             
             {/* CSV Import */}
-            <div className="bg-slate-900/60 border border-slate-850 rounded-[2.5rem] p-6 shadow-2xl space-y-4">
+            <div className="bg-slate-900/60 border border-slate-900 rounded-[2.5rem] p-6 shadow-2xl space-y-4">
               <h3 className="text-md font-black text-white flex items-center gap-2">
-                <Upload className="w-5 h-5 text-yellow-550" /> CSV Upload / Paste
+                <Upload className="w-5 h-5 text-yellow-600" /> CSV Upload / Paste
               </h3>
               
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="p-6 border border-dashed border-slate-800 hover:border-yellow-550 bg-slate-950/40 rounded-2xl text-center cursor-pointer transition flex flex-col items-center gap-2 group select-none"
+                className="p-6 border border-dashed border-slate-800 hover:border-yellow-600 bg-slate-950/40 rounded-2xl text-center cursor-pointer transition flex flex-col items-center gap-2 group select-none"
               >
-                <Upload className="w-8 h-8 text-slate-500 group-hover:text-yellow-550 transition" />
+                <Upload className="w-8 h-8 text-slate-500 group-hover:text-yellow-600 transition" />
                 <span className="text-xs font-bold text-slate-400">Click to upload KDP CSV</span>
-                <span className="text-[9px] text-slate-650 font-semibold">Supports .csv files</span>
+                <span className="text-[9px] text-slate-600 font-semibold">Supports .csv files</span>
                 <input 
                   type="file" 
                   ref={fileInputRef} 
@@ -534,31 +534,31 @@ export default function BulkGeneratorClient() {
                 <button
                   onClick={() => parseCSV(csvText)}
                   disabled={!csvText.trim()}
-                  className="w-full py-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-450 hover:bg-yellow-500 hover:text-slate-950 text-[10px] font-black uppercase rounded-xl transition cursor-pointer"
+                  className="w-full py-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-slate-950 text-[10px] font-black uppercase rounded-xl transition cursor-pointer"
                 >
                   Parse & Add CSV
                 </button>
               </div>
 
               {/* Sample format link */}
-              <div className="flex items-center gap-2 p-3 bg-slate-950/60 border border-slate-850 rounded-xl">
+              <div className="flex items-center gap-2 p-3 bg-slate-950/60 border border-slate-900 rounded-xl">
                 <AlertCircle className="w-4 h-4 text-indigo-400 shrink-0" />
-                <div className="text-[10px] text-slate-450 leading-relaxed font-semibold">
-                  Columns: <code className="text-indigo-350">Title, PuzzleType, Difficulty, Count, TrimSize</code>. Types: Sudoku, Maze, Word Search. Trims: 8.5x11, 6x9, 5'x8'.
+                <div className="text-[10px] text-slate-500 leading-relaxed font-semibold">
+                  Columns: <code className="text-indigo-300">Title, PuzzleType, Difficulty, Count, TrimSize</code>. Types: Sudoku, Maze, Word Search. Trims: 8.5x11, 6x9, 5'x8'.
                 </div>
               </div>
 
             </div>
 
             {/* Console Log output */}
-            <div className="bg-slate-900/60 border border-slate-850 rounded-[2.5rem] p-6 shadow-2xl space-y-4">
+            <div className="bg-slate-900/60 border border-slate-900 rounded-[2.5rem] p-6 shadow-2xl space-y-4">
               <h3 className="text-md font-black text-white flex items-center gap-2">
-                <RefreshCw className="w-5 h-5 text-yellow-555 animate-spin" /> Batch Execution Logs
+                <RefreshCw className="w-5 h-5 text-yellow-600 animate-spin" /> Batch Execution Logs
               </h3>
               
-              <div className="bg-slate-950 p-4 border border-slate-850 rounded-2xl font-mono text-[9px] text-emerald-400 h-[200px] overflow-y-auto space-y-1.5 leading-normal">
+              <div className="bg-slate-950 p-4 border border-slate-900 rounded-2xl font-mono text-[9px] text-emerald-400 h-[200px] overflow-y-auto space-y-1.5 leading-normal">
                 {consoleLogs.length === 0 ? (
-                  <span className="text-slate-550">Console idle. Awaiting batch process execution...</span>
+                  <span className="text-slate-600">Console idle. Awaiting batch process execution...</span>
                 ) : (
                   consoleLogs.map((log, idx) => (
                     <div key={idx} className="break-words">

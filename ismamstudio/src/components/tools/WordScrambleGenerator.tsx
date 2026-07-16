@@ -386,8 +386,8 @@ export default function WordScrambleGenerator() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-140px)] rounded-3xl border border-slate-200 overflow-hidden bg-white shadow-sm animate-in fade-in duration-500">
-      
+    <div className="flex h-[calc(100vh-140px)] rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden bg-[#F8FAFC] dark:bg-slate-950 transition-colors duration-300 animate-in fade-in duration-500" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
+
       {/* 🔮 Left Customization Options Sidebar */}
       <div className="w-80 bg-slate-900 text-slate-100 flex flex-col border-r border-slate-800 z-10">
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
@@ -420,7 +420,7 @@ export default function WordScrambleGenerator() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Enter one word per line..."
-              className="w-full h-44 bg-slate-850 border border-slate-800 rounded-xl p-3 text-xs font-semibold focus:border-indigo-500 focus:outline-none text-slate-200 resize-none font-mono"
+              className="w-full h-44 bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs font-semibold focus:border-indigo-500 focus:outline-none transition-colors duration-200 text-slate-200 resize-none font-mono"
             />
             <p className="text-[10px] text-slate-500 font-medium">Valid characters: A-Z letters only. Spaces & special signs ignored.</p>
           </div>
@@ -435,10 +435,10 @@ export default function WordScrambleGenerator() {
                 <button
                   key={d}
                   onClick={() => setDifficulty(d)}
-                  className={`py-2 px-1 rounded-xl text-xs font-black capitalize transition-all ${
+                  className={`py-2 px-1 rounded-2xl text-xs font-black capitalize transition-all duration-200 ${
                     difficulty === d
                       ? "bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/10"
-                      : "bg-slate-800 hover:bg-slate-750 text-slate-400 hover:text-white border border-slate-800"
+                      : "bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-800"
                   }`}
                 >
                   {d}
@@ -462,7 +462,7 @@ export default function WordScrambleGenerator() {
                   const size = TRIM_SIZES.find(s => s.id === e.target.value);
                   if (size) setTrimSize(size);
                 }}
-                className="w-full text-xs font-bold bg-slate-850 border border-slate-800 p-2.5 rounded-xl text-white outline-none focus:border-indigo-500"
+                className="w-full text-xs font-bold bg-slate-900 border border-slate-800 p-2.5 rounded-2xl text-white outline-none focus:border-indigo-500 transition-colors duration-200"
               >
                 {TRIM_SIZES.map(s => (
                   <option key={s.id} value={s.id}>{s.label}</option>
@@ -488,7 +488,7 @@ export default function WordScrambleGenerator() {
                   if (val > maxLimit) val = maxLimit;
                   setNumPages(val);
                 }}
-                className="w-full px-4 py-2.5 bg-slate-850 border border-slate-800 rounded-xl text-xs font-mono text-amber-400 focus:border-indigo-500 outline-none transition"
+                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-2xl text-xs font-mono text-amber-400 focus:border-indigo-500 outline-none transition-colors duration-200"
               />
             </div>
           </div>
@@ -547,15 +547,16 @@ export default function WordScrambleGenerator() {
           <button
             onClick={parseAndGeneratePuzzles}
             disabled={isGenerating}
-            className="w-full bg-slate-800 hover:bg-slate-750 text-white py-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 border border-slate-700"
+            className="btn-premium w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 normal-case"
           >
             {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin"/> : "Generate Scramble"}
           </button>
-          
+
           <button
             onClick={() => setIsExportModalOpen(true)}
             disabled={isDownloading || puzzles.length === 0}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 py-3.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/5 hover:-translate-y-0.5 active:translate-y-0"
+            className="btn-premium w-full bg-amber-500 hover:bg-amber-600 text-slate-950 normal-case hover:-translate-y-0.5"
+            style={{ boxShadow: "0 8px 24px rgba(245, 158, 11, 0.18)" }}
           >
             {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
             Download Print PDF
@@ -566,19 +567,19 @@ export default function WordScrambleGenerator() {
       </div>
 
       {/* 🎨 Preview Workspace */}
-      <div className="flex-1 bg-slate-100 flex flex-col overflow-hidden">
-        
+      <div className="flex-1 bg-slate-50 dark:bg-slate-900/40 flex flex-col overflow-hidden transition-colors duration-300">
+
         {/* Top Pagination Toolbar */}
-        <div className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between">
+        <div className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between transition-colors duration-300">
           <div className="flex items-center gap-2">
             <span className="text-xs font-black uppercase text-slate-400 tracking-wider">Active Preview:</span>
-            <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
               {puzzles.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActivePreviewIndex(idx)}
-                  className={`px-2.5 py-1 rounded-md font-bold transition-all ${
-                    activePreviewIndex === idx ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-800'
+                  className={`px-2.5 py-1 rounded-full font-bold transition-all ${
+                    activePreviewIndex === idx ? 'bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
                   P#{idx + 1}
@@ -586,20 +587,21 @@ export default function WordScrambleGenerator() {
               ))}
             </div>
           </div>
-          
-          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-2">
+
+          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-indigo-500" />
             Trim Size: {trimSize.label} | Words: {words.length}
           </div>
         </div>
 
         {/* Workspace Canvas Container */}
-        <div className="flex-1 p-8 overflow-y-auto flex items-center justify-center relative bg-slate-200/50">
-          
+        <div className="flex-1 p-10 overflow-y-auto flex items-center justify-center relative bg-slate-100/60 dark:bg-slate-950/40 transition-colors duration-300">
+
           {puzzles.length > 0 && puzzles[activePreviewIndex] ? (
-            <div 
-              className="relative bg-white shadow-[0_15px_40px_rgba(0,0,0,0.06)] rounded-sm border border-slate-300/80 flex flex-col p-12 overflow-hidden cursor-default transition-all duration-300"
+            <div
+              className="relative bg-white rounded-2xl border border-slate-200/80 flex flex-col p-12 overflow-hidden cursor-default transition-all duration-300"
               style={{
+                boxShadow: "var(--shadow-soft-lg)",
                 width: "480px", // proportional scaling for viewing
                 height: `${480 * (trimSize.h / trimSize.w)}px`,
                 paddingTop: "40px",
@@ -654,7 +656,7 @@ export default function WordScrambleGenerator() {
 
                 {/* Word Bank Area */}
                 {difficulty !== "hard" && (
-                  <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-3 text-center mt-3">
+                  <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3 text-center mt-3">
                     <h4 className="text-[9px] font-black text-indigo-600 uppercase tracking-widest mb-1.5">Word Bank</h4>
                     <div className="grid grid-cols-3 gap-y-1.5 gap-x-2 text-[9px] text-slate-600 font-medium text-left px-2">
                       {puzzles[activePreviewIndex].wordBank.map((word, idx) => (
@@ -675,10 +677,10 @@ export default function WordScrambleGenerator() {
 
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200 max-w-sm text-center shadow-md">
+            <div className="surface-card flex flex-col items-center justify-center p-12 max-w-sm text-center">
               <AlertCircle className="w-12 h-12 text-slate-400 mb-3" />
-              <h3 className="font-black text-slate-700 text-lg mb-1">No puzzle generated</h3>
-              <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+              <h3 className="font-black text-slate-700 dark:text-slate-200 text-lg mb-1">No puzzle generated</h3>
+              <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold leading-relaxed">
                 Add some words in the left panel and click "Generate Scramble" to preview and download.
               </p>
             </div>

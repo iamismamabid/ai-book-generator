@@ -213,12 +213,13 @@ export default function MasterStudioApp() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.25 }}
-              className="flex h-[calc(100vh-140px)] rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden bg-white dark:bg-slate-900 shadow-xl"
+              className="flex h-[calc(100vh-140px)] rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden bg-white dark:bg-slate-900 transition-colors duration-300"
+              style={{ boxShadow: "var(--shadow-soft-lg)" }}
             >
               {premiumStatus.checked && (premiumStatus.plan === "free" || premiumStatus.plan === "starter") ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0b0f19] text-white w-full h-full relative overflow-hidden">
                   <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-                  <div className="max-w-md w-full bg-slate-900/60 border border-slate-850 p-8 rounded-[2.5rem] shadow-2xl relative z-10 space-y-6">
+                  <div className="max-w-md w-full bg-slate-900/60 border border-slate-800 p-8 rounded-[2.5rem] relative z-10 space-y-6" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
                     <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto">
                       <Lock className="w-8 h-8" />
                     </div>
@@ -231,9 +232,10 @@ export default function MasterStudioApp() {
                       </p>
                     </div>
                     <div className="flex flex-col gap-2 pt-2">
-                      <Link 
+                      <Link
                         href="/pricing"
-                        className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-650 hover:from-indigo-650 hover:to-purple-750 text-white font-black text-xs rounded-xl shadow-lg transition-all"
+                        className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs rounded-2xl transition-all duration-200 ease-out active:scale-[0.98]"
+                        style={{ boxShadow: "var(--shadow-glow-primary)" }}
                       >
                         Upgrade to Pro Studio
                       </Link>

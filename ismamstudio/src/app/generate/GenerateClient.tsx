@@ -162,7 +162,7 @@ export default function GeneratePage() {
             <ArrowLeft className="w-4 h-4" /> Back to Library
           </button>
           
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-850">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-900">
             Monthly Usage: <span className="text-white">{usage.outlinesCount}</span> / {premiumStatus.plan === "free" ? "1 Outline" : premiumStatus.plan === "starter" ? "5 Outlines" : "Unlimited"}
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function GeneratePage() {
             {/* Left Column: Vision Settings */}
             <div className="lg:col-span-4 flex flex-col justify-between">
               <div className="space-y-6">
-                <div className="bg-slate-900/60 border border-slate-850 p-6 rounded-3xl space-y-4">
+                <div className="bg-slate-900/60 border border-slate-900 p-6 rounded-3xl space-y-4">
                   <h3 className="text-lg font-black text-white flex items-center gap-2">
                     <Sliders className="w-5 h-5 text-indigo-400" /> Story Parameters
                   </h3>
@@ -206,7 +206,7 @@ export default function GeneratePage() {
                     <select
                       value={genre}
                       onChange={(e) => setGenre(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-bold"
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-bold"
                     >
                       <option value="fantasy">Magical Fantasy</option>
                       <option value="sci-fi">Space Opera Sci-Fi</option>
@@ -221,7 +221,7 @@ export default function GeneratePage() {
                     <select
                       value={tone}
                       onChange={(e) => setTone(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-bold"
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-bold"
                     >
                       <option value="mysterious">Mysterious & Cryptic</option>
                       <option value="inspiring">Inspiring & Thoughtful</option>
@@ -235,7 +235,7 @@ export default function GeneratePage() {
                     <select
                       value={audience}
                       onChange={(e) => setAudience(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-bold"
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-bold"
                     >
                       <option value="young-adult">Young Adult (YA)</option>
                       <option value="adults">Adult General Fiction</option>
@@ -244,19 +244,19 @@ export default function GeneratePage() {
                   </div>
                 </div>
 
-                <div className="bg-slate-900/40 border border-slate-850 p-6 rounded-3xl space-y-3 text-xs text-slate-400">
+                <div className="bg-slate-900/40 border border-slate-900 p-6 rounded-3xl space-y-3 text-xs text-slate-400">
                   <h4 className="font-bold text-white mb-2">How it works:</h4>
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px]">1</div>
-                    <span className="text-slate-350">Describe story concept & settings</span>
+                    <span className="text-slate-300">Describe story concept & settings</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px]">2</div>
-                    <span className="text-slate-350">AI compiles 12-chapter outline</span>
+                    <span className="text-slate-300">AI compiles 12-chapter outline</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px]">3</div>
-                    <span className="text-slate-350">Generate chapters or download PDF</span>
+                    <span className="text-slate-300">Generate chapters or download PDF</span>
                   </div>
                 </div>
 
@@ -265,7 +265,7 @@ export default function GeneratePage() {
 
             {/* Right Column: Prompt Input Area */}
             <div className="lg:col-span-8">
-              <div className="bg-slate-900/50 backdrop-blur-md rounded-[2.5rem] border border-slate-850 p-8 md:p-12 shadow-2xl h-full flex flex-col justify-between">
+              <div className="bg-slate-900/50 backdrop-blur-md rounded-[2.5rem] border border-slate-900 p-8 md:p-12 shadow-2xl h-full flex flex-col justify-between">
                 
                 <div>
                   <div className="mb-8">
@@ -287,7 +287,7 @@ export default function GeneratePage() {
                         onChange={handleInputChange}
                         placeholder={limitReached ? "Monthly outline quota reached. Please upgrade to unlock." : "e.g. A dystopian world where cats rule the cities..."}
                         disabled={limitReached}
-                        className="w-full h-48 p-6 bg-slate-950 border border-slate-850 rounded-[1.5rem] focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-base text-white leading-relaxed resize-none shadow-inner disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-48 p-6 bg-slate-950 border border-slate-900 rounded-[1.5rem] focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-base text-white leading-relaxed resize-none shadow-inner disabled:opacity-50 disabled:cursor-not-allowed"
                         required
                       />
                     </div>
@@ -295,7 +295,7 @@ export default function GeneratePage() {
                     <button
                       type="submit"
                       disabled={limitReached}
-                      className="w-full py-5 rounded-2xl font-black text-base bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-650 hover:to-purple-750 transition-all shadow-xl hover:-translate-y-0.5 active:scale-98 flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      className="w-full py-5 rounded-2xl font-black text-base bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 transition-all shadow-xl hover:-translate-y-0.5 active:scale-98 flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       {limitReached ? <Lock className="w-5 h-5" /> : "🚀"} Compile Chapter Outline
                     </button>
@@ -303,7 +303,7 @@ export default function GeneratePage() {
                 </div>
 
                 {/* Example Quick Prompts */}
-                <div className="mt-8 pt-6 border-t border-slate-850">
+                <div className="mt-8 pt-6 border-t border-slate-900">
                   <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-3">
                     Click to Try a Sample Outline Prompt:
                   </span>
@@ -313,7 +313,7 @@ export default function GeneratePage() {
                         key={i}
                         disabled={limitReached}
                         onClick={() => handleExampleClick(example.text)}
-                        className="text-[11px] font-bold text-slate-350 bg-slate-950 hover:bg-slate-900 border border-slate-850 hover:border-slate-750 px-3.5 py-2 rounded-xl transition disabled:opacity-40"
+                        className="text-[11px] font-bold text-slate-300 bg-slate-950 hover:bg-slate-900 border border-slate-900 hover:border-slate-700 px-3.5 py-2 rounded-xl transition disabled:opacity-40"
                       >
                         {example.label}
                       </button>
@@ -329,9 +329,9 @@ export default function GeneratePage() {
           </div>
         ) : (
           /* Streaming generation box */
-          <div className="max-w-4xl mx-auto bg-slate-900/50 backdrop-blur-md rounded-[2.5rem] border border-slate-850 p-8 md:p-12 shadow-2xl animate-fade-in flex flex-col h-[70vh] justify-between">
+          <div className="max-w-4xl mx-auto bg-slate-900/50 backdrop-blur-md rounded-[2.5rem] border border-slate-900 p-8 md:p-12 shadow-2xl animate-fade-in flex flex-col h-[70vh] justify-between">
             <div>
-              <div className="flex items-center justify-between border-b border-slate-850 pb-6 mb-6">
+              <div className="flex items-center justify-between border-b border-slate-900 pb-6 mb-6">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-indigo-500/10 rounded-full flex items-center justify-center border border-indigo-500/20">
                     <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
@@ -356,7 +356,7 @@ export default function GeneratePage() {
             </div>
 
             {isSaving && (
-              <div className="mt-6 pt-6 border-t border-slate-850 text-center animate-pulse">
+              <div className="mt-6 pt-6 border-t border-slate-900 text-center animate-pulse">
                 <p className="text-indigo-400 font-bold text-sm flex items-center justify-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-indigo-400" />
                   Saving outline chapters to database...
@@ -383,10 +383,10 @@ export default function GeneratePage() {
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <Link href="/sign-in" className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-550 text-white font-black text-xs rounded-xl shadow-lg shadow-indigo-600/15">
+              <Link href="/sign-in" className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-600 text-white font-black text-xs rounded-xl shadow-lg shadow-indigo-600/15">
                 Create Free Account / Sign In
               </Link>
-              <button onClick={() => setIsAuthModalOpen(false)} className="w-full py-3.5 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-850 font-black text-xs rounded-xl">
+              <button onClick={() => setIsAuthModalOpen(false)} className="w-full py-3.5 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-900 font-black text-xs rounded-xl">
                 {activeCompletion.length > 0 ? "Keep Reading Outline" : "Maybe Later"}
               </button>
             </div>

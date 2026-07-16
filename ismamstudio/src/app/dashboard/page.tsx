@@ -42,19 +42,19 @@ export default async function DashboardPage() {
   let upgradeHint = null;
   if (rawPlan === "starter") {
     upgradeHint = (
-      <Link href="/redeem" className="text-[10px] font-bold text-indigo-650 hover:text-indigo-850 underline block mt-0.5 animate-pulse">
+      <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-900 underline block mt-0.5 animate-pulse">
         Stack another code for Tier 2 (Pro) →
       </Link>
     );
   } else if (rawPlan === "pro") {
     upgradeHint = (
-      <Link href="/redeem" className="text-[10px] font-bold text-indigo-650 hover:text-indigo-850 underline block mt-0.5 animate-pulse">
+      <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-900 underline block mt-0.5 animate-pulse">
         Stack another code for Tier 3 (Agency) →
       </Link>
     );
   } else if (rawPlan === "agency") {
     upgradeHint = (
-      <span className="text-[9px] font-bold text-emerald-650 block mt-0.5">
+      <span className="text-[9px] font-bold text-emerald-600 block mt-0.5">
         Max Tier Unlocked! ✨
       </span>
     );
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
     );
   } else if (rawPlan === "tier5") {
     upgradeHint = (
-      <span className="text-[9px] font-bold text-emerald-650 block mt-0.5">
+      <span className="text-[9px] font-bold text-emerald-600 block mt-0.5">
         Maximum Limits Active! 🚀
       </span>
     );
@@ -106,7 +106,7 @@ export default async function DashboardPage() {
           {/* Plan badge for empty state */}
           <div className="flex flex-col items-center gap-1.5 px-6 py-3.5 rounded-3xl bg-white border border-slate-100 shadow-sm mb-8">
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${isActivated ? "bg-emerald-500 animate-pulse" : isTrial ? "bg-amber-500 animate-pulse" : "bg-slate-350"}`} />
+              <span className={`w-2 h-2 rounded-full ${isActivated ? "bg-emerald-500 animate-pulse" : isTrial ? "bg-amber-500 animate-pulse" : "bg-slate-300"}`} />
               <span className="text-xs font-bold text-slate-500">Account Status: </span>
               <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${isActivated ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : isTrial ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                 {isActivated ? "Activated" : isTrial ? "Trial" : "Free"}
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
         {/* Actions & Plan badge */}
         <div className="flex items-center flex-wrap gap-4">
           <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-            <span className={`w-2 h-2 rounded-full ${isActivated ? "bg-emerald-500 animate-pulse" : isTrial ? "bg-amber-500 animate-pulse" : "bg-slate-350"}`} />
+            <span className={`w-2 h-2 rounded-full ${isActivated ? "bg-emerald-500 animate-pulse" : isTrial ? "bg-amber-500 animate-pulse" : "bg-slate-300"}`} />
             <div className="text-left">
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-slate-400 font-black uppercase tracking-wider text-[8px] leading-none">Account Status:</span>
@@ -149,7 +149,7 @@ export default async function DashboardPage() {
                   {isActivated ? "Activated" : isTrial ? "Trial" : "Free"}
                 </span>
               </div>
-              <span className="text-slate-850 font-black uppercase tracking-wide text-xs">{planName}</span>
+              <span className="text-slate-900 font-black uppercase tracking-wide text-xs">{planName}</span>
               {upgradeHint}
             </div>
           </div>

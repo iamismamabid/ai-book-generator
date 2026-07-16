@@ -37,7 +37,7 @@ export default function AboutPage() {
           
           {/* Header */}
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-450 border border-indigo-500/25">
+            <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-500/25">
               <Users className="w-6 h-6" />
             </div>
             <div>
@@ -61,8 +61,8 @@ export default function AboutPage() {
 
           {/* Pillars grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-850 space-y-3">
-              <div className="p-2.5 bg-indigo-550/10 rounded-xl text-indigo-400 border border-indigo-500/10 w-fit">
+            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 space-y-3">
+              <div className="p-2.5 bg-indigo-600/10 rounded-xl text-indigo-400 border border-indigo-500/10 w-fit">
                 <Cpu className="w-5 h-5" />
               </div>
               <h3 className="text-white font-bold text-base">Mathematical Precision</h3>
@@ -71,8 +71,8 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-850 space-y-3">
-              <div className="p-2.5 bg-amber-550/10 rounded-xl text-amber-400 border border-amber-500/10 w-fit">
+            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 space-y-3">
+              <div className="p-2.5 bg-amber-600/10 rounded-xl text-amber-400 border border-amber-500/10 w-fit">
                 <Shield className="w-5 h-5" />
               </div>
               <h3 className="text-white font-bold text-base">Bleed & Gutter Compliant</h3>
@@ -81,8 +81,8 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-850 space-y-3">
-              <div className="p-2.5 bg-emerald-550/10 rounded-xl text-emerald-400 border border-emerald-500/10 w-fit">
+            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 space-y-3">
+              <div className="p-2.5 bg-emerald-600/10 rounded-xl text-emerald-400 border border-emerald-500/10 w-fit">
                 <BookOpen className="w-5 h-5" />
               </div>
               <h3 className="text-white font-bold text-base">All-In-One Assembly</h3>

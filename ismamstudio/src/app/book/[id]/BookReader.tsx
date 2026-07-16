@@ -124,7 +124,7 @@ export default function BookReader({ book, pages }: BookReaderProps) {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${theme === "custom" ? `bg-slate-150` : bodyThemeMap[theme]}`}>
+    <div className={`min-h-screen transition-colors duration-300 ${theme === "custom" ? `bg-slate-100` : bodyThemeMap[theme]}`}>
       {/* ── STICKY CONTROL HEADER ───────────────────────────────── */}
       <nav className="print:hidden sticky top-0 z-50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-900/50 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4 w-full md:w-auto">

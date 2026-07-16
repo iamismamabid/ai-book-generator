@@ -121,9 +121,9 @@ export default function KakuroGenerator() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push("/tools")}
-              className="p-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white rounded-2xl transition shadow-inner group"
+              className="p-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] shadow-inner group"
             >
-              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform duration-200" />
             </button>
             <div>
               <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2">
@@ -137,7 +137,8 @@ export default function KakuroGenerator() {
 
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="px-6 py-3.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-650 text-white font-black rounded-2xl text-xs hover:scale-[1.02] shadow-lg shadow-indigo-600/20 active:scale-98 transition flex items-center justify-center gap-2 border border-indigo-500/20"
+            className="px-6 py-3.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white font-black rounded-2xl text-xs transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.97] flex items-center justify-center gap-2 border border-indigo-500/20"
+            style={{ boxShadow: "var(--shadow-glow-primary)" }}
           >
             <Download className="w-4 h-4" /> Download PDF Interior
           </button>
@@ -147,19 +148,19 @@ export default function KakuroGenerator() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Settings Console (Cols: 4) */}
-          <div className="lg:col-span-4 bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 p-6 rounded-[2rem] shadow-2xl space-y-6">
+          <div className="lg:col-span-4 bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 p-6 rounded-[2rem] space-y-6" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
             <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
               <Sliders className="w-4 h-4 text-indigo-400" />
-              <h2 className="text-sm font-black uppercase tracking-wider text-slate-350">Generator Console</h2>
+              <h2 className="text-sm font-black uppercase tracking-wider text-slate-300">Generator Console</h2>
             </div>
 
             {/* Grid Size Select */}
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase text-slate-450 tracking-wider">Grid Size</label>
+              <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Grid Size</label>
               <select
                 value={sizeId}
                 onChange={(e) => setSizeId(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-bold text-slate-200 focus:border-indigo-500 outline-none transition"
+                className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-bold text-slate-200 focus:border-indigo-500 outline-none transition-colors duration-200"
               >
                 <option value="4x4">4x4 Grid (Standard)</option>
                 <option value="6x6">6x6 Grid (Medium)</option>
@@ -171,16 +172,16 @@ export default function KakuroGenerator() {
 
             {/* Difficulty Level select */}
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase text-slate-450 tracking-wider">Difficulty Level</label>
+              <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Difficulty Level</label>
               <div className="grid grid-cols-2 gap-2">
                 {["easy", "intermediate", "hard", "challenging", "expert"].map((d) => (
                   <button
                     key={d}
                     onClick={() => setDifficulty(d)}
-                    className={`py-2.5 rounded-xl text-xs font-black capitalize transition-all ${
+                    className={`py-2.5 rounded-2xl text-xs font-black capitalize transition-all duration-200 ease-out active:scale-[0.97] ${
                       difficulty === d
-                        ? "bg-indigo-650 text-white shadow-lg shadow-indigo-650/15"
-                        : "bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white border border-slate-850"
+                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/15"
+                        : "bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
                     }`}
                   >
                     {d}
@@ -189,22 +190,22 @@ export default function KakuroGenerator() {
               </div>
             </div>
 
-            <div className="h-px bg-slate-850" />
+            <div className="h-px bg-slate-800" />
 
             {/* Print Settings (Trim size) */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4 text-slate-400" />
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-350">Print & PDF Sizing</h3>
+                <h3 className="text-xs font-black uppercase tracking-wider text-slate-300">Print & PDF Sizing</h3>
               </div>
 
               {/* Trim Size Select */}
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-slate-450 tracking-wider">Book Trim Size</label>
+                <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Book Trim Size</label>
                 <select
                   value={trimSize.id}
                   onChange={(e) => setTrimSize(TRIM_SIZES.find(t => t.id === e.target.value) || TRIM_SIZES[0])}
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-bold text-slate-200 focus:border-indigo-500 outline-none transition"
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-bold text-slate-200 focus:border-indigo-500 outline-none transition-colors duration-200"
                 >
                   {TRIM_SIZES.map((size) => (
                     <option key={size.id} value={size.id}>{size.label}</option>
@@ -215,7 +216,7 @@ export default function KakuroGenerator() {
               {/* Pages count input */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-black uppercase text-slate-450 tracking-wider">Number of Pages</label>
+                  <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Number of Pages</label>
                   <span className="text-[10px] font-black text-indigo-400">
                     {premiumStatus.isPremium ? "Premium: Unlimited (Max 1000)" : "Free Limit: 5"}
                   </span>
@@ -231,12 +232,12 @@ export default function KakuroGenerator() {
                     if (val > maxLimit) val = maxLimit;
                     setNumPages(val);
                   }}
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-mono text-indigo-400 focus:border-indigo-500 outline-none transition"
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-mono text-indigo-400 focus:border-indigo-500 outline-none transition-colors duration-200"
                 />
               </div>
 
               {/* Show Solutions Toggle */}
-              <div className="flex justify-between items-center p-3 bg-slate-950 rounded-2xl border border-slate-850/50">
+              <div className="flex justify-between items-center p-3 bg-slate-950 rounded-2xl border border-slate-800/50">
                 <div>
                   <label className="text-xs font-black text-slate-300 block">Include Solutions</label>
                   <span className="text-[9px] font-bold text-slate-500 block uppercase">Append answers at back</span>
@@ -252,7 +253,7 @@ export default function KakuroGenerator() {
 
             <button
               onClick={() => handleGeneratePreview()}
-              className="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow"
+              className="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all duration-200 ease-out active:scale-[0.97] shadow"
             >
               <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} /> Refresh Preview Grid
             </button>
@@ -262,8 +263,8 @@ export default function KakuroGenerator() {
           <div className="lg:col-span-8 flex flex-col gap-6">
             
             {/* Realtime Canvas */}
-            <div className="bg-slate-900/40 border border-slate-800/60 rounded-[2.5rem] p-8 md:p-12 shadow-2xl flex flex-col items-center justify-between min-h-[580px] relative">
-              
+            <div className="bg-slate-900/40 border border-slate-800/60 rounded-[2.5rem] p-8 md:p-12 flex flex-col items-center justify-between min-h-[580px] relative" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
+
               {/* Guides layout visual overlay */}
               {showGuides && (
                 <div className="absolute inset-8 border border-dashed border-slate-800/40 rounded-2xl pointer-events-none flex items-center justify-center">
@@ -273,12 +274,12 @@ export default function KakuroGenerator() {
 
               {/* Upper Pagination */}
               <div className="flex justify-between items-center w-full relative z-10">
-                <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest bg-slate-950 px-4 py-2 rounded-xl border border-slate-850">
+                <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest bg-slate-950 px-4 py-2 rounded-2xl border border-slate-800">
                   Previewing Random Grid Layout
                 </div>
                 <button
                   onClick={handleGeneratePreview}
-                  className="px-4 py-2 bg-indigo-650 hover:bg-indigo-600 text-white rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 shadow"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-xs font-black transition-all duration-200 ease-out active:scale-[0.97] cursor-pointer flex items-center gap-1.5 shadow"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} /> Refresh Preview
                 </button>
@@ -288,8 +289,9 @@ export default function KakuroGenerator() {
               {previewItem ? (
                 <div className="my-8 flex flex-col items-center gap-6 w-full">
                   <div
-                    className="grid gap-0 border-[3.5px] border-slate-900 bg-slate-900 shadow-2xl overflow-hidden"
+                    className="grid gap-0 border-[3.5px] border-slate-900 bg-slate-900 rounded-xl overflow-hidden"
                     style={{
+                      boxShadow: "var(--shadow-soft-lg)",
                       gridTemplateRows: `repeat(${previewItem.puzzle.rows}, minmax(0, 1fr))`,
                       gridTemplateColumns: `repeat(${previewItem.puzzle.cols}, minmax(0, 1fr))`,
                       width: "100%",
@@ -304,7 +306,7 @@ export default function KakuroGenerator() {
                           return (
                             <div
                               key={`${r}-${c}`}
-                              className="aspect-square border border-slate-200 flex items-center justify-center text-xs md:text-sm font-bold text-slate-800 bg-white select-none"
+                              className="interactive-cell aspect-square border border-slate-200 flex items-center justify-center text-xs md:text-sm font-bold text-slate-800 bg-white select-none"
                             >
                               {val || ""}
                             </div>
@@ -346,7 +348,7 @@ export default function KakuroGenerator() {
                   </div>
 
                   {/* Rules and guidelines description */}
-                  <div className="max-w-md text-center bg-slate-950/40 p-4 border border-slate-850/50 rounded-2xl flex gap-2.5 items-start">
+                  <div className="max-w-md text-center bg-slate-950/40 p-4 border border-slate-800/50 rounded-2xl flex gap-2.5 items-start">
                     <BookOpen className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                     <p className="text-[10px] text-slate-400 font-semibold text-left leading-relaxed">
                       <strong>Kakuro Guidelines:</strong> Kakuro is like a crossword puzzle with numbers. Each &quot;word&quot; must add up to the number provided in the clue above it or to the left. Words can only use the numbers 1 through 9, and a given number can only be used once in a word. Every kakuro puzzle has one and only solution, and can be solved through logic alone.
@@ -361,10 +363,10 @@ export default function KakuroGenerator() {
               <div className="flex gap-4 relative z-10 w-full">
                 <button
                   onClick={() => setShowGuides(prev => !prev)}
-                  className={`flex-1 py-3 border rounded-xl text-xs font-black transition cursor-pointer ${
+                  className={`flex-1 py-3 border rounded-2xl text-xs font-black transition-all duration-200 ease-out active:scale-[0.98] cursor-pointer ${
                     showGuides
                       ? "bg-slate-900 border-indigo-500/35 text-indigo-400"
-                      : "bg-slate-950 border-slate-850 text-slate-450 hover:text-slate-200"
+                      : "bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-200"
                   }`}
                 >
                   {showGuides ? "HIDE PRINT MARGINS" : "SHOW PRINT MARGINS"}

@@ -40,7 +40,7 @@ export function KakuroEditor({ page, updatePage }: any) {
                 onClick={() => handleToggleMode(false)}
                 className={`py-2 rounded-lg font-bold text-xs uppercase transition ${
                   !isSolution
-                    ? "bg-indigo-650 text-white shadow-sm"
+                    ? "bg-indigo-600 text-white shadow-sm"
                     : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
                 }`}
               >
@@ -50,7 +50,7 @@ export function KakuroEditor({ page, updatePage }: any) {
                 onClick={() => handleToggleMode(true)}
                 className={`py-2 rounded-lg font-bold text-xs uppercase transition ${
                   isSolution
-                    ? "bg-indigo-650 text-white shadow-sm"
+                    ? "bg-indigo-600 text-white shadow-sm"
                     : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
                 }`}
               >
@@ -94,7 +94,7 @@ export function KakuroEditor({ page, updatePage }: any) {
                   }}
                   className={`py-2 rounded-lg font-bold text-xs capitalize transition ${
                     difficulty === d
-                      ? "bg-indigo-650 text-white shadow-sm"
+                      ? "bg-indigo-600 text-white shadow-sm"
                       : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
                   }`}
                 >
@@ -107,7 +107,7 @@ export function KakuroEditor({ page, updatePage }: any) {
 
         <button
           onClick={() => handleGenerate()}
-          className="w-full bg-indigo-650 hover:bg-indigo-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 active:scale-95 transition"
+          className="w-full bg-indigo-600 hover:bg-indigo-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 active:scale-95 transition"
         >
           <RefreshCw className="w-4 h-4" /> Generate Kakuro
         </button>
@@ -125,7 +125,7 @@ export function KakuroEditor({ page, updatePage }: any) {
       <div className="flex-1 bg-white p-10 shadow-2xl border border-slate-200 min-h-[700px] flex flex-col items-center justify-between text-slate-800">
         <div className="text-center w-full">
           <h1 className="text-3xl font-black text-center mb-1 uppercase tracking-widest text-slate-800">
-            Kakuro Puzzle {isSolution && <span className="text-indigo-650">(Solution)</span>}
+            Kakuro Puzzle {isSolution && <span className="text-indigo-600">(Solution)</span>}
           </h1>
           <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-6">
             Difficulty: {difficulty} | Size: {sizeId}
@@ -174,7 +174,7 @@ export function KakuroEditor({ page, updatePage }: any) {
                       {hasClues && (
                         <>
                           {/* Diagonal divider line */}
-                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-slate-650/40 to-transparent pointer-events-none" />
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-slate-600/40 to-transparent pointer-events-none" />
                           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                             <line x1="0" y1="0" x2="100" y2="100" stroke="#475569" strokeWidth="2.5" />
                           </svg>

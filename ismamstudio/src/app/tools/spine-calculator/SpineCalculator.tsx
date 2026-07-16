@@ -162,7 +162,7 @@ export default function SpineCalculator() {
               Free specifications generator — no account creation, login, or credit card required.
             </span>
           </div>
-          <span className="hidden md:inline-block text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-450 border border-emerald-500/20 px-3 py-1 rounded-full">
+          <span className="hidden md:inline-block text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-3 py-1 rounded-full">
             Ready to use
           </span>
         </div>
@@ -199,8 +199,8 @@ export default function SpineCalculator() {
                       onClick={() => handlePresetSelect(idx)}
                       className={`text-left px-4 py-3 rounded-xl border text-xs font-bold transition-all flex justify-between items-center ${
                         selectedPresetIndex === idx
-                          ? "bg-indigo-650/20 border-indigo-500 text-white shadow-md shadow-indigo-500/5"
-                          : "bg-slate-950/40 border-slate-900 text-slate-450 hover:bg-slate-900 hover:text-slate-200"
+                          ? "bg-indigo-600/20 border-indigo-500 text-white shadow-md shadow-indigo-500/5"
+                          : "bg-slate-950/40 border-slate-900 text-slate-500 hover:bg-slate-900 hover:text-slate-200"
                       }`}
                     >
                       <span>{preset.name}</span>
@@ -213,8 +213,8 @@ export default function SpineCalculator() {
                     onClick={() => handlePresetSelect(-1)}
                     className={`text-left px-4 py-3 rounded-xl border text-xs font-bold transition-all flex justify-between items-center ${
                       selectedPresetIndex === -1
-                        ? "bg-indigo-650/20 border-indigo-500 text-white shadow-md shadow-indigo-500/5"
-                        : "bg-slate-950/40 border-slate-900 text-slate-450 hover:bg-slate-900 hover:text-slate-200"
+                        ? "bg-indigo-600/20 border-indigo-500 text-white shadow-md shadow-indigo-500/5"
+                        : "bg-slate-950/40 border-slate-900 text-slate-500 hover:bg-slate-900 hover:text-slate-200"
                     }`}
                   >
                     <span>Custom Dimensions</span>
@@ -227,7 +227,7 @@ export default function SpineCalculator() {
               {selectedPresetIndex === -1 && (
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div className="space-y-1.5">
-                    <span className="block text-[10px] font-black uppercase tracking-wider text-slate-450">
+                    <span className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
                       Trim Width (inches)
                     </span>
                     <input
@@ -242,7 +242,7 @@ export default function SpineCalculator() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <span className="block text-[10px] font-black uppercase tracking-wider text-slate-450">
+                    <span className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
                       Trim Height (inches)
                     </span>
                     <input
@@ -290,7 +290,7 @@ export default function SpineCalculator() {
                       onChange={(e) => setPageCount(parseInt(e.target.value) || 0)}
                       className="w-20 bg-slate-950 border border-slate-900 text-white rounded-lg px-2.5 py-1 text-center font-bold text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     />
-                    <span className="text-xs text-slate-450 font-bold">pages</span>
+                    <span className="text-xs text-slate-500 font-bold">pages</span>
                   </div>
                 </div>
 
@@ -303,7 +303,7 @@ export default function SpineCalculator() {
                   className="w-full accent-indigo-500 cursor-pointer h-2 bg-slate-950 rounded-lg appearance-none"
                 />
 
-                <div className="flex justify-between text-[10px] text-slate-450 font-black">
+                <div className="flex justify-between text-[10px] text-slate-500 font-black">
                   <span>{minPages} PGS</span>
                   <span>RECOMMENDED MAX: {maxPages} PGS</span>
                 </div>
@@ -347,15 +347,15 @@ export default function SpineCalculator() {
               </h4>
               <ul className="space-y-2 text-slate-400 font-semibold">
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-455 font-bold">•</span>
+                  <span className="text-indigo-500 font-bold">•</span>
                   <span>Bleed requirements: Adds <strong>0.125"</strong> to all outer edges (totaling 0.25" added to height, and 0.25" to combined width).</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-455 font-bold">•</span>
+                  <span className="text-indigo-500 font-bold">•</span>
                   <span>Barcode Safety: Keep all text/important details 0.25" away from the cover edges and 0.125" away from spine hinges.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-455 font-bold">•</span>
+                  <span className="text-indigo-500 font-bold">•</span>
                   <span>Calculations are output in <strong>inches (in)</strong>. Ideal DPI is <strong>300 DPI</strong> for printing.</span>
                 </li>
               </ul>
@@ -388,7 +388,7 @@ export default function SpineCalculator() {
                   >
                     {copiedSpine ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-450" /> Copied
+                        <Check className="w-3.5 h-3.5 text-emerald-500" /> Copied
                       </>
                     ) : (
                       <>
@@ -405,7 +405,7 @@ export default function SpineCalculator() {
                     <div className="text-2xl font-black text-white mt-1 font-mono">
                       {dims.fullWidth.toFixed(3)}"
                     </div>
-                    <span className="text-[9px] text-slate-450 font-bold block mt-0.5">
+                    <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
                       ({trimWidth}" + {dims.spineWidth.toFixed(4)}" + {trimWidth}" + 0.25")
                     </span>
                   </div>
@@ -415,7 +415,7 @@ export default function SpineCalculator() {
                   >
                     {copiedWidth ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-450" /> Copied
+                        <Check className="w-3.5 h-3.5 text-emerald-500" /> Copied
                       </>
                     ) : (
                       <>
@@ -432,7 +432,7 @@ export default function SpineCalculator() {
                     <div className="text-2xl font-black text-white mt-1 font-mono">
                       {dims.fullHeight.toFixed(3)}"
                     </div>
-                    <span className="text-[9px] text-slate-450 font-bold block mt-0.5">
+                    <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
                       ({trimHeight}" + 0.25" bleed)
                     </span>
                   </div>
@@ -442,7 +442,7 @@ export default function SpineCalculator() {
                   >
                     {copiedHeight ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-450" /> Copied
+                        <Check className="w-3.5 h-3.5 text-emerald-500" /> Copied
                       </>
                     ) : (
                       <>
@@ -456,7 +456,7 @@ export default function SpineCalculator() {
 
               {/* Dynamic SVG Blueprint */}
               <div className="bg-slate-950/80 border border-slate-900/60 rounded-2xl p-6 flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-450 mb-4 block self-start">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-4 block self-start">
                   Dynamic Cover Blueprint Preview
                 </span>
 
@@ -589,7 +589,7 @@ export default function SpineCalculator() {
                 </div>
 
                 {/* Guide Legend */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full border-t border-slate-900/60 pt-4 mt-2 text-[10px] text-slate-450 font-bold">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full border-t border-slate-900/60 pt-4 mt-2 text-[10px] text-slate-500 font-bold">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 bg-indigo-500/10 border border-indigo-500 block rounded" />
                     <span>Trim Size area</span>
@@ -611,7 +611,7 @@ export default function SpineCalculator() {
               </div>
 
               {/* Action Link to Cover Studio */}
-              <div className="flex justify-between items-center p-4 bg-indigo-550/10 border border-indigo-500/20 rounded-2xl">
+              <div className="flex justify-between items-center p-4 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl">
                 <div className="space-y-0.5 pr-4">
                   <span className="text-xs text-white font-black block">Ready to design your cover?</span>
                   <span className="text-[10px] text-slate-400 font-semibold block">
@@ -645,7 +645,7 @@ export default function SpineCalculator() {
             </div>
             <div className="space-y-2">
               <h3 className="font-bold text-indigo-400">What is "Bleed" and why is it exactly 0.25"?</h3>
-              <p className="text-slate-455 font-semibold leading-relaxed">
+              <p className="text-slate-500 font-semibold leading-relaxed">
                 Bleed is the extra print margin (0.125" on each outer edge) required by printers to ensure colors and artwork 
                 extend fully to the edge after the page is trimmed. Since bleed is added to the left and right sides of the cover, 
                 it increases the overall cover width by 0.25". Similarly, it increases the cover height by 0.25" (top and bottom).
@@ -653,7 +653,7 @@ export default function SpineCalculator() {
             </div>
             <div className="space-y-2">
               <h3 className="font-bold text-indigo-400">Why can't I put text on my spine?</h3>
-              <p className="text-slate-455 font-semibold leading-relaxed">
+              <p className="text-slate-500 font-semibold leading-relaxed">
                 Books with fewer than 79 pages have extremely thin spines (under 0.17 inches). 
                 Printers cannot guarantee the alignment of text on such thin areas without it spilling onto the front or back covers, 
                 so Amazon KDP prohibits spine text for books under 79 pages.
@@ -661,7 +661,7 @@ export default function SpineCalculator() {
             </div>
             <div className="space-y-2">
               <h3 className="font-bold text-indigo-400">What is the difference between Paper Types?</h3>
-              <p className="text-slate-455 font-semibold leading-relaxed">
+              <p className="text-slate-500 font-semibold leading-relaxed">
                 White and Cream paper types have slightly different physical thicknesses (Cream is thicker at 0.0025" per page vs. White at 0.002252"). 
                 Color printing uses another grade of white paper which is slightly thicker (0.002347"). Choosing the correct option ensures your spine 
                 matches the real thickness perfectly.

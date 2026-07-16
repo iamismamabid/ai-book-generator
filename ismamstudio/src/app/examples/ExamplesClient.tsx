@@ -100,7 +100,7 @@ export default function ExamplesPage() {
         </div>
 
         {/* Filter categories */}
-        <div className="flex flex-wrap gap-2 mb-8 bg-slate-905 p-1 rounded-2xl border border-slate-900 w-fit">
+        <div className="flex flex-wrap gap-2 mb-8 bg-slate-900 p-1 rounded-2xl border border-slate-900 w-fit">
           {["all", "sudoku", "labyrinths", "word search", "outline"].map((cat) => (
             <button
               key={cat}
@@ -138,7 +138,7 @@ export default function ExamplesPage() {
                 <div className="pt-2">
                   <Link
                     href={item.category === "Sudoku" ? "/sudoku" : item.category === "Labyrinths" ? "/maze" : item.category === "Word Search" ? "/tools/word-search" : "/generate"}
-                    className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-350 border border-slate-800 hover:border-slate-700 font-bold text-xs px-4 py-2.5 rounded-xl transition"
+                    className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700 font-bold text-xs px-4 py-2.5 rounded-xl transition"
                   >
                     Open Generator <ArrowLeft className="w-4 h-4 rotate-180" />
                   </Link>
@@ -149,12 +149,12 @@ export default function ExamplesPage() {
               <div className="w-full max-w-[170px] aspect-[1/1.4] bg-white rounded-xl shadow-2xl p-4 border border-slate-200 flex flex-col justify-between items-center text-slate-900 relative shrink-0">
                 <div className="w-full text-center border-b border-slate-200 pb-1.5">
                   <span className="text-[5px] font-black tracking-widest uppercase block text-slate-400">KDP Interior Spec</span>
-                  <span className="text-[7px] font-black uppercase text-indigo-650">{item.category}</span>
+                  <span className="text-[7px] font-black uppercase text-indigo-600">{item.category}</span>
                 </div>
 
                 {/* Dynamic graphics */}
                 {item.previewType === "sudoku" && (
-                  <div className="w-full grid grid-cols-4 gap-0.5 border border-slate-900 p-0.5 bg-slate-450">
+                  <div className="w-full grid grid-cols-4 gap-0.5 border border-slate-900 p-0.5 bg-slate-500">
                     {"4132324124131324".split("").map((num, i) => (
                       <div key={i} className="aspect-square flex items-center justify-center text-[7px] font-bold border border-slate-100 bg-slate-50">{num}</div>
                     ))}
@@ -162,7 +162,7 @@ export default function ExamplesPage() {
                 )}
                 {item.previewType === "maze" && (
                   <div className="w-full flex items-center justify-center p-1 bg-slate-50 border border-slate-200 rounded aspect-square">
-                    <div className="text-[6px] font-mono leading-none select-none text-slate-650 font-black">
+                    <div className="text-[6px] font-mono leading-none select-none text-slate-600 font-black">
                       {"#####\n#S  #\n# #E#\n#####".split("\n").map((r, i) => (
                         <div key={i}>{r}</div>
                       ))}
@@ -185,7 +185,7 @@ export default function ExamplesPage() {
                   </div>
                 )}
 
-                <div className="w-full text-center border-t border-slate-100 pt-1 flex justify-between items-center text-[5px] font-black text-slate-450">
+                <div className="w-full text-center border-t border-slate-100 pt-1 flex justify-between items-center text-[5px] font-black text-slate-500">
                   <span>Page 14</span>
                   <span>Ismam Studio</span>
                 </div>

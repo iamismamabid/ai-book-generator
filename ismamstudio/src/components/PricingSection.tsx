@@ -334,7 +334,7 @@ function PricingSectionInner() {
       ctaText: "Get Lifetime Tier 4",
       colorClass: "bg-slate-950/60 hover:border-slate-700",
       borderClass: "border-slate-800/80",
-      icon: <Award className="w-6 h-6 text-slate-450" />,
+      icon: <Award className="w-6 h-6 text-slate-500" />,
       ctaLink: "https://appsumo.com/products/ismam-studio",
       planKey: "appsumo_t4"
     },
@@ -459,7 +459,7 @@ function PricingSectionInner() {
           {/* Price Display */}
           <div className="mb-8 flex items-baseline gap-2 flex-wrap">
             {originalPrice && (
-              <span className={`text-2xl font-black line-through self-end pb-1.5 opacity-55 ${plan.popular ? "text-slate-550" : "text-slate-450"}`}>
+              <span className={`text-2xl font-black line-through self-end pb-1.5 opacity-55 ${plan.popular ? "text-slate-600" : "text-slate-500"}`}>
                 ${originalPrice}
               </span>
             )}
@@ -473,7 +473,7 @@ function PricingSectionInner() {
               </span>
             )}
             <span className={`text-[10px] font-bold block ml-2 self-center px-2 py-1 rounded-md uppercase tracking-wider ${plan.popular
-                ? "text-amber-750 bg-amber-500/10"
+                ? "text-amber-700 bg-amber-500/10"
                 : "text-teal-400 bg-teal-500/10"
               }`}>
               {billingText}
@@ -511,8 +511,8 @@ function PricingSectionInner() {
               target="_blank"
               rel="noopener noreferrer"
               className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                  : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                  : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                 }`}
             >
               {plan.ctaText}
@@ -522,8 +522,8 @@ function PricingSectionInner() {
             <Link
               href={ctaHref}
               className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                  : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                  : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                 }`}
             >
               {plan.ctaText}
@@ -533,8 +533,8 @@ function PricingSectionInner() {
             <button
               onClick={() => handleCheckout(plan.planKey)}
               className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-650 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                  : "bg-slate-900 hover:bg-slate-800 text-slate-350 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                  : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                 }`}
             >
               {plan.ctaText}
@@ -598,7 +598,7 @@ function PricingSectionInner() {
                 : "text-slate-400 hover:text-white"
               }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-450 shrink-0" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span>AppSumo LTD</span>
           </button>
         </div>
@@ -720,7 +720,7 @@ function PricingSectionInner() {
               <th className="py-4 px-4 text-center">Agency</th>
             </tr>
           </thead>
-          <tbody className="text-slate-350 font-semibold">
+          <tbody className="text-slate-300 font-semibold">
             <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
               <td className="py-4 px-4 font-bold text-white">Commercial Rights</td>
               <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>

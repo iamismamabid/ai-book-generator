@@ -41,7 +41,7 @@ export default function AffiliatePage() {
                 Partner with Ismam Studio and promote the most complete KDP publishing toolkit.
               </p>
             </div>
-            <div className="w-20 h-20 bg-indigo-550/10 rounded-3xl flex items-center justify-center text-indigo-400 border border-indigo-500/25 shrink-0">
+            <div className="w-20 h-20 bg-indigo-600/10 rounded-3xl flex items-center justify-center text-indigo-400 border border-indigo-500/25 shrink-0">
               <DollarSign className="w-10 h-10" />
             </div>
           </div>
@@ -50,8 +50,8 @@ export default function AffiliatePage() {
 
           {/* Core Perks */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-850 space-y-3">
-              <div className="p-2.5 bg-indigo-550/10 rounded-xl text-indigo-400 border border-indigo-500/10 w-fit">
+            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 space-y-3">
+              <div className="p-2.5 bg-indigo-600/10 rounded-xl text-indigo-400 border border-indigo-500/10 w-fit">
                 <DollarSign className="w-5 h-5" />
               </div>
               <h3 className="text-white font-bold text-base">30% Lifetime Cut</h3>
@@ -60,8 +60,8 @@ export default function AffiliatePage() {
               </p>
             </div>
 
-            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-850 space-y-3">
-              <div className="p-2.5 bg-purple-550/10 rounded-xl text-purple-400 border border-purple-500/10 w-fit">
+            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 space-y-3">
+              <div className="p-2.5 bg-purple-600/10 rounded-xl text-purple-400 border border-purple-500/10 w-fit">
                 <Target className="w-5 h-5" />
               </div>
               <h3 className="text-white font-bold text-base">60-Day Cookies</h3>
@@ -70,8 +70,8 @@ export default function AffiliatePage() {
               </p>
             </div>
 
-            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-850 space-y-3">
-              <div className="p-2.5 bg-emerald-550/10 rounded-xl text-emerald-400 border border-emerald-500/10 w-fit">
+            <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 space-y-3">
+              <div className="p-2.5 bg-emerald-600/10 rounded-xl text-emerald-400 border border-emerald-500/10 w-fit">
                 <Award className="w-5 h-5" />
               </div>
               <h3 className="text-white font-bold text-base">Partner Support</h3>
@@ -84,7 +84,7 @@ export default function AffiliatePage() {
           {/* How it works */}
           <div className="space-y-4 pt-4">
             <h2 className="text-xl font-black text-white">How It Works</h2>
-            <ol className="list-decimal list-inside pl-2 space-y-3 text-slate-350 text-xs md:text-sm font-semibold">
+            <ol className="list-decimal list-inside pl-2 space-y-3 text-slate-300 text-xs md:text-sm font-semibold">
               <li>
                 <strong>Apply:</strong> Sign up for our affiliate partner console using your email. Application reviews take &lt; 24 hours.
               </li>

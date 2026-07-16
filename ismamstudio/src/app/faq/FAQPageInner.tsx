@@ -85,7 +85,7 @@ export default function FAQPageInner() {
                   >
                     <span>{faq.question}</span>
                     <ChevronDown
-                      className={`w-5 h-5 text-slate-450 transition-transform duration-300 shrink-0 ${
+                      className={`w-5 h-5 text-slate-500 transition-transform duration-300 shrink-0 ${
                         isOpen ? "rotate-180 text-indigo-400" : ""
                       }`}
                     />
@@ -97,7 +97,7 @@ export default function FAQPageInner() {
                     }`}
                   >
                     <div className="overflow-hidden">
-                      <div className="px-6 pb-6 text-slate-350 text-sm font-semibold leading-relaxed border-t border-slate-800/50 pt-4">
+                      <div className="px-6 pb-6 text-slate-300 text-sm font-semibold leading-relaxed border-t border-slate-800/50 pt-4">
                         {faq.answer}
                       </div>
                     </div>

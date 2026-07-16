@@ -144,7 +144,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               <div className="w-full h-full grid grid-cols-2 gap-3">
                 {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Weekend", "Notes"].map((day, i) => (
                   <div key={i} className={`border border-slate-200 rounded-lg p-2 flex flex-col justify-between ${day === "Notes" ? "col-span-2 h-16" : "h-14"}`}>
-                    <span className="text-[8px] font-black uppercase text-indigo-650">{day}</span>
+                    <span className="text-[8px] font-black uppercase text-indigo-600">{day}</span>
                     <div className="border-b border-slate-100 w-full h-px" />
                   </div>
                 ))}
@@ -156,7 +156,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               <div className="w-full h-full grid grid-cols-2 gap-4">
                 {/* Schedule */}
                 <div className="border border-slate-200 rounded-lg p-3 space-y-2 h-full">
-                  <span className="text-[8px] font-black uppercase text-indigo-650 block mb-1">Today's Schedule</span>
+                  <span className="text-[8px] font-black uppercase text-indigo-600 block mb-1">Today's Schedule</span>
                   {["7:00 AM", "9:00 AM", "12:00 PM", "3:00 PM", "6:00 PM"].map((t, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-[6px] font-bold text-slate-400">
                       <span>{t}</span>
@@ -167,7 +167,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
                 {/* Tasks & Hydration */}
                 <div className="space-y-3">
                   <div className="border border-slate-200 rounded-lg p-3 space-y-2">
-                    <span className="text-[8px] font-black uppercase text-indigo-650 block mb-1">Top Priorities</span>
+                    <span className="text-[8px] font-black uppercase text-indigo-600 block mb-1">Top Priorities</span>
                     {[1, 2, 3].map((idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded border border-slate-200" />
@@ -176,7 +176,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
                     ))}
                   </div>
                   <div className="border border-slate-200 rounded-lg p-3 text-center">
-                    <span className="text-[8px] font-black uppercase text-indigo-650 block mb-2">Water Intake</span>
+                    <span className="text-[8px] font-black uppercase text-indigo-600 block mb-2">Water Intake</span>
                     <div className="flex justify-center gap-1.5">
                       {Array.from({ length: 8 }).map((_, i) => (
                         <div key={i} className="w-3.5 h-4.5 border border-indigo-400/50 rounded-b flex items-center justify-center text-[7px] text-indigo-500 font-bold">💧</div>
@@ -190,9 +190,9 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
             {/* Habit Tracker */}
             {templateType === "habit_tracker" && (
               <div className="w-full h-full space-y-2">
-                <span className="text-[8px] font-black uppercase text-indigo-650 block">Monthly Habits</span>
+                <span className="text-[8px] font-black uppercase text-indigo-600 block">Monthly Habits</span>
                 <div className="border border-slate-200 rounded-lg overflow-hidden text-[6px] font-black">
-                  <div className="grid grid-cols-6 bg-slate-50 border-b border-slate-250 p-1.5 text-slate-400 uppercase">
+                  <div className="grid grid-cols-6 bg-slate-50 border-b border-slate-200 p-1.5 text-slate-400 uppercase">
                     <span className="col-span-2">Habit Description</span>
                     <span className="text-center col-span-4">Days (1 - 31)</span>
                   </div>
@@ -227,7 +227,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
             {templateType === "budget_log" && (
               <div className="w-full h-full space-y-2">
                 <div className="border border-slate-200 rounded-lg overflow-hidden text-[6px] font-black">
-                  <div className="grid grid-cols-4 bg-slate-50 border-b border-slate-250 p-1.5 text-slate-400 uppercase">
+                  <div className="grid grid-cols-4 bg-slate-50 border-b border-slate-200 p-1.5 text-slate-400 uppercase">
                     <span>Date</span>
                     <span className="col-span-2">Description</span>
                     <span className="text-right">Amount</span>
@@ -253,7 +253,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
                 </div>
                 <div className="grid grid-cols-2 gap-3 h-full">
                   <div className="border border-slate-200 rounded-lg p-2.5 h-[120px] space-y-2">
-                    <span className="text-[7px] font-black uppercase text-indigo-650 block">Ingredients</span>
+                    <span className="text-[7px] font-black uppercase text-indigo-600 block">Ingredients</span>
                     {[1, 2, 3, 4].map((i) => (
                       <div key={i} className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/30" />
@@ -262,7 +262,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
                     ))}
                   </div>
                   <div className="border border-slate-200 rounded-lg p-2.5 h-[120px] space-y-2">
-                    <span className="text-[7px] font-black uppercase text-indigo-650 block">Instructions</span>
+                    <span className="text-[7px] font-black uppercase text-indigo-600 block">Instructions</span>
                     {[1, 2, 3].map((i) => (
                       <div key={i} className="flex items-start gap-1">
                         <span className="text-[6px] font-bold text-slate-400">{i}.</span>
@@ -283,7 +283,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
                   "The highlights and wins of my day..."
                 ].map((prompt, idx) => (
                   <div key={idx} className="border border-slate-200 rounded-lg p-3 space-y-2">
-                    <span className="text-[6px] font-black uppercase text-indigo-650 block">{prompt}</span>
+                    <span className="text-[6px] font-black uppercase text-indigo-600 block">{prompt}</span>
                     <div className="border-b border-slate-100 w-full h-px" />
                     <div className="border-b border-slate-100 w-full h-px" />
                   </div>
@@ -313,7 +313,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
           </div>
 
           {/* Footer page number indicator */}
-          <div className="w-full text-center border-t border-slate-100 pt-2 flex justify-between items-center text-[6px] font-black text-slate-450 uppercase">
+          <div className="w-full text-center border-t border-slate-100 pt-2 flex justify-between items-center text-[6px] font-black text-slate-500 uppercase">
             <span>Compliant Safe-zone margins</span>
             <span>Page PageNumber</span>
           </div>

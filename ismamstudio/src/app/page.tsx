@@ -94,7 +94,7 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
-              Create 10 Unique <span className="bg-gradient-to-r from-indigo-450 via-indigo-400 to-purple-450 bg-clip-text text-transparent">KDP Puzzle Books</span> in 5 Minutes
+              Create 10 Unique <span className="bg-gradient-to-r from-indigo-500 via-indigo-400 to-purple-500 bg-clip-text text-transparent">KDP Puzzle Books</span> in 5 Minutes
             </h1>
 
             <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed max-w-2xl">
@@ -104,7 +104,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/studio"
-                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-lg hover:from-orange-650 hover:to-amber-600 shadow-xl shadow-orange-500/20 hover:shadow-orange-500/30 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-lg hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/20 hover:shadow-orange-500/30 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
               >
                 Start Creating Now
                 <ArrowRight className="w-5 h-5 text-slate-950" />
@@ -116,7 +116,7 @@ export default function HomePage() {
                   e.preventDefault();
                   setIsVideoModalOpen(true);
                 }}
-                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-750 text-white font-black text-lg shadow-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-white font-black text-lg shadow-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
               >
                 <Play className="w-5 h-5 text-orange-500 fill-orange-500" />
                 Watch Walkthrough Video
@@ -140,13 +140,13 @@ export default function HomePage() {
             <div className="relative bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 rounded-[2.5rem] p-4 shadow-2xl overflow-hidden animate-float">
               {/* Header with Switcher Tabs */}
               <div className="flex items-center justify-between border-b border-slate-800/60 pb-3 mb-4">
-                <div className="flex items-center gap-1 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-850">
+                <div className="flex items-center gap-1 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-900">
                   <button
                     onClick={() => setActiveVideoTab("interior")}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                       activeVideoTab === "interior"
                         ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
-                        : "text-slate-500 hover:text-slate-350"
+                        : "text-slate-500 hover:text-slate-300"
                     }`}
                   >
                     <Grid3x3 className="w-3.5 h-3.5" />
@@ -157,7 +157,7 @@ export default function HomePage() {
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                       activeVideoTab === "cover"
                         ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
-                        : "text-slate-500 hover:text-slate-350"
+                        : "text-slate-500 hover:text-slate-300"
                     }`}
                   >
                     <Palette className="w-3.5 h-3.5" />
@@ -225,7 +225,7 @@ export default function HomePage() {
               { label: "Cryptogram", type: "Quotes", desc: "Shuffled letter decryption keys", emoji: "🔐" },
               { label: "Math sums", type: "Arithmetic", desc: "Sums, grid puzzle fill sheets", emoji: "➕" }
             ]).map((item, idx) => (
-              <div key={idx} className="bg-slate-950 border border-slate-850 p-5 rounded-2xl w-64 whitespace-normal shrink-0 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300">
+              <div key={idx} className="bg-slate-950 border border-slate-900 p-5 rounded-2xl w-64 whitespace-normal shrink-0 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300">
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-2xl">{item.emoji}</span>
                   <span className="px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{item.type}</span>
@@ -244,7 +244,7 @@ export default function HomePage() {
           <h2 className="text-2xl md:text-3xl font-black text-white mb-8">KDP Publishing Is Hard...</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
             <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-wider text-rose-450 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/10">Traditional Formatting Pitfalls</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-rose-500 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/10">Traditional Formatting Pitfalls</span>
               <ul className="space-y-3 font-semibold text-xs md:text-sm text-slate-400">
                 <li className="flex items-start gap-2.5">
                   <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
@@ -259,23 +259,23 @@ export default function HomePage() {
                   <span>Cover design calculations require expensive, custom layout software.</span>
                 </li>
               </ul>
-              <div className="mt-4 text-[10px] font-black text-rose-450 bg-rose-500/5 p-3 rounded-xl border border-rose-500/10 uppercase tracking-wider">
+              <div className="mt-4 text-[10px] font-black text-rose-500 bg-rose-500/5 p-3 rounded-xl border border-rose-500/10 uppercase tracking-wider">
                 ⚠️ Danger: A single margin or bleed formatting error can reject your book or cost you 30+ days of reprint delays.
               </div>
             </div>
             <div className="space-y-4">
               <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/10">The Ismam Studio Solution</span>
-              <ul className="space-y-3 font-semibold text-xs md:text-sm text-slate-350">
+              <ul className="space-y-3 font-semibold text-xs md:text-sm text-slate-300">
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-450 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <span>All-in-one suite. Go from zero to publication-ready PDF in 30 seconds.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-455 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <span>Mathematically unique, single-solution puzzles every compile.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-450 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <span>Dynamic cover canvas with live bleed guides and margins.</span>
                 </li>
               </ul>
@@ -304,7 +304,7 @@ export default function HomePage() {
           {/* 1. Book & Cover Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Palette className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">Book & Cover Studio</h3>
@@ -314,7 +314,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/studio"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Open Creator Studio <ArrowRight className="w-4 h-4" />
             </Link>
@@ -323,7 +323,7 @@ export default function HomePage() {
           {/* 2. KDP Interiors Merge */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">KDP Interiors Merge</h3>
@@ -333,7 +333,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/studio"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Start Assembling <ArrowRight className="w-4 h-4" />
             </Link>
@@ -358,7 +358,7 @@ export default function HomePage() {
           {/* 3. Labyrinth Designer */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Compass className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">Labyrinth Designer</h3>
@@ -368,7 +368,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/maze"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-350 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Design Mazes <ArrowRight className="w-4 h-4" />
             </Link>
@@ -377,7 +377,7 @@ export default function HomePage() {
           {/* 4. Sudoku Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Grid3x3 className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">Sudoku Studio</h3>
@@ -387,7 +387,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/sudoku"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Generate Sudokus <ArrowRight className="w-4 h-4" />
             </Link>
@@ -396,7 +396,7 @@ export default function HomePage() {
           {/* 5. Word Search Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Download className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">Word Search Studio</h3>
@@ -406,7 +406,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/tools/word-search"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Open Word Search <ArrowRight className="w-4 h-4" />
             </Link>
@@ -415,7 +415,7 @@ export default function HomePage() {
           {/* 6. Cryptogram Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-455 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Key className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">Cryptogram Studio</h3>
@@ -425,7 +425,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/studio/cryptogram"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Generate Cryptograms <ArrowRight className="w-4 h-4" />
             </Link>
@@ -434,7 +434,7 @@ export default function HomePage() {
           {/* 7. Math Puzzle Builder */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-455 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Calculator className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">Math Puzzle Builder</h3>
@@ -444,7 +444,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/studio/math-puzzle"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Generate Math Puzzles <ArrowRight className="w-4 h-4" />
             </Link>
@@ -453,7 +453,7 @@ export default function HomePage() {
           {/* 8. Word Scramble Studio */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-455 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Shuffle className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">Word Scramble Studio</h3>
@@ -463,7 +463,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/studio/word-scramble"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Generate Scrambles <ArrowRight className="w-4 h-4" />
             </Link>
@@ -472,7 +472,7 @@ export default function HomePage() {
           {/* 8.5. Kakuro Generator */}
           <div className="group relative dark-glow-card rounded-[2.5rem] p-8 hover:-translate-y-2 duration-500 flex flex-col justify-between h-[360px]">
             <div>
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-450 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-500 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 shadow-inner">
                 <Hash className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors duration-300 mb-3">Kakuro Generator</h3>
@@ -482,7 +482,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/studio/kakuro"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Generate Kakuros <ArrowRight className="w-4 h-4" />
             </Link>
@@ -501,7 +501,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/generate"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-355 group-hover:text-amber-400 transition-colors duration-300 mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-300 group-hover:text-amber-400 transition-colors duration-300 mt-6"
             >
               Create New Novel Outline <ArrowRight className="w-4 h-4" />
             </Link>
@@ -528,7 +528,7 @@ export default function HomePage() {
             <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
               Stop guessing what sells. Search autocomplete suggestions, estimate monthly sales targets, and calculate royalties using precise BSR estimators.
             </p>
-            <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-350 justify-center md:justify-start">
+            <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-300 justify-center md:justify-start">
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-indigo-400" /> Real-time search volumes</span>
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-indigo-400" /> BSR sales estimators</span>
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-indigo-400" /> Competition difficulty scores</span>
@@ -631,7 +631,7 @@ export default function HomePage() {
 
                     {/* Dynamic graphic inside sample */}
                     {sample.id === "sudoku" && (
-                      <div className="w-full grid grid-cols-4 gap-0.5 border border-slate-900 p-1 bg-slate-550">
+                      <div className="w-full grid grid-cols-4 gap-0.5 border border-slate-900 p-1 bg-slate-600">
                         {"3124423124131342".split("").map((num, i) => (
                           <div key={i} className="aspect-square flex items-center justify-center text-[8px] font-bold border border-slate-100 bg-slate-50">{num}</div>
                         ))}
@@ -659,7 +659,7 @@ export default function HomePage() {
                         <div className="h-0.5 bg-slate-200 w-full rounded" />
                         <div className="h-0.5 bg-slate-200 w-5/6 rounded" />
                         <div className="h-0.5 bg-slate-200 w-4/5 rounded" />
-                        <div className="h-1 bg-slate-350 w-1/4 rounded pt-1" />
+                        <div className="h-1 bg-slate-300 w-1/4 rounded pt-1" />
                         <div className="h-0.5 bg-slate-200 w-full rounded" />
                         <div className="h-0.5 bg-slate-200 w-11/12 rounded" />
                       </div>
@@ -810,7 +810,7 @@ export default function HomePage() {
 
       {/* 📧 Lead Generation Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 py-12">
-        <div className="bg-gradient-to-r from-slate-900/80 to-indigo-950/20 backdrop-blur-md rounded-[3rem] border border-slate-850 p-8 md:p-12 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 animate-fade-in">
+        <div className="bg-gradient-to-r from-slate-900/80 to-indigo-950/20 backdrop-blur-md rounded-[3rem] border border-slate-900 p-8 md:p-12 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 animate-fade-in">
           <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none" />
           
           <div className="max-w-xl space-y-4 relative z-10 text-center md:text-left">

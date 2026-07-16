@@ -277,7 +277,7 @@ export default function FreeToolsHub() {
         {/* Navigation & Header */}
         <div className="mb-12 border-b border-slate-900 pb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-450 text-xs font-black uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-black uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" /> 100% Free Tools — No Signup
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
@@ -325,13 +325,13 @@ export default function FreeToolsHub() {
                     {tool.category}
                   </span>
                   {tool.badge && (
-                    <span className="text-[9px] font-black uppercase tracking-widest text-yellow-450 bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded-md animate-pulse">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-yellow-500 bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded-md animate-pulse">
                       {tool.badge}
                     </span>
                   )}
                 </div>
 
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-yellow-450 transition-colors">
+                <h3 className="text-lg font-black text-white mb-2 group-hover:text-yellow-500 transition-colors">
                   {tool.name}
                 </h3>
                 <p className="text-slate-400 text-xs font-medium leading-relaxed mb-4">
@@ -350,14 +350,14 @@ export default function FreeToolsHub() {
               {tool.isInteractive ? (
                 <button
                   onClick={() => setActiveInteractiveTool(tool.id)}
-                  className="w-full text-center py-2.5 bg-slate-900 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 text-slate-350 font-black text-xs rounded-xl shadow-md transition-all uppercase tracking-wider cursor-pointer"
+                  className="w-full text-center py-2.5 bg-slate-900 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 text-slate-300 font-black text-xs rounded-xl shadow-md transition-all uppercase tracking-wider cursor-pointer"
                 >
                   Launch Interactive Tool
                 </button>
               ) : (
                 <Link
                   href={tool.link || "#"}
-                  className="w-full text-center py-2.5 bg-slate-900 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 text-slate-350 inline-block font-black text-xs rounded-xl shadow-md transition-all uppercase tracking-wider"
+                  className="w-full text-center py-2.5 bg-slate-900 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 text-slate-300 inline-block font-black text-xs rounded-xl shadow-md transition-all uppercase tracking-wider"
                 >
                   {tool.link ? "Open Tool" : "Launch Studio"}
                 </Link>
@@ -369,7 +369,7 @@ export default function FreeToolsHub() {
         {/* Dynamic Modals for Interactive Tools */}
         {activeInteractiveTool && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-            <div className="relative w-full max-w-2xl bg-[#0b0f19] border border-slate-850 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="relative w-full max-w-2xl bg-[#0b0f19] border border-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
               
               {/* Modal Header */}
               <div className="px-6 py-4 border-b border-slate-900 flex justify-between items-center bg-slate-950/50">
@@ -529,7 +529,7 @@ export default function FreeToolsHub() {
                         </div>
                         <div className="p-3 bg-slate-900/50 rounded-xl">
                           <span className="text-[9px] font-black text-slate-500 block uppercase">Royalty %</span>
-                          <span className="text-lg font-black text-yellow-450">{royaltyPercent}%</span>
+                          <span className="text-lg font-black text-yellow-500">{royaltyPercent}%</span>
                         </div>
                       </div>
                       <p className="text-[10px] text-slate-500 text-center leading-normal">
@@ -584,7 +584,7 @@ export default function FreeToolsHub() {
                       <div>
                         <label className="text-xs font-bold text-slate-400 block mb-1">Live KDP Preview</label>
                         <div 
-                          className="bg-white text-slate-900 p-3 rounded-xl text-[11px] font-sans h-[110px] overflow-y-auto select-none border border-slate-250 leading-relaxed"
+                          className="bg-white text-slate-900 p-3 rounded-xl text-[11px] font-sans h-[110px] overflow-y-auto select-none border border-slate-200 leading-relaxed"
                           dangerouslySetInnerHTML={{ __html: formattedHtml || "<i>Your live preview will render here...</i>" }}
                         />
                       </div>
@@ -611,7 +611,7 @@ export default function FreeToolsHub() {
                             }}
                             className="w-4 h-4 rounded text-yellow-500 accent-yellow-500 cursor-pointer mt-0.5"
                           />
-                          <span className={`text-xs ${item.checked ? 'line-through text-slate-555' : 'text-slate-300 font-medium'}`}>
+                          <span className={`text-xs ${item.checked ? 'line-through text-slate-600' : 'text-slate-300 font-medium'}`}>
                             {item.text}
                           </span>
                         </label>
@@ -643,7 +643,7 @@ export default function FreeToolsHub() {
                             <span className={`text-xs ${item.checked ? 'text-emerald-400 font-bold' : 'text-slate-300 font-medium'}`}>
                               {item.label}
                             </span>
-                            <span className="text-[10px] font-black text-slate-555">+{item.points} pts</span>
+                            <span className="text-[10px] font-black text-slate-600">+{item.points} pts</span>
                           </div>
                         </label>
                       ))}
@@ -657,7 +657,7 @@ export default function FreeToolsHub() {
                       <div className="text-right">
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Rating</span>
                         <span className={`text-xs font-black uppercase ${
-                          totalScore >= 80 ? 'text-emerald-400 animate-pulse' : (totalScore >= 50 ? 'text-yellow-450' : 'text-rose-400')
+                          totalScore >= 80 ? 'text-emerald-400 animate-pulse' : (totalScore >= 50 ? 'text-yellow-500' : 'text-rose-400')
                         }`}>
                           {totalScore >= 80 ? 'Ready to Publish' : (totalScore >= 50 ? 'Needs Improvement' : 'Rejected - Redesign')}
                         </span>
@@ -697,7 +697,7 @@ export default function FreeToolsHub() {
                       <span className="text-xs text-slate-200 font-bold block mb-1">
                         {uploadedEpubFile ? `Selected: ${uploadedEpubFile}` : "Select Word / Text manuscript"}
                       </span>
-                      <span className="text-[9px] text-slate-550 block mb-3">Accepts .docx, .txt formats (max 10MB)</span>
+                      <span className="text-[9px] text-slate-600 block mb-3">Accepts .docx, .txt formats (max 10MB)</span>
                       
                       <input 
                         type="file" 
@@ -722,7 +722,7 @@ export default function FreeToolsHub() {
                         onClick={() => {
                           document.getElementById("epub-file-input")?.click();
                         }}
-                        className="px-4 py-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl text-xs font-black text-slate-300 cursor-pointer"
+                        className="px-4 py-1.5 bg-slate-900 hover:bg-slate-900 border border-slate-800 rounded-xl text-xs font-black text-slate-300 cursor-pointer"
                       >
                         Upload manuscript
                       </button>
@@ -783,7 +783,7 @@ export default function FreeToolsHub() {
                       <span className="text-xs text-slate-200 font-bold block mb-1">
                         {uploadedPdfFile ? `Selected: ${uploadedPdfFile}` : "Upload interior manuscript PDF / Word document"}
                       </span>
-                      <span className="text-[9px] text-slate-550 block mb-3">Checks gutter spacing and trim alignment</span>
+                      <span className="text-[9px] text-slate-600 block mb-3">Checks gutter spacing and trim alignment</span>
                       
                       <input 
                         type="file" 
@@ -803,7 +803,7 @@ export default function FreeToolsHub() {
                         onClick={() => {
                           document.getElementById("pdf-file-input")?.click();
                         }}
-                        className="px-4 py-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl text-xs font-black text-slate-300 cursor-pointer"
+                        className="px-4 py-1.5 bg-slate-900 hover:bg-slate-900 border border-slate-800 rounded-xl text-xs font-black text-slate-300 cursor-pointer"
                       >
                         Select Document
                       </button>
@@ -820,7 +820,7 @@ export default function FreeToolsHub() {
                               alert(`Exporting and downloading KDP-${pdfTrimSize}-Interior.pdf...`);
                               setPdfFileAdded(false);
                             }}
-                            className="mt-3 px-3 py-1 bg-indigo-650 hover:bg-indigo-600 text-white font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer"
+                            className="mt-3 px-3 py-1 bg-indigo-600 hover:bg-indigo-600 text-white font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer"
                           >
                             Export Print-Ready PDF
                           </button>
@@ -846,7 +846,7 @@ export default function FreeToolsHub() {
                     setUploadedEpubFile(null);
                     setUploadedPdfFile(null);
                   }}
-                  className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-350 border border-slate-800 font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer"
                 >
                   Close
                 </button>

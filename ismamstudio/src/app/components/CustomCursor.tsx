@@ -98,20 +98,20 @@ export default function CustomCursor() {
       {/* Inner Dot */}
       <div
         ref={dotRef}
-        className={`fixed pointer-events-none rounded-full z-[9999] -translate-x-1/2 -translate-y-1/2 transition-all duration-150 ease-out bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)] ${
+        className={`fixed pointer-events-none rounded-full z-[9999] -translate-x-1/2 -translate-y-1/2 transition-all duration-150 ease-out bg-[#800000] shadow-[0_0_8px_rgba(128,0,0,0.5)] ${
           isVisible ? "opacity-100 scale-100" : "opacity-0 scale-50"
-        } ${isHovered ? "w-3 h-3 bg-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.6)]" : "w-2 h-2"}`}
+        } ${isHovered ? "w-3 h-3 bg-[#800000] shadow-[0_0_12px_rgba(128,0,0,0.8)]" : "w-2 h-2"}`}
         style={{ left: "-100px", top: "-100px" }}
       />
 
       {/* Outer Ring */}
       <div
         ref={outerRingRef}
-        className={`fixed pointer-events-none rounded-full z-[9998] -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out border-2 border-indigo-400/40 bg-indigo-500/0 ${
+        className={`fixed pointer-events-none rounded-full z-[9998] -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out border-2 border-black/40 bg-black/0 ${
           isVisible ? "opacity-100 scale-100" : "opacity-0 scale-50"
         } ${
           isHovered
-            ? "w-12 h-12 border-rose-400/30 bg-rose-500/5 shadow-[inset_0_0_8px_rgba(244,63,94,0.1)] scale-110"
+            ? "w-12 h-12 border-black/60 bg-black/5 shadow-[inset_0_0_8px_rgba(0,0,0,0.15)] scale-110"
             : "w-8 h-8"
         }`}
         style={{ left: "-100px", top: "-100px" }}

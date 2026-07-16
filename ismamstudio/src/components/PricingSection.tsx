@@ -107,11 +107,10 @@ function PricingSectionInner() {
         ]
       };
 
-      if (customerKey) {
-        checkoutOptions.customData = {
-          customer_key: customerKey
-        };
-      }
+      checkoutOptions.customData = {
+        userId: userId,
+        ...(customerKey ? { customer_key: customerKey } : {})
+      };
 
 
 

@@ -489,53 +489,51 @@ function PricingSectionInner() {
         {plans.map((plan) => renderPricingCard(plan, false))}
       </div>
 
-
-
       {/* 🛡️ Value Proposition Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
-        <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
-          <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-400 border border-amber-500/10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="bg-slate-900 border-t-2 border-amber-500 border-x border-b border-x-slate-800 border-b-slate-800 rounded-3xl p-6 flex items-start gap-4 shadow-xl shadow-black/40">
+          <div className="p-3 bg-amber-500/15 rounded-2xl text-amber-400 shrink-0">
             <Shield className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">Commercial Rights</h4>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">Commercial Rights</h4>
+            <p className="text-slate-300 text-xs font-medium leading-relaxed">
               Keep 100% of your Amazon royalties. All interiors are licensed for commercial sales.
             </p>
           </div>
         </div>
 
-        <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
-          <div className="p-3 bg-rose-500/10 rounded-2xl text-rose-400 border border-rose-500/10">
+        <div className="bg-slate-900 border-t-2 border-rose-500 border-x border-b border-x-slate-800 border-b-slate-800 rounded-3xl p-6 flex items-start gap-4 shadow-xl shadow-black/40">
+          <div className="p-3 bg-rose-500/15 rounded-2xl text-rose-400 shrink-0">
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">Instant Generation</h4>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">Instant Generation</h4>
+            <p className="text-slate-300 text-xs font-medium leading-relaxed">
               Generate fully populated books and vector mazes in less than 30 seconds.
             </p>
           </div>
         </div>
 
-        <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
-          <div className="p-3 bg-sky-500/10 rounded-2xl text-sky-400 border border-sky-500/10">
+        <div className="bg-slate-900 border-t-2 border-sky-500 border-x border-b border-x-slate-800 border-b-slate-800 rounded-3xl p-6 flex items-start gap-4 shadow-xl shadow-black/40">
+          <div className="p-3 bg-sky-500/15 rounded-2xl text-sky-400 shrink-0">
             <CreditCard className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">No Contract, Cancel</h4>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">No Contract, Cancel</h4>
+            <p className="text-slate-300 text-xs font-medium leading-relaxed">
               Pause or cancel direct SaaS subscriptions in one click. No hidden lock-ins.
             </p>
           </div>
         </div>
 
-        <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
-          <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400 border border-emerald-500/10">
+        <div className="bg-slate-900 border-t-2 border-emerald-500 border-x border-b border-x-slate-800 border-b-slate-800 rounded-3xl p-6 flex items-start gap-4 shadow-xl shadow-black/40">
+          <div className="p-3 bg-emerald-500/15 rounded-2xl text-emerald-400 shrink-0">
             <Award className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">Reconciled Guarantee</h4>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">Reconciled Guarantee</h4>
+            <p className="text-slate-300 text-xs font-medium leading-relaxed">
               7-day SaaS guarantee / 60-day AppSumo money-back policy for complete confidence.
             </p>
           </div>
@@ -543,14 +541,29 @@ function PricingSectionInner() {
       </div>
 
       {/* 🔒 Secure Payment trust badges */}
-      <div className="max-w-2xl mx-auto text-center mb-20 -mt-12 bg-slate-900/30 border border-slate-900/65 p-5 rounded-[2rem] backdrop-blur-sm">
-        <span className="text-[9px] font-black uppercase text-slate-500 tracking-[0.25em] block mb-3.5">Guaranteed Safe & Secure Checkout</span>
-        <div className="flex flex-wrap items-center justify-center gap-5 md:gap-7 text-[10px] text-slate-400 font-black uppercase tracking-widest">
-          <div className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-indigo-400" /> Paddle Checkout</div>
-          <div className="w-1 h-1 rounded-full bg-slate-800 hidden sm:block" />
-          <div className="flex items-center gap-2">📱 Apple Pay & Google Pay</div>
-          <div className="w-1 h-1 rounded-full bg-slate-800 hidden sm:block" />
-          <div className="flex items-center gap-2">✨ Visa / Mastercard / Amex</div>
+      <div className="max-w-2xl mx-auto text-center mb-20 bg-slate-900 border border-slate-700 p-6 rounded-[2rem] shadow-2xl shadow-black/50">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-700" />
+          <span className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em] whitespace-nowrap">🔒 Guaranteed Safe &amp; Secure Checkout</span>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-700" />
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-5 md:gap-8">
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl">
+            <CreditCard className="w-4 h-4 text-indigo-400" />
+            <span className="text-[10px] text-slate-200 font-black uppercase tracking-widest">Paddle</span>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl">
+            <span className="text-sm">🍎</span>
+            <span className="text-[10px] text-slate-200 font-black uppercase tracking-widest">Apple Pay</span>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl">
+            <span className="text-sm">🔵</span>
+            <span className="text-[10px] text-slate-200 font-black uppercase tracking-widest">Google Pay</span>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl">
+            <span className="text-sm">💳</span>
+            <span className="text-[10px] text-slate-200 font-black uppercase tracking-widest">Visa / MC / Amex</span>
+          </div>
         </div>
       </div>
 

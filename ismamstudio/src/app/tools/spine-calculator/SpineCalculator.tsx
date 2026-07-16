@@ -611,18 +611,21 @@ export default function SpineCalculator() {
               </div>
 
               {/* Action Link to Cover Studio */}
-              <div className="flex justify-between items-center p-4 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl">
-                <div className="space-y-0.5 pr-4">
-                  <span className="text-xs text-white font-black block">Ready to design your cover?</span>
-                  <span className="text-[10px] text-slate-400 font-semibold block">
-                    Use these measurements directly inside the Creator Studio to lay out your cover canvas.
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-6 bg-gradient-to-r from-indigo-950/40 via-indigo-900/10 to-indigo-950/40 border border-indigo-500/30 rounded-[2rem] shadow-lg backdrop-blur-sm mt-4">
+                <div className="space-y-1 pr-0 sm:pr-4 text-center sm:text-left">
+                  <span className="text-base text-white font-black flex items-center justify-center sm:justify-start gap-1.5">
+                    <Sparkles className="w-4 h-4 text-indigo-400 animate-pulse" />
+                    Now, Design Your Cover Inside KDPage Studio (Free)
+                  </span>
+                  <span className="text-xs text-slate-400 font-semibold block leading-relaxed">
+                    Transfer these specifications directly onto our Cover Canvas. Lay out your spine text, margins, and artwork in 60 seconds.
                   </span>
                 </div>
                 <Link
                   href="/studio?tab=cover"
-                  className="shrink-0 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow-md transition-all active:scale-95"
+                  className="w-full sm:w-auto shrink-0 px-6 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-sm rounded-xl shadow-lg hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-98 flex items-center justify-center gap-2"
                 >
-                  Open Cover Studio
+                  Create Cover Now <ArrowLeft className="-rotate-180 w-4 h-4" />
                 </Link>
               </div>
 

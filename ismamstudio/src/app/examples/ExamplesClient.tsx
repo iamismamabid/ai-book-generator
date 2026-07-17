@@ -53,10 +53,10 @@ const EXAMPLES_LIST: ExampleItem[] = [
   {
     id: "sci-fi-novel-chapters",
     title: "The Stellar Drift Outline",
-    category: "AI Outline",
+    category: "Chapter Outline",
     trim: "6\" x 9\"",
-    difficulty: "Llama-3 Turbo",
-    badge: "Groq AI Generation",
+    difficulty: "Chapter Writer",
+    badge: "12-Chapter Structure",
     desc: "A fully populated 12-chapter space opera plot, character descriptions, and blurb ready for formatting.",
     bgGradient: "from-purple-500/10 via-slate-900 to-transparent",
     previewType: "novel"

@@ -52,7 +52,7 @@ export default function Header() {
               Blog
             </Link>
             <Link href="/generate" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              AI Novel Writer
+              Chapter Writer
             </Link>
             <Link href="/tools" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Free Tools

@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import GeneratePage from "./GenerateClient";
 
 export const metadata: Metadata = {
-  title: "AI Novel Writer (Llama 3.3) | Write & Outline Books on KDP",
-  description: "Leverage advanced AI memory and context-management to generate high-quality novel outlines, chapter descriptions, and drafts tailored for Amazon KDP publishing.",
+  title: "Chapter Writer & Outliner | Write & Outline Books on KDP",
+  description: "Generate high-quality novel outlines, chapter descriptions, and drafts tailored for Amazon KDP publishing with our advanced Chapter Writer tool.",
   alternates: {
     canonical: "https://www.kdpage.com/generate",
   },
   openGraph: {
-    title: "AI Novel Writer (Llama 3.3) | Write & Outline Books on KDP",
-    description: "Leverage advanced AI memory and context-management to generate high-quality novel outlines, chapter descriptions, and drafts tailored for Amazon KDP publishing.",
+    title: "Chapter Writer & Outliner | Write & Outline Books on KDP",
+    description: "Generate high-quality novel outlines, chapter descriptions, and drafts tailored for Amazon KDP publishing with our advanced Chapter Writer tool.",
     url: "https://www.kdpage.com/generate",
     type: "website",
   }

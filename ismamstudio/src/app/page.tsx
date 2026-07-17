@@ -438,15 +438,15 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* 9. AI Novel Writer & Outliner */}
+          {/* 9. Chapter Writer & Outliner */}
           <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Sparkles className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">AI Novel Writer & Outliner</h3>
+              <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Chapter Writer & Outliner</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Generate 12-chapter novel outlines based on custom parameters, concepts, and genres. Co-write novel chapters using high-speed Llama 3.3 models.
+                Generate 12-chapter novel outlines based on custom parameters, concepts, and genres. Co-write novel chapters with speed and precision using our advanced writing engine.
               </p>
             </div>
             <Link
@@ -671,7 +671,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-black text-slate-800">2. Generate Puzzles & Text</h3>
               <p className="text-slate-600 text-xs md:text-sm font-semibold leading-relaxed">
-                Use our puzzle generator engine to create infinite unique Sudokus, mazes, cryptograms, and word search grids. Auto-generate complete chapter outlines and write full-text chapters with our advanced Llama-powered AI Novel Writer.
+                Use our puzzle generator engine to create infinite unique Sudokus, mazes, cryptograms, and word search grids. Auto-generate complete chapter outlines and write full-text chapters with our advanced Chapter Writer tool.
               </p>
             </div>
             <div className="text-purple-100 font-black text-6xl select-none text-right">02</div>

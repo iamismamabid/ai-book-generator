@@ -26,6 +26,13 @@ export const WordSearchEditor = ({ page, updatePage }: any) => {
     updatePage({ rawText: inputText, gridData, isSolution: solMode });
   };
 
+  React.useEffect(() => {
+    if (!gridData) {
+      handleGenerate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="w-full flex gap-8 h-full p-4 overflow-y-auto">
       <div className="w-80 flex flex-col gap-4">

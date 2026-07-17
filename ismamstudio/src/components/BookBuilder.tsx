@@ -99,7 +99,8 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   }, [bookPages]);
 
   const addPage = (type: string, initialConfig: any = {}) => {
-    setBookPages([...bookPages, { id: Date.now() + Math.random(), type, config: initialConfig }]);
+    const clonedConfig = JSON.parse(JSON.stringify(initialConfig));
+    setBookPages([...bookPages, { id: Date.now() + Math.random(), type, config: clonedConfig }]);
     setActiveIndex(bookPages.length);
   };
 

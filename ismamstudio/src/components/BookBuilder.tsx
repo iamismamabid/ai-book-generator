@@ -61,6 +61,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);
   const [isExporting, setIsExporting] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [solutionsStatus, setSolutionsStatus] = useState<'idle' | 'success'>('idle');
 
   useEffect(() => {
     setMounted(true);
@@ -191,6 +192,10 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     }
 
     setBookPages([...bookPages, ...newSolPages]);
+    setSolutionsStatus('success');
+    setTimeout(() => {
+      setSolutionsStatus('idle');
+    }, 2000);
   };
 
   const triggerExport = async () => {
@@ -250,9 +255,14 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           <div className="pt-4 border-t border-slate-800">
             <button
               onClick={autoGenerateAllSolutions}
-              className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/25 border border-amber-500/20 rounded-2xl text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] cursor-pointer"
+              className={`w-full py-3 border rounded-2xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] cursor-pointer ${
+                solutionsStatus === 'success'
+                  ? "bg-emerald-500/20 border-emerald-500/35 text-emerald-400"
+                  : "bg-amber-500/10 hover:bg-amber-500/25 border border-amber-500/20 text-amber-400"
+              }`}
             >
-              <Sparkles className="w-3.5 h-3.5" /> Auto-Build Solutions
+              <Sparkles className="w-3.5 h-3.5" />
+              {solutionsStatus === 'success' ? "✓ Solutions Added!" : "Auto-Build Solutions"}
             </button>
           </div>
         </div>
@@ -409,7 +419,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 onClick={() => setIsExportModalOpen(true)}
                 className="btn-premium-primary w-full py-3.5 normal-case text-sm"
               >
-                <FileDown className="w-4 h-4" /> Merge & Download PDF
+                <FileDown className="w-4 h-4" /> Configure &amp; Export PDF →
               </button>
             </div>
           )}

@@ -42,6 +42,9 @@ function fillBoard(board: Grid): boolean {
 function countSolutions(board: Grid, limit: number = 2): number {
   let count = 0;
 
+  // Clone the board to avoid mutation during evaluation
+  const tempBoard = board.map(row => [...row]);
+
   function checkCell(row: number, col: number): boolean {
     if (row === 9) {
       count++;
@@ -51,22 +54,20 @@ function countSolutions(board: Grid, limit: number = 2): number {
     const nextRow = col === 8 ? row + 1 : row;
     const nextCol = col === 8 ? 0 : col + 1;
 
-    if (board[row][col] !== 0) {
+    if (tempBoard[row][col] !== 0) {
       return checkCell(nextRow, nextCol);
     }
 
     for (let num = 1; num <= 9; num++) {
-      if (isValid(board, row, col, num)) {
-        board[row][col] = num;
+      if (isValid(tempBoard, row, col, num)) {
+        tempBoard[row][col] = num;
         if (checkCell(nextRow, nextCol)) return true;
-        board[row][col] = 0;
+        tempBoard[row][col] = 0;
       }
     }
     return false;
   }
 
-  // Clone the board to avoid mutation during evaluation
-  const tempBoard = board.map(row => [...row]);
   checkCell(0, 0);
   return count;
 }

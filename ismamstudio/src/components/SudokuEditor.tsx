@@ -33,7 +33,10 @@ export function SudokuEditor({ page, updatePage }: any) {
       <div className="w-80 flex flex-col gap-4">
         <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
           <div>
-            <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Page Mode</h3>
+            <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-1">Page Mode</h3>
+            <span className="text-[9px] text-slate-400 font-bold block mb-3 uppercase leading-tight">
+              *Converts this page into a puzzle grid or solution key in your book outline.
+            </span>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleToggleMode(false)}

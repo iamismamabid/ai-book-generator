@@ -292,48 +292,56 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           <div className="h-full pt-8">
             {bookPages[activeIndex].type === 'crossword' && (
               <CrosswordEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'word_search' && (
               <WordSearchEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'sudoku' && (
               <SudokuEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'maze' && (
               <MazeEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'word_scramble' && (
               <WordScrambleEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'cryptogram' && (
               <CryptogramEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'math_puzzle' && (
               <MathPuzzleEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'kakuro' && (
               <KakuroEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
@@ -341,12 +349,14 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
             {bookPages[activeIndex].type === 'low_content' && (
               <LowContentEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'title' && (
               <TitlePageEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />

@@ -7,7 +7,22 @@ import { RefreshCw, Search } from "lucide-react";
 import { generatePuzzleGrid } from "@/app/utils/puzzleEngine"; 
 
 export const WordSearchEditor = ({ page, updatePage }: any) => {
-  const [inputText, setInputText] = useState(page.config.rawText || "NEXTJS, REACT, PRISMA, TAILWIND, CODING, JAVASCRIPT");
+  const [inputText, setInputText] = useState(() => {
+    if (page.config.rawText) return page.config.rawText;
+    const categories = [
+      "LION, TIGER, ELEPHANT, GIRAFFE, ZEBRA, MONKEY, BEAR",
+      "APPLE, BANANA, CHERRY, ORANGE, GRAPE, MANGO, PEACH",
+      "PACIFIC, ATLANTIC, INDIAN, ARCTIC, SOUTHERN, OCEAN",
+      "MARS, VENUS, JUPITER, SATURN, URANUS, NEPTUNE, PLUTO",
+      "SOCCER, TENNIS, BASKETBALL, GOLF, CRICKET, RUGBY",
+      "PYTHON, JAVA, RUST, KOTLIN, SWIFT, TYPESCRIPT, GOLANG",
+      "LONDON, PARIS, TOKYO, SYDNEY, CAIRO, ROME, BERLIN",
+      "COFFEE, TEA, JUICE, WATER, SODA, MILK, SHAKE",
+      "PIZZA, BURGER, PASTA, SALAD, SUSHI, TACO, STEAK",
+      "GUITAR, PIANO, DRUMS, VIOLIN, FLUTE, TRUMPET, HARP"
+    ];
+    return categories[Math.floor(Math.random() * categories.length)];
+  });
   const [gridData, setGridData] = useState<any>(page.config.gridData || null);
 
   const isSolution = page.config.isSolution || false;

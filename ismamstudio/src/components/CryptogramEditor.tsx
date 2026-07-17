@@ -7,16 +7,28 @@ const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
   "SUCCESS IS NOT FINAL, FAILURE IS NOT FATAL: IT IS THE COURAGE TO CONTINUE THAT COUNTS.",
   "BE THE CHANGE THAT YOU WISH TO SEE IN THE WORLD.",
-  "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY."
+  "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY.",
+  "IMAGINATION IS MORE IMPORTANT THAN KNOWLEDGE.",
+  "THE JOURNEY OF A THOUSAND MILES BEGINS WITH ONE STEP.",
+  "TO BE YOURSELF IN A WORLD THAT IS CONSTANTLY TRYING TO MAKE YOU SOMETHING ELSE IS THE GREATEST ACCOMPLISHMENT.",
+  "IT ALWAYS SEEMS IMPOSSIBLE UNTIL IT IS DONE.",
+  "DO NOT GO WHERE THE PATH MAY LEAD, GO INSTEAD WHERE THERE IS NO PATH AND LEAVE A TRAIL.",
+  "WHAT YOU GET BY ACHIEVING YOUR GOALS IS NOT AS IMPORTANT AS WHAT YOU BECOME BY ACHIEVING YOUR GOALS.",
+  "BELIEVE YOU CAN AND YOU ARE HALFWAY THERE.",
+  "IN THE END, WE WILL REMEMBER NOT THE WORDS OF OUR ENEMIES, BUT THE SILENCE OF OUR FRIENDS.",
+  "THE ONLY WAY TO DO GREAT WORK IS TO LOVE WHAT YOU DO.",
+  "IF YOU WANT TO LIVE A HAPPY LIFE, TIE IT TO A GOAL, NOT TO PEOPLE OR THINGS.",
+  "LIFE IS WHAT HAPPENS WHEN YOU ARE BUSY MAKING OTHER PLANS."
 ];
 
 export function CryptogramEditor({ page, updatePage }: any) {
   const [inputText, setInputText] = useState(
     page.config.rawText || DEFAULT_QUOTES.join("\n")
   );
-  const [selectedQuoteIndex, setSelectedQuoteIndex] = useState<number>(
-    page.config.selectedQuoteIndex !== undefined ? page.config.selectedQuoteIndex : 0
-  );
+  const [selectedQuoteIndex, setSelectedQuoteIndex] = useState<number>(() => {
+    if (page.config.selectedQuoteIndex !== undefined) return page.config.selectedQuoteIndex;
+    return Math.floor(Math.random() * DEFAULT_QUOTES.length);
+  });
   const [cryptogramData, setCryptogramData] = useState<any>(
     page.config.cryptogramData || null
   );

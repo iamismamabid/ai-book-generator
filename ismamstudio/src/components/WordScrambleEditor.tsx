@@ -9,9 +9,20 @@ const DEFAULT_WORDS = [
 ];
 
 export function WordScrambleEditor({ page, updatePage }: any) {
-  const [inputText, setInputText] = useState(
-    page.config.rawText || DEFAULT_WORDS.join("\n")
-  );
+  const [inputText, setInputText] = useState(() => {
+    if (page.config.rawText) return page.config.rawText;
+    const pools = [
+      ["AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION", "ANTIGRAVITY", "FLIGHT", "PAYLOAD"],
+      ["GALAXY", "NEBULA", "SUPERNOVA", "TELESCOPE", "ASTRONAUT", "GRAVITY", "ORBIT"],
+      ["ALGORITHM", "COMPILER", "DATABASE", "ENCRYPTION", "RECURSION", "VARIABLE", "FUNCTION"],
+      ["HYDROGEN", "OXYGEN", "CARBON", "NITROGEN", "HELIUM", "URANIUM", "PLATINUM"],
+      ["CARNIVORE", "HERBIVORE", "OMNIVORE", "PREDATOR", "MAMMAL", "REPTILE", "AMPHIBIAN"],
+      ["METROPOLIS", "ARCHITECT", "SKYLINE", "SUBWAY", "BOULEVARD", "MONUMENT", "DISTRICT"],
+      ["CHAMPION", "ATHLETE", "TOURNAMENT", "MARATHON", "STADIUM", "REFEREE", "VICTORY"]
+    ];
+    const selected = pools[Math.floor(Math.random() * pools.length)];
+    return selected.join("\n");
+  });
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
     page.config.difficulty || "easy"
   );

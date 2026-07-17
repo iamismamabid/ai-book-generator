@@ -5,7 +5,17 @@ import { RefreshCw } from "lucide-react";
 import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
 
 export const CrosswordEditor = ({ page, updatePage }: any) => {
-  const [inputText, setInputText] = useState(page.config.rawText || "REACT, A popular UI library\nNEXTJS, A React framework\nVERCEL, Hosting platform\nCODING, Writing software");
+  const [inputText, setInputText] = useState(() => {
+    if (page.config.rawText) return page.config.rawText;
+    const pools = [
+      "REACT, A popular UI library\nNEXTJS, A React framework\nVERCEL, Hosting platform\nCODING, Writing software",
+      "DOG, Man's best friend\nCAT, Loves to catch mice\nBIRD, Can fly high in the sky\nFISH, Swims in the water",
+      "SUN, Center of the solar system\nMOON, Earth's natural satellite\nMARS, The Red Planet\nEARTH, Our home planet",
+      "PIZZA, Flatbread with cheese and tomato\nBURGER, Patty inside a bun\nSUSHI, Japanese raw fish dish\nPASTA, Italian noodle dish",
+      "GUITAR, String instrument with frets\nPIANO, Keyed musical instrument\nDRUMS, Percussion instrument\nVIOLIN, Bowed string instrument"
+    ];
+    return pools[Math.floor(Math.random() * pools.length)];
+  });
   const [gridData, setGridData] = useState<any>(page.config.gridData || null);
 
   const isSolution = page.config.isSolution || false;

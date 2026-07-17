@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import FreeToolsHub from "@/app/tools/page";
+import ToolsClient from "@/app/tools/ToolsClient";
 
 export const metadata: Metadata = {
   title: "Free KDP Tools — Spine Calculator, ISBN Generator, Royalty Estimator | KDPage",
@@ -30,5 +30,5 @@ export const metadata: Metadata = {
 };
 
 export default function FreeToolsPage() {
-  return <FreeToolsHub />;
+  return <ToolsClient />;
 }

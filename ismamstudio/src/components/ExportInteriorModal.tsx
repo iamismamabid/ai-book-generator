@@ -266,7 +266,7 @@ export default function ExportInteriorModal({
                   <div className="flex gap-2 items-start bg-indigo-50 border border-indigo-200 text-indigo-900 p-2.5 rounded-xl text-[10px] font-semibold leading-normal">
                     <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
                     <span>
-                      <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the Book & Cover Studio.
+                      <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the All-In-One Studio.
                     </span>
                   </div>
                 )}

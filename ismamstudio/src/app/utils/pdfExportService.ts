@@ -169,11 +169,15 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number) =
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
   const gridSize = 15;
-  const cellSize = 0.3;
+  
+  // Calculate dynamic cellSize to avoid margin overflows (especially on 6"x9" and 5"x8" sizes)
+  const maxW = pageWidth - 1.0 - Math.abs(xShift);
+  const cellSize = Math.min(0.3, maxW / gridSize);
+  
   const startX = (pageWidth - gridSize * cellSize) / 2 + xShift;
   const startY = 1.3;
 
-  doc.setLineWidth(0.01);
+  doc.setLineWidth(cellSize * 0.033);
   doc.setDrawColor(30, 41, 59);
 
   // Draw grid
@@ -193,19 +197,19 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number) =
         // Find if a word starts here
         const wordStart = data.placedWords.find((w: any) => w.r === r && w.c === c);
         if (wordStart) {
-          doc.setFontSize(6);
+          doc.setFontSize(Math.max(4.5, Math.floor(cellSize * 20)));
           doc.setFont("Helvetica", "bold");
           doc.setTextColor(30, 41, 59);
-          doc.text(String(wordStart.num), x + 0.03, y + 0.09);
+          doc.text(String(wordStart.num), x + cellSize * 0.1, y + cellSize * 0.3);
         }
 
         // Draw solved letter if it is solution mode
         if (isSolution) {
-          doc.setFontSize(12);
+          doc.setFontSize(Math.max(8, Math.floor(cellSize * 40)));
           doc.setFont("Helvetica", "bold");
           doc.setTextColor(30, 41, 59);
           const letterWidth = doc.getTextWidth(cell);
-          doc.text(cell, x + (cellSize - letterWidth) / 2, y + 0.22);
+          doc.text(cell, x + (cellSize - letterWidth) / 2, y + cellSize * 0.73);
         }
       }
     });
@@ -343,7 +347,10 @@ export function drawWordSearchGrid(
   }
 
   // 3. Draw all letters on top
-  doc.setFontSize(s.letterFontSize);
+  const baseLetterFontSize = s.letterFontSize || 11;
+  const scaledLetterFontSize = cellSize < 0.35 ? Math.max(6, Math.floor(baseLetterFontSize * (cellSize / 0.35))) : baseLetterFontSize;
+  doc.setFontSize(scaledLetterFontSize);
+  
   data.grid.forEach((row: string[], r: number) => {
     row.forEach((letter: string, c: number) => {
       const x = zone.x + (c * cellSize);
@@ -378,17 +385,21 @@ export function drawWordSearchWordList(
   const s = { ...WORD_SEARCH_DEFAULT_STYLE, ...opts.style };
   const isSolution = opts.isSolution || false;
 
+  // Calculate dynamic scale factor based on layout width (target width is ~4.75 in)
+  const scaleFactor = zone.w < 4.75 ? zone.w / 4.75 : 1;
+  const wordRowStep = s.wordRowStep * scaleFactor;
+
   let headingOffset = 0;
   if (opts.showHeading) {
     doc.setFont(s.wordFont, "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(Math.max(7, Math.floor(11 * scaleFactor)));
     doc.setTextColor(0);
     doc.text("WORDS TO FIND:", zone.x, zone.y);
-    headingOffset = 0.25;
+    headingOffset = 0.25 * scaleFactor;
   }
 
   doc.setFont(s.wordFont, "bold");
-  doc.setFontSize(s.wordFontSize);
+  doc.setFontSize(Math.max(6, Math.floor(s.wordFontSize * scaleFactor)));
   doc.setTextColor(isSolution ? "#94A3B8" : s.wordTextColor);
 
   const colWidth = zone.w / s.wordColumns;
@@ -396,7 +407,7 @@ export function drawWordSearchWordList(
     const rowIdx = Math.floor(idx / s.wordColumns);
     const colIdx = idx % s.wordColumns;
     const x = zone.x + (colIdx * colWidth);
-    const y = zone.y + headingOffset + ((rowIdx + 1) * s.wordRowStep);
+    const y = zone.y + headingOffset + ((rowIdx + 1) * wordRowStep);
     doc.text(w.text, x, y, { align: s.wordTextAlign });
   });
 
@@ -407,14 +418,18 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number) 
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
   const gridSize = data.grid.length;
-  const cellSize = 0.35;
+
+  // Calculate dynamic cellSize to avoid margin overflows (especially on 6"x9" and 5"x8" sizes)
+  const maxW = pageWidth - 1.0 - Math.abs(xShift);
+  const cellSize = Math.min(0.35, maxW / gridSize);
+
   const gridPx = gridSize * cellSize;
   const startX = (pageWidth - gridPx) / 2 + xShift;
   const startY = 1.4;
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridPx }, isSolution);
 
-  drawWordSearchWordList(doc, data.words, { x: startX + 0.5, y: startY + gridPx + 0.4, w: gridPx - 0.5 }, {
+  drawWordSearchWordList(doc, data.words, { x: startX + 0.3, y: startY + gridPx + 0.3, w: gridPx - 0.3 }, {
     isSolution,
     showHeading: true,
   });
@@ -424,7 +439,11 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number) 
 const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number) => {
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
-  const cellSize = 0.45;
+  
+  // Calculate dynamic cellSize to avoid margin overflows (especially on 6"x9" and 5"x8" sizes)
+  const maxW = pageWidth - 1.0 - Math.abs(xShift);
+  const cellSize = Math.min(0.45, maxW / 9);
+  
   const gridWidth = cellSize * 9;
   const startX = (pageWidth - gridWidth) / 2 + xShift;
   const startY = 1.6;
@@ -453,10 +472,11 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number) => {
           doc.setTextColor(15, 23, 42); // slate-900
           doc.setFont("Helvetica", "bold");
         }
-        doc.setFontSize(14);
+        const scaledFontSize = Math.max(8, Math.floor(cellSize * 31.1));
+        doc.setFontSize(scaledFontSize);
         const valStr = String(displayedVal);
         const valWidth = doc.getTextWidth(valStr);
-        doc.text(valStr, x + (cellSize - valWidth) / 2, y + 0.29);
+        doc.text(valStr, x + (cellSize - valWidth) / 2, y + cellSize * 0.64);
       }
     }
   }
@@ -583,13 +603,17 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number) => {
   const data = page.config.gridData;
   const showSolution = page.config.showSolution || page.config.isSolution || false;
   const gridSize = data.grid.length;
-  const cellSize = 0.2;
+  
+  // Calculate dynamic cellSize to fit the trim width with safe margins (especially on 6"x9" and 5"x8" sizes)
+  const maxW = pageWidth - 1.0 - Math.abs(xShift);
+  const cellSize = Math.min(0.2, maxW / gridSize);
+  
   const mazeWidth = gridSize * cellSize;
   const startX = (pageWidth - mazeWidth) / 2 + xShift;
   const startY = 1.6;
 
   // Draw maze walls
-  doc.setLineWidth(0.015);
+  doc.setLineWidth(cellSize * 0.075);
   doc.setDrawColor(26, 26, 26);
 
   data.grid.forEach((row: any[], r: number) => {
@@ -609,15 +633,15 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number) => {
 
   // Start / Exit markers
   doc.setFont("Helvetica", "bold");
-  doc.setFontSize(8);
+  doc.setFontSize(Math.max(6, Math.floor(cellSize * 40)));
   doc.setTextColor(16, 185, 129); // Green
-  doc.text("START", startX + data.start[1] * cellSize + 0.02, startY + data.start[0] * cellSize - 0.05);
+  doc.text("START", startX + data.start[1] * cellSize + cellSize * 0.1, startY + data.start[0] * cellSize - cellSize * 0.25);
   doc.setTextColor(239, 104, 104); // Red
-  doc.text("EXIT", startX + data.end[1] * cellSize + 0.02, startY + data.end[0] * cellSize + cellSize + 0.15);
+  doc.text("EXIT", startX + data.end[1] * cellSize + cellSize * 0.1, startY + data.end[0] * cellSize + cellSize + cellSize * 0.75);
 
   // Draw Solution Path if checked
   if (showSolution && data.solution && data.solution.length > 0) {
-    doc.setLineWidth(0.02);
+    doc.setLineWidth(cellSize * 0.1);
     doc.setDrawColor(239, 68, 68); // Red
 
     const path = data.solution;

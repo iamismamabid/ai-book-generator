@@ -156,8 +156,8 @@ function PricingSectionInner() {
         "Community support forum",
       ],
       ctaText: "Start Designing Free",
-      colorClass: "bg-slate-950/40 hover:border-slate-800",
-      borderClass: "border-slate-900",
+      colorClass: "bg-slate-50 dark:bg-slate-950/40 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-800",
+      borderClass: "border-slate-200 dark:border-slate-900",
       icon: <HelpCircle className="w-6 h-6 text-slate-500" />,
       ctaLink: "/sign-up",
       planKey: "free"
@@ -181,8 +181,8 @@ function PricingSectionInner() {
         "Email support (24-48h response)",
       ],
       ctaText: "Start Designing",
-      colorClass: "bg-slate-950/60 hover:border-slate-700",
-      borderClass: "border-slate-800/80",
+      colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-700",
+      borderClass: "border-slate-200 dark:border-slate-800/80",
       icon: <Star className="w-6 h-6 text-slate-400" />,
       ctaLink: "/sign-up?plan=starter",
       planKey: "starter"
@@ -207,8 +207,8 @@ function PricingSectionInner() {
         "Priority Customer Support (under 12 hours)",
       ],
       ctaText: "Get Pro Access",
-      colorClass: "bg-white text-slate-900 shadow-[0_20px_50px_rgba(245,158,11,0.25),_0_0_30px_rgba(56,189,248,0.15)]",
-      borderClass: "border-amber-400 border-2",
+      colorClass: "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-[0_20px_50px_rgba(245,158,11,0.15),_0_0_30px_rgba(56,189,248,0.1)]",
+      borderClass: "border-amber-500 dark:border-amber-400 border-2",
       icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
       ctaLink: "/sign-up?plan=pro",
       planKey: "pro"
@@ -232,8 +232,8 @@ function PricingSectionInner() {
         "Dedicated customer support manager",
       ],
       ctaText: "Go Agency Pro",
-      colorClass: "bg-slate-950/60 hover:border-slate-700",
-      borderClass: "border-slate-800/80",
+      colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-700",
+      borderClass: "border-slate-200 dark:border-slate-800/80",
       icon: <Award className="w-6 h-6 text-slate-400" />,
       ctaLink: "/sign-up?plan=agency",
       planKey: "agency"
@@ -327,27 +327,25 @@ function PricingSectionInner() {
             </span>
           </div>
 
-          <h3 className={`text-2xl font-black mb-2 ${plan.popular ? "text-slate-950" : "text-white"}`}>
+          <h3 className="text-2xl font-black mb-2 text-slate-900 dark:text-white">
             {plan.name}
           </h3>
-          <p className={`text-sm font-semibold mb-6 leading-relaxed min-h-[40px] ${plan.popular ? "text-slate-600" : "text-slate-300"
-            }`}>
+          <p className="text-sm font-semibold mb-6 leading-relaxed min-h-[40px] text-slate-600 dark:text-slate-300">
             {plan.description}
           </p>
 
           {/* Price Display */}
           <div className="mb-8 flex items-baseline gap-2 flex-wrap">
             {originalPrice && (
-              <span className={`text-2xl font-black line-through self-end pb-1.5 opacity-55 ${plan.popular ? "text-slate-600" : "text-slate-500"}`}>
+              <span className="text-2xl font-black line-through self-end pb-1.5 opacity-55 text-slate-500 dark:text-slate-500">
                 ${originalPrice}
               </span>
             )}
-            <span className={`text-6xl font-black tracking-tight ${plan.popular ? "text-slate-950" : "text-white"
-              }`}>
+            <span className="text-6xl font-black tracking-tight text-slate-900 dark:text-white">
               ${price}
             </span>
             {!isLtd && (
-              <span className={`font-bold text-sm ${plan.popular ? "text-slate-500" : "text-slate-300"}`}>
+              <span className="font-bold text-sm text-slate-500 dark:text-slate-300">
                 / month
               </span>
             )}
@@ -370,8 +368,7 @@ function PricingSectionInner() {
             {plan.features
               .filter((f: string) => !process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || (!f.toLowerCase().includes("ai chapter") && !f.toLowerCase().includes("ai writer")))
               .map((feature: any, fIndex: number) => (
-                <li key={fIndex} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? "text-slate-700" : "text-slate-300"
-                  }`}>
+                <li key={fIndex} className="flex items-start gap-3 font-semibold text-sm leading-snug text-slate-700 dark:text-slate-300">
                   <div className={`mt-0.5 p-0.5 rounded-full border shrink-0 ${plan.popular
                       ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
                       : "bg-teal-500/10 text-teal-400 border-teal-500/20"
@@ -435,17 +432,16 @@ function PricingSectionInner() {
       <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-sky-500/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] bg-rose-500/5 rounded-full blur-[90px] pointer-events-none" />
 
-      {/* Header */}
       <div className="text-center mb-16">
-        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-sky-500/10 border border-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-[0.2em] mb-6 shadow-md">
+        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-sky-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-black uppercase tracking-[0.2em] mb-6 shadow-md">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           Limited Time Launch Offer
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">
+        <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-4">
           Simple, <span className="bg-gradient-to-r from-amber-300 via-rose-400 to-sky-300 bg-clip-text text-transparent">Value-Packed</span> Pricing
         </h1>
-        <p className="text-slate-400 text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed">
+        <p className="text-slate-650 dark:text-slate-400 text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed">
           Create profitable books with ease. Choose a plan that matches your publishing scale.
         </p>
 
@@ -748,38 +744,38 @@ function PricingSkeleton() {
   ];
 
   return (
-    <section id="pricing" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-900">
+    <section id="pricing" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-200 dark:border-slate-900">
       <div className="text-center mb-16">
-        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-sky-500/10 border border-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-[0.2em] mb-6 shadow-md">
+        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-sky-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-black uppercase tracking-[0.2em] mb-6 shadow-md">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />Limited Time Launch Offer
         </div>
-        <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">
+        <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-4">
           Simple, <span className="bg-gradient-to-r from-amber-300 via-rose-400 to-sky-300 bg-clip-text text-transparent">Value-Packed</span> Pricing
         </h2>
-        <p className="text-slate-400 text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed">
+        <p className="text-slate-600 dark:text-slate-400 text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed">
           Create profitable books with ease. Choose a plan that matches your publishing scale.
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 items-stretch mb-24">
         {staticPlans.map((plan) => (
-          <div key={plan.name} className={`group relative rounded-[2.5rem] p-8 flex flex-col justify-between border backdrop-blur-md ${plan.popular ? 'bg-white text-slate-900 shadow-[0_20px_50px_rgba(245,158,11,0.25)] border-amber-400 border-2' : 'bg-slate-950/40 border-slate-900'}`}>
+          <div key={plan.name} className={`group relative rounded-[2.5rem] p-8 flex flex-col justify-between border backdrop-blur-md ${plan.popular ? 'bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-[0_20px_50px_rgba(245,158,11,0.15)] border-amber-500 dark:border-amber-400 border-2' : 'bg-slate-50 dark:bg-slate-950/40 text-slate-900 dark:text-white border-slate-200 dark:border-slate-900'}`}>
             {plan.popular && (
               <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg flex items-center gap-1.5 z-10">
                 <Sparkles className="w-3.5 h-3.5" />Most Popular
               </div>
             )}
             <div>
-              <h3 className={`text-2xl font-black mb-2 ${plan.popular ? 'text-slate-950' : 'text-white'}`}>{plan.name}</h3>
+              <h3 className="text-2xl font-black mb-2 text-slate-900 dark:text-white">{plan.name}</h3>
               <div className="mb-8 flex items-baseline gap-2">
-                <span className={`text-5xl font-black tracking-tight ${plan.popular ? 'text-slate-950' : 'text-white'}`}>{plan.price}</span>
-                <span className={`font-bold text-sm ${plan.popular ? 'text-slate-500' : 'text-slate-300'}`}>{plan.period}</span>
+                <span className="text-5xl font-black tracking-tight text-slate-900 dark:text-white">{plan.price}</span>
+                <span className="font-bold text-sm text-slate-500 dark:text-slate-300">{plan.period}</span>
               </div>
-              <div className={`h-px mb-8 ${plan.popular ? 'bg-slate-200' : 'bg-slate-800'}`} />
+              <div className={`h-px mb-8 ${plan.popular ? 'bg-slate-200 dark:bg-slate-800' : 'bg-slate-200 dark:bg-slate-900'}`} />
               <ul className="space-y-3">
                 {plan.features
                   .filter((f: string) => !process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || (!f.toLowerCase().includes("ai chapter") && !f.toLowerCase().includes("ai writer")))
                   .map((f, i) => (
-                    <li key={i} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? 'text-slate-700' : 'text-slate-300'}`}>
+                    <li key={i} className="flex items-start gap-3 font-semibold text-sm leading-snug text-slate-700 dark:text-slate-300">
                       <Check className={`w-4 h-4 shrink-0 mt-0.5 ${plan.popular ? 'text-amber-600' : 'text-teal-400'}`} />
                       <span>{f}</span>
                     </li>
@@ -787,7 +783,7 @@ function PricingSkeleton() {
               </ul>
             </div>
             <div className="mt-8">
-              <Link href="/sign-up" className={`w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 ${plan.popular ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800'}`}>
+              <Link href="/sign-up" className={`w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 ${plan.popular ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-900 hover:bg-slate-800 text-white dark:text-slate-300 border border-slate-200 dark:border-slate-800'}`}>
                 Get Started <Zap className="w-4 h-4 shrink-0 opacity-80" />
               </Link>
             </div>

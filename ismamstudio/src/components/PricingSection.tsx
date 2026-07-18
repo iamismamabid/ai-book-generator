@@ -367,18 +367,20 @@ function PricingSectionInner() {
 
           {/* Features Checklist */}
           <ul className="space-y-4">
-            {plan.features.map((feature: any, fIndex: number) => (
-              <li key={fIndex} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? "text-slate-700" : "text-slate-300"
-                }`}>
-                <div className={`mt-0.5 p-0.5 rounded-full border shrink-0 ${plan.popular
-                    ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                    : "bg-teal-500/10 text-teal-400 border-teal-500/20"
+            {plan.features
+              .filter((f: string) => !process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || (!f.toLowerCase().includes("ai chapter") && !f.toLowerCase().includes("ai writer")))
+              .map((feature: any, fIndex: number) => (
+                <li key={fIndex} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? "text-slate-700" : "text-slate-300"
                   }`}>
-                  <Check className="w-3.5 h-3.5" />
-                </div>
-                <span>{feature}</span>
-              </li>
-            ))}
+                  <div className={`mt-0.5 p-0.5 rounded-full border shrink-0 ${plan.popular
+                      ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                      : "bg-teal-500/10 text-teal-400 border-teal-500/20"
+                    }`}>
+                    <Check className="w-3.5 h-3.5" />
+                  </div>
+                  <span>{feature}</span>
+                </li>
+              ))}
           </ul>
         </div>
 
@@ -730,12 +732,14 @@ function PricingSkeleton() {
               </div>
               <div className={`h-px mb-8 ${plan.popular ? 'bg-slate-200' : 'bg-slate-800'}`} />
               <ul className="space-y-3">
-                {plan.features.map((f, i) => (
-                  <li key={i} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? 'text-slate-700' : 'text-slate-300'}`}>
-                    <Check className={`w-4 h-4 shrink-0 mt-0.5 ${plan.popular ? 'text-amber-600' : 'text-teal-400'}`} />
-                    <span>{f}</span>
-                  </li>
-                ))}
+                {plan.features
+                  .filter((f: string) => !process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || (!f.toLowerCase().includes("ai chapter") && !f.toLowerCase().includes("ai writer")))
+                  .map((f, i) => (
+                    <li key={i} className={`flex items-start gap-3 font-semibold text-sm leading-snug ${plan.popular ? 'text-slate-700' : 'text-slate-300'}`}>
+                      <Check className={`w-4 h-4 shrink-0 mt-0.5 ${plan.popular ? 'text-amber-600' : 'text-teal-400'}`} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
               </ul>
             </div>
             <div className="mt-8">

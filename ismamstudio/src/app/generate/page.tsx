@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   }
 };
 
+import { redirect } from "next/navigation";
+
 export default function Page() {
+  if (process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) {
+    redirect("/dashboard");
+  }
   return <GeneratePage />;
 }

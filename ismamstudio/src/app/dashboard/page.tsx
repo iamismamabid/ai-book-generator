@@ -118,12 +118,14 @@ export default async function DashboardPage() {
             {upgradeHint}
           </div>
 
-          <Link 
-            href="/generate" 
-            className="bg-indigo-600 text-white px-10 py-4 rounded-full font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1 active:scale-95"
-          >
-            + Create New Book
-          </Link>
+          {!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN && (
+            <Link 
+              href="/generate" 
+              className="bg-indigo-600 text-white px-10 py-4 rounded-full font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1 active:scale-95"
+            >
+              + Create New Book
+            </Link>
+          )}
         </div>
       </div>
     );
@@ -154,13 +156,15 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <Link 
-            href="/generate" 
-            className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
-            New Book
-          </Link>
+          {!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN && (
+            <Link 
+              href="/generate" 
+              className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+              New Book
+            </Link>
+          )}
         </div>
       </div>
 

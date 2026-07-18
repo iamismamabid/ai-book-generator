@@ -6,6 +6,7 @@ import CustomCursor from '@/app/components/CustomCursor';
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import Script from 'next/script';
 import type { Metadata } from 'next';
 
@@ -201,6 +202,7 @@ export default function RootLayout({
             `}
           </Script>
           <SpeedInsights />
+          <Analytics />
           </ThemeProvider>
         </body>
       </html>

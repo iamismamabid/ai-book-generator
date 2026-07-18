@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { RefreshCw } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { RefreshCw, Upload } from "lucide-react";
 
 const DEFAULT_WORDS = [
   "AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION",
@@ -29,8 +29,29 @@ export function WordScrambleEditor({ page, updatePage }: any) {
   const [scrambledData, setScrambledData] = useState<any>(
     page.config.scrambledData || null
   );
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
   const isSolution = page.config.isSolution || false;
+
+  // 📁 CSV / TXT import handler (one word per line, or comma-separated)
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = (event.target?.result as string) || "";
+      // If the file uses commas as delimiter, convert to newline
+      const lines = text
+        .replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+        .split("\n")
+        .flatMap((line) => line.split(","))
+        .map((w) => w.trim().toUpperCase().replace(/[^A-Z]/g, ""))
+        .filter((w) => w.length > 0);
+      setInputText(lines.join("\n"));
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   const scrambleWord = (word: string, diff: "easy" | "medium" | "hard"): string => {
     if (word.length <= 1) return word;
@@ -171,12 +192,21 @@ export function WordScrambleEditor({ page, updatePage }: any) {
         </div>
 
         <div className="flex-1 flex flex-col gap-2">
-          <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Words (One per line)</label>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Words (One per line)</label>
+            <button
+              onClick={() => csvInputRef.current?.click()}
+              className="flex items-center gap-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-lg hover:bg-emerald-100 transition"
+            >
+              <Upload className="w-3 h-3" /> Import CSV / TXT
+            </button>
+            <input type="file" accept=".csv,.txt" ref={csvInputRef} onChange={handleCsvUpload} className="hidden" />
+          </div>
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             className="w-full flex-1 min-h-[200px] p-4 border border-slate-200 rounded-xl text-sm font-mono shadow-inner bg-white outline-none focus:border-indigo-500"
-            placeholder="Enter words..."
+            placeholder="Enter words (one per line) — or import a .csv/.txt file..."
           />
         </div>
 

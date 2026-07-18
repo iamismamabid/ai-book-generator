@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { RefreshCw, Search } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { RefreshCw, Upload } from "lucide-react";
 
 // Use your existing grid generation function
 // Ensure this is imported correctly from your utils file
@@ -24,8 +24,25 @@ export const WordSearchEditor = ({ page, updatePage }: any) => {
     return categories[Math.floor(Math.random() * categories.length)];
   });
   const [gridData, setGridData] = useState<any>(page.config.gridData || null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
   const isSolution = page.config.isSolution || false;
+
+  // 📁 CSV / TXT import handler
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = (event.target?.result as string) || "";
+      // Convert any newlines or tabs into commas, then clean up extra commas
+      const cleaned = text.replace(/[\r\n\t]+/g, ", ").replace(/,\s*,/g, ",").trim();
+      setInputText(cleaned);
+    };
+    reader.readAsText(file);
+    // Reset so same file can be re-uploaded
+    e.target.value = "";
+  };
 
   const handleGenerate = () => {
     const wordList = inputText.split(',').map((w: string) => w.trim()).filter((w: string) => w.length > 0);
@@ -77,11 +94,27 @@ export const WordSearchEditor = ({ page, updatePage }: any) => {
           </div>
         </div>
 
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Words (comma separated)</label>
+          <button
+            onClick={() => csvInputRef.current?.click()}
+            className="flex items-center gap-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-lg hover:bg-emerald-100 transition"
+          >
+            <Upload className="w-3 h-3" /> Import CSV / TXT
+          </button>
+          <input
+            type="file"
+            accept=".csv,.txt"
+            ref={csvInputRef}
+            onChange={handleCsvUpload}
+            className="hidden"
+          />
+        </div>
         <textarea 
           value={inputText} 
           onChange={(e) => setInputText(e.target.value)}
-          className="w-full h-80 p-4 border border-slate-200 rounded-xl text-sm font-mono shadow-inner bg-white"
-          placeholder="Enter words separated by commas..."
+          className="w-full h-72 p-4 border border-slate-200 rounded-xl text-sm font-mono shadow-inner bg-white outline-none focus:border-indigo-500"
+          placeholder="Enter words separated by commas, or import a .csv/.txt file..."
         />
         <button onClick={handleGenerate} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">
           <RefreshCw className="w-4 h-4 inline mr-2"/> Generate Word Search

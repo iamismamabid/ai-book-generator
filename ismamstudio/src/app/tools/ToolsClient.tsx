@@ -276,44 +276,45 @@ export default function FreeToolsHub() {
     : toolsList.filter(t => t.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3" />
+    <div className="min-h-screen bg-[#030712] text-slate-100 py-24 px-6 relative overflow-hidden">
+      {/* 🔮 Background Mesh Glows */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[140px] translate-x-1/4 -translate-y-1/4 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[700px] h-[700px] bg-purple-500/5 rounded-full blur-[160px] -translate-x-1/4 translate-y-1/4 pointer-events-none" />
+      <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Navigation & Header */}
-        <div className="mb-12 border-b border-slate-900 pb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-black uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5" /> 100% Free Tools — No Signup
+        <div className="mb-16 border-b border-slate-900/60 pb-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-rose-500/5 border border-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> 100% Free Tools — No Signup
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-              Free Tools for <span className="bg-gradient-to-r from-yellow-400 to-amber-300 bg-clip-text text-transparent">Smarter Publishing</span>
+            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight">
+              Free Tools for <span className="bg-gradient-to-r from-amber-300 via-yellow-400 to-sky-300 bg-clip-text text-transparent">Smarter Publishing</span>
             </h1>
-            <p className="text-slate-400 text-sm font-semibold mt-2">
+            <p className="text-slate-400 text-base md:text-lg max-w-2xl font-semibold leading-relaxed">
               Calculate spine widths, format descriptions, generate ideas, and build print-ready templates without any registration.
             </p>
           </div>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-indigo-400 transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-black text-slate-400 hover:text-indigo-400 transition-colors group"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Home
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Back to Home
           </Link>
         </div>
 
         {/* Filter Toolbar */}
-        <div className="flex flex-wrap gap-2.5 mb-10 pb-6 border-b border-slate-900">
+        <div className="flex flex-wrap gap-2.5 mb-12 pb-8 border-b border-slate-900/60">
           {["All", "Design", "Writing", "Formatting", "Marketing"].map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm ${
                 activeCategory === cat 
-                  ? "bg-yellow-500 text-slate-950 shadow-md font-black" 
-                  : "bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-white"
+                  ? "bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-amber-500/10 scale-[1.03]" 
+                  : "bg-slate-900/60 border border-slate-800/80 text-slate-400 hover:text-white hover:border-slate-700"
               }`}
             >
               {cat}
@@ -322,34 +323,39 @@ export default function FreeToolsHub() {
         </div>
 
         {/* Grid of Tools */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredTools.map((tool) => (
             <div 
               key={tool.id}
-              className="bg-slate-950/40 border border-slate-900/80 hover:border-slate-800 rounded-3xl p-6 flex flex-col justify-between transition-all group hover:-translate-y-1 shadow-lg backdrop-blur-sm"
+              className="bg-slate-950/40 border border-slate-900/60 hover:border-amber-500/20 rounded-[2rem] p-8 flex flex-col justify-between transition-all duration-500 group hover:-translate-y-1 shadow-2xl hover:shadow-[0_20px_50px_rgba(245,158,11,0.06),_inset_0_0_12px_rgba(245,158,11,0.02)] backdrop-blur-md relative"
             >
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-xl">
+                <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
+                    tool.category === "Design" ? "text-sky-400 bg-sky-500/10 border-sky-500/10" :
+                    tool.category === "Writing" ? "text-rose-400 bg-rose-500/10 border-rose-500/10" :
+                    tool.category === "Formatting" ? "text-purple-400 bg-purple-500/10 border-purple-500/10" :
+                    "text-emerald-400 bg-emerald-500/10 border-emerald-500/10"
+                  }`}>
                     {tool.category}
                   </span>
                   {tool.badge && (
-                    <span className="text-[9px] font-black uppercase tracking-widest text-yellow-500 bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded-md animate-pulse">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/20 px-2.5 py-0.5 rounded-md animate-pulse">
                       {tool.badge}
                     </span>
                   )}
                 </div>
 
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-yellow-500 transition-colors">
+                <h3 className="text-xl font-black text-white mb-2 group-hover:text-amber-400 transition-colors font-sans leading-tight">
                   {tool.name}
                 </h3>
-                <p className="text-slate-400 text-xs font-medium leading-relaxed mb-4">
+                <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-6 font-sans">
                   {tool.description}
                 </p>
 
-                <ul className="space-y-1.5 mb-6">
+                <ul className="space-y-2 mb-8">
                   {tool.features.map((feat, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-[10px] font-semibold text-slate-400">
+                    <li key={idx} className="flex items-center gap-2.5 text-[10px] font-bold text-slate-400 font-sans">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> {feat}
                     </li>
                   ))}
@@ -359,16 +365,16 @@ export default function FreeToolsHub() {
               {tool.isInteractive ? (
                 <button
                   onClick={() => setActiveInteractiveTool(tool.id)}
-                  className="w-full text-center py-2.5 bg-slate-900 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 text-slate-300 font-black text-xs rounded-xl shadow-md transition-all uppercase tracking-wider cursor-pointer"
+                  className="w-full text-center py-3.5 bg-slate-900/60 border border-slate-800 hover:border-transparent hover:bg-gradient-to-r hover:from-amber-500 hover:to-yellow-500 hover:text-slate-950 hover:shadow-lg hover:shadow-amber-500/10 text-slate-300 font-black text-xs rounded-xl shadow-md transition-all duration-300 uppercase tracking-wider cursor-pointer hover:scale-[1.02] active:scale-98 flex items-center justify-center gap-1.5"
                 >
-                  Launch Interactive Tool
+                  Launch Interactive Tool <ChevronRight className="w-3.5 h-3.5 opacity-80" />
                 </button>
               ) : (
                 <Link
                   href={tool.link || "#"}
-                  className="w-full text-center py-2.5 bg-slate-900 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 text-slate-300 inline-block font-black text-xs rounded-xl shadow-md transition-all uppercase tracking-wider"
+                  className="w-full text-center py-3.5 bg-slate-900/60 border border-slate-800 hover:border-transparent hover:bg-gradient-to-r hover:from-amber-500 hover:to-yellow-500 hover:text-slate-950 hover:shadow-lg hover:shadow-amber-500/10 text-slate-300 inline-flex items-center justify-center gap-1.5 font-black text-xs rounded-xl shadow-md transition-all duration-300 uppercase tracking-wider hover:scale-[1.02] active:scale-98"
                 >
-                  {tool.link ? "Open Tool" : "Launch Studio"}
+                  {tool.link ? "Open Tool" : "Launch Studio"} <ChevronRight className="w-3.5 h-3.5 opacity-80" />
                 </Link>
               )}
             </div>

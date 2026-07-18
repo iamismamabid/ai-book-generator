@@ -277,8 +277,8 @@ export default function FreeToolsHub() {
 
   return (
     <div className="min-h-screen bg-[#fbfaf7] text-stone-900 py-24 px-6 relative overflow-hidden">
-      {/* 📖 Realistic Cream Book Fold Crease Shadow & Ambient Lights */}
-      <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-stone-900/[0.03] via-stone-900/[0.005] to-transparent pointer-events-none" />
+      {/* 📖 Left-side Crease/Binding Shadow */}
+      <div className="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-stone-900/[0.06] via-stone-900/[0.02] to-transparent pointer-events-none z-20" />
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/[0.04] rounded-full blur-[140px] translate-x-1/4 -translate-y-1/4 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[700px] h-[700px] bg-rose-500/[0.03] rounded-full blur-[160px] -translate-x-1/4 translate-y-1/4 pointer-events-none" />
 

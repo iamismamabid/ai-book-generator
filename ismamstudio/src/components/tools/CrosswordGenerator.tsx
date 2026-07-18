@@ -46,6 +46,7 @@ export default function CrosswordGenerator() {
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
   const [inputText, setInputText] = useState(DEFAULT_CROSSWORDS_TEXT);
   const [gridSize, setGridSize] = useState<number>(15);
+  const [numPuzzles, setNumPuzzles] = useState<number>(3);
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [includeAnswers, setIncludeAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
@@ -123,7 +124,7 @@ export default function CrosswordGenerator() {
         }
       });
     } else {
-      // Fallback: Group every 6 lines into a separate crossword puzzle
+      // Fallback: Group words into the specified number of puzzles
       const lines = inputText.split("\n").map(l => l.trim()).filter(l => l.length > 0);
       const words: Array<{ word: string; clue: string }> = [];
       lines.forEach(l => {
@@ -139,15 +140,16 @@ export default function CrosswordGenerator() {
         return;
       }
 
-      // Group every 6 words
-      const wordsPerPuzzle = 6;
-      for (let i = 0; i < words.length; i += wordsPerPuzzle) {
-        const chunk = words.slice(i, i + wordsPerPuzzle);
-        const idx = Math.floor(i / wordsPerPuzzle) + 1;
-        parsedPuzzlesList.push({
-          title: `Crossword Puzzle #${idx}`,
-          words: chunk
-        });
+      const wordsPerPuzzle = Math.ceil(words.length / numPuzzles);
+      for (let idx = 1; idx <= numPuzzles; idx++) {
+        const start = (idx - 1) * wordsPerPuzzle;
+        const chunk = words.slice(start, start + wordsPerPuzzle);
+        if (chunk.length > 0) {
+          parsedPuzzlesList.push({
+            title: `Crossword Puzzle #${idx}`,
+            words: chunk
+          });
+        }
       }
     }
 
@@ -176,7 +178,7 @@ export default function CrosswordGenerator() {
   useEffect(() => {
     parseAndGeneratePuzzles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gridSize]);
+  }, [gridSize, numPuzzles]);
 
   // Compile and Export PDF
   const handleExportPDF = async (options: {
@@ -449,6 +451,18 @@ export default function CrosswordGenerator() {
                 max="20" 
                 value={gridSize} 
                 onChange={(e) => setGridSize(Number(e.target.value))}
+                className="w-full accent-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-black uppercase text-slate-400 tracking-wider block mb-1.5">Number of Puzzles ({numPuzzles})</label>
+              <input 
+                type="range" 
+                min="1" 
+                max="20" 
+                value={numPuzzles} 
+                onChange={(e) => setNumPuzzles(Number(e.target.value))}
                 className="w-full accent-indigo-500"
               />
             </div>

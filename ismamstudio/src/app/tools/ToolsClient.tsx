@@ -276,45 +276,45 @@ export default function FreeToolsHub() {
     : toolsList.filter(t => t.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-[#030712] text-slate-100 py-24 px-6 relative overflow-hidden">
-      {/* 🔮 Background Mesh Glows */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[140px] translate-x-1/4 -translate-y-1/4 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[700px] h-[700px] bg-purple-500/5 rounded-full blur-[160px] -translate-x-1/4 translate-y-1/4 pointer-events-none" />
-      <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-[#fbfaf7] text-stone-900 py-24 px-6 relative overflow-hidden">
+      {/* 📖 Realistic Cream Book Fold Crease Shadow & Ambient Lights */}
+      <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-stone-900/[0.03] via-stone-900/[0.005] to-transparent pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/[0.04] rounded-full blur-[140px] translate-x-1/4 -translate-y-1/4 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[700px] h-[700px] bg-rose-500/[0.03] rounded-full blur-[160px] -translate-x-1/4 translate-y-1/4 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Navigation & Header */}
-        <div className="mb-16 border-b border-slate-900/60 pb-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+        <div className="mb-16 border-b border-stone-200 pb-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-rose-500/5 border border-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> 100% Free Tools — No Signup
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 border border-amber-200/60 text-amber-800 text-xs font-black uppercase tracking-wider shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> 100% Free Tools — No Signup
             </div>
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight">
-              Free Tools for <span className="bg-gradient-to-r from-amber-300 via-yellow-400 to-sky-300 bg-clip-text text-transparent">Smarter Publishing</span>
+            <h1 className="text-4xl md:text-6xl font-black text-stone-900 tracking-tight">
+              Free Tools for <span className="bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-600 bg-clip-text text-transparent">Smarter Publishing</span>
             </h1>
-            <p className="text-slate-400 text-base md:text-lg max-w-2xl font-semibold leading-relaxed">
+            <p className="text-stone-600 text-base md:text-lg max-w-2xl font-semibold leading-relaxed">
               Calculate spine widths, format descriptions, generate ideas, and build print-ready templates without any registration.
             </p>
           </div>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm font-black text-slate-400 hover:text-indigo-400 transition-colors group"
+            className="inline-flex items-center gap-2 text-sm font-black text-stone-500 hover:text-amber-700 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Back to Home
           </Link>
         </div>
 
         {/* Filter Toolbar */}
-        <div className="flex flex-wrap gap-2.5 mb-12 pb-8 border-b border-slate-900/60">
+        <div className="flex flex-wrap gap-2.5 mb-12 pb-8 border-b border-stone-200">
           {["All", "Design", "Writing", "Formatting", "Marketing"].map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm ${
                 activeCategory === cat 
-                  ? "bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-amber-500/10 scale-[1.03]" 
-                  : "bg-slate-900/60 border border-slate-800/80 text-slate-400 hover:text-white hover:border-slate-700"
+                  ? "bg-gradient-to-r from-amber-600 to-amber-500 text-white font-black shadow-amber-600/10 scale-[1.03]" 
+                  : "bg-white border border-stone-200 text-stone-600 hover:text-stone-950 hover:border-stone-300"
               }`}
             >
               {cat}
@@ -327,36 +327,36 @@ export default function FreeToolsHub() {
           {filteredTools.map((tool) => (
             <div 
               key={tool.id}
-              className="bg-slate-950/40 border border-slate-900/60 hover:border-amber-500/20 rounded-[2rem] p-8 flex flex-col justify-between transition-all duration-500 group hover:-translate-y-1 shadow-2xl hover:shadow-[0_20px_50px_rgba(245,158,11,0.06),_inset_0_0_12px_rgba(245,158,11,0.02)] backdrop-blur-md relative"
+              className="bg-white/80 border border-stone-200/60 hover:border-amber-500/30 rounded-[2rem] p-8 flex flex-col justify-between transition-all duration-500 group hover:-translate-y-1.5 shadow-md hover:shadow-[0_20px_40px_rgba(139,92,26,0.06),_inset_0_0_12px_rgba(245,158,11,0.01)] backdrop-blur-md relative"
             >
               <div>
                 <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
                   <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
-                    tool.category === "Design" ? "text-sky-400 bg-sky-500/10 border-sky-500/10" :
-                    tool.category === "Writing" ? "text-rose-400 bg-rose-500/10 border-rose-500/10" :
-                    tool.category === "Formatting" ? "text-purple-400 bg-purple-500/10 border-purple-500/10" :
-                    "text-emerald-400 bg-emerald-500/10 border-emerald-500/10"
+                    tool.category === "Design" ? "text-sky-700 bg-sky-500/10 border-sky-500/20" :
+                    tool.category === "Writing" ? "text-rose-700 bg-rose-500/10 border-rose-500/20" :
+                    tool.category === "Formatting" ? "text-purple-700 bg-purple-500/10 border-purple-500/20" :
+                    "text-emerald-700 bg-emerald-500/10 border-emerald-500/20"
                   }`}>
                     {tool.category}
                   </span>
                   {tool.badge && (
-                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/20 px-2.5 py-0.5 rounded-md animate-pulse">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-800 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-md animate-pulse">
                       {tool.badge}
                     </span>
                   )}
                 </div>
 
-                <h3 className="text-xl font-black text-white mb-2 group-hover:text-amber-400 transition-colors font-sans leading-tight">
+                <h3 className="text-xl font-black text-stone-900 mb-2 group-hover:text-amber-700 transition-colors font-sans leading-tight">
                   {tool.name}
                 </h3>
-                <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-6 font-sans">
+                <p className="text-stone-600 text-xs font-semibold leading-relaxed mb-6 font-sans">
                   {tool.description}
                 </p>
 
                 <ul className="space-y-2 mb-8">
                   {tool.features.map((feat, idx) => (
-                    <li key={idx} className="flex items-center gap-2.5 text-[10px] font-bold text-slate-400 font-sans">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> {feat}
+                    <li key={idx} className="flex items-center gap-2.5 text-[10px] font-bold text-stone-500 font-sans">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> {feat}
                     </li>
                   ))}
                 </ul>
@@ -365,14 +365,14 @@ export default function FreeToolsHub() {
               {tool.isInteractive ? (
                 <button
                   onClick={() => setActiveInteractiveTool(tool.id)}
-                  className="w-full text-center py-3.5 bg-slate-900/60 border border-slate-800 hover:border-transparent hover:bg-gradient-to-r hover:from-amber-500 hover:to-yellow-500 hover:text-slate-950 hover:shadow-lg hover:shadow-amber-500/10 text-slate-300 font-black text-xs rounded-xl shadow-md transition-all duration-300 uppercase tracking-wider cursor-pointer hover:scale-[1.02] active:scale-98 flex items-center justify-center gap-1.5"
+                  className="w-full text-center py-3.5 bg-stone-50 border border-stone-200/80 hover:border-transparent hover:bg-gradient-to-r hover:from-amber-600 hover:to-amber-500 hover:text-white hover:shadow-lg hover:shadow-amber-600/15 text-stone-700 font-black text-xs rounded-xl shadow-sm transition-all duration-300 uppercase tracking-wider cursor-pointer hover:scale-[1.02] active:scale-98 flex items-center justify-center gap-1.5"
                 >
                   Launch Interactive Tool <ChevronRight className="w-3.5 h-3.5 opacity-80" />
                 </button>
               ) : (
                 <Link
                   href={tool.link || "#"}
-                  className="w-full text-center py-3.5 bg-slate-900/60 border border-slate-800 hover:border-transparent hover:bg-gradient-to-r hover:from-amber-500 hover:to-yellow-500 hover:text-slate-950 hover:shadow-lg hover:shadow-amber-500/10 text-slate-300 inline-flex items-center justify-center gap-1.5 font-black text-xs rounded-xl shadow-md transition-all duration-300 uppercase tracking-wider hover:scale-[1.02] active:scale-98"
+                  className="w-full text-center py-3.5 bg-stone-50 border border-stone-200/80 hover:border-transparent hover:bg-gradient-to-r hover:from-amber-600 hover:to-amber-500 hover:text-white hover:shadow-lg hover:shadow-amber-600/15 text-stone-700 inline-flex items-center justify-center gap-1.5 font-black text-xs rounded-xl shadow-sm transition-all duration-300 uppercase tracking-wider hover:scale-[1.02] active:scale-98"
                 >
                   {tool.link ? "Open Tool" : "Launch Studio"} <ChevronRight className="w-3.5 h-3.5 opacity-80" />
                 </Link>
@@ -383,13 +383,13 @@ export default function FreeToolsHub() {
 
         {/* Dynamic Modals for Interactive Tools */}
         {activeInteractiveTool && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-            <div className="relative w-full max-w-2xl bg-[#0b0f19] border border-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/40 backdrop-blur-sm">
+            <div className="relative w-full max-w-2xl bg-[#fbfaf7] border border-stone-200 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
               
               {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-slate-900 flex justify-between items-center bg-slate-950/50">
-                <span className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-yellow-500" /> 
+              <div className="px-6 py-4 border-b border-stone-200 flex justify-between items-center bg-white/60">
+                <span className="text-xs font-black text-stone-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" /> 
                   {toolsList.find(t => t.id === activeInteractiveTool)?.name}
                 </span>
                 <button 
@@ -401,7 +401,7 @@ export default function FreeToolsHub() {
                     setUploadedEpubFile(null);
                     setUploadedPdfFile(null);
                   }}
-                  className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-600 hover:text-stone-900 font-bold transition-all text-xs cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -415,11 +415,11 @@ export default function FreeToolsHub() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Book Niche / Genre</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Book Niche / Genre</label>
                         <select 
                           value={titleGenre}
                           onChange={(e) => setTitleGenre(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-xs font-semibold text-white focus:outline-none"
+                          className="w-full bg-white border border-stone-200 p-2.5 rounded-xl text-xs font-semibold text-stone-850 focus:outline-none focus:border-amber-600 transition-colors"
                         >
                           <option value="Non-Fiction">Non-Fiction</option>
                           <option value="Puzzles">Activity & Puzzle Books</option>
@@ -427,35 +427,35 @@ export default function FreeToolsHub() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Target Keyword (e.g. Sudoku, Maze)</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Target Keyword (e.g. Sudoku, Maze)</label>
                         <input
                           type="text"
                           value={titleKeywords}
                           onChange={(e) => setTitleKeywords(e.target.value)}
                           placeholder="e.g. Word Search, Seniors"
-                          className="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-xs text-white focus:outline-none"
+                          className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850 focus:outline-none focus:border-amber-600 transition-colors"
                         />
                       </div>
                     </div>
                     <button 
                       onClick={generateTitlesAction}
-                      className="w-full py-2.5 bg-yellow-500 text-slate-950 font-black text-xs rounded-xl uppercase tracking-wider hover:bg-yellow-400 cursor-pointer"
+                      className="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-black text-xs rounded-xl uppercase tracking-wider transition-all duration-300 shadow-sm cursor-pointer"
                     >
                       Generate 10 Titles
                     </button>
 
                     {generatedTitles.length > 0 && (
-                      <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-900 space-y-2 mt-4">
-                        <label className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">KDP Optimized Ideas:</label>
+                      <div className="bg-white p-4 rounded-2xl border border-stone-200/60 space-y-2 mt-4">
+                        <label className="text-[10px] font-black text-stone-400 block uppercase tracking-wider">KDP Optimized Ideas:</label>
                         <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
                           {generatedTitles.map((t, idx) => (
-                            <div key={idx} className="flex justify-between items-center p-2 bg-slate-900/50 rounded-lg text-xs">
-                              <span className="font-bold text-slate-200">{t}</span>
+                            <div key={idx} className="flex justify-between items-center p-2 bg-stone-50 rounded-lg text-xs">
+                              <span className="font-bold text-stone-800">{t}</span>
                               <button 
                                 onClick={() => handleTriggerCopy(t, `title-${idx}`)}
-                                className="text-indigo-400 hover:text-indigo-300 font-bold"
+                                className="text-amber-700 hover:text-amber-800 font-bold"
                               >
-                                {copiedText === `title-${idx}` ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                                {copiedText === `title-${idx}` ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                               </button>
                             </div>
                           ))}
@@ -470,59 +470,59 @@ export default function FreeToolsHub() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Page Count ({pages})</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Page Count ({pages})</label>
                         <input
                           type="range"
                           min="24"
                           max="600"
                           value={pages}
                           onChange={(e) => setPages(parseInt(e.target.value))}
-                          className="w-full accent-yellow-500"
+                          className="w-full accent-amber-650"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Retail Price ($ {price})</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Retail Price ($ {price})</label>
                         <input
                           type="number"
                           step="0.01"
                           value={price}
                           onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-                          className="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-xs text-white"
+                          className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850 focus:outline-none focus:border-amber-600 transition-colors"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Color Type</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Color Type</label>
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setColorType("bw")}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg border ${colorType === 'bw' ? 'bg-yellow-500 text-slate-950 border-yellow-500' : 'bg-slate-900 border-slate-800 text-slate-400'}`}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${colorType === 'bw' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white border-stone-200 text-stone-500 hover:border-stone-300'}`}
                           >
                             Black & White
                           </button>
                           <button 
                             onClick={() => setColorType("color")}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg border ${colorType === 'color' ? 'bg-yellow-500 text-slate-950 border-yellow-500' : 'bg-slate-900 border-slate-800 text-slate-400'}`}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${colorType === 'color' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white border-stone-200 text-stone-500 hover:border-stone-300'}`}
                           >
                             Premium Color
                           </button>
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Paper Color</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Paper Color</label>
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setPaperColor("white")}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg border ${paperColor === 'white' ? 'bg-yellow-500 text-slate-950 border-yellow-500' : 'bg-slate-900 border-slate-800 text-slate-400'}`}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${paperColor === 'white' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white border-stone-200 text-stone-500 hover:border-stone-300'}`}
                           >
                             White
                           </button>
                           <button 
                             onClick={() => setPaperColor("cream")}
                             disabled={colorType === 'color'}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg border disabled:opacity-30 ${paperColor === 'cream' ? 'bg-yellow-500 text-slate-950 border-yellow-500' : 'bg-slate-900 border-slate-800 text-slate-400'}`}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg border disabled:opacity-30 transition-all ${paperColor === 'cream' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white border-stone-200 text-stone-500 hover:border-stone-300'}`}
                           >
                             Cream
                           </button>
@@ -531,23 +531,23 @@ export default function FreeToolsHub() {
                     </div>
 
                     {/* Results Card */}
-                    <div className="bg-slate-950/70 p-5 rounded-2xl border border-slate-900 space-y-4">
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Est. Royalties per Paperback Sale:</h4>
+                    <div className="bg-white p-5 rounded-2xl border border-stone-200/60 space-y-4 shadow-sm">
+                      <h4 className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Est. Royalties per Paperback Sale:</h4>
                       <div className="grid grid-cols-3 gap-2 text-center">
-                        <div className="p-3 bg-slate-900/50 rounded-xl">
-                          <span className="text-[9px] font-black text-slate-500 block uppercase">Print Cost</span>
-                          <span className="text-lg font-black text-red-400">${printCost}</span>
+                        <div className="p-3 bg-stone-50 rounded-xl">
+                          <span className="text-[9px] font-black text-stone-400 block uppercase">Print Cost</span>
+                          <span className="text-lg font-black text-red-650">${printCost}</span>
                         </div>
-                        <div className="p-3 bg-slate-900/50 rounded-xl">
-                          <span className="text-[9px] font-black text-slate-500 block uppercase">Net Royalty</span>
-                          <span className="text-lg font-black text-emerald-400">${estRoyalty}</span>
+                        <div className="p-3 bg-stone-50 rounded-xl">
+                          <span className="text-[9px] font-black text-stone-400 block uppercase">Net Royalty</span>
+                          <span className="text-lg font-black text-emerald-700">${estRoyalty}</span>
                         </div>
-                        <div className="p-3 bg-slate-900/50 rounded-xl">
-                          <span className="text-[9px] font-black text-slate-500 block uppercase">Royalty %</span>
-                          <span className="text-lg font-black text-yellow-500">{royaltyPercent}%</span>
+                        <div className="p-3 bg-stone-50 rounded-xl">
+                          <span className="text-[9px] font-black text-stone-400 block uppercase">Royalty %</span>
+                          <span className="text-lg font-black text-amber-700">{royaltyPercent}%</span>
                         </div>
                       </div>
-                      <p className="text-[10px] text-slate-500 text-center leading-normal">
+                      <p className="text-[10px] text-stone-500 text-center leading-normal">
                         Estimates are calculated using Amazon's standard 60% distribution channel royalty rate for paperback print-on-demand books.
                       </p>
                     </div>
@@ -558,7 +558,7 @@ export default function FreeToolsHub() {
                 {(activeInteractiveTool === "desc-formatter" || activeInteractiveTool === "desc-generator") && (
                   <div className="space-y-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-400 block mb-1">
+                      <label className="text-xs font-bold text-stone-500 block mb-1">
                         {activeInteractiveTool === "desc-formatter" ? "Write or Paste Description text" : "Draft Your Description (Use KDP tags)"}
                       </label>
                       <textarea
@@ -574,32 +574,32 @@ export default function FreeToolsHub() {
                           setFormattedHtml(formatted);
                         }}
                         placeholder="Type description. Leave empty lines for paragraphs."
-                        className="w-full bg-slate-900 border border-slate-800 p-3 rounded-2xl text-xs text-slate-200 focus:outline-none"
+                        className="w-full bg-white border border-stone-200 p-3 rounded-2xl text-xs text-stone-850 focus:outline-none focus:border-amber-600 transition-colors"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Formatted HTML Code</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Formatted HTML Code</label>
                         <div className="relative">
                           <textarea
                             readOnly
                             rows={5}
                             value={formattedHtml}
-                            className="w-full bg-slate-950/80 border border-slate-900 p-2.5 rounded-xl text-[10px] text-yellow-400 font-mono focus:outline-none"
+                            className="w-full bg-stone-900 border border-stone-850 p-2.5 rounded-xl text-[10px] text-yellow-400 font-mono focus:outline-none"
                           />
                           <button 
                             onClick={() => handleTriggerCopy(formattedHtml, "desc-html")}
-                            className="absolute top-2 right-2 p-1.5 bg-slate-900 hover:bg-slate-800 rounded-lg text-indigo-400 border border-slate-800"
+                            className="absolute top-2 right-2 p-1.5 bg-stone-800 hover:bg-stone-750 rounded-lg text-amber-400 border border-stone-750"
                           >
                             {copiedText === "desc-html" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Live KDP Preview</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Live KDP Preview</label>
                         <div 
-                          className="bg-white text-slate-900 p-3 rounded-xl text-[11px] font-sans h-[110px] overflow-y-auto select-none border border-slate-200 leading-relaxed"
+                          className="bg-white text-slate-900 p-3 rounded-xl text-[11px] font-sans h-[110px] overflow-y-auto select-none border border-stone-200 leading-relaxed shadow-inner"
                           dangerouslySetInnerHTML={{ __html: formattedHtml || "<i>Your live preview will render here...</i>" }}
                         />
                       </div>
@@ -610,12 +610,12 @@ export default function FreeToolsHub() {
                 {/* 4. KDP Upload Checklist */}
                 {activeInteractiveTool === "upload-checklist" && (
                   <div className="space-y-4">
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-stone-500">
                       Tick off each requirement as you prepare your book package. This checklist matches Amazon KDP guidelines exactly to prevent rejected uploads.
                     </p>
-                    <div className="space-y-2 bg-slate-950/60 p-4 rounded-2xl border border-slate-900">
+                    <div className="space-y-2 bg-white p-4 rounded-2xl border border-stone-200/60">
                       {checklistItems.map(item => (
-                        <label key={item.id} className="flex items-start gap-3 p-2 hover:bg-slate-900/50 rounded-lg cursor-pointer select-none">
+                        <label key={item.id} className="flex items-start gap-3 p-2 hover:bg-stone-50 rounded-lg cursor-pointer select-none">
                           <input
                             type="checkbox"
                             checked={item.checked}
@@ -624,9 +624,9 @@ export default function FreeToolsHub() {
                                 checklistItems.map(i => i.id === item.id ? { ...i, checked: e.target.checked } : i)
                               );
                             }}
-                            className="w-4 h-4 rounded text-yellow-500 accent-yellow-500 cursor-pointer mt-0.5"
+                            className="w-4 h-4 rounded text-amber-600 accent-amber-600 cursor-pointer mt-0.5"
                           />
-                          <span className={`text-xs ${item.checked ? 'line-through text-slate-600' : 'text-slate-300 font-medium'}`}>
+                          <span className={`text-xs ${item.checked ? 'line-through text-stone-400 font-medium' : 'text-stone-700 font-semibold'}`}>
                             {item.text}
                           </span>
                         </label>
@@ -638,12 +638,12 @@ export default function FreeToolsHub() {
                 {/* 5. Cover Self-Assessment */}
                 {activeInteractiveTool === "cover-assessment" && (
                   <div className="space-y-4">
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-stone-500">
                       Evaluate your cover design honestly against the key conversion factors.
                     </p>
-                    <div className="space-y-2 bg-slate-950/60 p-4 rounded-2xl border border-slate-900">
+                    <div className="space-y-2 bg-white p-4 rounded-2xl border border-stone-200/60">
                       {scorecard.map(item => (
-                        <label key={item.id} className="flex items-start gap-3 p-2 hover:bg-slate-900/50 rounded-lg cursor-pointer select-none">
+                        <label key={item.id} className="flex items-start gap-3 p-2 hover:bg-stone-50 rounded-lg cursor-pointer select-none">
                           <input
                             type="checkbox"
                             checked={item.checked}
@@ -652,27 +652,27 @@ export default function FreeToolsHub() {
                                 scorecard.map(i => i.id === item.id ? { ...i, checked: e.target.checked } : i)
                               );
                             }}
-                            className="w-4 h-4 rounded text-yellow-500 accent-yellow-500 cursor-pointer mt-0.5"
+                            className="w-4 h-4 rounded text-amber-600 accent-amber-600 cursor-pointer mt-0.5"
                           />
                           <div className="flex-1 flex justify-between items-center">
-                            <span className={`text-xs ${item.checked ? 'text-emerald-400 font-bold' : 'text-slate-300 font-medium'}`}>
+                            <span className={`text-xs ${item.checked ? 'text-emerald-700 font-bold' : 'text-stone-700 font-semibold'}`}>
                               {item.label}
                             </span>
-                            <span className="text-[10px] font-black text-slate-600">+{item.points} pts</span>
+                            <span className="text-[10px] font-black text-stone-400">+{item.points} pts</span>
                           </div>
                         </label>
                       ))}
                     </div>
 
-                    <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div className="p-4 bg-white rounded-2xl border border-stone-200/60 flex justify-between items-center shadow-sm">
                       <div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Overall Score</span>
-                        <span className="text-2xl font-black text-white">{totalScore} / 100</span>
+                        <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest block">Overall Score</span>
+                        <span className="text-2xl font-black text-stone-900">{totalScore} / 100</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Rating</span>
+                        <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest block">Rating</span>
                         <span className={`text-xs font-black uppercase ${
-                          totalScore >= 80 ? 'text-emerald-400 animate-pulse' : (totalScore >= 50 ? 'text-yellow-500' : 'text-rose-400')
+                          totalScore >= 80 ? 'text-emerald-700 animate-pulse' : (totalScore >= 50 ? 'text-amber-700' : 'text-rose-600')
                         }`}>
                           {totalScore >= 80 ? 'Ready to Publish' : (totalScore >= 50 ? 'Needs Improvement' : 'Rejected - Redesign')}
                         </span>
@@ -686,33 +686,33 @@ export default function FreeToolsHub() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Book Title</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Book Title</label>
                         <input
                           type="text"
                           value={epubTitle}
                           onChange={(e) => setEpubTitle(e.target.value)}
                           placeholder="e.g. Secret Recipes"
-                          className="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-xs text-white"
+                          className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Author Name</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Author Name</label>
                         <input
                           type="text"
                           value={epubAuthor}
                           onChange={(e) => setEpubAuthor(e.target.value)}
                           placeholder="e.g. John Doe"
-                          className="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-xs text-white"
+                          className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
                         />
                       </div>
                     </div>
 
-                    <div className="border border-dashed border-slate-800 rounded-2xl p-6 text-center bg-slate-950/30">
-                      <FileText className="w-10 h-10 text-slate-500 mx-auto mb-2" />
-                      <span className="text-xs text-slate-200 font-bold block mb-1">
+                    <div className="border border-dashed border-stone-300 rounded-2xl p-6 text-center bg-stone-50">
+                      <FileText className="w-10 h-10 text-stone-400 mx-auto mb-2" />
+                      <span className="text-xs text-stone-800 font-bold block mb-1">
                         {uploadedEpubFile ? `Selected: ${uploadedEpubFile}` : "Select Word / Text manuscript"}
                       </span>
-                      <span className="text-[9px] text-slate-600 block mb-3">Accepts .docx, .txt formats (max 10MB)</span>
+                      <span className="text-[9px] text-stone-500 block mb-3">Accepts .docx, .txt formats (max 10MB)</span>
                       
                       <input 
                         type="file" 
@@ -737,18 +737,18 @@ export default function FreeToolsHub() {
                         onClick={() => {
                           document.getElementById("epub-file-input")?.click();
                         }}
-                        className="px-4 py-1.5 bg-slate-900 hover:bg-slate-900 border border-slate-800 rounded-xl text-xs font-black text-slate-300 cursor-pointer"
+                        className="px-4 py-1.5 bg-white hover:bg-stone-50 border border-stone-250 rounded-xl text-xs font-black text-stone-700 cursor-pointer shadow-sm"
                       >
                         Upload manuscript
                       </button>
                     </div>
 
                     {epubSuccess && (
-                      <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                         <div>
-                          <span className="text-xs font-black text-white block">EPUB Validation Passed!</span>
-                          <span className="text-[10px] text-slate-400 block mt-0.5">
+                          <span className="text-xs font-black text-emerald-800 block">EPUB Validation Passed!</span>
+                          <span className="text-[10px] text-stone-600 block mt-0.5">
                             Format converted successfully. Your files are styled, table of contents generated, and compiled for direct Kindle uploads.
                           </span>
                           <button 
@@ -756,7 +756,7 @@ export default function FreeToolsHub() {
                               alert(`Downloading ${epubTitle || 'Book'}-Kindle.epub...`);
                               setEpubSuccess(false);
                             }}
-                            className="mt-3 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer"
+                            className="mt-3 px-3 py-1 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer shadow-sm"
                           >
                             Download EPUB
                           </button>
@@ -771,11 +771,11 @@ export default function FreeToolsHub() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Select Trim Size</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Select Trim Size</label>
                         <select
                           value={pdfTrimSize}
                           onChange={(e) => setPdfTrimSize(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-xs text-white"
+                          className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
                         >
                           <option value="6x9">6" x 9" (Novel/Standard)</option>
                           <option value="8.5x11">8.5" x 11" (Puzzle/Children's)</option>
@@ -783,9 +783,9 @@ export default function FreeToolsHub() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-slate-400 block mb-1">Bleed Margins</label>
+                        <label className="text-xs font-bold text-stone-500 block mb-1">Bleed Margins</label>
                         <select
-                          className="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-xs text-white"
+                          className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
                         >
                           <option value="nobleed">No Bleed (Puzzles/Text inside margins)</option>
                           <option value="bleed">Bleed (Images/graphics touching edges)</option>
@@ -793,12 +793,12 @@ export default function FreeToolsHub() {
                       </div>
                     </div>
 
-                    <div className="border border-dashed border-slate-800 rounded-2xl p-6 text-center bg-slate-950/30">
-                      <Layout className="w-10 h-10 text-slate-500 mx-auto mb-2" />
-                      <span className="text-xs text-slate-200 font-bold block mb-1">
+                    <div className="border border-dashed border-stone-300 rounded-2xl p-6 text-center bg-stone-50">
+                      <Layout className="w-10 h-10 text-stone-400 mx-auto mb-2" />
+                      <span className="text-xs text-stone-800 font-bold block mb-1">
                         {uploadedPdfFile ? `Selected: ${uploadedPdfFile}` : "Upload interior manuscript PDF / Word document"}
                       </span>
-                      <span className="text-[9px] text-slate-600 block mb-3">Checks gutter spacing and trim alignment</span>
+                      <span className="text-[9px] text-stone-500 block mb-3">Checks gutter spacing and trim alignment</span>
                       
                       <input 
                         type="file" 
@@ -818,24 +818,24 @@ export default function FreeToolsHub() {
                         onClick={() => {
                           document.getElementById("pdf-file-input")?.click();
                         }}
-                        className="px-4 py-1.5 bg-slate-900 hover:bg-slate-900 border border-slate-800 rounded-xl text-xs font-black text-slate-300 cursor-pointer"
+                        className="px-4 py-1.5 bg-white hover:bg-stone-50 border border-stone-250 rounded-xl text-xs font-black text-stone-700 cursor-pointer shadow-sm"
                       >
                         Select Document
                       </button>
                     </div>
 
                     {pdfFileAdded && (
-                      <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                         <div>
-                          <span className="text-xs font-black text-white block">Formatting Validated!</span>
-                          <span className="text-[10px] text-slate-400 block mt-0.5">{pdfFormattingStatus}</span>
+                          <span className="text-xs font-black text-amber-800 block">Formatting Validated!</span>
+                          <span className="text-[10px] text-stone-600 block mt-0.5">{pdfFormattingStatus}</span>
                           <button 
                             onClick={() => {
                               alert(`Exporting and downloading KDP-${pdfTrimSize}-Interior.pdf...`);
                               setPdfFileAdded(false);
                             }}
-                            className="mt-3 px-3 py-1 bg-indigo-600 hover:bg-indigo-600 text-white font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer"
+                            className="mt-3 px-3 py-1 bg-amber-700 hover:bg-amber-600 text-white font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer shadow-sm"
                           >
                             Export Print-Ready PDF
                           </button>
@@ -848,8 +848,8 @@ export default function FreeToolsHub() {
               </div>
 
               {/* Modal Footer */}
-              <div className="px-6 py-4 border-t border-slate-900 flex justify-between items-center bg-slate-950/30 text-xs">
-                <span className="text-slate-500 font-bold flex items-center gap-1">
+              <div className="px-6 py-4 border-t border-stone-200 flex justify-between items-center bg-white/60 text-xs">
+                <span className="text-stone-500 font-semibold flex items-center gap-1">
                   <ShieldAlert className="w-3.5 h-3.5" /> 100% Free Tool — No Registration required
                 </span>
                 <button
@@ -861,7 +861,7 @@ export default function FreeToolsHub() {
                     setUploadedEpubFile(null);
                     setUploadedPdfFile(null);
                   }}
-                  className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer shadow-sm"
                 >
                   Close
                 </button>

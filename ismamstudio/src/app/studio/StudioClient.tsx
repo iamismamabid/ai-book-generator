@@ -142,10 +142,10 @@ export default function MasterStudioApp() {
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-600 dark:from-white dark:via-slate-200 dark:to-indigo-400">
-              KDP Master Studio
+              KDPage Creator Studio
             </h1>
             <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold uppercase tracking-widest">
-              Premium Cover & Interior Creator
+              Premium Cover &amp; Interior Creator
             </p>
           </div>
         </div>

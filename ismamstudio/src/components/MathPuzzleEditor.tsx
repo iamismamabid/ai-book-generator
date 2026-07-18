@@ -219,6 +219,7 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
   const [puzzleData, setPuzzleData] = useState<any>(
     page?.config?.puzzleData || null
   );
+  const [isMounted, setIsMounted] = useState(false);
 
   const isSolution = page?.config?.isSolution || false;
 
@@ -373,7 +374,14 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
   };
 
   useEffect(() => {
-    handleGenerate();
+    if (isMounted) {
+      handleGenerate();
+    } else {
+      setIsMounted(true);
+      if (!puzzleData) {
+        handleGenerate();
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puzzleType, difficulty]);
 

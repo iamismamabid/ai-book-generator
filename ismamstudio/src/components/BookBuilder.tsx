@@ -61,6 +61,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);
   const [isExporting, setIsExporting] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [solutionsStatus, setSolutionsStatus] = useState<'idle' | 'success'>('idle');
 
   useEffect(() => {
     setMounted(true);
@@ -98,7 +99,8 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   }, [bookPages]);
 
   const addPage = (type: string, initialConfig: any = {}) => {
-    setBookPages([...bookPages, { id: Date.now() + Math.random(), type, config: initialConfig }]);
+    const clonedConfig = JSON.parse(JSON.stringify(initialConfig));
+    setBookPages([...bookPages, { id: Date.now() + Math.random(), type, config: clonedConfig }]);
     setActiveIndex(bookPages.length);
   };
 
@@ -191,6 +193,10 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     }
 
     setBookPages([...bookPages, ...newSolPages]);
+    setSolutionsStatus('success');
+    setTimeout(() => {
+      setSolutionsStatus('idle');
+    }, 2000);
   };
 
   const triggerExport = async () => {
@@ -250,9 +256,14 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           <div className="pt-4 border-t border-slate-800">
             <button
               onClick={autoGenerateAllSolutions}
-              className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/25 border border-amber-500/20 rounded-2xl text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] cursor-pointer"
+              className={`w-full py-3 border rounded-2xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] cursor-pointer ${
+                solutionsStatus === 'success'
+                  ? "bg-emerald-500/20 border-emerald-500/35 text-emerald-400"
+                  : "bg-amber-500/10 hover:bg-amber-500/25 border border-amber-500/20 text-amber-400"
+              }`}
             >
-              <Sparkles className="w-3.5 h-3.5" /> Auto-Build Solutions
+              <Sparkles className="w-3.5 h-3.5" />
+              {solutionsStatus === 'success' ? "✓ Solutions Added!" : "Auto-Build Solutions"}
             </button>
           </div>
         </div>
@@ -282,48 +293,56 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           <div className="h-full pt-8">
             {bookPages[activeIndex].type === 'crossword' && (
               <CrosswordEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'word_search' && (
               <WordSearchEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'sudoku' && (
               <SudokuEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'maze' && (
               <MazeEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'word_scramble' && (
               <WordScrambleEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'cryptogram' && (
               <CryptogramEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'math_puzzle' && (
               <MathPuzzleEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'kakuro' && (
               <KakuroEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
@@ -331,12 +350,14 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
             {bookPages[activeIndex].type === 'low_content' && (
               <LowContentEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
             {bookPages[activeIndex].type === 'title' && (
               <TitlePageEditor
+                key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
@@ -409,7 +430,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 onClick={() => setIsExportModalOpen(true)}
                 className="btn-premium-primary w-full py-3.5 normal-case text-sm"
               >
-                <FileDown className="w-4 h-4" /> Merge & Download PDF
+                <FileDown className="w-4 h-4" /> Configure &amp; Export PDF →
               </button>
             </div>
           )}
@@ -524,7 +545,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 <div className="flex gap-2 items-start bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 text-indigo-800 dark:text-indigo-300 p-2.5 rounded-xl text-[10px] font-semibold leading-normal mt-2">
                   <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
                   <span>
-                    <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the Book & Cover Studio.
+                    <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the All-In-One Studio.
                   </span>
                 </div>
               )}

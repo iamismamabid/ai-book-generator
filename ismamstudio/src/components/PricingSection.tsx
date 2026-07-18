@@ -491,53 +491,51 @@ function PricingSectionInner() {
         {plans.map((plan) => renderPricingCard(plan, false))}
       </div>
 
-
-
       {/* 🛡️ Value Proposition Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
-        <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
-          <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-400 border border-amber-500/10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="bg-slate-900 border-t-2 border-amber-500 border-x border-b border-x-slate-800 border-b-slate-800 rounded-3xl p-6 flex items-start gap-4 shadow-xl shadow-black/40">
+          <div className="p-3 bg-amber-500/15 rounded-2xl text-amber-400 shrink-0">
             <Shield className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">Commercial Rights</h4>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">Commercial Rights</h4>
+            <p className="text-slate-300 text-xs font-medium leading-relaxed">
               Keep 100% of your Amazon royalties. All interiors are licensed for commercial sales.
             </p>
           </div>
         </div>
 
-        <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
-          <div className="p-3 bg-rose-500/10 rounded-2xl text-rose-400 border border-rose-500/10">
+        <div className="bg-slate-900 border-t-2 border-rose-500 border-x border-b border-x-slate-800 border-b-slate-800 rounded-3xl p-6 flex items-start gap-4 shadow-xl shadow-black/40">
+          <div className="p-3 bg-rose-500/15 rounded-2xl text-rose-400 shrink-0">
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">Instant Generation</h4>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">Instant Generation</h4>
+            <p className="text-slate-300 text-xs font-medium leading-relaxed">
               Generate fully populated books and vector mazes in less than 30 seconds.
             </p>
           </div>
         </div>
 
-        <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
-          <div className="p-3 bg-sky-500/10 rounded-2xl text-sky-400 border border-sky-500/10">
+        <div className="bg-slate-900 border-t-2 border-sky-500 border-x border-b border-x-slate-800 border-b-slate-800 rounded-3xl p-6 flex items-start gap-4 shadow-xl shadow-black/40">
+          <div className="p-3 bg-sky-500/15 rounded-2xl text-sky-400 shrink-0">
             <CreditCard className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">No Contract, Cancel</h4>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">No Contract, Cancel</h4>
+            <p className="text-slate-300 text-xs font-medium leading-relaxed">
               Pause or cancel direct SaaS subscriptions in one click. No hidden lock-ins.
             </p>
           </div>
         </div>
 
-        <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 flex items-start gap-4">
-          <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400 border border-emerald-500/10">
+        <div className="bg-slate-900 border-t-2 border-emerald-500 border-x border-b border-x-slate-800 border-b-slate-800 rounded-3xl p-6 flex items-start gap-4 shadow-xl shadow-black/40">
+          <div className="p-3 bg-emerald-500/15 rounded-2xl text-emerald-400 shrink-0">
             <Award className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1">Reconciled Guarantee</h4>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">Reconciled Guarantee</h4>
+            <p className="text-slate-300 text-xs font-medium leading-relaxed">
               7-day SaaS guarantee / 60-day AppSumo money-back policy for complete confidence.
             </p>
           </div>
@@ -545,98 +543,144 @@ function PricingSectionInner() {
       </div>
 
       {/* 🔒 Secure Payment trust badges */}
-      <div className="max-w-2xl mx-auto text-center mb-20 -mt-12 bg-slate-900/30 border border-slate-900/65 p-5 rounded-[2rem] backdrop-blur-sm">
-        <span className="text-[9px] font-black uppercase text-slate-500 tracking-[0.25em] block mb-3.5">Guaranteed Safe & Secure Checkout</span>
-        <div className="flex flex-wrap items-center justify-center gap-5 md:gap-7 text-[10px] text-slate-400 font-black uppercase tracking-widest">
-          <div className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-indigo-400" /> Paddle Checkout</div>
-          <div className="w-1 h-1 rounded-full bg-slate-800 hidden sm:block" />
-          <div className="flex items-center gap-2">📱 Apple Pay & Google Pay</div>
-          <div className="w-1 h-1 rounded-full bg-slate-800 hidden sm:block" />
-          <div className="flex items-center gap-2">✨ Visa / Mastercard / Amex</div>
+      <div className="max-w-2xl mx-auto text-center mb-20 bg-slate-900 border border-slate-700 p-6 rounded-[2rem] shadow-2xl shadow-black/50">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-700" />
+          <span className="text-[10px] font-black uppercase text-slate-300 tracking-[0.3em] whitespace-nowrap">🔒 Guaranteed Safe &amp; Secure Checkout</span>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-700" />
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-5 md:gap-8">
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl">
+            <CreditCard className="w-4 h-4 text-indigo-400" />
+            <span className="text-[10px] text-slate-200 font-black uppercase tracking-widest">Paddle</span>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl">
+            <span className="text-sm">🍎</span>
+            <span className="text-[10px] text-slate-200 font-black uppercase tracking-widest">Apple Pay</span>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl">
+            <span className="text-sm">🔵</span>
+            <span className="text-[10px] text-slate-200 font-black uppercase tracking-widest">Google Pay</span>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl">
+            <span className="text-sm">💳</span>
+            <span className="text-[10px] text-slate-200 font-black uppercase tracking-widest">Visa / MC / Amex</span>
+          </div>
         </div>
       </div>
 
       {/* 📊 Feature Comparison Table */}
-      <div className="mb-24 overflow-x-auto rounded-[2rem] border border-slate-900 bg-slate-950/20 backdrop-blur-md p-4 md:p-8">
-        <h3 className="text-2xl font-black text-white text-center mb-8">Detailed Feature Comparison</h3>
+      <div className="mb-24 overflow-x-auto rounded-[2rem] border border-slate-800 bg-slate-900 shadow-2xl shadow-black/50">
+        {/* Table header */}
+        <div className="grid grid-cols-5 border-b border-slate-800">
+          <div className="p-5 md:p-6">
+            <span className="text-xs font-black uppercase tracking-widest text-slate-400">Core Capabilities</span>
+          </div>
+          {/* Free */}
+          <div className="p-5 md:p-6 text-center border-l border-slate-800">
+            <span className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Free Tier</span>
+            <span className="block text-xl font-black text-slate-300">$0</span>
+          </div>
+          {/* Starter */}
+          <div className="p-5 md:p-6 text-center border-l border-slate-800 bg-indigo-950/40">
+            <span className="block text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">Starter</span>
+            <span className="block text-xl font-black text-indigo-300">$9<span className="text-xs font-semibold text-slate-400">/mo</span></span>
+          </div>
+          {/* Pro */}
+          <div className="p-5 md:p-6 text-center border-l border-amber-500/30 bg-amber-950/30 relative">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-yellow-400" />
+            <span className="block text-[10px] font-black uppercase tracking-widest text-amber-400 mb-1">Pro Studio ⭐</span>
+            <span className="block text-xl font-black text-amber-300">$19<span className="text-xs font-semibold text-slate-400">/mo</span></span>
+          </div>
+          {/* Agency */}
+          <div className="p-5 md:p-6 text-center border-l border-slate-800 bg-emerald-950/30">
+            <span className="block text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Agency</span>
+            <span className="block text-xl font-black text-emerald-300">$39<span className="text-xs font-semibold text-slate-400">/mo</span></span>
+          </div>
+        </div>
 
-        <table className="w-full text-left border-collapse text-xs md:text-sm">
-          <thead>
-            <tr className="border-b border-slate-900 text-slate-400 font-bold uppercase tracking-wider">
-              <th className="py-4 px-4">Core Capabilities</th>
-              <th className="py-4 px-4 text-center">Free Tier</th>
-              <th className="py-4 px-4 text-center">Starter</th>
-              <th className="py-4 px-4 text-center">Pro Studio</th>
-              <th className="py-4 px-4 text-center">Agency</th>
-            </tr>
-          </thead>
-          <tbody className="text-slate-300 font-semibold">
-            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
-              <td className="py-4 px-4 font-bold text-white">Commercial Rights</td>
-              <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
-              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
-              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-amber-500 mx-auto" /></td>
-              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-emerald-400 mx-auto" /></td>
-            </tr>
-            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
-              <td className="py-4 px-4 font-bold text-white">Watermark-Free Exports</td>
-              <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
-              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
-              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-amber-500 mx-auto" /></td>
-              <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-emerald-400 mx-auto" /></td>
-            </tr>
-            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
-              <td className="py-4 px-4 font-bold text-white">Trim Size Adjustments</td>
-              <td className="py-4 px-4 text-center">Basic (8.5x11)</td>
-              <td className="py-4 px-4 text-center">Standard sizes</td>
-              <td className="py-4 px-4 text-center">All sizes + Custom</td>
-              <td className="py-4 px-4 text-center">All + Custom + SVGs</td>
-            </tr>
-            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
-              <td className="py-4 px-4 font-bold text-white">Sudoku Puzzle Difficulty</td>
-              <td className="py-4 px-4 text-center">Easy Only</td>
-              <td className="py-4 px-4 text-center">Easy & Medium</td>
-              <td className="py-4 px-4 text-center">All (Easy, Med, Hard)</td>
-              <td className="py-4 px-4 text-center">All + Custom solutions</td>
-            </tr>
-            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
-              <td className="py-4 px-4 font-bold text-white">Maze Layout Shapes</td>
-              <td className="py-4 px-4 text-center">Square Only</td>
-              <td className="py-4 px-4 text-center">Square Only</td>
-              <td className="py-4 px-4 text-center">Square, Circle, Heart</td>
-              <td className="py-4 px-4 text-center">All + custom masking</td>
-            </tr>
-            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
-              <td className="py-4 px-4 font-bold text-white">AI Writer Chapter Limits</td>
-              <td className="py-4 px-4 text-center">1 Outline/mo</td>
-              <td className="py-4 px-4 text-center">5 Chapters/mo</td>
-              <td className="py-4 px-4 text-center">Unlimited</td>
-              <td className="py-4 px-4 text-center">Unlimited (Priority)</td>
-            </tr>
-            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
-              <td className="py-4 px-4 font-bold text-white">Pen-names / Brands</td>
-              <td className="py-4 px-4 text-center">1</td>
-              <td className="py-4 px-4 text-center">3</td>
-              <td className="py-4 px-4 text-center">Unlimited</td>
-              <td className="py-4 px-4 text-center">Unlimited</td>
-            </tr>
-            <tr className="border-b border-slate-900/50 hover:bg-slate-900/10 transition-colors">
-              <td className="py-4 px-4 font-bold text-white">Team seats</td>
-              <td className="py-4 px-4 text-center">1 Seat</td>
-              <td className="py-4 px-4 text-center">1 Seat</td>
-              <td className="py-4 px-4 text-center">1 Seat</td>
-              <td className="py-4 px-4 text-center">Up to 3 Seats</td>
-            </tr>
-            <tr className="hover:bg-slate-900/10 transition-colors">
-              <td className="py-4 px-4 font-bold text-white">Customer Support</td>
-              <td className="py-4 px-4 text-center">Community</td>
-              <td className="py-4 px-4 text-center">Email (48h)</td>
-              <td className="py-4 px-4 text-center">Priority (&lt; 12h)</td>
-              <td className="py-4 px-4 text-center">Dedicated manager</td>
-            </tr>
-          </tbody>
-        </table>
+        {/* Rows */}
+        {[
+          {
+            label: "Commercial Rights",
+            free: false, starter: true, pro: true, agency: true,
+          },
+          {
+            label: "Watermark-Free Exports",
+            free: false, starter: true, pro: true, agency: true,
+          },
+          {
+            label: "Trim Size Adjustments",
+            free: "Basic (8.5×11)", starter: "Standard sizes", pro: "All sizes + Custom", agency: "All + Custom + SVGs",
+          },
+          {
+            label: "Sudoku Puzzle Difficulty",
+            free: "Easy Only", starter: "Easy & Medium", pro: "All (Easy, Med, Hard)", agency: "All + Custom",
+          },
+          {
+            label: "Maze Layout Shapes",
+            free: "Square Only", starter: "Square Only", pro: "Square, Circle, Heart", agency: "All + Custom masking",
+          },
+          {
+            label: "Word Search / Cryptogram / Scramble",
+            free: "Basic only", starter: "Std. grids", pro: "Unlimited", agency: "Unlimited",
+          },
+          {
+            label: "Math Puzzles & Kakuro",
+            free: false, starter: true, pro: "Unlimited", agency: "Unlimited",
+          },
+          {
+            label: "AI Writer Chapter Limits",
+            free: "1 Outline/mo", starter: "5 Chapters/mo", pro: "Unlimited", agency: "Unlimited (Priority)",
+          },
+          {
+            label: "Pen-names / Brands",
+            free: "1", starter: "3", pro: "Unlimited", agency: "Unlimited",
+          },
+          {
+            label: "Team Seats",
+            free: "1 Seat", starter: "1 Seat", pro: "1 Seat", agency: "Up to 3 Seats",
+          },
+          {
+            label: "Customer Support",
+            free: "Community", starter: "Email (48h)", pro: "Priority (< 12h)", agency: "Dedicated manager",
+          },
+        ].map((row, i) => {
+          const isLast = i === 10;
+          const rowBg = i % 2 === 0 ? "bg-slate-900" : "bg-slate-950/60";
+
+          const renderCell = (val: boolean | string, tierColor: string) => {
+            if (val === true) return <Check className={`w-5 h-5 mx-auto ${tierColor}`} />;
+            if (val === false) return <X className="w-4 h-4 mx-auto text-rose-600 opacity-70" />;
+            return (
+              <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] md:text-xs font-black ${tierColor} bg-current/10 bg-slate-800`}>
+                {val}
+              </span>
+            );
+          };
+
+          return (
+            <div key={row.label} className={`grid grid-cols-5 ${rowBg} ${!isLast ? "border-b border-slate-800/70" : ""} hover:brightness-110 transition-all`}>
+              <div className="py-4 px-4 md:px-6 flex items-center">
+                <span className="text-xs md:text-sm font-bold text-white">{row.label}</span>
+              </div>
+              <div className="py-4 px-2 md:px-4 flex items-center justify-center border-l border-slate-800 text-slate-400">
+                {renderCell(row.free, "text-slate-400")}
+              </div>
+              <div className="py-4 px-2 md:px-4 flex items-center justify-center border-l border-slate-800 bg-indigo-950/20 text-indigo-300">
+                {renderCell(row.starter, "text-indigo-400")}
+              </div>
+              <div className="py-4 px-2 md:px-4 flex items-center justify-center border-l border-amber-500/20 bg-amber-950/20 text-amber-300">
+                {renderCell(row.pro, "text-amber-400")}
+              </div>
+              <div className="py-4 px-2 md:px-4 flex items-center justify-center border-l border-slate-800 bg-emerald-950/20 text-emerald-300">
+                {renderCell(row.agency, "text-emerald-400")}
+              </div>
+            </div>
+          );
+        })}
       </div>
+
 
       {/* ❓ Frequently Asked Questions */}
       <div className="max-w-4xl mx-auto border-t border-slate-900/60 pt-20">
@@ -697,10 +741,10 @@ export default function PricingSection() {
 
 function PricingSkeleton() {
   const staticPlans = [
-    { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 AI Writer Outline / mo", "Community support forum"] },
-    { name: "Starter Creator", price: "$9", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 AI Chapters / mo", "Email support (24-48h response)"] },
-    { name: "Pro Studio", price: "$19", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Unlimited Brand profiles & pen-names", "Unlimited Sudoku puzzles (Easy, Med, Hard)", "Unlimited Labyrinth designs (Circle, Heart shapes)", "Unlimited Word Search boards & CSV imports", "Unlimited AI Chapters (Llama 3.3)", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
-    { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "AI KDP Niche Hunter & Keyword Spy", "API access for automated generation", "Dedicated customer support manager"] },
+    { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 Chapter Outline / mo", "Community support forum"] },
+    { name: "Starter Creator", price: "$9", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
+    { name: "Pro Studio", price: "$19", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Unlimited Brand profiles & pen-names", "Unlimited Sudoku puzzles (Easy, Med, Hard)", "Unlimited Labyrinth designs (Circle, Heart shapes)", "Unlimited Word Search boards & CSV imports", "Unlimited Chapter Writing", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
+    { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "KDP Niche Hunter & Keyword Spy", "API access for automated generation", "Dedicated customer support manager"] },
   ];
 
   return (

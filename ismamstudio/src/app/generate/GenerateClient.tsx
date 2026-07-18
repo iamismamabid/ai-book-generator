@@ -98,7 +98,7 @@ export default function GeneratePage() {
       setIsSaving(true);
       try {
         const titleMatch = result.match(/\*\*Book Title:\*\*\s*"([^"]+)"/);
-        const title = titleMatch ? titleMatch[1] : "My AI Masterpiece";
+        const title = titleMatch ? titleMatch[1] : "My Masterpiece";
         const savedBook = await saveBookToDB(title, result);
         if (savedBook?.id) {
           posthog.capture("book_outline_generated", {
@@ -252,7 +252,7 @@ export default function GeneratePage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px]">2</div>
-                    <span className="text-slate-300">AI compiles 12-chapter outline</span>
+                    <span className="text-slate-300">System compiles 12-chapter outline</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-[10px]">3</div>
@@ -273,7 +273,7 @@ export default function GeneratePage() {
                       What's your <span className="text-indigo-400">next masterpiece?</span>
                     </h1>
                     <p className="text-slate-200 text-sm font-bold leading-relaxed">
-                      Describe your book idea in 2-3 sentences. Our AI will outline your KDP-compliant novel outline instantly.
+                      Describe your book idea in 2-3 sentences. Our tool will outline your KDP-compliant novel outline instantly.
                     </p>
                   </div>
 

@@ -1,14 +1,40 @@
 "use client";
 
-import React, { useState } from "react";
-import { RefreshCw } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { RefreshCw, Upload } from "lucide-react";
 import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
 
 export const CrosswordEditor = ({ page, updatePage }: any) => {
-  const [inputText, setInputText] = useState(page.config.rawText || "REACT, A popular UI library\nNEXTJS, A React framework\nVERCEL, Hosting platform\nCODING, Writing software");
+  const [inputText, setInputText] = useState(() => {
+    if (page.config.rawText) return page.config.rawText;
+    const pools = [
+      "REACT, A popular UI library\nNEXTJS, A React framework\nVERCEL, Hosting platform\nCODING, Writing software",
+      "DOG, Man's best friend\nCAT, Loves to catch mice\nBIRD, Can fly high in the sky\nFISH, Swims in the water",
+      "SUN, Center of the solar system\nMOON, Earth's natural satellite\nMARS, The Red Planet\nEARTH, Our home planet",
+      "PIZZA, Flatbread with cheese and tomato\nBURGER, Patty inside a bun\nSUSHI, Japanese raw fish dish\nPASTA, Italian noodle dish",
+      "GUITAR, String instrument with frets\nPIANO, Keyed musical instrument\nDRUMS, Percussion instrument\nVIOLIN, Bowed string instrument"
+    ];
+    return pools[Math.floor(Math.random() * pools.length)];
+  });
   const [gridData, setGridData] = useState<any>(page.config.gridData || null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
   const isSolution = page.config.isSolution || false;
+
+  // 📁 CSV / TXT import handler (format: WORD, Clue per line)
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = (event.target?.result as string) || "";
+      // Normalize line endings and set directly - crossword already parses WORD, Clue per line
+      const cleaned = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+      setInputText(cleaned);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   const handleGenerate = () => {
     const lines = inputText.split('\n').filter((l: string) => l.trim().length > 0);
@@ -27,6 +53,13 @@ export const CrosswordEditor = ({ page, updatePage }: any) => {
   const handleToggleMode = (solMode: boolean) => {
     updatePage({ rawText: inputText, gridData, isSolution: solMode });
   };
+
+  React.useEffect(() => {
+    if (!gridData) {
+      handleGenerate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="w-full flex gap-8 h-full p-4 overflow-y-auto">
@@ -58,11 +91,21 @@ export const CrosswordEditor = ({ page, updatePage }: any) => {
           </div>
         </div>
 
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Words &amp; Clues</label>
+          <button
+            onClick={() => csvInputRef.current?.click()}
+            className="flex items-center gap-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-lg hover:bg-emerald-100 transition"
+          >
+            <Upload className="w-3 h-3" /> Import CSV / TXT
+          </button>
+          <input type="file" accept=".csv,.txt" ref={csvInputRef} onChange={handleCsvUpload} className="hidden" />
+        </div>
         <textarea 
           value={inputText} 
           onChange={(e) => setInputText(e.target.value)}
-          className="w-full h-80 p-4 border border-slate-200 rounded-xl text-sm font-mono shadow-inner bg-white"
-          placeholder="WORD, Clue"
+          className="w-full h-72 p-4 border border-slate-200 rounded-xl text-sm font-mono shadow-inner bg-white outline-none focus:border-indigo-500"
+          placeholder="WORD, Clue (one per line) — or import a .csv/.txt file"
         />
         <button onClick={handleGenerate} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">
           <RefreshCw className="w-4 h-4 inline mr-2"/> Generate Puzzle

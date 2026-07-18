@@ -15,7 +15,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', adjustFontFa
 
 export const metadata: Metadata = {
   title: "KDPage | All-in-One KDP Book Creation Toolkit",
-  description: "Create puzzle interiors, AI-assisted novel chapters, shape-masked mazes, word searches, and gorgeous covers for Amazon KDP — in minutes. No design software needed.",
+  description: "Create puzzle interiors, novel chapters, shape-masked mazes, word searches, and gorgeous covers for Amazon KDP — in minutes. No design software needed.",
   metadataBase: new URL("https://www.kdpage.com"),
   alternates: {
     canonical: "https://www.kdpage.com",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "KDPage — Create & Publish KDP Books in Minutes",
-    description: "The ultimate all-in-one toolkit for Amazon KDP self-publishers. Sudoku, mazes, word searches, AI novel outlines, and full cover design — all in one place.",
+    description: "The ultimate all-in-one toolkit for Amazon KDP self-publishers. Sudoku, mazes, word searches, novel outlines, and full cover design — all in one place.",
     url: "https://www.kdpage.com",
     siteName: "KDPage",
     images: [
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "KDPage — KDP Book Creation Toolkit",
-    description: "Create professional puzzle books, AI chapters & covers for Amazon KDP in minutes.",
+    description: "Create professional puzzle books, chapters & covers for Amazon KDP in minutes.",
     images: ["/og-image.png"],
   },
   icons: {

@@ -119,35 +119,34 @@ export default async function BlogPostPage({ params }: Props) {
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Back to Blog
           </Link>
         </div>
-
-        <div className="bg-slate-950/40 backdrop-blur-2xl border border-slate-900/60 rounded-[2.5rem] p-8 md:p-16 shadow-2xl">
+        <div className="bg-[#fbfaf7] border border-[#e6e2d8] rounded-[2rem] md:rounded-[3rem] p-8 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
           {/* Category & Meta */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/10 px-3 py-1 rounded-full">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#b45309] bg-[#fef3c7] border border-[#fde68a] px-3 py-1 rounded-full">
               {post.category}
             </span>
-            <div className="flex items-center gap-4 text-slate-500 text-xs font-bold">
+            <div className="flex items-center gap-4 text-stone-500 text-xs font-bold">
               <span className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-slate-600" /> {post.date}
+                <Calendar className="w-3.5 h-3.5 text-stone-400" /> {post.date}
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-slate-600" /> {post.readTime}
+                <Clock className="w-3.5 h-3.5 text-stone-400" /> {post.readTime}
               </span>
             </div>
           </div>
 
-          <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-8 tracking-tight font-sans">
+          <h1 className="text-3xl md:text-5xl font-black text-stone-900 leading-tight mb-8 tracking-tight font-serif">
             {post.title}
           </h1>
 
-          <div className="h-px bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 mb-8" />
+          <div className="h-px bg-gradient-to-r from-[#e6e2d8] via-[#d4cfc3] to-[#e6e2d8] mb-8" />
 
           {/* Main Text Content */}
-          <div className="space-y-6 text-slate-300 text-base md:text-lg leading-relaxed font-semibold font-sans">
+          <div className="space-y-6 text-[#292524] text-base md:text-lg leading-relaxed font-semibold font-serif">
             {post.content.map((paragraph, index) => {
               if (paragraph.startsWith("###")) {
                 return (
-                  <h3 key={index} className="text-xl md:text-2xl font-black text-white pt-8 pb-2 mb-2 border-b border-slate-900/60 leading-tight">
+                  <h3 key={index} className="text-xl md:text-2xl font-black text-stone-900 pt-8 pb-2 mb-2 border-b border-[#e6e2d8] leading-tight">
                     {paragraph.replace("### ", "")}
                   </h3>
                 );
@@ -156,8 +155,8 @@ export default async function BlogPostPage({ params }: Props) {
                 return (
                   <ul key={index} className="space-y-3 pl-2 py-2">
                     {paragraph.split("\n").map((li, lIdx) => (
-                      <li key={lIdx} className="flex items-start gap-3 text-slate-400 font-semibold text-sm leading-relaxed">
-                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 animate-pulse" />
+                      <li key={lIdx} className="flex items-start gap-3 text-stone-600 font-semibold text-sm leading-relaxed">
+                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[#b45309] shrink-0" />
                         <span>{li.replace("- ", "")}</span>
                       </li>
                     ))}
@@ -165,7 +164,7 @@ export default async function BlogPostPage({ params }: Props) {
                 );
               }
               return (
-                <p key={index} className="whitespace-pre-wrap text-slate-300 font-medium">
+                <p key={index} className="whitespace-pre-wrap text-[#292524] font-medium">
                   {paragraph}
                 </p>
               );
@@ -173,18 +172,18 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
 
           {/* Footer Call-To-Action inside the article */}
-          <div className="mt-16 p-8 rounded-[2rem] bg-gradient-to-br from-indigo-950/20 to-purple-950/5 border border-indigo-500/10 shadow-inner flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent pointer-events-none" />
+          <div className="mt-16 p-8 rounded-[2rem] bg-gradient-to-br from-stone-900 to-stone-950 border border-stone-800 shadow-inner flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent pointer-events-none" />
             <div className="space-y-2 relative z-10 text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-2 text-indigo-400 text-xs font-black uppercase tracking-widest">
-                <HelpCircle className="w-4 h-4 text-indigo-400 animate-pulse" /> Ready to publish your book?
+              <div className="flex items-center justify-center md:justify-start gap-2 text-amber-400 text-xs font-black uppercase tracking-widest">
+                <HelpCircle className="w-4 h-4 text-amber-400 animate-pulse" /> Ready to publish your book?
               </div>
-              <h4 className="text-xl font-black text-white">Create Compliant Interiors in Minutes</h4>
-              <p className="text-slate-400 text-xs font-semibold leading-relaxed max-w-md">KDPage handles margin safety, spine sizing, and mathematically verified puzzle generation automatically.</p>
+              <h4 className="text-xl font-black text-white font-serif">Create Compliant Interiors in Minutes</h4>
+              <p className="text-stone-400 text-xs font-semibold leading-relaxed max-w-md font-serif">KDPage handles margin safety, spine sizing, and mathematically verified puzzle generation automatically.</p>
             </div>
             <Link
               href={cta.href}
-              className="w-full md:w-auto px-6 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black text-sm rounded-xl hover:from-indigo-600 hover:to-purple-700 transition shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-98 relative z-10 whitespace-nowrap"
+              className="w-full md:w-auto px-6 py-4 bg-gradient-to-r from-[#d97706] to-[#b45309] text-white font-black text-sm rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg shadow-amber-600/10 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-98 relative z-10 whitespace-nowrap font-serif"
             >
               {cta.label} <ChevronRight className="w-4 h-4" />
             </Link>

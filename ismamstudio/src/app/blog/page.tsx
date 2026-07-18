@@ -41,31 +41,28 @@ export default function BlogPage() {
             <Link 
               key={post.slug}
               href={`/blog/${post.slug}`}
-              className="group relative rounded-[2.5rem] p-8 border border-slate-900/80 bg-slate-950/40 hover:border-indigo-500/30 transition-all duration-500 flex flex-col justify-between cursor-pointer hover:-translate-y-1 block text-left shadow-2xl hover:shadow-[0_20px_50px_rgba(99,102,241,0.1),_inset_0_0_15px_rgba(99,102,241,0.05)] backdrop-blur-md"
+              className="group relative rounded-[2rem] p-8 border border-[#e6e2d8] bg-[#fbfaf7] transition-all duration-500 flex flex-col justify-between cursor-pointer hover:-translate-y-1 block text-left shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:border-[#d97706]/40"
             >
-              {/* Card Gradient Glow on Hover */}
-              <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/10 px-3 py-1 rounded-full">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#b45309] bg-[#fef3c7] border border-[#fde68a] px-3 py-1 rounded-full">
                     {post.category}
                   </span>
-                  <div className="flex items-center gap-4 text-slate-500 text-xs font-bold">
-                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-slate-600" /> {post.date}</span>
-                    <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-600" /> {post.readTime}</span>
+                  <div className="flex items-center gap-4 text-stone-500 text-xs font-bold">
+                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-stone-400" /> {post.date}</span>
+                    <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-stone-400" /> {post.readTime}</span>
                   </div>
                 </div>
 
-                <h2 className="text-2xl font-black text-white mb-3 group-hover:text-amber-300 transition-colors font-sans leading-tight">
+                <h2 className="text-2xl font-black text-stone-900 mb-3 group-hover:text-[#b45309] transition-colors font-serif leading-tight">
                   {post.title}
                 </h2>
-                <p className="text-slate-400 text-sm font-semibold leading-relaxed mb-8 font-sans">
+                <p className="text-stone-600 text-sm font-semibold leading-relaxed mb-8 font-serif">
                   {post.description}
                 </p>
               </div>
 
-              <div className="flex items-center gap-1.5 text-indigo-400 text-xs font-black uppercase tracking-wider group-hover:text-indigo-300 relative z-10">
+              <div className="flex items-center gap-1.5 text-[#b45309] text-xs font-black uppercase tracking-wider group-hover:text-amber-800 relative z-10 font-serif">
                 Read Article <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
               </div>
             </Link>

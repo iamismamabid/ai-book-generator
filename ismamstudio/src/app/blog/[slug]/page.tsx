@@ -119,7 +119,14 @@ export default async function BlogPostPage({ params }: Props) {
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Back to Blog
           </Link>
         </div>
-        <div className="bg-[#fbfaf7] border border-[#e6e2d8] rounded-[2rem] md:rounded-[3rem] p-8 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+        <div className="bg-[#fbfaf7] border border-[#e6e2d8] rounded-[2rem] md:rounded-[3rem] p-8 md:p-16 shadow-[0_1px_1px_rgba(0,0,0,0.15),_0_10px_0_-5px_#fbfaf7,_0_10px_1px_-4px_rgba(0,0,0,0.15),_0_20px_0_-10px_#f5f2eb,_0_20px_1px_-9px_rgba(0,0,0,0.15),_0_30px_60px_rgba(0,0,0,0.45)] relative overflow-hidden">
+          {/* 📖 Left-side Crease/Binding Shadow */}
+          <div className="absolute top-0 left-0 w-8 h-full bg-gradient-to-r from-black/8 via-black/3 to-transparent pointer-events-none z-10" />
+
+          {/* 📄 Top-Right Folded Page Corner */}
+          <div className="absolute top-0 right-0 w-12 h-12 bg-[#030712] z-10" style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
+          <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-bl from-[#ebdcb9] to-[#faf6ee] shadow-[-3px_3px_10px_rgba(0,0,0,0.15)] border-l border-b border-[#c8bfa0]/60 rounded-bl-xl z-20 pointer-events-none" />
+
           {/* Category & Meta */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <span className="text-[10px] font-black uppercase tracking-widest text-[#b45309] bg-[#fef3c7] border border-[#fde68a] px-3 py-1 rounded-full">

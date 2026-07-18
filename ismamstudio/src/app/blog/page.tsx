@@ -41,8 +41,15 @@ export default function BlogPage() {
             <Link 
               key={post.slug}
               href={`/blog/${post.slug}`}
-              className="group relative rounded-[2rem] p-8 border border-[#e6e2d8] bg-[#fbfaf7] transition-all duration-500 flex flex-col justify-between cursor-pointer hover:-translate-y-1 block text-left shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:border-[#d97706]/40"
+              className="group relative rounded-[1.5rem] p-8 border border-[#e6e2d8] bg-[#fbfaf7] transition-all duration-500 flex flex-col justify-between cursor-pointer hover:-translate-y-1 block text-left shadow-[0_1px_1px_rgba(0,0,0,0.1),_0_6px_0_-3px_#fbfaf7,_0_6px_1px_-2px_rgba(0,0,0,0.15),_0_12px_0_-6px_#f5f2eb,_0_12px_1px_-5px_rgba(0,0,0,0.15),_0_20px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_1px_1px_rgba(0,0,0,0.1),_0_8px_0_-4px_#fbfaf7,_0_8px_1px_-3px_rgba(0,0,0,0.15),_0_16px_0_-8px_#f5f2eb,_0_16px_1px_-7px_rgba(0,0,0,0.15),_0_28px_45px_rgba(0,0,0,0.35)] hover:border-[#d97706]/40 overflow-hidden"
             >
+              {/* 📖 Book Crease Shadow on Left */}
+              <div className="absolute top-0 left-0 w-5 h-full bg-gradient-to-r from-black/6 via-black/2 to-transparent pointer-events-none z-10" />
+
+              {/* 📄 Top-Right Folded Page Corner */}
+              <div className="absolute top-0 right-0 w-8 h-8 bg-[#030712] z-10" style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
+              <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[#ebdcb9] to-[#faf6ee] shadow-[-2px_2px_6px_rgba(0,0,0,0.15)] border-l border-b border-[#c8bfa0]/60 rounded-bl-lg z-20 pointer-events-none" />
+
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                   <span className="text-[10px] font-black uppercase tracking-widest text-[#b45309] bg-[#fef3c7] border border-[#fde68a] px-3 py-1 rounded-full">

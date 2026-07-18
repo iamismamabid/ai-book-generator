@@ -74,7 +74,7 @@ export default async function BlogPostPage({ params }: Props) {
   const cta = getCtaLink(post.slug);
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#030712] text-slate-100 py-24 px-6 relative overflow-hidden">
       {/* JSON-LD Article & Author Schema */}
       <script
         type="application/ld+json"
@@ -106,63 +106,66 @@ export default async function BlogPostPage({ params }: Props) {
         }}
       />
 
-      {/* Background Glow */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none" />
+      {/* 🔮 Background Mesh Glows */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[140px] translate-x-1/4 -translate-y-1/4 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[700px] h-[700px] bg-purple-500/5 rounded-full blur-[160px] -translate-x-1/4 translate-y-1/4 pointer-events-none" />
 
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="mb-8">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-indigo-400 transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-black text-slate-400 hover:text-indigo-400 transition-colors group"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Blog
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Back to Blog
           </Link>
         </div>
 
-        <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-[2.5rem] p-8 md:p-12 shadow-2xl">
+        <div className="bg-slate-950/40 backdrop-blur-2xl border border-slate-900/60 rounded-[2.5rem] p-8 md:p-16 shadow-2xl">
           {/* Category & Meta */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <span className="text-xs font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-xl">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/10 px-3 py-1 rounded-full">
               {post.category}
             </span>
-            <div className="flex items-center gap-3 text-slate-500 text-xs font-bold">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" /> {post.date}
+            <div className="flex items-center gap-4 text-slate-500 text-xs font-bold">
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-slate-600" /> {post.date}
               </span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" /> {post.readTime}
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-slate-600" /> {post.readTime}
               </span>
             </div>
           </div>
 
-          <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-8">
+          <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-8 tracking-tight font-sans">
             {post.title}
           </h1>
 
-          <div className="h-px bg-slate-800 mb-8" />
+          <div className="h-px bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 mb-8" />
 
           {/* Main Text Content */}
-          <div className="space-y-6 text-slate-300 text-base md:text-lg leading-relaxed font-medium">
+          <div className="space-y-6 text-slate-300 text-base md:text-lg leading-relaxed font-semibold font-sans">
             {post.content.map((paragraph, index) => {
               if (paragraph.startsWith("###")) {
                 return (
-                  <h3 key={index} className="text-xl md:text-2xl font-bold text-white pt-6 mb-2">
+                  <h3 key={index} className="text-xl md:text-2xl font-black text-white pt-8 pb-2 mb-2 border-b border-slate-900/60 leading-tight">
                     {paragraph.replace("### ", "")}
                   </h3>
                 );
               }
               if (paragraph.startsWith("- ")) {
                 return (
-                  <ul key={index} className="list-disc list-inside pl-4 space-y-2 text-slate-500">
+                  <ul key={index} className="space-y-3 pl-2 py-2">
                     {paragraph.split("\n").map((li, lIdx) => (
-                      <li key={lIdx}>{li.replace("- ", "")}</li>
+                      <li key={lIdx} className="flex items-start gap-3 text-slate-400 font-semibold text-sm leading-relaxed">
+                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 animate-pulse" />
+                        <span>{li.replace("- ", "")}</span>
+                      </li>
                     ))}
                   </ul>
                 );
               }
               return (
-                <p key={index} className="whitespace-pre-wrap">
+                <p key={index} className="whitespace-pre-wrap text-slate-300 font-medium">
                   {paragraph}
                 </p>
               );
@@ -170,13 +173,18 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
 
           {/* Footer Call-To-Action inside the article */}
-          <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-slate-400 text-xs font-semibold">
-              <HelpCircle className="w-4 h-4 text-indigo-400 animate-pulse" /> Ready to publish your puzzle book?
+          <div className="mt-16 p-8 rounded-[2rem] bg-gradient-to-br from-indigo-950/20 to-purple-950/5 border border-indigo-500/10 shadow-inner flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent pointer-events-none" />
+            <div className="space-y-2 relative z-10 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2 text-indigo-400 text-xs font-black uppercase tracking-widest">
+                <HelpCircle className="w-4 h-4 text-indigo-400 animate-pulse" /> Ready to publish your book?
+              </div>
+              <h4 className="text-xl font-black text-white">Create Compliant Interiors in Minutes</h4>
+              <p className="text-slate-400 text-xs font-semibold leading-relaxed max-w-md">KDPage handles margin safety, spine sizing, and mathematically verified puzzle generation automatically.</p>
             </div>
             <Link
               href={cta.href}
-              className="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black text-sm rounded-xl hover:from-indigo-600 hover:to-purple-700 transition shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-1.5"
+              className="w-full md:w-auto px-6 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black text-sm rounded-xl hover:from-indigo-600 hover:to-purple-700 transition shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-98 relative z-10 whitespace-nowrap"
             >
               {cta.label} <ChevronRight className="w-4 h-4" />
             </Link>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku'; 
+import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku';
 import { downloadSudokuPdf } from '../../lib/sudoku-pdf';
 import DownloadButton from "@/components/DownloadButton";
 import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock } from "lucide-react";
@@ -17,14 +17,14 @@ function SudokuPreview({ grid, isSolution = false }: { grid: Grid; isSolution?: 
       <div className="grid grid-cols-9 gap-0 border-[3px] border-slate-700 rounded-sm overflow-hidden">
         {grid.flatMap((row, r) =>
           row.map((val, c) => {
-            const thickRight  = (c + 1) % 3 === 0 && c !== 8;
+            const thickRight = (c + 1) % 3 === 0 && c !== 8;
             const thickBottom = (r + 1) % 3 === 0 && r !== 8;
 
             return (
               <div
                 key={`${r}-${c}`}
                 className={`aspect-square flex items-center justify-center text-sm font-bold border border-slate-700/40
-                  ${thickRight  ? "border-r-[2.5px] border-r-slate-600" : ""}
+                  ${thickRight ? "border-r-[2.5px] border-r-slate-600" : ""}
                   ${thickBottom ? "border-b-[2.5px] border-b-slate-600" : ""}
                   ${val !== 0
                     ? isSolution
@@ -43,7 +43,7 @@ function SudokuPreview({ grid, isSolution = false }: { grid: Grid; isSolution?: 
   );
 }
 
-export default function SudokuGeneratorPage() {
+export default function SudokuClient() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"generator" | "solution" | "guide">("generator");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
@@ -55,7 +55,7 @@ export default function SudokuGeneratorPage() {
   const [includeSolutions, setIncludeSolutions] = useState(true);
   const [includeCover, setIncludeCover] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  
+
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
 
   useEffect(() => {
@@ -80,7 +80,11 @@ export default function SudokuGeneratorPage() {
     loadPremium();
   }, []);
 
-  const maxPuzzles = premiumStatus.isPremium ? 1000 : 5;
+  const maxPuzzles =
+    premiumStatus.plan === "free" ? 5 :
+      premiumStatus.plan === "starter" ? 20 :
+        premiumStatus.plan === "pro" ? 50 :
+          500;
 
   const handleBookCountChange = (val: number) => {
     let count = Math.max(1, val);
@@ -128,9 +132,9 @@ export default function SudokuGeneratorPage() {
   };
 
   const tabs = [
-    { id: "generator", label: "Puzzle Creator",  icon: Grid3x3 },
-    { id: "solution",  label: "Solution View",   icon: Eye      },
-    { id: "guide",     label: "KDP Guide",        icon: BookOpen },
+    { id: "generator", label: "Puzzle Creator", icon: Grid3x3 },
+    { id: "solution", label: "Solution View", icon: Eye },
+    { id: "guide", label: "KDP Guide", icon: BookOpen },
   ] as const;
 
   return (
@@ -159,11 +163,10 @@ export default function SudokuGeneratorPage() {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
-                activeTab === id
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === id
                   ? "bg-amber-500 text-slate-950 shadow-md"
                   : "text-slate-400 hover:text-white hover:bg-slate-900"
-              }`}
+                }`}
             >
               <Icon className="w-4 h-4" />
               {label}
@@ -182,9 +185,9 @@ export default function SudokuGeneratorPage() {
                 <h2 className="text-lg font-bold mb-4 text-amber-300">Difficulty</h2>
                 <div className="grid grid-cols-3 gap-3">
                   {(["easy", "medium", "hard"] as Difficulty[]).map((d) => {
-                    const isLocked = 
-                      premiumStatus.limits 
-                        ? !premiumStatus.limits.puzzles.includes(d) 
+                    const isLocked =
+                      premiumStatus.limits
+                        ? !premiumStatus.limits.puzzles.includes(d)
                         : (d !== "easy");
 
                     return (
@@ -192,13 +195,12 @@ export default function SudokuGeneratorPage() {
                         key={d}
                         disabled={isLocked && premiumStatus.checked}
                         onClick={() => !isLocked && setDifficulty(d)}
-                        className={`relative py-3 rounded-lg font-semibold capitalize transition flex items-center justify-center gap-1.5 ${
-                          difficulty === d
+                        className={`relative py-3 rounded-lg font-semibold capitalize transition flex items-center justify-center gap-1.5 ${difficulty === d
                             ? "bg-amber-500 text-slate-950"
                             : isLocked
-                            ? "bg-slate-900/40 text-slate-600 border border-slate-900/30 cursor-not-allowed"
-                            : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-                        }`}
+                              ? "bg-slate-900/40 text-slate-600 border border-slate-900/30 cursor-not-allowed"
+                              : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                          }`}
                       >
                         {isLocked && <Lock className="w-3.5 h-3.5 text-slate-500" />}
                         {d}
@@ -207,9 +209,9 @@ export default function SudokuGeneratorPage() {
                   })}
                 </div>
                 <p className="text-xs text-slate-500 mt-3">
-                  {difficulty === "easy"   && "~40 numbers shown — good for beginners"}
+                  {difficulty === "easy" && "~40 numbers shown — good for beginners"}
                   {difficulty === "medium" && "~32 numbers shown — balanced challenge"}
-                  {difficulty === "hard"   && "~26 numbers shown — for experienced solvers"}
+                  {difficulty === "hard" && "~26 numbers shown — for experienced solvers"}
                 </p>
               </div>
 
@@ -221,7 +223,7 @@ export default function SudokuGeneratorPage() {
                   <label className="block text-sm text-slate-400 mb-2">
                     Number of puzzles
                     <span className="ml-2 text-xs text-slate-500">
-                      {premiumStatus.isPremium ? "(Premium: Unlimited)" : "(Free limit: 5)"}
+                      {premiumStatus.plan === "free" ? "(Free limit: 5)" : premiumStatus.plan === "starter" ? "(Starter limit: 20)" : premiumStatus.plan === "pro" ? "(Pro limit: 50)" : "(Agency limit: 500)"}
                     </span>
                   </label>
                   <input
@@ -255,14 +257,12 @@ export default function SudokuGeneratorPage() {
                   </div>
                   <button
                     onClick={() => setIncludeSolutions(!includeSolutions)}
-                    className={`relative w-12 h-6 rounded-full transition-all ${
-                      includeSolutions ? "bg-amber-500" : "bg-slate-700"
-                    }`}
+                    className={`relative w-12 h-6 rounded-full transition-all ${includeSolutions ? "bg-amber-500" : "bg-slate-700"
+                      }`}
                   >
                     <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                        includeSolutions ? "translate-x-6" : "translate-x-0"
-                      }`}
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${includeSolutions ? "translate-x-6" : "translate-x-0"
+                        }`}
                     />
                   </button>
                 </div>
@@ -275,14 +275,12 @@ export default function SudokuGeneratorPage() {
                   </div>
                   <button
                     onClick={() => setIncludeCover(!includeCover)}
-                    className={`relative w-12 h-6 rounded-full transition-all ${
-                      includeCover ? "bg-amber-500" : "bg-slate-700"
-                    }`}
+                    className={`relative w-12 h-6 rounded-full transition-all ${includeCover ? "bg-amber-500" : "bg-slate-700"
+                      }`}
                   >
                     <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                        includeCover ? "translate-x-6" : "translate-x-0"
-                      }`}
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${includeCover ? "translate-x-6" : "translate-x-0"
+                        }`}
                     />
                   </button>
                 </div>
@@ -366,14 +364,12 @@ export default function SudokuGeneratorPage() {
                   <span className="text-sm text-slate-300 font-bold">Include solution pages</span>
                   <button
                     onClick={() => setIncludeSolutions(!includeSolutions)}
-                    className={`relative w-12 h-6 rounded-full transition-all ${
-                      includeSolutions ? "bg-amber-500" : "bg-slate-700"
-                    }`}
+                    className={`relative w-12 h-6 rounded-full transition-all ${includeSolutions ? "bg-amber-500" : "bg-slate-700"
+                      }`}
                   >
                     <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                        includeSolutions ? "translate-x-6" : "translate-x-0"
-                      }`}
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${includeSolutions ? "translate-x-6" : "translate-x-0"
+                        }`}
                     />
                   </button>
                 </div>

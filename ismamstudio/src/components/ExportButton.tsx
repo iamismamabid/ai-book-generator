@@ -4,8 +4,8 @@ import posthog from "posthog-js";
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
 import { Download } from "lucide-react";
-import { drawCoverPagePart, drawWatermark } from "@/app/utils/pdfExportService";
-import ExportInteriorModal from "./ExportInteriorModal";
+import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "@/app/utils/pdfExportService";
+import ExportInteriorModal, { TrimSizeOption } from "./ExportInteriorModal";
 
 interface Chapter {
   id: string;
@@ -25,6 +25,35 @@ interface ExportButtonProps {
   customTextColor?: string;
 }
 
+type ManuscriptTrimSize = "8.5x11" | "6x9" | "5x8" | "5.5x8.5" | "8.25x6" | "8.5x8.5";
+
+const TRIM_DIMENSIONS: Record<ManuscriptTrimSize, { w: number; h: number }> = {
+  "8.5x11": { w: 8.5, h: 11 },
+  "6x9": { w: 6, h: 9 },
+  "5x8": { w: 5, h: 8 },
+  "5.5x8.5": { w: 5.5, h: 8.5 },
+  "8.25x6": { w: 8.25, h: 6 },
+  "8.5x8.5": { w: 8.5, h: 8.5 },
+};
+
+const TRIM_SIZE_OPTIONS: TrimSizeOption<ManuscriptTrimSize>[] = [
+  { value: "8.5x11", label: '8.5″ × 11″ (Large Print)', tier: "free" },
+  { value: "6x9", label: '6″ × 9″ (Standard Novel)', tier: "starter" },
+  { value: "5.5x8.5", label: '5.5″ × 8.5″ (Compact Novel)', tier: "starter" },
+  { value: "5x8", label: '5″ × 8″ (Pocket Book)', tier: "pro" },
+  { value: "8.25x6", label: '8.25″ × 6″ (Landscape)', tier: "pro" },
+  { value: "8.5x8.5", label: '8.5″ × 8.5″ (Square)', tier: "pro" },
+];
+
+// KDP's required inside (gutter) margin grows with total interior page count.
+const getKdpGutterMargin = (totalPages: number): number => {
+  if (totalPages <= 150) return 0.375;
+  if (totalPages <= 300) return 0.5;
+  if (totalPages <= 500) return 0.625;
+  if (totalPages <= 700) return 0.75;
+  return 0.875;
+};
+
 export default function ExportButton({
   title = "My Book",
   subtitle = "An AI Generated Journey",
@@ -40,7 +69,7 @@ export default function ExportButton({
   const handleExportPDF = async (options: {
     includeCover: boolean;
     coverState: any;
-    trimSize: "6x9" | "8.5x11" | "5x8";
+    trimSize: ManuscriptTrimSize;
     hasBleed: boolean;
     showGuides: boolean;
     isPremium?: boolean;
@@ -48,32 +77,18 @@ export default function ExportButton({
     const { includeCover, coverState, trimSize, hasBleed, showGuides, isPremium } = options;
 
     // 1. Determine trim dimensions in inches
-    let w = 8.5;
-    let h = 11;
-    if (trimSize === "6x9") {
-      w = 6;
-      h = 9;
-    } else if (trimSize === "5x8") {
-      w = 5;
-      h = 8;
-    }
+    const { w, h } = TRIM_DIMENSIONS[trimSize] ?? TRIM_DIMENSIONS["8.5x11"];
 
     const bleed = 0.125;
     const pageW = hasBleed ? w + bleed * 2 : w;
     const pageH = hasBleed ? h + bleed * 2 : h;
 
-    const doc = new jsPDF({
-      orientation: "portrait",
-      unit: "in",
-      format: [pageW, pageH],
-    });
-
     // Typography & Margins custom layout parameters
     const docFont = customFont;
-    
+
     // Map CSS px size to PDF font size (pt)
     const docFontSize = Math.max(8, Math.min(20, Math.round(customFontSize * 0.65)));
-    
+
     // Map line height spacing (in)
     const lineSpacing = customLineSpacing * 0.13;
 
@@ -90,203 +105,235 @@ export default function ExportButton({
 
     const marginT = 0.85;
     const marginB = 0.85;
+    const outerMargin = 0.5;
 
-    let pageNum = 1;
-    let currentLineIndex = 0;
-    let firstPageAdded = false;
+    // Renders the full interior (title + intro + chapters) into `doc` using the given
+    // inside/gutter margin, and returns the final page number reached. Chapters are forced
+    // to start on a recto (odd, right-hand) page, inserting a blank verso page if needed.
+    const renderInterior = (
+      doc: jsPDF,
+      gutterMargin: number,
+      drawGuides: boolean,
+      hasFrontCoverPage: boolean
+    ): number => {
+      let pageNum = 1;
+      let currentLineIndex = 0;
 
-    // Helper to draw headers & footers (KDP layout)
-    const drawHeaderAndFooter = (doc: jsPDF, pNum: number, currentChapterTitle: string) => {
-      if (pNum === 1) return; // Skip title page
+      const drawHeaderAndFooter = (pNum: number, currentChapterTitle: string) => {
+        if (pNum === 1) return; // Skip title page
 
-      const isOdd = pNum % 2 === 1;
-      const marginL = isOdd ? 0.85 : 0.5;
-      const marginR = isOdd ? 0.5 : 0.85;
-      const headerY = 0.45;
-      const footerY = pageH - 0.45;
+        const isOdd = pNum % 2 === 1;
+        const marginL = isOdd ? gutterMargin : outerMargin;
+        const marginR = isOdd ? outerMargin : gutterMargin;
+        const headerY = 0.45;
+        const footerY = pageH - 0.45;
 
-      // Draw running header thin line
-      doc.setDrawColor(226, 232, 240); // slate-200
-      doc.setLineWidth(0.005);
-      doc.line(marginL, headerY + 0.05, pageW - marginR, headerY + 0.05);
+        // Draw running header thin line
+        doc.setDrawColor(226, 232, 240); // slate-200
+        doc.setLineWidth(0.005);
+        doc.line(marginL, headerY + 0.05, pageW - marginR, headerY + 0.05);
 
-      // Draw Running Header Text
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(100, 116, 139); // slate-500
+        // Draw Running Header Text
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139); // slate-500
 
-      if (isOdd) {
-        // Odd Page: Book Title Left, Chapter Title Right
-        doc.text(title, marginL, headerY);
-        doc.text(currentChapterTitle, pageW - marginR, headerY, { align: "right" });
-      } else {
-        // Even Page: Chapter Title Left, Book Title Right
-        doc.text(currentChapterTitle, marginL, headerY);
-        doc.text(title, pageW - marginR, headerY, { align: "right" });
-      }
+        if (isOdd) {
+          // Odd Page: Book Title Left, Chapter Title Right
+          doc.text(title, marginL, headerY);
+          doc.text(currentChapterTitle, pageW - marginR, headerY, { align: "right" });
+        } else {
+          // Even Page: Chapter Title Left, Book Title Right
+          doc.text(currentChapterTitle, marginL, headerY);
+          doc.text(title, pageW - marginR, headerY, { align: "right" });
+        }
 
-      // Draw Footer Page Number
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(148, 163, 184); // slate-400
-      doc.text(`Page ${pNum}`, marginL + (pageW - marginL - marginR) / 2, footerY, { align: "center" });
-    };
+        // Draw Footer Page Number
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184); // slate-400
+        doc.text(`Page ${pNum}`, marginL + (pageW - marginL - marginR) / 2, footerY, { align: "center" });
 
-    // Helper to print blocks of text with paragraph indentation
-    const renderTextBlock = (text: string, currentChapterTitle: string) => {
-      // Split text into paragraphs
-      const paragraphs = text
-        .split(/\r?\n/)
-        .map((p) => p.trim())
-        .filter((p) => p.length > 0);
+        if (drawGuides) {
+          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+        }
+      };
 
-      paragraphs.forEach((pText) => {
-        const indent = 0.25; // 0.25 in indent for standard novel layout
-        let isFirstLine = true;
-        let remainingText = pText;
+      // Helper to print blocks of text with paragraph indentation
+      const renderTextBlock = (text: string, currentChapterTitle: string) => {
+        // Split text into paragraphs
+        const paragraphs = text
+          .split(/\r?\n/)
+          .map((p) => p.trim())
+          .filter((p) => p.length > 0);
 
-        while (remainingText.length > 0) {
-          // Alternating inside/outside margins
-          const isOdd = pageNum % 2 === 1;
-          const marginL = isOdd ? 0.85 : 0.5;
-          const marginR = isOdd ? 0.5 : 0.85;
-          const contentW = pageW - marginL - marginR;
-          const contentH = pageH - marginT - marginB;
+        paragraphs.forEach((pText) => {
+          const indent = 0.25; // 0.25 in indent for standard novel layout
+          let isFirstLine = true;
+          let remainingText = pText;
 
-          const maxLinesPerPage = Math.floor(contentH / lineSpacing);
+          while (remainingText.length > 0) {
+            // Alternating inside/outside margins
+            const isOdd = pageNum % 2 === 1;
+            const marginL = isOdd ? gutterMargin : outerMargin;
+            const marginR = isOdd ? outerMargin : gutterMargin;
+            const contentW = pageW - marginL - marginR;
+            const contentH = pageH - marginT - marginB;
 
-          if (currentLineIndex >= maxLinesPerPage) {
-            // Close page and add header/footer
-            drawHeaderAndFooter(doc, pageNum, currentChapterTitle);
-            if (isPremium === false) {
-              drawWatermark(doc, pageW, pageH);
+            const maxLinesPerPage = Math.floor(contentH / lineSpacing);
+
+            if (currentLineIndex >= maxLinesPerPage) {
+              // Close page and add header/footer
+              drawHeaderAndFooter(pageNum, currentChapterTitle);
+              if (isPremium === false) {
+                drawWatermark(doc, pageW, pageH);
+              }
+
+              // Create new page
+              doc.addPage();
+              pageNum++;
+              currentLineIndex = 0;
             }
 
-            // Create new page
-            doc.addPage();
-            pageNum++;
-            currentLineIndex = 0;
+            const activeWidth = isFirstLine ? contentW - indent : contentW;
+            const activeX = isFirstLine ? marginL + indent : marginL;
+
+            doc.setFont(docFont, "normal");
+            doc.setFontSize(docFontSize);
+            doc.setTextColor(r, g, b);
+
+            const splitResult = doc.splitTextToSize(remainingText, activeWidth);
+            const lineToPrint = splitResult[0];
+
+            if (!lineToPrint) break;
+
+            const printY = marginT + currentLineIndex * lineSpacing + 0.15;
+            doc.text(lineToPrint, activeX, printY);
+            currentLineIndex++;
+
+            remainingText = remainingText.substring(lineToPrint.length).trim();
+            isFirstLine = false;
           }
+        });
+      };
 
-          const activeWidth = isFirstLine ? contentW - indent : contentW;
-          const activeX = isFirstLine ? marginL + indent : marginL;
+      // ── TITLE PAGE ───────────────────────────────────────────
+      if (hasFrontCoverPage) {
+        doc.addPage();
+      }
 
-          doc.setFont(docFont, "normal");
-          doc.setFontSize(docFontSize);
-          doc.setTextColor(r, g, b);
+      // Title page margins (Page 1)
+      const titleMarginL = 0.85;
+      const titleContentW = pageW - titleMarginL - 0.5;
 
-          const splitResult = doc.splitTextToSize(remainingText, activeWidth);
-          const lineToPrint = splitResult[0];
+      doc.setFont(docFont, "bold");
+      doc.setFontSize(28);
+      doc.setTextColor(r, g, b);
+      const titleLines = doc.splitTextToSize(title, titleContentW);
+      doc.text(titleLines, titleMarginL + titleContentW / 2, pageH * 0.3, { align: "center" });
 
-          if (!lineToPrint) break;
+      // Decorative divider line
+      doc.setDrawColor(r, g, b);
+      doc.setLineWidth(0.015);
+      doc.line(titleMarginL + titleContentW * 0.4, pageH * 0.4, titleMarginL + titleContentW * 0.6, pageH * 0.4);
 
-          const printY = marginT + currentLineIndex * lineSpacing + 0.15;
-          doc.text(lineToPrint, activeX, printY);
-          currentLineIndex++;
+      doc.setFont(docFont, "italic");
+      doc.setFontSize(14);
+      doc.setTextColor(r, g, b);
+      const subtitleLines = doc.splitTextToSize(subtitle, titleContentW);
+      doc.text(subtitleLines, titleMarginL + titleContentW / 2, pageH * 0.46, { align: "center" });
 
-          remainingText = remainingText.substring(lineToPrint.length).trim();
-          isFirstLine = false;
-        }
-      });
-    };
+      if (isPremium === false) {
+        drawWatermark(doc, pageW, pageH);
+      }
 
-    // ── 1. FRONT COVER ──────────────────────────────────────────
-    if (includeCover && coverState) {
-      await drawCoverPagePart(doc, coverState, "front", pageW, pageH);
-      firstPageAdded = true;
-    }
-
-    // ── 2. TITLE PAGE ───────────────────────────────────────────
-    if (firstPageAdded) {
-      doc.addPage();
-    }
-    firstPageAdded = true;
-
-    // Title page margins (Page 1)
-    const titleMarginL = 0.85;
-    const titleContentW = pageW - titleMarginL - 0.5;
-
-    doc.setFont(docFont, "bold");
-    doc.setFontSize(28);
-    doc.setTextColor(r, g, b);
-    const titleLines = doc.splitTextToSize(title, titleContentW);
-    doc.text(titleLines, titleMarginL + titleContentW / 2, pageH * 0.3, { align: "center" });
-
-    // Decorative divider line
-    doc.setDrawColor(r, g, b);
-    doc.setLineWidth(0.015);
-    doc.line(titleMarginL + titleContentW * 0.4, pageH * 0.4, titleMarginL + titleContentW * 0.6, pageH * 0.4);
-
-    doc.setFont(docFont, "italic");
-    doc.setFontSize(14);
-    doc.setTextColor(r, g, b);
-    const subtitleLines = doc.splitTextToSize(subtitle, titleContentW);
-    doc.text(subtitleLines, titleMarginL + titleContentW / 2, pageH * 0.46, { align: "center" });
-
-    if (isPremium === false) {
-      drawWatermark(doc, pageW, pageH);
-    }
-
-    // ── 3. BOOK INTRODUCTION / BLURB ───────────────────────────
-    doc.addPage();
-    pageNum++;
-    currentLineIndex = 0;
-
-    // Title: Introduction
-    doc.setFont(docFont, "bold");
-    doc.setFontSize(20);
-    doc.setTextColor(r, g, b);
-    doc.text("Introduction", 0.85, marginT + 0.2);
-    currentLineIndex = 3; // Leave space under heading
-
-    renderTextBlock(content, "Introduction");
-
-    // Close introduction page
-    drawHeaderAndFooter(doc, pageNum, "Introduction");
-    if (isPremium === false) {
-      drawWatermark(doc, pageW, pageH);
-    }
-
-    // ── 4. CHAPTERS ─────────────────────────────────────────────
-    chapters.forEach((chapter) => {
+      // ── BOOK INTRODUCTION / BLURB ───────────────────────────
       doc.addPage();
       pageNum++;
       currentLineIndex = 0;
 
-      // Stylized Chapter Start layout
-      const isOdd = pageNum % 2 === 1;
-      const marginL = isOdd ? 0.85 : 0.5;
-      const marginR = isOdd ? 0.5 : 0.85;
-      const contentW = pageW - marginL - marginR;
-
-      // Bold stylized Chapter Title starting lower on the page (1.8 inches down)
+      // Title: Introduction
       doc.setFont(docFont, "bold");
-      doc.setFontSize(22);
+      doc.setFontSize(20);
       doc.setTextColor(r, g, b);
-      
-      const chapterTitleText = chapter.title.toUpperCase();
-      const splitTitle = doc.splitTextToSize(chapterTitleText, contentW);
-      doc.text(splitTitle, marginL + contentW / 2, 1.8, { align: "center" });
+      doc.text("Introduction", 0.85, marginT + 0.2);
+      currentLineIndex = 3; // Leave space under heading
 
-      // Decorative divider under chapter header
-      doc.setDrawColor(r, g, b);
-      doc.setLineWidth(0.005);
-      doc.line(marginL + contentW * 0.35, 2.3, marginL + contentW * 0.65, 2.3);
+      renderTextBlock(content, "Introduction");
 
-      // Start text below title area
-      currentLineIndex = 9;
-
-      // Print chapter paragraphs
-      renderTextBlock(chapter.content, chapter.title);
-
-      // Close final page of the chapter
-      drawHeaderAndFooter(doc, pageNum, chapter.title);
+      // Close introduction page
+      drawHeaderAndFooter(pageNum, "Introduction");
       if (isPremium === false) {
         drawWatermark(doc, pageW, pageH);
       }
-    });
 
-    // ── 5. BACK COVER ───────────────────────────────────────────
+      // ── CHAPTERS ─────────────────────────────────────────────
+      chapters.forEach((chapter) => {
+        // Force chapter openings onto a right-hand (recto/odd) page, per standard print layout.
+        if (pageNum % 2 !== 0) {
+          doc.addPage();
+          pageNum++;
+        }
+
+        doc.addPage();
+        pageNum++;
+        currentLineIndex = 0;
+
+        // Stylized Chapter Start layout
+        const isOdd = pageNum % 2 === 1;
+        const marginL = isOdd ? gutterMargin : outerMargin;
+        const marginR = isOdd ? outerMargin : gutterMargin;
+        const contentW = pageW - marginL - marginR;
+
+        // Bold stylized Chapter Title starting lower on the page (1.8 inches down)
+        doc.setFont(docFont, "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(r, g, b);
+
+        const chapterTitleText = chapter.title.toUpperCase();
+        const splitTitle = doc.splitTextToSize(chapterTitleText, contentW);
+        doc.text(splitTitle, marginL + contentW / 2, 1.8, { align: "center" });
+
+        // Decorative divider under chapter header
+        doc.setDrawColor(r, g, b);
+        doc.setLineWidth(0.005);
+        doc.line(marginL + contentW * 0.35, 2.3, marginL + contentW * 0.65, 2.3);
+
+        // Start text below title area
+        currentLineIndex = 9;
+
+        // Print chapter paragraphs
+        renderTextBlock(chapter.content, chapter.title);
+
+        // Close final page of the chapter
+        drawHeaderAndFooter(pageNum, chapter.title);
+        if (isPremium === false) {
+          drawWatermark(doc, pageW, pageH);
+        }
+      });
+
+      return pageNum;
+    };
+
+    // ── PASS 1: probe the interior at a neutral gutter to estimate total page count ──
+    // (KDP's required gutter width depends on total page count, so we need a page count
+    // before we know the correct margin. Cover pages are excluded — KDP's gutter table is
+    // based on interior page count only.)
+    const probeDoc = new jsPDF({ orientation: "portrait", unit: "in", format: [pageW, pageH] });
+    const estimatedPages = renderInterior(probeDoc, 0.5, false, false);
+    const gutterMargin = getKdpGutterMargin(estimatedPages);
+
+    // ── PASS 2: real render with the correct KDP gutter margin ──
+    const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [pageW, pageH] });
+    let hasFrontCoverPage = false;
+
+    if (includeCover && coverState) {
+      await drawCoverPagePart(doc, coverState, "front", pageW, pageH);
+      hasFrontCoverPage = true;
+    }
+
+    renderInterior(doc, gutterMargin, showGuides, hasFrontCoverPage);
+
     if (includeCover && coverState) {
       doc.addPage();
       await drawCoverPagePart(doc, coverState, "back", pageW, pageH);
@@ -298,6 +345,7 @@ export default function ExportButton({
       trim_size: trimSize,
       include_cover: includeCover,
       has_bleed: hasBleed,
+      gutter_margin: gutterMargin,
       chapter_count: chapters.length,
       is_premium: isPremium,
     });
@@ -312,11 +360,12 @@ export default function ExportButton({
         <Download className="w-4 h-4" /> Export PDF
       </button>
 
-      <ExportInteriorModal
+      <ExportInteriorModal<ManuscriptTrimSize>
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         showSolutionsToggle={false}
         defaultTrimSize="6x9"
+        trimSizeOptions={TRIM_SIZE_OPTIONS}
         onExport={handleExportPDF}
       />
     </>

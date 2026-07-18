@@ -15,7 +15,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', adjustFontFa
 
 export const metadata: Metadata = {
   title: "KDPage | All-in-One KDP Book Creation Toolkit",
-  description: "Create puzzle interiors, novel chapters, shape-masked mazes, word searches, and gorgeous covers for Amazon KDP — in minutes. No design software needed.",
+  description: "Create puzzle interiors, shape-masked mazes, word searches, crosswords, and gorgeous covers for Amazon KDP — in minutes. No design software needed.",
   metadataBase: new URL("https://www.kdpage.com"),
   alternates: {
     canonical: "https://www.kdpage.com",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "KDPage — Create & Publish KDP Books in Minutes",
-    description: "The ultimate all-in-one toolkit for Amazon KDP self-publishers. Sudoku, mazes, word searches, novel outlines, and full cover design — all in one place.",
+    description: "The ultimate all-in-one toolkit for Amazon KDP self-publishers. Sudoku, mazes, word searches, crosswords, and full cover design — all in one place.",
     url: "https://www.kdpage.com",
     siteName: "KDPage",
     images: [
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "KDPage — KDP Book Creation Toolkit",
-    description: "Create professional puzzle books, chapters & covers for Amazon KDP in minutes.",
+    description: "Create professional puzzle books, custom activity interiors & covers for Amazon KDP in minutes.",
     images: ["/og-image.png"],
   },
   icons: {
@@ -101,7 +101,7 @@ export default function RootLayout({
                     {
                       "@type": "SoftwareApplication",
                       "name": "KDPage",
-                      "description": "All-in-one KDP book creation toolkit. Generate puzzle interiors, AI-assisted novel chapters, shape-masked mazes, word searches, and gorgeous covers for Amazon KDP.",
+                      "description": "All-in-one KDP book creation toolkit. Generate puzzle interiors, shape-masked mazes, word searches, crosswords, and gorgeous covers for Amazon KDP.",
                       "url": "https://www.kdpage.com",
                       "applicationCategory": "DesignApplication",
                       "operatingSystem": "Web",
@@ -138,7 +138,7 @@ export default function RootLayout({
                         }
                       ],
                       "screenshot": "https://www.kdpage.com/og-image.png",
-                      "featureList": "Sudoku Generator, Shape-Masked Maze Designer, Word Search Builder, Cryptogram Studio, Math Puzzle Builder, Word Scramble Studio, AI Chapter Writer, Cover & Interior Canvas Studio, KDP Niche Hunter & Keyword Spy, Spine & Cover Calculator, ISBN Barcode Generator"
+                      "featureList": "Sudoku Generator, Shape-Masked Maze Designer, Word Search Builder, Cryptogram Studio, Math Puzzle Builder, Word Scramble Studio, Layout & Outline Planner, Cover & Interior Canvas Studio, KDP Niche Hunter & Keyword Spy, Spine & Cover Calculator, ISBN Barcode Generator"
                     },
                     {
                       "@type": "Organization",

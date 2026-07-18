@@ -7,32 +7,51 @@ import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 
-interface ExportInteriorModalProps {
+export interface TrimSizeOption<T extends string> {
+  value: T;
+  label: string;
+  /** Minimum plan tier required to select this trim size. */
+  tier: "free" | "starter" | "pro";
+}
+
+const DEFAULT_TRIM_OPTIONS: TrimSizeOption<"6x9" | "8.5x11" | "5x8">[] = [
+  { value: "8.5x11", label: '8.5″ × 11″ (Large Print / Puzzle Book)', tier: "free" },
+  { value: "6x9", label: '6″ × 9″ (Novel / Workbook)', tier: "starter" },
+  { value: "5x8", label: '5″ × 8″ (Pocket Book)', tier: "pro" },
+];
+
+const TIER_RANK = { free: 0, starter: 1, pro: 2 } as const;
+
+interface ExportInteriorModalProps<T extends string = "6x9" | "8.5x11" | "5x8"> {
   isOpen: boolean;
   onClose: () => void;
   onExport: (options: {
     includeCover: boolean;
     coverState: any;
     includeSolutions: boolean;
-    trimSize: "6x9" | "8.5x11" | "5x8";
+    trimSize: T;
     hasBleed: boolean;
     showGuides: boolean;
   }) => void | Promise<void>;
-  defaultTrimSize?: "6x9" | "8.5x11" | "5x8";
+  defaultTrimSize?: T;
   showSolutionsToggle?: boolean;
+  /** Override the selectable trim sizes. Defaults to the standard 3-size KDP set. */
+  trimSizeOptions?: TrimSizeOption<T>[];
 }
 
-export default function ExportInteriorModal({
+export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" | "5x8">({
   isOpen,
   onClose,
   onExport,
-  defaultTrimSize = "8.5x11",
+  defaultTrimSize = "8.5x11" as T,
   showSolutionsToggle = true,
-}: ExportInteriorModalProps) {
+  trimSizeOptions,
+}: ExportInteriorModalProps<T>) {
+  const trimOptions = (trimSizeOptions ?? DEFAULT_TRIM_OPTIONS) as unknown as TrimSizeOption<T>[];
   const { userId, isLoaded, isSignedIn } = useAuth();
   const [includeCover, setIncludeCover] = useState(false);
   const [includeSolutions, setIncludeSolutions] = useState(true);
-  const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">(defaultTrimSize);
+  const [trimSize, setTrimSize] = useState<T>(defaultTrimSize);
   const [hasBleed, setHasBleed] = useState(false);
   const [showGuides, setShowGuides] = useState(true);
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
@@ -88,14 +107,21 @@ export default function ExportInteriorModal({
     }
   }, [isOpen, userId, isLoaded, isSignedIn]);
 
+  const userTierRank = premiumStatus.plan === "free" || !premiumStatus.plan
+    ? TIER_RANK.free
+    : premiumStatus.plan === "starter"
+    ? TIER_RANK.starter
+    : TIER_RANK.pro;
+
   useEffect(() => {
-    if (premiumStatus.checked) {
-      if (premiumStatus.plan === "free") {
-        setTrimSize("8.5x11");
-      } else if (premiumStatus.plan === "starter" && trimSize === "5x8") {
-        setTrimSize("8.5x11");
-      }
+    if (!premiumStatus.checked) return;
+    const current = trimOptions.find((o) => o.value === trimSize);
+    const currentRank = current ? TIER_RANK[current.tier] : TIER_RANK.free;
+    if (currentRank > userTierRank) {
+      const fallback = trimOptions.find((o) => TIER_RANK[o.tier] <= userTierRank) ?? trimOptions[0];
+      setTrimSize(fallback.value);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [premiumStatus.checked, premiumStatus.plan]);
 
   // Load cover state from localStorage
@@ -277,22 +303,17 @@ export default function ExportInteriorModal({
                 <label className="text-xs font-black text-slate-800 block mb-2 uppercase">KDP Trim Size</label>
                 <select
                   value={trimSize}
-                  onChange={(e) => setTrimSize(e.target.value as any)}
+                  onChange={(e) => setTrimSize(e.target.value as T)}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-600"
                 >
-                  <option value="8.5x11">8.5″ × 11″ (Large Print / Puzzle Book)</option>
-                  <option 
-                    value="6x9" 
-                    disabled={premiumStatus.plan === "free"}
-                  >
-                    6″ × 9″ (Novel / Workbook) {!premiumStatus.isPremium && "🔒"}
-                  </option>
-                  <option 
-                    value="5x8" 
-                    disabled={premiumStatus.plan === "free"}
-                  >
-                    5″ × 8″ (Pocket Book) {!premiumStatus.isPremium && "🔒"}
-                  </option>
+                  {trimOptions.map((opt) => {
+                    const locked = TIER_RANK[opt.tier] > userTierRank;
+                    return (
+                      <option key={opt.value} value={opt.value} disabled={locked}>
+                        {opt.label} {locked && "🔒"}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
@@ -315,8 +336,8 @@ export default function ExportInteriorModal({
 
                 <div className="flex justify-between items-center">
                   <div>
-                    <label className="text-xs font-black text-slate-800 block">Double-Sided Gutter Margin</label>
-                    <span className="text-[9px] font-bold text-slate-400 block uppercase">Adds extra padding for binding</span>
+                    <label className="text-xs font-black text-slate-800 block">Add Print Bleed</label>
+                    <span className="text-[9px] font-bold text-slate-400 block uppercase">Extends page 0.125" for edge-to-edge images</span>
                   </div>
                   <input
                     type="checkbox"

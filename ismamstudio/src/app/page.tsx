@@ -438,6 +438,25 @@ export default function HomePage() {
             </Link>
           </div>
 
+          {/* 8.6. Crossword Studio */}
+          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+            <div>
+              <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
+                <Grid3x3 className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Crossword Studio</h3>
+              <p className="text-slate-600 text-sm leading-relaxed font-semibold">
+                Compile custom crossword puzzles (10x10 to 20x20). Customize clues, adjust word placements, and export KDP paperback-ready PDF sheets.
+              </p>
+            </div>
+            <Link
+              href="/studio/crossword"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-600 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mt-6"
+            >
+              Open Crosswords <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
           {/* 9. Chapter Writer & Outliner */}
           {/* Chapter Writer card hidden for Paddle review
           <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">

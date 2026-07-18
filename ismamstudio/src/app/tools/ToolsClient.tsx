@@ -172,6 +172,15 @@ export default function FreeToolsHub() {
       link: "/studio"
     },
     {
+      id: "crossword-generator",
+      name: "Free KDP Crossword Generator",
+      badge: "New",
+      category: "Design",
+      description: "Design custom crossword puzzle grids and compile high-contrast vector PDF worksheets for KDP interiors.",
+      features: ["Custom grid sizing (10x10 to 20x20)", "Live KDP safe area preview", "Instant answers sheets"],
+      link: "/studio/crossword"
+    },
+    {
       id: "cover-calculator",
       name: "Free KDP Cover Size Calculator",
       badge: "New",

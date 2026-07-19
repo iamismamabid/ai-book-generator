@@ -128,6 +128,36 @@ export default function sitemap(): MetadataRoute.Sitemap {
             changeFrequency: 'monthly',
             priority: 0.7,
         },
+        // New free tools (calculators, text, image, and PDF utilities)
+        ...[
+            'print-cost-calculator',
+            'kenp-calculator',
+            'ebook-royalty-calculator',
+            'ads-roi-calculator',
+            'reading-time-calculator',
+            'readability-calculator',
+            'keyword-density',
+            'grammar-checker',
+            'copyright-page-generator',
+            'trademark-checker',
+            'book-planner',
+            'word-cloud',
+            'qr-code-generator',
+            'image-resizer',
+            'background-remover',
+            'photo-to-line-art',
+            'pattern-generator',
+            'stock-images',
+            'pdf-compressor',
+            'kdp-file-validator',
+            'ocr-scanner',
+            'interior-templates',
+        ].map((slug) => ({
+            url: `${baseUrl}/tools/${slug}`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly' as const,
+            priority: 0.7,
+        })),
 
         // ── Utility & Marketing ─────────────────────────────────
         {

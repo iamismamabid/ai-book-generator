@@ -2,6 +2,7 @@ import FAQPageInner from "./FAQPageInner";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://www.kdpage.com/faq" },
   title: "Frequently Asked Questions | KDPage Help Center",
   description: "Have questions about KDPage? Read our FAQs about puzzle creation, trim size compliance, commercial rights, licensing, and our AppSumo lifetime deals.",
 };

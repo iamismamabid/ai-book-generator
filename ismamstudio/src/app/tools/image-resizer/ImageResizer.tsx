@@ -130,12 +130,28 @@ export default function ImageResizer() {
     setZipping(false);
   };
 
+  const faqs = [
+    {
+      q: "Are my photos uploaded to a server?",
+      a: "No — every resize happens locally using your browser's canvas; nothing is sent anywhere, which is also why there's no file-count limit.",
+    },
+    {
+      q: "What's the difference between Crop to Fill and Fit Inside?",
+      a: "Crop to Fill scales the image to cover the full target size and crops any overflow; Fit Inside scales the image to fit entirely within the size, adding letterboxing if the aspect ratios differ.",
+    },
+    {
+      q: "What size should I use for a KDP eBook cover?",
+      a: "1600×2560px is Amazon's standard recommended Kindle cover size — it's included as a one-click preset.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Mass Image"
       highlight="Resizer"
       subtitle="Bulk resize up to 50 images at once with KDP cover and social media presets. Download individually or grab everything as a ZIP — all in your browser."
       maxWidth="max-w-7xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Controls */}

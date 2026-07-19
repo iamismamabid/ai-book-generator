@@ -137,12 +137,28 @@ export default function WordCloudGenerator() {
     a.click();
   };
 
+  const faqs = [
+    {
+      q: "Can I use the exported image commercially?",
+      a: "Yes — the PNG you download is generated entirely from your own text with no watermark or usage restriction.",
+    },
+    {
+      q: "Why do some words get skipped?",
+      a: "At high word counts the layout algorithm occasionally can't fit every word without excessive overlap — reduce max words or click Shuffle Layout to try a different arrangement.",
+    },
+    {
+      q: "Does my pasted text get uploaded?",
+      a: "No — the whole word cloud renders on an in-browser canvas; nothing leaves your device.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Word Cloud"
       highlight="Generator"
       subtitle="Turn any text or keyword list into a beautiful word cloud — perfect for research visualization, cover concepts, and social media graphics."
       maxWidth="max-w-7xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Controls */}

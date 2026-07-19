@@ -18,11 +18,27 @@ export default function KenpCalculator() {
   const yearly = monthly * 12;
   const estimatedKenpc = Math.round(wordCount / WORDS_PER_KENP);
 
+  const faqs = [
+    {
+      q: "What is KENP?",
+      a: "KENP (Kindle Edition Normalized Page count) is Amazon's standardized page count used to pay royalties for Kindle Unlimited and Kindle Owners' Lending Library reads.",
+    },
+    {
+      q: "Why does the per-page rate change every month?",
+      a: "Amazon pays KU royalties from a shared monthly fund; the per-page rate is only set after each month closes based on total fund size and total pages read, so it fluctuates.",
+    },
+    {
+      q: "Do I need to be in KDP Select to earn KENP royalties?",
+      a: "Yes — only books enrolled in KDP Select are eligible for Kindle Unlimited page-read royalties.",
+    },
+  ];
+
   return (
     <ToolShell
       title="KENP Royalty"
       highlight="Calculator"
       subtitle="Estimate your Kindle Unlimited earnings from KENP page reads. Model different KDP Select fund rates and read-through volumes."
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Inputs */}

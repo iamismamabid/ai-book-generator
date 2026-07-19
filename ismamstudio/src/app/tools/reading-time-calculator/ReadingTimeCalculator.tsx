@@ -35,12 +35,28 @@ export default function ReadingTimeCalculator() {
   const narrationMinutes = words / NARRATION_WPM;
   const pages = Math.ceil(words / WORDS_PER_PAGE);
 
+  const faqs = [
+    {
+      q: "How accurate is the reading time estimate?",
+      a: "It's based on average adult silent-reading speed (~238 words per minute) and will vary by reader and genre — use the speed slider to model faster or slower readers.",
+    },
+    {
+      q: "How is audiobook length estimated?",
+      a: "From standard professional narration pace (~150 words per minute), which is what ACX and most audiobook producers use to estimate finished-hour length.",
+    },
+    {
+      q: "Does pasted text get uploaded anywhere?",
+      a: "No — word counting and analysis happen entirely in your browser; nothing you paste is sent to a server.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Reading Time"
       highlight="Calculator"
       subtitle="Estimate how long readers need to finish your book — plus audiobook length and printed page estimates."
       maxWidth="max-w-5xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Inputs */}

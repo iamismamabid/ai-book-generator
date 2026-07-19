@@ -3,6 +3,7 @@ import { ArrowLeft, Check, X, Shield, Sparkles, Zap } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://www.kdpage.com/compare" },
   title: "Compare Plans & Features | KDPage Matrix",
   description: "View our detailed feature matrix. Compare Free, Starter, Pro, and Publisher Agency features side-by-side to find the right toolkit for your Amazon KDP self-publishing business.",
 };

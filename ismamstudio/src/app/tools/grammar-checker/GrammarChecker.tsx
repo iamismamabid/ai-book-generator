@@ -128,11 +128,27 @@ export default function GrammarChecker() {
     ? Math.max(0, Math.min(100, Math.round(100 - (errorCount * 8 + warnCount * 4 + styleCount * 2) / per100)))
     : 0;
 
+  const faqs = [
+    {
+      q: "Does this catch every grammar mistake?",
+      a: "No — it's a rule-based checker for mechanical slips, passive voice, filler words, and clichés. For a final manuscript, pair it with a human proofread.",
+    },
+    {
+      q: "Is my text uploaded anywhere?",
+      a: "No — every check runs locally in your browser; nothing is sent to a server.",
+    },
+    {
+      q: "What does the Clarity Score measure?",
+      a: "A 0-100 estimate that weighs how many mechanical errors and style warnings appear relative to your text length — higher is cleaner.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Grammar & Style"
       highlight="Checker"
       subtitle="Rule-based checks for mechanics, passive voice, filler words, clichés, and readability — private, instant, and free. Nothing leaves your browser."
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Input */}

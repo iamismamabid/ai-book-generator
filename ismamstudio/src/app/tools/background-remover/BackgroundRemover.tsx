@@ -153,12 +153,28 @@ export default function BackgroundRemover() {
     a.click();
   };
 
+  const faqs = [
+    {
+      q: "Will this work on any photo?",
+      a: "It works best on solid or lightly textured backgrounds (product shots, logos, scans). Busy photographic backgrounds need an AI-based remover for clean results.",
+    },
+    {
+      q: "Is my image uploaded anywhere?",
+      a: "No — background removal runs entirely in your browser using canvas pixel analysis; your image is never sent to a server.",
+    },
+    {
+      q: "What does 'Only remove connected regions' do?",
+      a: "It limits removal to background pixels physically touching the edge of the image, so same-colored areas inside your subject (like a white shirt) stay intact.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Background"
       highlight="Remover"
       subtitle="Remove solid and simple backgrounds from images and create transparent PNGs — perfect for cover elements and logos. Runs 100% in your browser."
       maxWidth="max-w-7xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Controls */}

@@ -101,11 +101,27 @@ export default function PrintCostCalculator() {
   const marginPct =
     royalty !== null && listPrice > 0 ? Math.min(100, (royalty / listPrice) * 100) : 0;
 
+  const faqs = [
+    {
+      q: "Are these Amazon KDP print cost numbers official?",
+      a: "They're based on Amazon KDP's published print cost formulas as of the most recent rate revision, but Amazon updates rates periodically — always confirm your final price in KDP's own calculator before publishing.",
+    },
+    {
+      q: "Why is hardcover unavailable for some marketplaces?",
+      a: "Amazon KDP hardcover printing isn't offered on every marketplace yet (for example, Canada) — switch to paperback or a supported marketplace to see costs.",
+    },
+    {
+      q: "How is my royalty calculated?",
+      a: "KDP pays 60% of your list price minus the printing cost for paperbacks sold through Amazon's own store; this calculator subtracts printing cost from 60% of your list price automatically.",
+    },
+  ];
+
   return (
     <ToolShell
       title="KDP Print Cost"
       highlight="Calculator"
       subtitle="Estimate Amazon KDP printing costs for paperbacks and hardcovers across major marketplaces — and see your royalty per sale instantly."
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Inputs */}

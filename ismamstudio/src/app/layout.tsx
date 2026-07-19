@@ -17,9 +17,6 @@ export const metadata: Metadata = {
   title: "KDPage | All-in-One KDP Book Creation Toolkit",
   description: "Create puzzle interiors, shape-masked mazes, word searches, crosswords, and gorgeous covers for Amazon KDP — in minutes. No design software needed.",
   metadataBase: new URL("https://www.kdpage.com"),
-  alternates: {
-    canonical: "https://www.kdpage.com",
-  },
   robots: {
     index: true,
     follow: true,

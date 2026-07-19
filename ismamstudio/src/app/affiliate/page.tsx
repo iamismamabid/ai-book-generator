@@ -3,6 +3,7 @@ import { ArrowLeft, Sparkles, DollarSign, Award, Target, Zap } from "lucide-reac
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://www.kdpage.com/affiliate" },
   title: "Affiliate Program | Earn with KDPage",
   description: "Join the KDPage Affiliate Program. Promote our KDP book-creation platform and earn a recurring 30% lifetime commission on every referral.",
 };

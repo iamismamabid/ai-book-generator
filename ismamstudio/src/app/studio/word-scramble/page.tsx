@@ -1,6 +1,7 @@
 import WordScrambleGenerator from "@/components/tools/WordScrambleGenerator";
 
 export const metadata = {
+  alternates: { canonical: "https://www.kdpage.com/studio/word-scramble" },
   title: "Word Scramble Generator | KDPage",
   description: "Create print-ready word scramble puzzle books for Amazon KDP.",
 };

@@ -104,12 +104,28 @@ export default function PdfCompressor() {
 
   const savings = result ? Math.max(0, (1 - result.after / result.before) * 100) : 0;
 
+  const faqs = [
+    {
+      q: "Is my PDF uploaded to a server?",
+      a: "No — compression runs entirely in your browser; your file never leaves your device.",
+    },
+    {
+      q: "Which mode should I use for a KDP print interior?",
+      a: "Use Lossless Optimize — it keeps your text sharp and selectable. The image-based modes rasterize every page, which hurts print quality and removes selectable text.",
+    },
+    {
+      q: "Why didn't my file get smaller?",
+      a: "Some PDFs are already well-optimized (for example, exported cleanly from InDesign) — try an image compression mode for further reduction, understanding it will rasterize the pages.",
+    },
+  ];
+
   return (
     <ToolShell
       title="PDF"
       highlight="Compressor"
       subtitle="Shrink PDF file sizes to meet KDP's upload limits — lossless optimization or aggressive image compression, all in your browser."
       maxWidth="max-w-5xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Controls */}

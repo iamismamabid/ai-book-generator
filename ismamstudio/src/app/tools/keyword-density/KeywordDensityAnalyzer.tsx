@@ -56,6 +56,21 @@ export default function KeywordDensityAnalyzer() {
     return { count, density };
   }, [target, words]);
 
+  const faqs = [
+    {
+      q: "What keyword density should I aim for on Amazon?",
+      a: "1-3% density on your primary keyword is generally healthy; above 3% starts to read as keyword stuffing, which this tool flags in red.",
+    },
+    {
+      q: "Should I filter out stopwords?",
+      a: "Yes for most analysis — filtering words like \"the\" and \"and\" surfaces the meaningful keywords and phrases readers actually search for.",
+    },
+    {
+      q: "Does this check backend keywords too?",
+      a: "You can paste your backend keyword string directly into the analyzer alongside your description to see how phrases repeat across both.",
+    },
+  ];
+
   const tableCard = (title: string, rows: NGramRow[]) => (
     <div className="bg-slate-900/35 border border-slate-900 rounded-3xl p-6 space-y-3">
       <h3 className="text-sm font-black text-white flex items-center gap-2">
@@ -96,6 +111,7 @@ export default function KeywordDensityAnalyzer() {
       highlight="Analyzer"
       subtitle="Analyze keyword usage in your book description, blurb, or A+ content. Spot over-optimization before Amazon's algorithm does."
       maxWidth="max-w-7xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Input */}

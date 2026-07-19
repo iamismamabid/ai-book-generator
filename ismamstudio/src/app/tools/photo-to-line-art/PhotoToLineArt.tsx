@@ -133,12 +133,28 @@ export default function PhotoToLineArt() {
     a.click();
   };
 
+  const faqs = [
+    {
+      q: "What kind of photos work best?",
+      a: "High-contrast, well-lit photos with clear subject edges — portraits, pets, flowers, and landmarks typically convert cleanly.",
+    },
+    {
+      q: "What line thickness should I use for a coloring book?",
+      a: "2-3 is a safe range for KDP coloring books — thin single-pixel lines can drop out or blur during print-on-demand.",
+    },
+    {
+      q: "Can I use converted photos commercially?",
+      a: "Only convert photos you have the rights to use — this tool doesn't grant any rights to source images, and publishing recognizable people without a release can create legal issues.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Photo to"
       highlight="Line Art"
       subtitle="Convert any photo into clean line art for coloring books and illustrations. Adjust detail, line thickness, and smoothing — all in your browser."
       maxWidth="max-w-7xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Controls */}

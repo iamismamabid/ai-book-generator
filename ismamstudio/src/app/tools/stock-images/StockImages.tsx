@@ -40,12 +40,28 @@ export default function StockImages() {
     }
   };
 
+  const faqs = [
+    {
+      q: "Do I need to credit the photographer?",
+      a: "No — Unsplash's license allows free commercial use without attribution required, though crediting photographers is appreciated.",
+    },
+    {
+      q: "Can I use these on a book cover I'll sell on Amazon?",
+      a: "Yes, for most photos — just avoid images featuring identifiable people or visible trademarks/logos unless you have a release, since those can create separate legal issues regardless of the image license.",
+    },
+    {
+      q: "Where do I get the full-resolution file?",
+      a: "Click 'Open' on any photo to view and download it at full resolution directly from its Unsplash page.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Free Stock"
       highlight="Images"
       subtitle="Search millions of royalty-free photos for your book covers and marketing materials, powered by Unsplash."
       maxWidth="max-w-7xl"
+      faqs={faqs}
     >
       <div className="space-y-8">
         {/* Search bar */}

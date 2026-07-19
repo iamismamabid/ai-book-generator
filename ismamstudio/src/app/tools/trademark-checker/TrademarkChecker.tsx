@@ -116,12 +116,28 @@ export default function TrademarkChecker() {
   const usptoUrl = `https://tmsearch.uspto.gov/search/search-information`;
   const euipoUrl = `https://www.tmdn.org/tmview/#/tmview`;
 
+  const faqs = [
+    {
+      q: "Is this a complete trademark database?",
+      a: "No — it's a curated screening list of terms that commonly cause KDP takedowns. Always run an official search (linked below) before finalizing your title.",
+    },
+    {
+      q: "Can I still use a generic word like 'sudoku' or 'crossword'?",
+      a: "Yes — generic category terms are safe to use descriptively; they aren't the trademarked brand names this tool screens for.",
+    },
+    {
+      q: "What happens if I publish with a trademarked term in my title?",
+      a: "Amazon can block the listing or suspend your account, or the rights holder can send a takedown notice — it's worth removing flagged terms before you upload.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Trademark"
       highlight="Checker"
       subtitle="Screen your book title, subtitle, and keywords against commonly trademarked terms before Amazon flags your listing."
       maxWidth="max-w-5xl"
+      faqs={faqs}
     >
       <div className="space-y-8">
         <div className="bg-slate-900/35 border border-slate-900 rounded-[2rem] p-8 space-y-5 backdrop-blur-md">

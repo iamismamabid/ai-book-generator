@@ -196,12 +196,28 @@ export default function PatternGenerator() {
     a.click();
   };
 
+  const faqs = [
+    {
+      q: "What does 'seamless' mean here?",
+      a: "The exported tile repeats edge-to-edge with no visible seam when placed side-by-side, so it can fill any size background without visible tiling lines.",
+    },
+    {
+      q: "Can I use these patterns on a book cover I'll sell?",
+      a: "Yes — patterns generated here are created new from your color and style choices with no licensing restriction.",
+    },
+    {
+      q: "What DPI are the page exports?",
+      a: "The 8.5×11 and 6×9 page presets export at 300 DPI, matching KDP's print resolution requirement.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Seamless Pattern"
       highlight="Generator"
       subtitle="Create seamless patterns for book covers, interiors, and endpapers. Twelve styles, custom colors, and print-ready 300 DPI exports."
       maxWidth="max-w-7xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Controls */}

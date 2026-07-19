@@ -122,11 +122,27 @@ export default function CopyrightPageGenerator() {
     "w-full bg-slate-950 border border-slate-900 text-white rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none";
   const labelCls = "block text-xs font-black uppercase tracking-wider text-slate-400";
 
+  const faqs = [
+    {
+      q: "Is this legal advice?",
+      a: "No — it generates standard, widely-used copyright page wording, not legal advice. For unusual licensing or co-author situations, consult an IP attorney.",
+    },
+    {
+      q: "Do I need to register my copyright separately?",
+      a: "In most countries, including the US, copyright exists automatically at creation. Formal registration is optional but can strengthen your legal position if you ever need to enforce it.",
+    },
+    {
+      q: "Where does the copyright page go in my book?",
+      a: "Traditionally on the reverse of the title page — page iv, the back of your book's opening page.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Copyright Page"
       highlight="Generator"
       subtitle="Generate a professional, legally-standard copyright page for your book — with the right disclaimer for fiction, non-fiction, or low-content books."
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Form */}

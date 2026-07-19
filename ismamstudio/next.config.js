@@ -67,6 +67,21 @@ const nextConfig = {
   // Required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
 
+  // ─── SEO: consolidate duplicate hub page into the canonical /tools ──────
+  // /tools/free rendered the same ToolsClient as /tools with its own
+  // self-referencing canonical, creating duplicate content. 301 to the
+  // version that's actually linked from nav + sitemap so link equity
+  // consolidates onto one URL instead of splitting across two.
+  async redirects() {
+    return [
+      {
+        source: "/tools/free",
+        destination: "/tools",
+        permanent: true,
+      },
+    ];
+  },
+
   // ─── Delegate TypeScript & ESLint checks to GitHub Actions CI ───────────
   typescript: {
     ignoreBuildErrors: true,

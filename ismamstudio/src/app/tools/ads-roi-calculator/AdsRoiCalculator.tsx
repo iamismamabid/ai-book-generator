@@ -31,11 +31,27 @@ export default function AdsRoiCalculator() {
     "w-full bg-slate-950 border border-slate-900 text-white rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none";
   const labelCls = "block text-xs font-black uppercase tracking-wider text-slate-400";
 
+  const faqs = [
+    {
+      q: "What is a good ACOS for a book campaign?",
+      a: "It depends on your royalty margin — a campaign is profitable whenever your ACOS is below your break-even ACOS, which this calculator computes automatically from your list price and royalty.",
+    },
+    {
+      q: "Does this work for Facebook and BookBub ads too?",
+      a: "Yes — plug in the spend, clicks, and orders from any platform's dashboard; the ROI math is the same regardless of ad network.",
+    },
+    {
+      q: "Should I count Kindle Unlimited reads in my ROI?",
+      a: "Yes, if the reads are attributable to the campaign — add them to the optional KU earnings field so they count toward your profit total.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Book Ads ROI"
       highlight="Calculator"
       subtitle="Analyze your Amazon Ads, Facebook, or BookBub campaigns — ACOS, ROAS, break-even points, and maximum profitable bids in one dashboard."
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Inputs */}

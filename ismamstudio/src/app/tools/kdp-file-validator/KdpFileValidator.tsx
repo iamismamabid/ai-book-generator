@@ -28,7 +28,7 @@ const STATUS_META: Record<Status, { icon: typeof CheckCircle2; cls: string; bord
   fail: { icon: XCircle, cls: "text-rose-400", border: "border-rose-500/20 bg-rose-500/5" },
 };
 
-function近(a: number, b: number, tol = 0.02): boolean {
+function isClose(a: number, b: number, tol = 0.02): boolean {
   return Math.abs(a - b) <= tol;
 }
 
@@ -78,7 +78,7 @@ export default function KdpFileValidator() {
         return [width / 72, height / 72] as [number, number];
       });
       const [firstW, firstH] = sizes[0];
-      const inconsistent = sizes.findIndex(([w, h]) => !近(w, firstW) || !近(h, firstH));
+      const inconsistent = sizes.findIndex(([w, h]) => !isClose(w, firstW) || !isClose(h, firstH));
       results.push(
         inconsistent === -1
           ? { status: "pass", title: "Consistent page size", detail: `All ${pageCount} pages are ${firstW.toFixed(2)}" × ${firstH.toFixed(2)}".` }
@@ -90,8 +90,8 @@ export default function KdpFileValidator() {
       );
 
       // 4. Trim size match
-      const exactTrim = KDP_TRIMS.find(([w, h]) => 近(firstW, w) && 近(firstH, h));
-      const bleedTrim = KDP_TRIMS.find(([w, h]) => 近(firstW, w + BLEED_W) && 近(firstH, h + BLEED_H));
+      const exactTrim = KDP_TRIMS.find(([w, h]) => isClose(firstW, w) && isClose(firstH, h));
+      const bleedTrim = KDP_TRIMS.find(([w, h]) => isClose(firstW, w + BLEED_W) && isClose(firstH, h + BLEED_H));
       if (exactTrim) {
         results.push({
           status: "pass",
@@ -137,12 +137,28 @@ export default function KdpFileValidator() {
   const failCount = checks.filter((c) => c.status === "fail").length;
   const warnCount = checks.filter((c) => c.status === "warn").length;
 
+  const faqs = [
+    {
+      q: "Does this guarantee KDP will accept my file?",
+      a: "No — it checks the structural rules KDP enforces at upload (trim size, page count, consistency, encryption), but KDP's own online previewer performs additional checks like font embedding and image resolution after upload.",
+    },
+    {
+      q: "What if my trim size doesn't match a standard KDP size?",
+      a: "KDP allows custom trims within its supported range — the validator will warn rather than fail, since custom sizes are valid but ship slightly slower.",
+    },
+    {
+      q: "Why does it flag an odd page count?",
+      a: "KDP automatically adds a blank final page to make an odd page count even — the validator flags it so you can add your own final page if you want control over what's there.",
+    },
+  ];
+
   return (
     <ToolShell
       title="KDP File"
       highlight="Validator"
       subtitle="Pre-flight your interior PDF against Amazon KDP's requirements — trim size, page count, consistency, and file limits — before you upload."
       maxWidth="max-w-5xl"
+      faqs={faqs}
     >
       <div className="space-y-8">
         <div

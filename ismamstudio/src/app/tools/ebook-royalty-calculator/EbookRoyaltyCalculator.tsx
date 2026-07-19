@@ -39,11 +39,27 @@ export default function EbookRoyaltyCalculator() {
   const bestPlan =
     royalty70 !== null && royalty70 > royalty35 ? 70 : 35;
 
+  const faqs = [
+    {
+      q: "What's the difference between the 35% and 70% royalty plans?",
+      a: "The 70% plan pays a higher royalty but only on books priced within Amazon's price band for that marketplace, and it deducts a delivery fee. The 35% plan has no price restriction or delivery fee but a lower rate.",
+    },
+    {
+      q: "Why doesn't my book qualify for 70%?",
+      a: "The 70% plan requires your list price to fall within Amazon's price band for that marketplace — outside that range, KDP automatically pays 35% regardless of which plan you select.",
+    },
+    {
+      q: "What is the delivery fee?",
+      a: "A per-megabyte charge Amazon deducts from 70%-plan royalties for file delivery — it does not apply on the 35% plan.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Kindle eBook Royalty"
       highlight="Calculator"
       subtitle="Compare 35% vs 70% royalty plans, factor in delivery fees, and project your monthly Kindle income across marketplaces."
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Inputs */}

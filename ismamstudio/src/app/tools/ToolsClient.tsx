@@ -268,6 +268,204 @@ export default function FreeToolsHub() {
       description: "Score your cover for thumbnail legibility, contrast, and genre fit with a guided scorecard.",
       features: ["Thumbnail test", "Automated score report", "Formatting validation"],
       isInteractive: true
+    },
+    {
+      id: "print-cost-calculator",
+      name: "Free Print Cost Calculator",
+      badge: "New",
+      category: "Marketing",
+      description: "Calculate Amazon KDP printing costs for paperbacks and hardcovers across all marketplaces.",
+      features: ["US/UK/EU/CA rates", "Royalty per sale", "Marketplace comparison table"],
+      link: "/tools/print-cost-calculator"
+    },
+    {
+      id: "kenp-calculator",
+      name: "Free KENP Royalty Calculator",
+      badge: "New",
+      category: "Marketing",
+      description: "Estimate your Kindle Unlimited page-reads earnings based on KENP and current fund rates.",
+      features: ["KENP count estimator", "Rate comparison table", "Monthly/yearly projections"],
+      link: "/tools/kenp-calculator"
+    },
+    {
+      id: "ebook-royalty-calculator",
+      name: "Free eBook Royalty Calculator",
+      badge: "New",
+      category: "Marketing",
+      description: "Calculate your Kindle eBook royalties for 35% and 70% plans across all Amazon marketplaces.",
+      features: ["70% price band check", "Delivery fee factored in", "5 marketplaces"],
+      link: "/tools/ebook-royalty-calculator"
+    },
+    {
+      id: "ads-roi-calculator",
+      name: "Free Book Ads ROI Calculator",
+      badge: "New",
+      category: "Marketing",
+      description: "Track and optimize Amazon, Facebook, and BookBub ad campaigns. Calculate ROI, ACOS, and break-even points.",
+      features: ["ACOS & ROAS", "Break-even calculator", "Max profitable bid"],
+      link: "/tools/ads-roi-calculator"
+    },
+    {
+      id: "reading-time-calculator",
+      name: "Free Reading Time Calculator",
+      badge: "New",
+      category: "Writing",
+      description: "Calculate estimated reading time for your book based on word count and reading speed.",
+      features: ["Audiobook length estimate", "Print page estimate", "Adjustable reading speed"],
+      link: "/tools/reading-time-calculator"
+    },
+    {
+      id: "readability-calculator",
+      name: "Free Readability Calculator",
+      badge: "New",
+      category: "Writing",
+      description: "Calculate Flesch-Kincaid, Gunning Fog, SMOG, and other readability scores for your content.",
+      features: ["5 grade-level formulas", "Target audience guide", "100% private analysis"],
+      link: "/tools/readability-calculator"
+    },
+    {
+      id: "keyword-density",
+      name: "Free Keyword Density Analyzer",
+      badge: "New",
+      category: "Marketing",
+      description: "Analyze keyword density in your book descriptions and content for SEO optimization.",
+      features: ["Top phrase tables", "Stuffing detection", "Target keyword tracker"],
+      link: "/tools/keyword-density"
+    },
+    {
+      id: "grammar-checker",
+      name: "Free Grammar Checker",
+      badge: "New",
+      category: "Writing",
+      description: "Check spelling, grammar, and style in your book descriptions. Get readability scores and writing tips.",
+      features: ["Passive voice detection", "Cliché & filler word flags", "Clarity score"],
+      link: "/tools/grammar-checker"
+    },
+    {
+      id: "copyright-page-generator",
+      name: "Free Copyright Page Generator",
+      badge: "New",
+      category: "Writing",
+      description: "Create professional copyright pages for your books with all required legal text.",
+      features: ["Fiction/non-fiction wording", "6×9 PDF export", "Copy or download .txt"],
+      link: "/tools/copyright-page-generator"
+    },
+    {
+      id: "trademark-checker",
+      name: "Free Trademark Checker",
+      badge: "New",
+      category: "Marketing",
+      description: "Check if your book title or keywords contain trademarked terms that could cause issues.",
+      features: ["70+ term screening list", "USPTO & TMview links", "Generic term guidance"],
+      link: "/tools/trademark-checker"
+    },
+    {
+      id: "book-planner",
+      name: "Free Book Planner",
+      badge: "New",
+      category: "Writing",
+      description: "Plan your book with chapters, characters, and outlines. Use templates and track your writing progress.",
+      features: ["Novel/non-fiction templates", "Autosaves in browser", "Word-count progress bar"],
+      link: "/tools/book-planner"
+    },
+    {
+      id: "word-cloud",
+      name: "Free Word Cloud Generator",
+      badge: "New",
+      category: "Design",
+      description: "Create beautiful word clouds from text or keywords. Visualize your research with custom colors and shapes.",
+      features: ["6 color schemes", "PNG export", "Stopword filtering"],
+      link: "/tools/word-cloud"
+    },
+    {
+      id: "qr-code-generator",
+      name: "Free QR Code Generator",
+      badge: "New",
+      category: "Marketing",
+      description: "Generate QR codes for book marketing, author websites, and social media links.",
+      features: ["Custom colors", "Up to 2048px export", "Print-safe error correction"],
+      link: "/tools/qr-code-generator"
+    },
+    {
+      id: "image-resizer",
+      name: "Free Mass Image Resizer",
+      badge: "New",
+      category: "Design",
+      description: "Bulk resize up to 50 images at once. KDP cover presets, social media sizes, custom dimensions. Download all as ZIP.",
+      features: ["50 images at once", "KDP & social presets", "Bulk ZIP download"],
+      link: "/tools/image-resizer"
+    },
+    {
+      id: "background-remover",
+      name: "Free Background Remover",
+      badge: "New",
+      category: "Design",
+      description: "Remove backgrounds from images instantly. Create transparent PNGs for covers and graphics.",
+      features: ["Auto edge detection", "Click-to-pick color mode", "100% in-browser"],
+      link: "/tools/background-remover"
+    },
+    {
+      id: "photo-to-line-art",
+      name: "Free Photo to Line Art",
+      badge: "New",
+      category: "Design",
+      description: "Convert any photo into clean line art perfect for coloring books. Adjust line thickness and detail.",
+      features: ["Adjustable detail level", "Coloring-book ready", "Instant PNG export"],
+      link: "/tools/photo-to-line-art"
+    },
+    {
+      id: "pattern-generator",
+      name: "Free Pattern Generator",
+      badge: "New",
+      category: "Design",
+      description: "Create seamless patterns for book covers and interiors. Multiple styles and colors.",
+      features: ["12 pattern styles", "Seamless tile export", "300 DPI print sizes"],
+      link: "/tools/pattern-generator"
+    },
+    {
+      id: "stock-images",
+      name: "Free Stock Images",
+      badge: "New",
+      category: "Design",
+      description: "Search and download royalty-free stock images for your book covers and marketing materials.",
+      features: ["Unsplash powered", "Commercial use OK", "No attribution required"],
+      link: "/tools/stock-images"
+    },
+    {
+      id: "pdf-compressor",
+      name: "Free PDF Compressor",
+      badge: "New",
+      category: "Formatting",
+      description: "Reduce PDF file size while maintaining quality. Perfect for meeting KDP upload limits.",
+      features: ["Lossless or image modes", "Before/after size report", "100% in-browser"],
+      link: "/tools/pdf-compressor"
+    },
+    {
+      id: "kdp-file-validator",
+      name: "Free KDP File Validator",
+      badge: "New",
+      category: "Formatting",
+      description: "Validate your PDF files for KDP compliance. Check dimensions, fonts, and image resolution.",
+      features: ["Trim size matching", "Page consistency check", "Pass/warn/fail report"],
+      link: "/tools/kdp-file-validator"
+    },
+    {
+      id: "ocr-scanner",
+      name: "Free OCR Scanner",
+      badge: "New",
+      category: "Formatting",
+      description: "Extract text from images, scanned pages, and image-based PDFs using advanced OCR technology.",
+      features: ["6 languages supported", "Copy or download .txt", "100% in-browser"],
+      link: "/tools/ocr-scanner"
+    },
+    {
+      id: "interior-templates",
+      name: "Free Interior Templates",
+      badge: "New",
+      category: "Formatting",
+      description: "Download ready-to-use interior templates for journals, planners, notebooks, and more.",
+      features: ["10 template styles", "Standard KDP trims", "Custom page counts"],
+      link: "/tools/interior-templates"
     }
   ];
 

@@ -162,12 +162,28 @@ export default function BookPlanner() {
   const smallInput =
     "bg-slate-950 border border-slate-900 text-white rounded-lg px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none";
 
+  const faqs = [
+    {
+      q: "Where is my book plan saved?",
+      a: "In your browser's local storage on this device — nothing is uploaded to a server, so clearing browser data will erase it. Export your outline regularly as a backup.",
+    },
+    {
+      q: "Can I use this on my phone and continue on my laptop?",
+      a: "Not automatically — local storage is per-device and per-browser. Use the Export Outline button to move your plan between devices.",
+    },
+    {
+      q: "Do the templates lock me into a structure?",
+      a: "No — templates just pre-fill chapters as a starting point; add, remove, or reorder them freely.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Book"
       highlight="Planner"
       subtitle="Plan chapters, track characters, and watch your word-count progress. Autosaves to your browser — no account needed."
       maxWidth="max-w-7xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left: book meta + stats */}

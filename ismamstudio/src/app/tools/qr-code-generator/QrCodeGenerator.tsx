@@ -56,12 +56,28 @@ export default function QrCodeGenerator() {
     a.click();
   };
 
+  const faqs = [
+    {
+      q: "Do these QR codes expire or stop working?",
+      a: "No — codes generated here encode your content directly (a static QR code), so they never expire and don't rely on any tracking service that could shut down.",
+    },
+    {
+      q: "What error correction level should I use for print?",
+      a: "Use Q or H — they stay scannable even with minor print blur, ink bleed, or a logo overlay.",
+    },
+    {
+      q: "Can I use a custom color QR code in a printed book?",
+      a: "Yes, as long as there's strong contrast between the foreground and background colors — low-contrast combinations can fail to scan.",
+    },
+  ];
+
   return (
     <ToolShell
       title="QR Code"
       highlight="Generator"
       subtitle="Generate high-resolution QR codes for your author website, Amazon page, review links, and book marketing — free forever."
       maxWidth="max-w-5xl"
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Controls */}

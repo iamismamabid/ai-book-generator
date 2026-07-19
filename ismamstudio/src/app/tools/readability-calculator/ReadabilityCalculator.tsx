@@ -25,11 +25,27 @@ export default function ReadabilityCalculator() {
     { name: "Automated Readability", value: scores.ari, desc: "Grade level from characters and word lengths" },
   ];
 
+  const faqs = [
+    {
+      q: "What's a good Flesch Reading Ease score for a book?",
+      a: "Most bestselling fiction scores 60-80 (roughly 8th-9th grade level); children's and middle-grade books typically score 80 or higher.",
+    },
+    {
+      q: "Why do the five formulas give slightly different grade levels?",
+      a: "Each formula weighs sentence length, syllables, or character counts differently — treat them as a range rather than one precise number.",
+    },
+    {
+      q: "Is my text uploaded to a server?",
+      a: "No — all scoring happens locally in your browser using standard published formula coefficients.",
+    },
+  ];
+
   return (
     <ToolShell
       title="Readability"
       highlight="Calculator"
       subtitle="Score your manuscript with Flesch-Kincaid, Gunning Fog, SMOG, Coleman-Liau, and ARI — all computed instantly in your browser."
+      faqs={faqs}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Input */}

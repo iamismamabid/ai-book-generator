@@ -318,9 +318,9 @@ export default function IsbnGenerator() {
         x={addPriceCode ? startX : startX + ean13Width / 2}
         y={22 * scale}
         fill={barColor}
-        fontSize={13 * scale}
+        fontSize={11 * scale}
         fontWeight="bold"
-        fontFamily="Courier New, monospace"
+        fontFamily="Arial, Helvetica, sans-serif"
         textAnchor={addPriceCode ? "start" : "middle"}
       >
         ISBN {meta.isbn}
@@ -424,9 +424,9 @@ export default function IsbnGenerator() {
           x={ean5StartX + ean5Width}
           y={22 * scale}
           fill={barColor}
-          fontSize={11 * scale}
+          fontSize={10 * scale}
           fontWeight="bold"
-          fontFamily="Courier New, monospace"
+          fontFamily="Arial, Helvetica, sans-serif"
           textAnchor="end"
         >
           {currency} {priceInput}
@@ -488,7 +488,7 @@ export default function IsbnGenerator() {
     barsContent += `<rect width="100%" height="100%" fill="${bgColor}" />`;
     
     // Top ISBN text
-    barsContent += `<text x="${addPriceCode ? startX : startX + ean13Width / 2}" y="${22 * scale}" fill="${barColor}" font-size="${13 * scale}" font-weight="bold" font-family="Courier New, monospace" text-anchor="${addPriceCode ? "start" : "middle"}">ISBN ${meta.isbn}</text>`;
+    barsContent += `<text x="${addPriceCode ? startX : startX + ean13Width / 2}" y="${22 * scale}" fill="${barColor}" font-size="${11 * scale}" font-weight="bold" font-family="Arial, Helvetica, sans-serif" text-anchor="${addPriceCode ? "start" : "middle"}">ISBN ${meta.isbn}</text>`;
 
     // EAN-13 bars
     const barTop = 28 * scale;
@@ -521,7 +521,7 @@ export default function IsbnGenerator() {
 
     // EAN-5 Price supplement
     if (addPriceCode && ean5Binary.length > 0) {
-      barsContent += `<text x="${ean5StartX + ean5Width}" y="${22 * scale}" fill="${barColor}" font-size="${11 * scale}" font-weight="bold" font-family="Courier New, monospace" text-anchor="end">${currency} ${priceInput}</text>`;
+      barsContent += `<text x="${ean5StartX + ean5Width}" y="${22 * scale}" fill="${barColor}" font-size="${10 * scale}" font-weight="bold" font-family="Arial, Helvetica, sans-serif" text-anchor="end">${currency} ${priceInput}</text>`;
       
       const ean5BarTop = 32 * scale;
       const ean5BarHeight = 83 * scale;

@@ -409,6 +409,25 @@ export default function KeywordResearchPage() {
           )}
         </div>
 
+        {/* Footer Studio Callout */}
+        <section className="bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/40 backdrop-blur-md rounded-[3rem] border border-indigo-900/35 p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-2xl">
+          <div className="absolute -right-20 -top-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="space-y-3 max-w-2xl">
+            <h2 className="text-3xl font-black text-white tracking-tight">
+              Found your niche? Build the book now.
+            </h2>
+            <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
+              Take these keywords straight into KDPage Studio — generate a print-ready puzzle interior and cover in minutes, then paste your backend slots into KDP at publish time.
+            </p>
+          </div>
+          <Link
+            href="/studio"
+            className="shrink-0 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm rounded-2xl shadow-md transition active:scale-95"
+          >
+            Start Building
+          </Link>
+        </section>
+
       </div>
     </div>
   );

@@ -1083,17 +1083,17 @@ export default function IsbnGenerator() {
           <div className="absolute -right-20 -top-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="space-y-3 max-w-2xl">
             <h2 className="text-3xl font-black text-white tracking-tight">
-              Build your entire book with KDPage
+              Barcode ready — now finish the book
             </h2>
             <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
-              ISBN barcodes, KDP covers, interiors, calculators — 100+ free tools for self-publishers.
+              Design a matching cover and compile a print-ready interior in KDPage Studio, then drop this barcode straight onto your back cover.
             </p>
           </div>
           <Link
-            href="/studio"
-            className="shrink-0 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-600 text-white font-black text-sm rounded-2xl shadow-md transition active:scale-95"
+            href="/studio?tab=cover"
+            className="shrink-0 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm rounded-2xl shadow-md transition active:scale-95"
           >
-            Explore All Tools
+            Open Cover Studio
           </Link>
         </section>
 

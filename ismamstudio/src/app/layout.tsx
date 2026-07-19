@@ -59,6 +59,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Trigger Vercel redeploy with correct Root Directory settings
   return (
     <ClerkProvider>
       {/* 🎯 html ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ToolShell from "@/components/tools/ToolShell";
 import { ImageIcon, Download, Trash2, Package, Info, Loader2 } from "lucide-react";
 
@@ -54,6 +54,16 @@ export default function ImageResizer() {
 
   const targetW = useCustom ? customW : PRESETS[presetIdx].w;
   const targetH = useCustom ? customH : PRESETS[presetIdx].h;
+
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    const urls = files.map((f) => URL.createObjectURL(f));
+    setPreviewUrls(urls);
+    return () => {
+      urls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [files]);
 
   const handleFiles = (list: FileList | null) => {
     if (!list) return;
@@ -163,12 +173,36 @@ export default function ImageResizer() {
 
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border border-dashed border-slate-800 hover:border-indigo-500 rounded-2xl p-6 text-center bg-slate-950/30 cursor-pointer transition-all"
+              className="border border-dashed border-slate-800 hover:border-indigo-500 rounded-2xl p-4 text-center bg-slate-950/30 cursor-pointer transition-all"
             >
-              <ImageIcon className="w-8 h-8 text-slate-500 mx-auto mb-2" />
-              <span className="text-xs text-slate-200 font-bold block">
-                {files.length > 0 ? `${files.length} image${files.length > 1 ? "s" : ""} selected` : "Click to select up to 50 images"}
-              </span>
+              {files.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-5 gap-2">
+                    {previewUrls.slice(0, 9).map((url, i) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={url}
+                        src={url}
+                        alt={files[i]?.name || `Selected image ${i + 1}`}
+                        className="w-full aspect-square object-cover rounded-lg border border-slate-800"
+                      />
+                    ))}
+                    {files.length > 9 && (
+                      <div className="w-full aspect-square rounded-lg border border-slate-800 bg-slate-900 flex items-center justify-center text-[10px] font-black text-slate-400">
+                        +{files.length - 9}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs text-slate-200 font-bold block">
+                    {files.length} image{files.length > 1 ? "s" : ""} selected — click to change
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <ImageIcon className="w-8 h-8 text-slate-500 mx-auto mb-2" />
+                  <span className="text-xs text-slate-200 font-bold block">Click to select up to 50 images</span>
+                </>
+              )}
               <span className="text-[9px] text-slate-600 block mt-1">JPG, PNG, WebP — processed locally, never uploaded</span>
               <input
                 ref={fileInputRef}

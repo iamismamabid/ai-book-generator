@@ -13,12 +13,96 @@ const LANGS = [
   { code: "por", label: "Portuguese" },
 ];
 
+type ScanType = "page" | "auto" | "line" | "sparse";
+// Names of tesseract.js's PSM enum members — resolved to the real runtime
+// enum after tesseract.js is dynamically imported (keeps the heavy OCR
+// engine out of the initial page bundle).
+type PsmKey = "SINGLE_BLOCK" | "AUTO" | "SINGLE_LINE" | "SPARSE_TEXT";
+
+// PSM (page segmentation mode) drives how Tesseract splits the image into
+// text regions before reading it — the wrong mode is a common cause of
+// scrambled or missing text, independent of image quality.
+const SCAN_TYPES: { key: ScanType; label: string; hint: string; psmKey: PsmKey }[] = [
+  { key: "page", label: "Photo of a Page", hint: "Best for book pages & paragraphs", psmKey: "SINGLE_BLOCK" },
+  { key: "auto", label: "Auto Layout", hint: "Multi-column or mixed layouts", psmKey: "AUTO" },
+  { key: "line", label: "Single Line", hint: "One quote or caption", psmKey: "SINGLE_LINE" },
+  { key: "sparse", label: "Sparse Text", hint: "Screenshots, scattered UI text", psmKey: "SPARSE_TEXT" },
+];
+
+const MIN_WIDTH = 1800; // upscale below this so small text has enough pixels to resolve
+const MAX_DIM = 3000; // cap upscaling/downscaling so huge photos don't blow up memory
+
+function loadImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Could not read ${file.name}`));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+/**
+ * Grayscale + contrast-stretch + upscale before handing off to Tesseract.
+ * Raw phone-camera photos usually have low, uneven contrast and text that's
+ * too small in pixel terms — both are the #1 cause of garbled OCR output.
+ * Normalizing the dynamic range and ensuring a minimum resolution fixes the
+ * majority of accuracy complaints without any manual cropping/rotation.
+ */
+async function preprocessForOcr(file: File): Promise<HTMLCanvasElement> {
+  const img = await loadImage(file);
+  URL.revokeObjectURL(img.src);
+
+  let scale = 1;
+  const largestSide = Math.max(img.width, img.height);
+  if (largestSide > MAX_DIM) {
+    scale = MAX_DIM / largestSide;
+  } else if (img.width < MIN_WIDTH) {
+    scale = MIN_WIDTH / img.width;
+  }
+
+  const w = Math.max(1, Math.round(img.width * scale));
+  const h = Math.max(1, Math.round(img.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, w, h);
+
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+  const pixelCount = w * h;
+  const gray = new Uint8ClampedArray(pixelCount);
+
+  let min = 255;
+  let max = 0;
+  for (let i = 0, p = 0; p < pixelCount; i += 4, p++) {
+    const g = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    gray[p] = g;
+    if (g < min) min = g;
+    if (g > max) max = g;
+  }
+
+  const range = Math.max(1, max - min);
+  for (let i = 0, p = 0; p < pixelCount; i += 4, p++) {
+    const stretched = ((gray[p] - min) / range) * 255;
+    data[i] = data[i + 1] = data[i + 2] = stretched;
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  return canvas;
+}
+
 export default function OcrScanner() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string>("");
   const [lang, setLang] = useState("eng");
+  const [scanType, setScanType] = useState<ScanType>("page");
   const [text, setText] = useState("");
   const [progress, setProgress] = useState(0);
+  const [stage, setStage] = useState("");
   const [working, setWorking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
@@ -28,21 +112,38 @@ export default function OcrScanner() {
     setError("");
     setText("");
     setProgress(0);
+    setStage("Preparing image…");
     setPreview(URL.createObjectURL(file));
     try {
-      const Tesseract = await import("tesseract.js");
-      const { data } = await Tesseract.recognize(file, lang, {
+      const canvas = await preprocessForOcr(file);
+      const { createWorker, PSM } = await import("tesseract.js");
+
+      setStage("Loading language data…");
+      const worker = await createWorker(lang, undefined, {
         logger: (m) => {
           if (m.status === "recognizing text") {
+            setStage("Recognizing text…");
             setProgress(Math.round(m.progress * 100));
+          } else if (m.status) {
+            setStage(m.status.replace(/^\w/, (c) => c.toUpperCase()) + "…");
           }
         },
       });
+
+      const psmKey = SCAN_TYPES.find((s) => s.key === scanType)?.psmKey ?? "SINGLE_BLOCK";
+      await worker.setParameters({
+        tessedit_pageseg_mode: PSM[psmKey],
+        preserve_interword_spaces: "1",
+      });
+
+      const { data } = await worker.recognize(canvas);
+      await worker.terminate();
       setText(data.text.trim());
     } catch {
-      setError("Could not extract text from this image. Try a clearer scan or a different file.");
+      setError("Could not extract text from this image. Try a clearer photo, better lighting, or a different Scan Type.");
     } finally {
       setWorking(false);
+      setStage("");
     }
   };
 
@@ -70,7 +171,7 @@ export default function OcrScanner() {
     },
     {
       q: "Why is the extracted text inaccurate?",
-      a: "OCR accuracy depends heavily on scan quality — flat, well-lit, high-contrast images with horizontal text produce the best results.",
+      a: "OCR accuracy depends heavily on scan quality — flat, well-lit, high-contrast images with horizontal text produce the best results. Try the 'Photo of a Page' scan type for book pages, or 'Sparse Text' for screenshots, and make sure the photo isn't blurry or at an angle.",
     },
     {
       q: "Can I scan handwriting?",
@@ -93,6 +194,30 @@ export default function OcrScanner() {
             <h3 className="text-lg font-black text-white flex items-center gap-2">
               <ScanText className="w-5 h-5 text-indigo-400" /> Scan Setup
             </h3>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
+                Scan Type
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {SCAN_TYPES.map((s) => (
+                  <button
+                    key={s.key}
+                    onClick={() => setScanType(s.key)}
+                    className={`text-left px-3 py-2.5 rounded-xl border transition-all cursor-pointer ${
+                      scanType === s.key
+                        ? "bg-indigo-600/20 border-indigo-500"
+                        : "bg-slate-950/40 border-slate-900 hover:border-slate-700"
+                    }`}
+                  >
+                    <span className={`text-[11px] font-black block ${scanType === s.key ? "text-white" : "text-slate-300"}`}>
+                      {s.label}
+                    </span>
+                    <span className="text-[9px] font-semibold text-slate-500">{s.hint}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="space-y-1.5">
               <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
@@ -140,9 +265,9 @@ export default function OcrScanner() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-black">
                   <span className="text-slate-400 flex items-center gap-1.5">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Recognizing text…
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> {stage || "Working…"}
                   </span>
-                  <span className="text-yellow-500">{progress}%</span>
+                  {progress > 0 && <span className="text-yellow-500">{progress}%</span>}
                 </div>
                 <div className="h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-900">
                   <div className="h-full bg-yellow-500 transition-all" style={{ width: `${progress}%` }} />
@@ -189,10 +314,10 @@ export default function OcrScanner() {
           <div className="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 flex items-start gap-3">
             <Info className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
             <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
-              Great for digitizing scanned manuscripts, extracting quotes from photographed book
-              pages, or pulling text from screenshots. Accuracy depends on scan quality — flat,
-              well-lit, high-contrast images work best. The OCR model runs entirely in your
-              browser; nothing is uploaded.
+              Images are automatically upscaled and contrast-corrected before scanning to improve
+              accuracy — for best results, use a flat, well-lit, in-focus photo and pick the Scan
+              Type that matches your source (a single book page vs. a screenshot behave very
+              differently). Everything runs locally in your browser; nothing is uploaded.
             </p>
           </div>
         </div>

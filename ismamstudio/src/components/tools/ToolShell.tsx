@@ -140,6 +140,25 @@ export default function ToolShell({
 
         {children}
 
+        {/* 🚀 Premium Studio Callout Banner */}
+        <section className="bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/40 backdrop-blur-md rounded-[2.5rem] border border-indigo-900/35 p-8 md:p-10 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-2xl my-8">
+          <div className="absolute -right-20 -top-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="space-y-3 max-w-2xl">
+            <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+              Ready to publish? Design the full book now
+            </h2>
+            <p className="text-slate-300 text-xs md:text-sm font-semibold leading-relaxed">
+              Take your files straight into KDPage Studio. Design professional, print-ready covers, generate puzzle book interiors, and compile everything in minutes.
+            </p>
+          </div>
+          <Link
+            href="/studio"
+            className="shrink-0 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm rounded-2xl shadow-md transition active:scale-95 whitespace-nowrap"
+          >
+            Open KDPage Studio
+          </Link>
+        </section>
+
         {/* Visible FAQ — mirrors the FAQPage JSON-LD above */}
         {faqs && faqs.length > 0 && (
           <div className="border-t border-slate-900 pt-10 space-y-5">

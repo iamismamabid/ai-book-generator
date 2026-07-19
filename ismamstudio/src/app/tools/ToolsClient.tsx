@@ -481,18 +481,25 @@ export default function FreeToolsHub() {
       <div className="absolute bottom-0 left-0 w-[700px] h-[700px] bg-rose-500/[0.03] rounded-full blur-[160px] -translate-x-1/4 translate-y-1/4 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        
+
+        {/* Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[11px] font-bold text-stone-500 mb-6">
+          <Link href="/" className="hover:text-amber-700 transition-colors">Home</Link>
+          <ChevronRight className="w-3 h-3 shrink-0" />
+          <span className="text-stone-700">Free Tools</span>
+        </nav>
+
         {/* Navigation & Header */}
         <div className="mb-16 border-b border-stone-200 pb-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 border border-amber-200/60 text-amber-800 text-xs font-black uppercase tracking-wider shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> 100% Free Tools — No Signup
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> 30+ Free KDP Tools — No Signup
             </div>
             <h1 className="text-4xl md:text-6xl font-black text-stone-900 tracking-tight">
-              Free Tools for <span className="bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-600 bg-clip-text text-transparent">Smarter Publishing</span>
+              Free KDP Tools for <span className="bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-600 bg-clip-text text-transparent">Smarter Publishing</span>
             </h1>
             <p className="text-stone-600 text-base md:text-lg max-w-2xl font-semibold leading-relaxed">
-              Calculate spine widths, format descriptions, generate ideas, and build print-ready templates without any registration.
+              Royalty and print cost calculators, cover and interior design generators, SEO and readability analyzers, PDF utilities, and print-ready templates — everything an Amazon KDP self-publisher needs, completely free with no registration.
             </p>
           </div>
           <Link
@@ -577,6 +584,40 @@ export default function FreeToolsHub() {
               )}
             </div>
           ))}
+        </div>
+
+        {/* FAQ — real indexable content for search intent beyond the tool cards themselves */}
+        <div className="mt-24 pt-16 border-t border-stone-200 space-y-8">
+          <div className="text-center space-y-3">
+            <h2 className="text-2xl md:text-3xl font-black text-stone-900 tracking-tight flex items-center justify-center gap-2">
+              <HelpCircle className="w-6 h-6 text-amber-600" /> Frequently Asked Questions
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto">
+            {[
+              {
+                q: "Are these KDP tools really free forever?",
+                a: "Yes — every tool on this page is 100% free with no account, credit card, or trial limit. They're built to support the same self-publishers who use KDPage's paid book-creation studio.",
+              },
+              {
+                q: "Do I need to create an account to use them?",
+                a: "No signup is required for any tool here — click \"Open Tool\" or \"Launch Interactive Tool\" and start immediately.",
+              },
+              {
+                q: "Is my data private when I use these tools?",
+                a: "Most tools — calculators, image editors, PDF utilities, OCR — run entirely in your browser and never upload your files or text to a server. A few that need external data, like Stock Images or Keyword Research, only send the specific search query you type.",
+              },
+              {
+                q: "How many free KDP tools are on this page?",
+                a: "Over 30, spanning royalty and print cost calculators, cover and interior design generators, SEO and readability analyzers, PDF utilities, and print-ready templates — all built specifically for Amazon KDP self-publishers.",
+              },
+            ].map((f) => (
+              <div key={f.q} className="bg-white/80 border border-stone-200/60 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-sm font-black text-stone-900 mb-2">{f.q}</h3>
+                <p className="text-xs font-semibold text-stone-600 leading-relaxed">{f.a}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Dynamic Modals for Interactive Tools */}

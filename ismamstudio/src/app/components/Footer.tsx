@@ -63,9 +63,6 @@ export default function Footer() {
                 <Link href="/faq" className="text-slate-400 hover:text-indigo-400 transition-colors">FAQ Help Center</Link>
               </li>
               <li>
-                <Link href="/redeem" className="text-slate-400 hover:text-indigo-400 transition-colors">Redeem AppSumo Code</Link>
-              </li>
-              <li>
                 <Link href="/affiliate" className="text-slate-400 hover:text-indigo-400 transition-colors">Affiliate Program</Link>
               </li>
             </ul>

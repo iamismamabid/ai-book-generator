@@ -59,9 +59,6 @@ export default function Header() {
             <Link href="/tools" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
               Free Tools
             </Link>
-            <Link href="/redeem" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              Redeem
-            </Link>
           </div>
 
           {/* Action Buttons & Auth */}

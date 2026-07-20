@@ -40,29 +40,13 @@ export default async function DashboardPage() {
 
   // Stacking guidance hints
   let upgradeHint = null;
-  if (rawPlan === "starter") {
-    upgradeHint = (
-      <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-900 underline block mt-0.5 animate-pulse">
-        Stack another code for Tier 2 (Pro) →
-      </Link>
-    );
-  } else if (rawPlan === "pro") {
-    upgradeHint = (
-      <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-900 underline block mt-0.5 animate-pulse">
-        Stack another code for Tier 3 (Agency) →
-      </Link>
-    );
+  if (rawPlan === "starter" || rawPlan === "pro" || rawPlan === "tier4") {
+    upgradeHint = null;
   } else if (rawPlan === "agency") {
     upgradeHint = (
       <span className="text-[9px] font-bold text-emerald-600 block mt-0.5">
         Max Tier Unlocked! ✨
       </span>
-    );
-  } else if (rawPlan === "tier4") {
-    upgradeHint = (
-      <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline block mt-0.5">
-        Stack another code for Tier 5 (Agency Max) →
-      </Link>
     );
   } else if (rawPlan === "tier5") {
     upgradeHint = (
@@ -73,8 +57,8 @@ export default async function DashboardPage() {
   } else {
     // If free, Free Trial, or other standard plans
     upgradeHint = (
-      <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline block mt-0.5">
-        Redeem AppSumo Code to unlock Premium →
+      <Link href="/#pricing" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline block mt-0.5">
+        Upgrade Plan to unlock Premium →
       </Link>
     );
   }

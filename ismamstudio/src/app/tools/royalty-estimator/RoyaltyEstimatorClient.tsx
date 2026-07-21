@@ -534,7 +534,7 @@ export default function RoyaltyEstimatorClient() {
 
               {/* Score Display */}
               <div className="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 text-center space-y-2">
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">AI Market Viability Score</span>
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">Market Viability Score</span>
                 <div className="flex justify-center items-baseline gap-1">
                   <span className={`text-4xl font-black ${
                     viability.score >= 70 ? "text-emerald-400" :

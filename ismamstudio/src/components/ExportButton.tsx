@@ -56,7 +56,7 @@ const getKdpGutterMargin = (totalPages: number): number => {
 
 export default function ExportButton({
   title = "My Book",
-  subtitle = "An AI Generated Journey",
+  subtitle = "A Creative Journey",
   content = "No content available.",
   chapters = [],
   customFont = "times",

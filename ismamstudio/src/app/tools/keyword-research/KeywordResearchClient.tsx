@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  ArrowLeft, Search, Sparkles, BarChart3, TrendingUp, HelpCircle, 
-  CheckCircle2, Shield, Zap, Copy, Check, Filter, Layers, Info 
+import {
+  ArrowLeft, Search, Sparkles, BarChart3, TrendingUp, HelpCircle,
+  CheckCircle2, Shield, Zap, Copy, Check, Filter, Layers, Info,
+  Star, BookOpen, Loader2, AlertTriangle
 } from "lucide-react";
+import type { CompetingBook } from "@/app/api/keyword-research/route";
 
 interface KeywordResult {
   keyword: string;
@@ -13,6 +15,42 @@ interface KeywordResult {
   competition: "Low" | "Medium" | "High";
   score: number; // 0-100 Niche Score
   estSales: number;
+}
+
+// Anchor points calibrated against publicly documented BSR-to-daily-sales
+// benchmarks (Kindlepreneur and similar publisher-reported comparisons).
+// Values between anchors are interpolated log-log (power-law), which is how
+// real BSR calculators work, instead of a coarse step function — a flat
+// bucket badly overestimates sales in the long tail (BSR 50k-500k), which is
+// where most real KDP books actually sit.
+const BSR_SALES_ANCHORS: [bsr: number, dailySales: number][] = [
+  [1, 1500],
+  [100, 800],
+  [1000, 100],
+  [5000, 40],
+  [10000, 20],
+  [20000, 8],
+  [50000, 2],
+  [100000, 0.5],
+  [300000, 0.15],
+  [1000000, 0.02],
+];
+
+function estimateDailySalesFromBsr(bsr: number): number {
+  const anchors = BSR_SALES_ANCHORS;
+  if (bsr <= anchors[0][0]) return anchors[0][1];
+  const last = anchors[anchors.length - 1];
+  if (bsr >= last[0]) return last[1];
+
+  for (let i = 0; i < anchors.length - 1; i++) {
+    const [x1, y1] = anchors[i];
+    const [x2, y2] = anchors[i + 1];
+    if (bsr >= x1 && bsr <= x2) {
+      const t = (Math.log(bsr) - Math.log(x1)) / (Math.log(x2) - Math.log(x1));
+      return Math.exp(Math.log(y1) + t * (Math.log(y2) - Math.log(y1)));
+    }
+  }
+  return 0;
 }
 
 export default function KeywordResearchPage() {
@@ -23,17 +61,49 @@ export default function KeywordResearchPage() {
   const [copiedSlot, setCopiedSlot] = useState<number | null>(null);
   const [backendSlots, setBackendSlots] = useState<string[]>(["", "", "", "", "", "", ""]);
 
+  // Real competing-book data, sourced live from Google Books (not Amazon —
+  // Amazon has no public API for search volume or BSR; see BSR calculator below
+  // for turning a manually-entered Amazon BSR into a sales estimate instead).
+  const [competingBooks, setCompetingBooks] = useState<CompetingBook[] | null>(null);
+  const [totalBooksFound, setTotalBooksFound] = useState<number | null>(null);
+  const [isSearchingBooks, setIsSearchingBooks] = useState(false);
+  const [booksError, setBooksError] = useState<string | null>(null);
+
   // BSR Calculator states
   const [bsr, setBsr] = useState<number>(50000);
-  const [calculatedSales, setCalculatedSales] = useState<{ daily: number; monthly: number; royalties: number } | null>({
-    daily: 5,
-    monthly: 150,
-    royalties: 375
+  const [calculatedSales, setCalculatedSales] = useState<{ daily: number; monthly: number; royalties: number } | null>(() => {
+    const daily = estimateDailySalesFromBsr(50000);
+    const monthly = daily * 30;
+    return {
+      daily: Math.round(daily * 100) / 100,
+      monthly: Math.round(monthly),
+      royalties: Math.round(monthly * 2.5 * 100) / 100
+    };
   });
+
+  const fetchCompetingBooks = async (searchTerm: string) => {
+    setIsSearchingBooks(true);
+    setBooksError(null);
+    setCompetingBooks(null);
+    try {
+      const res = await fetch(`/api/keyword-research?q=${encodeURIComponent(searchTerm)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to fetch competing books");
+      }
+      setCompetingBooks(data.books);
+      setTotalBooksFound(data.totalItems);
+    } catch (err) {
+      setBooksError(err instanceof Error ? err.message : "Failed to fetch competing books");
+    } finally {
+      setIsSearchingBooks(false);
+    }
+  };
 
   const handleSearch = (searchTerm: string) => {
     setIsSearching(true);
     setQuery(searchTerm);
+    fetchCompetingBooks(searchTerm);
 
     setTimeout(() => {
       const lower = searchTerm.toLowerCase();
@@ -97,22 +167,14 @@ export default function KeywordResearchPage() {
     setBsr(val);
     if (!val || val <= 0) return;
 
-    let daily = 0;
-    if (val < 100) daily = 1000;
-    else if (val < 1000) daily = 120;
-    else if (val < 5000) daily = 50;
-    else if (val < 20000) daily = 18;
-    else if (val < 100000) daily = 4;
-    else if (val < 500000) daily = 1;
-    else daily = 0;
-
-    const monthly = daily * 30 || (val > 1000000 ? 0 : 2);
+    const daily = estimateDailySalesFromBsr(val);
+    const monthly = daily * 30;
     const royalties = monthly * 2.5; // Avg $2.50 royalty
 
     setCalculatedSales({
-      daily: Math.max(1, daily),
-      monthly: Math.max(2, monthly),
-      royalties
+      daily: Math.round(daily * 100) / 100,
+      monthly: Math.round(monthly),
+      royalties: Math.round(royalties * 100) / 100
     });
   };
 
@@ -192,7 +254,7 @@ export default function KeywordResearchPage() {
               <Sparkles className="w-3.5 h-3.5" /> Market Intelligence
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-              AI KDP Niche & Keyword Explorer
+              KDP Niche & Keyword Explorer
             </h1>
           </div>
           <Link
@@ -225,10 +287,10 @@ export default function KeywordResearchPage() {
           {/* Keyword Search Module */}
           <div className="lg:col-span-2 bg-slate-900/55 backdrop-blur-xl border border-slate-800/80 rounded-[2rem] p-6 md:p-8 shadow-2xl space-y-6">
             <h2 className="text-xl font-black text-white flex items-center gap-2">
-              <Search className="w-5 h-5 text-indigo-400" /> Amazon Keyword Spy
+              <Search className="w-5 h-5 text-indigo-400" /> Long-Tail Phrase Ideas
             </h2>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-              Find long-tail autocompletes, estimated search volumes, and competition indicators directly. Select terms to pack your 7 backend slots.
+              Long-tail phrase variations to fill your 7 backend keyword slots. <span className="text-amber-400">Amazon doesn't publish keyword search-volume data</span> — the volume/competition/score numbers below are a directional heuristic, not measured stats. For real, live data, see Competing Books below.
             </p>
 
             <form onSubmit={handleSearchSubmit} className="flex gap-2">
@@ -352,6 +414,94 @@ export default function KeywordResearchPage() {
             </div>
           </div>
 
+        </div>
+
+        {/* Real Competing Books — live data via Google Books */}
+        <div className="bg-slate-900/55 backdrop-blur-xl border border-slate-800/80 rounded-[2rem] p-6 md:p-8 shadow-2xl space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-6 h-6 text-indigo-400" />
+              <div>
+                <h2 className="text-xl font-black text-white flex items-center gap-2">
+                  Real Competing Books
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Live Data
+                  </span>
+                </h2>
+                <p className="text-slate-500 text-xs font-semibold mt-1">
+                  Actual published titles, ratings, and page counts for this search — pulled live from Google Books, since Amazon doesn't provide this publicly.
+                </p>
+              </div>
+            </div>
+            {totalBooksFound !== null && !isSearchingBooks && (
+              <div className="text-right shrink-0">
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Published Titles Found</span>
+                <span className={`text-lg font-black ${
+                  totalBooksFound > 1000 ? "text-rose-400" : totalBooksFound > 200 ? "text-amber-400" : "text-emerald-400"
+                }`}>
+                  {totalBooksFound.toLocaleString()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {!query && !isSearchingBooks && (
+            <div className="p-8 text-center bg-slate-950/40 rounded-2xl border border-slate-900 border-dashed text-slate-500 font-semibold text-xs">
+              Run a search above to see real competing books for that niche.
+            </div>
+          )}
+
+          {isSearchingBooks && (
+            <div className="p-8 text-center bg-slate-950/40 rounded-2xl border border-slate-900 flex flex-col items-center gap-2 text-slate-400 text-xs font-bold">
+              <Loader2 className="w-6 h-6 animate-spin text-indigo-400" /> Fetching real book data...
+            </div>
+          )}
+
+          {booksError && (
+            <div className="p-4 bg-rose-50/5 border border-rose-500/20 rounded-2xl flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+              <span className="text-xs font-bold text-rose-300">{booksError}</span>
+            </div>
+          )}
+
+          {competingBooks && competingBooks.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {competingBooks.slice(0, 12).map((book) => (
+                <div key={book.id} className="bg-slate-950/40 border border-slate-900 rounded-2xl p-4 flex gap-3">
+                  {book.thumbnail ? (
+                    <img src={book.thumbnail} alt={book.title} className="w-14 h-20 object-cover rounded-lg shrink-0 shadow-md" />
+                  ) : (
+                    <div className="w-14 h-20 bg-slate-900 rounded-lg shrink-0 flex items-center justify-center">
+                      <BookOpen className="w-5 h-5 text-slate-700" />
+                    </div>
+                  )}
+                  <div className="min-w-0 space-y-1">
+                    <p className="text-xs font-black text-white leading-snug line-clamp-2">{book.title}</p>
+                    {book.authors.length > 0 && (
+                      <p className="text-[10px] text-slate-500 font-semibold truncate">{book.authors.join(", ")}</p>
+                    )}
+                    <div className="flex items-center gap-2 flex-wrap pt-1">
+                      {book.averageRating !== null && (
+                        <span className="flex items-center gap-0.5 text-[10px] font-black text-amber-400">
+                          <Star className="w-3 h-3 fill-amber-400" /> {book.averageRating}
+                          {book.ratingsCount !== null && <span className="text-slate-500 font-semibold"> ({book.ratingsCount})</span>}
+                        </span>
+                      )}
+                      {book.pageCount !== null && (
+                        <span className="text-[10px] text-slate-500 font-semibold">{book.pageCount}pg</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {competingBooks && competingBooks.length === 0 && (
+            <div className="p-8 text-center bg-slate-950/40 rounded-2xl border border-slate-900 border-dashed text-slate-500 font-semibold text-xs">
+              No published books found matching this search — could mean very low competition, or a very narrow phrase.
+            </div>
+          )}
         </div>
 
         {/* 7 KDP Backend Slots Generator */}

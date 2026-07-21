@@ -53,7 +53,7 @@ export default function Header() {
             </Link>
             {!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN && (
               <Link href="/generate" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                AI Novel Writer
+                Novel Writer
               </Link>
             )}
             <Link href="/tools" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">

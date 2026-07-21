@@ -31,11 +31,11 @@ export default function ChapterButton({ bookId, outline, title, currentCount }: 
 
   const handleWrite = async () => {
     if (isFree) {
-      alert("AI Chapter writing is a premium feature. Please upgrade to Starter or Pro to generate chapters!");
+      alert("Chapter writing is a premium feature. Please upgrade to Starter or Pro to generate chapters!");
       return;
     }
     if (isLimitReached) {
-      alert("You have reached the monthly limit of 5 AI Chapters on your Starter plan. Please upgrade to Pro for unlimited generation.");
+      alert("You have reached the monthly limit of 5 Chapters on your Starter plan. Please upgrade to Pro for unlimited generation.");
       return;
     }
 
@@ -46,7 +46,7 @@ export default function ChapterButton({ bookId, outline, title, currentCount }: 
       // Update local usage state after successfully writing
       setUsage(prev => ({ ...prev, chaptersCount: prev.chaptersCount + 1 }));
     } catch (error: any) {
-      alert(error.message || "AI is a bit tired. Please try again!");
+      alert(error.message || "The writing engine is a bit tired. Please try again!");
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ export default function ChapterButton({ bookId, outline, title, currentCount }: 
         <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-3xl transition-all">
           <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-indigo-600 font-black animate-pulse">
-            AI is crafting Chapter {currentCount + 1}... ✨
+            Crafting Chapter {currentCount + 1}... ✨
           </p>
         </div>
       )}
@@ -81,10 +81,10 @@ export default function ChapterButton({ bookId, outline, title, currentCount }: 
             className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 px-10 py-5 rounded-2xl font-black text-lg transition shadow-xl"
           >
             <Lock className="w-5 h-5" />
-            {isFree ? "Unlock AI Chapter Writer" : "Limit Reached - Upgrade to Pro"}
+            {isFree ? "Unlock Chapter Writer" : "Limit Reached - Upgrade to Pro"}
           </Link>
           <p className="text-[11px] font-bold text-amber-600">
-            {isFree ? "AI Chapters require Starter or Pro Plan" : "Starter plan is capped at 5 AI chapters/month"}
+            {isFree ? "Chapters require Starter or Pro Plan" : "Starter plan is capped at 5 chapters/month"}
           </p>
         </div>
       ) : (

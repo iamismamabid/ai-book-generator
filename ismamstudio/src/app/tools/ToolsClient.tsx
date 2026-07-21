@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
-  Sparkles, ArrowLeft, BookOpen, Calculator, Search, CheckCircle2, 
+import {
+  Sparkles, ArrowLeft, BookOpen, Calculator, Search, CheckCircle2,
   HelpCircle, Settings, FileText, Layout, Copy, Check, ChevronRight,
-  BookMarked, PenTool, Hash, RefreshCw, BarChart2, ShieldAlert
+  BookMarked, PenTool, Hash, RefreshCw, BarChart2, ShieldAlert, Loader2, AlertTriangle
 } from "lucide-react";
+import { splitManuscriptIntoChapters, generateEpub, downloadBlob } from "@/lib/epubExport";
+import { generateInteriorPdf, getGutterMargin } from "@/lib/pdfFormatter";
+import { validatePdfLayout, type PdfValidationReport } from "@/lib/pdfValidator";
 
 interface ToolItem {
   id: string;
@@ -60,23 +63,157 @@ export default function FreeToolsHub() {
     { id: "s5", label: "Spine text is centered and safe from folding lines", checked: false, points: 15 }
   ]);
 
-  // Widget States: eBook Formatter (EPUB) Mock
+  // Widget States: eBook Formatter (EPUB)
   const [epubTitle, setEpubTitle] = useState("");
   const [epubAuthor, setEpubAuthor] = useState("");
   const [epubSuccess, setEpubSuccess] = useState(false);
+  const [epubFile, setEpubFile] = useState<File | null>(null);
+  const [isGeneratingEpub, setIsGeneratingEpub] = useState(false);
+  const [epubError, setEpubError] = useState<string | null>(null);
+  const [epubResult, setEpubResult] = useState<{ blob: Blob; chapterCount: number } | null>(null);
 
-  // Widget States: PDF Formatter Mock
-  const [pdfTrimSize, setPdfTrimSize] = useState("8.5x11");
-  const [pdfFileAdded, setPdfFileAdded] = useState(false);
-  const [pdfFormattingStatus, setPdfFormattingStatus] = useState<string>("");
-
-  const [uploadedEpubFile, setUploadedEpubFile] = useState<string | null>(null);
-  const [uploadedPdfFile, setUploadedPdfFile] = useState<string | null>(null);
+  // Widget States: PDF Formatter
+  const [pdfTrimSize, setPdfTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("6x9");
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfTitle, setPdfTitle] = useState("");
+  const [pdfAuthor, setPdfAuthor] = useState("");
+  const [pdfFontFamily, setPdfFontFamily] = useState<"times" | "helvetica" | "courier">("times");
+  const [pdfFontSize, setPdfFontSize] = useState<number>(11);
+  const [pdfLineSpacing, setPdfLineSpacing] = useState<number>(1.25);
+  const [pdfPageNumbers, setPdfPageNumbers] = useState<boolean>(true);
+  const [pdfRunningHeaders, setPdfRunningHeaders] = useState<boolean>(true);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [pdfResult, setPdfResult] = useState<{ blob: Blob; pageCount: number } | null>(null);
+  const [pdfValidationReport, setPdfValidationReport] = useState<PdfValidationReport | null>(null);
+  const [isValidatingPdf, setIsValidatingPdf] = useState(false);
 
   const handleTriggerCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedText(id);
     setTimeout(() => setCopiedText(null), 2000);
+  };
+
+  // Reads the uploaded manuscript (.txt or .docx), splits it into chapters, and
+  // compiles a real, spec-valid EPUB entirely in the browser — no upload to a server.
+  const handleGenerateEpub = async () => {
+    if (!epubFile) return;
+    setEpubError(null);
+    setEpubResult(null);
+    setIsGeneratingEpub(true);
+
+    try {
+      let rawText: string;
+      if (epubFile.name.toLowerCase().endsWith(".docx")) {
+        const mammoth = await import("mammoth");
+        const arrayBuffer = await epubFile.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        rawText = result.value;
+      } else {
+        rawText = await epubFile.text();
+      }
+
+      if (!rawText || rawText.trim().length === 0) {
+        throw new Error("Couldn't find any readable text in that file.");
+      }
+
+      const chapters = splitManuscriptIntoChapters(rawText);
+      const finalTitle = epubTitle.trim() || epubFile.name.replace(/\.[^/.]+$/, "");
+      const finalAuthor = epubAuthor.trim() || "Self-Publisher";
+
+      const blob = await generateEpub({ title: finalTitle, author: finalAuthor, chapters });
+      setEpubResult({ blob, chapterCount: chapters.length });
+      setEpubSuccess(true);
+    } catch (err) {
+      console.error("EPUB generation failed:", err);
+      setEpubError(err instanceof Error ? err.message : "Failed to generate EPUB. Please check your file and try again.");
+    } finally {
+      setIsGeneratingEpub(false);
+    }
+  };
+
+  const handleDownloadEpub = () => {
+    if (!epubResult) return;
+    const finalTitle = epubTitle.trim() || epubFile?.name.replace(/\.[^/.]+$/, "") || "Book";
+    downloadBlob(epubResult.blob, `${finalTitle.replace(/\s+/g, "_")}-Kindle.epub`);
+  };
+
+  const handleGeneratePdf = async () => {
+    if (!pdfFile) return;
+    setPdfError(null);
+    setPdfResult(null);
+    setIsGeneratingPdf(true);
+
+    try {
+      let rawText: string;
+      if (pdfFile.name.toLowerCase().endsWith(".docx")) {
+        const mammoth = await import("mammoth");
+        const arrayBuffer = await pdfFile.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        rawText = result.value;
+      } else {
+        rawText = await pdfFile.text();
+      }
+
+      if (!rawText || rawText.trim().length === 0) {
+        throw new Error("Couldn't find any readable text in that file.");
+      }
+
+      const finalTitle = pdfTitle.trim() || pdfFile.name.replace(/\.[^/.]+$/, "");
+      const finalAuthor = pdfAuthor.trim() || "Self-Publisher";
+
+      const res = await generateInteriorPdf({
+        title: finalTitle,
+        author: finalAuthor,
+        rawText,
+        trimSize: pdfTrimSize,
+        fontFamily: pdfFontFamily,
+        fontSize: pdfFontSize,
+        lineSpacing: pdfLineSpacing,
+        pageNumbers: pdfPageNumbers,
+        runningHeaders: pdfRunningHeaders
+      });
+
+      setPdfResult({ blob: res.blob, pageCount: res.pageCount });
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      setPdfError(err instanceof Error ? err.message : "Failed to format PDF. Please verify your document structure.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleDownloadPdf = () => {
+    if (!pdfResult) return;
+    const finalTitle = pdfTitle.trim() || pdfFile?.name.replace(/\.[^/.]+$/, "") || "KDP_Interior";
+    downloadBlob(pdfResult.blob, `${finalTitle.replace(/\s+/g, "_")}-${pdfTrimSize}.pdf`);
+  };
+
+  const handlePdfUpload = async (file: File) => {
+    setPdfFile(file);
+    setPdfResult(null);
+    setPdfError(null);
+    setPdfValidationReport(null);
+
+    const nameLower = file.name.toLowerCase();
+    
+    if (nameLower.endsWith(".pdf")) {
+      setIsValidatingPdf(true);
+      try {
+        const buffer = await file.arrayBuffer();
+        const report = await validatePdfLayout(buffer);
+        setPdfValidationReport(report);
+      } catch (err) {
+        console.error("PDF validation failed:", err);
+        setPdfError("Could not parse the PDF file. Please ensure it is not password protected.");
+      } finally {
+        setIsValidatingPdf(false);
+      }
+    } else {
+      if (!pdfTitle) {
+        setPdfTitle(file.name.replace(/\.[^/.]+$/, ""));
+      }
+    }
   };
 
   const generateTitlesAction = () => {
@@ -191,7 +328,7 @@ export default function FreeToolsHub() {
     },
     {
       id: "title-generator",
-      name: "Free AI Book Title Generator",
+      name: "Free Book Title Generator",
       badge: "Most Popular",
       category: "Writing",
       description: "Generate catchy, marketable book titles for any genre. 10 unique KDP-optimized ideas per batch.",
@@ -636,9 +773,17 @@ export default function FreeToolsHub() {
                     setActiveInteractiveTool(null);
                     setGeneratedTitles([]);
                     setEpubSuccess(false);
-                    setPdfFileAdded(false);
-                    setUploadedEpubFile(null);
-                    setUploadedPdfFile(null);
+                    setPdfFile(null);
+                    setPdfTitle("");
+                    setPdfAuthor("");
+                    setPdfResult(null);
+                    setPdfError(null);
+                    setPdfValidationReport(null);
+                    setIsGeneratingPdf(false);
+                    setEpubFile(null);
+                    setEpubError(null);
+                    setEpubResult(null);
+                    setIsGeneratingEpub(false);
                   }}
                   className="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-600 hover:text-stone-900 font-bold transition-all text-xs cursor-pointer"
                 >
@@ -920,7 +1065,7 @@ export default function FreeToolsHub() {
                   </div>
                 )}
 
-                {/* 6. eBook Formatter Mock */}
+                {/* 6. eBook Formatter (real, client-side EPUB compiler) */}
                 {activeInteractiveTool === "epub-formatter" && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -949,30 +1094,29 @@ export default function FreeToolsHub() {
                     <div className="border border-dashed border-stone-300 rounded-2xl p-6 text-center bg-stone-50">
                       <FileText className="w-10 h-10 text-stone-400 mx-auto mb-2" />
                       <span className="text-xs text-stone-800 font-bold block mb-1">
-                        {uploadedEpubFile ? `Selected: ${uploadedEpubFile}` : "Select Word / Text manuscript"}
+                        {epubFile ? `Selected: ${epubFile.name}` : "Select Word / Text manuscript"}
                       </span>
-                      <span className="text-[9px] text-stone-500 block mb-3">Accepts .docx, .txt formats (max 10MB)</span>
-                      
-                      <input 
-                        type="file" 
-                        id="epub-file-input" 
-                        accept=".docx,.txt" 
-                        className="hidden" 
+                      <span className="text-[9px] text-stone-500 block mb-3">Accepts .docx, .txt formats (max 10MB) &mdash; processed entirely in your browser</span>
+
+                      <input
+                        type="file"
+                        id="epub-file-input"
+                        accept=".docx,.txt"
+                        className="hidden"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            setUploadedEpubFile(file.name);
+                            setEpubFile(file);
+                            setEpubSuccess(false);
+                            setEpubResult(null);
+                            setEpubError(null);
                             if (!epubTitle) {
                               setEpubTitle(file.name.replace(/\.[^/.]+$/, ""));
                             }
-                            if (!epubAuthor) {
-                              setEpubAuthor("Self-Publisher");
-                            }
-                            setEpubSuccess(true);
                           }
                         }}
                       />
-                      <button 
+                      <button
                         onClick={() => {
                           document.getElementById("epub-file-input")?.click();
                         }}
@@ -982,19 +1126,41 @@ export default function FreeToolsHub() {
                       </button>
                     </div>
 
-                    {epubSuccess && (
+                    {epubFile && !epubSuccess && (
+                      <button
+                        onClick={handleGenerateEpub}
+                        disabled={isGeneratingEpub}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white font-black text-xs rounded-xl cursor-pointer shadow-sm transition"
+                      >
+                        {isGeneratingEpub ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" /> Compiling EPUB...
+                          </>
+                        ) : (
+                          <>
+                            <BookOpen className="w-4 h-4" /> Generate EPUB
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {epubError && (
+                      <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                        <span className="text-xs font-bold text-rose-800">{epubError}</span>
+                      </div>
+                    )}
+
+                    {epubSuccess && epubResult && (
                       <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-3">
                         <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                         <div>
-                          <span className="text-xs font-black text-emerald-800 block">EPUB Validation Passed!</span>
+                          <span className="text-xs font-black text-emerald-800 block">EPUB Compiled Successfully!</span>
                           <span className="text-[10px] text-stone-600 block mt-0.5">
-                            Format converted successfully. Your files are styled, table of contents generated, and compiled for direct Kindle uploads.
+                            {epubResult.chapterCount} chapter{epubResult.chapterCount !== 1 ? "s" : ""} detected. Title page, table of contents, and Kindle-ready structure are built into the file.
                           </span>
-                          <button 
-                            onClick={() => {
-                              alert(`Downloading ${epubTitle || 'Book'}-Kindle.epub...`);
-                              setEpubSuccess(false);
-                            }}
+                          <button
+                            onClick={handleDownloadEpub}
                             className="mt-3 px-3 py-1 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer shadow-sm"
                           >
                             Download EPUB
@@ -1005,51 +1171,28 @@ export default function FreeToolsHub() {
                   </div>
                 )}
 
-                {/* 7. PDF Interior Formatter Mock */}
+                {/* 7. PDF Interior Formatter & Validator */}
                 {activeInteractiveTool === "pdf-formatter" && (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs font-bold text-stone-500 block mb-1">Select Trim Size</label>
-                        <select
-                          value={pdfTrimSize}
-                          onChange={(e) => setPdfTrimSize(e.target.value)}
-                          className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
-                        >
-                          <option value="6x9">6" x 9" (Novel/Standard)</option>
-                          <option value="8.5x11">8.5" x 11" (Puzzle/Children's)</option>
-                          <option value="5x8">5" x 8" (Compact)</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-stone-500 block mb-1">Bleed Margins</label>
-                        <select
-                          className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
-                        >
-                          <option value="nobleed">No Bleed (Puzzles/Text inside margins)</option>
-                          <option value="bleed">Bleed (Images/graphics touching edges)</option>
-                        </select>
-                      </div>
-                    </div>
-
+                    {/* File Upload Box */}
                     <div className="border border-dashed border-stone-300 rounded-2xl p-6 text-center bg-stone-50">
                       <Layout className="w-10 h-10 text-stone-400 mx-auto mb-2" />
                       <span className="text-xs text-stone-800 font-bold block mb-1">
-                        {uploadedPdfFile ? `Selected: ${uploadedPdfFile}` : "Upload interior manuscript PDF / Word document"}
+                        {pdfFile ? `Selected: ${pdfFile.name}` : "Upload manuscript file"}
                       </span>
-                      <span className="text-[9px] text-stone-500 block mb-3">Checks gutter spacing and trim alignment</span>
+                      <span className="text-[9px] text-stone-500 block mb-3">
+                        Accepts .docx, .txt (for typesetting) or .pdf (for compliance validation)
+                      </span>
                       
                       <input 
                         type="file" 
                         id="pdf-file-input" 
-                        accept=".pdf,.docx" 
+                        accept=".pdf,.docx,.txt" 
                         className="hidden" 
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            setUploadedPdfFile(file.name);
-                            setPdfFileAdded(true);
-                            setPdfFormattingStatus(`Checked file "${file.name}". Safety zones: OK. Gutter: OK. Safe margins: OK.`);
+                            handlePdfUpload(file);
                           }
                         }}
                       />
@@ -1059,26 +1202,221 @@ export default function FreeToolsHub() {
                         }}
                         className="px-4 py-1.5 bg-white hover:bg-stone-50 border border-stone-250 rounded-xl text-xs font-black text-stone-700 cursor-pointer shadow-sm"
                       >
-                        Select Document
+                        Select File
                       </button>
                     </div>
 
-                    {pdfFileAdded && (
-                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                        <div>
-                          <span className="text-xs font-black text-amber-800 block">Formatting Validated!</span>
-                          <span className="text-[10px] text-stone-600 block mt-0.5">{pdfFormattingStatus}</span>
-                          <button 
-                            onClick={() => {
-                              alert(`Exporting and downloading KDP-${pdfTrimSize}-Interior.pdf...`);
-                              setPdfFileAdded(false);
-                            }}
-                            className="mt-3 px-3 py-1 bg-amber-700 hover:bg-amber-600 text-white font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer shadow-sm"
-                          >
-                            Export Print-Ready PDF
-                          </button>
+                    {/* PDF Layout Validation Report */}
+                    {isValidatingPdf && (
+                      <div className="flex items-center justify-center gap-2 py-6 text-stone-600 text-xs">
+                        <Loader2 className="w-4 h-4 animate-spin text-amber-600" /> Analysing PDF structure...
+                      </div>
+                    )}
+
+                    {pdfValidationReport && (
+                      <div className="space-y-3 p-4 bg-white border border-stone-200 rounded-2xl shadow-sm">
+                        <h4 className="text-[10px] font-black text-stone-400 uppercase tracking-wider">KDP Layout Validation Report</h4>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                          <div className="p-2 bg-stone-50 rounded-lg">
+                            <span className="text-[9px] text-stone-500 block">Trim Size Detected</span>
+                            <span className="font-bold text-stone-850">{pdfValidationReport.detectedTrimSize}</span>
+                          </div>
+                          <div className="p-2 bg-stone-50 rounded-lg">
+                            <span className="text-[9px] text-stone-500 block">Total Pages</span>
+                            <span className="font-bold text-stone-850">{pdfValidationReport.pageCount} pages</span>
+                          </div>
                         </div>
+
+                        {pdfValidationReport.errors.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[9px] font-black text-red-650 block uppercase">Critical Errors ({pdfValidationReport.errors.length}):</span>
+                            {pdfValidationReport.errors.map((err, i) => (
+                              <div key={i} className="flex gap-2 text-xs text-red-700 bg-red-50 border border-red-100 p-2 rounded-lg items-start">
+                                <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+                                <span>{err}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {pdfValidationReport.warnings.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[9px] font-black text-amber-700 block uppercase">Warnings ({pdfValidationReport.warnings.length}):</span>
+                            {pdfValidationReport.warnings.map((warn, i) => (
+                              <div key={i} className="flex gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-150 p-2 rounded-lg items-start">
+                                <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+                                <span>{warn}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {pdfValidationReport.errors.length === 0 && (
+                          <div className="flex gap-2 text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 p-2 rounded-lg items-start">
+                            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                            <span>PDF structure looks KDP compliant. Required binding gutter: {pdfValidationReport.requiredGutterInches} in.</span>
+                          </div>
+                        )}
+
+                        <div className="text-[10px] text-stone-500 bg-stone-50 p-2.5 rounded-lg leading-relaxed">
+                          <strong>KDP Recommendation:</strong> {pdfValidationReport.recommendation}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Word / TXT Typesetting Form */}
+                    {pdfFile && !pdfFile.name.toLowerCase().endsWith(".pdf") && !pdfResult && (
+                      <div className="space-y-4 bg-white p-4 border border-stone-200/60 rounded-2xl shadow-sm">
+                        <h4 className="text-[10px] font-black text-stone-400 uppercase tracking-wider">Configure PDF Typesetting</h4>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-bold text-stone-500 block mb-1">Book Title</label>
+                            <input
+                              type="text"
+                              value={pdfTitle}
+                              onChange={(e) => setPdfTitle(e.target.value)}
+                              placeholder="Title page heading"
+                              className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-stone-500 block mb-1">Author Name</label>
+                            <input
+                              type="text"
+                              value={pdfAuthor}
+                              onChange={(e) => setPdfAuthor(e.target.value)}
+                              placeholder="Author name"
+                              className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <label className="text-[10px] font-bold text-stone-500 block mb-1">Trim Size</label>
+                            <select
+                              value={pdfTrimSize}
+                              onChange={(e) => setPdfTrimSize(e.target.value as any)}
+                              className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
+                            >
+                              <option value="6x9">6" x 9" (Standard Novel)</option>
+                              <option value="8.5x11">8.5" x 11" (Puzzle/Kids)</option>
+                              <option value="5x8">5" x 8" (Compact)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-stone-500 block mb-1">Font Theme</label>
+                            <select
+                              value={pdfFontFamily}
+                              onChange={(e) => setPdfFontFamily(e.target.value as any)}
+                              className="w-full bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
+                            >
+                              <option value="times">Serif (Times)</option>
+                              <option value="helvetica">Sans-Serif (Helvetica)</option>
+                              <option value="courier">Monospace (Courier)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-stone-500 block mb-1">Font Size & Spacing</label>
+                            <div className="flex gap-1.5">
+                              <select
+                                value={pdfFontSize}
+                                onChange={(e) => setPdfFontSize(parseInt(e.target.value))}
+                                className="flex-1 bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
+                              >
+                                <option value="10">10pt</option>
+                                <option value="11">11pt</option>
+                                <option value="12">12pt</option>
+                              </select>
+                              <select
+                                value={pdfLineSpacing}
+                                onChange={(e) => setPdfLineSpacing(parseFloat(e.target.value))}
+                                className="flex-1 bg-white border border-stone-200 p-2 rounded-xl text-xs text-stone-850"
+                              >
+                                <option value="1.15">1.15x</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-4 items-center pt-2">
+                          <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-stone-600 font-bold">
+                            <input
+                              type="checkbox"
+                              checked={pdfPageNumbers}
+                              onChange={(e) => setPdfPageNumbers(e.target.checked)}
+                              className="w-4 h-4 rounded text-amber-600 accent-amber-600 cursor-pointer"
+                            />
+                            Include Page Numbers
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-stone-600 font-bold">
+                            <input
+                              type="checkbox"
+                              checked={pdfRunningHeaders}
+                              onChange={(e) => setPdfRunningHeaders(e.target.checked)}
+                              className="w-4 h-4 rounded text-amber-600 accent-amber-600 cursor-pointer"
+                            />
+                            Include Running Headers
+                          </label>
+                        </div>
+
+                        <button
+                          onClick={handleGeneratePdf}
+                          disabled={isGeneratingPdf}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white font-black text-xs rounded-xl cursor-pointer shadow-sm transition mt-2"
+                        >
+                          {isGeneratingPdf ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" /> Laying out PDF manuscript...
+                            </>
+                          ) : (
+                            <>
+                              <BookOpen className="w-4 h-4" /> Typeset & Export PDF
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* PDF Generation Success Block */}
+                    {pdfResult && (
+                      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-3 shadow-sm">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="text-xs font-black text-emerald-800 block">PDF Typeset Complete!</span>
+                          <span className="text-[10px] text-stone-600 block mt-0.5">
+                            Total page count: {pdfResult.pageCount}. Includes standard Title page, Copyright disclaimer, Table of Contents, and KDP-compliant margins (Gutter: {getGutterMargin(pdfResult.pageCount)}").
+                          </span>
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              onClick={handleDownloadPdf}
+                              className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer shadow-sm"
+                            >
+                              Download KDP Interior
+                            </button>
+                            <button
+                              onClick={() => {
+                                setPdfFile(null);
+                                setPdfResult(null);
+                                setPdfError(null);
+                              }}
+                              className="px-3 py-1.5 bg-white border border-stone-250 hover:bg-stone-50 text-stone-700 font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer shadow-sm"
+                            >
+                              Upload New File
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {pdfError && (
+                      <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                        <span className="text-xs font-bold text-rose-800">{pdfError}</span>
                       </div>
                     )}
                   </div>
@@ -1097,8 +1435,11 @@ export default function FreeToolsHub() {
                     setGeneratedTitles([]);
                     setEpubSuccess(false);
                     setPdfFileAdded(false);
-                    setUploadedEpubFile(null);
                     setUploadedPdfFile(null);
+                    setEpubFile(null);
+                    setEpubError(null);
+                    setEpubResult(null);
+                    setIsGeneratingEpub(false);
                   }}
                   className="px-4 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 font-black text-[10px] rounded-lg uppercase tracking-wider cursor-pointer shadow-sm"
                 >

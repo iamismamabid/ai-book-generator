@@ -470,7 +470,7 @@ export default function HomeClient() {
                 <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                   <Sparkles className="w-7 h-7" />
                 </div>
-                <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">AI Novel Writer & Outliner</h3>
+                <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Novel Outline & Writer</h3>
                 <p className="text-slate-600 text-sm leading-relaxed font-semibold">
                   Generate 12-chapter novel outlines based on custom parameters, concepts, and genres. Co-write novel chapters using high-speed Llama 3.3 models.
                 </p>

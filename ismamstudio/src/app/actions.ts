@@ -35,7 +35,7 @@ export async function createBook(formData: FormData) {
   else if (premium.plan !== "free") maxOutlines = 15; // default premium fallback
 
   if (usage.outlinesCount >= maxOutlines) {
-    throw new Error(`Your current plan tier is limited to ${maxOutlines} AI Outlines per month. Please upgrade your lifetime license.`);
+    throw new Error(`Your current plan tier is limited to ${maxOutlines} Outlines per month. Please upgrade your lifetime license.`);
   }
 
   const prompt = formData.get("prompt") as string;
@@ -91,7 +91,7 @@ export async function generateNextChapter(bookId: string, outline: string, title
   const usage = await getUserUsage();
 
   if (premium.plan === "free") {
-    throw new Error("AI Chapter generation is not available on the Free Tier. Please upgrade.");
+    throw new Error("Chapter generation is not available on the Free Tier. Please upgrade.");
   }
 
   let maxChapters = 0;
@@ -103,7 +103,7 @@ export async function generateNextChapter(bookId: string, outline: string, title
   else maxChapters = 30; // default premium fallback
 
   if (usage.chaptersCount >= maxChapters) {
-    throw new Error(`Your current plan tier is limited to ${maxChapters} AI Chapters per month. Please upgrade your lifetime license.`);
+    throw new Error(`Your current plan tier is limited to ${maxChapters} Chapters per month. Please upgrade your lifetime license.`);
   }
 
   const currentChapterCount = await prisma.chapter.count({
@@ -332,7 +332,7 @@ export async function checkPremiumStatus() {
   const defaultFreeLimits = { tier: 0, brands: 1, aiChapters: 0, puzzles: ["easy"], maxBookCount: 5 };
 
   if (!userId) {
-    return { isPremium: false, reason: "unauthorized", plan: "free", limits: defaultFreeLimits };
+    return { checked: true, isPremium: false, reason: "unauthorized", plan: "free", limits: defaultFreeLimits };
   }
 
   try {
@@ -358,7 +358,7 @@ export async function checkPremiumStatus() {
         plan = "tier5";
         limits = { tier: 5, brands: 999999, aiChapters: 999999, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
       }
-      return { isPremium: true, plan, limits };
+      return { checked: true, isPremium: true, plan, limits };
     }
 
     // ২. Clerk publicMetadata চেক করা (সাবস্ক্রিপশনের জন্য)
@@ -380,7 +380,7 @@ export async function checkPremiumStatus() {
         } else if (userPlan === "agency") {
           limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
         }
-        return { isPremium: true, plan: userPlan, limits };
+        return { checked: true, isPremium: true, plan: userPlan, limits };
       }
 
       // ৩. ৭ দিনের ফ্রী ট্রায়াল পিরিয়ড চেক করা (অ্যাকাউন্ট বয়স ৭ দিনের কম হলে)
@@ -392,6 +392,7 @@ export async function checkPremiumStatus() {
       if (elapsedMs < trialDurationMs) {
         const daysRemaining = Math.max(0, Math.ceil((trialDurationMs - elapsedMs) / (24 * 60 * 60 * 1000)));
         return {
+          checked: true,
           isPremium: true,
           plan: "Free Trial",
           isTrial: true,
@@ -404,5 +405,5 @@ export async function checkPremiumStatus() {
     console.error("Error in checkPremiumStatus:", error);
   }
 
-  return { isPremium: false, reason: "free_tier", plan: "free", limits: defaultFreeLimits };
+  return { checked: true, isPremium: false, reason: "free_tier", plan: "free", limits: defaultFreeLimits };
 }

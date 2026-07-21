@@ -79,7 +79,18 @@ export default function MazeGeneratorPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+  const [premiumStatus, setPremiumStatus] = useState<{
+    checked: boolean;
+    isPremium: boolean;
+    plan: string;
+    limits?: {
+      tier: number;
+      brands: number;
+      aiChapters: number;
+      puzzles: string[];
+      maxBookCount: number;
+    };
+  }>({ checked: false, isPremium: false, plan: "free" });
 
   useEffect(() => {
     async function loadPremium() {

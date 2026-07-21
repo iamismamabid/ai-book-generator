@@ -15,7 +15,7 @@ export default function PremiumLanding() {
         
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 text-sm font-medium mb-8 backdrop-blur-md">
           <Sparkles className="w-4 h-4 text-indigo-400" />
-          <span>Introducing the Next Generation of AI Writing</span>
+          <span>Introducing the Next Generation of Book Outlining & Writing</span>
         </motion.div>
 
         <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-6xl md:text-8xl font-black tracking-tighter leading-[1.1] mb-8">

@@ -85,7 +85,7 @@ export default async function DashboardPage() {
             </svg>
           </div>
           <h2 className="text-2xl font-black text-slate-900 mb-2">Your library is empty</h2>
-          <p className="text-slate-500 font-medium mb-4">Start your writing journey today by creating your first AI book.</p>
+          <p className="text-slate-500 font-medium mb-4">Start your writing journey today by creating your first book.</p>
           
           {/* Plan badge for empty state */}
           <div className="flex flex-col items-center gap-1.5 px-6 py-3.5 rounded-3xl bg-white border border-slate-100 shadow-sm mb-8">

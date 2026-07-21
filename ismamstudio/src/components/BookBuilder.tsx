@@ -660,7 +660,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 // Title Page Configuration Component
 function TitlePageEditor({ page, updatePage }: any) {
   const [title, setTitle] = useState(page.config.title || "My Masterpiece Book");
-  const [subtitle, setSubtitle] = useState(page.config.subtitle || "A Collection of AI Puzzles");
+  const [subtitle, setSubtitle] = useState(page.config.subtitle || "A Collection of Puzzles");
   const [author, setAuthor] = useState(page.config.author || "KDPage");
 
   const handleChange = (field: string, val: string) => {

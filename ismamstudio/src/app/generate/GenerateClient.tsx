@@ -86,7 +86,7 @@ export default function GeneratePage() {
       audience
     },
     onError: (error) => {
-      console.error("AI Generation Error:", error.message);
+      console.error("Generation Error:", error.message);
       alert(`Oops! Something went wrong: ${error.message}`);
       setIsSaving(false); 
     },

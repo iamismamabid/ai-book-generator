@@ -99,7 +99,7 @@ export const BLOG_POSTS: Post[] = [
       "### Step 3: Spotting Market Saturation",
       "Type your target keyword in Amazon's search bar and analyze the first page results. If all top ranking books have 500+ reviews and are sponsored ads, the niche is highly competitive. Look for niches where top books have fewer than 100 reviews and were published recently (within the last 6 months)—this indicates a gap you can fill.",
       "### Step 4: Use the KDPage Niche Spy (Now Live!)",
-      "KDPage's AI KDP Niche Hunter & Keyword Spy is now fully live inside your dashboard. Simply enter any keyword and the tool fetches real-time Amazon search volumes, analyzes competitor BSR data, and estimates potential monthly royalties — all in seconds. No spreadsheets required. Access it directly from the Research Console on your dashboard or at kdpage.com/tools/keyword-research."
+      "KDPage's KDP Niche Hunter & Keyword Spy is now fully live inside your dashboard. Simply enter any keyword and the tool fetches real-time Amazon search volumes, analyzes competitor BSR data, and estimates potential monthly royalties — all in seconds. No spreadsheets required. Access it directly from the Research Console on your dashboard or at kdpage.com/tools/keyword-research."
     ]
   },
   {
@@ -121,7 +121,7 @@ export const BLOG_POSTS: Post[] = [
       "Create unique puzzle content instantly. Select your puzzle category (Sudoku, Maze, Word Search), difficulty level, and download high-resolution vector interiors with compiled solutions at the back of the book. Click 'Open Tool' to launch the puzzle creation canvas.",
       "### 4. KDP Cover Size Calculator",
       "Calculate full-wrap cover dimensions (front, spine, back, and bleed) in inches and pixels at 300 DPI to avoid upload rejection warnings. Simply choose your paper type, trim size, and page count to generate templates.",
-      "### 5. AI Book Title Generator",
+      "### 5. Book Title Generator",
       "Enter your book's genre and key topics to generate 10 unique, SEO-friendly, and highly clickable KDP titles per batch. Perfect for brainstorming keyword-rich subtitles.",
       "### 6. Book Description Generator",
       "Write conversion-focused descriptions using proven sales copywriting hooks and triggers, formatted with Amazon-approved HTML. Copy the output directly into KDP.",

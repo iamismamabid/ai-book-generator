@@ -156,7 +156,7 @@ export default function BackgroundRemover() {
   const faqs = [
     {
       q: "Will this work on any photo?",
-      a: "It works best on solid or lightly textured backgrounds (product shots, logos, scans). Busy photographic backgrounds need an AI-based remover for clean results.",
+      a: "It works best on solid or lightly textured backgrounds (product shots, logos, scans). Busy photographic backgrounds need a specialized background remover for clean results.",
     },
     {
       q: "Is my image uploaded anywhere?",
@@ -309,7 +309,7 @@ export default function BackgroundRemover() {
             <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
               This tool uses color-based detection, which works best on solid or lightly textured
               backgrounds (product shots, logos, scans, clip-art). For busy photographic
-              backgrounds, an AI-based remover will give cleaner results. Your image never leaves
+              backgrounds, a dedicated background remover will give cleaner results. Your image never leaves
               your browser.
             </p>
           </div>

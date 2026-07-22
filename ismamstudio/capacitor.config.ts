@@ -2,10 +2,12 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.aibookgenerator.app',
-  appName: 'AI Book Generator',
+  appName: 'KDPage - AI Book Generator & KDP Studio',
   webDir: 'public',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
+    url: 'https://www.kdpage.com',
+    cleartext: true
   }
 };
 

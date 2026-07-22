@@ -136,14 +136,13 @@ function runTypeset(
   // ----------------------------------------------------
   const chapterStarts: { title: string; page: number }[] = [];
 
-  chapters.forEach((chapter, chapterIndex) => {
-    // Each chapter starts on a new page
-    const isFirstChapter = chapterIndex === 0;
-    if (isFirstChapter) {
-      doc.addPage();
-    } else {
+  chapters.forEach((chapter) => {
+    // Force chapter openings onto a right-hand (recto/odd) page, per standard
+    // print layout — insert a blank verso page first if needed.
+    if (doc.getNumberOfPages() % 2 !== 0) {
       doc.addPage();
     }
+    doc.addPage();
 
     const startPage = doc.getNumberOfPages();
     chapterStarts.push({ title: chapter.title, page: startPage });

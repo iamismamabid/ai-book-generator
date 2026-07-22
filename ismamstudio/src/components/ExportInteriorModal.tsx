@@ -32,6 +32,8 @@ interface ExportInteriorModalProps<T extends string = "6x9" | "8.5x11" | "5x8"> 
     trimSize: T;
     hasBleed: boolean;
     showGuides: boolean;
+    includePageNumbers?: boolean;
+    isPremium?: boolean;
   }) => void | Promise<void>;
   defaultTrimSize?: T;
   showSolutionsToggle?: boolean;

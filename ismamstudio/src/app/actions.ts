@@ -407,3 +407,41 @@ export async function checkPremiumStatus() {
 
   return { checked: true, isPremium: false, reason: "free_tier", plan: "free", limits: defaultFreeLimits };
 }
+
+// Persists the Cover Studio's current project to the signed-in user's account.
+// One project per user for now (upsert) — this replaces the localStorage-only
+// draft that was previously the sole copy of a user's cover work, with nothing
+// backing it up if the browser cache was cleared or they switched devices.
+export async function saveCoverProject(data: unknown) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "unauthorized" };
+  }
+
+  try {
+    await prisma.coverProject.upsert({
+      where: { userId },
+      update: { data: data as any },
+      create: { userId, data: data as any },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving cover project:", error);
+    return { success: false, error: "Failed to save cover project" };
+  }
+}
+
+export async function loadCoverProject() {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, data: null };
+  }
+
+  try {
+    const project = await prisma.coverProject.findUnique({ where: { userId } });
+    return { success: true, data: project?.data ?? null, updatedAt: project?.updatedAt ?? null };
+  } catch (error) {
+    console.error("Error loading cover project:", error);
+    return { success: false, data: null };
+  }
+}

@@ -136,7 +136,6 @@ export function KakuroEditor({ page, updatePage }: any) {
           <div
             className="grid gap-0 border-[3px] border-slate-900 bg-slate-900 shadow-xl overflow-hidden"
             style={{
-              gridTemplateRef: "none",
               gridTemplateRows: `repeat(${puzzleData.rows}, minmax(0, 1fr))`,
               gridTemplateColumns: `repeat(${puzzleData.cols}, minmax(0, 1fr))`,
               width: "100%",

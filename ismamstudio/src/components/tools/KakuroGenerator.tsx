@@ -73,7 +73,15 @@ export default function KakuroGenerator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sizeId, difficulty]);
 
-  const handleDownload = async (coverState: any = null) => {
+  const handleDownload = async (options: {
+    includeCover: boolean;
+    coverState: any;
+    includeSolutions: boolean;
+    trimSize: "6x9" | "8.5x11" | "5x8";
+    hasBleed: boolean;
+    showGuides: boolean;
+  }) => {
+    const { includeCover: incCover, coverState, includeSolutions, trimSize: finalTrimSize } = options;
     setIsDownloading(true);
     try {
       const generatedPuzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[] = [];
@@ -93,10 +101,10 @@ export default function KakuroGenerator() {
       await downloadKakuroPdf({
         puzzles: generatedPuzzles,
         difficulty,
-        trimSize: trimSize.id as any,
+        trimSize: finalTrimSize,
         title: "Kakuro",
-        includeSolutions: showAnswers,
-        includeCover,
+        includeSolutions: includeSolutions,
+        includeCover: incCover,
         coverState,
         isPremium: premiumStatus.isPremium
       }, `Kakuro_${sizeId}_${difficulty}_${numPages}_Pages.pdf`);
@@ -386,10 +394,8 @@ export default function KakuroGenerator() {
         <ExportInteriorModal
           isOpen={isExportModalOpen}
           onClose={() => setIsExportModalOpen(false)}
+          defaultTrimSize={trimSize.id as any}
           onExport={handleDownload}
-          isDownloading={isDownloading}
-          trimSize={trimSize}
-          pageCount={numPages}
         />
       )}
     </div>

@@ -12,6 +12,8 @@ import {
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
 import { initFabricSnapping } from "@/hooks/useFabricSnap";
+import { COVER_TEMPLATES, resolveTemplateElements, CoverTemplate } from "@/lib/coverTemplates";
+import TemplateGalleryModal from "@/components/TemplateGalleryModal";
 
 const FONT_FAMILIES = [
   "Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Outfit", "Inter",
@@ -277,7 +279,7 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       if (type === 'textbox') {
         base.isTextbox = true;
       }
-    } else if (type === 'rect' || type === 'triangle' || type === 'hexagon' || type === 'star' || type === 'heart' || type === 'pentagon' || type === 'octagon' || type === 'ellipse' || type === 'diamond' || type === 'trapezoid') {
+    } else if (type === 'rect' || type === 'triangle' || type === 'hexagon' || type === 'star' || type === 'heart' || type === 'pentagon' || type === 'octagon' || type === 'ellipse' || type === 'diamond' || type === 'trapezoid' || type === 'path') {
       base.width = (obj.width || 100) * (obj.scaleX || 1);
       base.height = (obj.height || 100) * (obj.scaleY || 1);
       base.scaleX = 1;
@@ -429,6 +431,7 @@ export default function FabricCoverStudio({
   const [clipboard, setClipboard] = useState<any>(null);
   const [isObjectLocked, setIsObjectLocked] = useState(false);
   const [activeToolTab, setActiveToolTab] = useState<'elements' | 'graphics' | 'presets' | 'uploads' | 'settings'>('elements');
+  const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
   const [graphicsSubTab, setGraphicsSubTab] = useState<'kdp-icons' | 'unsplash'>('kdp-icons');
 
   // History Undo/Redo States
@@ -575,7 +578,7 @@ export default function FabricCoverStudio({
       setObjectLineHeight(textObj.lineHeight || 1.16);
 
       // Sync text style states
-      setObjectFontWeight(textObj.fontWeight || "normal");
+      setObjectFontWeight(String(textObj.fontWeight || "normal"));
       setObjectFontStyle(textObj.fontStyle || "normal");
       setObjectUnderline(!!textObj.underline);
       setObjectTextAlign(textObj.textAlign || "left");
@@ -1765,7 +1768,7 @@ export default function FabricCoverStudio({
       strokeWidth: strokeWidth ?? 2,
       strokeLineCap: 'round',
       strokeLineJoin: 'round',
-      strokeDashArray: strokeDashArray || null
+      strokeDashArray: strokeDashArray || undefined
     });
     
     // Scale path nicely
@@ -2103,12 +2106,62 @@ export default function FabricCoverStudio({
   const handleClearCanvas = () => {
     if (!canvas) return;
     if (confirm("Are you sure you want to clear all layers from the cover?")) {
-      const objects = canvas.getObjects();
-      while (objects.length > 0) {
-        canvas.remove(objects[0]);
-      }
+      // getObjects() returns a COPY of the internal array (this._objects.concat()),
+      // so a while-loop re-checking objects.length here never terminates —
+      // remove() mutates the canvas's real array, not this copy. Iterate the
+      // copy directly instead.
+      canvas.getObjects().forEach((obj) => canvas.remove(obj));
       canvas.discardActiveObject();
       canvas.requestRenderAll();
+    }
+  };
+
+  // Applies a full cover template: sets the background, clears the canvas,
+  // and adds the template's title/subtitle/decorative elements — resolved
+  // against the CURRENT layout so positions land correctly regardless of
+  // which trim size is selected.
+  const applyTemplate = (template: CoverTemplate, photoUrl: string | null = null) => {
+    if (!canvas) return;
+
+    try {
+      // No confirm() dialog here on purpose — it's a synchronous, blocking
+      // native prompt, and since Cover Studio already has full undo/redo,
+      // it's redundant friction (and can read as a frozen page if the user
+      // isn't expecting a modal).
+      // getObjects() returns a COPY of the internal array, so iterate it
+      // directly rather than looping on objects.length (see handleClearCanvas).
+      canvas.getObjects().forEach((obj) => canvas.remove(obj));
+      canvas.discardActiveObject();
+
+      // Sync the ref synchronously (matching applyPresetColors' pattern) so
+      // the immediate renderAll() below doesn't paint one frame of the stale
+      // background — nothing else forces a repaint for a plain color/gradient
+      // change. The real Unsplash photo (if fetched) becomes the front cover
+      // background image; a dark overlay element (added in
+      // resolveTemplateElements) keeps the title text legible on top of it.
+      const newBg = {
+        ...coverBackground,
+        frontCoverColor: template.background.frontCoverColor,
+        frontCoverType: template.background.frontCoverType,
+        frontCoverGradientStart: template.background.frontCoverGradientStart,
+        frontCoverGradientEnd: template.background.frontCoverGradientEnd,
+        backCoverColor: template.background.backCoverColor,
+        backCoverType: template.background.backCoverType,
+        backCoverGradientStart: template.background.backCoverGradientStart,
+        backCoverGradientEnd: template.background.backCoverGradientEnd,
+        backCoverImage: '',
+        frontCoverImage: photoUrl || '',
+        fullCoverImage: '',
+      };
+      coverBackgroundRef.current = newBg;
+      setCoverBackground(newBg);
+
+      const resolvedElements = resolveTemplateElements(template, layout, !!photoUrl);
+      importLegacyElements(canvas, resolvedElements, layout);
+      canvas.renderAll();
+      setActiveToolTab('elements');
+    } catch (err) {
+      console.error("Failed to apply cover template:", err);
     }
   };
 
@@ -2171,6 +2224,13 @@ export default function FabricCoverStudio({
     <div className="flex flex-1 overflow-hidden h-full">
       {/* 1. Far Left Tool Picker Toolbar */}
       <div className="w-16 bg-slate-950 flex flex-col items-center py-6 gap-5 border-r border-slate-900 z-20 text-slate-400">
+        <button
+          onClick={() => setIsTemplateGalleryOpen(true)}
+          title="Browse Cover Templates"
+          className="p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] hover:bg-slate-900 hover:text-white"
+        >
+          <LayoutTemplate className="w-5 h-5"/>
+        </button>
         <button
           onClick={() => setActiveToolTab('elements')}
           title="Shapes & Text"
@@ -2379,7 +2439,7 @@ export default function FabricCoverStudio({
                 </div>
 
                 {/* Spine alignment (if applicable) */}
-                {activeObject.id?.startsWith('spine') && (
+                {(activeObject as any).id?.startsWith('spine') && (
                   <div className="pt-2 border-t border-slate-100 space-y-2">
                     <span className="text-[9px] font-black text-slate-400 uppercase block">Spine Text Alignment</span>
                     {pageCount < 80 ? (
@@ -2414,7 +2474,7 @@ export default function FabricCoverStudio({
             )}
 
             {/* Colors (Fill & Border) */}
-            {activeObject.type !== 'image' && !activeObject.id?.startsWith('barcode') && (
+            {activeObject.type !== 'image' && !(activeObject as any).id?.startsWith('barcode') && (
               <div className="space-y-2.5 pt-2 border-t border-slate-100">
                 <div className="flex justify-between items-center">
                   <label className="text-[9px] font-black text-slate-400 uppercase">Fill Color</label>
@@ -2544,7 +2604,7 @@ export default function FabricCoverStudio({
               </div>
 
               {/* Exact dimensions */}
-              {!activeObject.id?.startsWith('barcode') && (
+              {!(activeObject as any).id?.startsWith('barcode') && (
                 <div className="grid grid-cols-2 gap-2 text-[10px] font-bold">
                   <div>
                     <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Width (px)</label>
@@ -3764,6 +3824,15 @@ export default function FabricCoverStudio({
           <span>Right: Front Cover</span>
         </div>
       </div>
+
+      <TemplateGalleryModal
+        isOpen={isTemplateGalleryOpen}
+        onClose={() => setIsTemplateGalleryOpen(false)}
+        onSelectTemplate={(template, photoUrl) => {
+          applyTemplate(template, photoUrl);
+          setIsTemplateGalleryOpen(false);
+        }}
+      />
     </div>
   );
 }

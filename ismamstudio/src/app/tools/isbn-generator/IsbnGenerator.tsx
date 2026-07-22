@@ -480,7 +480,6 @@ export default function IsbnGenerator() {
 
   // Compile full XML SVG string
   const compileSvgString = (): string => {
-    const contentHtml = React.JSX.Element ? "" : ""; // placeholder
     // We construct a raw string to ensure clean downloads
     let barsContent = "";
     

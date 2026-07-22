@@ -1434,8 +1434,10 @@ export default function FreeToolsHub() {
                     setActiveInteractiveTool(null);
                     setGeneratedTitles([]);
                     setEpubSuccess(false);
-                    setPdfFileAdded(false);
-                    setUploadedPdfFile(null);
+                    setPdfFile(null);
+                    setPdfValidationReport(null);
+                    setPdfResult(null);
+                    setPdfError(null);
                     setEpubFile(null);
                     setEpubError(null);
                     setEpubResult(null);

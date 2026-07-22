@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Grid3x3, Palette, Loader2, Sparkles, Lock } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Grid3x3, Palette, Loader2, Sparkles, Lock, Cloud, CloudOff, Check } from "lucide-react";
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { checkPremiumStatus } from "../actions";
+import { useAuth } from "@clerk/nextjs";
+import { checkPremiumStatus, saveCoverProject, loadCoverProject } from "../actions";
 
 // Dynamic imports — both components use browser-only APIs (canvas, localStorage)
 const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
@@ -18,9 +19,16 @@ const TRIM_SIZES = [
 ];
 
 export default function MasterStudioApp() {
+  const { isSignedIn } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'interior' | 'cover'>('interior');
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+  // Cloud sync status for the Cover Studio project — surfaced in the header so
+  // users can see their work is actually persisted to their account, not just
+  // sitting in this browser's localStorage.
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const cloudSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasLoadedFromCloudRef = useRef(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -68,39 +76,64 @@ export default function MasterStudioApp() {
   // Cover Math
   const spineWidth = pageCount * 0.002252;
 
-  // Load Cover draft on mount
+  // Applies a loaded project (from localStorage or the cloud) to state.
+  const applyCoverData = (data: any) => {
+    const loadedBg = {
+      backCoverColor: data.backCoverColor ?? '#0F172A',
+      backCoverType: data.backCoverType ?? 'solid',
+      backCoverGradientStart: data.backCoverGradientStart ?? '#0F172A',
+      backCoverGradientEnd: data.backCoverGradientEnd ?? '#020617',
+      frontCoverColor: data.frontCoverColor ?? '#1E293B',
+      frontCoverType: data.frontCoverType ?? 'solid',
+      frontCoverGradientStart: data.frontCoverGradientStart ?? '#1E293B',
+      frontCoverGradientEnd: data.frontCoverGradientEnd ?? '#0F172A',
+      backCoverImage: data.backCoverImage ?? '',
+      frontCoverImage: data.frontCoverImage ?? '',
+      fullCoverImage: data.fullCoverImage ?? ''
+    };
+    setCoverBackground(loadedBg);
+    if (data.coverElements) setCoverElements(data.coverElements);
+    if (data.pageCount) setPageCount(data.pageCount);
+    if (data.trimSize) {
+      const match = TRIM_SIZES.find(t => t.label === data.trimSize.label);
+      if (match) setTrimSize(match);
+    }
+  };
+
+  // Load Cover draft on mount — localStorage first (instant), then the cloud
+  // copy if signed in. The cloud copy wins once it exists, since it's the
+  // durable source of truth; if nothing's saved to the cloud yet, whatever
+  // was in localStorage gets migrated up automatically by the save effect below.
   useEffect(() => {
     const savedCover = localStorage.getItem("kdp-cover-draft");
     if (savedCover) {
       try {
-        const data = JSON.parse(savedCover);
-        const loadedBg = {
-          backCoverColor: data.backCoverColor ?? '#0F172A',
-          backCoverType: data.backCoverType ?? 'solid',
-          backCoverGradientStart: data.backCoverGradientStart ?? '#0F172A',
-          backCoverGradientEnd: data.backCoverGradientEnd ?? '#020617',
-          frontCoverColor: data.frontCoverColor ?? '#1E293B',
-          frontCoverType: data.frontCoverType ?? 'solid',
-          frontCoverGradientStart: data.frontCoverGradientStart ?? '#1E293B',
-          frontCoverGradientEnd: data.frontCoverGradientEnd ?? '#0F172A',
-          backCoverImage: data.backCoverImage ?? '',
-          frontCoverImage: data.frontCoverImage ?? '',
-          fullCoverImage: data.fullCoverImage ?? ''
-        };
-        setCoverBackground(loadedBg);
-        if (data.coverElements) setCoverElements(data.coverElements);
-        if (data.pageCount) setPageCount(data.pageCount);
-        if (data.trimSize) {
-          const match = TRIM_SIZES.find(t => t.label === data.trimSize.label);
-          if (match) setTrimSize(match);
-        }
+        applyCoverData(JSON.parse(savedCover));
       } catch (e) {
         console.error("Failed to parse cover draft", e);
       }
     }
   }, []);
 
-  // Save Cover draft on change
+  useEffect(() => {
+    if (!isSignedIn || hasLoadedFromCloudRef.current) return;
+    hasLoadedFromCloudRef.current = true;
+
+    (async () => {
+      try {
+        const res = await loadCoverProject();
+        if (res.success && res.data) {
+          applyCoverData(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load cloud cover project:", err);
+      }
+    })();
+  }, [isSignedIn]);
+
+  // Save Cover draft on change — localStorage instantly (fast local cache),
+  // plus a debounced save to the user's account so the design survives a
+  // cleared cache or a different device/browser.
   useEffect(() => {
     if (!isMounted) return;
     const data = {
@@ -110,8 +143,23 @@ export default function MasterStudioApp() {
       trimSize
     };
     localStorage.setItem("kdp-cover-draft", JSON.stringify(data));
+
+    if (!isSignedIn) return;
+
+    if (cloudSaveTimeoutRef.current) clearTimeout(cloudSaveTimeoutRef.current);
+    setCloudSyncStatus("saving");
+    cloudSaveTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await saveCoverProject(data);
+        setCloudSyncStatus(res.success ? "saved" : "error");
+      } catch (err) {
+        console.error("Failed to save cover project to cloud:", err);
+        setCloudSyncStatus("error");
+      }
+    }, 1500);
   }, [
     isMounted,
+    isSignedIn,
     coverBackground,
     coverElements,
     pageCount,
@@ -148,6 +196,28 @@ export default function MasterStudioApp() {
               Premium Cover &amp; Interior Creator
             </p>
           </div>
+          {activeTab === 'cover' && (
+            <div className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border shrink-0 whitespace-nowrap ${
+              !isSignedIn
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                : cloudSyncStatus === 'saving'
+                ? 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-400'
+                : cloudSyncStatus === 'error'
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
+                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+              }`}
+            >
+              {!isSignedIn ? (
+                <><CloudOff className="w-3 h-3" /> Sign in to save to your account</>
+              ) : cloudSyncStatus === 'saving' ? (
+                <><Loader2 className="w-3 h-3 animate-spin" /> Saving to your account...</>
+              ) : cloudSyncStatus === 'error' ? (
+                <><CloudOff className="w-3 h-3" /> Save failed — retrying</>
+              ) : (
+                <><Cloud className="w-3 h-3" /> Saved to your account</>
+              )}
+            </div>
+          )}
         </div>
 
         {/* TAB SWITCHER */}
@@ -216,7 +286,7 @@ export default function MasterStudioApp() {
               className="flex h-[calc(100vh-140px)] rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden bg-white dark:bg-slate-900 transition-colors duration-300"
               style={{ boxShadow: "var(--shadow-soft-lg)" }}
             >
-              {premiumStatus.checked && (premiumStatus.plan === "free" || premiumStatus.plan === "starter") ? (
+              {premiumStatus.checked && premiumStatus.plan === "free" ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0b0f19] text-white w-full h-full relative overflow-hidden">
                   <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
                   <div className="max-w-md w-full bg-slate-900/60 border border-slate-800 p-8 rounded-[2.5rem] relative z-10 space-y-6" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
@@ -228,7 +298,7 @@ export default function MasterStudioApp() {
                         Cover Studio is Locked
                       </h2>
                       <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-                        Designing high-converting book covers (front, spine, and back cover canvas) is a premium feature available on our **Pro Studio** and **Publisher Agency** plans.
+                        Designing high-converting book covers (front, spine, and back cover canvas) is available starting on our **Starter Creator** plan.
                       </p>
                     </div>
                     <div className="flex flex-col gap-2 pt-2">
@@ -237,7 +307,7 @@ export default function MasterStudioApp() {
                         className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs rounded-2xl transition-all duration-200 ease-out active:scale-[0.98]"
                         style={{ boxShadow: "var(--shadow-glow-primary)" }}
                       >
-                        Upgrade to Pro Studio
+                        Upgrade to Starter Creator
                       </Link>
                     </div>
                   </div>

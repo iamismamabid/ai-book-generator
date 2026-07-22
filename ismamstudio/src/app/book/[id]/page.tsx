@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { checkPremiumStatus } from "../actions";
+import { checkPremiumStatus } from "@/app/actions";
 import BookReader from "./BookReader";
 
 export const dynamic = "force-dynamic";

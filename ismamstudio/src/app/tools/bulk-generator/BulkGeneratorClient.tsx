@@ -208,7 +208,7 @@ export default function BulkGeneratorClient() {
         } 
         else if (item.type === "Maze") {
           const mazes = Array.from({ length: item.count }, () => {
-            const maze = generateMaze(15, 15);
+            const maze = generateMaze({ rows: 15, cols: 15, shape: "square" });
             return {
               grid: maze.grid,
               start: maze.start,

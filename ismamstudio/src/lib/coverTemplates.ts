@@ -459,6 +459,42 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
       { type: "textbox", xFrac: 0.15, yFrac: 0.48, widthFrac: 0.7, fontSizeFrac: 0.036, fontFamily: "Lora", fill: "#FFFFFF", align: "center", text: "A Memoir" },
     ],
   },
+  {
+    id: "sudoku-seniors",
+    name: "Large Print Sudoku for Seniors",
+    category: "Puzzle Books",
+    swatch: "#1E3A8A",
+    photoQuery: "senior reading book cozy",
+    background: {
+      frontCoverColor: "#1E3A8A", frontCoverType: "gradient", frontCoverGradientStart: "#1E3A8A", frontCoverGradientEnd: "#0F172A",
+      backCoverColor: "#0F172A", backCoverType: "solid", backCoverGradientStart: "#0F172A", frontCoverGradientEnd: "#020617",
+    },
+    elements: [
+      { type: "rect", xFrac: 0.1, yFrac: 0.12, widthFrac: 0.8, heightFrac: 0.76, fill: "transparent", stroke: "#F59E0B", strokeWidth: 3 },
+      { type: "textbox", xFrac: 0.12, yFrac: 0.20, widthFrac: 0.76, fontSizeFrac: 0.13, fontFamily: "Montserrat", fontStyle: "bold", fill: "#FFFFFF", align: "center", text: "LARGE PRINT" },
+      { type: "textbox", xFrac: 0.12, yFrac: 0.35, widthFrac: 0.76, fontSizeFrac: 0.16, fontFamily: "Bebas Neue", fill: "#F59E0B", align: "center", text: "SUDOKU" },
+      { type: "textbox", xFrac: 0.15, yFrac: 0.52, widthFrac: 0.7, fontSizeFrac: 0.045, fontFamily: "Montserrat", fill: "#E2E8F0", align: "center", text: "100 Easy to Hard Puzzles for Seniors" },
+      { type: "rect", xFrac: 0.2, yFrac: 0.72, widthFrac: 0.6, heightFrac: 0.08, fill: "#F59E0B", cornerRadius: 20 },
+      { type: "textbox", xFrac: 0.2, yFrac: 0.74, widthFrac: 0.6, fontSizeFrac: 0.035, fontFamily: "Montserrat", fontStyle: "bold", fill: "#0F172A", align: "center", text: "FULL SOLUTIONS INCLUDED" },
+    ],
+  },
+  {
+    id: "recipe-family",
+    name: "Family Heirloom Recipe Book",
+    category: "Low-Content",
+    swatch: "#064E3B",
+    photoQuery: "kitchen baking herbs rustic",
+    background: {
+      frontCoverColor: "#064E3B", frontCoverType: "gradient", frontCoverGradientStart: "#064E3B", frontCoverGradientEnd: "#022C22",
+      backCoverColor: "#022C22", backCoverType: "solid", backCoverGradientStart: "#022C22", frontCoverGradientEnd: "#064E3B",
+    },
+    elements: [
+      { type: "textbox", xFrac: 0.08, yFrac: 0.25, widthFrac: 0.84, fontSizeFrac: 0.12, fontFamily: "Playfair Display", fontStyle: "italic", fill: "#FDE68A", align: "center", text: "Our Family" },
+      { type: "textbox", xFrac: 0.08, yFrac: 0.38, widthFrac: 0.84, fontSizeFrac: 0.14, fontFamily: "Playfair Display", fontStyle: "bold", fill: "#FFFFFF", align: "center", text: "RECIPES" },
+      { type: "rect", xFrac: 0.35, yFrac: 0.56, widthFrac: 0.3, heightFrac: 0.005, fill: "#FDE68A" },
+      { type: "textbox", xFrac: 0.12, yFrac: 0.62, widthFrac: 0.76, fontSizeFrac: 0.04, fontFamily: "Lora", fill: "#E2E8F0", align: "center", text: "Treasured Dishes & Memories" },
+    ],
+  },
 ];
 
 // Converts a template's fractional element definitions into absolute pixel

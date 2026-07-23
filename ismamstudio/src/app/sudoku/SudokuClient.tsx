@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku';
 import { downloadSudokuPdf } from '../../lib/sudoku-pdf';
 import DownloadButton from "@/components/DownloadButton";
-import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock } from "lucide-react";
+import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock, Download } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import { checkPremiumStatus } from "../actions";
@@ -313,6 +313,15 @@ export default function SudokuClient() {
                     : `Download ${bookCount} Puzzle${bookCount !== 1 ? "s" : ""} PDF`
                 }
               />
+
+              <button
+                onClick={() => handleDownloadPdf({ includeCover: false, coverState: null, includeSolutions: true, trimSize: "6x9", isPremium: true })}
+                disabled={isDownloading}
+                className="w-full bg-slate-900/80 hover:bg-slate-900 text-amber-400 font-bold py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-500/60 transition text-xs flex items-center justify-center gap-2"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download 10 Free Sample Puzzles PDF (Vector 300 DPI)
+              </button>
 
               {/* Summary badge */}
               <div className="bg-slate-900/40 border border-slate-900 rounded-xl p-3 text-xs text-slate-500 font-semibold">

@@ -7,7 +7,7 @@ import { downloadMazePdf } from "@/lib/maze-pdf";
 import DownloadButton from "@/components/DownloadButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
-import { Lock } from "lucide-react";
+import { Lock, Download } from "lucide-react";
 import { checkPremiumStatus } from "@/app/actions";
 
 function MazePreview({ 
@@ -347,6 +347,15 @@ export default function MazeGeneratorPage() {
                 onClick={() => setIsExportModalOpen(true)}
                 label={isDownloading ? "Assembling Book..." : "Download High-Res PDF"}
               />
+
+              <button
+                onClick={() => handleDownloadPdf({ includeCover: false, coverState: null, includeSolutions: true, trimSize: "6x9", isPremium: true })}
+                disabled={isDownloading}
+                className="w-full bg-slate-900/80 hover:bg-slate-900 text-amber-400 font-bold py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-500/60 transition text-xs flex items-center justify-center gap-2"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download Free Sample Labyrinth PDF (300 DPI Vector)
+              </button>
 
               <CoverStudioCTA trimSize={trimSize} />
             </div>

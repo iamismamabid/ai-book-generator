@@ -6,7 +6,8 @@ import { LayoutTemplate, Download, Info, Loader2 } from "lucide-react";
 
 type TemplateKey =
   | "lined" | "dot-grid" | "graph" | "blank" | "cornell"
-  | "daily-planner" | "weekly-planner" | "habit-tracker" | "gratitude" | "meal-planner";
+  | "daily-planner" | "weekly-planner" | "habit-tracker" | "gratitude" | "meal-planner"
+  | "password-vault" | "workout-log" | "budget-planner" | "recipe-journal" | "reading-log";
 
 interface TemplateDef {
   key: TemplateKey;
@@ -25,6 +26,11 @@ const TEMPLATES: TemplateDef[] = [
   { key: "habit-tracker", label: "Habit Tracker", desc: "Monthly grid for daily habits" },
   { key: "gratitude", label: "Gratitude Journal", desc: "Daily reflection prompts" },
   { key: "meal-planner", label: "Meal Planner", desc: "Weekly meals & grocery list" },
+  { key: "password-vault", label: "Password Log", desc: "Website, username, password & hints" },
+  { key: "workout-log", label: "Workout Tracker", desc: "Exercise, sets, reps, weight & cardio" },
+  { key: "budget-planner", label: "Budget & Expense", desc: "Monthly income, savings & expense table" },
+  { key: "recipe-journal", label: "Recipe Journal", desc: "Ingredients, directions, prep & rating" },
+  { key: "reading-log", label: "Reading Log", desc: "Book title, author, rating & thoughts" },
 ];
 
 const TRIMS: { label: string; w: number; h: number }[] = [
@@ -227,6 +233,99 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     box(margin, groceryY, w - margin * 2, h - margin - groceryY - 0.05, "Grocery List");
   };
 
+  const drawPasswordVault = () => {
+    header("Password Log", false);
+    let y = margin + 0.45;
+    const itemH = 0.95;
+    const count = Math.floor((h - margin * 2 - 0.5) / itemH);
+    for (let i = 0; i < count; i++) {
+      box(margin, y, w - margin * 2, itemH - 0.08, `Website / App #${i + 1}`);
+      doc.setFontSize(8);
+      doc.setTextColor(100, 110, 125);
+      doc.text("Username / Email: ___________________________", margin + 0.15, y + 0.34);
+      doc.text("Password: _______________________________", margin + 0.15, y + 0.54);
+      doc.text("Hint / Notes: _______________________________", margin + 0.15, y + 0.74);
+      y += itemH;
+    }
+  };
+
+  const drawWorkoutLog = () => {
+    header("Workout Log");
+    let y = margin + 0.45;
+    box(margin, y, w - margin * 2, 0.45, "Focus / Target Muscle Groups");
+    y += 0.55;
+    const cols = ["Exercise Name", "Sets", "Reps", "Weight", "Rest"];
+    const colWidths = [(w - margin * 2) * 0.4, (w - margin * 2) * 0.15, (w - margin * 2) * 0.15, (w - margin * 2) * 0.15, (w - margin * 2) * 0.15];
+    let curX = margin;
+    doc.setFontSize(8);
+    doc.setTextColor(80, 90, 105);
+    cols.forEach((col, idx) => {
+      doc.text(col, curX + 0.05, y);
+      curX += colWidths[idx];
+    });
+    y += 0.1;
+    doc.setDrawColor(180, 190, 205);
+    doc.line(margin, y, w - margin, y);
+    y += 0.05;
+    for (let r = 0; r < 10; r++) {
+      y += 0.28;
+      doc.setDrawColor(225, 230, 238);
+      doc.line(margin, y, w - margin, y);
+    }
+    y += 0.2;
+    box(margin, y, w - margin * 2, h - margin - y - 0.05, "Cardio & Notes");
+  };
+
+  const drawBudgetPlanner = () => {
+    header("Monthly Budget & Expenses");
+    let y = margin + 0.45;
+    const half = (w - margin * 2 - 0.15) / 2;
+    box(margin, y, half, 1.4, "Income & Savings Goals");
+    box(margin + half + 0.15, y, half, 1.4, "Fixed Bills Summary");
+    y += 1.55;
+    doc.setFontSize(9);
+    doc.setTextColor(50, 58, 70);
+    doc.text("Daily Expense Tracker", margin, y);
+    y += 0.1;
+    doc.setDrawColor(180, 190, 205);
+    doc.line(margin, y, w - margin, y);
+    y += 0.05;
+    for (let i = 0; i < 12; i++) {
+      y += 0.26;
+      doc.setDrawColor(230, 234, 240);
+      doc.line(margin, y, w - margin, y);
+    }
+  };
+
+  const drawRecipeJournal = () => {
+    header("Recipe Journal");
+    let y = margin + 0.45;
+    box(margin, y, w - margin * 2, 0.5, "Recipe Name & Category");
+    y += 0.6;
+    const half = (w - margin * 2 - 0.15) / 2;
+    box(margin, y, half, 2.5, "Ingredients");
+    box(margin + half + 0.15, y, half, 2.5, "Directions & Steps");
+    doc.setDrawColor(230, 234, 240);
+    for (let ly = y + 0.35; ly < y + 2.4; ly += 0.26) {
+      doc.line(margin + 0.08, ly, margin + half - 0.08, ly);
+      doc.line(margin + half + 0.23, ly, w - margin - 0.08, ly);
+    }
+    y += 2.65;
+    box(margin, y, w - margin * 2, h - margin - y - 0.05, "Chef Notes & Rating (★ ★ ★ ★ ★)");
+  };
+
+  const drawReadingLog = () => {
+    header("Reading Log & Review");
+    let y = margin + 0.45;
+    box(margin, y, w - margin * 2, 0.75, "Book Title, Author & Genre");
+    y += 0.85;
+    box(margin, y, w - margin * 2, 0.45, "Rating: ★ ★ ★ ★ ★   |   Dates Read: ________ to ________");
+    y += 0.55;
+    box(margin, y, w - margin * 2, 1.8, "Key Takeaways & Favorite Quotes");
+    y += 1.95;
+    box(margin, y, w - margin * 2, h - margin - y - 0.05, "Personal Review & Reflection");
+  };
+
   for (let i = 0; i < pageCount; i++) {
     if (i > 0) doc.addPage([w, h]);
     switch (template) {
@@ -240,6 +339,11 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
       case "habit-tracker": drawHabitTracker(); break;
       case "gratitude": drawGratitude(); break;
       case "meal-planner": drawMealPlanner(); break;
+      case "password-vault": drawPasswordVault(); break;
+      case "workout-log": drawWorkoutLog(); break;
+      case "budget-planner": drawBudgetPlanner(); break;
+      case "recipe-journal": drawRecipeJournal(); break;
+      case "reading-log": drawReadingLog(); break;
     }
   }
 

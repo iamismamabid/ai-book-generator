@@ -67,6 +67,36 @@ const nextConfig = {
   // Required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
 
+  // ─── Security headers (applied to every route) ───────────────────────────
+  // Deliberately NOT a full Content-Security-Policy: a strict CSP would need
+  // careful allowlisting of Clerk (auth), Paddle (checkout), PostHog, and
+  // Unsplash, and any gap silently breaks sign-in or payments. These four are
+  // safe across all current third parties. HSTS is already set at the edge.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Prevent our pages being framed by other origins (clickjacking).
+          // SAMEORIGIN — not DENY — because Paddle/Clerk overlays are framed
+          // BY our page, which this does not affect; it only controls who may
+          // frame US.
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          // Stop browsers MIME-sniffing responses away from declared type.
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Send origin (not full path) on cross-origin navigations.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Disable powerful features no tool uses; camera left on for self
+          // in case OCR/scan tools ever call getUserMedia.
+          {
+            key: "Permissions-Policy",
+            value: "geolocation=(), microphone=(), browsing-topics=()",
+          },
+        ],
+      },
+    ];
+  },
+
   // ─── SEO: consolidate duplicate hub page into the canonical /tools ──────
   // /tools/free rendered the same ToolsClient as /tools with its own
   // self-referencing canonical, creating duplicate content. 301 to the

@@ -7,9 +7,34 @@ import {
   HelpCircle, Settings, FileText, Layout, Copy, Check, ChevronRight,
   BookMarked, PenTool, Hash, RefreshCw, BarChart2, ShieldAlert, Loader2, AlertTriangle
 } from "lucide-react";
-import { splitManuscriptIntoChapters, generateEpub, downloadBlob } from "@/lib/epubExport";
-import { generateInteriorPdf, getGutterMargin } from "@/lib/pdfFormatter";
-import { validatePdfLayout, type PdfValidationReport } from "@/lib/pdfValidator";
+import type { PdfValidationReport } from "@/lib/pdfValidator";
+
+// jsPDF (pdfFormatter), pdf-lib (pdfValidator) and JSZip (epubExport) together
+// added ~380 KB to the initial /tools bundle even though most visitors never
+// open the PDF/EPUB tools. They are now loaded on demand via dynamic import()
+// inside the click handlers below, keeping them out of first-load JS. The two
+// tiny helpers below are copied locally so the JSX render path (getGutterMargin)
+// and the download buttons never have to pull in those heavy modules.
+
+// Mirrors getGutterMargin in lib/pdfFormatter.ts — kept intentionally in sync.
+function getGutterMargin(pageCount: number): number {
+  if (pageCount <= 150) return 0.375;
+  if (pageCount <= 300) return 0.5;
+  if (pageCount <= 500) return 0.625;
+  if (pageCount <= 700) return 0.75;
+  return 0.875;
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 interface ToolItem {
   id: string;
@@ -117,6 +142,7 @@ export default function FreeToolsHub() {
         throw new Error("Couldn't find any readable text in that file.");
       }
 
+      const { splitManuscriptIntoChapters, generateEpub } = await import("@/lib/epubExport");
       const chapters = splitManuscriptIntoChapters(rawText);
       const finalTitle = epubTitle.trim() || epubFile.name.replace(/\.[^/.]+$/, "");
       const finalAuthor = epubAuthor.trim() || "Self-Publisher";
@@ -162,6 +188,7 @@ export default function FreeToolsHub() {
       const finalTitle = pdfTitle.trim() || pdfFile.name.replace(/\.[^/.]+$/, "");
       const finalAuthor = pdfAuthor.trim() || "Self-Publisher";
 
+      const { generateInteriorPdf } = await import("@/lib/pdfFormatter");
       const res = await generateInteriorPdf({
         title: finalTitle,
         author: finalAuthor,
@@ -201,6 +228,7 @@ export default function FreeToolsHub() {
       setIsValidatingPdf(true);
       try {
         const buffer = await file.arrayBuffer();
+        const { validatePdfLayout } = await import("@/lib/pdfValidator");
         const report = await validatePdfLayout(buffer);
         setPdfValidationReport(report);
       } catch (err) {

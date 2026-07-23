@@ -467,7 +467,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     photoQuery: "senior reading book cozy",
     background: {
       frontCoverColor: "#1E3A8A", frontCoverType: "gradient", frontCoverGradientStart: "#1E3A8A", frontCoverGradientEnd: "#0F172A",
-      backCoverColor: "#0F172A", backCoverType: "solid", backCoverGradientStart: "#0F172A", frontCoverGradientEnd: "#020617",
+      backCoverColor: "#0F172A", backCoverType: "solid", backCoverGradientStart: "#0F172A", backCoverGradientEnd: "#020617",
     },
     elements: [
       { type: "rect", xFrac: 0.1, yFrac: 0.12, widthFrac: 0.8, heightFrac: 0.76, fill: "transparent", stroke: "#F59E0B", strokeWidth: 3 },
@@ -486,7 +486,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     photoQuery: "kitchen baking herbs rustic",
     background: {
       frontCoverColor: "#064E3B", frontCoverType: "gradient", frontCoverGradientStart: "#064E3B", frontCoverGradientEnd: "#022C22",
-      backCoverColor: "#022C22", backCoverType: "solid", backCoverGradientStart: "#022C22", frontCoverGradientEnd: "#064E3B",
+      backCoverColor: "#022C22", backCoverType: "solid", backCoverGradientStart: "#022C22", backCoverGradientEnd: "#064E3B",
     },
     elements: [
       { type: "textbox", xFrac: 0.08, yFrac: 0.25, widthFrac: 0.84, fontSizeFrac: 0.12, fontFamily: "Playfair Display", fontStyle: "italic", fill: "#FDE68A", align: "center", text: "Our Family" },

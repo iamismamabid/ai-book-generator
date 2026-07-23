@@ -787,7 +787,7 @@ export default function FreeToolsHub() {
 
         {/* Dynamic Modals for Interactive Tools */}
         {activeInteractiveTool && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/40 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pt-28 bg-stone-950/40 backdrop-blur-sm">
             <div className="relative w-full max-w-2xl bg-[#fbfaf7] border border-stone-200 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
               
               {/* Modal Header */}

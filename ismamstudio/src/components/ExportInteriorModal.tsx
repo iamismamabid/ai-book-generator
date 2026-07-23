@@ -205,8 +205,8 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
           </div>
         </div>
       ) : (
-        <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full shadow-2xl p-6 relative animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 pt-28">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full max-h-[calc(100vh-140px)] overflow-y-auto shadow-2xl p-6 relative animate-in zoom-in-95 duration-200">
             <button
               onClick={onClose}
               className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"

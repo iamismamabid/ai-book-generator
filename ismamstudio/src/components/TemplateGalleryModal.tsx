@@ -82,8 +82,8 @@ export default function TemplateGalleryModal({ isOpen, onClose, onSelectTemplate
     : COVER_TEMPLATES.filter((t) => t.category === activeCategory);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl max-h-[85vh] bg-white rounded-[2rem] shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[99999] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 pt-32">
+      <div className="w-full max-w-5xl max-h-[calc(100vh-140px)] bg-white rounded-[2rem] shadow-2xl flex flex-col overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-lg font-black text-slate-900">Cover Templates</h2>

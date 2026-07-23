@@ -367,7 +367,7 @@ export default function GeneratePage() {
         )}
 
       {isAuthModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4 pt-28">
           <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center space-y-6 animate-in zoom-in-95 duration-200">
             <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 mx-auto">
               <Sparkles className="w-8 h-8" />

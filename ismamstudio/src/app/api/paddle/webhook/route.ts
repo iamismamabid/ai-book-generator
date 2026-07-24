@@ -60,18 +60,23 @@ export async function POST(request: Request) {
       if (status === "active" || status === "trialing") {
         console.log(`Upgrading Clerk User ${userId} to plan ${plan}`);
         
+        const customerId = data.customer_id;
+        const subscriptionId = data.id;
+
         await clerk.users.updateUserMetadata(userId, {
           publicMetadata: {
             isPremium: true,
             plan: plan,
             subscriptionStatus: "active",
+            ...(customerId ? { paddleCustomerId: customerId } : {}),
+            ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
           },
         });
 
         posthog.capture({
           distinctId: userId,
           event: "server_paddle_subscription_activated",
-          properties: { plan, priceId, status },
+          properties: { plan, priceId, status, customerId, subscriptionId },
         });
       } else {
         console.log(`Subscription status is ${status} for user ${userId}, not upgrading.`);

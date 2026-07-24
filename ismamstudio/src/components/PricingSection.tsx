@@ -4,13 +4,14 @@ import posthog from "posthog-js";
 import { useState, useEffect, Suspense } from "react";
 import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function PricingSectionInner() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { userId } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -27,13 +28,21 @@ function PricingSectionInner() {
     script.async = true;
     script.onload = () => {
       if ((window as any).Paddle) {
-        const env = cleanEnv(process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT) || "sandbox";
+        const env = cleanEnv(process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT) || "live";
         if (env === "sandbox") {
           (window as any).Paddle.Environment.set("sandbox");
         }
-        (window as any).Paddle.Initialize({
-          token: cleanEnv(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) || "test_token_placeholder",
-        });
+        
+        const paddleCustomerId = (user?.publicMetadata?.paddleCustomerId as string) || (user?.unsafeMetadata?.paddleCustomerId as string);
+        const initOptions: Record<string, any> = {
+          token: cleanEnv(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) || "",
+        };
+
+        if (paddleCustomerId && paddleCustomerId.startsWith("ctm_")) {
+          initOptions.pwCustomer = { id: paddleCustomerId };
+        }
+
+        (window as any).Paddle.Initialize(initOptions);
       }
     };
     document.body.appendChild(script);
@@ -41,7 +50,7 @@ function PricingSectionInner() {
     return () => {
       document.body.removeChild(script);
     };
-  }, []);
+  }, [user]);
 
   const handleCheckout = (planKey: string) => {
     const isAnnualBilling = billingCycle === 'annual';

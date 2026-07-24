@@ -68,15 +68,27 @@ const nextConfig = {
   skipTrailingSlashRedirect: true,
 
   // ─── Security headers (applied to every route) ───────────────────────────
-  // Deliberately NOT a full Content-Security-Policy: a strict CSP would need
-  // careful allowlisting of Clerk (auth), Paddle (checkout), PostHog, and
-  // Unsplash, and any gap silently breaks sign-in or payments. These four are
-  // safe across all current third parties. HSTS is already set at the edge.
   async headers() {
+    const cspHeader = `
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.paddle.com https://*.clerk.accounts.dev https://clerk.kdpage.com https://*.clerk.com https://us-assets.i.posthog.com https://us.i.posthog.com https://va.vercel-scripts.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' data: blob: https://images.unsplash.com https://*.amazonaws.com https://grainy-gradients.vercel.app https://*.clerk.com https://img.clerk.com;
+      font-src 'self' data: https://fonts.gstatic.com;
+      connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.kdpage.com https://us.i.posthog.com https://us-assets.i.posthog.com https://v2.paddle.com https://buy.paddle.com https://*.paddle.com https://*.amazonaws.com https://vitals.vercel-insights.com wss://*.clerk.accounts.dev;
+      frame-src 'self' https://buy.paddle.com https://*.paddle.com https://*.clerk.accounts.dev https://*.clerk.com;
+      worker-src 'self' blob:;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'self';
+    `.replace(/\s{2,}/g, ' ').trim();
+
     return [
       {
         source: "/:path*",
         headers: [
+          { key: "Content-Security-Policy", value: cspHeader },
           // Prevent our pages being framed by other origins (clickjacking).
           // SAMEORIGIN — not DENY — because Paddle/Clerk overlays are framed
           // BY our page, which this does not affect; it only controls who may

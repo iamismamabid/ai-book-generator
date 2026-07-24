@@ -23,33 +23,49 @@ function PricingSectionInner() {
 
   // Load Paddle script dynamically and initialize
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
-    script.async = true;
-    script.onload = () => {
+    const initPaddle = () => {
       if ((window as any).Paddle) {
         const env = cleanEnv(process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT) || "live";
         if (env === "sandbox") {
           (window as any).Paddle.Environment.set("sandbox");
         }
         
+        const token = cleanEnv(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN);
+        if (!token) {
+          console.warn("Paddle Warning: NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is missing.");
+          return;
+        }
+
         const paddleCustomerId = (user?.publicMetadata?.paddleCustomerId as string) || (user?.unsafeMetadata?.paddleCustomerId as string);
-        const initOptions: Record<string, any> = {
-          token: cleanEnv(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) || "",
-        };
+        const initOptions: Record<string, any> = { token };
 
         if (paddleCustomerId && paddleCustomerId.startsWith("ctm_")) {
           initOptions.pwCustomer = { id: paddleCustomerId };
         }
 
-        (window as any).Paddle.Initialize(initOptions);
+        try {
+          (window as any).Paddle.Initialize(initOptions);
+          console.log("Paddle V2 initialized successfully.");
+        } catch (err) {
+          console.error("Paddle Initialization Error:", err);
+        }
       }
     };
-    document.body.appendChild(script);
 
-    return () => {
-      document.body.removeChild(script);
-    };
+    if ((window as any).Paddle) {
+      initPaddle();
+    } else {
+      const existingScript = document.querySelector('script[src="https://cdn.paddle.com/paddle/v2/paddle.js"]');
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+        script.async = true;
+        script.onload = initPaddle;
+        document.body.appendChild(script);
+      } else {
+        existingScript.addEventListener("load", initPaddle);
+      }
+    }
   }, [user]);
 
   const handleCheckout = (planKey: string) => {
@@ -78,8 +94,6 @@ function PricingSectionInner() {
     }
 
     if (selectedPriceId && (window as any).Paddle) {
-
-
       // Get Partnero referral / partner ID
       let customerKey = null;
       if (typeof window !== "undefined") {
@@ -113,20 +127,32 @@ function PricingSectionInner() {
             priceId: selectedPriceId,
             quantity: 1
           }
-        ]
+        ],
+        customData: {
+          userId: userId,
+          ...(customerKey ? { customer_key: customerKey } : {})
+        }
       };
 
-      checkoutOptions.customData = {
-        userId: userId,
-        ...(customerKey ? { customer_key: customerKey } : {})
-      };
-
-
-
-      (window as any).Paddle.Checkout.open(checkoutOptions);
+      try {
+        (window as any).Paddle.Checkout.open(checkoutOptions);
+      } catch (err) {
+        console.error("Paddle Checkout Open Error:", err);
+        alert("Could not open checkout. Please check browser console for details.");
+      }
     } else {
-      // Fallback
-      router.push("/studio");
+      console.error("Paddle Checkout Failed:", {
+        selectedPriceId,
+        paddleLoaded: !!(window as any).Paddle,
+        planKey,
+        planIdKey,
+        configuredPriceIds: priceIds
+      });
+      if (!selectedPriceId) {
+        alert(`Checkout Error: Price ID for '${planIdKey}' is missing in environment variables.`);
+      } else {
+        alert("Checkout Error: Paddle SDK failed to load. Please refresh the page.");
+      }
     }
   };
 

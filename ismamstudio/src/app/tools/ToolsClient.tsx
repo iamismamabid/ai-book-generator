@@ -43,6 +43,7 @@ interface ToolItem {
   category: "Design" | "Writing" | "Formatting" | "Marketing";
   description: string;
   features: string[];
+  keywords?: string[];
   link?: string;
   isInteractive?: boolean;
 }
@@ -303,39 +304,42 @@ export default function FreeToolsHub() {
       percent: ((Math.max(0, royalty) / price) * 100).toFixed(1)
     };
   };
-
   const { cost: printCost, royalty: estRoyalty, percent: royaltyPercent } = calcRoyalty();
 
   // Score calculation for Self-Assessment
   const totalScore = scorecard.reduce((sum, item) => sum + (item.checked ? item.points : 0), 0);
 
   const toolsList: ToolItem[] = [
+    // 1. Puzzle & Interior Generators
     {
-      id: "epub-formatter",
-      name: "Free eBook Formatter (EPUB)",
-      badge: "New",
-      category: "Formatting",
-      description: "Upload your Word or text manuscript and get a Kindle-ready EPUB package — chapters, table of contents, and title page.",
-      features: ["Compliant structure", "Instant chapter generator", "Table of contents builder"],
-      isInteractive: true
-    },
-    {
-      id: "pdf-formatter",
-      name: "Free KDP Interior PDF Formatter",
-      badge: "New",
-      category: "Formatting",
-      description: "Upload your manuscript, choose a trim size, validate formatting, and export a KDP-ready interior PDF.",
-      features: ["Auto margins", "Bleed validation helper", "Standard trim sizing"],
-      isInteractive: true
-    },
-    {
-      id: "puzzle-generator",
-      name: "Free Puzzle Book Generator",
-      badge: "New",
+      id: "sudoku-generator",
+      name: "Free KDP Sudoku Generator",
+      badge: "Popular",
       category: "Design",
-      description: "Generate a print-ready puzzle book — sudoku, word search, maze, and more — with solutions included.",
-      features: ["Multiple types", "Answer keys compiled", "High contrast vector PDF"],
-      link: "/studio"
+      description: "Generate 100% mathematically unique Sudoku puzzle grids (Easy to Hard) with solution pages.",
+      features: ["Single-solution guaranteed", "Large print formatting", "2x2 solution layouts"],
+      keywords: ["sudoku", "sudokus", "sudokos", "number puzzle", "logic grid", "puzzle", "interior"],
+      link: "/sudoku"
+    },
+    {
+      id: "maze-generator",
+      name: "Free Shape-Masked Maze Studio",
+      badge: "Popular",
+      category: "Design",
+      description: "Create labyrinths and shape-masked mazes (hearts, stars, circles) with KDP bleed compliance.",
+      features: ["Heart & circle masks", "Bleed & gutter safety", "Vector PDF export"],
+      keywords: ["maze", "mazes", "labyrinth", "shaped maze", "heart maze", "puzzle", "interior"],
+      link: "/maze"
+    },
+    {
+      id: "word-search-generator",
+      name: "Free KDP Word Search Builder",
+      badge: "Popular",
+      category: "Design",
+      description: "Build custom word search puzzle books using your own word lists or niche topics.",
+      features: ["Custom CSV word lists", "Large print options", "Answer key grid export"],
+      keywords: ["word search", "wordsearch", "find words", "word puzzle", "puzzle", "interior"],
+      link: "/tools/word-search"
     },
     {
       id: "crossword-generator",
@@ -344,42 +348,99 @@ export default function FreeToolsHub() {
       category: "Design",
       description: "Design custom crossword puzzle grids and compile high-contrast vector PDF worksheets for KDP interiors.",
       features: ["Custom grid sizing (10x10 to 20x20)", "Live KDP safe area preview", "Instant answers sheets"],
+      keywords: ["crossword", "crosswords", "word puzzle", "grid puzzle", "clues", "puzzle"],
       link: "/studio/crossword"
     },
     {
-      id: "cover-calculator",
-      name: "Free KDP Cover Size Calculator",
+      id: "cryptogram-generator",
+      name: "Free Cryptogram & Cipher Studio",
       badge: "New",
       category: "Design",
-      description: "Calculate full-wrap cover dimensions — back, spine, front, and bleed — in inches and pixels at 300 DPI.",
-      features: ["300 DPI layout spec", "Trim boundary guides", "Automatic calculations"],
+      description: "Create crypto-quote and encrypted text cipher puzzle interiors with hint indexes.",
+      features: ["Custom quote banks", "Letter substitution cipher", "Hint keys index"],
+      keywords: ["cryptogram", "cryptograms", "crypto quote", "cipher", "secret code", "puzzle"],
+      link: "/studio/cryptogram"
+    },
+    {
+      id: "word-scramble-generator",
+      name: "Free Word Scramble Studio",
+      badge: "New",
+      category: "Design",
+      description: "Generate word jumble and anagram puzzle worksheets with solution keys.",
+      features: ["Niche word list import", "Custom clue hints", "Print-ready PDF layout"],
+      keywords: ["word scramble", "scramble", "anagram", "jumble", "scrambled words", "puzzle"],
+      link: "/studio/word-scramble"
+    },
+    {
+      id: "kakuro-generator",
+      name: "Free Kakuro Cross-Sums Generator",
+      badge: "New",
+      category: "Design",
+      description: "Generate Kakuro (number cross-sum) math logic puzzles with verified single solutions.",
+      features: ["Cross-sum logic grids", "Difficulty levels", "Answer key pages"],
+      keywords: ["kakuro", "cross sums", "math grid", "number puzzle", "logic puzzle", "puzzle"],
+      link: "/studio/kakuro"
+    },
+    {
+      id: "math-puzzle-generator",
+      name: "Free Math Puzzle Builder",
+      badge: "New",
+      category: "Design",
+      description: "Create arithmetic equation grids, number searches, and math workbooks for kids & adults.",
+      features: ["Addition/Subtraction/Multiplication", "Custom difficulty", "Answer pages"],
+      keywords: ["math", "math puzzle", "arithmetic grid", "equation puzzle", "number search", "workbook", "puzzle"],
+      link: "/studio/math-puzzle"
+    },
+    // 2. Cover & Spine Tools
+    {
+      id: "cover-studio",
+      name: "KDP Full Cover & Canvas Studio",
+      badge: "Essential",
+      category: "Design",
+      description: "Interactive canvas editor to design front, spine, and back covers with KDP safety guides.",
+      features: ["Full-wrap cover canvas", "Barcode placeholder", "High-res PDF export"],
+      keywords: ["cover", "covers", "cover studio", "cover designer", "full wrap cover", "canvas", "front cover", "back cover", "jacket"],
+      link: "/studio"
+    },
+    {
+      id: "spine-calculator",
+      name: "Free Spine Width & Cover Calculator",
+      badge: "Essential",
+      category: "Design",
+      description: "Get exact spine thickness and full cover dimensions for paperback & hardcover based on paper stock.",
+      features: ["Amazon official formulas", "Cream/white/color papers", "Precision calculations"],
+      keywords: ["spine", "spine calculator", "cover calculator", "spine width", "bleed", "page count", "dimensions"],
       link: "/tools/spine-calculator"
     },
     {
-      id: "title-generator",
-      name: "Free Book Title Generator",
-      badge: "Most Popular",
-      category: "Writing",
-      description: "Generate catchy, marketable book titles for any genre. 10 unique KDP-optimized ideas per batch.",
-      features: ["SEO metadata titles", "10 suggestions", "Non-fiction & fiction modes"],
-      isInteractive: true
+      id: "isbn-generator",
+      name: "Free ISBN Barcode Generator",
+      badge: "Essential",
+      category: "Design",
+      description: "Generate 300 DPI vector EAN-13 ISBN barcodes compliant with KDP print specifications.",
+      features: ["300 DPI vector PNG/SVG", "Price extension code support", "Amazon KDP compliant"],
+      keywords: ["isbn", "barcode", "barcodes", "ean-13", "book barcode", "barcode generator"],
+      link: "/tools/isbn-generator"
+    },
+    // 3. Keyword & Marketing Tools
+    {
+      id: "keyword-research",
+      name: "Free KDP Keyword & Niche Spy",
+      badge: "Popular",
+      category: "Marketing",
+      description: "Research low-competition KDP keywords, search volume, and 7 backend keyword slots.",
+      features: ["Search volume estimates", "Competition score", "Backend keyword optimizer"],
+      keywords: ["keyword", "keywords", "keyword research", "niche hunter", "amazon keywords", "seo", "search volume", "niche"],
+      link: "/tools/keyword-research"
     },
     {
-      id: "desc-generator",
-      name: "Free Book Description Generator",
-      badge: "New",
-      category: "Writing",
-      description: "Write conversion-optimized book descriptions with Amazon HTML formatting included.",
-      features: ["Amazon HTML tags", "Sales pitch triggers", "Copy-paste output"],
-      isInteractive: true
-    },
-    {
-      id: "royalty-calculator",
+      id: "royalty-estimator",
       name: "KDP Royalty & Market Viability Estimator",
       badge: "New",
       category: "Marketing",
       description: "Analyze printing costs, promo discounts, Kindle Unlimited reads, advertising PPC, and category competition.",
       features: ["PPC Marketing Simulator", "Category competition index", "Spine width calculator included"],
+      keywords: ["royalty", "royalty calculator", "printing cost", "kdp calculator", "profit", "earnings"],
       link: "/tools/royalty-estimator"
     },
     {
@@ -389,123 +450,69 @@ export default function FreeToolsHub() {
       category: "Formatting",
       description: "Queue dozens of puzzle book interiors, import configurations via CSV, and compile ready-to-upload files in bulk.",
       features: ["CSV configuration upload", "Sequenced background builder", "Multi-book download list"],
+      keywords: ["bulk", "bulk generator", "batch creator", "csv import", "mass generation"],
       link: "/tools/bulk-generator"
     },
+    // 4. Formatting & Utility Tools
     {
-      id: "spine-calculator",
-      name: "Free Spine Width Calculator",
+      id: "epub-formatter",
+      name: "Free eBook Formatter (EPUB)",
       badge: "New",
-      category: "Design",
-      description: "Get exact spine width and full cover dimensions for paperback and hardcover. Uses Amazon's official formulas.",
-      features: ["Amazon guidelines", "Cream/white/color papers", "Precision calculation"],
-      link: "/tools/spine-calculator"
-    },
-    {
-      id: "desc-formatter",
-      name: "Free Book Description Formatter",
-      badge: "New",
-      category: "Writing",
-      description: "Format your KDP book description with Amazon-approved HTML. Bold, headings, bullet points — preview and copy.",
-      features: ["Visual rich text preview", "Validates Amazon KDP tags", "Instant copy-paste"],
+      category: "Formatting",
+      description: "Upload your Word or text manuscript and get a Kindle-ready EPUB package — chapters, table of contents, and title page.",
+      features: ["Compliant structure", "Instant chapter generator", "Table of contents builder"],
+      keywords: ["epub", "ebook", "kindle", "epub formatter", "convert docx to epub"],
       isInteractive: true
     },
     {
-      id: "upload-checklist",
-      name: "Free KDP Upload Checklist",
-      category: "Marketing",
-      description: "Interactive checklist covering manuscript, cover, metadata, and account setup. Don't miss a single requirement.",
-      features: ["Tick off requirements", "Formatting compliance check", "Ensure instant approvals"],
+      id: "pdf-formatter",
+      name: "Free KDP Interior PDF Formatter",
+      badge: "New",
+      category: "Formatting",
+      description: "Upload your manuscript, choose a trim size, validate formatting, and export a KDP-ready interior PDF.",
+      features: ["Auto margins", "Bleed validation helper", "Standard trim sizing"],
+      keywords: ["pdf", "pdf formatter", "interior pdf", "margins", "trim size"],
       isInteractive: true
     },
     {
-      id: "keyword-research",
-      name: "Free KDP Keyword Research",
+      id: "pdf-compressor",
+      name: "Free PDF Compressor",
       badge: "New",
-      category: "Marketing",
-      description: "Brainstorm long-tail keywords and plan all 7 backend keyword slots. Honest tool — no fake search volumes.",
-      features: ["7 backend slots", "Search intent categories", "Low competition niches"],
-      link: "/tools/keyword-research"
+      category: "Formatting",
+      description: "Reduce PDF file size while maintaining print resolution. Perfect for meeting KDP file size limits.",
+      features: ["Lossless or image modes", "Before/after size report", "100% in-browser"],
+      keywords: ["pdf compress", "pdf compressor", "reduce pdf size", "shrink pdf", "kdp upload limit"],
+      link: "/tools/pdf-compressor"
     },
     {
-      id: "cover-assessment",
-      name: "Free Cover Self-Assessment",
+      id: "kdp-file-validator",
+      name: "Free KDP File & Margin Validator",
       badge: "New",
-      category: "Design",
-      description: "Score your cover for thumbnail legibility, contrast, and genre fit with a guided scorecard.",
-      features: ["Thumbnail test", "Automated score report", "Formatting validation"],
+      category: "Formatting",
+      description: "Validate your PDF files for KDP compliance. Check dimensions, font embedding, and bleed margins.",
+      features: ["Trim size matching", "Page consistency check", "Pass/warn/fail report"],
+      keywords: ["validator", "pdf validator", "margin checker", "bleed validator", "kdp error fix"],
+      link: "/tools/kdp-file-validator"
+    },
+    {
+      id: "title-generator",
+      name: "Free Book Title Generator",
+      badge: "Popular",
+      category: "Writing",
+      description: "Generate catchy, marketable book titles for any genre. 10 unique KDP-optimized ideas per batch.",
+      features: ["SEO metadata titles", "10 suggestions", "Non-fiction & fiction modes"],
+      keywords: ["title", "title generator", "book title", "ideas"],
       isInteractive: true
     },
     {
-      id: "print-cost-calculator",
-      name: "Free Print Cost Calculator",
-      badge: "New",
-      category: "Marketing",
-      description: "Calculate Amazon KDP printing costs for paperbacks and hardcovers across all marketplaces.",
-      features: ["US/UK/EU/CA rates", "Royalty per sale", "Marketplace comparison table"],
-      link: "/tools/print-cost-calculator"
-    },
-    {
-      id: "kenp-calculator",
-      name: "Free KENP Royalty Calculator",
-      badge: "New",
-      category: "Marketing",
-      description: "Estimate your Kindle Unlimited page-reads earnings based on KENP and current fund rates.",
-      features: ["KENP count estimator", "Rate comparison table", "Monthly/yearly projections"],
-      link: "/tools/kenp-calculator"
-    },
-    {
-      id: "ebook-royalty-calculator",
-      name: "Free eBook Royalty Calculator",
-      badge: "New",
-      category: "Marketing",
-      description: "Calculate your Kindle eBook royalties for 35% and 70% plans across all Amazon marketplaces.",
-      features: ["70% price band check", "Delivery fee factored in", "5 marketplaces"],
-      link: "/tools/ebook-royalty-calculator"
-    },
-    {
-      id: "ads-roi-calculator",
-      name: "Free Book Ads ROI Calculator",
-      badge: "New",
-      category: "Marketing",
-      description: "Track and optimize Amazon, Facebook, and BookBub ad campaigns. Calculate ROI, ACOS, and break-even points.",
-      features: ["ACOS & ROAS", "Break-even calculator", "Max profitable bid"],
-      link: "/tools/ads-roi-calculator"
-    },
-    {
-      id: "reading-time-calculator",
-      name: "Free Reading Time Calculator",
+      id: "desc-generator",
+      name: "Free Book Description Generator",
       badge: "New",
       category: "Writing",
-      description: "Calculate estimated reading time for your book based on word count and reading speed.",
-      features: ["Audiobook length estimate", "Print page estimate", "Adjustable reading speed"],
-      link: "/tools/reading-time-calculator"
-    },
-    {
-      id: "readability-calculator",
-      name: "Free Readability Calculator",
-      badge: "New",
-      category: "Writing",
-      description: "Calculate Flesch-Kincaid, Gunning Fog, SMOG, and other readability scores for your content.",
-      features: ["5 grade-level formulas", "Target audience guide", "100% private analysis"],
-      link: "/tools/readability-calculator"
-    },
-    {
-      id: "keyword-density",
-      name: "Free Keyword Density Analyzer",
-      badge: "New",
-      category: "Marketing",
-      description: "Analyze keyword density in your book descriptions and content for SEO optimization.",
-      features: ["Top phrase tables", "Stuffing detection", "Target keyword tracker"],
-      link: "/tools/keyword-density"
-    },
-    {
-      id: "grammar-checker",
-      name: "Free Grammar Checker",
-      badge: "New",
-      category: "Writing",
-      description: "Check spelling, grammar, and style in your book descriptions. Get readability scores and writing tips.",
-      features: ["Passive voice detection", "Cliché & filler word flags", "Clarity score"],
-      link: "/tools/grammar-checker"
+      description: "Write conversion-optimized book descriptions with Amazon HTML formatting included.",
+      features: ["Amazon HTML tags", "Sales pitch triggers", "Copy-paste output"],
+      keywords: ["description", "book description", "amazon html", "blurb"],
+      isInteractive: true
     },
     {
       id: "copyright-page-generator",
@@ -513,7 +520,8 @@ export default function FreeToolsHub() {
       badge: "New",
       category: "Writing",
       description: "Create professional copyright pages for your books with all required legal text.",
-      features: ["Fiction/non-fiction wording", "6×9 PDF export", "Copy or download .txt"],
+      features: ["Fiction/non-fiction wording", "6x9 PDF export", "Copy or download .txt"],
+      keywords: ["copyright", "legal page", "disclaimer", "front matter"],
       link: "/tools/copyright-page-generator"
     },
     {
@@ -521,129 +529,207 @@ export default function FreeToolsHub() {
       name: "Free Trademark Checker",
       badge: "New",
       category: "Marketing",
-      description: "Check if your book title or keywords contain trademarked terms that could cause issues.",
+      description: "Check if your book title or keywords contain trademarked terms that could cause account issues.",
       features: ["70+ term screening list", "USPTO & TMview links", "Generic term guidance"],
+      keywords: ["trademark", "tm check", "brand safety", "title check"],
       link: "/tools/trademark-checker"
     },
     {
       id: "book-planner",
-      name: "Free Book Planner",
+      name: "Free Book Planner & Outline Studio",
       badge: "New",
       category: "Writing",
-      description: "Plan your book with chapters, characters, and outlines. Use templates and track your writing progress.",
+      description: "Plan your book with chapters, characters, and outlines. Use templates and track word count.",
       features: ["Novel/non-fiction templates", "Autosaves in browser", "Word-count progress bar"],
+      keywords: ["book planner", "outline", "chapter planner", "character sheet", "writing progress"],
       link: "/tools/book-planner"
-    },
-    {
-      id: "word-cloud",
-      name: "Free Word Cloud Generator",
-      badge: "New",
-      category: "Design",
-      description: "Create beautiful word clouds from text or keywords. Visualize your research with custom colors and shapes.",
-      features: ["6 color schemes", "PNG export", "Stopword filtering"],
-      link: "/tools/word-cloud"
-    },
-    {
-      id: "qr-code-generator",
-      name: "Free QR Code Generator",
-      badge: "New",
-      category: "Marketing",
-      description: "Generate QR codes for book marketing, author websites, and social media links.",
-      features: ["Custom colors", "Up to 2048px export", "Print-safe error correction"],
-      link: "/tools/qr-code-generator"
-    },
-    {
-      id: "image-resizer",
-      name: "Free Mass Image Resizer",
-      badge: "New",
-      category: "Design",
-      description: "Bulk resize up to 50 images at once. KDP cover presets, social media sizes, custom dimensions. Download all as ZIP.",
-      features: ["50 images at once", "KDP & social presets", "Bulk ZIP download"],
-      link: "/tools/image-resizer"
     },
     {
       id: "background-remover",
       name: "Free Background Remover",
       badge: "New",
       category: "Design",
-      description: "Remove backgrounds from images instantly. Create transparent PNGs for covers and graphics.",
+      description: "Remove solid or simple backgrounds from images instantly to create transparent PNGs for covers.",
       features: ["Auto edge detection", "Click-to-pick color mode", "100% in-browser"],
+      keywords: ["background", "bg remover", "transparent png", "cutout", "image edit"],
       link: "/tools/background-remover"
     },
     {
-      id: "photo-to-line-art",
-      name: "Free Photo to Line Art",
+      id: "image-resizer",
+      name: "Free Mass Image Resizer",
       badge: "New",
       category: "Design",
-      description: "Convert any photo into clean line art perfect for coloring books. Adjust line thickness and detail.",
+      description: "Bulk resize up to 50 images at once with KDP cover presets and ZIP download.",
+      features: ["50 images at once", "KDP & social presets", "Bulk ZIP download"],
+      keywords: ["image resize", "batch resize", "zip download", "photo resizer"],
+      link: "/tools/image-resizer"
+    },
+    {
+      id: "photo-to-line-art",
+      name: "Free Photo to Line Art Converter",
+      badge: "New",
+      category: "Design",
+      description: "Convert photos into clean line art perfect for coloring books. Adjust line thickness and detail.",
       features: ["Adjustable detail level", "Coloring-book ready", "Instant PNG export"],
+      keywords: ["coloring book", "line art", "photo to sketch", "coloring page", "outline art"],
       link: "/tools/photo-to-line-art"
     },
     {
       id: "pattern-generator",
-      name: "Free Pattern Generator",
+      name: "Free Seamless Pattern Generator",
       badge: "New",
       category: "Design",
-      description: "Create seamless patterns for book covers and interiors. Multiple styles and colors.",
+      description: "Create seamless geometric patterns for book covers and endpapers.",
       features: ["12 pattern styles", "Seamless tile export", "300 DPI print sizes"],
+      keywords: ["pattern", "seamless tile", "background pattern", "cover texture"],
       link: "/tools/pattern-generator"
     },
     {
       id: "stock-images",
-      name: "Free Stock Images",
+      name: "Free Stock Images Search",
       badge: "New",
       category: "Design",
-      description: "Search and download royalty-free stock images for your book covers and marketing materials.",
+      description: "Search and download royalty-free stock images for your book covers.",
       features: ["Unsplash powered", "Commercial use OK", "No attribution required"],
+      keywords: ["stock images", "unsplash", "free photos", "cover graphics"],
       link: "/tools/stock-images"
     },
     {
-      id: "pdf-compressor",
-      name: "Free PDF Compressor",
-      badge: "New",
-      category: "Formatting",
-      description: "Reduce PDF file size while maintaining quality. Perfect for meeting KDP upload limits.",
-      features: ["Lossless or image modes", "Before/after size report", "100% in-browser"],
-      link: "/tools/pdf-compressor"
-    },
-    {
-      id: "kdp-file-validator",
-      name: "Free KDP File Validator",
-      badge: "New",
-      category: "Formatting",
-      description: "Validate your PDF files for KDP compliance. Check dimensions, fonts, and image resolution.",
-      features: ["Trim size matching", "Page consistency check", "Pass/warn/fail report"],
-      link: "/tools/kdp-file-validator"
-    },
-    {
       id: "ocr-scanner",
-      name: "Free OCR Scanner",
+      name: "Free OCR Text Extractor",
       badge: "New",
       category: "Formatting",
-      description: "Extract text from images, scanned pages, and image-based PDFs using advanced OCR technology.",
+      description: "Extract text from images, scanned manuscript pages, and PDFs using OCR.",
       features: ["6 languages supported", "Copy or download .txt", "100% in-browser"],
+      keywords: ["ocr", "image to text", "scan text", "photo to text"],
       link: "/tools/ocr-scanner"
     },
     {
       id: "interior-templates",
-      name: "Free Interior Templates",
+      name: "Free KDP Interior Templates",
       badge: "New",
       category: "Formatting",
-      description: "Download ready-to-use interior templates for journals, planners, notebooks, and more.",
+      description: "Download ready-to-use interior PDF templates for journals, planners, and notebooks.",
       features: ["10 template styles", "Standard KDP trims", "Custom page counts"],
+      keywords: ["templates", "journal interior", "planner pdf", "lined pages", "blank book"],
       link: "/tools/interior-templates"
+    },
+    {
+      id: "qr-code-generator",
+      name: "Free QR Code Generator",
+      badge: "New",
+      category: "Marketing",
+      description: "Generate QR codes for author websites, social media links, and book promotional pages.",
+      features: ["Custom colors", "Up to 2048px export", "Print-safe error correction"],
+      keywords: ["qr code", "qr generator", "author link", "marketing qr"],
+      link: "/tools/qr-code-generator"
+    },
+    {
+      id: "word-cloud",
+      name: "Free Word Cloud Generator",
+      badge: "New",
+      category: "Design",
+      description: "Create custom word clouds from manuscript text or keywords with PNG export.",
+      features: ["6 color schemes", "PNG export", "Stopword filtering"],
+      keywords: ["word cloud", "word art", "tag cloud", "visual words"],
+      link: "/tools/word-cloud"
+    },
+    {
+      id: "kenp-calculator",
+      name: "KENP Payout Calculator",
+      badge: "New",
+      category: "Marketing",
+      description: "Estimate earnings from Kindle Unlimited KENP page reads across global marketplaces.",
+      features: ["Global rate calculator", "Historical payouts", "Royalty breakdown"],
+      keywords: ["kenp", "kindle unlimited", "page reads", "ku royalty"],
+      link: "/tools/kenp-calculator"
+    },
+    {
+      id: "ads-roi-calculator",
+      name: "KDP Amazon Ads ROI Calculator",
+      badge: "New",
+      category: "Marketing",
+      description: "Calculate Amazon PPC advertising ACoS, break-even CPC, and net profit per book.",
+      features: ["ACoS & ACoV calculations", "Break-even CPC", "Net profit per sale"],
+      keywords: ["amazon ads", "ppc", "ad roi", "acos", "advertising"],
+      link: "/tools/ads-roi-calculator"
+    },
+    {
+      id: "ebook-royalty-calculator",
+      name: "Kindle eBook Royalty Calculator",
+      badge: "New",
+      category: "Marketing",
+      description: "Calculate 70% vs 35% Kindle eBook royalties including Amazon file delivery fees.",
+      features: ["File delivery fee deduction", "70% vs 35% comparison", "Multi-currency support"],
+      keywords: ["ebook royalty", "kindle pricing", "70% royalty", "35% royalty"],
+      link: "/tools/ebook-royalty-calculator"
+    },
+    {
+      id: "grammar-checker",
+      name: "Free Grammar & Proofreader",
+      badge: "New",
+      category: "Writing",
+      description: "Proofread book titles, descriptions, and manuscript passages for grammar & punctuation.",
+      features: ["Instant feedback", "Readability score", "100% browser-based"],
+      keywords: ["grammar", "spell check", "proofread", "writing check"],
+      link: "/tools/grammar-checker"
+    },
+    {
+      id: "print-cost-calculator",
+      name: "KDP Print Cost Calculator",
+      badge: "New",
+      category: "Marketing",
+      description: "Calculate exact Amazon KDP printing costs for black & white and color paperbacks & hardcovers.",
+      features: ["US/UK/EU rates", "Paper type options", "Trim size cost breakdown"],
+      keywords: ["print cost", "paperback cost", "hardcover cost", "printing price"],
+      link: "/tools/print-cost-calculator"
+    },
+    {
+      id: "readability-calculator",
+      name: "Free Readability Analyzer",
+      badge: "New",
+      category: "Writing",
+      description: "Analyze Flesch-Kincaid grade level and reading ease for your book manuscript.",
+      features: ["Flesch Reading Ease score", "Target grade level", "Word statistics"],
+      keywords: ["readability", "flesch kincaid", "grade level", "text analysis"],
+      link: "/tools/readability-calculator"
+    },
+    {
+      id: "reading-time-calculator",
+      name: "Free Reading Time Estimator",
+      badge: "New",
+      category: "Writing",
+      description: "Estimate average reading time for your book based on word count and reading speed.",
+      features: ["Word count analyzer", "Adult/child speed presets", "Chapter breakdown"],
+      keywords: ["reading time", "word count", "minutes to read"],
+      link: "/tools/reading-time-calculator"
+    },
+    {
+      id: "keyword-density",
+      name: "Free Keyword Density Analyzer",
+      badge: "New",
+      category: "Marketing",
+      description: "Analyze keyword frequency and density in book descriptions to optimize for Amazon search.",
+      features: ["Keyword frequency count", "Stopword exclusion", "1-word & 2-word phrase analysis"],
+      keywords: ["keyword density", "seo text", "word frequency"],
+      link: "/tools/keyword-density"
     }
   ];
 
   const filteredTools = toolsList.filter((t) => {
-    const matchesCategory = activeCategory === "All" || t.category === activeCategory;
     const q = searchQuery.trim().toLowerCase();
+
+    // If typing a search query, ignore active category tab so matching tools aren't hidden
+    const matchesCategory = !q && activeCategory !== "All" ? t.category === activeCategory : true;
+    if (!q) return matchesCategory;
+
     const matchesSearch =
-      !q ||
       t.name.toLowerCase().includes(q) ||
       t.description.toLowerCase().includes(q) ||
       t.category.toLowerCase().includes(q) ||
-      t.features.some((f) => f.toLowerCase().includes(q));
+      t.features.some((f) => f.toLowerCase().includes(q)) ||
+      (t.keywords && t.keywords.some((k) => k.toLowerCase().includes(q)));
+
     return matchesCategory && matchesSearch;
   });
 

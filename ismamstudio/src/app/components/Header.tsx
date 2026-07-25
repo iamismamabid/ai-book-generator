@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
+import GlobalSearchModal from '@/app/components/GlobalSearchModal';
 
 export default function Header() {
   return (
@@ -63,6 +64,8 @@ export default function Header() {
 
           {/* Action Buttons & Auth */}
           <div className="flex items-center gap-3 lg:gap-4 shrink-0">
+            {/* Global Search Button & Modal */}
+            <GlobalSearchModal />
             <SignedIn>
               <Link href="/dashboard" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-2">
                 My Library

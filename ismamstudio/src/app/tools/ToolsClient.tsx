@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   Sparkles, ArrowLeft, BookOpen, Calculator, Search, CheckCircle2,
-  HelpCircle, Settings, FileText, Layout, Copy, Check, ChevronRight,
+  HelpCircle, Settings, FileText, Layout, Copy, Check, ChevronRight, X,
   BookMarked, PenTool, Hash, RefreshCw, BarChart2, ShieldAlert, Loader2, AlertTriangle
 } from "lucide-react";
 import type { PdfValidationReport } from "@/lib/pdfValidator";

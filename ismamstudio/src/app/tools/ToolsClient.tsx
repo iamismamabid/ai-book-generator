@@ -49,6 +49,7 @@ interface ToolItem {
 
 export default function FreeToolsHub() {
   const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
   // Active Tool Modal states
@@ -634,9 +635,17 @@ export default function FreeToolsHub() {
     }
   ];
 
-  const filteredTools = activeCategory === "All" 
-    ? toolsList 
-    : toolsList.filter(t => t.category === activeCategory);
+  const filteredTools = toolsList.filter((t) => {
+    const matchesCategory = activeCategory === "All" || t.category === activeCategory;
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch =
+      !q ||
+      t.name.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q) ||
+      t.category.toLowerCase().includes(q) ||
+      t.features.some((f) => f.toLowerCase().includes(q));
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-[#fbfaf7] text-stone-900 py-24 px-6 relative overflow-hidden">
@@ -658,7 +667,7 @@ export default function FreeToolsHub() {
         <div className="mb-16 border-b border-stone-200 pb-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 border border-amber-200/60 text-amber-800 text-xs font-black uppercase tracking-wider shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> 30+ Free KDP Tools — No Signup
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> {toolsList.length}+ Free KDP Tools — No Signup
             </div>
             <h1 className="text-4xl md:text-6xl font-black text-stone-900 tracking-tight">
               Free KDP Tools for <span className="bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-600 bg-clip-text text-transparent">Smarter Publishing</span>
@@ -675,21 +684,53 @@ export default function FreeToolsHub() {
           </Link>
         </div>
 
-        {/* Filter Toolbar */}
-        <div className="flex flex-wrap gap-2.5 mb-12 pb-8 border-b border-stone-200">
-          {["All", "Design", "Writing", "Formatting", "Marketing"].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm ${
-                activeCategory === cat 
-                  ? "bg-gradient-to-r from-amber-600 to-amber-500 text-white font-black shadow-amber-600/10 scale-[1.03]" 
-                  : "bg-white border border-stone-200 text-stone-600 hover:text-stone-950 hover:border-stone-300"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Search Bar & Category Filter Toolbar */}
+        <div className="mb-12 pb-8 border-b border-stone-200 space-y-6">
+          {/* Instant Search Bar */}
+          <div className="relative max-w-xl">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-stone-400">
+              <Search className="w-5 h-5" />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tools by name, keyword, feature (e.g. spine, pdf, barcode, keyword)..."
+              className="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-white border border-stone-300 text-stone-900 placeholder-stone-400 font-semibold text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-stone-700 transition-colors"
+                title="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Category Filter Buttons + Match Counter */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap gap-2.5">
+              {["All", "Design", "Writing", "Formatting", "Marketing"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm ${
+                    activeCategory === cat 
+                      ? "bg-gradient-to-r from-amber-600 to-amber-500 text-white font-black shadow-amber-600/10 scale-[1.03]" 
+                      : "bg-white border border-stone-200 text-stone-600 hover:text-stone-950 hover:border-stone-300"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <div className="text-xs font-bold text-stone-500">
+              Showing <span className="text-amber-700 font-black">{filteredTools.length}</span> of {toolsList.length} tools
+            </div>
+          </div>
         </div>
 
         {/* Grid of Tools */}
@@ -749,6 +790,27 @@ export default function FreeToolsHub() {
               )}
             </div>
           ))}
+
+          {filteredTools.length === 0 && (
+            <div className="col-span-full py-16 text-center bg-white/80 border border-stone-200/80 rounded-[2rem] p-8 shadow-sm">
+              <Search className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+              <h3 className="text-xl font-black text-stone-800 mb-2 font-sans">
+                No tools found matching "{searchQuery}"
+              </h3>
+              <p className="text-stone-500 text-sm max-w-md mx-auto mb-6 font-medium">
+                Try searching for keywords like "spine", "pdf", "barcode", "royalty", "cover", or "word".
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setActiveCategory("All");
+                }}
+                className="px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black uppercase tracking-wider transition-all shadow-md cursor-pointer active:scale-95"
+              >
+                Clear Search & Show All Tools
+              </button>
+            </div>
+          )}
         </div>
 
         {/* FAQ — real indexable content for search intent beyond the tool cards themselves */}

@@ -37,7 +37,21 @@ function PricingSectionInner() {
         }
 
         const paddleCustomerId = (user?.publicMetadata?.paddleCustomerId as string) || (user?.unsafeMetadata?.paddleCustomerId as string);
-        const initOptions: Record<string, any> = { token };
+        const initOptions: Record<string, any> = {
+          token,
+          eventCallback: (event: any) => {
+            if (event?.name === "checkout.completed") {
+              if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+                (window as any).gtag('event', 'conversion_event_purchase', {
+                  transaction_id: event?.data?.id,
+                  value: event?.data?.details?.totals?.grand_total ? event.data.details.totals.grand_total / 100 : undefined,
+                  currency: event?.data?.currency_code || 'USD'
+                });
+              }
+              posthog.capture("paddle_checkout_completed", event?.data);
+            }
+          }
+        };
 
         if (paddleCustomerId && paddleCustomerId.startsWith("ctm_")) {
           initOptions.pwCustomer = { id: paddleCustomerId };

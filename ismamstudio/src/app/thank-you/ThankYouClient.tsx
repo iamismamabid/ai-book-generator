@@ -14,6 +14,12 @@ export default function ThankYouClient() {
   useEffect(() => {
     // Track conversion event on mount
     posthog.capture("checkout_success_page_loaded");
+    if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+      (window as any).gtag('event', 'conversion_event_purchase', {
+        event_category: 'ecommerce',
+        event_label: 'purchase_completed'
+      });
+    }
 
     // Check plan status
     async function verifyStatus() {

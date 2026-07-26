@@ -116,11 +116,53 @@ const nextConfig = {
   // consolidates onto one URL instead of splitting across two.
   async redirects() {
     return [
+      // ─── Legacy duplicate page ───────────────────────────────────────────
       {
         source: "/tools/free",
         destination: "/tools",
         permanent: true,
       },
+
+      // ─── Keyword-rich URL aliases → canonical tool URLs ──────────────────
+      // These let Google discover keyword-dense slugs while keeping one
+      // canonical URL. Link equity flows back to the canonical via 301.
+
+      // Spine Calculator
+      { source: "/tools/kdp-spine-calculator", destination: "/tools/spine-calculator", permanent: true },
+      { source: "/tools/kdp-spine-width-calculator", destination: "/tools/spine-calculator", permanent: true },
+      { source: "/tools/free-kdp-spine-calculator", destination: "/tools/spine-calculator", permanent: true },
+      { source: "/tools/book-spine-calculator", destination: "/tools/spine-calculator", permanent: true },
+
+      // ISBN / Barcode Generator
+      { source: "/tools/kdp-isbn-barcode-generator", destination: "/tools/isbn-generator", permanent: true },
+      { source: "/tools/free-isbn-barcode-generator", destination: "/tools/isbn-generator", permanent: true },
+      { source: "/tools/book-barcode-generator", destination: "/tools/isbn-generator", permanent: true },
+
+      // Keyword Research
+      { source: "/tools/kdp-keyword-research", destination: "/tools/keyword-research", permanent: true },
+      { source: "/tools/free-kdp-keyword-research", destination: "/tools/keyword-research", permanent: true },
+      { source: "/tools/amazon-kdp-keywords", destination: "/tools/keyword-research", permanent: true },
+
+      // Royalty Estimator
+      { source: "/tools/kdp-royalty-calculator", destination: "/tools/royalty-estimator", permanent: true },
+      { source: "/tools/free-kdp-royalty-calculator", destination: "/tools/royalty-estimator", permanent: true },
+      { source: "/tools/amazon-royalty-calculator", destination: "/tools/royalty-estimator", permanent: true },
+
+      // Print Cost Calculator
+      { source: "/tools/kdp-print-cost-calculator", destination: "/tools/print-cost-calculator", permanent: true },
+      { source: "/tools/amazon-kdp-printing-cost", destination: "/tools/print-cost-calculator", permanent: true },
+
+      // PDF Validator
+      { source: "/tools/kdp-pdf-validator", destination: "/tools/kdp-file-validator", permanent: true },
+      { source: "/tools/free-kdp-pdf-checker", destination: "/tools/kdp-file-validator", permanent: true },
+
+      // Sudoku Generator (non-/tools path)
+      { source: "/tools/kdp-sudoku-generator", destination: "/sudoku", permanent: true },
+      { source: "/tools/free-sudoku-generator", destination: "/sudoku", permanent: true },
+
+      // Maze Generator
+      { source: "/tools/kdp-maze-generator", destination: "/maze", permanent: true },
+      { source: "/tools/free-maze-generator", destination: "/maze", permanent: true },
     ];
   },
 

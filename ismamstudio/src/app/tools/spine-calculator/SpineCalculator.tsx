@@ -647,15 +647,15 @@ export default function SpineCalculator() {
               </p>
             </div>
             <div className="space-y-2">
-              <h3 className="font-bold text-indigo-400">What is "Bleed" and why is it exactly 0.25"?</h3>
+              <h3 className="font-bold text-indigo-400">What is &quot;Bleed&quot; and why is it exactly 0.25&quot;?</h3>
               <p className="text-slate-500 font-semibold leading-relaxed">
-                Bleed is the extra print margin (0.125" on each outer edge) required by printers to ensure colors and artwork 
+                Bleed is the extra print margin (0.125&quot; on each outer edge) required by printers to ensure colors and artwork 
                 extend fully to the edge after the page is trimmed. Since bleed is added to the left and right sides of the cover, 
-                it increases the overall cover width by 0.25". Similarly, it increases the cover height by 0.25" (top and bottom).
+                it increases the overall cover width by 0.25&quot;. Similarly, it increases the cover height by 0.25&quot; (top and bottom).
               </p>
             </div>
             <div className="space-y-2">
-              <h3 className="font-bold text-indigo-400">Why can't I put text on my spine?</h3>
+              <h3 className="font-bold text-indigo-400">Why can&apos;t I put text on my spine?</h3>
               <p className="text-slate-500 font-semibold leading-relaxed">
                 Books with fewer than 79 pages have extremely thin spines (under 0.17 inches). 
                 Printers cannot guarantee the alignment of text on such thin areas without it spilling onto the front or back covers, 
@@ -665,12 +665,173 @@ export default function SpineCalculator() {
             <div className="space-y-2">
               <h3 className="font-bold text-indigo-400">What is the difference between Paper Types?</h3>
               <p className="text-slate-500 font-semibold leading-relaxed">
-                White and Cream paper types have slightly different physical thicknesses (Cream is thicker at 0.0025" per page vs. White at 0.002252"). 
-                Color printing uses another grade of white paper which is slightly thicker (0.002347"). Choosing the correct option ensures your spine 
+                White and Cream paper types have slightly different physical thicknesses (Cream is thicker at 0.0025&quot; per page vs. White at 0.002252&quot;). 
+                Color printing uses another grade of white paper which is slightly thicker (0.002347&quot;). Choosing the correct option ensures your spine 
                 matches the real thickness perfectly.
               </p>
             </div>
           </div>
+        </section>
+
+        {/* ─── Rich SEO Content Block (Updated 2025) ─── */}
+        <section className="space-y-10 text-sm leading-relaxed text-slate-400">
+
+          {/* Freshness badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+            KDP Specifications — Updated July 2025
+          </div>
+
+          {/* Formula block */}
+          <div className="bg-slate-900/30 border border-slate-800/60 rounded-2xl p-6 md:p-8 space-y-6">
+            <h2 className="text-xl font-black text-white">How to Calculate KDP Spine Width — The Official Amazon Formula</h2>
+            <p className="text-slate-400">
+              Amazon KDP calculates spine width using the physical thickness of each individual page multiplied by your total page count.
+              The exact multiplier depends on your chosen paper type:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { label: "White Paper (B&W)", value: "0.002252\"", sub: "per page", color: "indigo" },
+                { label: "Cream Paper (B&W)", value: "0.0025\"", sub: "per page (thicker)", color: "amber" },
+                { label: "White Paper (Color)", value: "0.002347\"", sub: "per page", color: "emerald" },
+              ].map((item) => (
+                <div key={item.label} className={`p-4 rounded-xl border ${
+                  item.color === "indigo" ? "bg-indigo-500/10 border-indigo-500/20" :
+                  item.color === "amber" ? "bg-amber-500/10 border-amber-500/20" :
+                  "bg-emerald-500/10 border-emerald-500/20"
+                }`}>
+                  <div className={`text-2xl font-black mb-1 ${
+                    item.color === "indigo" ? "text-indigo-300" :
+                    item.color === "amber" ? "text-amber-300" : "text-emerald-300"
+                  }`}>{item.value}</div>
+                  <div className="font-bold text-slate-200 text-xs">{item.label}</div>
+                  <div className="text-slate-500 text-[11px]">{item.sub}</div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-slate-950/60 rounded-xl p-4 font-mono text-xs space-y-1">
+              <p className="text-emerald-400 font-black">/* KDP Spine Width Formula */</p>
+              <p className="text-slate-300">Spine Width = Page Count × Paper Multiplier</p>
+              <p className="text-slate-300">Full Cover Width = (Trim Width × 2) + Spine Width + 0.25&quot;</p>
+              <p className="text-slate-300">Full Cover Height = Trim Height + 0.25&quot;</p>
+              <p className="text-slate-500 text-[10px] mt-2">* 0.25&quot; = 0.125&quot; bleed on each outer edge (left + right, or top + bottom)</p>
+            </div>
+          </div>
+
+          {/* Page count reference table */}
+          <div className="bg-slate-900/30 border border-slate-800/60 rounded-2xl p-6 md:p-8 space-y-4">
+            <h2 className="text-xl font-black text-white">KDP Spine Width Reference Table — White Paper (B&W)</h2>
+            <p className="text-slate-400">Pre-calculated spine widths for common page counts using the official 0.002252&quot;/page multiplier:</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800">
+                    <th className="text-left py-2 pr-4 text-slate-400 font-black">Page Count</th>
+                    <th className="text-left py-2 pr-4 text-slate-400 font-black">Spine Width (in)</th>
+                    <th className="text-left py-2 pr-4 text-slate-400 font-black">Spine Width (mm)</th>
+                    <th className="text-left py-2 text-slate-400 font-black">Spine Text OK?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    [50, "0.1126", "2.86", "No (< 79 pages)"],
+                    [79, "0.1779", "4.52", "Yes (minimum)"],
+                    [100, "0.2252", "5.72", "Yes"],
+                    [150, "0.3378", "8.58", "Yes"],
+                    [200, "0.4504", "11.44", "Yes"],
+                    [250, "0.5630", "14.30", "Yes"],
+                    [300, "0.6756", "17.16", "Yes"],
+                    [350, "0.7882", "20.02", "Yes"],
+                    [400, "0.9008", "22.88", "Yes"],
+                    [500, "1.1260", "28.60", "Yes"],
+                    [600, "1.3512", "34.32", "Yes"],
+                    [700, "1.5764", "40.04", "Yes"],
+                    [828, "1.8647", "47.36", "Yes (max)"],
+                  ].map(([pages, inches, mm, text]) => (
+                    <tr key={pages} className="border-b border-slate-900/60 hover:bg-slate-800/20 transition-colors">
+                      <td className="py-2 pr-4 text-white font-bold">{pages}</td>
+                      <td className="py-2 pr-4 text-indigo-300 font-mono">{inches}&quot;</td>
+                      <td className="py-2 pr-4 text-slate-300 font-mono">{mm} mm</td>
+                      <td className={`py-2 font-bold text-[11px] ${String(text).startsWith("Yes") ? "text-emerald-400" : "text-red-400"}`}>{text}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Paper type comparison */}
+          <div className="bg-slate-900/30 border border-slate-800/60 rounded-2xl p-6 md:p-8 space-y-4">
+            <h2 className="text-xl font-black text-white">KDP Paper Type Comparison — Which Should You Choose?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              {[
+                {
+                  title: "White Paper (B&W)",
+                  multiplier: "0.002252\"/page",
+                  maxPages: "828 pages",
+                  best: "Novels, journals, workbooks, puzzle books",
+                  note: "Standard option. Bright white finish.",
+                  color: "indigo"
+                },
+                {
+                  title: "Cream Paper (B&W)",
+                  multiplier: "0.0025\"/page",
+                  maxPages: "776 pages",
+                  best: "Fiction, literary books, poetry",
+                  note: "Warmer tone. 11% thicker per page than white.",
+                  color: "amber"
+                },
+                {
+                  title: "White Paper (Color)",
+                  multiplier: "0.002347\"/page",
+                  maxPages: "828 pages",
+                  best: "Children's books, coloring books, illustrated guides",
+                  note: "Higher print cost. Vivid color reproduction.",
+                  color: "emerald"
+                },
+              ].map((item) => (
+                <div key={item.title} className={`p-4 rounded-xl border space-y-2 ${
+                  item.color === "indigo" ? "bg-indigo-500/[0.06] border-indigo-500/20" :
+                  item.color === "amber" ? "bg-amber-500/[0.06] border-amber-500/20" :
+                  "bg-emerald-500/[0.06] border-emerald-500/20"
+                }`}>
+                  <div className="font-black text-white">{item.title}</div>
+                  <div className={`font-mono font-black text-sm ${
+                    item.color === "indigo" ? "text-indigo-300" :
+                    item.color === "amber" ? "text-amber-300" : "text-emerald-300"
+                  }`}>{item.multiplier}</div>
+                  <div className="text-slate-400"><span className="text-slate-300 font-bold">Max: </span>{item.maxPages}</div>
+                  <div className="text-slate-400"><span className="text-slate-300 font-bold">Best for: </span>{item.best}</div>
+                  <div className="text-slate-500 italic">{item.note}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Common trim sizes */}
+          <div className="bg-slate-900/30 border border-slate-800/60 rounded-2xl p-6 md:p-8 space-y-4">
+            <h2 className="text-xl font-black text-white">Amazon KDP Standard Trim Sizes — 2025</h2>
+            <p className="text-slate-400">These are the most popular KDP paperback trim sizes used by self-publishers:</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              {[
+                { size: "5\" × 8\"", use: "Novels, memoirs" },
+                { size: "5.25\" × 8\"", use: "Fiction" },
+                { size: "5.5\" × 8.5\"", use: "Compact non-fiction" },
+                { size: "6\" × 9\"", use: "Standard (most popular)" },
+                { size: "7\" × 10\"", use: "Textbooks, workbooks" },
+                { size: "8\" × 10\"", use: "Workbooks" },
+                { size: "8.5\" × 8.5\"", use: "Square coloring books" },
+                { size: "8.5\" × 11\"", use: "Large workbooks, planners" },
+                { size: "8.25\" × 6\"", use: "Landscape children's books" },
+              ].map((item) => (
+                <div key={item.size} className="flex items-start gap-2 p-3 rounded-lg bg-slate-800/30 border border-slate-800/50">
+                  <span className="text-indigo-400 font-black font-mono shrink-0">{item.size}</span>
+                  <span className="text-slate-500">{item.use}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </section>
 
       </div>

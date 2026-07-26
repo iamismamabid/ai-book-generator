@@ -61,7 +61,9 @@ export default function RootLayout({
 }) {
   // Trigger Vercel redeploy with correct Root Directory settings
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      captchaWidgetType="invisible"
+    >
       {/* 🎯 html ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
       <html lang="en" className={`scroll-smooth ${inter.variable}`} suppressHydrationWarning>
         {/* 🎯 body ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}

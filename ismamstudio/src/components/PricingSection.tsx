@@ -743,13 +743,13 @@ function PricingSectionInner() {
 
 
       {/* ❓ Frequently Asked Questions */}
-      <div className="max-w-4xl mx-auto border-t border-slate-900/60 pt-20">
+      <div className="max-w-4xl mx-auto border-t border-slate-800/60 pt-20">
 
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 text-amber-400 text-xs font-black uppercase tracking-[0.25em] mb-3">
+          <div className="inline-flex items-center gap-2 text-amber-500 dark:text-amber-400 text-xs font-black uppercase tracking-[0.25em] mb-3">
             <HelpCircle className="w-4 h-4" /> Got Questions?
           </div>
-          <h3 className="text-3xl font-black text-white">Frequently Asked Questions</h3>
+          <h3 className="text-3xl font-black text-slate-900 dark:text-white">Frequently Asked Questions</h3>
         </div>
 
         <div className="space-y-4">
@@ -758,15 +758,15 @@ function PricingSectionInner() {
             return (
               <div
                 key={index}
-                className="bg-slate-950/30 border border-slate-900 rounded-2xl overflow-hidden transition-all duration-300"
+                className="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-2xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md"
               >
                 <button
                   onClick={() => toggleFaq(index)}
-                  className="w-full px-6 py-5 flex items-center justify-between text-left font-black text-white hover:text-amber-300 transition-colors"
+                  className="w-full px-6 py-5 flex items-center justify-between text-left font-black text-slate-950 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                 >
-                  <span className="text-base">{faq.q}</span>
+                  <span className="text-base font-black text-slate-950 dark:text-slate-100">{faq.q}</span>
                   <ChevronDown
-                    className={`w-5 h-5 text-slate-400 transition-transform duration-300 shrink-0 ml-4 ${isOpen ? "rotate-180 text-amber-400" : ""
+                    className={`w-5 h-5 text-slate-700 dark:text-slate-400 transition-transform duration-300 shrink-0 ml-4 ${isOpen ? "rotate-180 text-amber-600 dark:text-amber-400" : ""
                       }`}
                   />
                 </button>
@@ -776,7 +776,7 @@ function PricingSectionInner() {
                     }`}
                 >
                   <div className="overflow-hidden">
-                    <div className="px-6 pb-6 pt-1 text-slate-400 text-sm font-semibold leading-relaxed border-t border-slate-900/30">
+                    <div className="px-6 pb-6 pt-2 text-slate-900 dark:text-slate-200 text-sm font-bold leading-relaxed border-t border-slate-300 dark:border-slate-800/60">
                       {faq.a}
                     </div>
                   </div>

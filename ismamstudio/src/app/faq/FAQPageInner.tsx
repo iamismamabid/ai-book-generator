@@ -77,16 +77,16 @@ export default function FAQPageInner() {
               return (
                 <div
                   key={index}
-                  className="border border-slate-800/85 bg-slate-900/30 rounded-2xl overflow-hidden transition-all duration-300"
+                  className="border border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md"
                 >
                   <button
                     onClick={() => toggleFAQ(index)}
-                    className="w-full text-left p-6 flex justify-between items-center gap-4 font-bold text-white hover:text-indigo-400 transition-colors"
+                    className="w-full text-left p-6 flex justify-between items-center gap-4 font-black text-slate-950 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                   >
-                    <span>{faq.question}</span>
+                    <span className="text-base font-black text-slate-950 dark:text-slate-100">{faq.question}</span>
                     <ChevronDown
-                      className={`w-5 h-5 text-slate-500 transition-transform duration-300 shrink-0 ${
-                        isOpen ? "rotate-180 text-indigo-400" : ""
+                      className={`w-5 h-5 text-slate-700 dark:text-slate-400 transition-transform duration-300 shrink-0 ${
+                        isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : ""
                       }`}
                     />
                   </button>
@@ -97,7 +97,7 @@ export default function FAQPageInner() {
                     }`}
                   >
                     <div className="overflow-hidden">
-                      <div className="px-6 pb-6 text-slate-300 text-sm font-semibold leading-relaxed border-t border-slate-800/50 pt-4">
+                      <div className="px-6 pb-6 text-slate-900 dark:text-slate-200 text-sm font-bold leading-relaxed border-t border-slate-300 dark:border-slate-800/60 pt-4">
                         {faq.answer}
                       </div>
                     </div>

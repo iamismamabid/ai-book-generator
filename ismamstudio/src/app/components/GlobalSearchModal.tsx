@@ -269,30 +269,67 @@ export default function GlobalSearchModal() {
 
   return (
     <>
-      {/* Search Trigger Button in Navbar */}
+      {/* ✨ Search Trigger Button — Premium Animated Navbar Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-850 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold transition-all shadow-sm group hover:scale-[1.02] active:scale-95"
+        className="relative flex items-center gap-2.5 pl-3.5 pr-2.5 py-2 rounded-full border transition-all duration-300 group
+          bg-gradient-to-r from-slate-50 to-white
+          border-slate-200/80
+          hover:border-indigo-400/60
+          hover:shadow-[0_0_0_3px_rgba(99,102,241,0.10),_0_2px_12px_rgba(99,102,241,0.10)]
+          active:scale-95 shadow-sm"
         title="Search all KDP tools & generators (Cmd+K)"
+        aria-label="Open search"
       >
-        <Search className="w-3.5 h-3.5 text-indigo-500 group-hover:text-indigo-600 transition-colors" />
-        <span className="hidden sm:inline">Search tools...</span>
-        <span className="inline sm:hidden">Search</span>
-        <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-black text-slate-400 dark:text-slate-500 shadow-2xs">
-          ⌘K
-        </kbd>
+        {/* Animated gradient background on hover */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/[0.07] to-violet-500/[0.07] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        <div className="relative flex items-center gap-2">
+          {/* Animated search icon */}
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-sm group-hover:shadow-indigo-500/30 group-hover:scale-110 transition-all duration-300">
+            <Search className="w-3.5 h-3.5 text-white" />
+          </div>
+
+          <span className="hidden sm:block text-sm font-bold text-slate-500 group-hover:text-indigo-600 transition-colors duration-200 whitespace-nowrap">
+            Search tools...
+          </span>
+
+          {/* Keyboard shortcut badge */}
+          <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-400 ml-1 group-hover:bg-indigo-50 group-hover:border-indigo-200 group-hover:text-indigo-500 transition-all duration-200">
+            ⌘K
+          </kbd>
+        </div>
       </button>
 
-      {/* Fullscreen Search Modal Overlay */}
+      {/* 🔍 Fullscreen Search Modal Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-start justify-center pt-20 px-4 bg-slate-950/60 backdrop-blur-md animate-fade-in">
-          <div 
-            className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] transition-all"
+        <div
+          className="fixed inset-0 z-[99999] flex items-start justify-center pt-16 sm:pt-24 px-4"
+          onClick={() => setIsOpen(false)}
+        >
+          {/* Blurred backdrop */}
+          <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xl" />
+
+          {/* Modal card */}
+          <div
+            className="relative w-full max-w-2xl flex flex-col overflow-hidden max-h-[82vh]
+              rounded-[2rem] border border-white/10
+              bg-gradient-to-b from-slate-900/95 to-slate-950/98
+              shadow-[0_32px_80px_rgba(0,0,0,0.7),_0_0_0_1px_rgba(99,102,241,0.15),_inset_0_1px_0_rgba(255,255,255,0.07)]
+              animate-in fade-in slide-in-from-top-4 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Input Bar Header */}
-            <div className="flex items-center px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
-              <Search className="w-5 h-5 text-indigo-500 mr-3 shrink-0" />
+            {/* Decorative gradient glow top */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
+            <div className="absolute top-0 left-1/4 w-1/2 h-16 bg-indigo-500/5 blur-2xl pointer-events-none" />
+
+            {/* ——— INPUT HEADER ——— */}
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06]">
+              {/* Search icon with glow */}
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
+                <Search className="w-4.5 h-4.5 text-white w-[18px] h-[18px]" />
+              </div>
+
               <input
                 ref={inputRef}
                 type="text"
@@ -302,96 +339,158 @@ export default function GlobalSearchModal() {
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleKeyDownInInput}
-                placeholder="Search any KDP tool (e.g., Sudoku, Spine, Barcode, Cover, Keyword)..."
-                className="w-full bg-transparent text-slate-900 dark:text-white placeholder-slate-400 text-base font-semibold focus:outline-none"
+                placeholder="Search tools… e.g. Sudoku, Spine, Barcode, Cover, Royalty"
+                className="flex-1 bg-transparent text-white placeholder-slate-500 text-[15px] font-semibold focus:outline-none caret-indigo-400"
               />
-              {query && (
+
+              <div className="flex items-center gap-2 shrink-0">
+                {query && (
+                  <button
+                    onClick={() => setQuery("")}
+                    className="w-7 h-7 rounded-lg bg-white/[0.07] hover:bg-white/[0.12] flex items-center justify-center text-slate-400 hover:text-white transition-all"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 <button
-                  onClick={() => setQuery("")}
-                  className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors mr-2"
+                  onClick={() => setIsOpen(false)}
+                  className="px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-all"
                 >
-                  <X className="w-4 h-4" />
+                  ESC
                 </button>
-              )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="px-2.5 py-1 text-xs font-black text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 uppercase tracking-wider transition-colors"
-              >
-                ESC
-              </button>
+              </div>
             </div>
 
-            {/* Results List */}
-            <div className="p-3 overflow-y-auto flex-1 divide-y divide-slate-100 dark:divide-slate-850">
+            {/* ——— CATEGORY CHIPS (shown when empty) ——— */}
+            {!query && (
+              <div className="px-5 pt-4 pb-2 flex flex-wrap gap-2">
+                {["Puzzles & Interiors", "Covers & Specs", "Marketing & Keywords", "Formatting & Tools"].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setQuery(cat.split(" ")[0])}
+                    className="px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider
+                      bg-white/[0.05] hover:bg-indigo-500/20 border border-white/10 hover:border-indigo-500/40
+                      text-slate-400 hover:text-indigo-300 transition-all duration-200 cursor-pointer"
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* ——— RESULTS LIST ——— */}
+            <div className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5 scroll-smooth
+              [&::-webkit-scrollbar]:w-1.5
+              [&::-webkit-scrollbar-track]:bg-transparent
+              [&::-webkit-scrollbar-thumb]:bg-white/10
+              [&::-webkit-scrollbar-thumb]:rounded-full">
+
               {filtered.length > 0 ? (
-                filtered.map((item, index) => {
-                  const isSelected = index === selectedIndex;
-                  return (
-                    <div
-                      key={item.id}
-                      onClick={() => handleSelect(item.link)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all duration-150 ${
-                        isSelected
-                          ? "bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/60 dark:border-indigo-800/60 translate-x-1"
-                          : "hover:bg-slate-50 dark:hover:bg-slate-850/50"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2.5 rounded-xl shrink-0 mt-0.5 ${
+                <>
+                  {/* Section label when searching */}
+                  {query && (
+                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 px-3 pt-2 pb-1">
+                      {filtered.length} result{filtered.length !== 1 ? "s" : ""} for "{query}"
+                    </p>
+                  )}
+                  {/* Result rows */}
+                  {filtered.map((item, index) => {
+                    const isSelected = index === selectedIndex;
+                    // Category accent colors
+                    const catColor =
+                      item.category === "Puzzles & Interiors" ? "from-violet-500 to-indigo-600" :
+                      item.category === "Covers & Specs" ? "from-amber-400 to-orange-500" :
+                      item.category === "Marketing & Keywords" ? "from-emerald-400 to-teal-500" :
+                      "from-sky-400 to-blue-500";
+
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => handleSelect(item.link)}
+                        onMouseEnter={() => setSelectedIndex(index)}
+                        className={`flex items-center gap-3.5 px-3 py-3 rounded-2xl cursor-pointer transition-all duration-150 ${
                           isSelected
-                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                        }`}>
-                          <Sparkles className="w-4 h-4" />
+                            ? "bg-white/[0.08] border border-indigo-500/25 shadow-[inset_0_0_0_1px_rgba(99,102,241,0.15)]"
+                            : "hover:bg-white/[0.04] border border-transparent"
+                        }`}
+                      >
+                        {/* Category gradient icon */}
+                        <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${catColor} flex items-center justify-center shrink-0 shadow-md ${isSelected ? "scale-110" : ""} transition-transform duration-150`}>
+                          <Sparkles className="w-4 h-4 text-white" />
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-black text-slate-900 dark:text-slate-100">
+
+                        {/* Text block */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-[13px] font-black ${isSelected ? "text-white" : "text-slate-200"} transition-colors`}>
                               {item.name}
                             </span>
-                            <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white/[0.07] text-slate-500">
                               {item.category}
                             </span>
                             {item.badge && (
-                              <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                              <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
+                                item.badge === "Popular" ? "bg-amber-500/15 text-amber-400 border border-amber-500/20" :
+                                item.badge === "Essential" ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" :
+                                "bg-indigo-500/15 text-indigo-400 border border-indigo-500/20"
+                              }`}>
                                 {item.badge}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1 mt-0.5">
+                          <p className="text-[11px] text-slate-500 font-medium line-clamp-1 mt-0.5">
                             {item.description}
                           </p>
                         </div>
+
+                        {/* Arrow */}
+                        <ChevronRight className={`w-4 h-4 shrink-0 transition-all duration-150 ${
+                          isSelected ? "text-indigo-400 translate-x-0.5" : "text-slate-700"
+                        }`} />
                       </div>
-                      <ChevronRight className={`w-4 h-4 transition-transform shrink-0 ${
-                        isSelected ? "text-indigo-600 dark:text-indigo-400 translate-x-1" : "text-slate-300 dark:text-slate-700"
-                      }`} />
-                    </div>
-                  );
-                })
+                    );
+                  })}
+                </>
               ) : (
-                <div className="py-12 text-center">
-                  <Search className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                    No tools found matching "{query}"
+                <div className="py-16 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-white/[0.05] flex items-center justify-center mx-auto mb-4 border border-white/[0.06]">
+                    <Search className="w-7 h-7 text-slate-600" />
+                  </div>
+                  <p className="text-sm font-black text-slate-300 mb-1">
+                    No results for "{query}"
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Try searching for "Sudoku", "Maze", "Spine", "Cover", or "Barcode"
+                  <p className="text-xs text-slate-600 max-w-xs mx-auto">
+                    Try "Sudoku", "Spine", "Cover", "Maze", or "Royalty"
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Footer Tip */}
-            <div className="px-5 py-2.5 bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-bold text-slate-400">
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1"><kbd className="px-1 py-0.5 bg-white dark:bg-slate-900 border rounded text-[9px]">↑</kbd> <kbd className="px-1 py-0.5 bg-white dark:bg-slate-900 border rounded text-[9px]">↓</kbd> Navigate</span>
-                <span className="flex items-center gap-1"><kbd className="px-1 py-0.5 bg-white dark:bg-slate-900 border rounded text-[9px]">↵</kbd> Select</span>
+            {/* ——— FOOTER SHORTCUTS ——— */}
+            <div className="px-5 py-3 border-t border-white/[0.06] flex items-center justify-between
+              bg-gradient-to-r from-slate-950/50 to-slate-900/50">
+              <div className="flex items-center gap-4 text-[11px] font-bold text-slate-600">
+                <span className="flex items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[9px] text-slate-500">↑</kbd>
+                  <kbd className="px-1.5 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[9px] text-slate-500">↓</kbd>
+                  Navigate
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[9px] text-slate-500">↵</kbd>
+                  Open
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded text-[9px] text-slate-500">ESC</kbd>
+                  Close
+                </span>
               </div>
-              <span>KDPage Search Studio</span>
+              <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-600">
+                <div className="w-4 h-4 rounded bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+                  <Search className="w-2.5 h-2.5 text-white" />
+                </div>
+                KDPage Search Studio
+              </div>
             </div>
-
           </div>
         </div>
       )}

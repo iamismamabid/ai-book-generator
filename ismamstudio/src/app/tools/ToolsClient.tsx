@@ -772,27 +772,48 @@ export default function FreeToolsHub() {
 
         {/* Search Bar & Category Filter Toolbar */}
         <div className="mb-12 pb-8 border-b border-stone-200 space-y-6">
-          {/* Instant Search Bar */}
-          <div className="relative max-w-xl">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-stone-400">
-              <Search className="w-5 h-5" />
+
+          {/* ✨ Premium Instant Search Bar */}
+          <div className="relative max-w-2xl group">
+            {/* Animated glow ring on focus */}
+            <div className="absolute -inset-0.5 rounded-[1.25rem] bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 opacity-0 group-focus-within:opacity-100 blur-sm transition-all duration-500 pointer-events-none" />
+
+            <div className="relative flex items-center bg-white rounded-[1.1rem] border border-stone-200 group-focus-within:border-transparent shadow-sm group-focus-within:shadow-amber-500/10 group-focus-within:shadow-lg transition-all duration-300">
+
+              {/* Search icon with gradient bg */}
+              <div className="pl-4 pr-2.5 shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-sm shadow-amber-500/25 group-focus-within:scale-110 transition-transform duration-300">
+                  <Search className="w-4 h-4 text-white" />
+                </div>
+              </div>
+
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search 40+ free KDP tools — Sudoku, Spine, Barcode, PDF, Keyword..."
+                className="flex-1 py-4 pr-3 bg-transparent text-stone-900 placeholder-stone-400 font-semibold text-sm focus:outline-none"
+              />
+
+              {/* Live match pill */}
+              {!searchQuery && (
+                <div className="hidden sm:flex items-center gap-1 px-3 py-1 mr-3 rounded-full bg-amber-50 border border-amber-200/60 text-amber-700 text-[10px] font-black uppercase tracking-wider shrink-0">
+                  <Sparkles className="w-3 h-3 text-amber-500" />
+                  40+ tools
+                </div>
+              )}
+
+              {/* Clear button */}
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="mr-3 w-7 h-7 rounded-lg bg-stone-100 hover:bg-red-50 hover:border-red-200 border border-stone-200 flex items-center justify-center text-stone-400 hover:text-red-500 transition-all shrink-0"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search tools by name, keyword, feature (e.g. spine, pdf, barcode, keyword)..."
-              className="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-white border border-stone-300 text-stone-900 placeholder-stone-400 font-semibold text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-stone-700 transition-colors"
-                title="Clear search"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
           </div>
 
           {/* Category Filter Buttons + Match Counter */}

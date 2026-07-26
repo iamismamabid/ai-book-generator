@@ -207,6 +207,7 @@ function PricingSectionInner() {
       priceAnnualTotal: 110,
       popular: false,
       features: [
+        "7-Day Free Trial (Cancel Anytime)",
         "Full Commercial Rights (Keep 100% royalties)",
         "Watermark-free vector PDF exports",
         "Up to 3 brand & pen-name profiles",
@@ -216,7 +217,7 @@ function PricingSectionInner() {
         "Generate up to 5 Chapters / mo",
         "Email support (24-48h response)",
       ],
-      ctaText: "Start Designing",
+      ctaText: "Start 7-Day Free Trial",
       colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-700",
       borderClass: "border-slate-200 dark:border-slate-800/80",
       icon: <Star className="w-6 h-6 text-slate-400" />,
@@ -233,6 +234,7 @@ function PricingSectionInner() {
       priceAnnualTotal: 220,
       popular: true,
       features: [
+        "7-Day Free Trial (Cancel Anytime)",
         "Watermark-free PDF exports (All sizes + Custom)",
         "100% Commercial-use rights (Keep all royalties)",
         "Unlimited Brand profiles & pen-names",
@@ -243,7 +245,7 @@ function PricingSectionInner() {
         "Premium Cover & Interior Canvas Studio",
         "Priority Customer Support (under 12 hours)",
       ],
-      ctaText: "Get Pro Access",
+      ctaText: "Start 7-Day Free Trial",
       colorClass: "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-[0_20px_50px_rgba(245,158,11,0.15),_0_0_30px_rgba(56,189,248,0.1)]",
       borderClass: "border-amber-500 dark:border-amber-400 border-2",
       icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
@@ -260,6 +262,7 @@ function PricingSectionInner() {
       priceAnnualTotal: 220,
       popular: false,
       features: [
+        "7-Day Free Trial (Cancel Anytime)",
         "Everything in Pro Studio plan",
         "Up to 3 team member account seats",
         "Vector SVG & source file exports",
@@ -269,7 +272,7 @@ function PricingSectionInner() {
         "API access for automated generation",
         "Dedicated customer support manager",
       ],
-      ctaText: "Go Agency Pro",
+      ctaText: "Start 7-Day Free Trial",
       colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-700",
       borderClass: "border-slate-200 dark:border-slate-800/80",
       icon: <Award className="w-6 h-6 text-slate-400" />,
@@ -281,6 +284,10 @@ function PricingSectionInner() {
 
 
   const faqs = [
+    {
+      q: "How does the 7-Day Free Trial work?",
+      a: "When you choose Starter Creator, Pro Studio, or Publisher Agency, you get full unlocked commercial access to all tools for 7 full days without paying anything today. Your card is validated at checkout ($0 charge), and you can cancel anytime within 7 days from your billing dashboard if you decide not to continue.",
+    },
     {
       q: "Are the generated interiors ready to upload directly to Amazon KDP?",
       a: "Yes! All interior templates, mazes, word searches, and Sudokus export as high-fidelity, print-ready vector PDFs that respect KDP guidelines, including precise trim sizes (6\"x9\", 8.5\"x11\"), interior bleed requirements, and gutter safety margins.",
@@ -446,16 +453,21 @@ function PricingSectionInner() {
               <Zap className="w-4 h-4 shrink-0 opacity-80" />
             </Link>
           ) : (
-            <button
-              onClick={() => handleCheckout(plan.planKey)}
-              className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                  : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                }`}
-            >
-              {plan.ctaText}
-              <Zap className="w-4 h-4 shrink-0 opacity-80" />
-            </button>
+            <>
+              <button
+                onClick={() => handleCheckout(plan.planKey)}
+                className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
+                    ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                    : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                  }`}
+              >
+                {plan.ctaText}
+                <Zap className="w-4 h-4 shrink-0 opacity-80" />
+              </button>
+              <p className="text-[11px] text-center font-semibold text-slate-500 dark:text-slate-400 mt-2.5">
+                🔒 7 Days Free • $0 Charged Today • Cancel Anytime
+              </p>
+            </>
           )}
         </div>
       </div>

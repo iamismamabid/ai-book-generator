@@ -117,7 +117,7 @@ export default function RootLayout({
                         },
                         {
                           "@type": "Offer",
-                          "price": "9",
+                          "price": "11.99",
                           "priceCurrency": "USD",
                           "name": "Starter Creator",
                           "billingIncrement": 1,
@@ -125,7 +125,7 @@ export default function RootLayout({
                         },
                         {
                           "@type": "Offer",
-                          "price": "19",
+                          "price": "21",
                           "priceCurrency": "USD",
                           "name": "Pro Studio",
                           "billingIncrement": 1,

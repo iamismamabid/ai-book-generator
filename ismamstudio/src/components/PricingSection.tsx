@@ -200,10 +200,11 @@ function PricingSectionInner() {
     {
       name: "Starter Creator",
       description: "Perfect for hobbyists & beginner publishers starting their KDP journey.",
-      priceMonthly: 9,
-      priceMonthlyOriginal: 11,
-      priceAnnual: 7,
-      priceAnnualOriginal: 9,
+      priceMonthly: 11.99,
+      priceMonthlyOriginal: 14.99,
+      priceAnnual: 9.17,
+      priceAnnualOriginal: 11.99,
+      priceAnnualTotal: 110,
       popular: false,
       features: [
         "Full Commercial Rights (Keep 100% royalties)",
@@ -225,10 +226,11 @@ function PricingSectionInner() {
     {
       name: "Pro Studio",
       description: "Everything you need to compile, format, and sell low/medium content books.",
-      priceMonthly: 19,
-      priceMonthlyOriginal: 24,
-      priceAnnual: 15,
-      priceAnnualOriginal: 19,
+      priceMonthly: 21,
+      priceMonthlyOriginal: 26,
+      priceAnnual: 18.33,
+      priceAnnualOriginal: 21,
+      priceAnnualTotal: 220,
       popular: true,
       features: [
         "Watermark-free PDF exports (All sizes + Custom)",
@@ -253,8 +255,9 @@ function PricingSectionInner() {
       description: "Scale your publishing business with multiple brands and API access.",
       priceMonthly: 39,
       priceMonthlyOriginal: 49,
-      priceAnnual: 31,
+      priceAnnual: 18.33,
       priceAnnualOriginal: 39,
+      priceAnnualTotal: 220,
       popular: false,
       features: [
         "Everything in Pro Studio plan",
@@ -615,13 +618,13 @@ function PricingSectionInner() {
           {/* Starter */}
           <div className="p-5 md:p-6 text-center border-l border-slate-800 bg-indigo-950/40">
             <span className="block text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">Starter</span>
-            <span className="block text-xl font-black text-indigo-300">$9<span className="text-xs font-semibold text-slate-400">/mo</span></span>
+            <span className="block text-xl font-black text-indigo-300">$11.99<span className="text-xs font-semibold text-slate-400">/mo</span></span>
           </div>
           {/* Pro */}
           <div className="p-5 md:p-6 text-center border-l border-amber-500/30 bg-amber-950/30 relative">
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-yellow-400" />
             <span className="block text-[10px] font-black uppercase tracking-widest text-amber-400 mb-1">Pro Studio ⭐</span>
-            <span className="block text-xl font-black text-amber-300">$19<span className="text-xs font-semibold text-slate-400">/mo</span></span>
+            <span className="block text-xl font-black text-amber-300">$21<span className="text-xs font-semibold text-slate-400">/mo</span></span>
           </div>
           {/* Agency */}
           <div className="p-5 md:p-6 text-center border-l border-slate-800 bg-emerald-950/30">
@@ -773,8 +776,8 @@ export default function PricingSection() {
 function PricingSkeleton() {
   const staticPlans = [
     { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 Chapter Outline / mo", "Community support forum"] },
-    { name: "Starter Creator", price: "$9", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
-    { name: "Pro Studio", price: "$19", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Unlimited Brand profiles & pen-names", "Unlimited Sudoku puzzles (Easy, Med, Hard)", "Unlimited Labyrinth designs (Circle, Heart shapes)", "Unlimited Word Search boards & CSV imports", "Unlimited Chapter Writing", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
+    { name: "Starter Creator", price: "$11.99", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
+    { name: "Pro Studio", price: "$21", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Unlimited Brand profiles & pen-names", "Unlimited Sudoku puzzles (Easy, Med, Hard)", "Unlimited Labyrinth designs (Circle, Heart shapes)", "Unlimited Word Search boards & CSV imports", "Unlimited Chapter Writing", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
     { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "KDP Niche Hunter & Keyword Spy", "API access for automated generation", "Dedicated customer support manager"] },
   ];
 

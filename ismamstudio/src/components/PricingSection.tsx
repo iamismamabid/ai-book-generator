@@ -124,35 +124,40 @@ function PricingSectionInner() {
 
     const selectedPriceId = priceIds[planIdKey];
 
-    if (!userId) {
-      // Redirect to signup and pass callback checkout parameter
-      router.push(`/sign-up?redirect_url=${encodeURIComponent(`/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}`)}`);
-      return;
-    }
+    // Multi-source affiliate key lookup (URL params, localStorage, sessionStorage, cookies)
+    let customerKey: string | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        customerKey = urlParams.get('aff') || urlParams.get('via') || urlParams.get('ref') || urlParams.get('partner') || urlParams.get('am_id');
 
-    if (selectedPriceId && (window as any).Paddle) {
-      // Get Partnero referral / partner ID
-      let customerKey = null;
-      if (typeof window !== "undefined") {
-        const partneroQueryParam = 'aff';
-        const partneroCookieName = 'partnero_partner';
-
-        // 1. Check URL query params
-        customerKey = new URLSearchParams(window.location.search).get(partneroQueryParam);
-
-        // 2. Fallback to cookies
         if (!customerKey) {
-          const cookieArr = document.cookie.split(";").map(cookie => cookie.trim());
-          for (const cookie of cookieArr) {
-            const [cookieName, cookieValue] = cookie.split("=");
-            if (partneroCookieName === cookieName) {
-              customerKey = decodeURIComponent(cookieValue);
+          customerKey = localStorage.getItem('partnero_partner') || localStorage.getItem('aff_ref') || sessionStorage.getItem('partnero_partner');
+        }
+
+        if (!customerKey) {
+          const cookieArr = document.cookie.split(";").map(c => c.trim());
+          for (const c of cookieArr) {
+            const [cName, cVal] = c.split("=");
+            if (cName === 'partnero_partner' || cName === 'aff' || cName === 'via') {
+              customerKey = decodeURIComponent(cVal);
               break;
             }
           }
         }
+      } catch (e) {
+        console.error("Error retrieving affiliate key:", e);
       }
+    }
 
+    if (!userId) {
+      // Preserve affiliate tracking key during signup redirect
+      const affParam = customerKey ? `&aff=${encodeURIComponent(customerKey)}` : "";
+      router.push(`/sign-up?redirect_url=${encodeURIComponent(`/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}${affParam}`)}`);
+      return;
+    }
+
+    if (selectedPriceId && (window as any).Paddle) {
       const checkoutOptions: any = {
         settings: {
           displayMode: "overlay",
@@ -167,7 +172,12 @@ function PricingSectionInner() {
         ],
         customData: {
           userId: userId,
-          ...(customerKey ? { customer_key: customerKey } : {})
+          ...(customerKey ? {
+            customer_key: customerKey,
+            partnero_partner: customerKey,
+            aff: customerKey,
+            via: customerKey
+          } : {})
         }
       };
 

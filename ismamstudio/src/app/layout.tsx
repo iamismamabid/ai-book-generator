@@ -192,7 +192,7 @@ export default function RootLayout({
             </Script>
 
             {/* PartneroJS Tracking Script */}
-            <Script id="partnero-js" strategy="lazyOnload">
+            <Script id="partnero-js" strategy="afterInteractive">
             {`
               (function(p,t,n,e,r,o){ p['__partnerObject']=r;function f(){
               var c={ a:arguments,q:[]};var r=this.push(c);return "number"!=typeof r?r:f.bind(c.q);}
@@ -202,18 +202,23 @@ export default function RootLayout({
               po('settings', 'assets_host', 'https://assets.partnero.com');
               po('program', 'CNPKWOED', 'load');
 
-              // Backup Cookie Writer for Localhost and Cross-Domain Testing
+              // Backup Referral Writer across Cookies, localStorage, and sessionStorage
               (function() {
                 try {
                   const urlParams = new URLSearchParams(window.location.search);
-                  const aff = urlParams.get('aff');
+                  const aff = urlParams.get('aff') || urlParams.get('via') || urlParams.get('ref') || urlParams.get('partner') || urlParams.get('am_id');
                   if (aff) {
                     const date = new Date();
-                    date.setTime(date.getTime() + (60 * 24 * 60 * 60 * 1000));
+                    date.setTime(date.getTime() + (90 * 24 * 60 * 60 * 1000));
                     document.cookie = "partnero_partner=" + encodeURIComponent(aff) + "; expires=" + date.toUTCString() + "; path=/; SameSite=Lax";
+                    try {
+                      localStorage.setItem('partnero_partner', aff);
+                      localStorage.setItem('aff_ref', aff);
+                      sessionStorage.setItem('partnero_partner', aff);
+                    } catch(e) {}
                   }
                 } catch(e) {
-                  console.error("Partnero cookie fallback error:", e);
+                  console.error("Partnero tracking fallback error:", e);
                 }
               })();
             `}

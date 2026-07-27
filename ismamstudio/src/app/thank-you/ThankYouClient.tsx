@@ -23,6 +23,10 @@ export default function ThankYouClient() {
         event_category: 'ecommerce',
         event_label: 'purchase_completed'
       });
+      (window as any).gtag('event', 'conversion_event_purchase_2', {
+        event_category: 'ecommerce',
+        event_label: 'purchase_completed'
+      });
       (window as any).gtag('event', 'conversion', {
         send_to: process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW-18328569670'
       });

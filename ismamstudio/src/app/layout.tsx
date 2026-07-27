@@ -175,6 +175,19 @@ export default function RootLayout({
                 gtag('js', new Date());
                 gtag('config', 'G-B08V9NL031');
                 gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || "AW-18328569670"}');
+
+                window.gtagSendEvent = function(url) {
+                  var callback = function () {
+                    if (typeof url === 'string' && url) {
+                      window.location = url;
+                    }
+                  };
+                  gtag('event', 'conversion_event_purchase_2', {
+                    'event_callback': callback,
+                    'event_timeout': 2000
+                  });
+                  return false;
+                };
               `}
             </Script>
 

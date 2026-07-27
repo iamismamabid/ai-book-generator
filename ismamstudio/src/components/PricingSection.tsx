@@ -58,6 +58,12 @@ function PricingSectionInner() {
                   currency: currency
                 });
 
+                (window as any).gtag('event', 'conversion_event_purchase_2', {
+                  transaction_id: txnId,
+                  value: grandTotal,
+                  currency: currency
+                });
+
                 (window as any).gtag('event', 'conversion', {
                   send_to: (process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW-18328569670'),
                   value: grandTotal,

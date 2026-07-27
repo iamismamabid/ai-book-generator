@@ -15,9 +15,16 @@ export default function ThankYouClient() {
     // Track conversion event on mount
     posthog.capture("checkout_success_page_loaded");
     if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+      (window as any).gtag('event', 'purchase', {
+        event_category: 'ecommerce',
+        event_label: 'purchase_completed'
+      });
       (window as any).gtag('event', 'conversion_event_purchase', {
         event_category: 'ecommerce',
         event_label: 'purchase_completed'
+      });
+      (window as any).gtag('event', 'conversion', {
+        send_to: process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW-18328569670'
       });
     }
 

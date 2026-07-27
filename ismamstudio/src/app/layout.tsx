@@ -165,7 +165,7 @@ export default function RootLayout({
 
             {/* Google Analytics & Google Ads (gtag.js) */}
             <Script
-              src="https://www.googletagmanager.com/gtag/js?id=G-B08V9NL031"
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || "G-B08V9NL031"}`}
               strategy="afterInteractive"
             />
             <Script id="google-analytics" strategy="afterInteractive">
@@ -174,6 +174,7 @@ export default function RootLayout({
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', 'G-B08V9NL031');
+                gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || "AW-18328569670"}');
               `}
             </Script>
 

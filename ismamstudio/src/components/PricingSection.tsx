@@ -42,10 +42,27 @@ function PricingSectionInner() {
           eventCallback: (event: any) => {
             if (event?.name === "checkout.completed") {
               if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+                const grandTotal = event?.data?.details?.totals?.grand_total ? event.data.details.totals.grand_total / 100 : 0;
+                const currency = event?.data?.currency_code || 'USD';
+                const txnId = event?.data?.id;
+
+                (window as any).gtag('event', 'purchase', {
+                  transaction_id: txnId,
+                  value: grandTotal,
+                  currency: currency
+                });
+
                 (window as any).gtag('event', 'conversion_event_purchase', {
-                  transaction_id: event?.data?.id,
-                  value: event?.data?.details?.totals?.grand_total ? event.data.details.totals.grand_total / 100 : undefined,
-                  currency: event?.data?.currency_code || 'USD'
+                  transaction_id: txnId,
+                  value: grandTotal,
+                  currency: currency
+                });
+
+                (window as any).gtag('event', 'conversion', {
+                  send_to: (process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW-18328569670'),
+                  value: grandTotal,
+                  currency: currency,
+                  transaction_id: txnId
                 });
               }
               posthog.capture("paddle_checkout_completed", event?.data);

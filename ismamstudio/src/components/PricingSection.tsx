@@ -261,6 +261,7 @@ function PricingSectionInner() {
         "Standard trim sizes (6\"x9\", 8.5\"x11\")",
         "Easy & Medium Sudoku & Word Search",
         "Square mazes, Kakuros & Cryptograms",
+        "25 Vector Line Art Credits / mo",
         "Generate up to 5 Chapters / mo",
         "Email support (24-48h response)",
       ],
@@ -284,6 +285,7 @@ function PricingSectionInner() {
         "7-Day Free Trial (Cancel Anytime)",
         "Watermark-free PDF exports (All sizes + Custom)",
         "100% Commercial-use rights (Keep all royalties)",
+        "100 Vector Line Art Credits / mo",
         "Unlimited Brand profiles & pen-names",
         "Unlimited Sudoku puzzles (Easy, Med, Hard)",
         "Unlimited Labyrinth designs (Circle, Heart shapes)",
@@ -311,6 +313,7 @@ function PricingSectionInner() {
       features: [
         "7-Day Free Trial (Cancel Anytime)",
         "Everything in Pro Studio plan",
+        "300 Vector Line Art Credits / mo",
         "Up to 3 team member account seats",
         "Vector SVG & source file exports",
         "Advanced custom shapes & interior styling",

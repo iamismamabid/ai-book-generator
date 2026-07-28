@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Refund Policy | KDPage Help Center",
-  description: "Read the Refund Policy of KDPage. Learn about our 7-day money-back guarantee for SaaS subscriptions and 60-day refund policy for AppSumo lifetime deals.",
+  description: "Read the Refund Policy of KDPage. Learn about our 7-day money-back guarantee for SaaS subscription plans.",
 };
 
 export default function RefundPolicyPage() {

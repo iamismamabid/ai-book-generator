@@ -30,8 +30,8 @@ const faqs = [
     answer: "We export print-ready PDF files for book interiors and high-quality PNG/JPG layouts for covers. The PDFs are generated with clean vector lines, ensuring crisp, clear print quality even at high page numbers when printed by Amazon."
   },
   {
-    question: "How does the AppSumo deal work? Is there a monthly subscription?",
-    answer: "By purchasing the AppSumo Lifetime Deal (LTD), you pay a one-time fee with absolutely no recurring charges or monthly subscription costs. You get lifetime access to all core generators, editors, and future updates. AppSumo buyers are covered by AppSumo's standard 60-day money-back guarantee, which overrides our standard 7-day SaaS refund policy for these promotional licenses."
+    question: "What subscription plans are available and how can I cancel?",
+    answer: "KDPage offers flexible Monthly and Annual subscription plans (Starter Creator, Pro Studio, and Publisher Agency) with a 7-day free trial. You can upgrade, downgrade, or cancel your subscription at any time with a single click from your account dashboard."
   }
 ];
 

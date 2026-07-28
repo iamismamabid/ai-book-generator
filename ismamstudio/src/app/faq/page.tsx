@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   alternates: { canonical: "https://www.kdpage.com/faq" },
   title: "Frequently Asked Questions | KDPage Help Center",
-  description: "Have questions about KDPage? Read our FAQs about puzzle creation, trim size compliance, commercial rights, licensing, and our AppSumo lifetime deals.",
+  description: "Have questions about KDPage? Read our FAQs about puzzle creation, trim size compliance, commercial rights, licensing, and subscription plans.",
 };
 
 export default function FAQPage() {
@@ -62,10 +62,10 @@ export default function FAQPage() {
       },
       {
         "@type": "Question",
-        "name": "How does the AppSumo deal work? Is there a monthly subscription?",
+        "name": "What subscription plans are available and how can I cancel?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "By purchasing the AppSumo Lifetime Deal (LTD), you pay a one-time fee with absolutely no recurring charges or monthly subscription costs. You get lifetime access to all core generators, editors, and future updates. AppSumo buyers are covered by AppSumo's standard 60-day money-back guarantee, which overrides our standard 7-day SaaS refund policy for these promotional licenses."
+          "text": "KDPage offers flexible Monthly and Annual subscription plans (Starter Creator, Pro Studio, and Publisher Agency) with a 7-day free trial. You can upgrade, downgrade, or cancel your subscription at any time with a single click from your account dashboard."
         }
       }
     ]

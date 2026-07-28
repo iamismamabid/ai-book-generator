@@ -20,6 +20,29 @@ const FONT_FAMILIES = [
   "Playfair Display", "Montserrat", "Oswald", "Lora", "Merriweather", "Bebas Neue", "Pacifico", "Cinzel", "Sacramento", "Arimo"
 ];
 
+// Photoshop-style layer compositing modes (native canvas globalCompositeOperation)
+const BLEND_MODES = [
+  { value: "source-over", label: "Normal" },
+  { value: "multiply", label: "Multiply" },
+  { value: "screen", label: "Screen" },
+  { value: "overlay", label: "Overlay" },
+  { value: "darken", label: "Darken" },
+  { value: "lighten", label: "Lighten" },
+  { value: "color-dodge", label: "Color Dodge" },
+  { value: "color-burn", label: "Color Burn" },
+  { value: "hard-light", label: "Hard Light" },
+  { value: "soft-light", label: "Soft Light" },
+  { value: "difference", label: "Difference" },
+  { value: "exclusion", label: "Exclusion" },
+  { value: "hue", label: "Hue" },
+  { value: "saturation", label: "Saturation" },
+  { value: "color", label: "Color" },
+  { value: "luminosity", label: "Luminosity" },
+];
+
+// Fixed 3x3 sharpen convolution kernel (fabric.Image.filters.Convolute)
+const SHARPEN_MATRIX = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+
 const CLIPARTS = [
   { name: "Quantum Propulsion", src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=300&q=80" },
   { name: " containment field", src: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=300&q=80" },
@@ -479,6 +502,28 @@ export default function FabricCoverStudio({
   const [objectShadowOffsetX, setObjectShadowOffsetX] = useState(5);
   const [objectShadowOffsetY, setObjectShadowOffsetY] = useState(5);
 
+  // Blend mode (Photoshop-style layer compositing)
+  const [objectBlendMode, setObjectBlendMode] = useState<string>("source-over");
+
+  // Gradient fill (shapes & text)
+  const [objectFillType, setObjectFillType] = useState<'solid' | 'gradient'>('solid');
+  const [objectGradientStart, setObjectGradientStart] = useState('#6366F1');
+  const [objectGradientEnd, setObjectGradientEnd] = useState('#EC4899');
+  const [objectGradientAngle, setObjectGradientAngle] = useState(90);
+
+  // Photoshop-style image adjustments (backed by fabric.Image.filters)
+  const [imgBrightness, setImgBrightness] = useState(0);
+  const [imgContrast, setImgContrast] = useState(0);
+  const [imgSaturation, setImgSaturation] = useState(0);
+  const [imgHue, setImgHue] = useState(0);
+  const [imgBlur, setImgBlur] = useState(0);
+  const [imgSharpen, setImgSharpen] = useState(false);
+  const [imgPixelate, setImgPixelate] = useState(0);
+  const [imgNoise, setImgNoise] = useState(0);
+  const [imgGrayscale, setImgGrayscale] = useState(false);
+  const [imgSepia, setImgSepia] = useState(false);
+  const [imgInvert, setImgInvert] = useState(false);
+
   // Layer list state for UI rendering
   const [layers, setLayers] = useState<fabric.Object[]>([]);
 
@@ -569,6 +614,36 @@ export default function FabricCoverStudio({
     setObjectFlipX(!!activeObject.flipX);
     setObjectFlipY(!!activeObject.flipY);
 
+    // Sync blend mode
+    setObjectBlendMode((activeObject as any).globalCompositeOperation || "source-over");
+
+    // Sync fill type (solid vs gradient) for shapes/text
+    const fillVal: any = activeObject.fill;
+    if (fillVal && typeof fillVal === "object" && Array.isArray(fillVal.colorStops)) {
+      setObjectFillType("gradient");
+      setObjectGradientStart(fillVal.colorStops[0]?.color || "#6366F1");
+      setObjectGradientEnd(fillVal.colorStops[fillVal.colorStops.length - 1]?.color || "#EC4899");
+    } else {
+      setObjectFillType("solid");
+    }
+
+    // Sync Photoshop-style image adjustments from existing filters
+    if (activeObject.type === "image") {
+      const imgFilters = ((activeObject as fabric.Image).filters || []) as any[];
+      const findFilter = (t: string) => imgFilters.find((f) => f && f.type === t);
+      setImgBrightness(findFilter("Brightness")?.brightness ?? 0);
+      setImgContrast(findFilter("Contrast")?.contrast ?? 0);
+      setImgSaturation(findFilter("Saturation")?.saturation ?? 0);
+      setImgHue(Math.round((findFilter("HueRotation")?.rotation ?? 0) * 180));
+      setImgBlur(findFilter("Blur")?.blur ?? 0);
+      setImgSharpen(!!findFilter("Convolute"));
+      setImgPixelate(findFilter("Pixelate")?.blocksize ?? 0);
+      setImgNoise(findFilter("Noise")?.noise ?? 0);
+      setImgGrayscale(!!findFilter("Grayscale"));
+      setImgSepia(!!findFilter("Sepia"));
+      setImgInvert(!!findFilter("Invert"));
+    }
+
     if (activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox') {
       const textObj = activeObject as fabric.IText;
       setObjectText(textObj.text || "");
@@ -608,6 +683,85 @@ export default function FabricCoverStudio({
     } else {
       activeObject.set({ shadow: undefined });
     }
+    canvas.requestRenderAll();
+    if (saveHistory) {
+      canvas.fire("object:modified", { target: activeObject });
+    }
+  };
+
+  // Rebuilds the fabric.Image filter stack from scratch (non-destructive — always
+  // recomputed from the original pixels, so overrides can be applied in any order
+  // without compounding). Any single param can be overridden while the rest fall
+  // back to current state, which lets each slider commit just its own value.
+  const applyImageFilters = (
+    overrides: Partial<{
+      brightness: number; contrast: number; saturation: number; hue: number;
+      blur: number; sharpen: boolean; pixelate: number; noise: number;
+      grayscale: boolean; sepia: boolean; invert: boolean;
+    }> = {},
+    saveHistory = true
+  ) => {
+    if (!canvas || !activeObject || activeObject.type !== "image") return;
+    const img = activeObject as fabric.Image;
+
+    const brightness = overrides.brightness ?? imgBrightness;
+    const contrast = overrides.contrast ?? imgContrast;
+    const saturation = overrides.saturation ?? imgSaturation;
+    const hue = overrides.hue ?? imgHue;
+    const blur = overrides.blur ?? imgBlur;
+    const sharpen = overrides.sharpen ?? imgSharpen;
+    const pixelate = overrides.pixelate ?? imgPixelate;
+    const noise = overrides.noise ?? imgNoise;
+    const grayscale = overrides.grayscale ?? imgGrayscale;
+    const sepia = overrides.sepia ?? imgSepia;
+    const invert = overrides.invert ?? imgInvert;
+
+    const filters: any[] = [];
+    if (brightness !== 0) filters.push(new fabric.Image.filters.Brightness({ brightness }));
+    if (contrast !== 0) filters.push(new fabric.Image.filters.Contrast({ contrast }));
+    if (saturation !== 0) filters.push(new fabric.Image.filters.Saturation({ saturation }));
+    if (hue !== 0) filters.push(new fabric.Image.filters.HueRotation({ rotation: hue / 180 }));
+    if (grayscale) filters.push(new fabric.Image.filters.Grayscale());
+    if (sepia) filters.push(new fabric.Image.filters.Sepia());
+    if (invert) filters.push(new fabric.Image.filters.Invert());
+    if (sharpen) filters.push(new fabric.Image.filters.Convolute({ matrix: SHARPEN_MATRIX }));
+    if (blur > 0) filters.push(new fabric.Image.filters.Blur({ blur }));
+    if (pixelate > 0) filters.push(new fabric.Image.filters.Pixelate({ blocksize: pixelate }));
+    if (noise > 0) filters.push(new fabric.Image.filters.Noise({ noise }));
+
+    img.filters = filters;
+    img.applyFilters();
+    canvas.requestRenderAll();
+    if (saveHistory) {
+      canvas.fire("object:modified", { target: img });
+    }
+  };
+
+  // Builds a linear gradient in the object's own coordinate space (0..width, 0..height)
+  // and rotates the start/end points around its center to honor the angle control.
+  const applyGradientFill = (start: string, end: string, angleDeg: number, saveHistory = true) => {
+    if (!canvas || !activeObject) return;
+    const width = activeObject.width || 100;
+    const height = activeObject.height || 100;
+    const rad = (angleDeg * Math.PI) / 180;
+    const cx = width / 2;
+    const cy = height / 2;
+
+    const gradient = new fabric.Gradient({
+      type: "linear",
+      coords: {
+        x1: cx - cx * Math.cos(rad),
+        y1: cy - cy * Math.sin(rad),
+        x2: cx + cx * Math.cos(rad),
+        y2: cy + cy * Math.sin(rad),
+      },
+      colorStops: [
+        { offset: 0, color: start },
+        { offset: 1, color: end },
+      ],
+    });
+
+    activeObject.set("fill", gradient);
     canvas.requestRenderAll();
     if (saveHistory) {
       canvas.fire("object:modified", { target: activeObject });
@@ -2473,26 +2627,200 @@ export default function FabricCoverStudio({
               </div>
             )}
 
+            {/* Photoshop-style Image Adjustments */}
+            {activeObject.type === 'image' && (
+              <div className="space-y-3 pt-2 border-t border-slate-100">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-[9px] font-black text-slate-400 uppercase">Image Adjustments</h4>
+                  <button
+                    onClick={() => {
+                      setImgBrightness(0); setImgContrast(0); setImgSaturation(0); setImgHue(0);
+                      setImgBlur(0); setImgSharpen(false); setImgPixelate(0); setImgNoise(0);
+                      setImgGrayscale(false); setImgSepia(false); setImgInvert(false);
+                      applyImageFilters({
+                        brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0,
+                        sharpen: false, pixelate: 0, noise: 0, grayscale: false, sepia: false, invert: false
+                      }, true);
+                    }}
+                    className="text-[8px] font-black uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                    <span>Brightness</span>
+                    <span className="text-slate-600 font-bold">{Math.round(imgBrightness * 100)}</span>
+                  </div>
+                  <input
+                    type="range" min="-1" max="1" step="0.02" value={imgBrightness}
+                    onChange={(e) => { const v = parseFloat(e.target.value); setImgBrightness(v); applyImageFilters({ brightness: v }, false); }}
+                    onMouseUp={() => applyImageFilters({}, true)}
+                    onTouchEnd={() => applyImageFilters({}, true)}
+                    className="w-full accent-indigo-600 h-1 cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                    <span>Contrast</span>
+                    <span className="text-slate-600 font-bold">{Math.round(imgContrast * 100)}</span>
+                  </div>
+                  <input
+                    type="range" min="-1" max="1" step="0.02" value={imgContrast}
+                    onChange={(e) => { const v = parseFloat(e.target.value); setImgContrast(v); applyImageFilters({ contrast: v }, false); }}
+                    onMouseUp={() => applyImageFilters({}, true)}
+                    onTouchEnd={() => applyImageFilters({}, true)}
+                    className="w-full accent-indigo-600 h-1 cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                    <span>Saturation</span>
+                    <span className="text-slate-600 font-bold">{Math.round(imgSaturation * 100)}</span>
+                  </div>
+                  <input
+                    type="range" min="-1" max="1" step="0.02" value={imgSaturation}
+                    onChange={(e) => { const v = parseFloat(e.target.value); setImgSaturation(v); applyImageFilters({ saturation: v }, false); }}
+                    onMouseUp={() => applyImageFilters({}, true)}
+                    onTouchEnd={() => applyImageFilters({}, true)}
+                    className="w-full accent-indigo-600 h-1 cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                    <span>Hue</span>
+                    <span className="text-slate-600 font-bold">{imgHue}°</span>
+                  </div>
+                  <input
+                    type="range" min="-180" max="180" step="1" value={imgHue}
+                    onChange={(e) => { const v = parseInt(e.target.value); setImgHue(v); applyImageFilters({ hue: v }, false); }}
+                    onMouseUp={() => applyImageFilters({}, true)}
+                    onTouchEnd={() => applyImageFilters({}, true)}
+                    className="w-full accent-indigo-600 h-1 cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                    <span>Blur</span>
+                    <span className="text-slate-600 font-bold">{Math.round(imgBlur * 100)}</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="1" step="0.02" value={imgBlur}
+                    onChange={(e) => { const v = parseFloat(e.target.value); setImgBlur(v); applyImageFilters({ blur: v }, false); }}
+                    onMouseUp={() => applyImageFilters({}, true)}
+                    onTouchEnd={() => applyImageFilters({}, true)}
+                    className="w-full accent-indigo-600 h-1 cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                    <span>Pixelate</span>
+                    <span className="text-slate-600 font-bold">{imgPixelate}</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="30" step="1" value={imgPixelate}
+                    onChange={(e) => { const v = parseInt(e.target.value); setImgPixelate(v); applyImageFilters({ pixelate: v }, false); }}
+                    onMouseUp={() => applyImageFilters({}, true)}
+                    onTouchEnd={() => applyImageFilters({}, true)}
+                    className="w-full accent-indigo-600 h-1 cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                    <span>Grain / Noise</span>
+                    <span className="text-slate-600 font-bold">{imgNoise}</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="400" step="10" value={imgNoise}
+                    onChange={(e) => { const v = parseInt(e.target.value); setImgNoise(v); applyImageFilters({ noise: v }, false); }}
+                    onMouseUp={() => applyImageFilters({}, true)}
+                    onTouchEnd={() => applyImageFilters({}, true)}
+                    className="w-full accent-indigo-600 h-1 cursor-pointer"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5 pt-1">
+                  <button
+                    onClick={() => { const v = !imgGrayscale; setImgGrayscale(v); applyImageFilters({ grayscale: v }, true); }}
+                    className={`py-1.5 rounded-lg text-[9px] font-black uppercase border transition-colors cursor-pointer ${imgGrayscale ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
+                  >
+                    Grayscale
+                  </button>
+                  <button
+                    onClick={() => { const v = !imgSepia; setImgSepia(v); applyImageFilters({ sepia: v }, true); }}
+                    className={`py-1.5 rounded-lg text-[9px] font-black uppercase border transition-colors cursor-pointer ${imgSepia ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
+                  >
+                    Sepia
+                  </button>
+                  <button
+                    onClick={() => { const v = !imgInvert; setImgInvert(v); applyImageFilters({ invert: v }, true); }}
+                    className={`py-1.5 rounded-lg text-[9px] font-black uppercase border transition-colors cursor-pointer ${imgInvert ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
+                  >
+                    Invert
+                  </button>
+                  <button
+                    onClick={() => { const v = !imgSharpen; setImgSharpen(v); applyImageFilters({ sharpen: v }, true); }}
+                    className={`py-1.5 rounded-lg text-[9px] font-black uppercase border transition-colors cursor-pointer ${imgSharpen ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
+                  >
+                    Sharpen
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Colors (Fill & Border) */}
             {activeObject.type !== 'image' && !(activeObject as any).id?.startsWith('barcode') && (
               <div className="space-y-2.5 pt-2 border-t border-slate-100">
                 <div className="flex justify-between items-center">
                   <label className="text-[9px] font-black text-slate-400 uppercase">Fill Color</label>
-                  <button
-                    onClick={() => {
-                      const isTrans = objectColor === "transparent";
-                      const newVal = isTrans ? "#FFFFFF" : "transparent";
-                      setObjectColor(newVal);
-                      updateActiveObjectProperty("fill", newVal, true);
-                    }}
-                    className={`text-[8px] font-black uppercase px-2 py-0.5 rounded cursor-pointer ${
-                      objectColor === "transparent" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                    }`}
-                  >
-                    None
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[8px] font-black uppercase">
+                      <button
+                        onClick={() => {
+                          setObjectFillType('solid');
+                          const solidColor = objectColor === "transparent" ? "#FFFFFF" : objectColor;
+                          setObjectColor(solidColor);
+                          updateActiveObjectProperty("fill", solidColor, true);
+                        }}
+                        className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${objectFillType === 'solid' ? 'bg-white shadow text-slate-900' : 'text-slate-500'}`}
+                      >
+                        Solid
+                      </button>
+                      <button
+                        onClick={() => {
+                          setObjectFillType('gradient');
+                          applyGradientFill(objectGradientStart, objectGradientEnd, objectGradientAngle, true);
+                        }}
+                        className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${objectFillType === 'gradient' ? 'bg-white shadow text-slate-900' : 'text-slate-500'}`}
+                      >
+                        Gradient
+                      </button>
+                    </div>
+                    {objectFillType === 'solid' && (
+                      <button
+                        onClick={() => {
+                          const isTrans = objectColor === "transparent";
+                          const newVal = isTrans ? "#FFFFFF" : "transparent";
+                          setObjectColor(newVal);
+                          updateActiveObjectProperty("fill", newVal, true);
+                        }}
+                        className={`text-[8px] font-black uppercase px-2 py-0.5 rounded cursor-pointer ${
+                          objectColor === "transparent" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                        }`}
+                      >
+                        None
+                      </button>
+                    )}
+                  </div>
                 </div>
-                {objectColor !== "transparent" && (
+                {objectFillType === 'solid' && objectColor !== "transparent" && (
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -2512,6 +2840,62 @@ export default function FabricCoverStudio({
                       }}
                       className="flex-1 text-xs font-semibold uppercase px-2 py-1 border border-slate-200 rounded-lg text-center font-mono"
                     />
+                  </div>
+                )}
+
+                {objectFillType === 'gradient' && (
+                  <div className="space-y-2 bg-white p-2 border border-slate-200 rounded-xl">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[8px] font-bold text-slate-400 block mb-0.5 uppercase">Color 1</label>
+                        <div className="flex gap-1 items-center">
+                          <input
+                            type="color"
+                            value={objectGradientStart}
+                            onChange={(e) => {
+                              setObjectGradientStart(e.target.value);
+                              applyGradientFill(e.target.value, objectGradientEnd, objectGradientAngle, false);
+                            }}
+                            onBlur={() => applyGradientFill(objectGradientStart, objectGradientEnd, objectGradientAngle, true)}
+                            className="w-7 h-7 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
+                          />
+                          <span className="text-[9px] font-black text-slate-400 uppercase truncate">{objectGradientStart}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[8px] font-bold text-slate-400 block mb-0.5 uppercase">Color 2</label>
+                        <div className="flex gap-1 items-center">
+                          <input
+                            type="color"
+                            value={objectGradientEnd}
+                            onChange={(e) => {
+                              setObjectGradientEnd(e.target.value);
+                              applyGradientFill(objectGradientStart, e.target.value, objectGradientAngle, false);
+                            }}
+                            onBlur={() => applyGradientFill(objectGradientStart, objectGradientEnd, objectGradientAngle, true)}
+                            className="w-7 h-7 rounded-lg cursor-pointer border border-slate-200 p-0.5 bg-white"
+                          />
+                          <span className="text-[9px] font-black text-slate-400 uppercase truncate">{objectGradientEnd}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase">
+                        <span>Angle</span>
+                        <span>{objectGradientAngle}°</span>
+                      </div>
+                      <input
+                        type="range" min="0" max="360" step="1" value={objectGradientAngle}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setObjectGradientAngle(val);
+                          applyGradientFill(objectGradientStart, objectGradientEnd, val, false);
+                        }}
+                        onMouseUp={() => applyGradientFill(objectGradientStart, objectGradientEnd, objectGradientAngle, true)}
+                        onTouchEnd={() => applyGradientFill(objectGradientStart, objectGradientEnd, objectGradientAngle, true)}
+                        className="w-full accent-indigo-600 h-1 cursor-pointer"
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -2602,6 +2986,25 @@ export default function FabricCoverStudio({
                   className="w-full accent-indigo-600 h-1 cursor-pointer"
                 />
               </div>
+
+              {/* Blend Mode (Photoshop-style compositing) */}
+              {!(activeObject as any).id?.startsWith('barcode') && (
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase block">Blend Mode</label>
+                  <select
+                    value={objectBlendMode}
+                    onChange={(e) => {
+                      setObjectBlendMode(e.target.value);
+                      updateActiveObjectProperty("globalCompositeOperation", e.target.value, true);
+                    }}
+                    className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-500 cursor-pointer"
+                  >
+                    {BLEND_MODES.map((mode) => (
+                      <option key={mode.value} value={mode.value}>{mode.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Exact dimensions */}
               {!(activeObject as any).id?.startsWith('barcode') && (

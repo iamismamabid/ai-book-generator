@@ -393,16 +393,6 @@ export default function FreeToolsHub() {
     },
     // 2. Cover & Spine Tools
     {
-      id: "cover-studio",
-      name: "KDP Full Cover & Canvas Studio",
-      badge: "Essential",
-      category: "Design",
-      description: "Interactive canvas editor to design front, spine, and back covers with KDP safety guides.",
-      features: ["Full-wrap cover canvas", "Barcode placeholder", "High-res PDF export"],
-      keywords: ["cover", "covers", "cover studio", "cover designer", "full wrap cover", "canvas", "front cover", "back cover", "jacket"],
-      link: "/studio"
-    },
-    {
       id: "spine-calculator",
       name: "Free Spine Width & Cover Calculator",
       badge: "Essential",

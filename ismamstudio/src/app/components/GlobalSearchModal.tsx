@@ -92,8 +92,8 @@ const SEARCH_ITEMS: SearchItem[] = [
     category: "Covers & Specs",
     description: "Interactive canvas editor to design front, spine, and back covers with KDP safety guides.",
     keywords: ["cover", "covers", "cover studio", "cover designer", "full wrap cover", "canvas", "front cover", "back cover"],
-    link: "/studio",
-    badge: "Essential"
+    link: "/studio?tab=cover",
+    badge: "Pro"
   },
   {
     id: "spine-calculator",

@@ -2,8 +2,8 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-  outputFileTracingRoot: path.resolve(__dirname),
+  // output: 'standalone',
+  // outputFileTracingRoot: path.resolve(__dirname),
 
   // ─── Strip console.log in production builds ───────────────────────────────
   compiler: {

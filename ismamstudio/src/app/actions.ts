@@ -290,8 +290,13 @@ export async function redeemAppSumoCode(code: string) {
       })
     ]);
 
+    // ৪. রিডেম্পশন শেষে মোট স্ট্যাকড কোডের সংখ্যা বের করা
+    const newRedemptionsCount = await prisma.appSumoRedemption.count({
+      where: { clerkId: userId }
+    });
+
     revalidatePath("/dashboard");
-    return { success: true };
+    return { success: true, count: newRedemptionsCount };
   } catch (error: any) {
     console.error("Redemption action error:", error);
     return { success: false, error: error.message || "Server error occurred. Please try again." };

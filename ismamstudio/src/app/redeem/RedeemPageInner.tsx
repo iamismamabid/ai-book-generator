@@ -39,7 +39,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
     }
   }, [userId]);
 
-  const getTierDetails = (redeemedCode: string) => {
+  const getTierDetails = (redeemedCode: string, stackedCount?: number) => {
     const cleanCode = redeemedCode.toUpperCase();
     if (cleanCode.includes("PH10OFF")) {
       return {
@@ -55,7 +55,41 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
           "Email support (24-48h response)",
         ],
       };
-    } else if (cleanCode.includes("-T3-") || cleanCode.includes("TIER3") || cleanCode.includes("-TIER-3-") || cleanCode.includes("-T3")) {
+    }
+
+    // Determine tier based on explicit code string or stacked redemption count
+    let tierNumber = stackedCount || 1;
+    if (cleanCode.includes("-T3-") || cleanCode.includes("TIER3") || cleanCode.includes("-TIER-3-") || cleanCode.includes("-T3")) {
+      tierNumber = Math.max(tierNumber, 3);
+    } else if (cleanCode.includes("-T2-") || cleanCode.includes("TIER2") || cleanCode.includes("-TIER-2-") || cleanCode.includes("-T2")) {
+      tierNumber = Math.max(tierNumber, 2);
+    }
+
+    if (tierNumber >= 5) {
+      return {
+        name: "Tier 5: Agency Max Lifetime Access",
+        limits: [
+          "Unlimited team seats & brand profiles",
+          "Unlimited Sudoku, Maze, Word Search, and Story Generations",
+          "Vector SVG & source file exports",
+          "Advanced Custom Shapes & Custom Masking",
+          "Full access to KDP Niche Hunter & Keyword Spy",
+          "Dedicated 1-on-1 account manager",
+        ],
+      };
+    } else if (tierNumber === 4) {
+      return {
+        name: "Tier 4: Agency Plus Lifetime Access",
+        limits: [
+          "Up to 5 team seats (shared account access)",
+          "Unlimited Sudoku, Maze, Word Search, and Story Generations",
+          "Vector SVG & source file exports",
+          "Advanced Custom Shapes & Custom Masking",
+          "Full access to KDP Niche Hunter & Keyword Spy",
+          "Priority customer support",
+        ],
+      };
+    } else if (tierNumber === 3) {
       return {
         name: "Tier 3: Agency Lifetime Access",
         limits: [
@@ -67,7 +101,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
           "Dedicated support manager",
         ],
       };
-    } else if (cleanCode.includes("-T2-") || cleanCode.includes("TIER2") || cleanCode.includes("-TIER-2-") || cleanCode.includes("-T2")) {
+    } else if (tierNumber === 2) {
       return {
         name: "Tier 2: Professional Lifetime Access",
         limits: [
@@ -110,18 +144,22 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
       try {
         const res = await redeemAppSumoCode(code);
         if (res.success) {
-          const tier = getTierDetails(code);
-          setRedeemedTier(tier);
-
           try {
             const updatedPlan = await checkPremiumStatus();
             setActivePlan(updatedPlan);
+            const activeTierCount = res.count || (updatedPlan.limits as any)?.tier || 1;
+            const tier = getTierDetails(code, activeTierCount);
+            setRedeemedTier(tier);
+
             posthog.capture("appsumo_code_redeemed", {
               tier_name: tier.name,
               new_plan: updatedPlan.plan,
+              stacked_count: activeTierCount,
             });
           } catch (planErr) {
             console.error("Failed to refresh plan status:", planErr);
+            const fallbackTier = getTierDetails(code, res.count);
+            setRedeemedTier(fallbackTier);
           }
 
           setStatus({

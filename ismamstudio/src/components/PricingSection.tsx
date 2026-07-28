@@ -352,7 +352,7 @@ function PricingSectionInner() {
     },
     {
       q: "Is there a money-back guarantee?",
-      a: "Yes, we offer a 7-day money-back guarantee for all subscription plans. If you are not satisfied with your experience, contact support within 7 days of purchase for a full refund.",
+      a: "We offer a 7-day money-back guarantee for direct SaaS subscription plans. For purchases made via AppSumo, refunds are governed by AppSumo's standard 60-day refund policy via your AppSumo portal.",
     },
     {
       q: "Do the puzzle books include solution keys?",

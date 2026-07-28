@@ -249,9 +249,9 @@ function PricingSectionInner() {
       description: "Perfect for hobbyists & beginner publishers starting their KDP journey.",
       priceMonthly: 11.99,
       priceMonthlyOriginal: 14.99,
-      priceAnnual: 9.17,
+      priceAnnual: 10.75,
       priceAnnualOriginal: 11.99,
-      priceAnnualTotal: 110,
+      priceAnnualTotal: 129,
       popular: false,
       features: [
         "7-Day Free Trial (Cancel Anytime)",
@@ -306,9 +306,9 @@ function PricingSectionInner() {
       description: "Scale your publishing business with multiple brands and API access.",
       priceMonthly: 39,
       priceMonthlyOriginal: 49,
-      priceAnnual: 18.33,
+      priceAnnual: 34,
       priceAnnualOriginal: 39,
-      priceAnnualTotal: 220,
+      priceAnnualTotal: 408,
       popular: false,
       features: [
         "7-Day Free Trial (Cancel Anytime)",
@@ -628,7 +628,7 @@ function PricingSectionInner() {
           <div>
             <h4 className="text-white font-black text-base mb-1.5 tracking-tight">Reconciled Guarantee</h4>
             <p className="text-slate-300 text-xs font-medium leading-relaxed">
-              7-day SaaS guarantee / 60-day AppSumo money-back policy for complete confidence.
+              7-day money-back guarantee for complete confidence.
             </p>
           </div>
         </div>

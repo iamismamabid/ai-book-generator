@@ -46,6 +46,7 @@ export default function PrivacyPolicyPage() {
               <ul className="list-disc list-inside pl-4 space-y-2 text-slate-400">
                 <li>Account credentials (email address, name, profile image) managed via Clerk.</li>
                 <li>Billing and transaction data (processed securely through Stripe or Paddle).</li>
+                <li>Marketplace redemption data (license/activation code and purchase verification status) if you activate your account through a licensed marketplace partner such as AppSumo.</li>
                 <li>Generated files, including book outlines, covers, and puzzle interiors.</li>
               </ul>
             </section>
@@ -79,6 +80,7 @@ export default function PrivacyPolicyPage() {
                 <li><strong>Supabase / Prisma:</strong> Secure hosting and management of our user databases.</li>
                 <li><strong>Vercel Inc.:</strong> Hosting of our web applications and serverless backend instances.</li>
                 <li><strong>Stripe / Paddle:</strong> Processing transactions and invoice billing securely (PCI-DSS compliant).</li>
+                <li><strong>AppSumo (Sumo Group Inc.):</strong> If you purchase a license through the AppSumo Marketplace, we receive your redemption code and purchase verification status to activate the corresponding plan on your account. Your purchase and payment details remain governed by AppSumo's own privacy policy.</li>
               </ul>
             </section>
 

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Refund Policy | KDPage Help Center",
-  description: "Read the Refund Policy of KDPage. Learn about our 7-day money-back guarantee for SaaS subscription plans.",
+  description: "Read the comprehensive Refund Policy of KDPage. Learn about our 7-day money-back guarantee, fair usage terms, AppSumo policy, and Paddle Merchant of Record terms.",
 };
 
 export default function RefundPolicyPage() {
@@ -30,8 +30,8 @@ export default function RefundPolicyPage() {
               <CreditCard className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-white">Refund Policy</h1>
-              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mt-1">Last Updated: June 2026</p>
+              <h1 className="text-3xl font-black tracking-tight text-white">Refund & Cancellation Policy</h1>
+              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mt-1">Last Updated: July 2026</p>
             </div>
           </div>
 
@@ -39,41 +39,66 @@ export default function RefundPolicyPage() {
 
           <div className="space-y-8 text-slate-300 text-sm font-semibold leading-relaxed">
             <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">1. Refund & Cancellation Policy</h2>
+              <h2 className="text-xl font-black text-white">1. Overview & 7-Day Money-Back Guarantee</h2>
               <p>
-                We stand behind the quality of our Creator Studio and want you to feel confident in your purchase. To protect both our users and our platform, we offer a **7-day conditional money-back guarantee** based on fair use.
+                We stand behind the quality of KDPage and want you to feel confident in your purchase. We offer a **7-day conditional money-back guarantee** for all direct SaaS subscription plans purchased via our platform.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">2. Eligibility for Refund</h2>
+              <h2 className="text-xl font-black text-white">2. Eligibility & Usage-Based Limitations</h2>
               <p>
-                You are eligible for a full refund within **7 days** of your initial subscription purchase, provided you have downloaded or exported **fewer than 5 complete puzzle books, interiors, or manuscript PDFs**.
+                Refunds under the 7-day guarantee apply to **first-time purchases only**. Subscription renewals, repeat purchases of a previously refunded plan, and plan upgrades from an existing paid plan are non-refundable.
+              </p>
+              <p className="p-4 bg-slate-950/60 rounded-xl border border-slate-800 text-slate-300 text-xs leading-relaxed">
+                <strong className="text-amber-400 block mb-1">Usage-Based Credit Limitation:</strong>
+                Where a plan includes usage-based resources (AI line art generation credits, book exports, or AI-assisted content features), refund requests may be declined if **more than 20%** of the plan's monthly resource allowance has been consumed at the time of the request.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">3. When Refunds Are Not Applicable</h2>
-              <ul className="space-y-4">
-                <li>
-                  <strong className="text-white block mb-1">A. Usage Limit Exceeded</strong>
-                  If you have successfully generated and downloaded **5 or more complete books or manuscripts**, you are no longer eligible for a refund. Generating and exporting this volume of print-ready assets indicates that the core commercial value of the platform has been utilized.
-                </li>
-                <li>
-                  <strong className="text-white block mb-1">B. Subscription Renewals</strong>
-                  The 7-day guarantee applies only to your first, initial purchase. Subsequent monthly or annual subscription renewals are non-refundable.
-                </li>
-                <li>
-                  <strong className="text-white block mb-1">C. Third-Party Marketplaces</strong>
-                  If you purchased a lifetime deal or subscription through a third-party partner (e.g., AppSumo), your purchase is governed entirely by that specific platform’s refund policy (e.g., the standard 60-day AppSumo guarantee). Please process those specific refunds directly through their respective user portals.
-                </li>
-              </ul>
+              <h2 className="text-xl font-black text-white">3. Annual Subscription Plans</h2>
+              <p>
+                Annual plans are covered by the same **7-day money-back guarantee** from the date of purchase. After 7 days, annual plans are non-refundable, but you may cancel auto-renewal at any time to prevent future billing cycles.
+              </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">4. How to Request a Refund</h2>
+              <h2 className="text-xl font-black text-white">4. Cancellation vs. Refund</h2>
               <p>
-                If you meet the criteria above and wish to request a refund, please contact our support team at **support@kdpage.com** within 7 days of your original transaction.
+                Cancelling a subscription stops future recurring billing but does not automatically trigger a refund. Upon cancellation, you retain full access to your account features until the end of your current billing period. We do not provide prorated refunds for partial billing periods.
+              </p>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-black text-white">5. Third-Party Purchases (AppSumo Deals)</h2>
+              <p>
+                AppSumo lifetime purchases are handled entirely through AppSumo under their **standard 60-day refund policy**. We cannot issue refunds for AppSumo purchases directly from our dashboard. When an AppSumo code is refunded on AppSumo's portal, the code and corresponding tier access are automatically deactivated on our platform. Tier upgrades and code stacking are managed directly through your AppSumo user portal.
+              </p>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-black text-white">6. Merchant of Record & EU/UK Consumer Notice</h2>
+              <p>
+                Direct website payments are processed by **Paddle** as Merchant of Record. Their terms of sale and refund policies apply to all direct transactions.
+              </p>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                <strong className="text-white block mb-1">EU/UK Consumers Right of Withdrawal:</strong>
+                For EU and UK consumers accessing digital goods, by initiating immediate access and downloading digital exports, you acknowledge and agree that your right of withdrawal is satisfied upon consumption of digital assets beyond our fair usage thresholds.
+              </p>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-black text-white">7. Chargebacks & Abuse Prevention</h2>
+              <p>
+                Please contact our support team at **support@kdpage.com** before initiating a chargeback with your card provider. Accounts subject to a chargeback may be suspended pending investigation. We reserve the right to decline refunds where we detect fraud, abuse, automated account creation, or repeated refund requests across multiple accounts.
+              </p>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-black text-white">8. How to Request a Refund</h2>
+              <p>
+                To request a refund for a direct website subscription, please send an email to **support@kdpage.com** from the email address associated with your account within 7 days of purchase. Approved refunds are issued to the original payment method and typically process within **5 to 10 business days**.
               </p>
             </section>
           </div>

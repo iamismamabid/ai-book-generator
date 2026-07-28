@@ -344,19 +344,15 @@ function PricingSectionInner() {
     },
     {
       q: "Do I own the commercial copyrights for the books and puzzles I create?",
-      a: "Absolutely. When subscribing to any of our paid plans (Starter, Pro, Agency) or AppSumo Lifetime Deals, you receive full commercial rights to publish and sell the generated books, interiors, covers, and puzzles anywhere, including Amazon KDP, Etsy, or your own site. You keep 100% of the royalties. The Free Tier is for personal testing only.",
+      a: "Absolutely. When subscribing to any of our paid plans (Starter, Pro, Agency), you receive full commercial rights and a royalty-free license to publish and sell the generated books, interiors, covers, vector art, and puzzles anywhere—including Amazon KDP, Etsy, IngramSpark, or your own website. You keep 100% of your earnings and royalties. The Free Tier is for personal testing only.",
     },
     {
       q: "Can I cancel, upgrade, or downgrade my subscription at any time?",
-      a: "Yes, you can manage your recurring SaaS subscription easily from your billing panel. You can cancel at any time, and you will retain access to your plan until the end of your billing cycle. For AppSumo lifetime deals, tier upgrades and license management are handled directly via your AppSumo portal.",
-    },
-    {
-      q: "How does the AppSumo deal work? Is there a monthly subscription?",
-      a: "By purchasing the AppSumo Lifetime Deal (LTD), you pay a one-time fee with absolutely no recurring charges or monthly subscription costs. You get lifetime access to all core generators, editors, and future updates. AppSumo buyers are covered by AppSumo's standard 60-day money-back guarantee, which overrides our standard 7-day SaaS refund policy for these promotional licenses.",
+      a: "Yes, you can manage your recurring SaaS subscription easily from your billing panel. You can upgrade, downgrade, or cancel at any time with a single click, and you will retain access to your plan features until the end of your active billing cycle.",
     },
     {
       q: "Is there a money-back guarantee?",
-      a: "Yes, we support a 7-day money-back guarantee for all direct recurring monthly/annual subscription plans. For AppSumo lifetime deal buyers, the refund window is extended to AppSumo's standard 60-day refund policy, managed directly through your AppSumo billing dashboard.",
+      a: "Yes, we offer a 7-day money-back guarantee for all subscription plans. If you are not satisfied with your experience, contact support within 7 days of purchase for a full refund.",
     },
     {
       q: "Do the puzzle books include solution keys?",

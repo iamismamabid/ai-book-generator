@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     // Standard AppSumo GET check to validate Redirect URL
     return NextResponse.json({
       status: "ok",
+      success: true,
       message: "AppSumo OAuth Redirect Endpoint active and validated."
     }, { status: 200 });
   }
@@ -15,4 +16,12 @@ export async function GET(request: Request) {
   // Redirect to the redeem page, pre-populating the code parameter
   const baseUrl = new URL(request.url).origin;
   return NextResponse.redirect(`${baseUrl}/redeem?code=${encodeURIComponent(code)}`);
+}
+
+export async function POST() {
+  return NextResponse.json({
+    status: "ok",
+    success: true,
+    message: "AppSumo OAuth Redirect Endpoint active and validated."
+  }, { status: 200 });
 }

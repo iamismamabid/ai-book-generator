@@ -4167,8 +4167,8 @@ export default function FabricCoverStudio({
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* 3. FABRIC WORKSPACE */}
       <div className="flex-1 bg-slate-100 flex flex-col items-center justify-center p-3 sm:p-6 md:p-10 relative overflow-auto min-w-0">

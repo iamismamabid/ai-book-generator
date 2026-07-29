@@ -222,10 +222,41 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     }
   };
 
+  const toggleLeftSidebar = () => {
+    const nextState = !leftOpen;
+    setLeftOpen(nextState);
+    if (nextState && typeof window !== "undefined" && window.innerWidth < 768) {
+      setRightOpen(false);
+    }
+  };
+
+  const toggleRightSidebar = () => {
+    const nextState = !rightOpen;
+    setRightOpen(nextState);
+    if (nextState && typeof window !== "undefined" && window.innerWidth < 768) {
+      setLeftOpen(false);
+    }
+  };
+
+  const closeSidebarsOnMobile = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setLeftOpen(false);
+      setRightOpen(false);
+    }
+  };
+
   return (
     <>
       <div className="flex h-[calc(100vh-140px)] bg-[#F8FAFC] dark:bg-slate-950 overflow-hidden relative rounded-3xl border border-slate-200/50 dark:border-slate-800/50 transition-colors duration-300" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
       
+      {/* Mobile Backdrop Overlay */}
+      {(leftOpen || rightOpen) && (
+        <div
+          onClick={closeSidebarsOnMobile}
+          className="md:hidden absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] z-20 animate-in fade-in-0 duration-200 cursor-pointer"
+        />
+      )}
+
       {/* Sidebar Left: Asset Tool buttons */}
       <motion.div
         animate={{ 
@@ -280,16 +311,16 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
         
         {/* Sidebar Toggle Buttons */}
         <button
-          onClick={() => setLeftOpen(!leftOpen)}
-          className="absolute left-4 top-4 z-20 p-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95"
+          onClick={toggleLeftSidebar}
+          className="absolute left-4 top-4 z-40 p-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95"
           title={leftOpen ? "Collapse Side Panel" : "Expand Side Panel"}
         >
           {leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
 
         <button
-          onClick={() => setRightOpen(!rightOpen)}
-          className="absolute right-4 top-4 z-20 p-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95"
+          onClick={toggleRightSidebar}
+          className="absolute right-4 top-4 z-40 p-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95"
           title={rightOpen ? "Collapse Outline Panel" : "Expand Outline Panel"}
         >
           {rightOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}

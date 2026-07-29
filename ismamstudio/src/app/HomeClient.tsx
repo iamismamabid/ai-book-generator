@@ -26,7 +26,11 @@ import {
   BookOpen,
   LayoutTemplate
 } from "lucide-react";
-import PricingSection from "../components/PricingSection";
+import dynamic from "next/dynamic";
+
+const PricingSection = dynamic(() => import("../components/PricingSection"), {
+  ssr: true,
+});
 
 interface BookSample {
   id: string;

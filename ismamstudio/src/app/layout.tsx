@@ -11,7 +11,7 @@ import Script from 'next/script';
 import type { Metadata } from 'next';
 
 // 🎨 গুগল ফন্ট লোড করা হচ্ছে
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', adjustFontFallback: false });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap', adjustFontFallback: false });
 
 export const metadata: Metadata = {
   title: "KDPage | All-in-One KDP Book Creation Toolkit",

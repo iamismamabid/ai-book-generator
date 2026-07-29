@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { prisma } from "../../../../lib/prisma";
 import { getPostHogClient } from "@/lib/posthog-server";
 
@@ -8,6 +9,27 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
 };
+
+// Verifies the request carries AppSumo's shared secret before we let it mutate
+// license data. APPSUMO_WEBHOOK_SECRET isn't issued until listing submission,
+// so until it's set in the environment we accept requests unauthenticated —
+// once it's set, a matching Bearer token or ?secret=/?key= param is required.
+function isAuthorizedAppSumoRequest(request: Request): boolean {
+  const expected = process.env.APPSUMO_WEBHOOK_SECRET;
+  if (!expected) return true;
+
+  const authHeader = request.headers.get("authorization") || "";
+  const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+  const url = new URL(request.url);
+  const provided = bearerMatch?.[1] || url.searchParams.get("secret") || url.searchParams.get("key") || "";
+
+  if (!provided) return false;
+
+  const expectedBuf = Buffer.from(expected);
+  const providedBuf = Buffer.from(provided);
+  if (expectedBuf.length !== providedBuf.length) return false;
+  return crypto.timingSafeEqual(expectedBuf, providedBuf);
+}
 
 // Handle OPTIONS preflight requests from browser CORS checks
 export async function OPTIONS() {
@@ -63,6 +85,17 @@ export async function POST(request: Request) {
         status: "success",
         success: true
       }, { status: 200, headers: corsHeaders });
+    }
+
+    // Past this point the request will create or delete real license records,
+    // so it must carry a valid secret (once one has been configured).
+    if (!isAuthorizedAppSumoRequest(request)) {
+      console.warn("AppSumo Webhook rejected: missing/invalid shared secret.");
+      return NextResponse.json({
+        message: "unauthorized",
+        status: "error",
+        success: false
+      }, { status: 401, headers: corsHeaders });
     }
 
     // Uppercased/trimmed to match the format redeemAppSumoCode() looks codes up by

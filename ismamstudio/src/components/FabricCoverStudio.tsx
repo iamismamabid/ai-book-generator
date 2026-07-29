@@ -4165,6 +4165,7 @@ export default function FabricCoverStudio({
               </div>
             </div>
           </div>
+        )}
         </div>
       )}
 

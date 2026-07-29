@@ -363,7 +363,7 @@ export async function checkPremiumStatus() {
         plan = "tier5";
         limits = { tier: 5, brands: 999999, aiChapters: 999999, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
       }
-      return { checked: true, isPremium: true, plan, limits };
+      return { checked: true, isPremium: true, plan, limits, isLifetimeDeal: true };
     }
 
     // ২. Clerk publicMetadata চেক করা (সাবস্ক্রিপশনের জন্য)
@@ -375,34 +375,32 @@ export async function checkPremiumStatus() {
         publicMetadata.plan === "starter" ||
         publicMetadata.plan === "pro" ||
         publicMetadata.plan === "agency" ||
-        publicMetadata.subscriptionStatus === "active"
+        publicMetadata.subscriptionStatus === "active" ||
+        publicMetadata.subscriptionStatus === "trialing"
       ) {
         const userPlan = publicMetadata.plan || "pro";
         let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
-        
+
         if (userPlan === "starter") {
           limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium"], maxBookCount: 20 };
         } else if (userPlan === "agency") {
           limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
         }
-        return { checked: true, isPremium: true, plan: userPlan, limits };
-      }
 
-      // ৩. ৭ দিনের ফ্রী ট্রায়াল পিরিয়ড চেক করা (অ্যাকাউন্ট বয়স ৭ দিনের কম হলে)
-      const createdTime = user.createdAt; // Epoch milliseconds from Clerk
-      const currentTime = Date.now();
-      const trialDurationMs = 7 * 24 * 60 * 60 * 1000; // ৭ দিন মিলি-সেকেন্ডে
-      const elapsedMs = currentTime - createdTime;
+        // ৭ দিনের ট্রায়াল শুধু আসল Paddle "trialing" সাবস্ক্রিপশনের ক্ষেত্রেই সত্যি (কার্ড ভেরিফাইড checkout-এর পরে)
+        const isTrial = publicMetadata.subscriptionStatus === "trialing";
+        let daysRemaining;
+        if (isTrial && publicMetadata.trialEndsAt) {
+          const msRemaining = new Date(publicMetadata.trialEndsAt).getTime() - Date.now();
+          daysRemaining = Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
+        }
 
-      if (elapsedMs < trialDurationMs) {
-        const daysRemaining = Math.max(0, Math.ceil((trialDurationMs - elapsedMs) / (24 * 60 * 60 * 1000)));
         return {
           checked: true,
           isPremium: true,
-          plan: "Free Trial",
-          isTrial: true,
-          daysRemaining,
-          limits: { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium"], maxBookCount: 20 }
+          plan: userPlan,
+          limits,
+          ...(isTrial ? { isTrial: true, daysRemaining } : {}),
         };
       }
     }

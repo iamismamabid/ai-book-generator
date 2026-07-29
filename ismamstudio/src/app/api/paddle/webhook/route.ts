@@ -58,18 +58,22 @@ export async function POST(request: Request) {
     ) {
       const status = data.status;
       if (status === "active" || status === "trialing") {
-        console.log(`Upgrading Clerk User ${userId} to plan ${plan}`);
-        
+        console.log(`Upgrading Clerk User ${userId} to plan ${plan} (status: ${status})`);
+
         const customerId = data.customer_id;
         const subscriptionId = data.id;
+        const trialEndsAt = status === "trialing"
+          ? (data.current_billing_period?.ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
+          : null;
 
         await clerk.users.updateUserMetadata(userId, {
           publicMetadata: {
             isPremium: true,
             plan: plan,
-            subscriptionStatus: "active",
+            subscriptionStatus: status,
             ...(customerId ? { paddleCustomerId: customerId } : {}),
             ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+            ...(trialEndsAt ? { trialEndsAt } : { trialEndsAt: null }),
           },
         });
 

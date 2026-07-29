@@ -23,17 +23,26 @@ export default async function DashboardPage() {
 
   // Fetch Premium / AppSumo status
   const premiumStatus = await checkPremiumStatus();
-  const planNames: Record<string, string> = {
-    free: "Free Tier",
+  const isLtd = (premiumStatus as any).isLifetimeDeal === true;
+
+  // AppSumo lifetime-deal tiers vs regular Paddle SaaS subscription plans share the
+  // same "starter"/"pro"/"agency" plan keys, so the display label must branch on isLtd.
+  const ltdPlanNames: Record<string, string> = {
     starter: "Lifetime Tier 1: Starter",
     pro: "Lifetime Tier 2: Pro",
     agency: "Lifetime Tier 3: Agency",
     tier4: "Lifetime Tier 4: Pro Plus",
     tier5: "Lifetime Tier 5: Agency Max",
   };
-  
+  const saasPlanNames: Record<string, string> = {
+    free: "Free Tier",
+    starter: "Starter Creator",
+    pro: "Pro Studio",
+    agency: "Publisher Agency",
+  };
+
   const rawPlan = premiumStatus.plan || "free";
-  const planName = planNames[rawPlan] || rawPlan;
+  const planName = rawPlan === "free" ? "Free Tier" : (isLtd ? ltdPlanNames[rawPlan] : saasPlanNames[rawPlan]) || rawPlan;
   const isPremium = premiumStatus.isPremium;
   const isTrial = (premiumStatus as any).isTrial === true;
   const isActivated = isPremium && !isTrial;

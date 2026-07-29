@@ -252,7 +252,10 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   <div>
                     <span className="font-black text-slate-900 block">Premium Export Mode Activated</span>
                     <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
-                      You have <span className="font-black text-emerald-600">{premiumStatus.daysRemaining} days remaining</span>. High-res watermark-free vector PDF exports are fully unlocked!
+                      {premiumStatus.isTrial && premiumStatus.daysRemaining !== undefined ? (
+                        <>You have <span className="font-black text-emerald-600">{premiumStatus.daysRemaining} days remaining</span> in your free trial. </>
+                      ) : null}
+                      High-res watermark-free vector PDF exports are fully unlocked!
                     </p>
                   </div>
                 </div>

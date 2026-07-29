@@ -65,6 +65,10 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setLeftOpen(false);
+      setRightOpen(false);
+    }
   }, []);
 
   // Validation Hook
@@ -229,7 +233,9 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           opacity: leftOpen ? 1 : 0
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="bg-slate-900 text-slate-100 border-r border-slate-800 flex flex-col justify-between overflow-hidden relative shrink-0"
+        className={`bg-slate-900 text-slate-100 border-r border-slate-800 flex flex-col justify-between overflow-hidden shrink-0 ${
+          leftOpen ? "absolute md:relative left-0 top-0 h-full z-30 shadow-2xl" : "relative"
+        }`}
       >
         <div className="w-72 p-5 space-y-6 flex flex-col h-full justify-between">
           <div className="space-y-6">
@@ -270,7 +276,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
       </motion.div>
 
       {/* Main Page Workspace */}
-      <div className="flex-1 p-8 overflow-y-auto relative min-w-0">
+      <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto relative min-w-0">
         
         {/* Sidebar Toggle Buttons */}
         <button
@@ -385,7 +391,9 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           opacity: rightOpen ? 1 : 0
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden shrink-0 transition-colors duration-300"
+        className={`bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden shrink-0 transition-colors duration-300 ${
+          rightOpen ? "absolute md:relative right-0 top-0 h-full z-30 shadow-2xl" : "relative"
+        }`}
       >
         <div className="w-[304px] p-5 flex flex-col h-full justify-between">
           <div className="flex justify-between items-center mb-4">

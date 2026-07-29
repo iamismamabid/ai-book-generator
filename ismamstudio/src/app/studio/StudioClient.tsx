@@ -176,14 +176,14 @@ export default function MasterStudioApp() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 p-4 md:p-8 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-hidden relative">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 p-2 sm:p-4 md:p-8 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-x-hidden relative">
       
       {/* 🌌 Background ambient gradient blobs */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       {/* APP HEADER */}
-      <header className="mb-8 flex flex-col sm:flex-row justify-between items-center max-w-[1600px] mx-auto w-full gap-6 relative z-10">
+      <header className="mb-4 sm:mb-8 flex flex-col sm:flex-row justify-between items-center max-w-[1600px] mx-auto w-full gap-4 sm:gap-6 relative z-10">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-500/20">
             <Sparkles className="w-6 h-6" />

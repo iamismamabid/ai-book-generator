@@ -2,13 +2,29 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { getPostHogClient } from "@/lib/posthog-server";
 
+// CORS Headers to allow AppSumo Partner Portal browser validation checks
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+};
+
+// Handle OPTIONS preflight requests from browser CORS checks
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
+}
+
 // Handle GET validation pings from AppSumo platform crawler
 export async function GET() {
   return NextResponse.json({
+    message: "success",
+    status: "success",
     success: true,
-    status: "active",
-    message: "AppSumo Webhook Endpoint active and validated."
-  }, { status: 200 });
+    detail: "AppSumo Webhook Endpoint active and validated."
+  }, { status: 200, headers: corsHeaders });
 }
 
 export async function POST(request: Request) {
@@ -19,9 +35,10 @@ export async function POST(request: Request) {
     } catch (parseErr) {
       // Return 200 OK for empty or non-JSON validation pings
       return NextResponse.json({
-        success: true,
-        message: "AppSumo Webhook connection validated."
-      }, { status: 200 });
+        message: "success",
+        status: "success",
+        success: true
+      }, { status: 200, headers: corsHeaders });
     }
 
     console.log("AppSumo Webhook received payload:", JSON.stringify(body));
@@ -37,27 +54,30 @@ export async function POST(request: Request) {
       body.type === "ping"
     ) {
       return NextResponse.json({
-        event: body?.event || "test",
+        message: "success",
+        status: "success",
         success: true,
-        message: "Webhook URL test successful."
-      }, { status: 200 });
+        event: body?.event || body?.action || "test"
+      }, { status: 200, headers: corsHeaders });
     }
 
-    const { event, license_key, tier } = body;
+    const { event, action, license_key, tier } = body;
+    const currentEvent = event || action || "activate";
 
     // If no license_key (e.g. test validation call without parameters), pass validation cleanly
     if (!license_key) {
       return NextResponse.json({
-        success: true,
-        message: "Webhook URL validated (No license_key provided in test payload)."
-      }, { status: 200 });
+        message: "success",
+        status: "success",
+        success: true
+      }, { status: 200, headers: corsHeaders });
     }
 
     const cleanCode = license_key.trim();
 
     // Process events
     const posthog = getPostHogClient();
-    if (event === "deactivate" || event === "refund") {
+    if (currentEvent === "deactivate" || currentEvent === "refund") {
       // User has refunded or cancelled, remove their lifetime deal
       await prisma.appSumoRedemption.deleteMany({
         where: { code: cleanCode }
@@ -65,30 +85,38 @@ export async function POST(request: Request) {
       posthog.capture({
         distinctId: cleanCode,
         event: "server_appsumo_license_deactivated",
-        properties: { license_key: cleanCode, event_type: event, tier },
+        properties: { license_key: cleanCode, event_type: currentEvent, tier },
       });
       await posthog.flush();
       console.log(`Deactivated AppSumo license: ${cleanCode}`);
-    } else if (event === "purchase" || event === "activate" || event === "upgrade" || event === "downgrade") {
+    } else if (
+      currentEvent === "purchase" ||
+      currentEvent === "activate" ||
+      currentEvent === "upgrade" ||
+      currentEvent === "downgrade"
+    ) {
       // Purchase/activation events
       posthog.capture({
         distinctId: cleanCode,
         event: "server_appsumo_license_activated",
-        properties: { license_key: cleanCode, event_type: event, tier },
+        properties: { license_key: cleanCode, event_type: currentEvent, tier },
       });
       await posthog.flush();
-      console.log(`Processed AppSumo event: ${event} for code: ${cleanCode} (Tier: ${tier})`);
+      console.log(`Processed AppSumo event: ${currentEvent} for code: ${cleanCode} (Tier: ${tier})`);
     }
 
     return NextResponse.json({
-      event: event || "purchase",
-      success: true
-    }, { status: 200 });
+      message: "success",
+      status: "success",
+      success: true,
+      event: currentEvent
+    }, { status: 200, headers: corsHeaders });
   } catch (err: any) {
     console.error("AppSumo Webhook handler error:", err);
     return NextResponse.json({
-      success: true,
-      message: "AppSumo Webhook endpoint active."
-    }, { status: 200 });
+      message: "success",
+      status: "success",
+      success: true
+    }, { status: 200, headers: corsHeaders });
   }
 }

@@ -453,9 +453,16 @@ export default function FabricCoverStudio({
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
   const [clipboard, setClipboard] = useState<any>(null);
   const [isObjectLocked, setIsObjectLocked] = useState(false);
-  const [activeToolTab, setActiveToolTab] = useState<'elements' | 'graphics' | 'presets' | 'uploads' | 'settings'>('elements');
+  const [activeToolTab, setActiveToolTab] = useState<'elements' | 'graphics' | 'presets' | 'uploads' | 'settings' | null>('elements');
   const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
   const [graphicsSubTab, setGraphicsSubTab] = useState<'kdp-icons' | 'unsplash'>('kdp-icons');
+
+  // Auto-collapse tool tab panel on mobile devices upon initial load
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setActiveToolTab(null);
+    }
+  }, []);
 
   // History Undo/Redo States
   const [history, setHistory] = useState<string[]>([]);
@@ -2386,7 +2393,7 @@ export default function FabricCoverStudio({
           <LayoutTemplate className="w-5 h-5"/>
         </button>
         <button
-          onClick={() => setActiveToolTab('elements')}
+          onClick={() => setActiveToolTab(prev => prev === 'elements' ? null : 'elements')}
           title="Shapes & Text"
           className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'elements' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
@@ -2395,7 +2402,7 @@ export default function FabricCoverStudio({
           <Plus className="w-5 h-5"/>
         </button>
         <button
-          onClick={() => setActiveToolTab('graphics')}
+          onClick={() => setActiveToolTab(prev => prev === 'graphics' ? null : 'graphics')}
           title="Clipart Library"
           className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'graphics' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
@@ -2404,7 +2411,7 @@ export default function FabricCoverStudio({
           <Shapes className="w-5 h-5"/>
         </button>
         <button
-          onClick={() => setActiveToolTab('presets')}
+          onClick={() => setActiveToolTab(prev => prev === 'presets' ? null : 'presets')}
           title="Background Presets"
           className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'presets' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
@@ -2413,7 +2420,7 @@ export default function FabricCoverStudio({
           <Sparkles className="w-5 h-5"/>
         </button>
         <button
-          onClick={() => setActiveToolTab('uploads')}
+          onClick={() => setActiveToolTab(prev => prev === 'uploads' ? null : 'uploads')}
           title="Upload Custom Graphics"
           className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'uploads' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
@@ -2422,7 +2429,7 @@ export default function FabricCoverStudio({
           <Upload className="w-5 h-5"/>
         </button>
         <button
-          onClick={() => setActiveToolTab('settings')}
+          onClick={() => setActiveToolTab(prev => prev === 'settings' ? null : 'settings')}
           title="Cover Specs"
           className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'settings' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
@@ -2452,8 +2459,19 @@ export default function FabricCoverStudio({
         </div>
       </div>
 
+      {/* Mobile Backdrop Overlay */}
+      {activeToolTab && (
+        <div
+          onClick={() => setActiveToolTab(null)}
+          className="md:hidden absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] z-20 cursor-pointer"
+        />
+      )}
+
       {/* 2. Left Configuration Panel */}
-      <div className="w-72 bg-slate-50 border-r border-slate-200 flex flex-col p-5 z-10 overflow-y-auto">
+      {activeToolTab && (
+        <div className={`w-72 bg-slate-50 border-r border-slate-200 flex flex-col p-5 overflow-y-auto shrink-0 ${
+          activeToolTab ? 'absolute md:relative left-16 top-0 h-full z-30 shadow-2xl' : 'relative z-10'
+        }`}>
         
         {/* Contextual Edit Panel (Consolidated Sidebar Editor) */}
         {activeObject && (
@@ -4153,14 +4171,14 @@ export default function FabricCoverStudio({
       </div>
 
       {/* 3. FABRIC WORKSPACE */}
-      <div className="flex-1 bg-slate-100 flex flex-col items-center justify-center p-10 relative overflow-hidden">
+      <div className="flex-1 bg-slate-100 flex flex-col items-center justify-center p-3 sm:p-6 md:p-10 relative overflow-auto min-w-0">
         {/* Spine details helper */}
-        <div className="absolute top-4 bg-slate-950/80 px-4 py-2 rounded-full border border-slate-800 text-[10px] font-black uppercase text-amber-400 tracking-widest shadow-md z-20">
+        <div className="mb-2 sm:mb-0 sm:absolute sm:top-4 bg-slate-950/80 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-800 text-[9px] sm:text-[10px] font-black uppercase text-amber-400 tracking-widest shadow-md z-20 max-w-full text-center truncate">
           Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"
         </div>
 
         {/* Global Canvas Control Bar */}
-        <div className="mb-4 flex items-center gap-3 bg-white py-2 px-4 rounded-full border border-slate-200 shadow-sm z-10 select-none">
+        <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3 bg-white py-1.5 sm:py-2 px-3 sm:px-4 rounded-full border border-slate-200 shadow-sm z-10 select-none max-w-full overflow-x-auto">
           <button
             onClick={handleUndo}
             disabled={historyStep <= 0}

@@ -65,7 +65,8 @@ export async function POST(request: Request) {
       }, { status: 200, headers: corsHeaders });
     }
 
-    const cleanCode = String(license_key).trim();
+    // Uppercased/trimmed to match the format redeemAppSumoCode() looks codes up by
+    const cleanCode = String(license_key).trim().toUpperCase();
 
     // Try processing PostHog & Database safely
     try {
@@ -83,7 +84,15 @@ export async function POST(request: Request) {
         await posthog.flush();
         console.log(`Deactivated AppSumo license: ${cleanCode}`);
       } else {
-        // Purchase/activation events
+        // Purchase/activation events — register the code as valid & unredeemed so
+        // the customer can immediately redeem it at /redeem. Upsert with a no-op
+        // update so a duplicate/retried webhook call never resets an already-
+        // redeemed code back to unredeemed.
+        await prisma.appSumoValidCode.upsert({
+          where: { code: cleanCode },
+          update: {},
+          create: { code: cleanCode, isRedeemed: false },
+        });
         posthog.capture({
           distinctId: cleanCode,
           event: "server_appsumo_license_activated",

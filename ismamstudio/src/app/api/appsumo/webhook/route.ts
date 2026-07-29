@@ -10,18 +10,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
 };
 
-// Verifies the request carries AppSumo's shared secret before we let it mutate
-// license data. APPSUMO_WEBHOOK_SECRET isn't issued until listing submission,
-// so until it's set in the environment we accept requests unauthenticated —
-// once it's set, a matching Bearer token or ?secret=/?key= param is required.
-function isAuthorizedAppSumoRequest(request: Request): boolean {
+// Verifies the request carries AppSumo's shared secret before mutating license data.
+// A matching Bearer token, ?secret=/?key= URL parameter, or body secret is required.
+function isAuthorizedAppSumoRequest(request: Request, bodySecret?: string): boolean {
   const expected = process.env.APPSUMO_WEBHOOK_SECRET;
-  if (!expected) return true;
+  if (!expected) {
+    console.error("APPSUMO_WEBHOOK_SECRET is not configured in environment variables. Webhook request rejected.");
+    return false;
+  }
 
   const authHeader = request.headers.get("authorization") || "";
   const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
   const url = new URL(request.url);
-  const provided = bearerMatch?.[1] || url.searchParams.get("secret") || url.searchParams.get("key") || "";
+  const provided = bearerMatch?.[1] || url.searchParams.get("secret") || url.searchParams.get("key") || bodySecret || "";
 
   if (!provided) return false;
 
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
 
     // Past this point the request will create or delete real license records,
     // so it must carry a valid secret (once one has been configured).
-    if (!isAuthorizedAppSumoRequest(request)) {
+    if (!isAuthorizedAppSumoRequest(request, body.secret || body.key || body.token)) {
       console.warn("AppSumo Webhook rejected: missing/invalid shared secret.");
       return NextResponse.json({
         message: "unauthorized",

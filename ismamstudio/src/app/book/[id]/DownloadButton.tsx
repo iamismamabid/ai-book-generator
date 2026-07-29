@@ -1,7 +1,5 @@
 "use client";
 
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { useState } from "react";
 
 export default function DownloadButton({ title }: { title: string }) {
@@ -17,6 +15,10 @@ export default function DownloadButton({ title }: { title: string }) {
     }
 
     try {
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas"),
+      ]);
       // 💡 প্রো-টিপ: html2canvas স্ক্রল করা অবস্থায় থাকলে ঠিকমতো রেন্ডার করতে পারে না।
       // তাই ক্যাপচার করার ঠিক আগে পেজটিকে সাময়িকভাবে একদম ওপরে নিয়ে যাওয়া হলো।
       const originalScrollPos = window.scrollY;

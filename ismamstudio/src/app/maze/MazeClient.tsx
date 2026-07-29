@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { generateMaze, MazeGrid, Shape } from "@/lib/maze";
-import { downloadMazePdf } from "@/lib/maze-pdf";
 import DownloadButton from "@/components/DownloadButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
@@ -148,10 +147,11 @@ export default function MazeGeneratorPage() {
     setIsDownloading(true);
     const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, isPremium } = options;
     try {
-      const mazes = Array.from({ length: bookCount }, () => 
+      const mazes = Array.from({ length: bookCount }, () =>
         generateMaze({ rows: gridSize, cols: gridSize, shape })
       );
 
+      const { downloadMazePdf } = await import("@/lib/maze-pdf");
       await downloadMazePdf(
         {
           mazes,

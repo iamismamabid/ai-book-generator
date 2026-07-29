@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku';
-import { downloadSudokuPdf } from '../../lib/sudoku-pdf';
 import DownloadButton from "@/components/DownloadButton";
 import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock, Download } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
@@ -126,6 +125,7 @@ export default function SudokuClient() {
 
     const count = Math.max(1, bookCount);
     const puzzles = generateSudokuBook(count, difficulty);
+    const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');
     await downloadSudokuPdf(
       {
         puzzles,

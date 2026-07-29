@@ -5,10 +5,8 @@ import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, Download, RefreshCw, AlertCircle, FileText, CheckCircle2, Sliders, Settings, BookOpen, Upload, Lock, Sparkles
 } from "lucide-react";
-import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
-import { drawCoverPagePart, drawWatermark } from "@/app/utils/pdfExportService";
 import { checkPremiumStatus } from "@/app/actions";
 import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
 
@@ -209,6 +207,10 @@ export default function CrosswordGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark }] = await Promise.all([
+        import("jspdf"),
+        import("@/app/utils/pdfExportService"),
+      ]);
       const doc = new jsPDF({
         orientation: "portrait",
         unit: "in",

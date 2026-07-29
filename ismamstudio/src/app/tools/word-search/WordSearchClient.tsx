@@ -2,9 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText, Lock, Sparkles } from "lucide-react";
-import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
-import { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList } from "../../utils/pdfExportService";
 import { generatePuzzleGrid } from "../../utils/puzzleEngine";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import { useRouter } from "next/navigation";
@@ -222,6 +220,10 @@ export default function WordSearchStudio() {
             finalH = 8;
         }
 
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList }] = await Promise.all([
+            import("jspdf"),
+            import("../../utils/pdfExportService"),
+        ]);
         const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [finalW, finalH] });
         const margin = 0.5; const safeWidth = finalW - (margin * 2); const safeHeight = finalH - (margin * 2);
 
@@ -349,6 +351,7 @@ export default function WordSearchStudio() {
     // 🖨️ PRO COVER PDF GENERATOR
     const handleGenerateCover = async () => {
         await new Promise(resolve => setTimeout(resolve, 100));
+        const { jsPDF } = await import("jspdf");
         const doc = new jsPDF({ orientation: "landscape", unit: "in", format: [coverTotalWidth, coverTotalHeight] });
 
         doc.setFillColor(backCoverColor); doc.rect(0, 0, bleed + trimSize.w + spineWidth, coverTotalHeight, "F");

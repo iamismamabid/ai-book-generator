@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { RefreshCw, Download } from "lucide-react";
-import jsPDF from "jspdf";
 
 // ==========================================
 // 📄 PDF EXPORT LOGIC (1 Huge Block Per Page)
 // ==========================================
-const downloadMathPuzzlesPDF = (puzzleData: any, puzzleType: string) => {
+const downloadMathPuzzlesPDF = async (puzzleData: any, puzzleType: string) => {
+  const { default: jsPDF } = await import("jspdf");
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
   const pageWidth = pdf.internal.pageSize.getWidth();
@@ -368,9 +368,9 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
     }
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!puzzleData) return;
-    downloadMathPuzzlesPDF(puzzleData, puzzleType);
+    await downloadMathPuzzlesPDF(puzzleData, puzzleType);
   };
 
   useEffect(() => {

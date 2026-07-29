@@ -5,10 +5,8 @@ import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, Download, RefreshCw, AlertCircle, FileText, CheckCircle2, Sliders, Type, BookOpen
 } from "lucide-react";
-import { jsPDF } from "jspdf";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
-import { drawCoverPagePart, drawWatermark } from "@/app/utils/pdfExportService";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -151,6 +149,10 @@ export default function CryptogramGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark }] = await Promise.all([
+        import("jspdf"),
+        import("@/app/utils/pdfExportService"),
+      ]);
       const doc = new jsPDF({
         orientation: "portrait",
         unit: "in",

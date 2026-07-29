@@ -2,9 +2,8 @@
 
 import posthog from "posthog-js";
 import React, { useState } from "react";
-import { jsPDF } from "jspdf";
+import type { jsPDF } from "jspdf";
 import { Download } from "lucide-react";
-import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "@/app/utils/pdfExportService";
 import ExportInteriorModal, { TrimSizeOption } from "./ExportInteriorModal";
 
 interface Chapter {
@@ -75,6 +74,11 @@ export default function ExportButton({
     isPremium?: boolean;
   }) => {
     const { includeCover, coverState, trimSize, hasBleed, showGuides, isPremium } = options;
+
+    const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }] = await Promise.all([
+      import("jspdf"),
+      import("@/app/utils/pdfExportService"),
+    ]);
 
     // 1. Determine trim dimensions in inches
     const { w, h } = TRIM_DIMENSIONS[trimSize] ?? TRIM_DIMENSIONS["8.5x11"];

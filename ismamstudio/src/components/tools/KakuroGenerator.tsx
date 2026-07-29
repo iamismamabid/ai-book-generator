@@ -8,7 +8,6 @@ import {
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import { generateKakuro, KakuroPuzzle } from "@/lib/kakuro";
-import { downloadKakuroPdf } from "@/lib/kakuro-pdf";
 import { checkPremiumStatus } from "@/app/actions";
 
 const TRIM_SIZES = [
@@ -98,6 +97,7 @@ export default function KakuroGenerator() {
         generatedPuzzles.push({ puzzle: puz, solution: sol });
       }
 
+      const { downloadKakuroPdf } = await import("@/lib/kakuro-pdf");
       await downloadKakuroPdf({
         puzzles: generatedPuzzles,
         difficulty,

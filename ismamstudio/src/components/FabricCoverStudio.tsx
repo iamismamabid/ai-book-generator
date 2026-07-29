@@ -4167,7 +4167,6 @@ export default function FabricCoverStudio({
               </div>
             </div>
           </div>
-        </div>
       ) : null}
 
       {/* 3. FABRIC WORKSPACE */}

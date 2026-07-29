@@ -145,9 +145,9 @@ export function CryptogramEditor({ page, updatePage }: any) {
   }, [selectedQuoteIndex]);
 
   return (
-    <div className="w-full flex gap-8 h-full p-4 overflow-y-auto">
+    <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 h-full p-2 sm:p-4 overflow-y-auto">
       {/* Options Panel */}
-      <div className="w-80 flex flex-col gap-4">
+      <div className="w-full lg:w-80 lg:shrink-0 flex flex-col gap-4">
         <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
           <div>
             <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Page Mode</h3>
@@ -221,7 +221,7 @@ export function CryptogramEditor({ page, updatePage }: any) {
       </div>
 
       {/* Canvas Area */}
-      <div className="flex-1 bg-slate-200/50 p-8 overflow-y-auto flex items-center justify-center relative min-h-[700px]">
+      <div className="flex-1 min-w-0 bg-slate-200/50 p-3 sm:p-5 lg:p-8 overflow-y-auto flex items-center justify-center relative min-h-[400px] lg:min-h-[700px]">
         {cryptogramData ? (
           <div 
             className="relative bg-white shadow-[0_15px_40px_rgba(0,0,0,0.06)] rounded-sm border border-slate-300/80 flex flex-col p-12 overflow-hidden cursor-default transition-all duration-300"

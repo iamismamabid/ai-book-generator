@@ -29,9 +29,9 @@ export function KakuroEditor({ page, updatePage }: any) {
   }, []);
 
   return (
-    <div className="w-full flex gap-8 h-full p-4 overflow-y-auto">
+    <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 h-full p-2 sm:p-4 overflow-y-auto">
       {/* Editor Controls Panel */}
-      <div className="w-80 flex flex-col gap-4">
+      <div className="w-full lg:w-80 lg:shrink-0 flex flex-col gap-4">
         <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
           <div>
             <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Page Mode</h3>
@@ -122,7 +122,7 @@ export function KakuroEditor({ page, updatePage }: any) {
       </div>
 
       {/* Canvas Rendering Area */}
-      <div className="flex-1 bg-white p-10 shadow-2xl border border-slate-200 min-h-[700px] flex flex-col items-center justify-between text-slate-800">
+      <div className="flex-1 min-w-0 bg-white p-4 sm:p-6 lg:p-10 shadow-2xl border border-slate-200 min-h-[400px] lg:min-h-[700px] flex flex-col items-center justify-between text-slate-800">
         <div className="text-center w-full">
           <h1 className="text-3xl font-black text-center mb-1 uppercase tracking-widest text-slate-800">
             Kakuro Puzzle {isSolution && <span className="text-indigo-600">(Solution)</span>}

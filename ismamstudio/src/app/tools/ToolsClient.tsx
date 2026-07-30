@@ -443,6 +443,16 @@ export default function FreeToolsHub() {
       keywords: ["bulk", "bulk generator", "batch creator", "csv import", "mass generation"],
       link: "/tools/bulk-generator"
     },
+    {
+      id: "bulk-listing-generator",
+      name: "Bulk KDP Listing Generator",
+      badge: "New",
+      category: "Marketing",
+      description: "Paste a batch of book titles or concepts and get an AI-written Amazon title, subtitle, description, 7 backend keywords, and category suggestions for each — ready to paste into KDP.",
+      features: ["AI title & description writer", "7 backend keyword slots per book", "CSV export for bulk upload"],
+      keywords: ["listing", "listing generator", "kdp listing", "amazon description", "book description generator", "bulk listing", "keywords", "metadata"],
+      link: "/tools/bulk-listing-generator"
+    },
     // 4. Formatting & Utility Tools
     {
       id: "epub-formatter",

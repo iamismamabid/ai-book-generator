@@ -422,3 +422,84 @@ export async function loadCoverProject() {
     return { success: false, data: null };
   }
 }
+
+export interface KdpListingResult {
+  input: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  keywords: string[];
+  categories: string[];
+  error?: string;
+}
+
+// AI-generated Amazon KDP listing metadata (title/subtitle/description/keywords/
+// categories) for a batch of book concepts at once — the "bulk listing helper".
+export async function generateBulkKdpListings(bookConcepts: string[]): Promise<{ success: boolean; results?: KdpListingResult[]; error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "Unauthorized. Please sign in." };
+
+  const premium = await checkPremiumStatus();
+  if (!premium.isPremium) {
+    return { success: false, error: "The Bulk KDP Listing Generator is a premium feature. Please upgrade your plan to use it." };
+  }
+
+  const maxBatch = premium.plan === "starter" ? 5 : premium.plan === "pro" ? 15 : 50;
+  const concepts = bookConcepts.map(c => c.trim()).filter(Boolean).slice(0, maxBatch);
+  if (concepts.length === 0) {
+    return { success: false, error: "Please provide at least one book title or concept, one per line." };
+  }
+
+  const groq = getGroqClient();
+  const results: KdpListingResult[] = [];
+
+  for (const input of concepts) {
+    try {
+      const prompt = `You are an expert Amazon KDP listing copywriter. Given a book concept, produce ONLY a single valid JSON object (no markdown fences, no commentary) in exactly this shape:
+{"title": "...", "subtitle": "...", "description": "...", "keywords": ["...", "...", "...", "...", "...", "...", "..."], "categories": ["...", "..."]}
+
+Rules:
+- title: a catchy, search-friendly Amazon book title under 200 characters. Never include the word "Kindle".
+- subtitle: a benefit-driven subtitle under 200 characters.
+- description: a persuasive 150-250 word Amazon product page description, plain text (no HTML tags), 3-4 short paragraphs.
+- keywords: exactly 7 backend search keyword phrases (multi-word phrases, not single words), each under 50 characters, no two keywords repeating the same words, no trademarked terms.
+- categories: exactly 2 realistic Amazon KDP browse category paths relevant to this concept (e.g. "Crafts, Hobbies & Home > Games & Activities > Puzzles & Games > Logic & Brain Teasers").
+
+Book concept: "${input}"`;
+
+      const completion = await groq.chat.completions.create({
+        messages: [{ role: "user", content: prompt }],
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.7,
+      });
+
+      const raw = completion.choices[0]?.message?.content || "";
+      const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+      const jsonStart = cleaned.indexOf("{");
+      const jsonEnd = cleaned.lastIndexOf("}");
+      const parsed = JSON.parse(cleaned.slice(jsonStart, jsonEnd + 1));
+
+      results.push({
+        input,
+        title: typeof parsed.title === "string" ? parsed.title : input,
+        subtitle: typeof parsed.subtitle === "string" ? parsed.subtitle : "",
+        description: typeof parsed.description === "string" ? parsed.description : "",
+        keywords: Array.isArray(parsed.keywords) ? parsed.keywords.slice(0, 7).map(String) : [],
+        categories: Array.isArray(parsed.categories) ? parsed.categories.slice(0, 2).map(String) : [],
+      });
+    } catch (err) {
+      console.error(`Bulk KDP listing generation failed for "${input}":`, err);
+      results.push({
+        input,
+        title: input,
+        subtitle: "",
+        description: "",
+        keywords: [],
+        categories: [],
+        error: "Failed to generate metadata for this item. Try again or rephrase the concept.",
+      });
+    }
+  }
+
+  return { success: true, results };
+}

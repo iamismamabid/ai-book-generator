@@ -312,7 +312,7 @@ const WORD_SEARCH_DEFAULT_STYLE: Required<WordSearchStyle> = {
 
 export function drawWordSearchGrid(
   doc: any,
-  data: { grid: string[][]; words: any[]; mask: boolean[][] },
+  data: { grid: string[][]; words: any[]; mask: boolean[][]; active?: boolean[][]; hiddenMessage?: { cells: { r: number; c: number }[] } },
   zone: { x: number; y: number; size: number },
   isSolution: boolean,
   style: Partial<WordSearchStyle> = {}
@@ -320,13 +320,21 @@ export function drawWordSearchGrid(
   const s = { ...WORD_SEARCH_DEFAULT_STYLE, ...style };
   const gridSize = data.grid.length;
   const cellSize = zone.size / gridSize;
+  // Shaped puzzles (circle/heart/diamond/star) mark cells outside the shape
+  // inactive — those are skipped entirely so the printed page shows the
+  // silhouette instead of a full rectangle. Unshaped puzzles have no `active`
+  // grid at all, so every cell draws as before.
+  const isActive = (r: number, c: number) => !data.active || data.active[r][c];
+  const hiddenMessageCells = new Set((data.hiddenMessage?.cells || []).map(({ r, c }) => `${r},${c}`));
 
   // 1. Draw all cell backgrounds and borders first
   data.grid.forEach((row: string[], r: number) => {
     row.forEach((letter: string, c: number) => {
+      if (!isActive(r, c)) return;
       const x = zone.x + (c * cellSize);
       const y = zone.y + (r * cellSize);
       const isWordLetter = isSolution && data.mask && data.mask[r][c];
+      const isMessageLetter = isSolution && hiddenMessageCells.has(`${r},${c}`);
 
       doc.setDrawColor(s.borderColor);
       doc.setLineWidth(s.lineWidth);
@@ -336,6 +344,13 @@ export function drawWordSearchGrid(
       if (isSolution && s.solutionHighlighter === 'fill' && isWordLetter) {
         doc.setFillColor(s.highlightColor);
         doc.roundedRect(x + cellSize * 0.06, y + cellSize * 0.06, cellSize * 0.88, cellSize * 0.88, cellSize * 0.12, cellSize * 0.12, "F");
+      }
+
+      if (isMessageLetter) {
+        // Distinct highlight (amber) so the revealed message reads clearly
+        // against the word-search green/apple highlight used for found words.
+        doc.setFillColor(252, 211, 77);
+        doc.roundedRect(x + cellSize * 0.12, y + cellSize * 0.12, cellSize * 0.76, cellSize * 0.76, cellSize * 0.1, cellSize * 0.1, "F");
       }
     });
   });
@@ -372,6 +387,7 @@ export function drawWordSearchGrid(
   
   data.grid.forEach((row: string[], r: number) => {
     row.forEach((letter: string, c: number) => {
+      if (!isActive(r, c) || !letter) return;
       const x = zone.x + (c * cellSize);
       const y = zone.y + (r * cellSize);
       const isWordLetter = isSolution && data.mask && data.mask[r][c];

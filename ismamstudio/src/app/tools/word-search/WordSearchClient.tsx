@@ -3,10 +3,19 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText, Lock, Sparkles } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
-import { generatePuzzleGrid } from "../../utils/puzzleEngine";
+import { generatePuzzleGrid, WordSearchShape } from "../../utils/puzzleEngine";
+import { WORD_SEARCH_THEMES, WORD_SEARCH_THEME_CATEGORIES } from "@/lib/wordSearchThemes";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import { useRouter } from "next/navigation";
 import { checkPremiumStatus } from "@/app/actions";
+
+const WORD_SEARCH_SHAPES: { id: WordSearchShape; label: string }[] = [
+    { id: "square", label: "Square" },
+    { id: "circle", label: "Circle" },
+    { id: "heart", label: "Heart" },
+    { id: "diamond", label: "Diamond" },
+    { id: "star", label: "Star" },
+];
 
 const TRIM_SIZES = [
     { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
@@ -65,9 +74,28 @@ export default function WordSearchStudio() {
     const [words, setWords] = useState("NEXTJS\nREACT\nPRISMA\nTAILWIND\nCODING\nJAVASCRIPT\nTYPESCRIPT\nDATABASE\nSERVER\nVERCEL\nGITHUB\nAPI\nJSON\nNODE\nFRONTEND\nBACKEND");
     const [previewGrid, setPreviewGrid] = useState<string[][] | null>(null);
     const [answerMask, setAnswerMask] = useState<boolean[][] | null>(null);
-    const [cleanWordsList, setCleanWordsList] = useState<any[]>([]); 
-    const [showAnswers, setShowAnswers] = useState(false); 
+    const [cleanWordsList, setCleanWordsList] = useState<any[]>([]);
+    const [showAnswers, setShowAnswers] = useState(false);
     const csvInputRef = useRef<HTMLInputElement>(null);
+
+    // 🚨 SHAPE / THEME / HIDDEN MESSAGE STATES 🚨
+    const [puzzleShape, setPuzzleShape] = useState<WordSearchShape>("square");
+    const [selectedThemeId, setSelectedThemeId] = useState<string>("");
+    const [hiddenMessage, setHiddenMessage] = useState<string>("");
+    const [previewActive, setPreviewActive] = useState<boolean[][] | null>(null);
+    const [previewHiddenMessageCells, setPreviewHiddenMessageCells] = useState<{ r: number; c: number }[] | null>(null);
+
+    const handleThemeSelect = (themeId: string) => {
+        setSelectedThemeId(themeId);
+        if (!themeId) return;
+        const theme = WORD_SEARCH_THEMES.find(t => t.id === themeId);
+        if (theme) {
+            setWords(theme.words.join("\n"));
+            // Themes vary in size (12-20 words); never leave "words per page"
+            // set higher than what the theme can actually supply.
+            setWordsPerPage(prev => Math.min(prev, theme.words.length));
+        }
+    };
 
     // 🚨 COVER STUDIO PRO STATES 🚨
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -192,8 +220,8 @@ export default function WordSearchStudio() {
         if (wordsSort === 'alphabetical') randomSubset.sort((a,b) => a.localeCompare(b));
         if (wordsSort === 'length') randomSubset.sort((a,b) => a.length - b.length || a.localeCompare(b));
 
-        const { grid, words: cleanWords, mask } = generatePuzzleGrid(randomSubset, gridSize, textCase);
-        setPreviewGrid(grid); setCleanWordsList(cleanWords.map(cw => ({...cw, title: titleText}))); setAnswerMask(mask); setShowAnswers(false); 
+        const { grid, words: cleanWords, mask, active, hiddenMessage: placedMessage } = generatePuzzleGrid(randomSubset, gridSize, textCase, { shape: puzzleShape, hiddenMessage });
+        setPreviewGrid(grid); setCleanWordsList(cleanWords.map(cw => ({...cw, title: titleText}))); setAnswerMask(mask); setPreviewActive(active); setPreviewHiddenMessageCells(placedMessage?.cells || null); setShowAnswers(false);
     };
 
     const handleGenerateInterior = async (options: {
@@ -232,7 +260,7 @@ export default function WordSearchStudio() {
             let subset = [...cleanedWords].sort(() => 0.5 - Math.random()).slice(0, wordsPerPage);
             if (wordsSort === 'alphabetical') subset.sort((a,b) => a.localeCompare(b));
             if (wordsSort === 'length') subset.sort((a,b) => a.length - b.length || a.localeCompare(b));
-            bookPuzzles.push(generatePuzzleGrid(subset, gridSize, textCase));
+            bookPuzzles.push(generatePuzzleGrid(subset, gridSize, textCase, { shape: puzzleShape, hiddenMessage }));
         }
 
         // 1. Draw Front Cover if integrated
@@ -253,7 +281,7 @@ export default function WordSearchStudio() {
                 const puzIndex = (p * puzzlesPerPage) + z;
                 if (puzIndex >= totalPuzzles) break;
                 const zone = puzZones[z];
-                const { grid, words: pageWords, mask } = bookPuzzles[puzIndex];
+                const { grid, words: pageWords, mask, active } = bookPuzzles[puzIndex];
 
                 const titleSpace = 0.4; const wordListSpace = puzzlesPerPage === 4 ? 0.8 : 1.5;
                 const gridDrawSize = Math.min(zone.w, zone.h - titleSpace - wordListSpace);
@@ -270,7 +298,7 @@ export default function WordSearchStudio() {
 
                 // Draw grid + word bank via the shared word search PDF primitives
                 // (also used by pdfExportService.ts and the bulk generator)
-                drawWordSearchGrid(doc, { grid, words: pageWords, mask }, { x: startX, y: startY, size: gridDrawSize }, false, {
+                drawWordSearchGrid(doc, { grid, words: pageWords, mask, active }, { x: startX, y: startY, size: gridDrawSize }, false, {
                     font: lettersFont,
                     letterFontSize: letterTextSize * (gridDrawSize / 6.5),
                     lineWidth: lineWidth * 0.01,
@@ -298,7 +326,7 @@ export default function WordSearchStudio() {
                     const solIndex = (p * solutionsPerPage) + z;
                     if (solIndex >= totalPuzzles) break;
                     const zone = solZones[z];
-                    const { grid, words: pageWords, mask } = bookPuzzles[solIndex];
+                    const { grid, words: pageWords, mask, active, hiddenMessage: solHiddenMessage } = bookPuzzles[solIndex];
 
                     const titleSpace = 0.4;
                     const gridDrawSize = Math.min(zone.w, zone.h - titleSpace);
@@ -313,7 +341,7 @@ export default function WordSearchStudio() {
 
                     // Highlighted answer grid via the shared word search PDF primitive
                     // (also used by pdfExportService.ts and the bulk generator)
-                    drawWordSearchGrid(doc, { grid, words: pageWords, mask }, { x: startX, y: startY, size: gridDrawSize }, true, {
+                    drawWordSearchGrid(doc, { grid, words: pageWords, mask, active, hiddenMessage: solHiddenMessage }, { x: startX, y: startY, size: gridDrawSize }, true, {
                         font: lettersFont,
                         letterFontSize: letterTextSize * (gridDrawSize / 6.5),
                         highlightColor: '#E2E8F0',
@@ -517,6 +545,55 @@ export default function WordSearchStudio() {
                                     </div>
                                 </div>
 
+                                {/* Puzzle Shape, Theme & Hidden Message */}
+                                <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    <h3 className="font-bold text-xs text-indigo-600 uppercase">Puzzle Shape & Extras</h3>
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-600">Grid Shape</label>
+                                        <div className="grid grid-cols-5 gap-1.5 mt-1">
+                                            {WORD_SEARCH_SHAPES.map(({ id, label }) => (
+                                                <button
+                                                    key={id}
+                                                    type="button"
+                                                    onClick={() => setPuzzleShape(id)}
+                                                    title={label}
+                                                    className={`py-1.5 rounded text-[10px] font-bold border transition-all ${puzzleShape === id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'}`}
+                                                >
+                                                    {label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-600">Themed Word List</label>
+                                        <select
+                                            value={selectedThemeId}
+                                            onChange={(e) => handleThemeSelect(e.target.value)}
+                                            className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"
+                                        >
+                                            <option value="">— Custom (edit below) —</option>
+                                            {WORD_SEARCH_THEME_CATEGORIES.map(category => (
+                                                <optgroup key={category} label={category}>
+                                                    {WORD_SEARCH_THEMES.filter(t => t.category === category).map(t => (
+                                                        <option key={t.id} value={t.id}>{t.name}</option>
+                                                    ))}
+                                                </optgroup>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-600">Hidden Message (optional)</label>
+                                        <input
+                                            type="text"
+                                            value={hiddenMessage}
+                                            onChange={(e) => setHiddenMessage(e.target.value)}
+                                            placeholder="e.g. HAPPY BIRTHDAY"
+                                            className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"
+                                        />
+                                        <p className="text-[10px] text-slate-400 mt-1">Leftover letters (after all words are found) spell this out — shown highlighted in amber on the answer page.</p>
+                                    </div>
+                                </div>
+
                                 {/* 5. Data & Title */}
                                 <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
                                     <h3 className="font-bold text-xs text-indigo-600 uppercase flex justify-between items-center">Data & Title
@@ -549,17 +626,22 @@ export default function WordSearchStudio() {
                                     
                                     <div className="relative flex-1 w-full mx-auto max-h-[60%] flex flex-col justify-center">
                                         <div className="absolute inset-0 grid z-10" style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
-                                            {previewGrid.map((row, r) => row.map((letter, c) => (
-                                                <div key={`${r}-${c}`} className="flex items-center justify-center font-bold" 
-                                                    style={{ 
-                                                        backgroundColor: (showAnswers && solutionHighlighter === 'fill' && answerMask[r][c]) ? '#E2E8F0' : cellColor, 
-                                                        borderWidth: `${lineWidth}px`, borderColor, 
-                                                        fontFamily: lettersFont, 
-                                                        color: (showAnswers && solutionHighlighter === 'fade' && !answerMask[r][c]) ? '#D1D5DB' : '#000000'
-                                                    }}>
-                                                    {letter}
-                                                </div>
-                                            )))}
+                                            {previewGrid.map((row, r) => row.map((letter, c) => {
+                                                const isActiveCell = !previewActive || previewActive[r][c];
+                                                const isMessageCell = showAnswers && previewHiddenMessageCells?.some(m => m.r === r && m.c === c);
+                                                if (!isActiveCell) return <div key={`${r}-${c}`} style={{ visibility: "hidden" }} />;
+                                                return (
+                                                    <div key={`${r}-${c}`} className="flex items-center justify-center font-bold"
+                                                        style={{
+                                                            backgroundColor: isMessageCell ? '#FCD34D' : (showAnswers && solutionHighlighter === 'fill' && answerMask[r][c]) ? '#E2E8F0' : cellColor,
+                                                            borderWidth: `${lineWidth}px`, borderColor,
+                                                            fontFamily: lettersFont,
+                                                            color: (showAnswers && solutionHighlighter === 'fade' && !answerMask[r][c] && !isMessageCell) ? '#D1D5DB' : '#000000'
+                                                        }}>
+                                                        {letter}
+                                                    </div>
+                                                );
+                                            }))}
                                         </div>
                                         {showAnswers && solutionHighlighter === 'apple' && (
                                             <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">

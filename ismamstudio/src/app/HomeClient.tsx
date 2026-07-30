@@ -833,7 +833,7 @@ export default function HomeClient() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-black text-slate-600 uppercase tracking-widest">Active & Improving Daily</span>
+                  <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Actively Maintained &amp; Updated</span>
                 </div>
               </div>
             </div>

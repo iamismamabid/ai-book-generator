@@ -550,7 +550,7 @@ function PricingSectionInner() {
       <div className="text-center mb-16">
         <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-sky-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-black uppercase tracking-[0.2em] mb-6 shadow-md">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          Limited Time Launch Offer
+          Transparent &amp; Fair Creator Pricing
         </div>
 
         <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-4">
@@ -864,7 +864,7 @@ function PricingSkeleton() {
     <section id="pricing" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-200 dark:border-slate-900">
       <div className="text-center mb-16">
         <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-sky-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-black uppercase tracking-[0.2em] mb-6 shadow-md">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />Limited Time Launch Offer
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />Transparent &amp; Fair Creator Pricing
         </div>
         <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-4">
           Simple, <span className="bg-gradient-to-r from-amber-300 via-rose-400 to-sky-300 bg-clip-text text-transparent">Value-Packed</span> Pricing

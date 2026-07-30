@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle, GripVertical, Info } from "lucide-react";
+import { Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, AlertCircle, AlertTriangle, GripVertical, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
@@ -122,6 +122,42 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     ));
   };
 
+  const duplicatePage = (indexToDuplicate: number) => {
+    if (indexToDuplicate < 0 || indexToDuplicate >= bookPages.length) return;
+    const target = bookPages[indexToDuplicate];
+    const newPage = {
+      id: Date.now() + Math.random(),
+      type: target.type,
+      config: JSON.parse(JSON.stringify(target.config || {}))
+    };
+    const updated = [...bookPages];
+    updated.splice(indexToDuplicate + 1, 0, newPage);
+    setBookPages(updated);
+    setActiveIndex(indexToDuplicate + 1);
+  };
+
+  const movePageUp = (idx: number) => {
+    if (idx <= 0) return;
+    const updated = [...bookPages];
+    const temp = updated[idx];
+    updated[idx] = updated[idx - 1];
+    updated[idx - 1] = temp;
+    setBookPages(updated);
+    if (activeIndex === idx) setActiveIndex(idx - 1);
+    else if (activeIndex === idx - 1) setActiveIndex(idx);
+  };
+
+  const movePageDown = (idx: number) => {
+    if (idx >= bookPages.length - 1) return;
+    const updated = [...bookPages];
+    const temp = updated[idx];
+    updated[idx] = updated[idx + 1];
+    updated[idx + 1] = temp;
+    setBookPages(updated);
+    if (activeIndex === idx) setActiveIndex(idx + 1);
+    else if (activeIndex === idx + 1) setActiveIndex(idx);
+  };
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -141,37 +177,17 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
       const oldIndex = bookPages.findIndex((p) => p.id === active.id);
       const newIndex = bookPages.findIndex((p) => p.id === over.id);
 
-      const isActiveTitle = oldIndex === 0 && bookPages[0]?.type === 'title';
-      const isTargetTitle = newIndex === 0 && bookPages[0]?.type === 'title';
-
-      if (isActiveTitle || isTargetTitle) {
-        return;
-      }
-
       const updated = arrayMove(bookPages, oldIndex, newIndex);
       setBookPages(updated);
 
       const activePageId = bookPages[activeIndex]?.id;
       if (activePageId !== undefined) {
-        const nextActiveIndex = updated.findIndex((p) => p.id === activePageId);
-        if (nextActiveIndex !== -1) {
-          setActiveIndex(nextActiveIndex);
+        const newActiveIndex = updated.findIndex((p) => p.id === activePageId);
+        if (newActiveIndex !== -1) {
+          setActiveIndex(newActiveIndex);
         }
       }
     }
-  };
-
-  const duplicatePage = (index: number) => {
-    const pageToDup = bookPages[index];
-    const dup = {
-      ...pageToDup,
-      id: Date.now() + Math.random(),
-      config: JSON.parse(JSON.stringify(pageToDup.config))
-    };
-    const updated = [...bookPages];
-    updated.splice(index + 1, 0, dup);
-    setBookPages(updated);
-    setActiveIndex(index + 1);
   };
 
   const autoGenerateAllSolutions = () => {
@@ -466,8 +482,11 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                     key={p.id}
                     page={p}
                     index={i}
+                    totalCount={bookPages.length}
                     isActive={activeIndex === i}
                     onSelect={() => setActiveIndex(i)}
+                    onMoveUp={() => movePageUp(i)}
+                    onMoveDown={() => movePageDown(i)}
                     onDuplicate={() => duplicatePage(i)}
                     onRemove={() => removePage(i)}
                   />
@@ -783,8 +802,11 @@ function TitlePageEditor({ page, updatePage }: any) {
 interface SortablePageItemProps {
   page: any;
   index: number;
+  totalCount: number;
   isActive: boolean;
   onSelect: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   onDuplicate: () => void;
   onRemove: () => void;
 }
@@ -792,8 +814,11 @@ interface SortablePageItemProps {
 function SortablePageItem({
   page,
   index,
+  totalCount,
   isActive,
   onSelect,
+  onMoveUp,
+  onMoveDown,
   onDuplicate,
   onRemove,
 }: SortablePageItemProps) {
@@ -833,21 +858,14 @@ function SortablePageItem({
       }`}
     >
       <div className="flex items-center gap-2">
-        {!isTitlePage ? (
-          <div
-            {...attributes}
-            {...listeners}
-            className="p-1 -ml-1 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded cursor-grab active:cursor-grabbing flex items-center justify-center transition-colors duration-200"
-          >
-            <GripVertical className="w-3.5 h-3.5" />
-          </div>
-        ) : (
-          <div className="p-1 -ml-1 text-slate-300 dark:text-slate-600 flex items-center justify-center cursor-not-allowed" title="Title page is locked">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-        )}
+        <div
+          {...attributes}
+          {...listeners}
+          className="p-1 -ml-1 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded cursor-grab active:cursor-grabbing flex items-center justify-center transition-colors duration-200"
+          title="Drag to reorder"
+        >
+          <GripVertical className="w-3.5 h-3.5" />
+        </div>
 
         <div className="flex flex-col">
           <span className="text-xs font-black">Page {index + 1}</span>
@@ -865,6 +883,22 @@ function SortablePageItem({
 
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
         <button
+          onClick={onMoveUp}
+          disabled={index === 0}
+          title="Move Page Up"
+          className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-20 disabled:pointer-events-none transition-colors duration-200 cursor-pointer"
+        >
+          <ChevronUp className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={onMoveDown}
+          disabled={index === totalCount - 1}
+          title="Move Page Down"
+          className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-20 disabled:pointer-events-none transition-colors duration-200 cursor-pointer"
+        >
+          <ChevronDown className="w-3.5 h-3.5" />
+        </button>
+        <button
           onClick={onDuplicate}
           title="Duplicate Page"
           className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors duration-200 cursor-pointer"
@@ -874,6 +908,7 @@ function SortablePageItem({
         {!isTitlePage && (
           <button
             onClick={onRemove}
+            title="Delete Page"
             className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors duration-200 cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />

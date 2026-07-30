@@ -72,6 +72,25 @@ function PricingSectionInner() {
                 });
               }
               posthog.capture("paddle_checkout_completed", event?.data);
+
+              // Trustpilot JavaScript Review Invitation Trigger (Method 1)
+              const customerEmail = event?.data?.customer?.email || (user?.primaryEmailAddress?.emailAddress ?? "");
+              const customerName = event?.data?.customer?.name || user?.fullName || "Customer";
+              const txnId = event?.data?.id || `PADDLE_${Date.now()}`;
+
+              if (typeof window !== "undefined" && (window as any).tp && customerEmail) {
+                try {
+                  (window as any).tp("createInvitation", {
+                    recipientEmail: customerEmail,
+                    recipientName: customerName,
+                    referenceId: txnId,
+                    source: "PaddleCheckout"
+                  });
+                  console.log("Trustpilot review invitation queued for:", customerEmail);
+                } catch (tpErr) {
+                  console.error("Trustpilot Invitation Error:", tpErr);
+                }
+              }
             }
           }
         };

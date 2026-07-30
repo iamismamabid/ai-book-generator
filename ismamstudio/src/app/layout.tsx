@@ -221,6 +221,10 @@ export default function RootLayout({
               })();
             `}
           </Script>
+
+          {/* Trustpilot JavaScript Integration Script (Method 1) */}
+          <Script id="trustpilot-invitation-js" src="https://invitejs.trustpilot.com/tp.min.js" strategy="afterInteractive" />
+
           <SpeedInsights />
           <Analytics />
           </ThemeProvider>

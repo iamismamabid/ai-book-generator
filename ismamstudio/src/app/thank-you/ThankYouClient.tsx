@@ -5,31 +5,52 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { CheckCircle, ArrowRight, Sparkles, BookOpen, Clock } from "lucide-react";
 import posthog from "posthog-js";
+import { useUser } from "@clerk/nextjs";
 import { checkPremiumStatus } from "../actions";
 
 export default function ThankYouClient() {
+  const { user } = useUser();
   const [status, setStatus] = useState<{ isPremium: boolean; plan: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Track conversion event on mount
     posthog.capture("checkout_success_page_loaded");
-    if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
-      (window as any).gtag('event', 'purchase', {
-        event_category: 'ecommerce',
-        event_label: 'purchase_completed'
-      });
-      (window as any).gtag('event', 'conversion_event_purchase', {
-        event_category: 'ecommerce',
-        event_label: 'purchase_completed'
-      });
-      (window as any).gtag('event', 'conversion_event_purchase_2', {
-        event_category: 'ecommerce',
-        event_label: 'purchase_completed'
-      });
-      (window as any).gtag('event', 'conversion', {
-        send_to: process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW-18328569670'
-      });
+    if (typeof window !== "undefined") {
+      if (typeof (window as any).gtag === "function") {
+        (window as any).gtag('event', 'purchase', {
+          event_category: 'ecommerce',
+          event_label: 'purchase_completed'
+        });
+        (window as any).gtag('event', 'conversion_event_purchase', {
+          event_category: 'ecommerce',
+          event_label: 'purchase_completed'
+        });
+        (window as any).gtag('event', 'conversion_event_purchase_2', {
+          event_category: 'ecommerce',
+          event_label: 'purchase_completed'
+        });
+        (window as any).gtag('event', 'conversion', {
+          send_to: process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW-18328569670'
+        });
+      }
+
+      // Trustpilot JS Review Invitation Trigger (Method 1)
+      const email = user?.primaryEmailAddress?.emailAddress;
+      const name = user?.fullName || user?.firstName || "Customer";
+      if ((window as any).tp && email) {
+        try {
+          (window as any).tp("createInvitation", {
+            recipientEmail: email,
+            recipientName: name,
+            referenceId: `TY_${Date.now()}`,
+            source: "ThankYouPage"
+          });
+          console.log("Trustpilot review invitation queued on ThankYou page for:", email);
+        } catch (tpErr) {
+          console.error("Trustpilot Invitation Error:", tpErr);
+        }
+      }
     }
 
     // Check plan status

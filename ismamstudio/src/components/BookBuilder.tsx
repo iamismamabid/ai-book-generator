@@ -309,22 +309,36 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
       {/* Main Page Workspace */}
       <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto relative min-w-0">
         
-        {/* Sidebar Toggle Buttons */}
-        <button
-          onClick={toggleLeftSidebar}
-          className="absolute left-4 top-4 z-40 p-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95"
-          title={leftOpen ? "Collapse Side Panel" : "Expand Side Panel"}
-        >
-          {leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-        </button>
+        {/* Sidebar Toggle & Mobile Add Page Buttons */}
+        <div className="absolute inset-x-4 top-4 z-40 flex items-center justify-between pointer-events-none">
+          <button
+            onClick={toggleLeftSidebar}
+            className="pointer-events-auto p-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95 flex items-center gap-1.5"
+            title={leftOpen ? "Collapse Side Panel" : "Expand Side Panel"}
+          >
+            {leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            <span className="md:hidden text-[10px] font-black uppercase text-slate-700 dark:text-slate-300">Tools</span>
+          </button>
 
-        <button
-          onClick={toggleRightSidebar}
-          className="absolute right-4 top-4 z-40 p-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95"
-          title={rightOpen ? "Collapse Outline Panel" : "Expand Outline Panel"}
-        >
-          {rightOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </button>
+          {/* Mobile Quick Add Page Button in Header */}
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="pointer-events-auto md:hidden px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-[11px] uppercase tracking-wider rounded-xl shadow-lg cursor-pointer transition active:scale-95 flex items-center gap-1.5 border border-white/20"
+            title="Add New Page"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Page</span>
+          </button>
+
+          <button
+            onClick={toggleRightSidebar}
+            className="pointer-events-auto p-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md cursor-pointer transition text-slate-500 dark:text-slate-400 active:scale-95 flex items-center gap-1.5"
+            title={rightOpen ? "Collapse Outline Panel" : "Expand Outline Panel"}
+          >
+            <span className="md:hidden text-[10px] font-black uppercase text-slate-700 dark:text-slate-300">Pages ({bookPages.length})</span>
+            {rightOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
+        </div>
 
         {bookPages.length > 0 && bookPages[activeIndex] ? (
           <div className="h-full pt-8">
@@ -476,6 +490,16 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
         </div>
       </motion.div>
     </div>
+
+    {/* Mobile Floating Action Button (FAB) to Add Page */}
+    <button
+      onClick={() => setIsAddModalOpen(true)}
+      className="md:hidden fixed bottom-6 right-6 z-50 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full shadow-2xl flex items-center gap-2 font-black text-xs uppercase tracking-wider active:scale-95 transition-all duration-200 border-2 border-white/20"
+      style={{ boxShadow: '0 10px 25px -5px rgba(79, 70, 229, 0.5)' }}
+    >
+      <Plus className="w-5 h-5" />
+      <span>Add Page</span>
+    </button>
 
     {mounted && isAddModalOpen && createPortal(
       <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">

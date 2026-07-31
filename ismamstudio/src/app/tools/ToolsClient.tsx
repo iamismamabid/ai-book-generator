@@ -310,77 +310,6 @@ export default function FreeToolsHub() {
   const totalScore = scorecard.reduce((sum, item) => sum + (item.checked ? item.points : 0), 0);
 
   const toolsList: ToolItem[] = [
-    // 1. Puzzle & Interior Generators
-    {
-      id: "maze-generator",
-      name: "Free Shape-Masked Maze Studio",
-      badge: "Popular",
-      category: "Design",
-      description: "Create labyrinths and shape-masked mazes (hearts, stars, circles) with KDP bleed compliance.",
-      features: ["Heart & circle masks", "Bleed & gutter safety", "Vector PDF export"],
-      keywords: ["maze", "mazes", "labyrinth", "shaped maze", "heart maze", "puzzle", "interior"],
-      link: "/maze"
-    },
-    {
-      id: "word-search-generator",
-      name: "Free KDP Word Search Builder",
-      badge: "Popular",
-      category: "Design",
-      description: "Build custom word search puzzle books using your own word lists or niche topics.",
-      features: ["Custom CSV word lists", "Large print options", "Answer key grid export"],
-      keywords: ["word search", "wordsearch", "find words", "word puzzle", "puzzle", "interior"],
-      link: "/tools/word-search"
-    },
-    {
-      id: "crossword-generator",
-      name: "Free KDP Crossword Generator",
-      badge: "New",
-      category: "Design",
-      description: "Design custom crossword puzzle grids and compile high-contrast vector PDF worksheets for KDP interiors.",
-      features: ["Custom grid sizing (10x10 to 20x20)", "Live KDP safe area preview", "Instant answers sheets"],
-      keywords: ["crossword", "crosswords", "word puzzle", "grid puzzle", "clues", "puzzle"],
-      link: "/studio/crossword"
-    },
-    {
-      id: "cryptogram-generator",
-      name: "Free Cryptogram & Cipher Studio",
-      badge: "New",
-      category: "Design",
-      description: "Create crypto-quote and encrypted text cipher puzzle interiors with hint indexes.",
-      features: ["Custom quote banks", "Letter substitution cipher", "Hint keys index"],
-      keywords: ["cryptogram", "cryptograms", "crypto quote", "cipher", "secret code", "puzzle"],
-      link: "/studio/cryptogram"
-    },
-    {
-      id: "word-scramble-generator",
-      name: "Free Word Scramble Studio",
-      badge: "New",
-      category: "Design",
-      description: "Generate word jumble and anagram puzzle worksheets with solution keys.",
-      features: ["Niche word list import", "Custom clue hints", "Print-ready PDF layout"],
-      keywords: ["word scramble", "scramble", "anagram", "jumble", "scrambled words", "puzzle"],
-      link: "/studio/word-scramble"
-    },
-    {
-      id: "kakuro-generator",
-      name: "Free Kakuro Cross-Sums Generator",
-      badge: "New",
-      category: "Design",
-      description: "Generate Kakuro (number cross-sum) math logic puzzles with verified single solutions.",
-      features: ["Cross-sum logic grids", "Difficulty levels", "Answer key pages"],
-      keywords: ["kakuro", "cross sums", "math grid", "number puzzle", "logic puzzle", "puzzle"],
-      link: "/studio/kakuro"
-    },
-    {
-      id: "math-puzzle-generator",
-      name: "Free Math Puzzle Builder",
-      badge: "New",
-      category: "Design",
-      description: "Create arithmetic equation grids, number searches, and math workbooks for kids & adults.",
-      features: ["Addition/Subtraction/Multiplication", "Custom difficulty", "Answer pages"],
-      keywords: ["math", "math puzzle", "arithmetic grid", "equation puzzle", "number search", "workbook", "puzzle"],
-      link: "/studio/math-puzzle"
-    },
     // 2. Cover & Spine Tools
     {
       id: "spine-calculator",
@@ -781,7 +710,7 @@ export default function FreeToolsHub() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search 40+ free KDP tools — Maze, Spine, Barcode, PDF, Keyword..."
+                placeholder="Search 30+ free KDP tools — Spine, Barcode, PDF, Keyword, Royalty..."
                 className="flex-1 py-4 pr-3 bg-transparent text-stone-900 placeholder-stone-400 font-semibold text-sm focus:outline-none"
               />
 
@@ -789,7 +718,7 @@ export default function FreeToolsHub() {
               {!searchQuery && (
                 <div className="hidden sm:flex items-center gap-1 px-3 py-1 mr-3 rounded-full bg-amber-50 border border-amber-200/60 text-amber-700 text-[10px] font-black uppercase tracking-wider shrink-0">
                   <Sparkles className="w-3 h-3 text-amber-500" />
-                  40+ tools
+                  30+ tools
                 </div>
               )}
 

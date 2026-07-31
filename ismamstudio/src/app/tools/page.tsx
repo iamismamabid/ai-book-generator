@@ -49,7 +49,6 @@ export const metadata: Metadata = {
 // collapsed to one canonical URL.)
 const TOOL_ITEMS: { name: string; path: string }[] = [
   { name: "Free Puzzle Book Generator", path: "/studio" },
-  { name: "Free KDP Crossword Generator", path: "/studio/crossword" },
   { name: "Free KDP Spine & Cover Calculator", path: "/tools/spine-calculator" },
   { name: "KDP Royalty & Market Viability Estimator", path: "/tools/royalty-estimator" },
   { name: "KDP Bulk Book Batch Studio", path: "/tools/bulk-generator" },

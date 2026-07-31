@@ -5,6 +5,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { Groq } from "groq-sdk";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { randomUUID } from "crypto";
 
 
 // Look! No import line here anymore.
@@ -420,6 +421,107 @@ export async function loadCoverProject() {
   } catch (error) {
     console.error("Error loading cover project:", error);
     return { success: false, data: null };
+  }
+}
+
+// ---- Cover review links (read-only sharing) ----
+
+const MAX_PREVIEW_BYTES = 4_000_000; // ~4MB of base64; well past a 1x JPEG preview
+
+export interface CoverShareInput {
+  title: string;
+  previewUrl: string;
+  trimLabel?: string;
+  pageCount?: number;
+  spineWidth?: number;
+}
+
+export async function createCoverShare(input: CoverShareInput) {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "unauthorized" as const };
+
+  // Only ever accept an inline image the sharer's browser rendered — never a
+  // remote URL, which would let this be used to make the server fetch anything.
+  if (!input.previewUrl?.startsWith("data:image/")) {
+    return { success: false, error: "Invalid preview image" };
+  }
+  if (input.previewUrl.length > MAX_PREVIEW_BYTES) {
+    return { success: false, error: "Preview image is too large to share" };
+  }
+
+  try {
+    const token = randomUUID().replace(/-/g, "");
+    await prisma.coverShare.create({
+      data: {
+        token,
+        userId,
+        title: (input.title || "Untitled Cover").slice(0, 120),
+        previewUrl: input.previewUrl,
+        trimLabel: input.trimLabel?.slice(0, 60) ?? null,
+        pageCount: input.pageCount ?? null,
+        spineWidth: input.spineWidth ?? null,
+      },
+    });
+    return { success: true, token };
+  } catch (error) {
+    console.error("Error creating cover share:", error);
+    return { success: false, error: "Failed to create review link" };
+  }
+}
+
+export async function listCoverShares() {
+  const { userId } = await auth();
+  if (!userId) return { success: false, shares: [] };
+
+  try {
+    const shares = await prisma.coverShare.findMany({
+      where: { userId, revoked: false },
+      orderBy: { createdAt: "desc" },
+      take: 25,
+      // Deliberately omit previewUrl — the list only needs metadata, and each
+      // preview is megabytes.
+      select: { token: true, title: true, createdAt: true, trimLabel: true },
+    });
+    return { success: true, shares };
+  } catch (error) {
+    console.error("Error listing cover shares:", error);
+    return { success: false, shares: [] };
+  }
+}
+
+export async function revokeCoverShare(token: string) {
+  const { userId } = await auth();
+  if (!userId) return { success: false };
+
+  try {
+    // Scoped to userId so a token alone can't be used to revoke someone else's link.
+    const result = await prisma.coverShare.updateMany({
+      where: { token, userId },
+      data: { revoked: true },
+    });
+    return { success: result.count > 0 };
+  } catch (error) {
+    console.error("Error revoking cover share:", error);
+    return { success: false };
+  }
+}
+
+/** Public — no auth. Used by the /review/[token] page. */
+export async function getCoverShare(token: string) {
+  try {
+    const share = await prisma.coverShare.findUnique({ where: { token } });
+    if (!share || share.revoked) return null;
+    return {
+      title: share.title,
+      previewUrl: share.previewUrl,
+      trimLabel: share.trimLabel,
+      pageCount: share.pageCount,
+      spineWidth: share.spineWidth,
+      createdAt: share.createdAt,
+    };
+  } catch (error) {
+    console.error("Error loading cover share:", error);
+    return null;
   }
 }
 

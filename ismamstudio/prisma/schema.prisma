@@ -59,6 +59,26 @@ model CoverProject {
   @@map("cover_projects")
 }
 
+// A read-only review link for a cover design, shared with a client or
+// co-author who may not have an account. Stores a flattened preview image
+// rather than the editable design so the link can't be used to lift the
+// original project, and so the public page needs no canvas library.
+model CoverShare {
+  id         String    @id @default(uuid())
+  token      String    @unique
+  userId     String
+  title      String    @default("Untitled Cover")
+  previewUrl String    // data: URL of the rendered cover preview
+  trimLabel  String?
+  pageCount  Int?
+  spineWidth Float?
+  revoked    Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@map("cover_shares")
+}
+
 model AppSumoRedemption {
   id        String   @id @default(uuid())
   clerkId   String

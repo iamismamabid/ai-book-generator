@@ -10,7 +10,7 @@ import {
   Bold, Italic, Underline, AlignJustify, Box, Layers as LayersIcon,
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
-  AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History
+  AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -26,6 +26,7 @@ import { COVER_TEXTURES, TEXTURE_CATEGORIES, renderTexture, CoverTexture } from 
 import VersionHistoryModal from "@/components/VersionHistoryModal";
 import { CoverVersion } from "@/lib/coverVersions";
 import { relayoutLegacyElements, layoutsDiffer } from "@/lib/coverRelayout";
+import ShareReviewModal from "@/components/ShareReviewModal";
 
 // Text-on-a-path shapes. "arc" is the original circular layout; the rest are
 // sampled parametric curves (see samplePathPoints).
@@ -806,6 +807,9 @@ export default function FabricCoverStudio({
 
   // Named version history (checkpoints, distinct from step-by-step undo/redo)
   const [isVersionsOpen, setIsVersionsOpen] = useState(false);
+
+  // Read-only review links for clients / co-authors
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   // Smart resize — remap the design when the cover geometry changes. Mirrored
   // into a ref because the canvas-init effect that consumes it deliberately
@@ -2094,6 +2098,31 @@ export default function FabricCoverStudio({
     background: coverBackgroundRef.current,
     canvasJson: canvas ? canvas.toJSON(['isCurvedText', 'curvedTextData']) : null,
   });
+
+  // Review links carry a flattened preview rather than the editable design.
+  // Rendered at 1x and re-encoded as JPEG: a 3x PNG is ~12MB, far too large to
+  // put in a database row, and this only has to be good enough to review.
+  const buildSharePreview = async (): Promise<string> => {
+    if (!canvas) throw new Error("Canvas not ready");
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
+
+    const pngUrl = await exportCanvasWithBackground(canvas, 1);
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const el = document.createElement('canvas');
+        el.width = img.width;
+        el.height = img.height;
+        const ctx = el.getContext('2d');
+        if (!ctx) return reject(new Error("No 2D context"));
+        ctx.drawImage(img, 0, 0);
+        resolve(el.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => reject(new Error("Failed to render preview"));
+      img.src = pngUrl;
+    });
+  };
 
   const restoreVersion = (version: CoverVersion) => {
     if (!canvas || !version.canvasJson) return;
@@ -3516,6 +3545,13 @@ export default function FabricCoverStudio({
             className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
           >
             <History className="w-5 h-5"/>
+          </button>
+          <button
+            onClick={() => setIsShareOpen(true)}
+            title="Share for Review — Read-only Client Link"
+            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+          >
+            <Share2 className="w-5 h-5"/>
           </button>
           <button
             onClick={handleGenerateCover}
@@ -5626,6 +5662,17 @@ export default function FabricCoverStudio({
         onClose={() => setIsVersionsOpen(false)}
         getSnapshot={buildVersionSnapshot}
         onRestore={restoreVersion}
+      />
+
+      <ShareReviewModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        buildPreview={buildSharePreview}
+        meta={{
+          trimLabel: trimSize.label,
+          pageCount,
+          spineWidth: layout.spineWidth,
+        }}
       />
     </div>
   );

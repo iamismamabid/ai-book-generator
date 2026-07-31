@@ -54,7 +54,12 @@ export default function CoverMockup3DModal({
     if (!mockupRef.current) return;
     setIsDownloading(true);
     try {
-      const { default: html2canvas } = await import("html2canvas");
+      // html2canvas-pro (not the base html2canvas) — the base library throws
+      // "unsupported color function lab()" when it walks the cloned document
+      // and hits any element using a modern CSS color function, which this
+      // app's Tailwind setup uses widely. -pro is a maintained drop-in fork
+      // that adds oklch()/lab()/color-mix() support.
+      const { default: html2canvas } = await import("html2canvas-pro");
       const canvas = await html2canvas(mockupRef.current, {
         backgroundColor: null,
         scale: 2,

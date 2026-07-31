@@ -578,6 +578,12 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       base.fontStyle = obj.fontStyle;
       base.align = obj.textAlign;
       base.width = (obj.width || 240) * (obj.scaleX || 1);
+      base.fontWeight = obj.fontWeight;
+      // Spine text is positioned from its center, so x/y above mean something
+      // different than for the default top-left origin — persist the origin or
+      // the text jumps on reload.
+      base.originX = obj.originX;
+      base.originY = obj.originY;
       if (type === 'textbox') {
         base.isTextbox = true;
       }
@@ -822,6 +828,9 @@ export default function FabricCoverStudio({
   // Spine Text Alignment States
   const [spineTextVAlign, setSpineTextVAlign] = useState<'top' | 'center' | 'bottom'>('center');
   const [spineTextRotation, setSpineTextRotation] = useState<90 | 270>(90);
+  // True when the last spine fit had to scale the text down to stay inside the
+  // spine folds / trim margins — surfaced in the panel so it isn't a silent change.
+  const [spineTextWasShrunk, setSpineTextWasShrunk] = useState(false);
 
   // Typography & Effects States
   const [objectCharSpacing, setObjectCharSpacing] = useState(0);
@@ -1004,11 +1013,25 @@ export default function FabricCoverStudio({
   const updateActiveObjectProperty = (property: string, value: any, saveHistory = true) => {
     if (!canvas || !activeObject) return;
     activeObject.set({ [property]: value });
+
+    // Spine text has to stay inside the spine folds and trim margins, so any
+    // edit that changes its rendered size re-runs the fit instead of letting a
+    // longer title silently overflow the cover.
+    const isSpineText = (activeObject as any).id?.startsWith('spine');
+    if (isSpineText && ['text', 'fontSize', 'fontFamily', 'fontWeight', 'charSpacing'].includes(property)) {
+      refitSpineTextRef.current?.();
+      return;
+    }
+
     canvas.requestRenderAll();
     if (saveHistory) {
       canvas.fire("object:modified", { target: activeObject });
     }
   };
+
+  // alignTextToSpine is declared further down; this ref lets the earlier
+  // property-update path call it without reordering the whole component.
+  const refitSpineTextRef = useRef<(() => void) | null>(null);
 
   const updateActiveObjectShadow = (hasShadow: boolean, color: string, blur: number, ox: number, oy: number, saveHistory = true) => {
     if (!canvas || !activeObject) return;
@@ -1371,6 +1394,7 @@ export default function FabricCoverStudio({
     fCanvas.on("selection:cleared", () => {
       setActiveObject(null);
       setSelectionCount(0);
+      setSpineTextWasShrunk(false);
     });
 
     // Save history on changes
@@ -1653,7 +1677,10 @@ export default function FabricCoverStudio({
           fill: el.fill || '#FFFFFF',
           fontFamily: el.fontFamily || 'Arial',
           fontStyle: el.fontStyle || 'normal',
+          fontWeight: el.fontWeight || 'normal',
           textAlign: el.align || 'center',
+          originX: el.originX || 'left',
+          originY: el.originY || 'top',
           scaleX: el.scaleX || 1,
           scaleY: el.scaleY || 1,
           angle: el.rotation || 0,
@@ -2047,6 +2074,32 @@ export default function FabricCoverStudio({
     canvas.add(heading);
     canvas.setActiveObject(heading);
     canvas.requestRenderAll();
+  };
+
+  // Spine text is a normal IText tagged with a "spine" id, which is what
+  // unlocks the spine alignment controls and the auto-fit behaviour. It's
+  // created pre-rotated and centered on the spine, then immediately fitted.
+  const addSpineText = () => {
+    if (!canvas) return;
+    const text = new fabric.IText("BOOK TITLE", {
+      id: `spine-text-${Date.now()}`,
+      originX: 'center',
+      originY: 'center',
+      left: layout.spineCenterPx,
+      top: layout.canvasHeight / 2,
+      angle: spineTextRotation,
+      fontFamily: "Arial",
+      fontSize: 28,
+      fontWeight: "bold",
+      fill: "#FFFFFF",
+      textAlign: "center"
+    } as any);
+    canvas.add(text);
+    canvas.setActiveObject(text);
+    setActiveObject(text);
+    canvas.requestRenderAll();
+    // Fit immediately so it never lands overflowing a thin spine.
+    fitSpineTextObject(text);
   };
 
   const addMultilineText = () => {
@@ -2581,40 +2634,64 @@ export default function FabricCoverStudio({
     }
   };
 
-  const alignTextToSpine = (vAlignOverride?: 'top' | 'center' | 'bottom', rotOverride?: 90 | 270) => {
-    if (!canvas || !activeObject) return;
+  const fitSpineTextObject = (
+    target: fabric.Object,
+    vAlignOverride?: 'top' | 'center' | 'bottom',
+    rotOverride?: 90 | 270
+  ) => {
+    if (!canvas) return;
+    const activeObject = target;
 
     const vAlign = vAlignOverride || spineTextVAlign;
     const rot = rotOverride || spineTextRotation;
-    
+
     // Safety margin of 0.0625" (1/16") inside spine fold on each side
     // Total reduction = 0.125" (1/8")
-    const maxAllowedWidthPx = (layout.spineWidth - 0.125) * layout.scale; 
+    const maxAllowedWidthPx = (layout.spineWidth - 0.125) * layout.scale;
+    // Keep 0.75" safe margin from top/bottom trim borders
+    const vMarginPx = 0.75 * layout.scale;
+    const maxAllowedLengthPx = (layout.trimBottomPx - layout.trimTopPx) - vMarginPx * 2;
 
-    // Set origin to center for exact centering on spine
+    // Reset to unscaled before measuring so the fit is idempotent — otherwise
+    // re-running it (which now happens on every spine text edit) would compound
+    // the shrink factor and never grow back when the title gets shorter. Size
+    // is therefore driven purely by fontSize, with this as a pure fit on top.
     activeObject.set({
       originX: 'center',
       originY: 'center',
-      angle: rot
+      angle: rot,
+      scaleX: 1,
+      scaleY: 1
     });
-    
-    // Scale down if thickness exceeds safety boundaries
-    let boundingBox = activeObject.getBoundingRect();
-    if (boundingBox.width > maxAllowedWidthPx) {
-      const scaleFactor = maxAllowedWidthPx / boundingBox.width;
-      activeObject.set({
-        scaleX: (activeObject.scaleX || 1) * scaleFactor,
-        scaleY: (activeObject.scaleY || 1) * scaleFactor
-      });
-      // Re-calculate bounding box after scaling
-      boundingBox = activeObject.getBoundingRect();
+
+    // fabric.Text caches its measured width/height and only recomputes them on
+    // the next render, so measuring straight after a text/font change would use
+    // the previous string's dimensions and skip the fit entirely.
+    const remeasure = () => {
+      const asText = activeObject as any;
+      if (typeof asText.initDimensions === 'function') asText.initDimensions();
+      activeObject.setCoords();
+      return activeObject.getBoundingRect();
+    };
+
+    // Once rotated 90/270, the bounding box's width is the text's thickness
+    // (must fit between the spine folds) and its height is the text's length
+    // (must fit between the top/bottom margins). A long title overflows the
+    // second one, so fit against both and take whichever is more restrictive.
+    let boundingBox = remeasure();
+    const widthScale = boundingBox.width > maxAllowedWidthPx ? maxAllowedWidthPx / boundingBox.width : 1;
+    const lengthScale = boundingBox.height > maxAllowedLengthPx ? maxAllowedLengthPx / boundingBox.height : 1;
+    const fitScale = Math.min(widthScale, lengthScale);
+
+    if (fitScale < 1) {
+      activeObject.set({ scaleX: fitScale, scaleY: fitScale });
+      boundingBox = remeasure();
     }
+    setSpineTextWasShrunk(fitScale < 1);
 
     // Calculate vertical position (top, center, bottom)
-    // Keep 0.75" safe margin from top/bottom trim borders
-    const vMarginPx = 0.75 * layout.scale;
     const textHeightPx = boundingBox.height; // rotated height (the length of the text)
-    
+
     let topPos = layout.canvasHeight / 2;
     if (vAlign === 'top') {
       topPos = layout.trimTopPx + vMarginPx + (textHeightPx / 2);
@@ -2630,6 +2707,13 @@ export default function FabricCoverStudio({
     canvas.requestRenderAll();
     canvas.fire("object:modified", { target: activeObject });
   };
+
+  const alignTextToSpine = (vAlignOverride?: 'top' | 'center' | 'bottom', rotOverride?: 90 | 270) => {
+    if (!activeObject) return;
+    fitSpineTextObject(activeObject, vAlignOverride, rotOverride);
+  };
+
+  refitSpineTextRef.current = () => alignTextToSpine();
 
   const addBarcodePlaceholder = () => {
     if (!canvas) return;
@@ -3465,6 +3549,11 @@ export default function FabricCoverStudio({
                             </button>
                           ))}
                         </div>
+                        {spineTextWasShrunk && (
+                          <p className="text-[8px] font-black text-indigo-600 bg-indigo-50/60 p-2 rounded-lg border border-indigo-200/50 leading-normal">
+                            ↔ Auto-shrunk to fit the spine. Lower the font size for a larger visual result.
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -4193,6 +4282,12 @@ export default function FabricCoverStudio({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 15a8 8 0 0 1 16 0" />
                     </svg>
                     <span>Add Curved / Arc Text</span>
+                  </button>
+                  <button onClick={addSpineText} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
+                    <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16M8 4h8M8 20h8" />
+                    </svg>
+                    <span>Add Spine Text (Auto-Fit)</span>
                   </button>
                 </div>
               </div>

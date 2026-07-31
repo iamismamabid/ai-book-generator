@@ -25,6 +25,7 @@ import { loadGoogleFontFamilies } from "@/lib/loadGoogleFont";
 import { COVER_TEXTURES, TEXTURE_CATEGORIES, renderTexture, CoverTexture } from "@/lib/coverTextures";
 import VersionHistoryModal from "@/components/VersionHistoryModal";
 import { CoverVersion } from "@/lib/coverVersions";
+import { relayoutLegacyElements, layoutsDiffer } from "@/lib/coverRelayout";
 
 const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
   { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo"] },
@@ -750,8 +751,18 @@ export default function FabricCoverStudio({
   // not-yet-loaded font would silently stay on the fallback font.
   useEffect(() => {
     if (!canvas || typeof document === 'undefined' || !document.fonts?.ready) return;
-    document.fonts.ready.then(() => canvas.requestRenderAll());
+    // Resolves asynchronously, by which point a trim-size change may have
+    // replaced (and disposed) this canvas.
+    document.fonts.ready.then(() => {
+      if (isCanvasAlive(canvas)) canvas.requestRenderAll();
+    });
   }, [canvas]);
+
+  // fabric.Canvas.dispose() tears down the 2D contexts but the instance stays
+  // referenced by React state until the replacement commits, so anything that
+  // might run in that window has to check the canvas is still usable.
+  const isCanvasAlive = (c: fabric.Canvas | null): c is fabric.Canvas =>
+    !!c && !!c.getContext();
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
@@ -783,6 +794,14 @@ export default function FabricCoverStudio({
 
   // Named version history (checkpoints, distinct from step-by-step undo/redo)
   const [isVersionsOpen, setIsVersionsOpen] = useState(false);
+
+  // Smart resize — remap the design when the cover geometry changes. Mirrored
+  // into a ref because the canvas-init effect that consumes it deliberately
+  // doesn't re-run on this toggle.
+  const [autoRelayout, setAutoRelayout] = useState(true);
+  const autoRelayoutRef = useRef(autoRelayout);
+  useEffect(() => { autoRelayoutRef.current = autoRelayout; }, [autoRelayout]);
+  const lastImportLayoutRef = useRef<KdpLayoutResult | null>(null);
 
   // Auto-collapse tool tab panel on mobile devices upon initial load
   useEffect(() => {
@@ -1443,8 +1462,26 @@ export default function FabricCoverStudio({
     }
     if (restoredFonts.size > 0) loadGoogleFontFamilies(Array.from(restoredFonts));
 
-    // Initial elements import (translation from Konva element nodes to Fabric objects)
-    importLegacyElements(fCanvas, initialElements, layout);
+    // Smart resize: this effect re-runs (and rebuilds the canvas) whenever the
+    // trim size, page count or paper type changes the cover geometry. Without a
+    // remap the saved elements would be re-imported at coordinates meant for the
+    // old canvas, so a 6x9 layout would land wrong on an 8.5x11. Transform the
+    // element data rather than the built objects so asynchronously loaded
+    // images go through the same mapping.
+    const previousLayout = lastImportLayoutRef.current;
+    const shouldRelayout =
+      autoRelayoutRef.current && previousLayout && layoutsDiffer(previousLayout, layout);
+    const elementsToImport = shouldRelayout
+      ? relayoutLegacyElements(initialElements, previousLayout!, layout)
+      : initialElements;
+    lastImportLayoutRef.current = layout;
+
+    // Initial elements import (translation from Konva element nodes to Fabric objects).
+    // Adding each object fires object:added -> saveState, which serializes the
+    // canvas and persists the remapped coordinates — so no explicit save here.
+    // (Calling onSaveWorkspace directly at this point re-renders the parent
+    // mid-effect and makes other effects render against the just-disposed canvas.)
+    importLegacyElements(fCanvas, elementsToImport, layout);
 
     // Initial layers load
     updateLayers();
@@ -1457,7 +1494,7 @@ export default function FabricCoverStudio({
 
   // Handle snap-to-grid & guides alignment
   useEffect(() => {
-    if (!canvas) return;
+    if (!isCanvasAlive(canvas)) return;
 
     const getGuides = () => ({
       x: [
@@ -1566,7 +1603,13 @@ export default function FabricCoverStudio({
 
   // Background painting and KDP Guides rendering in Fabric's before:render and after:render
   useEffect(() => {
-    if (!canvas) return;
+    // Changing the trim size / page count rebuilds the fabric canvas, and the
+    // init effect runs first — so on that render this effect still sees the
+    // previous, already-disposed instance. Touching it throws inside fabric
+    // (its 2D context is gone), which used to take the whole studio down.
+    // Bailing is safe: `canvas` is a dependency, so this re-runs against the
+    // new instance as soon as setCanvas commits.
+    if (!isCanvasAlive(canvas)) return;
 
     // Remove legacy render listeners
     canvas.off("before:render");
@@ -5070,6 +5113,19 @@ export default function FabricCoverStudio({
                   ))}
                 </select>
               </div>
+
+              <label className="flex items-start gap-2.5 cursor-pointer select-none bg-white p-2.5 rounded-xl border border-slate-200">
+                <input
+                  type="checkbox"
+                  checked={autoRelayout}
+                  onChange={(e) => setAutoRelayout(e.target.checked)}
+                  className="w-3.5 h-3.5 mt-0.5 accent-indigo-600 cursor-pointer shrink-0"
+                />
+                <span className="text-[10px] font-bold text-slate-600 leading-snug">
+                  Smart resize — reposition and rescale your design automatically when the trim
+                  size, page count or paper type changes.
+                </span>
+              </label>
 
               <div>
                 <label className="text-xs font-bold text-slate-600 block mb-1">Paper Type (Spine Factor)</label>

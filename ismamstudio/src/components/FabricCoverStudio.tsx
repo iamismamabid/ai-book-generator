@@ -7,7 +7,10 @@ import {
   Trash2, Undo2, Redo2, Loader2, Download, Check, Settings,
   Sparkles, Shapes, Upload, LayoutTemplate, Grid, ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight,
   Plus, Eraser, Lock, Unlock, Copy, Scissors, Clipboard, ChevronsUp, ChevronsDown,
-  Bold, Italic, Underline, AlignJustify, Box, Layers as LayersIcon
+  Bold, Italic, Underline, AlignJustify, Box, Layers as LayersIcon,
+  AlignStartVertical, AlignCenterVertical, AlignEndVertical,
+  AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
+  AlignHorizontalSpaceAround, AlignVerticalSpaceAround
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -766,6 +769,10 @@ export default function FabricCoverStudio({
   // Which cover region the texture swatches apply to
   const [textureTarget, setTextureTarget] = useState<'full' | 'front' | 'back'>('full');
 
+  // How many objects are in the current selection — drives the multi-object
+  // align/distribute controls, which only make sense for 2+ (3+ to distribute).
+  const [selectionCount, setSelectionCount] = useState(0);
+
   // Auto-collapse tool tab panel on mobile devices upon initial load
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -1350,24 +1357,20 @@ export default function FabricCoverStudio({
     fCanvas.on("object:moving", syncActiveObjectDimensions);
 
     // Selection events
-    fCanvas.on("selection:created", (e) => {
+    const syncSelection = (e: any) => {
       const obj = e.selected ? e.selected[0] : null;
       setActiveObject(obj);
+      setSelectionCount(fCanvas.getActiveObjects().length);
       if (obj) {
         setObjectWidth(Math.round((obj.width || 0) * (obj.scaleX || 1)));
         setObjectHeight(Math.round((obj.height || 0) * (obj.scaleY || 1)));
       }
-    });
-    fCanvas.on("selection:updated", (e) => {
-      const obj = e.selected ? e.selected[0] : null;
-      setActiveObject(obj);
-      if (obj) {
-        setObjectWidth(Math.round((obj.width || 0) * (obj.scaleX || 1)));
-        setObjectHeight(Math.round((obj.height || 0) * (obj.scaleY || 1)));
-      }
-    });
+    };
+    fCanvas.on("selection:created", syncSelection);
+    fCanvas.on("selection:updated", syncSelection);
     fCanvas.on("selection:cleared", () => {
       setActiveObject(null);
+      setSelectionCount(0);
     });
 
     // Save history on changes
@@ -2694,6 +2697,77 @@ export default function FabricCoverStudio({
     canvas.fire("object:modified", { target: activeObject });
   };
 
+  // Multi-object align/distribute. While objects sit inside an ActiveSelection
+  // their left/top are relative to that group's center, so discarding the
+  // selection first (which bakes absolute coordinates back onto each object)
+  // is what makes plain left/top math correct here. The selection is rebuilt
+  // afterwards so the user's selection isn't lost.
+  const withUngroupedSelection = (fn: (objects: fabric.Object[]) => void) => {
+    if (!canvas) return;
+    const objects = canvas.getActiveObjects();
+    if (objects.length < 2) return;
+
+    canvas.discardActiveObject();
+    objects.forEach(obj => obj.setCoords());
+    fn(objects);
+    objects.forEach(obj => obj.setCoords());
+
+    const selection = new fabric.ActiveSelection(objects, { canvas });
+    canvas.setActiveObject(selection);
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: selection });
+  };
+
+  const alignSelection = (edge: 'left' | 'centerX' | 'right' | 'top' | 'centerY' | 'bottom') => {
+    withUngroupedSelection((objects) => {
+      const rects = objects.map(obj => ({ obj, rect: obj.getBoundingRect(true, true) }));
+      const minX = Math.min(...rects.map(r => r.rect.left));
+      const maxX = Math.max(...rects.map(r => r.rect.left + r.rect.width));
+      const minY = Math.min(...rects.map(r => r.rect.top));
+      const maxY = Math.max(...rects.map(r => r.rect.top + r.rect.height));
+      const midX = (minX + maxX) / 2;
+      const midY = (minY + maxY) / 2;
+
+      for (const { obj, rect } of rects) {
+        // getBoundingRect can differ from left/top (stroke, rotation, origin),
+        // so shift by the delta rather than assigning an absolute position.
+        if (edge === 'left') obj.set({ left: (obj.left || 0) + (minX - rect.left) });
+        else if (edge === 'right') obj.set({ left: (obj.left || 0) + (maxX - (rect.left + rect.width)) });
+        else if (edge === 'centerX') obj.set({ left: (obj.left || 0) + (midX - (rect.left + rect.width / 2)) });
+        else if (edge === 'top') obj.set({ top: (obj.top || 0) + (minY - rect.top) });
+        else if (edge === 'bottom') obj.set({ top: (obj.top || 0) + (maxY - (rect.top + rect.height)) });
+        else if (edge === 'centerY') obj.set({ top: (obj.top || 0) + (midY - (rect.top + rect.height / 2)) });
+      }
+    });
+  };
+
+  const distributeSelection = (axis: 'horizontal' | 'vertical') => {
+    withUngroupedSelection((objects) => {
+      if (objects.length < 3) return;
+      const rects = objects.map(obj => ({ obj, rect: obj.getBoundingRect(true, true) }));
+      const isH = axis === 'horizontal';
+      const start = (r: { left: number; top: number }) => (isH ? r.left : r.top);
+      const size = (r: { width: number; height: number }) => (isH ? r.width : r.height);
+
+      rects.sort((a, b) => start(a.rect) - start(b.rect));
+
+      const first = rects[0];
+      const last = rects[rects.length - 1];
+      const span = start(last.rect) + size(last.rect) - start(first.rect);
+      const totalSize = rects.reduce((sum, r) => sum + size(r.rect), 0);
+      // Equal gaps between edges, with the outermost two objects staying put.
+      const gap = (span - totalSize) / (rects.length - 1);
+
+      let cursor = start(first.rect) + size(first.rect) + gap;
+      for (let i = 1; i < rects.length - 1; i++) {
+        const { obj, rect } = rects[i];
+        if (isH) obj.set({ left: (obj.left || 0) + (cursor - rect.left) });
+        else obj.set({ top: (obj.top || 0) + (cursor - rect.top) });
+        cursor += size(rect) + gap;
+      }
+    });
+  };
+
   const applyPresetColors = (back: string, front: string, type?: string, backStart?: string, backEnd?: string, frontStart?: string, frontEnd?: string) => {
     let newBg;
     if (type === 'gradient' && backStart && backEnd && frontStart && frontEnd) {
@@ -3196,6 +3270,57 @@ export default function FabricCoverStudio({
                 Deselect
               </button>
             </div>
+
+            {/* Multi-object Align & Distribute */}
+            {selectionCount >= 2 && (
+              <div className="space-y-2 pb-2 border-b border-slate-100">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-[9px] font-black text-slate-400 uppercase">Align {selectionCount} Objects</h4>
+                </div>
+
+                <div className="grid grid-cols-3 gap-1">
+                  {([
+                    { edge: 'left', label: 'Left', icon: AlignStartVertical },
+                    { edge: 'centerX', label: 'Center', icon: AlignCenterVertical },
+                    { edge: 'right', label: 'Right', icon: AlignEndVertical },
+                    { edge: 'top', label: 'Top', icon: AlignStartHorizontal },
+                    { edge: 'centerY', label: 'Middle', icon: AlignCenterHorizontal },
+                    { edge: 'bottom', label: 'Bottom', icon: AlignEndHorizontal },
+                  ] as const).map(({ edge, label, icon: Icon }) => (
+                    <button
+                      key={edge}
+                      onClick={() => alignSelection(edge)}
+                      title={`Align ${label.toLowerCase()}`}
+                      className="flex flex-col items-center gap-0.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-400 text-slate-600 transition-colors cursor-pointer"
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span className="text-[8px] font-black uppercase">{label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {selectionCount >= 3 && (
+                  <div className="grid grid-cols-2 gap-1">
+                    <button
+                      onClick={() => distributeSelection('horizontal')}
+                      title="Distribute horizontally with equal spacing"
+                      className="flex items-center justify-center gap-1 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-400 text-slate-600 transition-colors cursor-pointer"
+                    >
+                      <AlignHorizontalSpaceAround className="w-3.5 h-3.5" />
+                      <span className="text-[8px] font-black uppercase">Space H</span>
+                    </button>
+                    <button
+                      onClick={() => distributeSelection('vertical')}
+                      title="Distribute vertically with equal spacing"
+                      className="flex items-center justify-center gap-1 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-400 text-slate-600 transition-colors cursor-pointer"
+                    >
+                      <AlignVerticalSpaceAround className="w-3.5 h-3.5" />
+                      <span className="text-[8px] font-black uppercase">Space V</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Text Options */}
             {(activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox') && (

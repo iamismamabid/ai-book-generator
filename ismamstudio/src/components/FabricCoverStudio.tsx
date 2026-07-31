@@ -17,6 +17,8 @@ import TemplateGalleryModal from "@/components/TemplateGalleryModal";
 import CoverMockup3DModal from "@/components/CoverMockup3DModal";
 import SeriesBrandingModal from "@/components/SeriesBrandingModal";
 import BackgroundRemoverModal from "@/components/BackgroundRemoverModal";
+import FontPicker from "@/components/FontPicker";
+import { loadGoogleFontFamilies } from "@/lib/loadGoogleFont";
 
 const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
   { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo"] },
@@ -1388,6 +1390,16 @@ export default function FabricCoverStudio({
     fCanvas.on("object:added", saveState);
     fCanvas.on("object:modified", saveState);
     fCanvas.on("object:removed", saveState);
+
+    // A saved design may reference a font outside the curated 66 (picked via the
+    // full-catalog FontPicker in an earlier session) — load those before/alongside
+    // import so text doesn't silently render in a fallback font after a reload.
+    const restoredFonts = new Set<string>();
+    for (const el of initialElements || []) {
+      if (el?.fontFamily) restoredFonts.add(el.fontFamily);
+      if (el?.curvedTextData?.fontFamily) restoredFonts.add(el.curvedTextData.fontFamily);
+    }
+    if (restoredFonts.size > 0) loadGoogleFontFamilies(Array.from(restoredFonts));
 
     // Initial elements import (translation from Konva element nodes to Fabric objects)
     importLegacyElements(fCanvas, initialElements, layout);
@@ -3109,23 +3121,14 @@ export default function FabricCoverStudio({
                 </div>
                 <div>
                   <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Family</label>
-                  <select
+                  <FontPicker
                     value={objectFontFamily}
-                    onChange={(e) => {
-                      setObjectFontFamily(e.target.value);
-                      updateActiveObjectProperty("fontFamily", e.target.value);
+                    curatedCategories={FONT_CATEGORIES}
+                    onChange={(font) => {
+                      setObjectFontFamily(font);
+                      updateActiveObjectProperty("fontFamily", font);
                     }}
-                    className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-500 font-sans"
-                    style={{ fontFamily: objectFontFamily }}
-                  >
-                    {FONT_CATEGORIES.map(({ category, fonts }) => (
-                      <optgroup key={category} label={category}>
-                        {fonts.map((font) => (
-                          <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
-                        ))}
-                      </optgroup>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -3297,23 +3300,14 @@ export default function FabricCoverStudio({
                 </div>
                 <div>
                   <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Family</label>
-                  <select
+                  <FontPicker
                     value={curvedFontFamily}
-                    onChange={(e) => {
-                      setCurvedFontFamily(e.target.value);
-                      regenerateCurvedText({ fontFamily: e.target.value });
+                    curatedCategories={FONT_CATEGORIES}
+                    onChange={(font) => {
+                      setCurvedFontFamily(font);
+                      regenerateCurvedText({ fontFamily: font });
                     }}
-                    className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-500"
-                    style={{ fontFamily: curvedFontFamily }}
-                  >
-                    {FONT_CATEGORIES.map(({ category, fonts }) => (
-                      <optgroup key={category} label={category}>
-                        {fonts.map((font) => (
-                          <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
-                        ))}
-                      </optgroup>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>

@@ -27,6 +27,18 @@ import VersionHistoryModal from "@/components/VersionHistoryModal";
 import { CoverVersion } from "@/lib/coverVersions";
 import { relayoutLegacyElements, layoutsDiffer } from "@/lib/coverRelayout";
 
+// Text-on-a-path shapes. "arc" is the original circular layout; the rest are
+// sampled parametric curves (see samplePathPoints).
+type PathShape = 'arc' | 'wave' | 'bump' | 'valley' | 'slant';
+
+const PATH_SHAPE_OPTIONS: { value: PathShape; label: string }[] = [
+  { value: 'arc', label: 'Circle' },
+  { value: 'bump', label: 'Arch' },
+  { value: 'valley', label: 'Valley' },
+  { value: 'wave', label: 'Wave' },
+  { value: 'slant', label: 'Slant' },
+];
+
 const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
   { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo"] },
   { category: "Sans Serif", fonts: ["Inter", "Outfit", "Montserrat", "Poppins", "Raleway", "Nunito", "Work Sans", "Rubik", "DM Sans", "Archivo", "Karla", "Mulish", "Manrope", "Josefin Sans"] },
@@ -835,6 +847,9 @@ export default function FabricCoverStudio({
   const [curvedTextValue, setCurvedTextValue] = useState("CURVED TEXT");
   const [curvedRadius, setCurvedRadius] = useState(90);
   const [curvedFlip, setCurvedFlip] = useState(false);
+  const [curvedPathShape, setCurvedPathShape] = useState<PathShape>('arc');
+  const [curvedPathWidth, setCurvedPathWidth] = useState(300);
+  const [curvedPathAmplitude, setCurvedPathAmplitude] = useState(40);
   const [curvedFontFamily, setCurvedFontFamily] = useState("Arial");
   const [curvedFontSize, setCurvedFontSize] = useState(24);
   const [curvedColor, setCurvedColor] = useState("#FFFFFF");
@@ -1031,6 +1046,10 @@ export default function FabricCoverStudio({
       setCurvedFontFamily(data.fontFamily);
       setCurvedFontSize(data.fontSize);
       setCurvedColor(data.fill);
+      // Designs saved before path shapes existed have no pathShape — those are circular.
+      setCurvedPathShape(data.pathShape || 'arc');
+      setCurvedPathWidth(data.pathWidth ?? 300);
+      setCurvedPathAmplitude(data.pathAmplitude ?? 40);
     }
   }, [activeObject]);
 
@@ -2203,7 +2222,83 @@ export default function FabricCoverStudio({
     fontFamily: string;
     fontSize: number;
     fill: string;
+    /** Omitted on designs saved before path shapes existed — those stay circular. */
+    pathShape?: PathShape;
+    /** Horizontal extent of the non-circular paths */
+    pathWidth?: number;
+    /** How pronounced the curve is */
+    pathAmplitude?: number;
   }
+
+  // Samples a parametric path centered on the origin, then walks it by arc
+  // length so letters keep even spacing around the bends (stepping the raw
+  // parameter instead would bunch them up where the curve is steep).
+  const samplePathPoints = (shape: PathShape, width: number, amplitude: number) => {
+    const STEPS = 400;
+    const points: { x: number; y: number }[] = [];
+    for (let i = 0; i <= STEPS; i++) {
+      const t = i / STEPS;
+      const x = (t - 0.5) * width;
+      let y = 0;
+      if (shape === 'wave') y = -amplitude * Math.sin(2 * Math.PI * t);
+      else if (shape === 'bump') y = -amplitude * Math.sin(Math.PI * t);
+      else if (shape === 'valley') y = amplitude * Math.sin(Math.PI * t);
+      else if (shape === 'slant') y = (t - 0.5) * 2 * amplitude;
+      points.push({ x, y });
+    }
+
+    const cumulative: number[] = [0];
+    for (let i = 1; i < points.length; i++) {
+      const dx = points[i].x - points[i - 1].x;
+      const dy = points[i].y - points[i - 1].y;
+      cumulative.push(cumulative[i - 1] + Math.hypot(dx, dy));
+    }
+
+    const total = cumulative[cumulative.length - 1];
+
+    // Position + tangent angle at a given distance along the path
+    const at = (distance: number) => {
+      const d = Math.max(0, Math.min(total, distance));
+      let i = 1;
+      while (i < cumulative.length - 1 && cumulative[i] < d) i++;
+      const segLength = cumulative[i] - cumulative[i - 1] || 1;
+      const f = (d - cumulative[i - 1]) / segLength;
+      const p0 = points[i - 1];
+      const p1 = points[i];
+      return {
+        x: p0.x + (p1.x - p0.x) * f,
+        y: p0.y + (p1.y - p0.y) * f,
+        angle: (Math.atan2(p1.y - p0.y, p1.x - p0.x) * 180) / Math.PI,
+      };
+    };
+
+    return { total, at };
+  };
+
+  const buildPathTextChars = (config: CurvedTextData): fabric.Text[] => {
+    const { text, fontFamily, fontSize, fill } = config;
+    const shape = config.pathShape || 'wave';
+    const width = config.pathWidth ?? 300;
+    const amplitude = config.pathAmplitude ?? 40;
+    const { total, at } = samplePathPoints(shape, width, amplitude);
+
+    // Build each glyph first so its real advance width drives the spacing.
+    const chars = text.split('').map(
+      (ch) => new fabric.Text(ch, { fontFamily, fontSize, fill, originX: 'center', originY: 'center' })
+    );
+    const widths = chars.map((c) => c.width || fontSize * 0.5);
+    const textLength = widths.reduce((sum, w) => sum + w, 0);
+
+    // Center the string along the path.
+    let cursor = Math.max(0, (total - textLength) / 2);
+    chars.forEach((charObj, i) => {
+      const { x, y, angle } = at(cursor + widths[i] / 2);
+      charObj.set({ left: x, top: y, angle });
+      cursor += widths[i];
+    });
+
+    return chars;
+  };
 
   // Fabric.js has no built-in text-on-a-path, so curved text is built as a
   // Group of individually positioned + rotated single-character Text
@@ -2212,6 +2307,23 @@ export default function FabricCoverStudio({
   // (see regenerateCurvedText below).
   const buildCurvedTextGroup = (config: CurvedTextData & { left: number; top: number }): fabric.Group => {
     const { text, radius, flip, fontFamily, fontSize, fill, left, top } = config;
+
+    // Non-circular paths follow the sampled-path layout instead. The circular
+    // branch below is kept as-is so designs saved before path shapes existed
+    // render exactly as they did.
+    if (config.pathShape && config.pathShape !== 'arc') {
+      const pathChars = buildPathTextChars(config);
+      const pathGroup = new fabric.Group(pathChars, { left, top });
+      (pathGroup as any).isCurvedText = true;
+      (pathGroup as any).curvedTextData = {
+        text, radius, flip, fontFamily, fontSize, fill,
+        pathShape: config.pathShape,
+        pathWidth: config.pathWidth ?? 300,
+        pathAmplitude: config.pathAmplitude ?? 40,
+      };
+      return pathGroup;
+    }
+
     const chars = text.split('');
     // Degrees per character, scaled down for longer strings so they don't
     // overlap; capped so short strings don't spread across the whole circle.
@@ -2240,7 +2352,12 @@ export default function FabricCoverStudio({
 
     const group = new fabric.Group(charObjects, { left, top });
     (group as any).isCurvedText = true;
-    (group as any).curvedTextData = { text, radius, flip, fontFamily, fontSize, fill };
+    (group as any).curvedTextData = {
+      text, radius, flip, fontFamily, fontSize, fill,
+      pathShape: 'arc' as PathShape,
+      pathWidth: config.pathWidth ?? 300,
+      pathAmplitude: config.pathAmplitude ?? 40,
+    };
     return group;
   };
 
@@ -3662,34 +3779,93 @@ export default function FabricCoverStudio({
                   />
                 </div>
                 <div>
-                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Curve Radius: {curvedRadius}px</label>
-                  <input
-                    type="range"
-                    min={30}
-                    max={250}
-                    value={curvedRadius}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      setCurvedRadius(val);
-                      regenerateCurvedText({ radius: val });
-                    }}
-                    className="w-full accent-indigo-500"
-                  />
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Path Shape</label>
+                  <div className="grid grid-cols-3 gap-1">
+                    {PATH_SHAPE_OPTIONS.map(({ value, label }) => (
+                      <button
+                        key={value}
+                        onClick={() => {
+                          setCurvedPathShape(value);
+                          regenerateCurvedText({ pathShape: value });
+                        }}
+                        className={`py-1.5 rounded-lg text-[9px] font-black uppercase border transition-all cursor-pointer ${
+                          curvedPathShape === value
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => { setCurvedFlip(false); regenerateCurvedText({ flip: false }); }}
-                    className={`p-2 rounded-lg text-[10px] font-black uppercase border transition-all ${!curvedFlip ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200'}`}
-                  >
-                    Arc Up
-                  </button>
-                  <button
-                    onClick={() => { setCurvedFlip(true); regenerateCurvedText({ flip: true }); }}
-                    className={`p-2 rounded-lg text-[10px] font-black uppercase border transition-all ${curvedFlip ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200'}`}
-                  >
-                    Arc Down
-                  </button>
-                </div>
+
+                {curvedPathShape === 'arc' ? (
+                  <>
+                    <div>
+                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Curve Radius: {curvedRadius}px</label>
+                      <input
+                        type="range"
+                        min={30}
+                        max={250}
+                        value={curvedRadius}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setCurvedRadius(val);
+                          regenerateCurvedText({ radius: val });
+                        }}
+                        className="w-full accent-indigo-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => { setCurvedFlip(false); regenerateCurvedText({ flip: false }); }}
+                        className={`p-2 rounded-lg text-[10px] font-black uppercase border transition-all cursor-pointer ${!curvedFlip ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200'}`}
+                      >
+                        Arc Up
+                      </button>
+                      <button
+                        onClick={() => { setCurvedFlip(true); regenerateCurvedText({ flip: true }); }}
+                        className={`p-2 rounded-lg text-[10px] font-black uppercase border transition-all cursor-pointer ${curvedFlip ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200'}`}
+                      >
+                        Arc Down
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Path Width: {curvedPathWidth}px</label>
+                      <input
+                        type="range"
+                        min={80}
+                        max={600}
+                        value={curvedPathWidth}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setCurvedPathWidth(val);
+                          regenerateCurvedText({ pathWidth: val });
+                        }}
+                        className="w-full accent-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Curve Depth: {curvedPathAmplitude}px</label>
+                      <input
+                        type="range"
+                        min={0}
+                        max={150}
+                        value={curvedPathAmplitude}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setCurvedPathAmplitude(val);
+                          regenerateCurvedText({ pathAmplitude: val });
+                        }}
+                        className="w-full accent-indigo-500"
+                      />
+                    </div>
+                  </>
+                )}
                 <div>
                   <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Family</label>
                   <FontPicker

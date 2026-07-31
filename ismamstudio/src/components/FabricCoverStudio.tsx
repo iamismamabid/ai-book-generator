@@ -5550,7 +5550,7 @@ export default function FabricCoverStudio({
       {/* 3. FABRIC WORKSPACE */}
       <div className="flex-1 bg-slate-100 flex flex-col items-center justify-center p-3 sm:p-6 md:p-10 relative overflow-auto min-w-0">
         {/* Spine details helper */}
-        <div className="mb-2 sm:mb-0 sm:absolute sm:top-4 bg-slate-950/80 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-800 text-[9px] sm:text-[10px] font-black uppercase text-amber-400 tracking-widest shadow-md z-20 max-w-full text-center truncate">
+        <div className="mb-3 sm:mb-4 bg-slate-950/80 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-800 text-[9px] sm:text-[10px] font-black uppercase text-amber-400 tracking-widest shadow-md z-20 max-w-full text-center truncate">
           Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"
         </div>
 

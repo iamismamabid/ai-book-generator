@@ -1412,6 +1412,86 @@ export default function FabricCoverStudio({
     };
   }, [canvas, snapToGrid, layout]);
 
+  // Paints the wraparound cover's background (solid/gradient fills, then any
+  // uploaded background photos) onto an arbitrary 2D context at 1x scale —
+  // the caller should ctx.scale(multiplier, multiplier) first for a
+  // higher-resolution target. Shared by the live canvas's before:render hook
+  // below AND by every export path (handleGenerateCover, the 3D mockup
+  // crop, series batch export): Fabric's multiplier-based toDataURL()
+  // renders through an internal clone that never fires bound render event
+  // listeners, so without this the exported/mocked-up/batched covers come
+  // out with the background missing (solid color fills and photos alike).
+  const paintCoverBackground = (ctx: CanvasRenderingContext2D) => {
+    const bg = coverBackgroundRef.current;
+    ctx.save();
+
+    if (bg.backCoverType === 'gradient') {
+      const grad = ctx.createLinearGradient(0, 0, layout.spineLeftPx, 0);
+      grad.addColorStop(0, bg.backCoverGradientStart);
+      grad.addColorStop(1, bg.backCoverGradientEnd);
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = bg.backCoverColor;
+    }
+    ctx.fillRect(0, 0, layout.spineLeftPx, layout.canvasHeight);
+
+    if (bg.backCoverType === 'gradient' && bg.frontCoverType === 'gradient') {
+      const grad = ctx.createLinearGradient(layout.spineLeftPx, 0, layout.spineRightPx, 0);
+      grad.addColorStop(0, bg.backCoverGradientEnd);
+      grad.addColorStop(1, bg.frontCoverGradientStart);
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = bg.backCoverColor;
+    }
+    ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
+
+    if (bg.frontCoverType === 'gradient') {
+      const grad = ctx.createLinearGradient(layout.spineRightPx, 0, layout.canvasWidth, 0);
+      grad.addColorStop(0, bg.frontCoverGradientStart);
+      grad.addColorStop(1, bg.frontCoverGradientEnd);
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = bg.frontCoverColor;
+    }
+    ctx.fillRect(layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
+
+    if (fullCoverImageEl.current) {
+      ctx.drawImage(fullCoverImageEl.current, 0, 0, layout.canvasWidth, layout.canvasHeight);
+    }
+    if (backCoverImageEl.current) {
+      ctx.drawImage(backCoverImageEl.current, 0, 0, layout.spineLeftPx, layout.canvasHeight);
+    }
+    if (frontCoverImageEl.current) {
+      ctx.drawImage(frontCoverImageEl.current, layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
+    }
+
+    ctx.restore();
+  };
+
+  // Renders a fabric canvas to a data URL that includes the custom-painted
+  // background (see paintCoverBackground's comment for why this can't just
+  // be canvas.toDataURL({multiplier})). Composites Fabric's own
+  // objects-only multiplied render on top of a manually-painted background
+  // layer at the same resolution.
+  const exportCanvasWithBackground = (targetCanvas: fabric.Canvas, multiplier: number): Promise<string> => {
+    return new Promise((resolve) => {
+      const objectsOnlyDataUrl = targetCanvas.toDataURL({ format: 'png', multiplier });
+      const img = new Image();
+      img.onload = () => {
+        const compositeEl = document.createElement('canvas');
+        compositeEl.width = layout.canvasWidth * multiplier;
+        compositeEl.height = layout.canvasHeight * multiplier;
+        const ctx = compositeEl.getContext('2d');
+        if (!ctx) { resolve(objectsOnlyDataUrl); return; }
+        ctx.scale(multiplier, multiplier);
+        paintCoverBackground(ctx);
+        ctx.drawImage(img, 0, 0, layout.canvasWidth, layout.canvasHeight);
+        resolve(compositeEl.toDataURL('image/png'));
+      };
+      img.src = objectsOnlyDataUrl;
+    });
+  };
+
   // Background painting and KDP Guides rendering in Fabric's before:render and after:render
   useEffect(() => {
     if (!canvas) return;
@@ -1424,56 +1504,7 @@ export default function FabricCoverStudio({
     canvas.on("before:render", () => {
       const ctx = canvas.getContext();
       if (!ctx) return;
-
-      ctx.save();
-      
-      const bg = coverBackgroundRef.current;
-      
-      // 1. Draw Back Cover background
-      if (bg.backCoverType === 'gradient') {
-        const grad = ctx.createLinearGradient(0, 0, layout.spineLeftPx, 0);
-        grad.addColorStop(0, bg.backCoverGradientStart);
-        grad.addColorStop(1, bg.backCoverGradientEnd);
-        ctx.fillStyle = grad;
-      } else {
-        ctx.fillStyle = bg.backCoverColor;
-      }
-      ctx.fillRect(0, 0, layout.spineLeftPx, layout.canvasHeight);
-
-      // 2. Draw Spine background (smooth connecting gradient or solid color)
-      if (bg.backCoverType === 'gradient' && bg.frontCoverType === 'gradient') {
-        const grad = ctx.createLinearGradient(layout.spineLeftPx, 0, layout.spineRightPx, 0);
-        grad.addColorStop(0, bg.backCoverGradientEnd);
-        grad.addColorStop(1, bg.frontCoverGradientStart);
-        ctx.fillStyle = grad;
-      } else {
-        ctx.fillStyle = bg.backCoverColor;
-      }
-      ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
-
-      // 3. Draw Front Cover background
-      if (bg.frontCoverType === 'gradient') {
-        const grad = ctx.createLinearGradient(layout.spineRightPx, 0, layout.canvasWidth, 0);
-        grad.addColorStop(0, bg.frontCoverGradientStart);
-        grad.addColorStop(1, bg.frontCoverGradientEnd);
-        ctx.fillStyle = grad;
-      } else {
-        ctx.fillStyle = bg.frontCoverColor;
-      }
-      ctx.fillRect(layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
-
-      // 4. Overlay Background Images if loaded
-      if (fullCoverImageEl.current) {
-        ctx.drawImage(fullCoverImageEl.current, 0, 0, layout.canvasWidth, layout.canvasHeight);
-      }
-      if (backCoverImageEl.current) {
-        ctx.drawImage(backCoverImageEl.current, 0, 0, layout.spineLeftPx, layout.canvasHeight);
-      }
-      if (frontCoverImageEl.current) {
-        ctx.drawImage(frontCoverImageEl.current, layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
-      }
-
-      ctx.restore();
+      paintCoverBackground(ctx);
     });
 
     // Draw Guidelines AFTER drawing objects (so they sit on top)
@@ -2752,16 +2783,13 @@ export default function FabricCoverStudio({
     canvas.discardActiveObject();
     canvas.requestRenderAll();
     
-    setTimeout(() => {
-      const dataURL = canvas.toDataURL({ 
-        format: 'png', 
-        multiplier: 3 
-      });
+    setTimeout(async () => {
+      const dataURL = await exportCanvasWithBackground(canvas, 3);
 
-      const doc = new jsPDF({ 
-        orientation: "landscape", 
-        unit: "in", 
-        format: [layout.coverWidthInches, layout.coverHeightInches] 
+      const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "in",
+        format: [layout.coverWidthInches, layout.coverHeightInches]
       });
 
       doc.addImage(dataURL, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
@@ -2780,9 +2808,9 @@ export default function FabricCoverStudio({
     canvas.discardActiveObject();
     canvas.requestRenderAll();
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const multiplier = 3;
-      const fullDataUrl = canvas.toDataURL({ format: 'png', multiplier });
+      const fullDataUrl = await exportCanvasWithBackground(canvas, multiplier);
 
       const img = new Image();
       img.onload = () => {
@@ -2853,19 +2881,19 @@ export default function FabricCoverStudio({
     const zip = new JSZip();
 
     const renderOne = (title: string): Promise<Blob> => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const tempEl = document.createElement('canvas');
         const tempCanvas = new fabric.Canvas(tempEl, {
           width: layout.canvasWidth,
           height: layout.canvasHeight,
         });
-        tempCanvas.loadFromJSON(snapshot, () => {
+        tempCanvas.loadFromJSON(snapshot, async () => {
           const marked = tempCanvas.getObjects().find((o: any) => o.seriesTitleMarker);
           if (marked) {
             (marked as fabric.IText).set('text', title);
           }
           tempCanvas.renderAll();
-          const dataUrl = tempCanvas.toDataURL({ format: 'png', multiplier: 3 });
+          const dataUrl = await exportCanvasWithBackground(tempCanvas, 3);
           const doc = new JsPdfCtor({ orientation: "landscape", unit: "in", format: [layout.coverWidthInches, layout.coverHeightInches] });
           doc.addImage(dataUrl, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
           tempCanvas.dispose();

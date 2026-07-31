@@ -796,7 +796,7 @@ export default function HomeClient() {
 
               <div className="space-y-4 text-slate-600 text-sm md:text-base font-semibold leading-relaxed font-sans">
                 <p>
-                  "As a CSE student and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, making it tedious to compile a single book. I knew there had to be a more efficient and integrated way."
+                  "As a web developer and software engineer and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, making it tedious to compile a single book. I knew there had to be a more efficient and integrated way."
                 </p>
                 <p>
                   "That is why I built KDPage. My goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. I wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."

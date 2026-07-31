@@ -10,7 +10,7 @@ import {
   Bold, Italic, Underline, AlignJustify, Box, Layers as LayersIcon,
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
-  AlignHorizontalSpaceAround, AlignVerticalSpaceAround
+  AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -23,6 +23,8 @@ import BackgroundRemoverModal from "@/components/BackgroundRemoverModal";
 import FontPicker from "@/components/FontPicker";
 import { loadGoogleFontFamilies } from "@/lib/loadGoogleFont";
 import { COVER_TEXTURES, TEXTURE_CATEGORIES, renderTexture, CoverTexture } from "@/lib/coverTextures";
+import VersionHistoryModal from "@/components/VersionHistoryModal";
+import { CoverVersion } from "@/lib/coverVersions";
 
 const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
   { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo"] },
@@ -778,6 +780,9 @@ export default function FabricCoverStudio({
   // How many objects are in the current selection — drives the multi-object
   // align/distribute controls, which only make sense for 2+ (3+ to distribute).
   const [selectionCount, setSelectionCount] = useState(0);
+
+  // Named version history (checkpoints, distinct from step-by-step undo/redo)
+  const [isVersionsOpen, setIsVersionsOpen] = useState(false);
 
   // Auto-collapse tool tab panel on mobile devices upon initial load
   useEffect(() => {
@@ -2016,6 +2021,36 @@ export default function FabricCoverStudio({
         isUpdatingHistory.current = false;
       });
     }
+  };
+
+  // Named version checkpoints. The snapshot payload deliberately matches the
+  // undo/redo state shape (same custom-prop list passed to toJSON) plus the
+  // trim/page settings, since those change the canvas geometry too.
+  const buildVersionSnapshot = () => ({
+    pageCount,
+    trimSize,
+    background: coverBackgroundRef.current,
+    canvasJson: canvas ? canvas.toJSON(['isCurvedText', 'curvedTextData']) : null,
+  });
+
+  const restoreVersion = (version: CoverVersion) => {
+    if (!canvas || !version.canvasJson) return;
+    isUpdatingHistory.current = true;
+
+    if (version.trimSize) setTrimSize(version.trimSize);
+    if (version.pageCount) setPageCount(version.pageCount);
+    if (version.background) {
+      coverBackgroundRef.current = version.background;
+      setCoverBackground(version.background);
+    }
+
+    canvas.loadFromJSON(version.canvasJson, () => {
+      canvas.requestRenderAll();
+      isUpdatingHistory.current = false;
+      // Push the restored state onto the undo stack so the restore itself
+      // is undoable rather than silently replacing history.
+      saveStateRef.current?.();
+    });
   };
 
   // Ref to store the previous cover background state to avoid duplicate saves
@@ -3314,6 +3349,13 @@ export default function FabricCoverStudio({
             className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
           >
             <LayersIcon className="w-5 h-5"/>
+          </button>
+          <button
+            onClick={() => setIsVersionsOpen(true)}
+            title="Version History — Save & Restore Checkpoints"
+            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+          >
+            <History className="w-5 h-5"/>
           </button>
           <button
             onClick={handleGenerateCover}
@@ -5345,6 +5387,13 @@ export default function FabricCoverStudio({
         onClose={() => setIsBgRemoverOpen(false)}
         imageSrc={bgRemoverImageSrc}
         onApply={handleApplyBgRemoval}
+      />
+
+      <VersionHistoryModal
+        isOpen={isVersionsOpen}
+        onClose={() => setIsVersionsOpen(false)}
+        getSnapshot={buildVersionSnapshot}
+        onRestore={restoreVersion}
       />
     </div>
   );

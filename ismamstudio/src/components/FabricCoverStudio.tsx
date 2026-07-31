@@ -16,6 +16,7 @@ import { COVER_TEMPLATES, resolveTemplateElements, CoverTemplate } from "@/lib/c
 import TemplateGalleryModal from "@/components/TemplateGalleryModal";
 import CoverMockup3DModal from "@/components/CoverMockup3DModal";
 import SeriesBrandingModal from "@/components/SeriesBrandingModal";
+import BackgroundRemoverModal from "@/components/BackgroundRemoverModal";
 
 const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
   { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo"] },
@@ -749,6 +750,10 @@ export default function FabricCoverStudio({
   // Series Branding (batch export) state
   const [isSeriesModalOpen, setIsSeriesModalOpen] = useState(false);
 
+  // Background Remover (in-panel) state
+  const [isBgRemoverOpen, setIsBgRemoverOpen] = useState(false);
+  const [bgRemoverImageSrc, setBgRemoverImageSrc] = useState<string | null>(null);
+
   // Auto-collapse tool tab panel on mobile devices upon initial load
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -1052,6 +1057,38 @@ export default function FabricCoverStudio({
     if (saveHistory) {
       canvas.fire("object:modified", { target: img });
     }
+  };
+
+  const handleOpenBgRemover = () => {
+    if (!canvas || !activeObject || activeObject.type !== "image") return;
+    const img = activeObject as fabric.Image;
+    const src = img.getSrc();
+    if (!src) return;
+    setBgRemoverImageSrc(src);
+    setIsBgRemoverOpen(true);
+  };
+
+  const handleApplyBgRemoval = (dataUrl: string) => {
+    if (!canvas || !activeObject || activeObject.type !== "image") return;
+    const img = activeObject as fabric.Image;
+    // Preserve the on-canvas display size — the processed image may have
+    // slightly different pixel dimensions than the original due to the
+    // background remover's internal downscale cap for very large photos.
+    const displayWidth = img.getScaledWidth();
+    const displayHeight = img.getScaledHeight();
+    img.setSrc(
+      dataUrl,
+      () => {
+        img.set({
+          scaleX: displayWidth / (img.width || displayWidth),
+          scaleY: displayHeight / (img.height || displayHeight),
+        });
+        if (img.filters && img.filters.length > 0) img.applyFilters();
+        canvas.requestRenderAll();
+        canvas.fire("object:modified", { target: img });
+      },
+      { crossOrigin: "anonymous" }
+    );
   };
 
   // Builds a linear gradient in the object's own coordinate space (0..width, 0..height)
@@ -1841,10 +1878,12 @@ export default function FabricCoverStudio({
         } as any);
         (obj as any).isTrapezoid = true;
       } else if (el.type === 'clipart') {
-        const secureSrc = el.src.includes('?') 
-          ? `${el.src}&ts=${Date.now()}` 
-          : `${el.src}?ts=${Date.now()}`;
-          
+        const secureSrc = el.src.startsWith('data:')
+          ? el.src
+          : el.src.includes('?')
+            ? `${el.src}&ts=${Date.now()}`
+            : `${el.src}?ts=${Date.now()}`;
+
         fabric.Image.fromURL(secureSrc, (img) => {
           img.set({
             id: el.id,
@@ -2324,11 +2363,14 @@ export default function FabricCoverStudio({
 
   const addClipart = (src: string) => {
     if (!canvas) return;
-    // Add unique cache buster query parameter to bypass browser CORS cache issue
-    const secureSrc = src.includes('?') 
-      ? `${src}&ts=${Date.now()}` 
-      : `${src}?ts=${Date.now()}`;
-      
+    // Add unique cache buster query parameter to bypass browser CORS cache issue.
+    // Skip for data: URLs (local uploads) — appending a query string corrupts them.
+    const secureSrc = src.startsWith('data:')
+      ? src
+      : src.includes('?')
+        ? `${src}&ts=${Date.now()}`
+        : `${src}?ts=${Date.now()}`;
+
     fabric.Image.fromURL(secureSrc, (img) => {
       const imgW = img.width || 150;
       const imgH = img.height || 150;
@@ -3323,6 +3365,13 @@ export default function FabricCoverStudio({
                     Reset
                   </button>
                 </div>
+
+                <button
+                  onClick={handleOpenBgRemover}
+                  className="w-full inline-flex items-center justify-center gap-1.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-black text-[9px] rounded-lg uppercase tracking-wider cursor-pointer transition-all"
+                >
+                  <Scissors className="w-3.5 h-3.5" /> Remove Background
+                </button>
 
                 <div className="space-y-1">
                   <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
@@ -4936,6 +4985,13 @@ export default function FabricCoverStudio({
         onClose={() => setIsSeriesModalOpen(false)}
         targetPreviewText={seriesTargetPreviewText}
         onGenerate={handleGenerateSeries}
+      />
+
+      <BackgroundRemoverModal
+        isOpen={isBgRemoverOpen}
+        onClose={() => setIsBgRemoverOpen(false)}
+        imageSrc={bgRemoverImageSrc}
+        onApply={handleApplyBgRemoval}
       />
     </div>
   );

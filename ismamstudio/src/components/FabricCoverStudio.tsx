@@ -281,6 +281,8 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       type = 'heart';
     } else if (obj.type === 'path') {
       type = 'path';
+    } else if (obj.type === 'group' && obj.isCurvedText) {
+      type = 'curvedtext';
     }
 
 
@@ -312,6 +314,8 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       if (type === 'textbox') {
         base.isTextbox = true;
       }
+    } else if (type === 'curvedtext') {
+      base.curvedTextData = obj.curvedTextData;
     } else if (type === 'rect' || type === 'triangle' || type === 'hexagon' || type === 'star' || type === 'heart' || type === 'pentagon' || type === 'octagon' || type === 'ellipse' || type === 'diamond' || type === 'trapezoid' || type === 'path') {
       base.width = (obj.width || 100) * (obj.scaleX || 1);
       base.height = (obj.height || 100) * (obj.scaleY || 1);
@@ -516,6 +520,14 @@ export default function FabricCoverStudio({
   const [objectFontSize, setObjectFontSize] = useState(32);
   const [objectFontFamily, setObjectFontFamily] = useState("Arial");
 
+  // Curved text controls
+  const [curvedTextValue, setCurvedTextValue] = useState("CURVED TEXT");
+  const [curvedRadius, setCurvedRadius] = useState(90);
+  const [curvedFlip, setCurvedFlip] = useState(false);
+  const [curvedFontFamily, setCurvedFontFamily] = useState("Arial");
+  const [curvedFontSize, setCurvedFontSize] = useState(24);
+  const [curvedColor, setCurvedColor] = useState("#FFFFFF");
+
   // Contextual toolbar properties
   const [objectFontWeight, setObjectFontWeight] = useState("normal");
   const [objectFontStyle, setObjectFontStyle] = useState("normal");
@@ -695,6 +707,16 @@ export default function FabricCoverStudio({
       setObjectFontStyle(textObj.fontStyle || "normal");
       setObjectUnderline(!!textObj.underline);
       setObjectTextAlign(textObj.textAlign || "left");
+    }
+
+    if ((activeObject as any).isCurvedText) {
+      const data = (activeObject as any).curvedTextData as CurvedTextData;
+      setCurvedTextValue(data.text);
+      setCurvedRadius(data.radius);
+      setCurvedFlip(data.flip);
+      setCurvedFontFamily(data.fontFamily);
+      setCurvedFontSize(data.fontSize);
+      setCurvedColor(data.fill);
     }
   }, [activeObject]);
 
@@ -996,7 +1018,7 @@ export default function FabricCoverStudio({
 
     // Initial history step
     const initialJson = JSON.stringify({
-      canvasJson: fCanvas.toJSON(),
+      canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData']),
       background: coverBackgroundRef.current
     });
     historyRef.current = [initialJson];
@@ -1046,7 +1068,7 @@ export default function FabricCoverStudio({
     const saveState = () => {
       if (isUpdatingHistory.current) return;
       const stateObj = {
-        canvasJson: fCanvas.toJSON(),
+        canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData']),
         background: coverBackgroundRef.current
       };
       const json = JSON.stringify(stateObj);
@@ -1423,6 +1445,13 @@ export default function FabricCoverStudio({
         } as any);
         (obj as any).svgPathData = el.pathData;
         (obj as any).viewBox = vb;
+      } else if (el.type === 'curvedtext' && el.curvedTextData) {
+        obj = buildCurvedTextGroup({
+          ...el.curvedTextData,
+          left: el.x,
+          top: el.y,
+        });
+        obj.set({ angle: el.rotation || 0, opacity: el.opacity ?? 1 });
       } else if (el.type === 'pentagon') {
         const points = [
           { x: 50, y: 0 },
@@ -1681,6 +1710,90 @@ export default function FabricCoverStudio({
     });
     canvas.add(textbox);
     canvas.setActiveObject(textbox);
+    canvas.requestRenderAll();
+  };
+
+  interface CurvedTextData {
+    text: string;
+    radius: number;
+    flip: boolean;
+    fontFamily: string;
+    fontSize: number;
+    fill: string;
+  }
+
+  // Fabric.js has no built-in text-on-a-path, so curved text is built as a
+  // Group of individually positioned + rotated single-character Text
+  // objects arranged along a circular arc. Editing content/radius/font
+  // isn't a live in-place edit — the whole group is discarded and rebuilt
+  // (see regenerateCurvedText below).
+  const buildCurvedTextGroup = (config: CurvedTextData & { left: number; top: number }): fabric.Group => {
+    const { text, radius, flip, fontFamily, fontSize, fill, left, top } = config;
+    const chars = text.split('');
+    // Degrees per character, scaled down for longer strings so they don't
+    // overlap; capped so short strings don't spread across the whole circle.
+    const anglePerChar = Math.min(18, 320 / Math.max(chars.length, 1));
+    const totalArc = anglePerChar * (chars.length - 1);
+    const startAngle = -totalArc / 2;
+
+    const charObjects = chars.map((ch, i) => {
+      const angleDeg = startAngle + i * anglePerChar;
+      const angleRad = (angleDeg * Math.PI) / 180;
+      const x = radius * Math.sin(angleRad);
+      const y = flip ? radius * Math.cos(angleRad) : -radius * Math.cos(angleRad);
+      const rotation = flip ? -angleDeg : angleDeg;
+
+      return new fabric.Text(ch === ' ' ? ' ' : ch, {
+        left: x,
+        top: y,
+        originX: 'center',
+        originY: 'center',
+        fontFamily,
+        fontSize,
+        fill,
+        angle: rotation,
+      });
+    });
+
+    const group = new fabric.Group(charObjects, { left, top });
+    (group as any).isCurvedText = true;
+    (group as any).curvedTextData = { text, radius, flip, fontFamily, fontSize, fill };
+    return group;
+  };
+
+  const addCurvedText = () => {
+    if (!canvas) return;
+    const group = buildCurvedTextGroup({
+      text: "CURVED TEXT",
+      radius: 90,
+      flip: false,
+      fontFamily: "Arial",
+      fontSize: 24,
+      fill: "#FFFFFF",
+      left: layout.frontCoverCenterPx,
+      top: layout.canvasHeight / 2,
+    });
+    canvas.add(group);
+    canvas.setActiveObject(group);
+    canvas.requestRenderAll();
+  };
+
+  // Rebuilds the currently-selected curved-text group with partial changes
+  // merged into its stored config, preserving its on-canvas position.
+  const regenerateCurvedText = (overrides: Partial<CurvedTextData>) => {
+    if (!canvas || !activeObject || !(activeObject as any).isCurvedText) return;
+    const current = (activeObject as any).curvedTextData as CurvedTextData;
+    const merged = { ...current, ...overrides };
+    const newGroup = buildCurvedTextGroup({
+      ...merged,
+      left: activeObject.left || 0,
+      top: activeObject.top || 0,
+    });
+    newGroup.set({ angle: activeObject.angle, opacity: activeObject.opacity });
+    canvas.remove(activeObject);
+    canvas.add(newGroup);
+    canvas.setActiveObject(newGroup);
+    setActiveObject(newGroup);
     canvas.requestRenderAll();
   };
 
@@ -2727,6 +2840,100 @@ export default function FabricCoverStudio({
               </div>
             )}
 
+            {/* Curved / Arc Text Options */}
+            {(activeObject as any).isCurvedText && (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Content</label>
+                  <input
+                    type="text"
+                    value={curvedTextValue}
+                    onChange={(e) => {
+                      setCurvedTextValue(e.target.value);
+                      regenerateCurvedText({ text: e.target.value });
+                    }}
+                    className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Curve Radius: {curvedRadius}px</label>
+                  <input
+                    type="range"
+                    min={30}
+                    max={250}
+                    value={curvedRadius}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setCurvedRadius(val);
+                      regenerateCurvedText({ radius: val });
+                    }}
+                    className="w-full accent-indigo-500"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => { setCurvedFlip(false); regenerateCurvedText({ flip: false }); }}
+                    className={`p-2 rounded-lg text-[10px] font-black uppercase border transition-all ${!curvedFlip ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200'}`}
+                  >
+                    Arc Up
+                  </button>
+                  <button
+                    onClick={() => { setCurvedFlip(true); regenerateCurvedText({ flip: true }); }}
+                    className={`p-2 rounded-lg text-[10px] font-black uppercase border transition-all ${curvedFlip ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200'}`}
+                  >
+                    Arc Down
+                  </button>
+                </div>
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Family</label>
+                  <select
+                    value={curvedFontFamily}
+                    onChange={(e) => {
+                      setCurvedFontFamily(e.target.value);
+                      regenerateCurvedText({ fontFamily: e.target.value });
+                    }}
+                    className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-500"
+                    style={{ fontFamily: curvedFontFamily }}
+                  >
+                    {FONT_CATEGORIES.map(({ category, fonts }) => (
+                      <optgroup key={category} label={category}>
+                        {fonts.map((font) => (
+                          <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Size</label>
+                    <input
+                      type="number"
+                      value={curvedFontSize}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setCurvedFontSize(val);
+                        regenerateCurvedText({ fontSize: val });
+                      }}
+                      className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Color</label>
+                    <input
+                      type="color"
+                      value={curvedColor}
+                      onChange={(e) => {
+                        setCurvedColor(e.target.value);
+                        regenerateCurvedText({ fill: e.target.value });
+                      }}
+                      className="w-full h-8 border border-slate-200 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Photoshop-style Image Adjustments */}
             {activeObject.type === 'image' && (
               <div className="space-y-3 pt-2 border-t border-slate-100">
@@ -3350,6 +3557,12 @@ export default function FabricCoverStudio({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h7" />
                     </svg>
                     <span>Add Paragraph (Multiline)</span>
+                  </button>
+                  <button onClick={addCurvedText} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
+                    <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 15a8 8 0 0 1 16 0" />
+                    </svg>
+                    <span>Add Curved / Arc Text</span>
                   </button>
                 </div>
               </div>

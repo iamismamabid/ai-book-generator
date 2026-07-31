@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Download, Loader2, Box } from "lucide-react";
 
 interface CoverMockup3DModalProps {
@@ -34,8 +35,13 @@ export default function CoverMockup3DModal({
   const mockupRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [rotation, setRotation] = useState(-26);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const displayHeight = 380;
   const displayWidth = displayHeight * frontAspect;
@@ -67,8 +73,8 @@ export default function CoverMockup3DModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
       <div className="bg-slate-900 border border-slate-800 rounded-[2rem] shadow-2xl max-w-2xl w-full p-6 relative">
         <button
           onClick={onClose}
@@ -169,6 +175,7 @@ export default function CoverMockup3DModal({
           {isDownloading ? "Exporting..." : "Download Mockup Image"}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

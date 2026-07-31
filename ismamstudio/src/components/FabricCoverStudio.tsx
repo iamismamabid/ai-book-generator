@@ -7,7 +7,7 @@ import {
   Trash2, Undo2, Redo2, Loader2, Download, Check, Settings,
   Sparkles, Shapes, Upload, LayoutTemplate, Grid, ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight,
   Plus, Eraser, Lock, Unlock, Copy, Scissors, Clipboard, ChevronsUp, ChevronsDown,
-  Bold, Italic, Underline, AlignJustify, Box
+  Bold, Italic, Underline, AlignJustify, Box, Layers as LayersIcon
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -15,6 +15,7 @@ import { initFabricSnapping } from "@/hooks/useFabricSnap";
 import { COVER_TEMPLATES, resolveTemplateElements, CoverTemplate } from "@/lib/coverTemplates";
 import TemplateGalleryModal from "@/components/TemplateGalleryModal";
 import CoverMockup3DModal from "@/components/CoverMockup3DModal";
+import SeriesBrandingModal from "@/components/SeriesBrandingModal";
 
 const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
   { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo"] },
@@ -763,6 +764,9 @@ export default function FabricCoverStudio({
   const [isMockupLoading, setIsMockupLoading] = useState(false);
   const [mockupFrontUrl, setMockupFrontUrl] = useState<string | null>(null);
   const [mockupSpineUrl, setMockupSpineUrl] = useState<string | null>(null);
+
+  // Series Branding (batch export) state
+  const [isSeriesModalOpen, setIsSeriesModalOpen] = useState(false);
 
   // Auto-collapse tool tab panel on mobile devices upon initial load
   useEffect(() => {
@@ -2808,6 +2812,83 @@ export default function FabricCoverStudio({
     }, 300);
   };
 
+  // The text object whose content will be swapped per book when batch-
+  // exporting a series: prefer whichever text object is currently selected,
+  // otherwise fall back to the first text-like object found on the canvas.
+  const findSeriesTargetObject = (): fabric.Object | null => {
+    if (!canvas) return null;
+    const isTextLike = (o: fabric.Object) => o.type === 'i-text' || o.type === 'text' || o.type === 'textbox';
+    if (activeObject && isTextLike(activeObject)) return activeObject;
+    return canvas.getObjects().find(isTextLike) || null;
+  };
+
+  const seriesTargetPreviewText = (() => {
+    const obj = findSeriesTargetObject();
+    return obj ? (obj as fabric.IText).text || "" : null;
+  })();
+
+  // Batch-exports the current design as a ZIP of separate KDP-ready cover
+  // PDFs, one per title, everything else (background, fonts, decorations,
+  // layout) held identical. Each title is rendered on a detached, off-DOM
+  // fabric.Canvas cloned from the current design's JSON so the user's live
+  // canvas is never disturbed mid-batch.
+  const handleGenerateSeries = async (titles: string[]) => {
+    if (!canvas) return;
+    const targetObj = findSeriesTargetObject();
+    if (!targetObj) throw new Error("No text object found to swap per title.");
+
+    // Tag the live object so we can find its counterpart after
+    // loadFromJSON reconstructs a fresh object graph on the temp canvas.
+    (targetObj as any).seriesTitleMarker = true;
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
+    const snapshot = canvas.toJSON(['isCurvedText', 'curvedTextData', 'seriesTitleMarker']);
+    delete (targetObj as any).seriesTitleMarker;
+    canvas.requestRenderAll();
+
+    const [{ default: JSZip }, { jsPDF: JsPdfCtor }] = await Promise.all([
+      import("jszip"),
+      import("jspdf"),
+    ]);
+    const zip = new JSZip();
+
+    const renderOne = (title: string): Promise<Blob> => {
+      return new Promise((resolve, reject) => {
+        const tempEl = document.createElement('canvas');
+        const tempCanvas = new fabric.Canvas(tempEl, {
+          width: layout.canvasWidth,
+          height: layout.canvasHeight,
+        });
+        tempCanvas.loadFromJSON(snapshot, () => {
+          const marked = tempCanvas.getObjects().find((o: any) => o.seriesTitleMarker);
+          if (marked) {
+            (marked as fabric.IText).set('text', title);
+          }
+          tempCanvas.renderAll();
+          const dataUrl = tempCanvas.toDataURL({ format: 'png', multiplier: 3 });
+          const doc = new JsPdfCtor({ orientation: "landscape", unit: "in", format: [layout.coverWidthInches, layout.coverHeightInches] });
+          doc.addImage(dataUrl, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
+          tempCanvas.dispose();
+          resolve(doc.output('blob'));
+        });
+      });
+    };
+
+    for (let i = 0; i < titles.length; i++) {
+      const blob = await renderOne(titles[i]);
+      const safeName = titles[i].replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 60) || `book-${i + 1}`;
+      zip.file(`${safeName}.pdf`, blob);
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(zipBlob);
+    a.download = `series-covers-${titles.length}-books.zip`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setIsSeriesModalOpen(false);
+  };
+
   // Bind keyboard shortcut handler references
   handlersRef.current = { 
     handleUndo, 
@@ -2912,6 +2993,13 @@ export default function FabricCoverStudio({
             className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
           >
             <Box className="w-5 h-5"/>
+          </button>
+          <button
+            onClick={() => setIsSeriesModalOpen(true)}
+            title="Series Branding — Batch Export"
+            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+          >
+            <LayersIcon className="w-5 h-5"/>
           </button>
           <button
             onClick={handleGenerateCover}
@@ -4832,6 +4920,13 @@ export default function FabricCoverStudio({
         spineWidthInches={layout.spineWidth}
         frontWidthInches={trimSize.w}
         isLoading={isMockupLoading}
+      />
+
+      <SeriesBrandingModal
+        isOpen={isSeriesModalOpen}
+        onClose={() => setIsSeriesModalOpen(false)}
+        targetPreviewText={seriesTargetPreviewText}
+        onGenerate={handleGenerateSeries}
       />
     </div>
   );

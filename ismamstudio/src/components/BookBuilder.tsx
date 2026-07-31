@@ -35,6 +35,24 @@ import { CSS } from '@dnd-kit/utilities';
 
 
 
+// Every puzzle editor auto-generates fresh content on mount if this config key
+// is missing (see each Editor's `useEffect(() => { if (!x) handleGenerate() }, [])`).
+// Duplicate relies on that: it clears the generated field but keeps everything
+// else (word list, difficulty, size...), so the new page — mounted fresh under
+// a new key — regenerates a genuinely new puzzle with the same settings instead
+// of an exact copy. Types not listed (title, low_content) have no randomness to
+// regenerate, so they duplicate as-is.
+const GENERATED_CONTENT_KEY: Record<string, string> = {
+  crossword: 'gridData',
+  word_search: 'gridData',
+  sudoku: 'gridData',
+  maze: 'gridData',
+  word_scramble: 'scrambledData',
+  cryptogram: 'cryptogramData',
+  math_puzzle: 'puzzleData',
+  kakuro: 'gridData',
+};
+
 const TRIM_SIZES = [
   { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
   { label: '6" x 9" (Novel)', w: 6, h: 9 },
@@ -125,10 +143,17 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   const duplicatePage = (indexToDuplicate: number) => {
     if (indexToDuplicate < 0 || indexToDuplicate >= bookPages.length) return;
     const target = bookPages[indexToDuplicate];
+    const clonedConfig = JSON.parse(JSON.stringify(target.config || {}));
+
+    // Strip the generated puzzle content (keeping settings) so the new page
+    // regenerates a fresh puzzle instead of an exact copy of this one.
+    const contentKey = GENERATED_CONTENT_KEY[target.type];
+    if (contentKey) delete clonedConfig[contentKey];
+
     const newPage = {
       id: Date.now() + Math.random(),
       type: target.type,
-      config: JSON.parse(JSON.stringify(target.config || {}))
+      config: clonedConfig
     };
     const updated = [...bookPages];
     updated.splice(indexToDuplicate + 1, 0, newPage);

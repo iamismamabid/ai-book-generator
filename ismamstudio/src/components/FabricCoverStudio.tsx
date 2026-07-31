@@ -7,18 +7,28 @@ import {
   Trash2, Undo2, Redo2, Loader2, Download, Check, Settings,
   Sparkles, Shapes, Upload, LayoutTemplate, Grid, ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight,
   Plus, Eraser, Lock, Unlock, Copy, Scissors, Clipboard, ChevronsUp, ChevronsDown,
-  Bold, Italic, Underline, AlignJustify
+  Bold, Italic, Underline, AlignJustify, Box
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
 import { initFabricSnapping } from "@/hooks/useFabricSnap";
 import { COVER_TEMPLATES, resolveTemplateElements, CoverTemplate } from "@/lib/coverTemplates";
 import TemplateGalleryModal from "@/components/TemplateGalleryModal";
+import CoverMockup3DModal from "@/components/CoverMockup3DModal";
 
-const FONT_FAMILIES = [
-  "Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Outfit", "Inter",
-  "Playfair Display", "Montserrat", "Oswald", "Lora", "Merriweather", "Bebas Neue", "Pacifico", "Cinzel", "Sacramento", "Arimo"
+const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
+  { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo"] },
+  { category: "Sans Serif", fonts: ["Inter", "Outfit", "Montserrat", "Poppins", "Raleway", "Nunito", "Work Sans", "Rubik", "DM Sans", "Archivo", "Karla", "Mulish", "Manrope", "Josefin Sans"] },
+  { category: "Serif", fonts: ["Playfair Display", "Merriweather", "Lora", "Cormorant Garamond", "Crimson Text", "PT Serif", "Libre Baskerville", "EB Garamond", "Cinzel", "Bitter", "Noto Serif", "Vollkorn", "Domine", "Spectral"] },
+  { category: "Display & Bold", fonts: ["Bebas Neue", "Oswald", "Anton", "Passion One", "Alfa Slab One", "Bungee", "Fjalla One", "Righteous", "Staatliches", "Abril Fatface", "Bangers", "Titan One", "Luckiest Guy", "Big Shoulders Display"] },
+  { category: "Handwriting & Script", fonts: ["Pacifico", "Sacramento", "Great Vibes", "Dancing Script", "Caveat", "Satisfy", "Kalam", "Shadows Into Light", "Amatic SC", "Permanent Marker", "Indie Flower", "Homemade Apple"] },
+  { category: "Monospace", fonts: ["Courier Prime", "Space Mono", "JetBrains Mono", "IBM Plex Mono"] },
 ];
+
+const FONT_FAMILIES = FONT_CATEGORIES.flatMap(c => c.fonts);
+
+// Fonts that need loading from Google Fonts (i.e. everything except the browser-native System group)
+const GOOGLE_FONT_FAMILIES = FONT_CATEGORIES.filter(c => c.category !== "System").flatMap(c => c.fonts);
 
 // Photoshop-style layer compositing modes (native canvas globalCompositeOperation)
 const BLEND_MODES = [
@@ -373,10 +383,15 @@ export default function FabricCoverStudio({
     coverBackgroundRef.current = coverBackground;
   }, [coverBackground]);
 
-  // Dynamically load Google Fonts for the cover studio
+  // Dynamically load Google Fonts for the cover studio — every font in
+  // GOOGLE_FONT_FAMILIES (everything but the browser-native "System" group)
+  // gets requested at both regular and bold weight in one combined stylesheet.
   useEffect(() => {
+    const familyParams = GOOGLE_FONT_FAMILIES
+      .map(f => `family=${f.replace(/\s+/g, '+')}:wght@400;700`)
+      .join('&');
     const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Bebas+Neue&family=Cinzel:wght@400..900&family=Great+Vibes&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300..900;1,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oswald:wght@200..700&family=Pacifico&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Sacramento&family=Outfit:wght@100..900&family=Inter:wght@100..900&display=swap';
+    link.href = `https://fonts.googleapis.com/css2?${familyParams}&display=swap`;
     link.rel = 'stylesheet';
     document.head.appendChild(link);
     return () => {
@@ -449,6 +464,16 @@ export default function FabricCoverStudio({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [scaleRatio, setScaleRatio] = useState(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
+
+  // Fabric.js renders text with whatever font is available at the moment it
+  // draws — it doesn't know when a webfont finishes downloading. With 50+
+  // fonts now loading async, without this any text already placed with a
+  // not-yet-loaded font would silently stay on the fallback font.
+  useEffect(() => {
+    if (!canvas || typeof document === 'undefined' || !document.fonts?.ready) return;
+    document.fonts.ready.then(() => canvas.requestRenderAll());
+  }, [canvas]);
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
   const [clipboard, setClipboard] = useState<any>(null);
@@ -456,6 +481,12 @@ export default function FabricCoverStudio({
   const [activeToolTab, setActiveToolTab] = useState<'elements' | 'graphics' | 'presets' | 'uploads' | 'settings' | null>('elements');
   const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
   const [graphicsSubTab, setGraphicsSubTab] = useState<'kdp-icons' | 'unsplash'>('kdp-icons');
+
+  // 3D Mockup Preview states
+  const [isMockupOpen, setIsMockupOpen] = useState(false);
+  const [isMockupLoading, setIsMockupLoading] = useState(false);
+  const [mockupFrontUrl, setMockupFrontUrl] = useState<string | null>(null);
+  const [mockupSpineUrl, setMockupSpineUrl] = useState<string | null>(null);
 
   // Auto-collapse tool tab panel on mobile devices upon initial load
   useEffect(() => {
@@ -2350,6 +2381,48 @@ export default function FabricCoverStudio({
     }, 300);
   };
 
+  // Crops the front-cover and spine regions out of the full wraparound export
+  // (excluding bleed) so the 3D mockup shows just those two faces, not the
+  // whole flat back+spine+front strip.
+  const handleOpenMockupPreview = () => {
+    if (!canvas) return;
+    setIsMockupOpen(true);
+    setIsMockupLoading(true);
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
+
+    setTimeout(() => {
+      const multiplier = 3;
+      const fullDataUrl = canvas.toDataURL({ format: 'png', multiplier });
+
+      const img = new Image();
+      img.onload = () => {
+        const cropRegion = (xPx: number, yPx: number, wPx: number, hPx: number): string => {
+          const cropCanvas = document.createElement('canvas');
+          cropCanvas.width = wPx;
+          cropCanvas.height = hPx;
+          const ctx = cropCanvas.getContext('2d');
+          if (!ctx) return fullDataUrl;
+          ctx.drawImage(img, xPx, yPx, wPx, hPx, 0, 0, wPx, hPx);
+          return cropCanvas.toDataURL('image/png');
+        };
+
+        const frontX = layout.frontLiveLeftPx - layout.safeMarginPx; // = spineRightPx, the trimmed front-cover left edge
+        const frontW = layout.trimRightPx - frontX;
+        const frontH = layout.trimBottomPx - layout.trimTopPx;
+
+        setMockupFrontUrl(cropRegion(frontX * multiplier, layout.trimTopPx * multiplier, frontW * multiplier, frontH * multiplier));
+        if (layout.spineWidthPx > 2) {
+          setMockupSpineUrl(cropRegion(layout.spineLeftPx * multiplier, layout.trimTopPx * multiplier, layout.spineWidthPx * multiplier, frontH * multiplier));
+        } else {
+          setMockupSpineUrl(null);
+        }
+        setIsMockupLoading(false);
+      };
+      img.src = fullDataUrl;
+    }, 300);
+  };
+
   // Bind keyboard shortcut handler references
   handlersRef.current = { 
     handleUndo, 
@@ -2449,6 +2522,13 @@ export default function FabricCoverStudio({
             <LayoutTemplate className="w-5 h-5"/>
           </button>
           <button
+            onClick={handleOpenMockupPreview}
+            title="Preview 3D Book Mockup"
+            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+          >
+            <Box className="w-5 h-5"/>
+          </button>
+          <button
             onClick={handleGenerateCover}
             disabled={isGenerating}
             title="Compile & Download PDF Cover"
@@ -2514,8 +2594,12 @@ export default function FabricCoverStudio({
                     className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-500 font-sans"
                     style={{ fontFamily: objectFontFamily }}
                   >
-                    {FONT_FAMILIES.map((font, idx) => (
-                      <option key={idx} value={font} style={{ fontFamily: font }}>{font}</option>
+                    {FONT_CATEGORIES.map(({ category, fonts }) => (
+                      <optgroup key={category} label={category}>
+                        {fonts.map((font) => (
+                          <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                 </div>
@@ -4252,6 +4336,17 @@ export default function FabricCoverStudio({
           applyTemplate(template, photoUrl);
           setIsTemplateGalleryOpen(false);
         }}
+      />
+
+      <CoverMockup3DModal
+        isOpen={isMockupOpen}
+        onClose={() => setIsMockupOpen(false)}
+        frontImageDataUrl={mockupFrontUrl}
+        spineImageDataUrl={mockupSpineUrl}
+        frontAspect={trimSize.w / trimSize.h}
+        spineWidthInches={layout.spineWidth}
+        frontWidthInches={trimSize.w}
+        isLoading={isMockupLoading}
       />
     </div>
   );

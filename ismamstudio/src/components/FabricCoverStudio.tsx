@@ -19,6 +19,7 @@ import SeriesBrandingModal from "@/components/SeriesBrandingModal";
 import BackgroundRemoverModal from "@/components/BackgroundRemoverModal";
 import FontPicker from "@/components/FontPicker";
 import { loadGoogleFontFamilies } from "@/lib/loadGoogleFont";
+import { COVER_TEXTURES, TEXTURE_CATEGORIES, renderTexture, CoverTexture } from "@/lib/coverTextures";
 
 const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
   { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo"] },
@@ -482,6 +483,9 @@ interface FabricCoverStudioProps {
     backCoverImage: string;
     frontCoverImage: string;
     fullCoverImage: string;
+    backCoverTextureId: string;
+    frontCoverTextureId: string;
+    fullCoverTextureId: string;
   };
   setCoverBackground: React.Dispatch<React.SetStateAction<{
     backCoverColor: string;
@@ -495,6 +499,9 @@ interface FabricCoverStudioProps {
     backCoverImage: string;
     frontCoverImage: string;
     fullCoverImage: string;
+    backCoverTextureId: string;
+    frontCoverTextureId: string;
+    fullCoverTextureId: string;
   }>>;
 
   showKdpGuides: boolean;
@@ -755,6 +762,9 @@ export default function FabricCoverStudio({
   // Background Remover (in-panel) state
   const [isBgRemoverOpen, setIsBgRemoverOpen] = useState(false);
   const [bgRemoverImageSrc, setBgRemoverImageSrc] = useState<string | null>(null);
+
+  // Which cover region the texture swatches apply to
+  const [textureTarget, setTextureTarget] = useState<'full' | 'front' | 'back'>('full');
 
   // Auto-collapse tool tab panel on mobile devices upon initial load
   useEffect(() => {
@@ -2698,7 +2708,10 @@ export default function FabricCoverStudio({
         frontCoverColor: front,
         backCoverImage: '',
         frontCoverImage: '',
-        fullCoverImage: ''
+        fullCoverImage: '',
+        backCoverTextureId: '',
+        frontCoverTextureId: '',
+        fullCoverTextureId: ''
       };
     } else {
       newBg = {
@@ -2712,7 +2725,10 @@ export default function FabricCoverStudio({
         frontCoverGradientEnd: front,
         backCoverImage: '',
         frontCoverImage: '',
-        fullCoverImage: ''
+        fullCoverImage: '',
+        backCoverTextureId: '',
+        frontCoverTextureId: '',
+        fullCoverTextureId: ''
       };
     }
     coverBackgroundRef.current = newBg;
@@ -2720,9 +2736,9 @@ export default function FabricCoverStudio({
     if (canvas) canvas.renderAll();
   };
 
-  const applyBackgroundImage = (url: string, target: 'full' | 'front' | 'back') => {
+  const applyBackgroundImage = (url: string, target: 'full' | 'front' | 'back', textureId = '') => {
     if (!canvas) return;
-    
+
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.src = url;
@@ -2745,10 +2761,84 @@ export default function FabricCoverStudio({
         setFullCoverImage('');
         fullCoverImageEl.current = null;
       }
+      // Texture ids mirror whichever image slots this just set, so the saved
+      // project can store a 12-byte id instead of a multi-megabyte data URL.
+      const nextIds =
+        target === 'full'
+          ? { fullCoverTextureId: textureId, frontCoverTextureId: '', backCoverTextureId: '' }
+          : target === 'front'
+            ? { frontCoverTextureId: textureId, fullCoverTextureId: '' }
+            : { backCoverTextureId: textureId, fullCoverTextureId: '' };
+      coverBackgroundRef.current = { ...coverBackgroundRef.current, ...nextIds };
+      setCoverBackground(prev => ({ ...prev, ...nextIds }));
+
       canvas.renderAll();
       canvas.fire("object:modified");
     };
   };
+
+  // Textures are generated at the export resolution of the region they'll fill
+  // (the export path multiplies the on-screen canvas by 3), so the grain stays
+  // crisp in the final PDF instead of being upscaled from a screen-size render.
+  const applyTexture = (texture: CoverTexture, target: 'full' | 'front' | 'back') => {
+    const exportMultiplier = 3;
+    const regionWidthPx =
+      target === 'full'
+        ? layout.canvasWidth
+        : target === 'front'
+          ? layout.canvasWidth - layout.spineRightPx
+          : layout.spineLeftPx;
+
+    const dataUrl = renderTexture(
+      texture,
+      regionWidthPx * exportMultiplier,
+      layout.canvasHeight * exportMultiplier
+    );
+    applyBackgroundImage(dataUrl, target, texture.id);
+  };
+
+  const clearBackgroundImage = (target: 'full' | 'front' | 'back') => {
+    if (target === 'full') {
+      fullCoverImageEl.current = null;
+      setFullCoverImage('');
+    } else if (target === 'front') {
+      frontCoverImageEl.current = null;
+      setFrontCoverImage('');
+    } else {
+      backCoverImageEl.current = null;
+      setBackCoverImage('');
+    }
+    const key = `${target}CoverTextureId` as const;
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, [key]: '' };
+    setCoverBackground(prev => ({ ...prev, [key]: '' }));
+    if (canvas) {
+      canvas.renderAll();
+      canvas.fire("object:modified");
+    }
+  };
+
+  // A saved project stores only the texture id, so regenerate the actual pixels
+  // once the canvas exists. Deterministic seeding means this reproduces exactly
+  // the texture the user originally picked.
+  const restoredTexturesRef = useRef(false);
+  useEffect(() => {
+    if (!canvas || restoredTexturesRef.current) return;
+    const bg = coverBackgroundRef.current;
+    const pending: [string | undefined, 'full' | 'front' | 'back', string][] = [
+      [bg.fullCoverTextureId, 'full', bg.fullCoverImage],
+      [bg.frontCoverTextureId, 'front', bg.frontCoverImage],
+      [bg.backCoverTextureId, 'back', bg.backCoverImage],
+    ];
+    const needsRestore = pending.some(([id, , image]) => id && !image);
+    if (!needsRestore) return;
+    restoredTexturesRef.current = true;
+
+    for (const [id, target, image] of pending) {
+      if (!id || image) continue;
+      const texture = COVER_TEXTURES.find(t => t.id === id);
+      if (texture) applyTexture(texture, target);
+    }
+  }, [canvas]);
 
   const handleClearCanvas = () => {
     if (!canvas) return;
@@ -2799,6 +2889,9 @@ export default function FabricCoverStudio({
         backCoverImage: '',
         frontCoverImage: photoUrl || '',
         fullCoverImage: '',
+        backCoverTextureId: '',
+        frontCoverTextureId: '',
+        fullCoverTextureId: '',
       };
       coverBackgroundRef.current = newBg;
       setCoverBackground(newBg);
@@ -4416,6 +4509,52 @@ export default function FabricCoverStudio({
 
             <div className="h-px bg-slate-200 my-4" />
 
+            <div className="space-y-3">
+              <div>
+                <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Textures</h3>
+                <p className="text-[10px] font-semibold text-slate-400 mt-1">
+                  Pick where it goes, then choose a texture.
+                </p>
+              </div>
+
+              <div className="flex bg-slate-200/80 p-0.5 rounded-lg border border-slate-300/40 text-[9px] font-black uppercase">
+                {(['full', 'front', 'back'] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setTextureTarget(t)}
+                    className={`flex-1 px-2 py-1 rounded-md transition-all cursor-pointer ${
+                      textureTarget === t ? 'bg-white shadow text-slate-900' : 'text-slate-500'
+                    }`}
+                  >
+                    {t === 'full' ? 'Full' : t === 'front' ? 'Front' : 'Back'}
+                  </button>
+                ))}
+              </div>
+
+              {TEXTURE_CATEGORIES.map((category) => (
+                <div key={category} className="space-y-1.5">
+                  <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">{category}</p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {COVER_TEXTURES.filter((t) => t.category === category).map((texture) => (
+                      <button
+                        key={texture.id}
+                        onClick={() => applyTexture(texture, textureTarget)}
+                        title={`${texture.name} — apply to ${textureTarget} cover`}
+                        className="group rounded-lg border border-slate-200 hover:border-amber-400 overflow-hidden transition-all cursor-pointer"
+                      >
+                        <span className="block h-10 w-full" style={{ backgroundColor: texture.swatch }} />
+                        <span className="block text-[8px] font-bold text-slate-500 group-hover:text-slate-800 py-1 px-0.5 truncate">
+                          {texture.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="h-px bg-slate-200 my-4" />
+
             <div className="space-y-4">
               <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Custom Gradient & Colors</h3>
               
@@ -4722,19 +4861,19 @@ export default function FabricCoverStudio({
                     {fullCoverImage && (
                       <div className="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-[10px]">
                         <span className="font-semibold text-indigo-950 truncate max-w-[150px]">Full Cover BG Image</span>
-                        <button onClick={() => setFullCoverImage('')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Clear</button>
+                        <button onClick={() => clearBackgroundImage('full')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Clear</button>
                       </div>
                     )}
                     {backCoverImage && (
                       <div className="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-[10px]">
                         <span className="font-semibold text-indigo-950 truncate max-w-[150px]">Back Cover BG Image</span>
-                        <button onClick={() => setBackCoverImage('')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Clear</button>
+                        <button onClick={() => clearBackgroundImage('back')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Clear</button>
                       </div>
                     )}
                     {frontCoverImage && (
                       <div className="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-[10px]">
                         <span className="font-semibold text-indigo-950 truncate max-w-[150px]">Front Cover BG Image</span>
-                        <button onClick={() => setFrontCoverImage('')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Clear</button>
+                        <button onClick={() => clearBackgroundImage('front')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Clear</button>
                       </div>
                     )}
                   </div>

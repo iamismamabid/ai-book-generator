@@ -66,7 +66,10 @@ export default function MasterStudioApp() {
     frontCoverGradientEnd: '#0F172A',
     backCoverImage: '',
     frontCoverImage: '',
-    fullCoverImage: ''
+    fullCoverImage: '',
+    backCoverTextureId: '',
+    frontCoverTextureId: '',
+    fullCoverTextureId: ''
   });
 
   const [coverElements, setCoverElements] = useState<any[]>([]);
@@ -89,7 +92,10 @@ export default function MasterStudioApp() {
       frontCoverGradientEnd: data.frontCoverGradientEnd ?? '#0F172A',
       backCoverImage: data.backCoverImage ?? '',
       frontCoverImage: data.frontCoverImage ?? '',
-      fullCoverImage: data.fullCoverImage ?? ''
+      fullCoverImage: data.fullCoverImage ?? '',
+      backCoverTextureId: data.backCoverTextureId ?? '',
+      frontCoverTextureId: data.frontCoverTextureId ?? '',
+      fullCoverTextureId: data.fullCoverTextureId ?? ''
     };
     setCoverBackground(loadedBg);
     if (data.coverElements) setCoverElements(data.coverElements);
@@ -136,13 +142,25 @@ export default function MasterStudioApp() {
   // cleared cache or a different device/browser.
   useEffect(() => {
     if (!isMounted) return;
+    // A texture background is a multi-megabyte data URL. Persist only its id —
+    // Cover Studio regenerates identical pixels from that on load — otherwise a
+    // single texture blows the localStorage quota and the cloud row alike.
     const data = {
       ...coverBackground,
+      backCoverImage: coverBackground.backCoverTextureId ? '' : coverBackground.backCoverImage,
+      frontCoverImage: coverBackground.frontCoverTextureId ? '' : coverBackground.frontCoverImage,
+      fullCoverImage: coverBackground.fullCoverTextureId ? '' : coverBackground.fullCoverImage,
       coverElements,
       pageCount,
       trimSize
     };
-    localStorage.setItem("kdp-cover-draft", JSON.stringify(data));
+    try {
+      localStorage.setItem("kdp-cover-draft", JSON.stringify(data));
+    } catch (err) {
+      // Quota exceeded (large uploaded background images) — the cloud save
+      // below is still the durable copy, so don't let this break the editor.
+      console.warn("Couldn't cache cover draft locally:", err);
+    }
 
     if (!isSignedIn) return;
 

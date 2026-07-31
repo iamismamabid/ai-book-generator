@@ -139,7 +139,7 @@ export default function RootLayout({
                         }
                       ],
                       "screenshot": "https://www.kdpage.com/og-image.png",
-                      "featureList": "Sudoku Generator, Shape-Masked Maze Designer, Word Search Builder, Cryptogram Studio, Math Puzzle Builder, Word Scramble Studio, Layout & Outline Planner, Cover & Interior Canvas Studio, KDP Niche Hunter & Keyword Spy, Spine & Cover Calculator, ISBN Barcode Generator"
+                      "featureList": "Shape-Masked Maze Designer, Word Search Builder, Cryptogram Studio, Math Puzzle Builder, Word Scramble Studio, Layout & Outline Planner, Cover & Interior Canvas Studio, KDP Niche Hunter & Keyword Spy, Spine & Cover Calculator, ISBN Barcode Generator"
                     },
                     {
                       "@type": "Organization",

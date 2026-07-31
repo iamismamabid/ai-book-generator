@@ -312,16 +312,6 @@ export default function FreeToolsHub() {
   const toolsList: ToolItem[] = [
     // 1. Puzzle & Interior Generators
     {
-      id: "sudoku-generator",
-      name: "Free KDP Sudoku Generator",
-      badge: "Popular",
-      category: "Design",
-      description: "Generate 100% mathematically unique Sudoku puzzle grids (Easy to Hard) with solution pages.",
-      features: ["Single-solution guaranteed", "Large print formatting", "2x2 solution layouts"],
-      keywords: ["sudoku", "sudokus", "sudokos", "number puzzle", "logic grid", "puzzle", "interior"],
-      link: "/sudoku"
-    },
-    {
       id: "maze-generator",
       name: "Free Shape-Masked Maze Studio",
       badge: "Popular",
@@ -791,7 +781,7 @@ export default function FreeToolsHub() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search 40+ free KDP tools — Sudoku, Spine, Barcode, PDF, Keyword..."
+                placeholder="Search 40+ free KDP tools — Maze, Spine, Barcode, PDF, Keyword..."
                 className="flex-1 py-4 pr-3 bg-transparent text-stone-900 placeholder-stone-400 font-semibold text-sm focus:outline-none"
               />
 

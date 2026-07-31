@@ -18,15 +18,6 @@ interface SearchItem {
 const SEARCH_ITEMS: SearchItem[] = [
   // Puzzles & Interiors
   {
-    id: "sudoku",
-    name: "KDP Sudoku Generator",
-    category: "Puzzles & Interiors",
-    description: "Generate 100% single-solution guaranteed Sudoku puzzle grids (Easy to Hard).",
-    keywords: ["sudoku", "sudokus", "sudokos", "number puzzle", "logic grid", "puzzle", "interior"],
-    link: "/sudoku",
-    badge: "Popular"
-  },
-  {
     id: "maze",
     name: "Shape-Masked Maze Studio",
     category: "Puzzles & Interiors",
@@ -339,7 +330,7 @@ export default function GlobalSearchModal() {
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleKeyDownInInput}
-                placeholder="Search tools… e.g. Sudoku, Spine, Barcode, Cover, Royalty"
+                placeholder="Search tools… e.g. Maze, Spine, Barcode, Cover, Royalty"
                 className="flex-1 bg-transparent text-white placeholder-slate-500 text-[15px] font-semibold focus:outline-none caret-indigo-400"
               />
 
@@ -460,7 +451,7 @@ export default function GlobalSearchModal() {
                     No results for "{query}"
                   </p>
                   <p className="text-xs text-slate-600 max-w-xs mx-auto">
-                    Try "Sudoku", "Spine", "Cover", "Maze", or "Royalty"
+                    Try "Crossword", "Spine", "Cover", "Maze", or "Royalty"
                   </p>
                 </div>
               )}

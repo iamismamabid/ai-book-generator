@@ -137,7 +137,7 @@ export default function ExamplesPage() {
                 </div>
                 <div className="pt-2">
                   <Link
-                    href={item.category === "Labyrinths" ? "/maze" : item.category === "Word Search" ? "/tools/word-search" : item.category === "Sudoku" ? "/studio" : "/generate"}
+                    href={item.category === "Sudoku" ? "/sudoku" : item.category === "Labyrinths" ? "/maze" : item.category === "Word Search" ? "/tools/word-search" : "/generate"}
                     className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700 font-bold text-xs px-4 py-2.5 rounded-xl transition"
                   >
                     Open Generator <ArrowLeft className="w-4 h-4 rotate-180" />

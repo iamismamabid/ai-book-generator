@@ -313,13 +313,13 @@ export default function FreeToolsHub() {
     // 1. Puzzle & Interior Generators
     {
       id: "sudoku-generator",
-      name: "KDP Sudoku Puzzle Generator",
+      name: "Free KDP Sudoku Generator",
       badge: "Popular",
       category: "Design",
-      description: "Generate 100% mathematically unique Sudoku puzzle grids (Easy to Hard) with solution pages, right inside Book Builder.",
-      features: ["Single-solution guaranteed", "Large print formatting", "Difficulty scales with plan"],
+      description: "Generate 100% mathematically unique Sudoku puzzle grids (Easy to Hard) with solution pages.",
+      features: ["Single-solution guaranteed", "Large print formatting", "2x2 solution layouts"],
       keywords: ["sudoku", "sudokus", "sudokos", "number puzzle", "logic grid", "puzzle", "interior"],
-      link: "/studio"
+      link: "/sudoku"
     },
     // 2. Cover & Spine Tools
     {

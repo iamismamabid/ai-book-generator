@@ -19,11 +19,11 @@ const SEARCH_ITEMS: SearchItem[] = [
   // Puzzles & Interiors
   {
     id: "sudoku",
-    name: "Sudoku Puzzle Generator",
+    name: "KDP Sudoku Generator",
     category: "Puzzles & Interiors",
-    description: "Generate 100% single-solution guaranteed Sudoku puzzle grids (Easy to Hard) inside Book Builder.",
+    description: "Generate 100% single-solution guaranteed Sudoku puzzle grids (Easy to Hard).",
     keywords: ["sudoku", "sudokus", "sudokos", "number puzzle", "logic grid", "puzzle", "interior"],
-    link: "/studio",
+    link: "/sudoku",
     badge: "Popular"
   },
   {

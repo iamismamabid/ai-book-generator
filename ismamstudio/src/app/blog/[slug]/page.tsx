@@ -33,6 +33,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // Map blog post slugs to relevant internal creator tools
 function getCtaLink(slug: string) {
+  if (slug.includes("sudoku")) {
+    return { href: "/sudoku", label: "Open Sudoku Generator" };
+  }
   if (slug.includes("word-search")) {
     return { href: "/tools/word-search", label: "Open Word Search Generator" };
   }

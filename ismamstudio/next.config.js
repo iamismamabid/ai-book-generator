@@ -156,10 +156,9 @@ const nextConfig = {
       { source: "/tools/kdp-pdf-validator", destination: "/tools/kdp-file-validator", permanent: true },
       { source: "/tools/free-kdp-pdf-checker", destination: "/tools/kdp-file-validator", permanent: true },
 
-      // Sudoku Generator (standalone tool retired — Book Builder still generates Sudoku pages)
-      { source: "/tools/kdp-sudoku-generator", destination: "/studio", permanent: true },
-      { source: "/tools/free-sudoku-generator", destination: "/studio", permanent: true },
-      { source: "/sudoku", destination: "/studio", permanent: true },
+      // Sudoku Generator (non-/tools path)
+      { source: "/tools/kdp-sudoku-generator", destination: "/sudoku", permanent: true },
+      { source: "/tools/free-sudoku-generator", destination: "/sudoku", permanent: true },
 
       // Maze Generator
       { source: "/tools/kdp-maze-generator", destination: "/maze", permanent: true },

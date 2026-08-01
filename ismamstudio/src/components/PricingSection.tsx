@@ -259,7 +259,9 @@ function PricingSectionInner() {
       ctaText: "Start Designing Free",
       colorClass: "bg-slate-50 dark:bg-slate-950/40 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-800",
       borderClass: "border-slate-200 dark:border-slate-900",
-      icon: <HelpCircle className="w-6 h-6 text-slate-500" />,
+      icon: <HelpCircle className="w-6 h-6 text-sky-500" />,
+      accentIconBg: "bg-sky-500/10 border-sky-500/20",
+      accentBadge: "text-sky-600 bg-sky-500/10 border-sky-500/20",
       ctaLink: "/sign-up",
       planKey: "free"
     },
@@ -287,7 +289,9 @@ function PricingSectionInner() {
       ctaText: "Start 7-Day Free Trial",
       colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-700",
       borderClass: "border-slate-200 dark:border-slate-800/80",
-      icon: <Star className="w-6 h-6 text-slate-400" />,
+      icon: <Star className="w-6 h-6 text-indigo-500" />,
+      accentIconBg: "bg-indigo-500/10 border-indigo-500/20",
+      accentBadge: "text-indigo-600 bg-indigo-500/10 border-indigo-500/20",
       ctaLink: "/sign-up?plan=starter",
       planKey: "starter"
     },
@@ -317,6 +321,8 @@ function PricingSectionInner() {
       colorClass: "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-[0_20px_50px_rgba(245,158,11,0.15),_0_0_30px_rgba(56,189,248,0.1)]",
       borderClass: "border-amber-500 dark:border-amber-400 border-2",
       icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
+      accentIconBg: "bg-amber-500/10 border-amber-500/20",
+      accentBadge: "text-amber-700 bg-amber-500/10 border-amber-500/20",
       ctaLink: "/sign-up?plan=pro",
       planKey: "pro"
     },
@@ -344,7 +350,9 @@ function PricingSectionInner() {
       ctaText: "Start 7-Day Free Trial",
       colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-700",
       borderClass: "border-slate-200 dark:border-slate-800/80",
-      icon: <Award className="w-6 h-6 text-slate-400" />,
+      icon: <Award className="w-6 h-6 text-emerald-500" />,
+      accentIconBg: "bg-emerald-500/10 border-emerald-500/20",
+      accentBadge: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20",
       ctaLink: "/sign-up?plan=agency",
       planKey: "agency"
     },
@@ -423,16 +431,10 @@ function PricingSectionInner() {
         <div>
           {/* Plan Header */}
           <div className="flex items-center justify-between mb-6">
-            <div className={`p-3 rounded-2xl border shadow-inner ${plan.popular
-                ? "bg-slate-55 border-slate-200"
-                : "bg-slate-900/80 border-slate-800"
-              }`}>
+            <div className={`p-3 rounded-2xl border shadow-inner ${plan.accentIconBg}`}>
               {plan.icon}
             </div>
-            <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${plan.popular
-                ? "text-slate-500 bg-slate-100 border-slate-200"
-                : "text-slate-500 bg-slate-950/50 border-slate-900"
-              }`}>
+            <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${plan.accentBadge}`}>
               {isLtd ? "Lifetime Deal" : "KDP Tier"}
             </span>
           </div>

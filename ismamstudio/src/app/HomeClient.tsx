@@ -849,91 +849,76 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 🌟 Social Proof & Verified Creator Testimonials */}
+      {/* 🌟 Official Trustpilot Rating & Technical Product Guarantees */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-100">
         <div className="text-center mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black uppercase tracking-widest shadow-sm">
-            <Star className="w-3.5 h-3.5 fill-emerald-500 text-emerald-500" />
-            Rated 4.9/5 by 1,000+ KDP Publishers
-          </div>
+          <Link 
+            href="https://www.trustpilot.com/review/kdpage.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 text-emerald-800 text-xs font-black uppercase tracking-widest shadow-sm transition-all hover:scale-105"
+          >
+            <Star className="w-4 h-4 fill-emerald-500 text-emerald-500" />
+            Check Our Live Reviews on Trustpilot
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
           <h2 className="text-3xl md:text-5xl font-black text-slate-800 tracking-tight">
-            Loved by Bestselling <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">KDP Authors</span>
+            Built for Bestselling <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">KDP Authors</span>
           </h2>
           <p className="text-slate-600 text-base md:text-lg max-w-xl mx-auto font-medium">
-            See how self-publishers and activity book creators scale their royalties with KDPage.
+            3 Core guarantees that ensure your books pass Amazon KDP review every single time.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Card 1 */}
+          {/* Guarantee 1 */}
           <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="flex items-center gap-1 text-amber-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                ))}
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-black">
+                🛡️
               </div>
-              <p className="text-slate-700 text-sm font-semibold leading-relaxed italic">
-                "KDPage saved me at least 15 hours on my last Sudoku &amp; Labyrinth puzzle book release. The single-solution guarantee gives me complete peace of mind when sending PDFs directly to Amazon KDP."
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">100% KDP Print Guarantee</h3>
+              <p className="text-slate-600 text-sm font-semibold leading-relaxed">
+                Automatic gutter margins (0.375" - 0.5") based on total page count. Guaranteed no margin or bleed violations during Amazon KDP review.
               </p>
             </div>
-            <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black flex items-center justify-center text-sm shadow">
-                JD
-              </div>
-              <div>
-                <h4 className="text-xs font-black text-slate-900 uppercase">Julian D.</h4>
-                <p className="text-[10px] text-slate-500 font-bold">KDP Activity Book Publisher (42+ Titles)</p>
-              </div>
-              <span className="ml-auto text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Verified</span>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Bleed &amp; Safety</span>
+              <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Guaranteed</span>
             </div>
           </div>
 
-          {/* Card 2 */}
+          {/* Guarantee 2 */}
           <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="flex items-center gap-1 text-amber-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                ))}
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center text-xl font-black">
+                🔢
               </div>
-              <p className="text-slate-700 text-sm font-semibold leading-relaxed italic">
-                "The Fabric Cover Studio with automatic KDP spine width calculation is worth the price alone. I no longer get margin or bleed errors from Amazon's interior review system!"
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">Single-Solution Uniqueness</h3>
+              <p className="text-slate-600 text-sm font-semibold leading-relaxed">
+                Our backtracking solver evaluates <code className="text-xs font-bold bg-purple-50 text-purple-700 px-1 py-0.5 rounded">countSolutions(grid, 2)</code> to mathematically guarantee exactly 1 unique solution per grid.
               </p>
             </div>
-            <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white font-black flex items-center justify-center text-sm shadow">
-                MR
-              </div>
-              <div>
-                <h4 className="text-xs font-black text-slate-900 uppercase">Marcus R.</h4>
-                <p className="text-[10px] text-slate-500 font-bold">Low-Content Niche Creator</p>
-              </div>
-              <span className="ml-auto text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Verified</span>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Sudoku &amp; Logic</span>
+              <span className="text-[9px] font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">Mathematically Verified</span>
             </div>
           </div>
 
-          {/* Card 3 */}
+          {/* Guarantee 3 */}
           <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="flex items-center gap-1 text-amber-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                ))}
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center text-xl font-black">
+                🎨
               </div>
-              <p className="text-slate-700 text-sm font-semibold leading-relaxed italic">
-                "Switched from Book Bolt and haven't looked back. Generating Word Search CSV lists and heart-shaped mazes takes seconds. Exported 20 books last month!"
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">Fabric.js Cover Math</h3>
+              <p className="text-slate-600 text-sm font-semibold leading-relaxed">
+                Calculates exact spine thickness <code className="text-xs font-bold bg-amber-50 text-amber-700 px-1 py-0.5 rounded">pageCount * 0.002252"</code> for crisp, professional wrap-around covers.
               </p>
             </div>
-            <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 text-white font-black flex items-center justify-center text-sm shadow">
-                SK
-              </div>
-              <div>
-                <h4 className="text-xs font-black text-slate-900 uppercase">Sarah K.</h4>
-                <p className="text-[10px] text-slate-500 font-bold">Full-Time KDP Author</p>
-              </div>
-              <span className="ml-auto text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Verified</span>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Cover Studio</span>
+              <span className="text-[9px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">Zero Trim Shift</span>
             </div>
           </div>
         </div>

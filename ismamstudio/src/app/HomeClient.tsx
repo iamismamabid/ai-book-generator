@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
+import TrustpilotWidget from "./components/TrustpilotWidget";
+
 const PricingSection = dynamic(() => import("../components/PricingSection"), {
   ssr: true,
 });
@@ -868,6 +870,7 @@ export default function HomeClient() {
           <p className="text-slate-600 text-base md:text-lg max-w-xl mx-auto font-medium">
             3 Core guarantees that ensure your books pass Amazon KDP review every single time.
           </p>
+          <TrustpilotWidget />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

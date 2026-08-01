@@ -310,6 +310,17 @@ export default function FreeToolsHub() {
   const totalScore = scorecard.reduce((sum, item) => sum + (item.checked ? item.points : 0), 0);
 
   const toolsList: ToolItem[] = [
+    // 1. Puzzle & Interior Generators
+    {
+      id: "sudoku-generator",
+      name: "KDP Sudoku Puzzle Generator",
+      badge: "Popular",
+      category: "Design",
+      description: "Generate 100% mathematically unique Sudoku puzzle grids (Easy to Hard) with solution pages, right inside Book Builder.",
+      features: ["Single-solution guaranteed", "Large print formatting", "Difficulty scales with plan"],
+      keywords: ["sudoku", "sudokus", "sudokos", "number puzzle", "logic grid", "puzzle", "interior"],
+      link: "/studio"
+    },
     // 2. Cover & Spine Tools
     {
       id: "spine-calculator",
@@ -710,7 +721,7 @@ export default function FreeToolsHub() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search 30+ free KDP tools — Spine, Barcode, PDF, Keyword, Royalty..."
+                placeholder="Search 30+ free KDP tools — Sudoku, Spine, Barcode, Keyword, Royalty..."
                 className="flex-1 py-4 pr-3 bg-transparent text-stone-900 placeholder-stone-400 font-semibold text-sm focus:outline-none"
               />
 

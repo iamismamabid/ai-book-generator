@@ -334,6 +334,27 @@ export default function HomeClient() {
             </Link>
           </div>
 
+          {/* 4. Sudoku Studio — generated inside Book Builder rather than a
+              dedicated page, since Sudoku's difficulty tiers are gated by
+              plan there (see the pricing comparison table). */}
+          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+            <div>
+              <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
+                <Grid3x3 className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Sudoku Studio</h3>
+              <p className="text-slate-600 text-sm leading-relaxed font-semibold">
+                Compile print-ready Sudoku puzzle grids (Easy, Medium, Hard) in bulk with mathematically guaranteed single-solution uniqueness, right inside Book Builder.
+              </p>
+            </div>
+            <Link
+              href="/studio"
+              className="inline-flex items-center gap-2 text-sm font-black text-slate-600 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mt-6"
+            >
+              Open Book Builder <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
           {/* 5. Word Search Studio */}
           <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
             <div>

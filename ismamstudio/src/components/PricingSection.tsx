@@ -741,7 +741,7 @@ function PricingSectionInner() {
             },
             {
               label: "Math Puzzles & Kakuro",
-              free: false, starter: true, pro: "Unlimited", agency: "Unlimited",
+              free: false, starter: "Easy & Medium", pro: "Unlimited", agency: "Unlimited",
             },
             {
               label: "Chapter Limits",

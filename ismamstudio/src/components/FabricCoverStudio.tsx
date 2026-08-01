@@ -5548,55 +5548,58 @@ export default function FabricCoverStudio({
       )}
 
       {/* 3. FABRIC WORKSPACE */}
-      <div className="flex-1 bg-slate-100 flex flex-col items-center justify-center p-3 sm:p-6 md:p-10 relative overflow-auto min-w-0">
-        {/* Spine details helper */}
-        <div className="mb-3 sm:mb-4 bg-slate-950/80 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-800 text-[9px] sm:text-[10px] font-black uppercase text-amber-400 tracking-widest shadow-md z-20 max-w-full text-center truncate">
-          Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"
-        </div>
+      <div className="flex-1 bg-slate-100 flex flex-col items-center justify-start p-3 sm:p-6 md:p-8 relative overflow-auto min-w-0">
+        {/* Top Header Controls: Trim Badge & Action Toolbar with clean vertical spacing */}
+        <div className="flex flex-col items-center gap-3.5 mb-5 z-20 shrink-0 select-none max-w-full">
+          {/* Spine details helper */}
+          <div className="bg-slate-950/90 px-4 py-2 rounded-full border border-slate-800 text-[10px] sm:text-xs font-black uppercase text-amber-400 tracking-widest shadow-md text-center truncate">
+            Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"
+          </div>
 
-        {/* Global Canvas Control Bar */}
-        <div className="mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3 bg-white py-1.5 sm:py-2 px-3 sm:px-4 rounded-full border border-slate-200 shadow-sm z-10 select-none max-w-full overflow-x-auto">
-          <button
-            onClick={handleUndo}
-            disabled={historyStep <= 0}
-            title="Undo (Ctrl+Z)"
-            className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
-          >
-            <Undo2 className="w-4 h-4"/>
-            <span className="text-[10px] font-black uppercase tracking-wider">Undo</span>
-          </button>
+          {/* Global Canvas Control Bar */}
+          <div className="flex items-center gap-2 sm:gap-3 bg-white py-2 px-4 rounded-full border border-slate-200/80 shadow-md max-w-full overflow-x-auto">
+            <button
+              onClick={handleUndo}
+              disabled={historyStep <= 0}
+              title="Undo (Ctrl+Z)"
+              className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
+            >
+              <Undo2 className="w-4 h-4"/>
+              <span className="text-[10px] font-black uppercase tracking-wider">Undo</span>
+            </button>
 
-          <button
-            onClick={handleRedo}
-            disabled={historyStep === history.length - 1}
-            title="Redo (Ctrl+Y)"
-            className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
-          >
-            <Redo2 className="w-4 h-4"/>
-            <span className="text-[10px] font-black uppercase tracking-wider">Redo</span>
-          </button>
+            <button
+              onClick={handleRedo}
+              disabled={historyStep === history.length - 1}
+              title="Redo (Ctrl+Y)"
+              className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
+            >
+              <Redo2 className="w-4 h-4"/>
+              <span className="text-[10px] font-black uppercase tracking-wider">Redo</span>
+            </button>
 
-          <div className="w-px h-5 bg-slate-200 mx-1" />
+            <div className="w-px h-5 bg-slate-200 mx-1" />
 
-          <button
-            onClick={deleteSelected}
-            disabled={!activeObject}
-            title="Erase / Delete Selected Layer (Delete)"
-            className="p-2 rounded-full text-red-600 hover:bg-red-50 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
-          >
-            <Trash2 className="w-4 h-4"/>
-            <span className="text-[10px] font-black uppercase tracking-wider">Erase</span>
-          </button>
+            <button
+              onClick={deleteSelected}
+              disabled={!activeObject}
+              title="Erase / Delete Selected Layer (Delete)"
+              className="p-2 rounded-full text-red-600 hover:bg-red-50 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
+            >
+              <Trash2 className="w-4 h-4"/>
+              <span className="text-[10px] font-black uppercase tracking-wider">Erase</span>
+            </button>
 
-          <button
-            onClick={handleClearCanvas}
-            disabled={layers.length === 0}
-            title="Clear All Layers"
-            className="p-2 rounded-full text-slate-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
-          >
-            <Eraser className="w-4 h-4"/>
-            <span className="text-[10px] font-black uppercase tracking-wider">Clear All</span>
-          </button>
+            <button
+              onClick={handleClearCanvas}
+              disabled={layers.length === 0}
+              title="Clear All Layers"
+              className="p-2 rounded-full text-slate-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
+            >
+              <Eraser className="w-4 h-4"/>
+              <span className="text-[10px] font-black uppercase tracking-wider">Clear All</span>
+            </button>
+          </div>
         </div>
 
         {/* Responsive parent container to calculate scale */}

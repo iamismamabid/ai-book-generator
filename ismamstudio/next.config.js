@@ -116,7 +116,12 @@ const nextConfig = {
   // consolidates onto one URL instead of splitting across two.
   async redirects() {
     return [
-      // ─── Legacy duplicate page ───────────────────────────────────────────
+      // Legacy duplicate page & guide redirects
+      {
+        source: "/kdp-formatting-guide",
+        destination: "/kdp-checklist",
+        permanent: true,
+      },
       {
         source: "/tools/free",
         destination: "/tools",

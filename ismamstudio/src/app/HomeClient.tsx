@@ -30,6 +30,7 @@ import {
 import dynamic from "next/dynamic";
 
 import TrustpilotWidget from "./components/TrustpilotWidget";
+import UserReviewsSection from "./components/UserReviewsSection";
 
 const PricingSection = dynamic(() => import("../components/PricingSection"), {
   ssr: true,
@@ -850,6 +851,9 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      {/* 💬 User Reviews */}
+      <UserReviewsSection />
 
       {/* 🌟 Official Trustpilot Rating & Technical Product Guarantees */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 border-t border-slate-100">

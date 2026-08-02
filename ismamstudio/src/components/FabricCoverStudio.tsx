@@ -10,7 +10,7 @@ import {
   Bold, Italic, Underline, AlignJustify, Box, Layers as LayersIcon,
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
-  AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2
+  AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -781,7 +781,36 @@ export default function FabricCoverStudio({
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
   const [clipboard, setClipboard] = useState<any>(null);
   const [isObjectLocked, setIsObjectLocked] = useState(false);
-  const [activeToolTab, setActiveToolTab] = useState<'elements' | 'graphics' | 'presets' | 'uploads' | 'settings' | null>('elements');
+  const [activeToolTab, setActiveToolTab] = useState<'elements' | 'graphics' | 'presets' | 'uploads' | 'draw' | 'settings' | null>('elements');
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [drawingColor, setDrawingColor] = useState("#000000");
+  const [drawingWidth, setDrawingWidth] = useState(4);
+
+  const toggleDrawingMode = (forceState?: boolean) => {
+    if (!canvas) return;
+    const nextMode = forceState !== undefined ? forceState : !isDrawingMode;
+    setIsDrawingMode(nextMode);
+    canvas.isDrawingMode = nextMode;
+    if (nextMode) {
+      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+      canvas.freeDrawingBrush.color = drawingColor;
+      canvas.freeDrawingBrush.width = drawingWidth;
+    }
+  };
+
+  const handleDrawingColorChange = (color: string) => {
+    setDrawingColor(color);
+    if (canvas && canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.color = color;
+    }
+  };
+
+  const handleDrawingWidthChange = (width: number) => {
+    setDrawingWidth(width);
+    if (canvas && canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.width = width;
+    }
+  };
   const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
   const [graphicsSubTab, setGraphicsSubTab] = useState<'kdp-icons' | 'unsplash'>('kdp-icons');
 
@@ -3506,6 +3535,19 @@ export default function FabricCoverStudio({
           <Upload className="w-5 h-5"/>
         </button>
         <button
+          onClick={() => {
+            const nextTab = activeToolTab === 'draw' ? null : 'draw';
+            setActiveToolTab(nextTab);
+            toggleDrawingMode(nextTab === 'draw');
+          }}
+          title="Pencil / Freehand Draw"
+          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+            activeToolTab === 'draw' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
+          }`}
+        >
+          <Pencil className="w-5 h-5"/>
+        </button>
+        <button
           onClick={() => setActiveToolTab(prev => prev === 'settings' ? null : 'settings')}
           title="Cover Specs"
           className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
@@ -5302,6 +5344,116 @@ export default function FabricCoverStudio({
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {activeToolTab === 'draw' && (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Freehand Pencil & Brush</h3>
+              <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${isDrawingMode ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-slate-200 text-slate-500'}`}>
+                {isDrawingMode ? 'Drawing Active' : 'Paused'}
+              </span>
+            </div>
+
+            <button
+              onClick={() => toggleDrawingMode()}
+              className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
+                isDrawingMode
+                  ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md'
+              }`}
+            >
+              <Pencil className="w-4 h-4" />
+              {isDrawingMode ? 'Pause Freehand Draw' : 'Activate Pencil Brush'}
+            </button>
+
+            {/* Brush Size Controls */}
+            <div className="space-y-3 p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-slate-600">Brush Thickness</label>
+                <span className="text-xs font-black text-slate-800">{drawingWidth}px</span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={drawingWidth}
+                onChange={(e) => handleDrawingWidthChange(parseInt(e.target.value))}
+                className="w-full accent-amber-500 cursor-pointer"
+              />
+              <div className="grid grid-cols-4 gap-1.5 pt-1">
+                {[
+                  { label: 'Fine (2px)', width: 2 },
+                  { label: 'Pen (5px)', width: 5 },
+                  { label: 'Marker (12px)', width: 12 },
+                  { label: 'Brush (24px)', width: 24 }
+                ].map((preset) => (
+                  <button
+                    key={preset.width}
+                    onClick={() => handleDrawingWidthChange(preset.width)}
+                    className={`py-1.5 px-1 text-[9px] font-black uppercase rounded-lg border transition-all ${
+                      drawingWidth === preset.width
+                        ? 'bg-amber-500 text-slate-950 border-amber-500'
+                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Brush Color Picker */}
+            <div className="space-y-3 p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-slate-600">Brush Color</label>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-slate-500">{drawingColor}</span>
+                  <input
+                    type="color"
+                    value={drawingColor}
+                    onChange={(e) => handleDrawingColorChange(e.target.value)}
+                    className="w-6 h-6 rounded border border-slate-200 cursor-pointer p-0 bg-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Swatches */}
+              <div className="grid grid-cols-6 gap-1.5">
+                {[
+                  '#000000', '#ffffff', '#ef4444', '#f97316', '#f59e0b', '#10b981',
+                  '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#64748b'
+                ].map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => handleDrawingColorChange(color)}
+                    style={{ backgroundColor: color }}
+                    className={`h-7 rounded-lg border border-slate-300 shadow-inner transition-transform hover:scale-110 ${
+                      drawingColor === color ? 'ring-2 ring-amber-500 ring-offset-1 scale-105' : ''
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-2 space-y-2">
+              <button
+                onClick={() => {
+                  if (!canvas) return;
+                  const pathObjs = canvas.getObjects().filter((o: any) => o.type === 'path' && !o.isHeart);
+                  if (pathObjs.length === 0) return;
+                  if (confirm(`Clear all ${pathObjs.length} freehand drawing stroke(s)?`)) {
+                    pathObjs.forEach((o) => canvas.remove(o));
+                    canvas.requestRenderAll();
+                  }
+                }}
+                className="w-full py-2.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" /> Clear Freehand Strokes
+              </button>
+            </div>
           </div>
         )}
 

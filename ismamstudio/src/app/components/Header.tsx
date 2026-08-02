@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import GlobalSearchModal from '@/app/components/GlobalSearchModal';
 import { Menu, X, Sparkles, BookOpen, Wrench, CreditCard, LayoutGrid, Layers } from 'lucide-react';
 
@@ -83,10 +83,15 @@ export default function Header() {
 
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="bg-slate-900 dark:bg-slate-800 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:shadow-lg transition-all active:scale-95">
+                <button className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-1.5 sm:px-2">
                   Sign In
                 </button>
               </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="bg-slate-900 dark:bg-slate-800 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:shadow-lg transition-all active:scale-95">
+                  Sign Up
+                </button>
+              </SignUpButton>
             </SignedOut>
 
             {/* Mobile Hamburger Toggle Button */}

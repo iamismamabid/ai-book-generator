@@ -3,7 +3,7 @@
 import posthog from "posthog-js";
 import React, { useState } from "react";
 import type { jsPDF } from "jspdf";
-import { Download } from "lucide-react";
+import { Download, FileText } from "lucide-react";
 import ExportInteriorModal, { TrimSizeOption } from "./ExportInteriorModal";
 
 interface Chapter {
@@ -64,6 +64,69 @@ export default function ExportButton({
   customTextColor = "#1e293b",
 }: ExportButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExportingWord, setIsExportingWord] = useState(false);
+
+  // Word export is a manuscript/editing format, not a print-ready page layout
+  // like the PDF path — no gutter margins, bleed, or trim size involved, so
+  // it skips the ExportInteriorModal and just builds the document directly.
+  const handleExportWord = async () => {
+    const { Document, Paragraph, TextRun, HeadingLevel, Packer, AlignmentType, PageBreak } = await import("docx");
+
+    const paragraphsFromText = (text: string) =>
+      text
+        .split(/\r?\n/)
+        .map((p) => p.trim())
+        .filter((p) => p.length > 0)
+        .map(
+          (p) =>
+            new Paragraph({
+              children: [new TextRun(p)],
+              spacing: { after: 200 },
+            })
+        );
+
+    const doc = new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 200 },
+              children: [new TextRun({ text: title, bold: true, size: 56 })],
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 600 },
+              children: [new TextRun({ text: subtitle, italics: true, size: 28 })],
+            }),
+            new Paragraph({
+              heading: HeadingLevel.HEADING_1,
+              children: [new TextRun("Introduction")],
+            }),
+            ...paragraphsFromText(content),
+            ...chapters.flatMap((chapter) => [
+              new Paragraph({ children: [new PageBreak()] }),
+              new Paragraph({
+                heading: HeadingLevel.HEADING_1,
+                children: [new TextRun(chapter.title)],
+              }),
+              ...paragraphsFromText(chapter.content),
+            ]),
+          ],
+        },
+      ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.replace(/\s+/g, "_")}_Manuscript.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    posthog.capture("book_exported_word", { chapter_count: chapters.length });
+  };
 
   const handleExportPDF = async (options: {
     includeCover: boolean;
@@ -357,12 +420,28 @@ export default function ExportButton({
 
   return (
     <>
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-600 shadow-md transition-all active:scale-95 pointer-events-auto cursor-pointer"
-      >
-        <Download className="w-4 h-4" /> Export PDF
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-600 shadow-md transition-all active:scale-95 pointer-events-auto cursor-pointer"
+        >
+          <Download className="w-4 h-4" /> Export PDF
+        </button>
+        <button
+          onClick={async () => {
+            setIsExportingWord(true);
+            try {
+              await handleExportWord();
+            } finally {
+              setIsExportingWord(false);
+            }
+          }}
+          disabled={isExportingWord}
+          className="flex items-center gap-2 bg-white text-slate-700 border border-slate-200 px-5 py-2 rounded-full text-sm font-bold hover:border-indigo-400 hover:text-indigo-600 shadow-sm transition-all active:scale-95 disabled:opacity-50 pointer-events-auto cursor-pointer"
+        >
+          <FileText className="w-4 h-4" /> {isExportingWord ? "Exporting..." : "Export Word"}
+        </button>
+      </div>
 
       <ExportInteriorModal<ManuscriptTrimSize>
         isOpen={isModalOpen}

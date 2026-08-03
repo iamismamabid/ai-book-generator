@@ -82,8 +82,6 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
     words: ["ROCKET", "GALAXY", "ASTRONAUT", "PLANET", "COMET", "NEBULA", "SATELLITE", "METEOR", "TELESCOPE", "ORBIT", "GRAVITY", "STARDUST"] },
   { id: "dinosaurs", category: "Space & Science", name: "Dinosaurs",
     words: ["TREX", "TRICERATOPS", "VELOCIRAPTOR", "STEGOSAURUS", "FOSSIL", "PTERODACTYL", "JURASSIC", "EXTINCT", "PALEONTOLOGY", "BRACHIOSAURUS", "CLAW", "SWAMP"] },
-  { id: "alphabet", category: "Space & Science", name: "Simple Animals (Kids)",
-    words: ["CAT", "DOG", "BIRD", "FISH", "FROG", "DUCK", "BEAR", "LION", "GOAT", "MOUSE", "SHEEP", "SNAKE"] },
 
   // --- Sports & Music ---
   { id: "sports", category: "Sports & Music", name: "Team Sports",

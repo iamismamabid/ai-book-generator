@@ -80,12 +80,15 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   const [isExporting, setIsExporting] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [solutionsStatus, setSolutionsStatus] = useState<'idle' | 'success'>('idle');
-  // Word Search answer keys can be packed multiple-per-page (matching the
-  // standalone /tools/word-search generator) to cut page count and print
-  // cost; other puzzle types keep one solution per page.
+  // All puzzle types support N-per-page solution packing
   const [wordSearchSolutionsPerPage, setWordSearchSolutionsPerPage] = useState<1 | 2 | 4>(1);
-  // Sudoku answer keys can also be packed 1, 2, or 4 per page
   const [sudokuSolutionsPerPage, setSudokuSolutionsPerPage] = useState<1 | 2 | 4>(4);
+  const [crosswordSolutionsPerPage, setCrosswordSolutionsPerPage] = useState<1 | 2 | 4>(2);
+  const [mazeSolutionsPerPage, setMazeSolutionsPerPage] = useState<1 | 2 | 4>(2);
+  const [kakuroSolutionsPerPage, setKakuroSolutionsPerPage] = useState<1 | 2 | 4>(2);
+  const [wordScrambleSolutionsPerPage, setWordScrambleSolutionsPerPage] = useState<1 | 2 | 4>(2);
+  const [cryptogramSolutionsPerPage, setCryptogramSolutionsPerPage] = useState<1 | 2 | 4>(2);
+  const [mathPuzzleSolutionsPerPage, setMathPuzzleSolutionsPerPage] = useState<1 | 2 | 4>(4);
 
   useEffect(() => {
     setMounted(true);
@@ -226,77 +229,44 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     const puzzleTypes = ['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle', 'kakuro'];
     const puzzlePages = bookPages.filter((page) => puzzleTypes.includes(page.type) && !page.config.isSolution);
 
-    // Word Search and Sudoku solutions pack N-per-page; other types keep one solution per page.
-    const wordSearchPages = puzzlePages.filter((p) => p.type === 'word_search');
-    const sudokuPages = puzzlePages.filter((p) => p.type === 'sudoku');
-    const otherPages = puzzlePages.filter((p) => p.type !== 'word_search' && p.type !== 'sudoku');
-
-    otherPages.forEach((page) => {
-      newSolPages.push({
-        id: Date.now() + Math.random(),
-        type: page.type,
-        config: {
-          ...JSON.parse(JSON.stringify(page.config)),
-          isSolution: true,
-          showSolution: true // For maze
+    // Helper to pack any puzzle type N-per-page
+    const packSolutions = (pages: any[], perPage: 1 | 2 | 4, type: string, dataKey: string, extraKeys: string[] = []) => {
+      for (let i = 0; i < pages.length; i += perPage) {
+        const batch = pages.slice(i, i + perPage);
+        if (perPage === 1) {
+          newSolPages.push({
+            id: Date.now() + Math.random(),
+            type,
+            config: { ...JSON.parse(JSON.stringify(batch[0].config)), isSolution: true, showSolution: true }
+          });
+        } else {
+          newSolPages.push({
+            id: Date.now() + Math.random(),
+            type,
+            config: {
+              isSolution: true,
+              isMultiSolution: true,
+              solutionGroup: batch.map((p, idx) => {
+                const entry: any = { puzzleIndex: i + idx + 1, [dataKey]: JSON.parse(JSON.stringify(p.config[dataKey])) };
+                extraKeys.forEach(k => { if (p.config[k] !== undefined) entry[k] = p.config[k]; });
+                return entry;
+              }),
+            }
+          });
         }
-      });
-    });
-
-    // Sudoku solutions packed N-per-page
-    for (let i = 0; i < sudokuPages.length; i += sudokuSolutionsPerPage) {
-      const batch = sudokuPages.slice(i, i + sudokuSolutionsPerPage);
-      if (sudokuSolutionsPerPage === 1) {
-        newSolPages.push({
-          id: Date.now() + Math.random(),
-          type: 'sudoku',
-          config: {
-            ...JSON.parse(JSON.stringify(batch[0].config)),
-            isSolution: true,
-          }
-        });
-      } else {
-        newSolPages.push({
-          id: Date.now() + Math.random(),
-          type: 'sudoku',
-          config: {
-            isSolution: true,
-            isMultiSolution: true,
-            solutionGroup: batch.map((p, idx) => ({
-              gridData: JSON.parse(JSON.stringify(p.config.gridData)),
-              puzzleIndex: i + idx + 1,
-            })),
-          }
-        });
       }
-    }
+    };
 
-    for (let i = 0; i < wordSearchPages.length; i += wordSearchSolutionsPerPage) {
-      const batch = wordSearchPages.slice(i, i + wordSearchSolutionsPerPage);
-      if (wordSearchSolutionsPerPage === 1) {
-        newSolPages.push({
-          id: Date.now() + Math.random(),
-          type: 'word_search',
-          config: {
-            ...JSON.parse(JSON.stringify(batch[0].config)),
-            isSolution: true,
-          }
-        });
-      } else {
-        newSolPages.push({
-          id: Date.now() + Math.random(),
-          type: 'word_search',
-          config: {
-            isSolution: true,
-            isMultiSolution: true,
-            solutionGroup: batch.map((p, idx) => ({
-              gridData: JSON.parse(JSON.stringify(p.config.gridData)),
-              puzzleIndex: i + idx + 1,
-            })),
-          }
-        });
-      }
-    }
+    const byType = (t: string) => puzzlePages.filter(p => p.type === t);
+
+    packSolutions(byType('crossword'), crosswordSolutionsPerPage, 'crossword', 'gridData');
+    packSolutions(byType('word_search'), wordSearchSolutionsPerPage, 'word_search', 'gridData');
+    packSolutions(byType('sudoku'), sudokuSolutionsPerPage, 'sudoku', 'gridData');
+    packSolutions(byType('kakuro'), kakuroSolutionsPerPage, 'kakuro', 'gridData');
+    packSolutions(byType('maze'), mazeSolutionsPerPage, 'maze', 'gridData');
+    packSolutions(byType('word_scramble'), wordScrambleSolutionsPerPage, 'word_scramble', 'scrambledData');
+    packSolutions(byType('cryptogram'), cryptogramSolutionsPerPage, 'cryptogram', 'cryptogramData');
+    packSolutions(byType('math_puzzle'), mathPuzzleSolutionsPerPage, 'math_puzzle', 'puzzleData', ['puzzleType']);
 
     if (newSolPages.length === 0) {
       alert("No puzzle pages found to generate solutions for.");
@@ -397,33 +367,31 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           </div>
 
           {/* Bulk Utility Section */}
-          <div className="pt-4 border-t border-slate-800 space-y-2.5">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Word Search Solutions/Page</span>
-              <select
-                value={wordSearchSolutionsPerPage}
-                onChange={(e) => setWordSearchSolutionsPerPage(Number(e.target.value) as 1 | 2 | 4)}
-                title="Pack multiple Word Search answer keys onto one page to cut page count and print cost"
-                className="bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-200 px-2 py-1 cursor-pointer"
-              >
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-                <option value={4}>4</option>
-              </select>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sudoku Solutions/Page</span>
-              <select
-                value={sudokuSolutionsPerPage}
-                onChange={(e) => setSudokuSolutionsPerPage(Number(e.target.value) as 1 | 2 | 4)}
-                title="Pack multiple Sudoku answer keys onto one page to cut page count and print cost"
-                className="bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-200 px-2 py-1 cursor-pointer"
-              >
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-                <option value={4}>4</option>
-              </select>
-            </div>
+          <div className="pt-4 border-t border-slate-800 space-y-2">
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Solutions Per Page</span>
+            {([
+              ['Word Search', wordSearchSolutionsPerPage, setWordSearchSolutionsPerPage],
+              ['Sudoku', sudokuSolutionsPerPage, setSudokuSolutionsPerPage],
+              ['Crossword', crosswordSolutionsPerPage, setCrosswordSolutionsPerPage],
+              ['Maze', mazeSolutionsPerPage, setMazeSolutionsPerPage],
+              ['Kakuro', kakuroSolutionsPerPage, setKakuroSolutionsPerPage],
+              ['Word Scramble', wordScrambleSolutionsPerPage, setWordScrambleSolutionsPerPage],
+              ['Cryptogram', cryptogramSolutionsPerPage, setCryptogramSolutionsPerPage],
+              ['Math Puzzle', mathPuzzleSolutionsPerPage, setMathPuzzleSolutionsPerPage],
+            ] as const).map(([label, val, setter]) => (
+              <div key={label} className="flex items-center justify-between gap-2">
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{label}</span>
+                <select
+                  value={val}
+                  onChange={(e) => (setter as (v: 1|2|4) => void)(Number(e.target.value) as 1 | 2 | 4)}
+                  className="bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-200 px-2 py-1 cursor-pointer"
+                >
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                  <option value={4}>4</option>
+                </select>
+              </div>
+            ))}
             <button
               onClick={autoGenerateAllSolutions}
               className={`w-full py-3 border rounded-2xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] cursor-pointer ${

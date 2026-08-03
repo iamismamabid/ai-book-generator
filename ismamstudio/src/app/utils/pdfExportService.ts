@@ -56,7 +56,9 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       }
     }
 
-    if (page.type === 'crossword' && page.config.gridData) {
+    if (page.type === 'crossword' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawCrosswordSolutionPack(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'crossword' && page.config.gridData) {
       drawCrossword(doc, page, leftMarginShift, w);
     } else if (page.type === 'word_search' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawWordSearchSolutionPack(doc, page, leftMarginShift, w, h);
@@ -66,14 +68,24 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       drawSudokuSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'sudoku' && page.config.gridData) {
       drawSudoku(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'kakuro' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawKakuroSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'kakuro' && page.config.gridData) {
       drawKakuro(doc, page, leftMarginShift, w);
+    } else if (page.type === 'maze' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawMazeSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'maze' && page.config.gridData) {
       drawMaze(doc, page, leftMarginShift, w);
+    } else if (page.type === 'word_scramble' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawWordScrambleSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_scramble' && page.config.scrambledData) {
       drawWordScramble(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'cryptogram' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawCryptogramSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'cryptogram' && page.config.cryptogramData) {
       drawCryptogram(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'math_puzzle' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawMathPuzzleSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'math_puzzle' && page.config.puzzleData) {
       drawMathPuzzle(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'low_content') {
@@ -2108,6 +2120,336 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
     }
   }
 
+  doc.setTextColor(0);
+};
+
+// ── Crossword Solution Pack (1, 2, or 4 per page) ─────────────────────────────
+const drawCrosswordSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const margin = 0.5;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.gridData) return;
+    const data = entry.gridData;
+    const gridSize = 15;
+    const titleSpace = 0.28;
+    const maxCellSize = Math.min(zone.w, zone.h - titleSpace) / gridSize;
+    const cellSize = Math.min(0.3, maxCellSize);
+    const gridW = cellSize * gridSize;
+    const startX = zone.x + (zone.w - gridW) / 2;
+    const startY = zone.y + titleSpace;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    doc.setLineWidth(cellSize * 0.033);
+    doc.setDrawColor(30, 41, 59);
+    data.grid.forEach((row: string[], r: number) => {
+      row.forEach((cell: string, c: number) => {
+        const x = startX + c * cellSize;
+        const y = startY + r * cellSize;
+        if (cell === '') {
+          doc.setFillColor(30, 41, 59);
+          doc.rect(x, y, cellSize, cellSize, "F");
+        } else {
+          doc.rect(x, y, cellSize, cellSize);
+          doc.setFontSize(Math.max(5, Math.floor(cellSize * 38)));
+          doc.setFont("Helvetica", "bold");
+          doc.setTextColor(30, 41, 59);
+          const lw = doc.getTextWidth(cell);
+          doc.text(cell, x + (cellSize - lw) / 2, y + cellSize * 0.73);
+        }
+      });
+    });
+  });
+};
+
+// ── Kakuro Solution Pack (1, 2, or 4 per page) ─────────────────────────────────
+const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const margin = 0.5;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.gridData) return;
+    const { grid, rows, cols } = entry.gridData;
+    const titleSpace = 0.28;
+    const cellSize = Math.min((zone.w) / cols, (zone.h - titleSpace) / rows);
+    const gridW = cellSize * cols;
+    const gridH = cellSize * rows;
+    const startX = zone.x + (zone.w - gridW) / 2;
+    const startY = zone.y + titleSpace + (zone.h - titleSpace - gridH) / 2;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cell = grid[r][c];
+        const x = startX + c * cellSize;
+        const y = startY + r * cellSize;
+        if (cell.type === "white") {
+          doc.setLineWidth(0.005); doc.setDrawColor(180, 180, 190); doc.setFillColor(255, 255, 255);
+          doc.rect(x, y, cellSize, cellSize, "FD");
+          doc.setTextColor(79, 70, 229); doc.setFont("Helvetica", "bold");
+          doc.setFontSize(Math.max(6, Math.floor(cellSize * 30)));
+          doc.text(String(cell.value), x + cellSize / 2, y + cellSize * 0.65, { align: "center" });
+        } else {
+          doc.setLineWidth(0.005); doc.setDrawColor(60, 60, 70); doc.setFillColor(30, 30, 35);
+          doc.rect(x, y, cellSize, cellSize, "FD");
+          const hasRow = cell.rowClue !== undefined;
+          const hasCol = cell.colClue !== undefined;
+          if (hasRow || hasCol) {
+            doc.setLineWidth(0.006); doc.setDrawColor(100, 100, 110);
+            doc.line(x, y, x + cellSize, y + cellSize);
+            doc.setFont("Helvetica", "bold"); doc.setFontSize(Math.max(5, Math.floor(cellSize * 15)));
+            doc.setTextColor(248, 250, 252);
+            if (hasRow) doc.text(String(cell.rowClue), x + cellSize * 0.72, y + cellSize * 0.38, { align: "center" });
+            if (hasCol) doc.text(String(cell.colClue), x + cellSize * 0.28, y + cellSize * 0.8, { align: "center" });
+          }
+        }
+      }
+    }
+    doc.setLineWidth(0.012); doc.setDrawColor(25, 25, 35);
+    doc.rect(startX, startY, gridW, gridH);
+  });
+  doc.setTextColor(0);
+};
+
+// ── Maze Solution Pack (1, 2, or 4 per page) ──────────────────────────────────
+const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const margin = 0.5;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.gridData) return;
+    const data = entry.gridData;
+    const gridSize = data.grid.length;
+    const titleSpace = 0.28;
+    const cellSize = Math.min(zone.w / gridSize, (zone.h - titleSpace) / gridSize);
+    const mazeW = gridSize * cellSize;
+    const startX = zone.x + (zone.w - mazeW) / 2;
+    const startY = zone.y + titleSpace;
+
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
+    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    doc.setLineWidth(cellSize * 0.07); doc.setDrawColor(26, 26, 26);
+    data.grid.forEach((row: any[], r: number) => {
+      row.forEach((cell: any, c: number) => {
+        if (!cell.active) return;
+        const x1 = startX + c * cellSize; const y1 = startY + r * cellSize;
+        const x2 = x1 + cellSize; const y2 = y1 + cellSize;
+        if (cell.walls.top) doc.line(x1, y1, x2, y1);
+        if (cell.walls.bottom) doc.line(x1, y2, x2, y2);
+        if (cell.walls.right) doc.line(x2, y1, x2, y2);
+        if (cell.walls.left) doc.line(x1, y1, x1, y2);
+      });
+    });
+
+    // Draw solution path
+    if (data.solution && data.solution.length > 0) {
+      doc.setLineWidth(cellSize * 0.1); doc.setDrawColor(239, 68, 68);
+      const path = data.solution;
+      for (let pi = 0; pi < path.length - 1; pi++) {
+        const p1 = path[pi]; const p2 = path[pi + 1];
+        doc.line(startX + p1[1] * cellSize + cellSize / 2, startY + p1[0] * cellSize + cellSize / 2,
+                 startX + p2[1] * cellSize + cellSize / 2, startY + p2[0] * cellSize + cellSize / 2);
+      }
+    }
+  });
+  doc.setTextColor(0);
+};
+
+// ── Word Scramble Solution Pack (1, 2, or 4 per page) ─────────────────────────
+const drawWordScrambleSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { scrambledData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const margin = 0.5;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.scrambledData) return;
+    const data = entry.scrambledData;
+
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
+    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    const titleSpace = 0.28;
+    const words = data.original || [];
+    const stepY = Math.min(0.26, (zone.h - titleSpace - 0.1) / Math.max(1, words.length));
+    words.forEach((word: string, wi: number) => {
+      const y = zone.y + titleSpace + wi * stepY + 0.1;
+      doc.setFont("Helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+      doc.text(`${wi + 1}.`, zone.x + 0.1, y);
+      doc.setFont("Courier", "bold"); doc.setFontSize(9); doc.setTextColor(30, 41, 59);
+      doc.text((data.scrambled[wi] || "").split("").join(" "), zone.x + 0.32, y);
+      doc.setFont("Helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(79, 70, 229);
+      doc.text(word, zone.x + zone.w - 0.1, y, { align: "right" });
+    });
+  });
+  doc.setTextColor(0);
+};
+
+// ── Cryptogram Solution Pack (1, 2, or 4 per page) ────────────────────────────
+const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { cryptogramData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const margin = 0.5;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.cryptogramData) return;
+    const data = entry.cryptogramData;
+
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
+    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    const titleSpace = 0.32;
+    // Show decoded text wrapped in zone
+    doc.setFont("Helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(30, 41, 59);
+    const words = (data.original || "").split(" ");
+    let lineX = zone.x + 0.1;
+    let lineY = zone.y + titleSpace;
+    const lineStep = 0.22;
+    const maxX = zone.x + zone.w - 0.1;
+    words.forEach((word: string) => {
+      const ww = doc.getTextWidth(word + " ");
+      if (lineX + ww > maxX) { lineX = zone.x + 0.1; lineY += lineStep; }
+      if (lineY < zone.y + zone.h - 0.1) {
+        doc.setFont("Helvetica", "bold"); doc.setTextColor(79, 70, 229);
+        doc.text(word + " ", lineX, lineY);
+        lineX += ww;
+      }
+    });
+
+    // Mini cipher key at bottom of zone
+    if (data.cipherMap) {
+      const keyY = zone.y + zone.h - 0.2;
+      doc.setFont("Courier", "bold"); doc.setFontSize(6); doc.setTextColor(100, 116, 139);
+      const half1 = "ABCDEFGHIJKLM".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}`).join(" ");
+      const half2 = "NOPQRSTUVWXYZ".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}`).join(" ");
+      doc.text(half1, zone.x + 0.1, keyY - 0.1);
+      doc.text(half2, zone.x + 0.1, keyY);
+    }
+  });
+  doc.setTextColor(0);
+};
+
+// ── Math Puzzle Solution Pack (1, 2, or 4 per page) ───────────────────────────
+const drawMathPuzzleSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { puzzleData: any; puzzleType: string; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const margin = 0.5;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.puzzleData) return;
+    const puzzle = entry.puzzleData;
+    const puzzleType = entry.puzzleType || "addition";
+
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
+    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    const titleSpace = 0.3;
+    const availH = zone.h - titleSpace;
+
+    if (puzzleType === "addition") {
+      const size = 3;
+      const boxW = Math.min(0.55, (zone.w - 0.4) / (size + (size - 1)));
+      const cellSpacing = boxW * 0.82;
+      const totalW = size * boxW + (size - 1) * cellSpacing;
+      const startX = zone.x + (zone.w - totalW) / 2;
+      const startY = zone.y + titleSpace + (availH - (size * boxW + (size - 1) * cellSpacing)) / 2;
+
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const idx = r * 3 + c;
+          const cx = startX + c * (boxW + cellSpacing);
+          const cy = startY + r * (boxW + cellSpacing);
+          doc.setDrawColor(30, 41, 59); doc.setLineWidth(0.01); doc.rect(cx, cy, boxW, boxW);
+          const val = puzzle.grid[idx];
+          const isAnswer = puzzle.hiddenIndices.includes(idx);
+          doc.setFont("Helvetica", "bold"); doc.setFontSize(Math.max(8, Math.floor(boxW * 22)));
+          doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+          doc.text(val.toString(), cx + boxW / 2, cy + boxW / 2 + boxW * 0.1, { align: "center" });
+          doc.setFontSize(Math.max(7, Math.floor(boxW * 20))); doc.setTextColor(100, 116, 139);
+          if (c < size - 1) doc.text(c === 1 ? "=" : "+", cx + boxW + cellSpacing / 2, cy + boxW / 2 + boxW * 0.1, { align: "center" });
+          if (r < size - 1) doc.text(r === 1 ? "=" : "+", cx + boxW / 2, cy + boxW + cellSpacing / 2 + boxW * 0.1, { align: "center" });
+        }
+      }
+    } else if (puzzleType === "multiplication" || puzzleType === "number_fill") {
+      const size = 5;
+      const cellW = Math.min(0.5, zone.w / (size + 0.5));
+      const cellH = Math.min(0.5, availH / (size + 0.5));
+      const totalW = size * cellW; const totalH = size * cellH;
+      const startX = zone.x + (zone.w - totalW) / 2;
+      const startY = zone.y + titleSpace + (availH - totalH) / 2;
+
+      doc.setLineWidth(0.01); doc.setDrawColor(30, 41, 59);
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const cx = startX + c * cellW; const cy = startY + r * cellH;
+          if (puzzleType === "multiplication") {
+            const isHeader = r === 0 || c === 0;
+            if (isHeader) { doc.setFillColor(241, 245, 249); doc.rect(cx, cy, cellW, cellH, "FD"); }
+            else doc.rect(cx, cy, cellW, cellH);
+            let val: any = ""; let isAnswer = false;
+            if (r === 0 && c === 0) { val = "×"; }
+            else if (r === 0) { val = puzzle.colFactors[c-1]; isAnswer = puzzle.hiddenCols.includes(c-1); }
+            else if (c === 0) { val = puzzle.rowFactors[r-1]; isAnswer = puzzle.hiddenRows.includes(r-1); }
+            else { val = puzzle.grid[r-1][c-1]; isAnswer = puzzle.hiddenProducts.some((p: any) => p[0]===r-1 && p[1]===c-1); }
+            doc.setFont("Helvetica", "bold"); doc.setFontSize(Math.max(7, Math.floor(cellW * 18)));
+            doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+            doc.text(val.toString(), cx + cellW/2, cy + cellH/2 + cellH*0.08, { align: "center" });
+          } else {
+            if (r === size-1 && c === size-1) continue;
+            const isSumHeader = r === size-1 || c === size-1;
+            if (isSumHeader) { doc.setFillColor(248, 250, 252); doc.setDrawColor(148, 163, 184); doc.rect(cx, cy, cellW, cellH, "FD"); }
+            else { doc.setDrawColor(30, 41, 59); doc.rect(cx, cy, cellW, cellH); }
+            doc.setFont("Helvetica", "bold"); doc.setFontSize(Math.max(7, Math.floor(cellW * 18)));
+            const isAnswer = !isSumHeader && puzzle.hiddenCells.some((cell: any) => cell[0]===r && cell[1]===c);
+            doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+            const val = isSumHeader ? (r === size-1 ? puzzle.colSums[c] : puzzle.rowSums[r]) : puzzle.grid[r][c];
+            doc.text(val.toString(), cx + cellW/2, cy + cellH/2 + cellH*0.08, { align: "center" });
+          }
+        }
+      }
+    }
+  });
   doc.setTextColor(0);
 };
 

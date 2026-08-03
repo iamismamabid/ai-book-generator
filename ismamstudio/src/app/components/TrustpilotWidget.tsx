@@ -23,7 +23,7 @@ export default function TrustpilotWidget() {
         className="trustpilot-widget"
         data-locale="en-US"
         data-template-id="5419b6a8b0d04a076446a9ad"
-        data-businessunit-id="kdpage.com"
+        data-businessunit-id="6a6b9f255899f3a104131ad8"
         data-style-height="52px"
         data-style-width="100%"
         data-theme="light"

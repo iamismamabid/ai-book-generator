@@ -32,8 +32,6 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
     words: ["DOLPHIN", "OCTOPUS", "STARFISH", "CORAL", "SHARK", "WHALE", "JELLYFISH", "SEAHORSE", "LOBSTER", "STINGRAY", "SEAWEED", "TIDEPOOL", "URCHIN"] },
   { id: "farm", category: "Nature & Animals", name: "Farm Animals",
     words: ["COW", "PIG", "CHICKEN", "HORSE", "SHEEP", "GOAT", "DUCK", "ROOSTER", "TRACTOR", "BARN", "PASTURE", "HAYSTACK", "TURKEY"] },
-  { id: "jungle", category: "Nature & Animals", name: "Jungle & Safari",
-    words: ["LION", "ELEPHANT", "GIRAFFE", "ZEBRA", "MONKEY", "LEOPARD", "GORILLA", "CROCODILE", "RHINO", "HIPPO", "CHEETAH", "PARROT", "PYTHON"] },
   { id: "birds", category: "Nature & Animals", name: "Birdwatching",
     words: ["SPARROW", "EAGLE", "ROBIN", "CARDINAL", "HUMMINGBIRD", "OWL", "FALCON", "WOODPECKER", "SWALLOW", "PELICAN", "FEATHER", "NEST", "BIRDSONG"] },
   { id: "garden", category: "Nature & Animals", name: "Garden & Flowers",
@@ -92,10 +90,6 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
     words: ["SOCCER", "BASKETBALL", "BASEBALL", "HOCKEY", "VOLLEYBALL", "FOOTBALL", "REFEREE", "TOURNAMENT", "STADIUM", "CHAMPION", "SCOREBOARD", "DEFENSE"] },
   { id: "music", category: "Sports & Music", name: "Musical Instruments",
     words: ["GUITAR", "PIANO", "VIOLIN", "DRUMS", "FLUTE", "TRUMPET", "CELLO", "HARP", "CLARINET", "SAXOPHONE", "ACCORDION", "UKULELE"] },
-
-  // --- Faith ---
-  { id: "bible", category: "Faith", name: "Bible Stories",
-    words: ["NOAH", "MOSES", "DAVID", "GOLIATH", "GENESIS", "PARABLE", "SHEPHERD", "COVENANT", "PSALM", "DISCIPLE", "PROPHET", "BLESSING"] },
 ];
 
 export const WORD_SEARCH_THEME_CATEGORIES: string[] = Array.from(

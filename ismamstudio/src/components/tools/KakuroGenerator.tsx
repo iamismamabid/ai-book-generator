@@ -226,7 +226,7 @@ export default function KakuroGenerator() {
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Number of Pages</label>
                   <span className="text-[10px] font-black text-indigo-400">
-                    {premiumStatus.isPremium ? "Premium: Unlimited (Max 1000)" : "Free Limit: 5"}
+                    {premiumStatus.isPremium ? "Premium: Max 1000" : "Free Limit: 5"}
                   </span>
                 </div>
                 <input

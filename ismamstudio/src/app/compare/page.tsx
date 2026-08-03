@@ -96,15 +96,15 @@ export default function ComparePage() {
                   <td className="py-4 px-4 font-bold text-white">Novel Chapter Limits</td>
                   <td className="py-4 px-4 text-center">1 Outline/mo</td>
                   <td className="py-4 px-4 text-center">5 Chapters/mo</td>
-                  <td className="py-4 px-4 text-center">Unlimited</td>
-                  <td className="py-4 px-4 text-center">Unlimited (Priority)</td>
+                  <td className="py-4 px-4 text-center">30 Chapters/mo</td>
+                  <td className="py-4 px-4 text-center">100 Chapters/mo</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">Pen-names / Brands</td>
                   <td className="py-4 px-4 text-center">1</td>
                   <td className="py-4 px-4 text-center">3</td>
-                  <td className="py-4 px-4 text-center">Unlimited</td>
-                  <td className="py-4 px-4 text-center">Unlimited</td>
+                  <td className="py-4 px-4 text-center">10 Profiles</td>
+                  <td className="py-4 px-4 text-center">25 Profiles</td>
                 </tr>
                 <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
                   <td className="py-4 px-4 font-bold text-white">Team seats</td>

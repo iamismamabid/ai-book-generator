@@ -163,7 +163,7 @@ export default function GeneratePage() {
           </button>
           
           <div className="text-xs font-bold text-slate-500 uppercase tracking-widest bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-900">
-            Monthly Usage: <span className="text-white">{usage.outlinesCount}</span> / {premiumStatus.plan === "free" ? "1 Outline" : premiumStatus.plan === "starter" ? "5 Outlines" : "Unlimited"}
+            Monthly Usage: <span className="text-white">{usage.outlinesCount}</span> / {premiumStatus.plan === "free" ? "1 Outline" : premiumStatus.plan === "starter" ? "5 Outlines" : "100 Outlines"}
           </div>
         </div>
 
@@ -379,7 +379,7 @@ export default function GeneratePage() {
               <p className="text-slate-400 text-xs font-semibold leading-relaxed">
                 {activeCompletion.length > 0
                   ? "Your story outline has been successfully compiled! Sign up for a free account to save it, edit chapters, and download KDP-ready PDFs."
-                  : "Create a free KDPage account to unlock the Novel Chapter Planner and compile unlimited outlines."}
+                  : "Create a free KDPage account to unlock the Novel Chapter Planner and compile book outlines."}
               </p>
             </div>
             <div className="flex flex-col gap-2">

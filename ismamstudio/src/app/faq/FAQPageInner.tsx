@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     question: "Are there limits on how many pages or puzzles I can generate?",
-    answer: "No! With our paid tiers, you have unlimited puzzle and page generation. You can compile large compilations, custom activity books, or test different difficulty levels without worrying about monthly generation caps or page count restrictions."
+    answer: "No! With our paid tiers, you have high-capacity puzzle and page generation limits. You can compile large compilations, custom activity books, or test different difficulty levels without low free tier restrictions."
   },
   {
     question: "What file formats does KDPage export?",

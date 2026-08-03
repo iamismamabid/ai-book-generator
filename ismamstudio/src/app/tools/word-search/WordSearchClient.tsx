@@ -429,7 +429,7 @@ export default function WordSearchStudio() {
                             Word Search Studio is Locked
                         </h2>
                         <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-                            Unlimited Word Search board compiling and custom CSV list imports are premium features available on our **Pro Studio** and **Publisher Agency** plans.
+                            Full Word Search board compiling and custom CSV list imports are premium features available on our **Pro Studio** and **Publisher Agency** plans.
                         </p>
                     </div>
 
@@ -437,7 +437,7 @@ export default function WordSearchStudio() {
                         <div className="flex items-center gap-2 text-indigo-400 text-[10px] uppercase tracking-wider mb-1">
                             <Sparkles className="w-3.5 h-3.5" /> Pro Plan Benefits:
                         </div>
-                        <p>✓ Unlimited Word Search collections</p>
+                        <p>✓ High-capacity Word Search collections</p>
                         <p>✓ Watermark-free, print-ready PDF compile</p>
                         <p>✓ Bulk CSV upload to instantly build boards</p>
                         <p>✓ Access to Cover Studio & Interior Canvas Builder</p>

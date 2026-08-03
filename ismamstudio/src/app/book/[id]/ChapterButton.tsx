@@ -35,7 +35,7 @@ export default function ChapterButton({ bookId, outline, title, currentCount }: 
       return;
     }
     if (isLimitReached) {
-      alert("You have reached the monthly limit of 5 Chapters on your Starter plan. Please upgrade to Pro for unlimited generation.");
+      alert("You have reached the monthly limit of 5 Chapters on your Starter plan. Please upgrade to Pro for higher generation limits.");
       return;
     }
 
@@ -69,7 +69,7 @@ export default function ChapterButton({ bookId, outline, title, currentCount }: 
         {currentCount === 0 ? "Begin the Legend" : `Current Progress: ${currentCount} Chapters`}
         {premiumStatus.checked && (
           <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">
-            Usage: {usage.chaptersCount} / {isFree ? "0" : premiumStatus.plan === "starter" ? "5" : "Unlimited"}
+            Usage: {usage.chaptersCount} / {isFree ? "0" : premiumStatus.plan === "starter" ? "5" : "100"}
           </span>
         )}
       </p>

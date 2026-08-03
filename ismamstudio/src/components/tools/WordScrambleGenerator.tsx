@@ -476,7 +476,7 @@ export default function WordScrambleGenerator() {
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex justify-between block mb-1.5">
                 <span>Number of Pages</span>
                 <span className="text-amber-400 font-bold">
-                  {premiumStatus.isPremium ? "Premium: Unlimited (Max 1000)" : "Free Limit: 3"}
+                  {premiumStatus.isPremium ? "Premium: Max 1000" : "Free Limit: 3"}
                 </span>
               </label>
               <input

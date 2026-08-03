@@ -279,7 +279,7 @@ export default function MazeGeneratorPage() {
                   <label className="block text-sm text-slate-400 mb-2">
                     Number of Puzzles
                     <span className="ml-1 text-[10px] text-slate-500">
-                      {premiumStatus.isPremium ? "(Premium: Unlimited)" : "(Max 5)"}
+                      {premiumStatus.isPremium ? "(Max 50)" : "(Max 5)"}
                     </span>
                   </label>
                   <input

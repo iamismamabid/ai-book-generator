@@ -36,17 +36,23 @@ function drawWordSearchPage(
   const label = isSolution ? `${title} #${puzzleNumber} — Answer Key` : `${title} #${puzzleNumber}`;
   doc.text(label, width / 2, 0.65, { align: "center" });
 
-  const margin = 0.75;
-  const gridPx = Math.min(width - margin * 2, height - 3.2);
+  const margin = 0.5;
+  const safeW = width - (margin * 2);
+  const safeH = height - (margin * 2);
+
+  const titleSpace = 0.5;
+  const wordListSpace = isSolution ? 0.4 : 1.5;
+  const gridPx = Math.min(safeW, safeH - titleSpace - wordListSpace);
+
   const startX = (width - gridPx) / 2;
-  const startY = 1.1;
+  const startY = margin + titleSpace + 0.3;
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridPx }, isSolution, style);
 
   if (!isSolution) {
-    drawWordSearchWordList(doc, data.words, { x: margin, y: startY + gridPx + 0.35, w: width - margin * 2 }, {
+    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridPx + 0.25, w: gridPx }, {
       showHeading: true,
-      style,
+      style: { wordColumns: 3, wordFontSize: 9.5, ...style },
     });
   }
 

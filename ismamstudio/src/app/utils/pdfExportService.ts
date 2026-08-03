@@ -61,7 +61,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     } else if (page.type === 'word_search' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawWordSearchSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_search' && page.config.gridData) {
-      drawWordSearch(doc, page, leftMarginShift, w);
+      drawWordSearch(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'sudoku' && page.config.gridData) {
       drawSudoku(doc, page, leftMarginShift, w);
     } else if (page.type === 'kakuro' && page.config.gridData) {
@@ -451,25 +451,30 @@ export function drawWordSearchWordList(
   doc.setTextColor(0);
 }
 
-const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number) => {
+const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
-  const gridSize = data.grid.length;
 
-  // Calculate dynamic cellSize to avoid margin overflows (especially on 6"x9" and 5"x8" sizes)
-  const maxW = pageWidth - 1.0 - Math.abs(xShift);
-  const cellSize = Math.min(0.35, maxW / gridSize);
+  const margin = 0.5;
+  const safeW = pageWidth - (margin * 2);
+  const safeH = (pageHeight || 11) - (margin * 2);
 
-  const gridPx = gridSize * cellSize;
-  const startX = (pageWidth - gridPx) / 2 + xShift;
-  const startY = 1.4;
+  const titleSpace = 0.5;
+  const wordListSpace = isSolution ? 0.4 : 1.5;
+  const gridDrawSize = Math.min(safeW, safeH - titleSpace - wordListSpace);
 
-  drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridPx }, isSolution);
+  const startX = (pageWidth - gridDrawSize) / 2 + xShift;
+  const startY = margin + titleSpace + 0.3;
 
-  drawWordSearchWordList(doc, data.words, { x: startX + 0.3, y: startY + gridPx + 0.3, w: gridPx - 0.3 }, {
-    isSolution,
-    showHeading: true,
-  });
+  drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
+
+  if (!isSolution) {
+    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridDrawSize + 0.25, w: gridDrawSize }, {
+      isSolution,
+      showHeading: true,
+      style: { wordColumns: 3, wordFontSize: 9.5 }
+    });
+  }
 };
 
 // Splits the page into 2 or 4 tiles below the generic page title (reserving

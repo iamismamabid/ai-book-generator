@@ -455,16 +455,18 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
 
-  const margin = 0.5;
+  const margin = 0.75;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  const titleSpace = 0.5;
-  const wordListSpace = isSolution ? 0.4 : 1.5;
-  const gridDrawSize = Math.min(safeW, safeH - titleSpace - wordListSpace);
+  // Standard Large KDP ratio (5.8" - 6.0" grid size): clean, professional & balanced
+  const maxGridDimension = Math.min(5.8, safeW);
+  const titleSpace = 0.4;
+  const wordListSpace = isSolution ? 0.4 : 1.4;
+  const gridDrawSize = Math.min(maxGridDimension, safeH - titleSpace - wordListSpace);
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
-  const startY = margin + titleSpace + 0.3;
+  const startY = margin + titleSpace + 0.2;
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
 

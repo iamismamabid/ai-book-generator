@@ -2132,21 +2132,28 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     doc.text("HABIT DESCRIPTION", startX + 0.1, startY + 0.28);
     doc.text("DAYS OF THE MONTH (1 - 31)", startX + descW + 1.2, startY + 0.28);
 
-    for (let r = 0; r < 10; r++) {
+    // Row count scales with page height instead of a fixed 10, so taller
+    // trims get a fully-filled habit grid rather than blank space below it.
+    const numRows = Math.floor((h - 0.8 - (startY + rowH)) / rowH);
+    for (let r = 0; r < numRows; r++) {
       const cY = startY + (r + 1) * rowH;
       doc.rect(startX, cY, descW + (31 * cellW), rowH);
       doc.line(startX + descW, cY, startX + descW, cY + rowH);
-      
+
       for (let c = 1; c <= 31; c++) {
         const cX = startX + descW + c * cellW;
         doc.line(cX, cY, cX, cY + rowH);
       }
     }
-  } 
+  }
   else if (templateType === 'password_keeper') {
     let currentY = 1.6;
-    for (let b = 0; b < 4; b++) {
-      doc.rect(startX, currentY, w - 1.5, 1.3);
+    const blockH = 1.3;
+    const blockStep = 1.6;
+    // Loops until the next block would overrun the bottom margin, instead of
+    // a fixed 4, so taller trims fill up with more entry blocks.
+    while (currentY + blockH <= h - 0.8) {
+      doc.rect(startX, currentY, w - 1.5, blockH);
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(7);
       doc.setTextColor(148, 163, 184);
@@ -2160,9 +2167,9 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
       doc.line(startX + 1.8, currentY + 1.1, startX + w - 1.8, currentY + 1.1);
 
       doc.setDrawColor(203, 213, 225);
-      currentY += 1.6;
+      currentY += blockStep;
     }
-  } 
+  }
   else if (templateType === 'budget_log') {
     const colW = [1.2, 3.8, 2.0];
     const headerH = 0.45;
@@ -2183,13 +2190,17 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     doc.line(startX + colW[0], startY, startX + colW[0], startY + headerH);
     doc.line(startX + colW[0] + colW[1], startY, startX + colW[0] + colW[1], startY + headerH);
 
-    for (let r = 0; r < 16; r++) {
+    // Row count scales with the actual page height (same "fill to h - 0.8"
+    // bottom-margin convention as lined_journal/dot_grid above) instead of a
+    // fixed count, so taller trims don't leave the bottom of the page blank.
+    const numRows = Math.floor((h - 0.8 - (startY + headerH)) / rowH);
+    for (let r = 0; r < numRows; r++) {
       const cY = startY + headerH + r * rowH;
       doc.rect(startX, cY, w - 1.5, rowH);
       doc.line(startX + colW[0], cY, startX + colW[0], cY + rowH);
       doc.line(startX + colW[0] + colW[1], cY, startX + colW[0] + colW[1], cY + rowH);
     }
-  } 
+  }
   else if (templateType === 'recipe_journal') {
     const cardW = (w - 1.8) / 3;
     const startY = 1.6;
@@ -2212,17 +2223,22 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     doc.setTextColor(79, 70, 229);
     doc.text("INGREDIENTS", startX + 0.15, boxY + 0.3);
 
-    for (let i = 0; i < 12; i++) {
+    // Line counts scale with boxH (which already scales with page height)
+    // instead of fixed 12/10, so the ingredient/direction lines actually
+    // fill the box rather than stopping partway on taller trims.
+    const ingredientLines = Math.floor((boxH - 0.75) / 0.4);
+    for (let i = 0; i < ingredientLines; i++) {
       doc.circle(startX + 0.2, boxY + 0.6 + i * 0.4, 0.015, "F");
       doc.line(startX + 0.35, boxY + 0.62 + i * 0.4, startX + boxW - 0.15, boxY + 0.62 + i * 0.4);
     }
 
     doc.rect(startX + boxW + 0.3, boxY, boxW, boxH);
     doc.text("DIRECTIONS / NOTES", startX + boxW + 0.45, boxY + 0.3);
-    for (let i = 0; i < 10; i++) {
+    const directionLines = Math.floor((boxH - 0.77) / 0.48);
+    for (let i = 0; i < directionLines; i++) {
       doc.line(startX + boxW + 0.45, boxY + 0.62 + i * 0.48, startX + w - 0.9, boxY + 0.62 + i * 0.48);
     }
-  } 
+  }
   else if (templateType === 'gratitude_journal') {
     const prompts = [
       "Three things I am grateful for today:",
@@ -2248,8 +2264,12 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
   } 
   else if (templateType === 'guest_book') {
     let currentY = 1.6;
-    for (let b = 0; b < 4; b++) {
-      doc.rect(startX, currentY, w - 1.5, 1.4);
+    const blockH = 1.4;
+    const blockStep = 1.7;
+    // Loops until the next block would overrun the bottom margin, instead of
+    // a fixed 4, so taller trims fill up with more guest entry blocks.
+    while (currentY + blockH <= h - 0.8) {
+      doc.rect(startX, currentY, w - 1.5, blockH);
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(7);
       doc.setTextColor(148, 163, 184);
@@ -2262,7 +2282,7 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
       doc.line(startX + 0.15, currentY + 1.05, startX + w - 0.9, currentY + 1.05);
 
       doc.setDrawColor(203, 213, 225);
-      currentY += 1.7;
+      currentY += blockStep;
     }
   }
 

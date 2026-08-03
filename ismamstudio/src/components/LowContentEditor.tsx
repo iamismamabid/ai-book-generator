@@ -187,17 +187,17 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               </div>
             )}
 
-            {/* Habit Tracker */}
+            {/* Habit Tracker — rows stretch to fill the page like the PDF export */}
             {templateType === "habit_tracker" && (
-              <div className="w-full h-full space-y-2">
-                <span className="text-[8px] font-black uppercase text-indigo-600 block">Monthly Habits</span>
-                <div className="border border-slate-200 rounded-lg overflow-hidden text-[6px] font-black">
-                  <div className="grid grid-cols-6 bg-slate-50 border-b border-slate-200 p-1.5 text-slate-400 uppercase">
+              <div className="w-full h-full flex flex-col gap-2">
+                <span className="text-[8px] font-black uppercase text-indigo-600 block shrink-0">Monthly Habits</span>
+                <div className="border border-slate-200 rounded-lg overflow-hidden text-[6px] font-black flex-1 flex flex-col">
+                  <div className="grid grid-cols-6 bg-slate-50 border-b border-slate-200 p-1.5 text-slate-400 uppercase shrink-0">
                     <span className="col-span-2">Habit Description</span>
                     <span className="text-center col-span-4">Days (1 - 31)</span>
                   </div>
-                  {[1, 2, 3, 4, 5].map((row) => (
-                    <div key={row} className="grid grid-cols-6 border-b border-slate-100 p-1.5 items-center last:border-b-0">
+                  {Array.from({ length: 8 }).map((_, row) => (
+                    <div key={row} className="grid grid-cols-6 border-b border-slate-100 p-1.5 items-center last:border-b-0 flex-1">
                       <div className="col-span-2 border-b border-slate-100 h-3 w-4/5" />
                       <div className="col-span-4 flex justify-between px-1">
                         {Array.from({ length: 10 }).map((_, i) => (
@@ -210,11 +210,11 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               </div>
             )}
 
-            {/* Password Keeper */}
+            {/* Password Keeper — blocks stretch to fill the page like the PDF export */}
             {templateType === "password_keeper" && (
-              <div className="w-full h-full space-y-3">
-                {[1, 2, 3].map((block) => (
-                  <div key={block} className="border border-slate-200 rounded-lg p-2.5 space-y-2 text-[6px] font-bold text-slate-400">
+              <div className="w-full h-full flex flex-col gap-3">
+                {Array.from({ length: 4 }).map((_, block) => (
+                  <div key={block} className="border border-slate-200 rounded-lg p-2.5 space-y-2 text-[6px] font-bold text-slate-400 flex-1 flex flex-col justify-center">
                     <div className="flex items-center gap-2"><span>Website:</span><div className="flex-1 border-b border-slate-100 h-px" /></div>
                     <div className="flex items-center gap-2"><span>Username:</span><div className="flex-1 border-b border-slate-100 h-px" /></div>
                     <div className="flex items-center gap-2"><span>Password:</span><div className="flex-1 border-b border-slate-100 h-px" /></div>
@@ -223,17 +223,19 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               </div>
             )}
 
-            {/* Budget Log */}
+            {/* Budget Log — rows stretch (flex-1) to actually fill the page
+                instead of a small fixed count, matching the exported PDF
+                (which now scales row count to the real page height too). */}
             {templateType === "budget_log" && (
-              <div className="w-full h-full space-y-2">
-                <div className="border border-slate-200 rounded-lg overflow-hidden text-[6px] font-black">
-                  <div className="grid grid-cols-4 bg-slate-50 border-b border-slate-200 p-1.5 text-slate-400 uppercase">
+              <div className="w-full h-full flex flex-col">
+                <div className="border border-slate-200 rounded-lg overflow-hidden text-[6px] font-black flex-1 flex flex-col">
+                  <div className="grid grid-cols-4 bg-slate-50 border-b border-slate-200 p-1.5 text-slate-400 uppercase shrink-0">
                     <span>Date</span>
                     <span className="col-span-2">Description</span>
                     <span className="text-right">Amount</span>
                   </div>
-                  {[1, 2, 3, 4, 5, 6].map((row) => (
-                    <div key={row} className="grid grid-cols-4 border-b border-slate-100 p-2 items-center last:border-b-0">
+                  {Array.from({ length: 10 }).map((_, row) => (
+                    <div key={row} className="grid grid-cols-4 border-b border-slate-100 p-2 items-center last:border-b-0 flex-1">
                       <div className="border-b border-slate-100 h-2 w-3/4" />
                       <div className="col-span-2 border-b border-slate-100 h-2 w-11/12" />
                       <div className="border-b border-slate-100 h-2 w-1/2 ml-auto" />
@@ -291,11 +293,11 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               </div>
             )}
 
-            {/* Guest Book */}
+            {/* Guest Book — blocks stretch to fill the page like the PDF export */}
             {templateType === "guest_book" && (
-              <div className="w-full h-full space-y-2.5">
-                {[1, 2, 3].map((idx) => (
-                  <div key={idx} className="border border-slate-200 rounded-lg p-2.5 space-y-2 text-[6px] font-bold text-slate-400">
+              <div className="w-full h-full flex flex-col gap-2.5">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <div key={idx} className="border border-slate-200 rounded-lg p-2.5 space-y-2 text-[6px] font-bold text-slate-400 flex-1 flex flex-col justify-center">
                     <div className="flex justify-between items-center gap-2">
                       <span className="w-12">Visitor Name:</span>
                       <div className="flex-1 border-b border-slate-100 h-px" />

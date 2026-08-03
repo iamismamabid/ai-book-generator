@@ -1843,14 +1843,19 @@ export default function FabricCoverStudio({
           layout.frontLiveBottomPx - layout.frontLiveTopPx
         );
 
-        // Labels
+        // Labels — stacked on a fixed vertical cadence rather than each
+        // computed independently from its own box's corner. On a narrow
+        // spine, spineLeftPx/frontLiveLeftPx/bleedPx all land close together,
+        // so independently-positioned labels used to overlap into unreadable
+        // mush; three distinct lines stay legible regardless of spine width.
         ctx.font = "bold 9px sans-serif";
-        ctx.fillStyle = "rgba(244, 63, 94, 0.6)";
-        ctx.fillText("SPINE AREA", layout.spineLeftPx + 4, 15);
+        const labelBaseY = layout.bleedPx - 4;
         ctx.fillStyle = "rgba(59, 130, 246, 0.6)";
-        ctx.fillText("TRIM LINE", layout.bleedPx + 4, layout.bleedPx - 4);
+        ctx.fillText("TRIM LINE", layout.bleedPx + 4, labelBaseY);
+        ctx.fillStyle = "rgba(244, 63, 94, 0.6)";
+        ctx.fillText("SPINE AREA", layout.spineLeftPx + 4, labelBaseY + 11);
         ctx.fillStyle = "rgba(249, 115, 22, 0.6)";
-        ctx.fillText("SAFETY ZONE", layout.frontLiveLeftPx + 4, layout.frontLiveTopPx - 4);
+        ctx.fillText("SAFETY ZONE", layout.frontLiveLeftPx + 4, labelBaseY + 22);
 
         ctx.restore();
       }

@@ -848,12 +848,65 @@ export default function FabricCoverStudio({
   useEffect(() => { autoRelayoutRef.current = autoRelayout; }, [autoRelayout]);
   const lastImportLayoutRef = useRef<KdpLayoutResult | null>(null);
 
-  // Auto-collapse tool tab panel on mobile devices upon initial load
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setActiveToolTab(null);
     }
   }, []);
+
+  const applyDesignerPalette = (palette: DesignerPalette) => {
+    if (!canvas) return;
+    const newBg = {
+      ...coverBackground,
+      frontCoverColor: palette.bgColor,
+      frontCoverType: 'gradient' as const,
+      frontCoverGradientStart: palette.gradientStart,
+      frontCoverGradientEnd: palette.gradientEnd,
+      backCoverColor: palette.bgColor,
+      backCoverType: 'gradient' as const,
+      backCoverGradientStart: palette.gradientStart,
+      backCoverGradientEnd: palette.gradientEnd,
+    };
+    coverBackgroundRef.current = newBg;
+    setCoverBackground(newBg);
+
+    // Auto-recolor text & shape elements for instant color harmony
+    canvas.getObjects().forEach((obj) => {
+      if (obj.type === 'i-text' || obj.type === 'text' || obj.type === 'textbox') {
+        obj.set({ fill: palette.textColor });
+      } else if (obj.type === 'path' || obj.type === 'rect' || obj.type === 'circle') {
+        if ((obj as any).stroke && (obj as any).stroke !== 'transparent') {
+          obj.set({ stroke: palette.accentColor });
+        }
+      }
+    });
+
+    canvas.renderAll();
+    canvas.fire("object:modified");
+  };
+
+  const handleAutoAlignSpineText = () => {
+    if (!canvas) return;
+    const active = canvas.getActiveObject();
+    if (!active || (active.type !== 'i-text' && active.type !== 'text' && active.type !== 'textbox')) {
+      alert("Please select a text layer first to auto-align down the spine!");
+      return;
+    }
+
+    const spineCenterPx = layout.spineLeftPx + layout.spineWidthPx / 2;
+    const spineCenterY = layout.canvasHeight / 2;
+
+    active.set({
+      left: spineCenterPx,
+      top: spineCenterY,
+      angle: 90,
+      originX: 'center',
+      originY: 'center'
+    });
+
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: active });
+  };
 
   // History Undo/Redo States
   const [history, setHistory] = useState<string[]>([]);
@@ -3749,6 +3802,14 @@ export default function FabricCoverStudio({
                   </div>
                 </div>
 
+                <button
+                  onClick={handleAutoAlignSpineText}
+                  title="Auto-rotate 90° and center text down the spine line"
+                  className="w-full mt-2 py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                >
+                  <Ruler className="w-3.5 h-3.5" /> Auto-Align Text to Spine Line
+                </button>
+
                 {/* Bold, Italic, Underline */}
                 <div>
                   <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Style</label>
@@ -5045,6 +5106,31 @@ export default function FabricCoverStudio({
 
         {activeToolTab === 'presets' && (
           <div className="space-y-4">
+            <div className="space-y-3 pb-4 border-b border-slate-200">
+              <div className="flex justify-between items-center">
+                <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">1-Click Designer Themes</h3>
+                <span className="text-[8px] font-bold text-amber-700 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Luxe Palette</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {DESIGNER_PALETTES.map((palette) => (
+                  <button
+                    key={palette.id}
+                    onClick={() => applyDesignerPalette(palette)}
+                    title={`Apply ${palette.name} theme`}
+                    className="group rounded-xl border border-slate-200 hover:border-amber-400 p-2.5 bg-white text-left transition-all hover:shadow-md cursor-pointer overflow-hidden"
+                  >
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <div className="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-sm" style={{ backgroundColor: palette.bgColor }} />
+                      <div className="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-sm" style={{ backgroundColor: palette.accentColor }} />
+                      <div className="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-sm" style={{ backgroundColor: palette.textColor }} />
+                    </div>
+                    <p className="text-[10px] font-black text-slate-800 truncate group-hover:text-amber-600">{palette.name}</p>
+                    <span className="text-[8px] font-bold text-slate-400 block truncate">{palette.category}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Preset Styles</h3>
             <div className="space-y-2">
               {BACKGROUNDS.map((bg, i) => (

@@ -11,7 +11,7 @@ import {
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
   AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil,
-  Image as ImageIcon
+  Image as ImageIcon, ZoomIn, ZoomOut, Group as GroupIcon, Ungroup as UngroupIcon, Store
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -19,6 +19,7 @@ import { initFabricSnapping } from "@/hooks/useFabricSnap";
 import { COVER_TEMPLATES, resolveTemplateElements, CoverTemplate } from "@/lib/coverTemplates";
 import TemplateGalleryModal from "@/components/TemplateGalleryModal";
 import CoverMockup3DModal from "@/components/CoverMockup3DModal";
+import MarketplaceThumbnailPreviewModal from "@/components/MarketplaceThumbnailPreviewModal";
 import SeriesBrandingModal from "@/components/SeriesBrandingModal";
 import BackgroundRemoverModal from "@/components/BackgroundRemoverModal";
 import FontPicker from "@/components/FontPicker";
@@ -786,6 +787,10 @@ export default function FabricCoverStudio({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [scaleRatio, setScaleRatio] = useState(1);
+  // Multiplies on top of scaleRatio (the auto fit-to-container ratio) so
+  // users can zoom in for precision work (e.g. spine text) without changing
+  // the underlying full-resolution canvas dimensions.
+  const [userZoom, setUserZoom] = useState(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
 
   // Fabric.js renders text with whatever font is available at the moment it
@@ -849,6 +854,11 @@ export default function FabricCoverStudio({
   const [isMockupLoading, setIsMockupLoading] = useState(false);
   const [mockupFrontUrl, setMockupFrontUrl] = useState<string | null>(null);
   const [mockupSpineUrl, setMockupSpineUrl] = useState<string | null>(null);
+
+  // Marketplace Thumbnail Preview states
+  const [isThumbPreviewOpen, setIsThumbPreviewOpen] = useState(false);
+  const [isThumbPreviewLoading, setIsThumbPreviewLoading] = useState(false);
+  const [thumbPreviewUrl, setThumbPreviewUrl] = useState<string | null>(null);
 
   // Series Branding (batch export) state
   const [isSeriesModalOpen, setIsSeriesModalOpen] = useState(false);
@@ -3197,6 +3207,40 @@ export default function FabricCoverStudio({
     });
   };
 
+  // Combines the current multi-selection into one permanent fabric.Group so
+  // it can be moved/resized as a single unit and stays that way after
+  // deselecting (unlike the transient ActiveSelection align/distribute use).
+  // toGroup()/toActiveSelection() below set canvas._activeObject directly
+  // (bypassing setActiveObject's event-firing path), so a follow-up
+  // setActiveObject() call is a same-object no-op that fires nothing — the
+  // sidebar's selection state has to be synced by hand instead of via events.
+  const groupSelection = () => {
+    if (!canvas) return;
+    const active = canvas.getActiveObject();
+    if (!active || active.type !== 'activeSelection') return;
+    const group = (active as fabric.ActiveSelection).toGroup();
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: group });
+    setActiveObject(group);
+    setSelectionCount(1);
+    setObjectWidth(Math.round((group.width || 0) * (group.scaleX || 1)));
+    setObjectHeight(Math.round((group.height || 0) * (group.scaleY || 1)));
+  };
+
+  // Splits a user-created group back into its individual objects. Curved
+  // text is also internally a fabric.Group (see addCurvedText) but must stay
+  // grouped for its path-following logic to keep working, so it's excluded.
+  const ungroupSelection = () => {
+    if (!canvas) return;
+    const active = canvas.getActiveObject();
+    if (!active || active.type !== 'group' || (active as any).isCurvedText) return;
+    const selection = (active as fabric.Group).toActiveSelection();
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: selection });
+    setActiveObject(selection.getObjects()[0] || null);
+    setSelectionCount(selection.getObjects().length);
+  };
+
   const applyPresetColors = (back: string, front: string, type?: string, backStart?: string, backEnd?: string, frontStart?: string, frontEnd?: string) => {
     let newBg;
     if (type === 'gradient' && backStart && backEnd && frontStart && frontEnd) {
@@ -3356,6 +3400,15 @@ export default function FabricCoverStudio({
     }
   };
 
+  // Zoom multiplies on top of the auto fit-to-container scaleRatio, so 100%
+  // always means "fit to screen" regardless of window size.
+  const ZOOM_MIN = 0.5;
+  const ZOOM_MAX = 2.5;
+  const ZOOM_STEP = 0.25;
+  const zoomIn = () => setUserZoom((z) => Math.min(ZOOM_MAX, Math.round((z + ZOOM_STEP) * 100) / 100));
+  const zoomOut = () => setUserZoom((z) => Math.max(ZOOM_MIN, Math.round((z - ZOOM_STEP) * 100) / 100));
+  const resetZoom = () => setUserZoom(1);
+
   // Applies a full cover template: sets the background, clears the canvas,
   // and adds the template's title/subtitle/decorative elements — resolved
   // against the CURRENT layout so positions land correctly regardless of
@@ -3466,6 +3519,44 @@ export default function FabricCoverStudio({
           setMockupSpineUrl(null);
         }
         setIsMockupLoading(false);
+      };
+      img.src = fullDataUrl;
+    }, 300);
+  };
+
+  // Crops out just the front-cover region (same trim math as the 3D mockup)
+  // for the marketplace thumbnail preview — only the front cover shows up in
+  // search results / product thumbnails, so the spine/back aren't needed.
+  const handleOpenThumbPreview = () => {
+    if (!canvas) return;
+    setIsThumbPreviewOpen(true);
+    setIsThumbPreviewLoading(true);
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
+
+    setTimeout(async () => {
+      const multiplier = 3;
+      const fullDataUrl = await exportCanvasWithBackground(canvas, multiplier);
+
+      const img = new Image();
+      img.onload = () => {
+        const frontX = layout.frontLiveLeftPx - layout.safeMarginPx;
+        const frontW = layout.trimRightPx - frontX;
+        const frontH = layout.trimBottomPx - layout.trimTopPx;
+
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width = frontW * multiplier;
+        cropCanvas.height = frontH * multiplier;
+        const ctx = cropCanvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(
+            img,
+            frontX * multiplier, layout.trimTopPx * multiplier, frontW * multiplier, frontH * multiplier,
+            0, 0, frontW * multiplier, frontH * multiplier
+          );
+          setThumbPreviewUrl(cropCanvas.toDataURL('image/png'));
+        }
+        setIsThumbPreviewLoading(false);
       };
       img.src = fullDataUrl;
     }, 300);
@@ -3676,6 +3767,13 @@ export default function FabricCoverStudio({
             <Box className="w-5 h-5"/>
           </button>
           <button
+            onClick={handleOpenThumbPreview}
+            title="Marketplace Thumbnail Preview — see your cover at real Amazon listing sizes"
+            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+          >
+            <Store className="w-5 h-5"/>
+          </button>
+          <button
             onClick={() => setIsSeriesModalOpen(true)}
             title="Series Branding — Batch Export"
             className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
@@ -3784,6 +3882,30 @@ export default function FabricCoverStudio({
                     </button>
                   </div>
                 )}
+
+                <button
+                  onClick={groupSelection}
+                  title="Group these objects into one"
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-400 text-slate-600 transition-colors cursor-pointer"
+                >
+                  <GroupIcon className="w-3.5 h-3.5" />
+                  <span className="text-[9px] font-black uppercase">Group</span>
+                </button>
+              </div>
+            )}
+
+            {/* Ungroup (only for user-made groups — curved text is also a
+                group internally, but must stay grouped to keep following its path) */}
+            {activeObject.type === 'group' && !(activeObject as any).isCurvedText && (
+              <div className="pb-2 border-b border-slate-100">
+                <button
+                  onClick={ungroupSelection}
+                  title="Ungroup back into individual objects"
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-400 text-slate-600 transition-colors cursor-pointer"
+                >
+                  <UngroupIcon className="w-3.5 h-3.5" />
+                  <span className="text-[9px] font-black uppercase">Ungroup</span>
+                </button>
               </div>
             )}
 
@@ -5930,16 +6052,42 @@ export default function FabricCoverStudio({
               <Eraser className="w-4 h-4"/>
               <span className="text-[10px] font-black uppercase tracking-wider">Clear All</span>
             </button>
+
+            <div className="w-px h-5 bg-slate-200 mx-1" />
+
+            <button
+              onClick={zoomOut}
+              disabled={userZoom <= ZOOM_MIN}
+              title="Zoom Out"
+              className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94]"
+            >
+              <ZoomOut className="w-4 h-4"/>
+            </button>
+            <button
+              onClick={resetZoom}
+              title="Reset Zoom to Fit"
+              className="text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-slate-800 transition-colors w-11 text-center"
+            >
+              {Math.round(userZoom * 100)}%
+            </button>
+            <button
+              onClick={zoomIn}
+              disabled={userZoom >= ZOOM_MAX}
+              title="Zoom In"
+              className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94]"
+            >
+              <ZoomIn className="w-4 h-4"/>
+            </button>
           </div>
         </div>
 
         {/* Responsive parent container to calculate scale */}
-        <div ref={containerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center relative">
+        <div ref={containerRef} className={`flex-1 w-full h-full min-h-0 overflow-auto flex relative ${userZoom > 1 ? 'items-start justify-start' : 'items-center justify-center'}`}>
           {/* Scaled canvas container */}
           <div
             style={{
-              transform: `scale(${scaleRatio})`,
-              transformOrigin: 'center center',
+              transform: `scale(${scaleRatio * userZoom})`,
+              transformOrigin: userZoom > 1 ? 'top left' : 'center center',
               transition: 'transform 0.1s ease',
               boxShadow: "var(--shadow-soft-lg)"
             }}
@@ -5975,6 +6123,14 @@ export default function FabricCoverStudio({
         spineWidthInches={layout.spineWidth}
         frontWidthInches={trimSize.w}
         isLoading={isMockupLoading}
+      />
+
+      <MarketplaceThumbnailPreviewModal
+        isOpen={isThumbPreviewOpen}
+        onClose={() => setIsThumbPreviewOpen(false)}
+        frontImageDataUrl={thumbPreviewUrl}
+        frontAspect={trimSize.w / trimSize.h}
+        isLoading={isThumbPreviewLoading}
       />
 
       <SeriesBrandingModal

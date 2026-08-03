@@ -478,6 +478,35 @@ const BACKGROUNDS = [
   { name: "Cyberpunk Glow", back: "#030712", front: "#3B0764", type: 'gradient', backStart: '#030712', backEnd: '#111827', frontStart: '#111827', frontEnd: '#3b0764' }
 ];
 
+// 1-click "Designer Themes" palettes for the Background Presets panel. Each
+// applies a front/back gradient plus recolors existing text/shape strokes for
+// instant harmony (see applyDesignerPalette). This type + array were
+// referenced by that function and the JSX below since the feature was first
+// added, but never actually defined — with typescript.ignoreBuildErrors
+// masking the resulting compile error, that shipped straight to production
+// as a guaranteed crash on every click.
+interface DesignerPalette {
+  id: string;
+  name: string;
+  category: string;
+  bgColor: string;
+  gradientStart: string;
+  gradientEnd: string;
+  accentColor: string;
+  textColor: string;
+}
+
+const DESIGNER_PALETTES: DesignerPalette[] = [
+  { id: "midnight-gold", name: "Midnight Gold", category: "Elegant", bgColor: "#16213e", gradientStart: "#16213e", gradientEnd: "#0f3460", accentColor: "#e5a91d", textColor: "#f5f5f5" },
+  { id: "emerald-noir", name: "Emerald Noir", category: "Elegant", bgColor: "#0d1f1a", gradientStart: "#0d1f1a", gradientEnd: "#1b4332", accentColor: "#52b788", textColor: "#f0fdf4" },
+  { id: "royal-amethyst", name: "Royal Amethyst", category: "Bold", bgColor: "#3c096c", gradientStart: "#5a189a", gradientEnd: "#240046", accentColor: "#ffd60a", textColor: "#ffffff" },
+  { id: "sunset-blaze", name: "Sunset Blaze", category: "Bold", bgColor: "#f7931e", gradientStart: "#f7931e", gradientEnd: "#c1440e", accentColor: "#2b2d42", textColor: "#ffffff" },
+  { id: "ocean-breeze", name: "Ocean Breeze", category: "Fresh", bgColor: "#90e0ef", gradientStart: "#90e0ef", gradientEnd: "#00b4d8", accentColor: "#023e8a", textColor: "#03045e" },
+  { id: "blush-romance", name: "Blush Romance", category: "Pastel", bgColor: "#ffccd5", gradientStart: "#ffccd5", gradientEnd: "#ffe5ec", accentColor: "#c9184a", textColor: "#590d22" },
+  { id: "crimson-noir", name: "Crimson Noir", category: "Dark", bgColor: "#240000", gradientStart: "#240000", gradientEnd: "#660000", accentColor: "#ff3333", textColor: "#ffffff" },
+  { id: "sage-minimalist", name: "Sage Minimalist", category: "Minimal", bgColor: "#d8e2dc", gradientStart: "#d8e2dc", gradientEnd: "#ece4db", accentColor: "#6b705c", textColor: "#3d3d3d" },
+];
+
 const TRIM_SIZES = [
   { label: '6" x 9" (Novel)', w: 6, h: 9 },
   { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },

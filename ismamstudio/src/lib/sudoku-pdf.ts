@@ -139,10 +139,10 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     const safeW = width - (margin * 2);
     const safeH = height - (margin * 2);
 
-    const titleSpace = 0.45;
-    const gridSize = Math.min(safeW * 0.86, safeH - titleSpace - 0.4);
+    const titleSpace = 0.4;
+    const gridSize = Math.min(safeW, safeH - titleSpace - 0.4);
     const startX = (width - gridSize) / 2;
-    const startY = margin + titleSpace + 0.2;
+    const startY = margin + titleSpace + 0.1;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);

@@ -525,24 +525,24 @@ const drawWordSearchSolutionPack = (doc: any, page: any, xShift: number, pageWid
   });
 };
 
-// Helper: Draw Sudoku Grid (Standard Large Ratio: ~5.8"-6.5" grid size)
+// Helper: Draw Sudoku Grid (Full Page Printable Width)
 const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
   
-  const margin = 0.6;
+  const margin = 0.5;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  const titleSpace = 0.5;
-  const gridDrawSize = Math.min(safeW * 0.86, safeH - titleSpace - 0.5);
+  const titleSpace = 0.4;
+  const gridDrawSize = Math.min(safeW, safeH - titleSpace - 0.4);
   const cellSize = gridDrawSize / 9;
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
-  const startY = margin + titleSpace + 0.3;
+  const startY = margin + titleSpace + 0.1;
 
   // Draw thin cell borders first
-  doc.setLineWidth(0.008);
+  doc.setLineWidth(0.01);
   doc.setDrawColor(148, 163, 184);
 
   for (let r = 0; r < 9; r++) {
@@ -564,7 +564,7 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
           doc.setTextColor(15, 23, 42); // slate-900
           doc.setFont("Helvetica", "bold");
         }
-        const scaledFontSize = Math.max(12, Math.floor(cellSize * 36));
+        const scaledFontSize = Math.max(10, Math.floor(cellSize * 36));
         doc.setFontSize(scaledFontSize);
         const valStr = String(displayedVal);
         doc.text(valStr, x + cellSize / 2, y + cellSize * 0.68, { align: "center" });
@@ -573,7 +573,7 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
   }
 
   // Draw thicker borders for 3x3 subdivisions
-  doc.setLineWidth(0.024);
+  doc.setLineWidth(0.028);
   doc.setDrawColor(15, 23, 42);
   for (let i = 0; i <= 9; i += 3) {
     const offset = i * cellSize;

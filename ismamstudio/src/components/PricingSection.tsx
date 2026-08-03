@@ -254,7 +254,7 @@ function PricingSectionInner() {
         "Square maze & basic outline tools",
         "1 Creative Outline / mo",
         "Personal use only (No KDP sales)",
-        "Community support forum",
+        "Access to free tools & KDP guides",
       ],
       ctaText: "Start Designing Free",
       colorClass: "bg-slate-50 dark:bg-slate-950/40 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-800",
@@ -859,7 +859,7 @@ export default function PricingSection() {
 
 function PricingSkeleton() {
   const staticPlans = [
-    { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 Chapter Outline / mo", "Community support forum"] },
+    { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 Chapter Outline / mo", "Access to free tools & KDP guides"] },
     { name: "Starter Creator", price: "$11.99", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
     { name: "Pro Studio", price: "$21", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Up to 10 Brand & pen-name profiles", "Full Sudoku Engine (Easy, Med, Hard)", "Shaped Labyrinth Generator (Circle, Heart)", "Word Search, Cryptogram & Scramble Studio", "30 AI Book Chapters & 15 Outlines / mo", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
     { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "KDP Niche Hunter & Keyword Spy", "API access for automated generation", "Dedicated customer support manager"] },

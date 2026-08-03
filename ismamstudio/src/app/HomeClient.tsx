@@ -512,7 +512,7 @@ export default function HomeClient() {
 
           <div className="space-y-4 max-w-2xl relative z-10">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-indigo-100 text-indigo-600 text-xs font-black uppercase tracking-wider shadow-sm">
-              <Sparkles className="w-3.5 h-3.5" /> Now Live & Active
+              <Sparkles className="w-3.5 h-3.5" /> Free Research Tool
             </span>
             <h2 className="text-3xl font-black text-slate-800 tracking-tight">
               KDP Niche Hunter & Keyword Spy

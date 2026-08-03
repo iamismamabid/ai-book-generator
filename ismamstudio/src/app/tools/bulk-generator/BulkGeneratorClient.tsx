@@ -201,6 +201,7 @@ export default function BulkGeneratorClient() {
             trimSize: item.trimSize,
             title: item.title,
             includeSolutions: true,
+            solutionsPerPage: 4,
             isPremium: true
           }, filename);
 

@@ -62,8 +62,10 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       drawWordSearchSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_search' && page.config.gridData) {
       drawWordSearch(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'sudoku' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawSudokuSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'sudoku' && page.config.gridData) {
-      drawSudoku(doc, page, leftMarginShift, w);
+      drawSudoku(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'kakuro' && page.config.gridData) {
       drawKakuro(doc, page, leftMarginShift, w);
     } else if (page.type === 'maze' && page.config.gridData) {
@@ -523,33 +525,35 @@ const drawWordSearchSolutionPack = (doc: any, page: any, xShift: number, pageWid
   });
 };
 
-// Helper: Draw Sudoku Grid
-const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number) => {
+// Helper: Draw Sudoku Grid (Standard Large Ratio: ~5.8"-6.5" grid size)
+const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
   
-  // Calculate dynamic cellSize to avoid margin overflows (especially on 6"x9" and 5"x8" sizes)
-  const maxW = pageWidth - 1.0 - Math.abs(xShift);
-  const cellSize = Math.min(0.45, maxW / 9);
-  
-  const gridWidth = cellSize * 9;
-  const startX = (pageWidth - gridWidth) / 2 + xShift;
-  const startY = 1.6;
+  const margin = 0.6;
+  const safeW = pageWidth - (margin * 2);
+  const safeH = (pageHeight || 11) - (margin * 2);
 
-  // Draw cells and borders
+  const titleSpace = 0.5;
+  const gridDrawSize = Math.min(safeW * 0.86, safeH - titleSpace - 0.5);
+  const cellSize = gridDrawSize / 9;
+
+  const startX = (pageWidth - gridDrawSize) / 2 + xShift;
+  const startY = margin + titleSpace + 0.3;
+
+  // Draw thin cell borders first
+  doc.setLineWidth(0.008);
+  doc.setDrawColor(148, 163, 184);
+
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       const x = startX + (c * cellSize);
       const y = startY + (r * cellSize);
-
-      // Normal border
-      doc.setLineWidth(0.005);
-      doc.setDrawColor(148, 163, 184);
       doc.rect(x, y, cellSize, cellSize);
 
       // Value
-      const initialVal = data.puzzle[r][c];
-      const displayedVal = isSolution ? data.solution[r][c] : initialVal;
+      const initialVal = data.puzzle ? data.puzzle[r][c] : (data.grid ? data.grid[r][c] : 0);
+      const displayedVal = isSolution ? (data.solution ? data.solution[r][c] : initialVal) : initialVal;
       const isAnswer = isSolution && initialVal === 0;
 
       if (displayedVal !== 0) {
@@ -560,27 +564,86 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number) => {
           doc.setTextColor(15, 23, 42); // slate-900
           doc.setFont("Helvetica", "bold");
         }
-        const scaledFontSize = Math.max(8, Math.floor(cellSize * 31.1));
+        const scaledFontSize = Math.max(12, Math.floor(cellSize * 36));
         doc.setFontSize(scaledFontSize);
         const valStr = String(displayedVal);
-        const valWidth = doc.getTextWidth(valStr);
-        doc.text(valStr, x + (cellSize - valWidth) / 2, y + cellSize * 0.64);
+        doc.text(valStr, x + cellSize / 2, y + cellSize * 0.68, { align: "center" });
       }
     }
   }
 
   // Draw thicker borders for 3x3 subdivisions
-  doc.setLineWidth(0.02);
+  doc.setLineWidth(0.024);
   doc.setDrawColor(15, 23, 42);
   for (let i = 0; i <= 9; i += 3) {
+    const offset = i * cellSize;
     // Vertical lines
-    doc.line(startX + i * cellSize, startY, startX + i * cellSize, startY + gridWidth);
+    doc.line(startX + offset, startY, startX + offset, startY + gridDrawSize);
     // Horizontal lines
-    doc.line(startX, startY + i * cellSize, startX + gridWidth, startY + i * cellSize);
+    doc.line(startX, startY + offset, startX + gridDrawSize, startY + offset);
   }
 
   // Reset text color
   doc.setTextColor(0);
+};
+
+const drawSudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const margin = 0.5;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.gridData) return;
+
+    const titleSpace = 0.3;
+    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace);
+    const startX = zone.x + (zone.w - gridDrawSize) / 2;
+    const startY = zone.y + titleSpace;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.2, { align: "center" });
+
+    const data = entry.gridData;
+    const cellSize = gridDrawSize / 9;
+
+    doc.setLineWidth(0.006);
+    doc.setDrawColor(148, 163, 184);
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        doc.rect(startX + c * cellSize, startY + r * cellSize, cellSize, cellSize);
+      }
+    }
+
+    doc.setLineWidth(0.02);
+    doc.setDrawColor(15, 23, 42);
+    for (let b = 0; b <= 3; b++) {
+      const offset = b * cellSize * 3;
+      doc.line(startX + offset, startY, startX + offset, startY + gridDrawSize);
+      doc.line(startX, startY + offset, startX + gridDrawSize, startY + offset);
+    }
+
+    const numberFontSize = Math.max(9, Math.floor(cellSize * 36));
+    doc.setFontSize(numberFontSize);
+
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        const val = data.solution ? data.solution[r][c] : (data.grid ? data.grid[r][c] : 0);
+        if (val !== 0) {
+          doc.setTextColor(79, 70, 229);
+          doc.setFont("Helvetica", "bold");
+          doc.text(String(val), startX + c * cellSize + cellSize / 2, startY + r * cellSize + cellSize * 0.68, { align: "center" });
+        }
+      }
+    }
+  });
 };
 
 // Helper: Draw Kakuro Grid

@@ -7,6 +7,7 @@ import { Scissors, Download, Upload, Pipette, Info, Loader2 } from "lucide-react
 const MAX_DIM = 2000;
 
 type Mode = "auto" | "pick";
+type OutputBg = "transparent" | "white" | "custom";
 
 export default function BackgroundRemover() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -19,6 +20,8 @@ export default function BackgroundRemover() {
   const [pickedColor, setPickedColor] = useState<[number, number, number] | null>(null);
   const [processing, setProcessing] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [outputBg, setOutputBg] = useState<OutputBg>("transparent");
+  const [customColor, setCustomColor] = useState("#ffffff");
 
   const loadFile = (file: File) => {
     const img = new Image();
@@ -147,9 +150,28 @@ export default function BackgroundRemover() {
   const download = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    let exportCanvas: HTMLCanvasElement = canvas;
+    let suffix = "transparent";
+
+    if (outputBg !== "transparent") {
+      // Composite the cut-out result onto a solid backing canvas — drawImage
+      // alpha-blends the transparent edges naturally, so this stays clean
+      // even where the removal left semi-transparent antialiased pixels.
+      const backed = document.createElement("canvas");
+      backed.width = canvas.width;
+      backed.height = canvas.height;
+      const bctx = backed.getContext("2d")!;
+      bctx.fillStyle = outputBg === "white" ? "#ffffff" : customColor;
+      bctx.fillRect(0, 0, backed.width, backed.height);
+      bctx.drawImage(canvas, 0, 0);
+      exportCanvas = backed;
+      suffix = outputBg === "white" ? "white-bg" : "custom-bg";
+    }
+
     const a = document.createElement("a");
-    a.download = `${fileName || "image"}-transparent.png`;
-    a.href = canvas.toDataURL("image/png");
+    a.download = `${fileName || "image"}-${suffix}.png`;
+    a.href = exportCanvas.toDataURL("image/png");
     a.click();
   };
 
@@ -263,12 +285,71 @@ export default function BackgroundRemover() {
               </span>
             </label>
 
+            <div className="space-y-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
+                Output Background
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => setOutputBg("transparent")}
+                  className={`py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl border transition-all cursor-pointer ${
+                    outputBg === "transparent"
+                      ? "bg-indigo-600/20 border-indigo-500 text-white"
+                      : "bg-slate-950/40 border-slate-900 text-slate-500 hover:text-slate-200"
+                  }`}
+                >
+                  Transparent
+                </button>
+                <button
+                  onClick={() => setOutputBg("white")}
+                  className={`py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl border transition-all cursor-pointer ${
+                    outputBg === "white"
+                      ? "bg-indigo-600/20 border-indigo-500 text-white"
+                      : "bg-slate-950/40 border-slate-900 text-slate-500 hover:text-slate-200"
+                  }`}
+                >
+                  White
+                </button>
+                <button
+                  onClick={() => setOutputBg("custom")}
+                  className={`py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl border transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 ${
+                    outputBg === "custom"
+                      ? "bg-indigo-600/20 border-indigo-500 text-white"
+                      : "bg-slate-950/40 border-slate-900 text-slate-500 hover:text-slate-200"
+                  }`}
+                >
+                  <span
+                    className="w-3 h-3 rounded-full border border-slate-600 shrink-0"
+                    style={{ backgroundColor: customColor }}
+                  />
+                  Custom
+                </button>
+              </div>
+              {outputBg === "custom" && (
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="color"
+                    value={customColor}
+                    onChange={(e) => setCustomColor(e.target.value)}
+                    className="w-9 h-9 rounded-lg cursor-pointer border border-slate-800 bg-slate-950 p-0.5"
+                  />
+                  <input
+                    type="text"
+                    value={customColor}
+                    onChange={(e) => setCustomColor(e.target.value)}
+                    className="flex-1 text-xs font-bold uppercase p-2 border border-slate-800 bg-slate-950 rounded-lg text-center font-mono text-slate-300"
+                  />
+                </div>
+              )}
+            </div>
+
             <button
               onClick={download}
               disabled={!hasImage}
               className="w-full inline-flex items-center justify-center gap-1.5 py-3 bg-yellow-500 hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-xs rounded-xl uppercase tracking-wider cursor-pointer transition-all"
             >
-              <Download className="w-4 h-4" /> Download Transparent PNG
+              <Download className="w-4 h-4" />
+              {outputBg === "transparent" ? "Download Transparent PNG" : "Download PNG"}
             </button>
           </div>
         </div>
@@ -278,13 +359,17 @@ export default function BackgroundRemover() {
           <div className="bg-slate-900/35 border border-slate-900 rounded-[2rem] p-4 md:p-6 relative">
             <div
               className="rounded-2xl overflow-hidden flex items-center justify-center min-h-[420px]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(45deg,#334155 25%,transparent 25%),linear-gradient(-45deg,#334155 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#334155 75%),linear-gradient(-45deg,transparent 75%,#334155 75%)",
-                backgroundSize: "20px 20px",
-                backgroundPosition: "0 0,0 10px,10px -10px,-10px 0",
-                backgroundColor: "#1e293b",
-              }}
+              style={
+                outputBg === "transparent"
+                  ? {
+                      backgroundImage:
+                        "linear-gradient(45deg,#334155 25%,transparent 25%),linear-gradient(-45deg,#334155 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#334155 75%),linear-gradient(-45deg,transparent 75%,#334155 75%)",
+                      backgroundSize: "20px 20px",
+                      backgroundPosition: "0 0,0 10px,10px -10px,-10px 0",
+                      backgroundColor: "#1e293b",
+                    }
+                  : { backgroundColor: outputBg === "white" ? "#ffffff" : customColor }
+              }
             >
               <canvas
                 ref={canvasRef}

@@ -58,6 +58,8 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
 
     if (page.type === 'crossword' && page.config.gridData) {
       drawCrossword(doc, page, leftMarginShift, w);
+    } else if (page.type === 'word_search' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawWordSearchSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_search' && page.config.gridData) {
       drawWordSearch(doc, page, leftMarginShift, w);
     } else if (page.type === 'sudoku' && page.config.gridData) {
@@ -467,6 +469,53 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number) 
   drawWordSearchWordList(doc, data.words, { x: startX + 0.3, y: startY + gridPx + 0.3, w: gridPx - 0.3 }, {
     isSolution,
     showHeading: true,
+  });
+};
+
+// Splits the page into 2 or 4 tiles below the generic page title (reserving
+// the same 1.4" top offset drawWordSearch uses) and draws one answer grid
+// per tile — reusing the shared drawWordSearchGrid primitive so answer keys
+// pack multiple-per-page instead of one full page each, cutting page count
+// and print cost the same way the standalone /tools/word-search generator does.
+const getSolutionPackZones = (count: number, x0: number, y0: number, safeW: number, safeH: number) => {
+  if (count <= 1) return [{ x: x0, y: y0, w: safeW, h: safeH }];
+  if (count === 2) return [
+    { x: x0, y: y0, w: safeW, h: safeH / 2 - 0.25 },
+    { x: x0, y: y0 + safeH / 2 + 0.25, w: safeW, h: safeH / 2 - 0.25 },
+  ];
+  return [
+    { x: x0, y: y0, w: safeW / 2 - 0.1, h: safeH / 2 - 0.1 },
+    { x: x0 + safeW / 2 + 0.1, y: y0, w: safeW / 2 - 0.1, h: safeH / 2 - 0.1 },
+    { x: x0, y: y0 + safeH / 2 + 0.1, w: safeW / 2 - 0.1, h: safeH / 2 - 0.1 },
+    { x: x0 + safeW / 2 + 0.1, y: y0 + safeH / 2 + 0.1, w: safeW / 2 - 0.1, h: safeH / 2 - 0.1 },
+  ];
+};
+
+const drawWordSearchSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const margin = 0.5;
+  const topReserved = 1.4; // matches drawWordSearch's own startY, below the generic page title
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.gridData) return;
+
+    const titleSpace = 0.3;
+    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace);
+    const startX = zone.x + (zone.w - gridDrawSize) / 2;
+    const startY = zone.y + titleSpace;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.2, { align: "center" });
+
+    drawWordSearchGrid(doc, entry.gridData, { x: startX, y: startY, size: gridDrawSize }, true);
   });
 };
 

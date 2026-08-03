@@ -80,6 +80,10 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   const [isExporting, setIsExporting] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [solutionsStatus, setSolutionsStatus] = useState<'idle' | 'success'>('idle');
+  // Word Search answer keys can be packed multiple-per-page (matching the
+  // standalone /tools/word-search generator) to cut page count and print
+  // cost; other puzzle types keep one solution per page.
+  const [wordSearchSolutionsPerPage, setWordSearchSolutionsPerPage] = useState<1 | 2 | 4>(1);
 
   useEffect(() => {
     setMounted(true);
@@ -217,20 +221,52 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
   const autoGenerateAllSolutions = () => {
     const newSolPages: any[] = [];
-    bookPages.forEach((page) => {
-      // Check if it's a puzzle and not already a solution page
-      if (['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle', 'kakuro'].includes(page.type) && !page.config.isSolution) {
+    const puzzleTypes = ['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle', 'kakuro'];
+    const puzzlePages = bookPages.filter((page) => puzzleTypes.includes(page.type) && !page.config.isSolution);
+
+    // Word Search solutions pack N-per-page (per wordSearchSolutionsPerPage);
+    // every other puzzle type keeps one solution per page as before.
+    const wordSearchPages = puzzlePages.filter((p) => p.type === 'word_search');
+    const otherPages = puzzlePages.filter((p) => p.type !== 'word_search');
+
+    otherPages.forEach((page) => {
+      newSolPages.push({
+        id: Date.now() + Math.random(),
+        type: page.type,
+        config: {
+          ...JSON.parse(JSON.stringify(page.config)),
+          isSolution: true,
+          showSolution: true // For maze
+        }
+      });
+    });
+
+    for (let i = 0; i < wordSearchPages.length; i += wordSearchSolutionsPerPage) {
+      const batch = wordSearchPages.slice(i, i + wordSearchSolutionsPerPage);
+      if (wordSearchSolutionsPerPage === 1) {
         newSolPages.push({
           id: Date.now() + Math.random(),
-          type: page.type,
+          type: 'word_search',
           config: {
-            ...JSON.parse(JSON.stringify(page.config)),
+            ...JSON.parse(JSON.stringify(batch[0].config)),
             isSolution: true,
-            showSolution: true // For maze
+          }
+        });
+      } else {
+        newSolPages.push({
+          id: Date.now() + Math.random(),
+          type: 'word_search',
+          config: {
+            isSolution: true,
+            isMultiSolution: true,
+            solutionGroup: batch.map((p, idx) => ({
+              gridData: JSON.parse(JSON.stringify(p.config.gridData)),
+              puzzleIndex: i + idx + 1,
+            })),
           }
         });
       }
-    });
+    }
 
     if (newSolPages.length === 0) {
       alert("No puzzle pages found to generate solutions for.");
@@ -331,7 +367,20 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
           </div>
 
           {/* Bulk Utility Section */}
-          <div className="pt-4 border-t border-slate-800">
+          <div className="pt-4 border-t border-slate-800 space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Word Search Solutions/Page</span>
+              <select
+                value={wordSearchSolutionsPerPage}
+                onChange={(e) => setWordSearchSolutionsPerPage(Number(e.target.value) as 1 | 2 | 4)}
+                title="Pack multiple Word Search answer keys onto one page to cut page count and print cost"
+                className="bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-200 px-2 py-1 cursor-pointer"
+              >
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={4}>4</option>
+              </select>
+            </div>
             <button
               onClick={autoGenerateAllSolutions}
               className={`w-full py-3 border rounded-2xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] cursor-pointer ${
@@ -390,7 +439,20 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
-            {bookPages[activeIndex].type === 'word_search' && (
+            {bookPages[activeIndex].type === 'word_search' && bookPages[activeIndex].config.isMultiSolution && (
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center space-y-2">
+                <p className="text-sm font-black text-slate-700 dark:text-slate-200">
+                  Combined Answer Key Page
+                </p>
+                <p className="text-xs font-semibold text-slate-500 max-w-md mx-auto">
+                  This page packs {bookPages[activeIndex].config.solutionGroup?.length || 0} answer keys
+                  (#{bookPages[activeIndex].config.solutionGroup?.map((s: any) => s.puzzleIndex).join(', #')})
+                  onto one page — generated automatically by "Auto-Build Solutions". Edit the individual
+                  puzzle pages instead; this page regenerates from them.
+                </p>
+              </div>
+            )}
+            {bookPages[activeIndex].type === 'word_search' && !bookPages[activeIndex].config.isMultiSolution && (
               <WordSearchEditor
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}

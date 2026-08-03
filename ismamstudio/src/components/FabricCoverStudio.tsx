@@ -10,7 +10,8 @@ import {
   Bold, Italic, Underline, AlignJustify, Box, Layers as LayersIcon,
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
-  AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil
+  AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil,
+  Image as ImageIcon
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -810,7 +811,7 @@ export default function FabricCoverStudio({
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
   const [clipboard, setClipboard] = useState<any>(null);
   const [isObjectLocked, setIsObjectLocked] = useState(false);
-  const [activeToolTab, setActiveToolTab] = useState<'elements' | 'graphics' | 'presets' | 'uploads' | 'draw' | 'settings' | null>('elements');
+  const [activeToolTab, setActiveToolTab] = useState<'elements' | 'shapes' | 'graphics' | 'presets' | 'uploads' | 'draw' | 'settings' | null>('elements');
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState("#000000");
   const [drawingWidth, setDrawingWidth] = useState(4);
@@ -3599,13 +3600,22 @@ export default function FabricCoverStudio({
           <Plus className="w-5 h-5"/>
         </button>
         <button
+          onClick={() => setActiveToolTab(prev => prev === 'shapes' ? null : 'shapes')}
+          title="Shapes"
+          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+            activeToolTab === 'shapes' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
+          }`}
+        >
+          <Shapes className="w-5 h-5"/>
+        </button>
+        <button
           onClick={() => setActiveToolTab(prev => prev === 'graphics' ? null : 'graphics')}
           title="Clipart Library"
           className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'graphics' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
-          <Shapes className="w-5 h-5"/>
+          <ImageIcon className="w-5 h-5"/>
         </button>
         <button
           onClick={() => setActiveToolTab(prev => prev === 'presets' ? null : 'presets')}
@@ -4730,70 +4740,6 @@ export default function FabricCoverStudio({
                 </div>
               </div>
 
-              {/* Shapes Grid */}
-              <div>
-                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">Shapes</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={addRectangle} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <Square className="w-4 h-4 text-amber-500"/> Rect
-                  </button>
-                  <button onClick={addCircle} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <CircleIcon className="w-4 h-4 text-sky-500"/> Circle
-                  </button>
-                  <button onClick={addTriangle} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2L2 22h20L12 2z" />
-                    </svg>
-                    Triangle
-                  </button>
-                  <button onClick={addHexagon} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2l9 5.196v10.392l-9 5.196-9-5.196V7.196L12 2z" />
-                    </svg>
-                    Hexagon
-                  </button>
-                  <button onClick={addPentagon} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2l9.5 6.9-3.6 11.1H6.1L2.5 8.9 12 2z" />
-                    </svg>
-                    Pentagon
-                  </button>
-                  <button onClick={addOctagon} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <svg className="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 2h8l6 6v8l-6 6H8l-6-6V8l6-6z" />
-                    </svg>
-                    Octagon
-                  </button>
-                  <button onClick={addEllipse} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <ellipse cx="12" cy="12" rx="10" ry="6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-                    </svg>
-                    Ellipse
-                  </button>
-                  <button onClick={addDiamond} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <svg className="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2L2 12l10 10 10-10L12 2z" />
-                    </svg>
-                    Diamond
-                  </button>
-                  <button onClick={addTrapezoid} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 4h12l4 16H2L6 4z" />
-                    </svg>
-                    Trapezoid
-                  </button>
-                  <button onClick={addStar} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500/20"/> Star
-                  </button>
-                  <button onClick={addHeart} className="p-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-slate-700">
-                    <svg className="w-4 h-4 text-red-500 fill-red-500/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    Heart
-                  </button>
-                </div>
-              </div>
-
               {/* Utility / Barcode */}
               <div>
                 <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">Utilities</span>
@@ -4957,6 +4903,115 @@ export default function FabricCoverStudio({
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeToolTab === 'shapes' && (
+          <div className="space-y-5">
+            <div className="flex justify-between items-center">
+              <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Shape Library</h3>
+              <span className="text-[8px] font-bold text-amber-700 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Premium Shapes</span>
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Basic Shapes</span>
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={addRectangle} title="Rectangle" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Square className="w-5 h-5 text-amber-500"/>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Rect</span>
+                </button>
+                <button onClick={addCircle} title="Circle" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <CircleIcon className="w-5 h-5 text-sky-500"/>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Circle</span>
+                </button>
+                <button onClick={addTriangle} title="Triangle" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2L2 22h20L12 2z" />
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Triangle</span>
+                </button>
+                <button onClick={addEllipse} title="Ellipse" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <ellipse cx="12" cy="12" rx="10" ry="6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Ellipse</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Polygons</span>
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={addPentagon} title="Pentagon" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2l9.5 6.9-3.6 11.1H6.1L2.5 8.9 12 2z" />
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Pentagon</span>
+                </button>
+                <button onClick={addHexagon} title="Hexagon" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2l9 5.196v10.392l-9 5.196-9-5.196V7.196L12 2z" />
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Hexagon</span>
+                </button>
+                <button onClick={addOctagon} title="Octagon" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg className="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 2h8l6 6v8l-6 6H8l-6-6V8l6-6z" />
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Octagon</span>
+                </button>
+                <button onClick={addDiamond} title="Diamond" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg className="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 2L2 12l10 10 10-10L12 2z" />
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Diamond</span>
+                </button>
+                <button onClick={addTrapezoid} title="Trapezoid" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 4h12l4 16H2L6 4z" />
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Trapezoid</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Decorative</span>
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={addStar} title="Star" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500/20"/>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Star</span>
+                </button>
+                <button onClick={addHeart} title="Heart" className="group flex flex-col items-center gap-2 p-3 bg-white border border-slate-200 rounded-2xl hover:border-amber-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                  <span className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg className="w-5 h-5 text-red-500 fill-red-500/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-black text-slate-700">Heart</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

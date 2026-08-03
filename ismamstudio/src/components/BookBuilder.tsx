@@ -84,6 +84,8 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   // standalone /tools/word-search generator) to cut page count and print
   // cost; other puzzle types keep one solution per page.
   const [wordSearchSolutionsPerPage, setWordSearchSolutionsPerPage] = useState<1 | 2 | 4>(1);
+  // Sudoku answer keys can also be packed 1, 2, or 4 per page
+  const [sudokuSolutionsPerPage, setSudokuSolutionsPerPage] = useState<1 | 2 | 4>(4);
 
   useEffect(() => {
     setMounted(true);
@@ -224,10 +226,10 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     const puzzleTypes = ['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle', 'kakuro'];
     const puzzlePages = bookPages.filter((page) => puzzleTypes.includes(page.type) && !page.config.isSolution);
 
-    // Word Search solutions pack N-per-page (per wordSearchSolutionsPerPage);
-    // every other puzzle type keeps one solution per page as before.
+    // Word Search and Sudoku solutions pack N-per-page; other types keep one solution per page.
     const wordSearchPages = puzzlePages.filter((p) => p.type === 'word_search');
-    const otherPages = puzzlePages.filter((p) => p.type !== 'word_search');
+    const sudokuPages = puzzlePages.filter((p) => p.type === 'sudoku');
+    const otherPages = puzzlePages.filter((p) => p.type !== 'word_search' && p.type !== 'sudoku');
 
     otherPages.forEach((page) => {
       newSolPages.push({
@@ -240,6 +242,34 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
         }
       });
     });
+
+    // Sudoku solutions packed N-per-page
+    for (let i = 0; i < sudokuPages.length; i += sudokuSolutionsPerPage) {
+      const batch = sudokuPages.slice(i, i + sudokuSolutionsPerPage);
+      if (sudokuSolutionsPerPage === 1) {
+        newSolPages.push({
+          id: Date.now() + Math.random(),
+          type: 'sudoku',
+          config: {
+            ...JSON.parse(JSON.stringify(batch[0].config)),
+            isSolution: true,
+          }
+        });
+      } else {
+        newSolPages.push({
+          id: Date.now() + Math.random(),
+          type: 'sudoku',
+          config: {
+            isSolution: true,
+            isMultiSolution: true,
+            solutionGroup: batch.map((p, idx) => ({
+              gridData: JSON.parse(JSON.stringify(p.config.gridData)),
+              puzzleIndex: i + idx + 1,
+            })),
+          }
+        });
+      }
+    }
 
     for (let i = 0; i < wordSearchPages.length; i += wordSearchSolutionsPerPage) {
       const batch = wordSearchPages.slice(i, i + wordSearchSolutionsPerPage);
@@ -374,6 +404,19 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 value={wordSearchSolutionsPerPage}
                 onChange={(e) => setWordSearchSolutionsPerPage(Number(e.target.value) as 1 | 2 | 4)}
                 title="Pack multiple Word Search answer keys onto one page to cut page count and print cost"
+                className="bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-200 px-2 py-1 cursor-pointer"
+              >
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={4}>4</option>
+              </select>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sudoku Solutions/Page</span>
+              <select
+                value={sudokuSolutionsPerPage}
+                onChange={(e) => setSudokuSolutionsPerPage(Number(e.target.value) as 1 | 2 | 4)}
+                title="Pack multiple Sudoku answer keys onto one page to cut page count and print cost"
                 className="bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-200 px-2 py-1 cursor-pointer"
               >
                 <option value={1}>1</option>

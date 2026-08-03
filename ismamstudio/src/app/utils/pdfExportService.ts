@@ -525,21 +525,23 @@ const drawWordSearchSolutionPack = (doc: any, page: any, xShift: number, pageWid
   });
 };
 
-// Helper: Draw Sudoku Grid (Full Page Printable Width)
+// Helper: Draw Sudoku Grid (matches Word Search full large size in All-in-One Studio)
 const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
   
-  const margin = 0.5;
+  // Match Word Search margins exactly (margin=0.6, safeW * 0.86 factor removed for Sudoku)
+  const margin = 0.6;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  const titleSpace = 0.4;
-  const gridDrawSize = Math.min(safeW, safeH - titleSpace - 0.4);
+  const titleSpace = 0.5;
+  // Sudoku fills as much of the page as possible (no 0.86 scaling factor)
+  const gridDrawSize = Math.min(safeW, safeH - titleSpace - 0.3);
   const cellSize = gridDrawSize / 9;
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
-  const startY = margin + titleSpace + 0.1;
+  const startY = margin + titleSpace + 0.3;
 
   // Draw thin cell borders first
   doc.setLineWidth(0.01);

@@ -37,6 +37,21 @@ model Book {
   @@map("books")
 }
 
+model Notebook {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  subtitle  String?  @default("Notebook Entry")
+  content   String   @db.Text
+  category  String?  @default("general")
+  data      Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("notebooks")
+}
+
 model Chapter {
   id        String   @id @default(uuid())
   title     String

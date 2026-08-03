@@ -631,3 +631,49 @@ export async function saveProjectToLibrary(title: string, content: string, subti
   }
 }
 
+// 📓 📓 📓 Dedicated "Save to My Notebook" Action for permanent account storage (Separate from Book model)
+export async function saveToNotebook(title: string, content: string, subtitle?: string, category?: string, data?: any) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "Unauthorized. Please sign in to save to your Notebook." };
+  }
+
+  try {
+    const entry = await (prisma as any).notebook.create({
+      data: {
+        userId: userId,
+        title: title.trim() || "Untitled Notebook Entry",
+        subtitle: subtitle || "Permanent Cloud Storage Entry",
+        content: content || "",
+        category: category || "general",
+        data: data || null,
+      },
+    });
+
+    revalidatePath("/notebook");
+    return { success: true, id: entry.id };
+  } catch (err: any) {
+    console.error("Save to notebook failed:", err);
+    return { success: false, error: err?.message || "Failed to save to Notebook." };
+  }
+}
+
+// 🗑️ Delete Notebook Entry Action
+export async function deleteNotebookEntry(id: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "Unauthorized." };
+  }
+
+  try {
+    await (prisma as any).notebook.delete({
+      where: { id },
+    });
+    revalidatePath("/notebook");
+    return { success: true };
+  } catch (err: any) {
+    console.error("Delete notebook entry failed:", err);
+    return { success: false, error: err?.message || "Failed to delete item." };
+  }
+}
+

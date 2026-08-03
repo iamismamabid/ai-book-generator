@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { BookOpen, Check, Loader2, Cloud, CloudCheck } from "lucide-react";
-import { saveProjectToLibrary } from "../actions";
+import { saveToNotebook } from "../actions";
 import Link from "next/link";
 
 interface SaveToNotebookButtonProps {
   title: string;
   content: string;
   subtitle?: string;
+  category?: string;
+  data?: any;
   className?: string;
 }
 
@@ -16,6 +18,8 @@ export default function SaveToNotebookButton({
   title,
   content,
   subtitle,
+  category = "general",
+  data,
   className = "",
 }: SaveToNotebookButtonProps) {
   const [saving, setSaving] = useState(false);
@@ -26,7 +30,7 @@ export default function SaveToNotebookButton({
     setSaving(true);
     setError(null);
     try {
-      const res = await saveProjectToLibrary(title, content, subtitle);
+      const res = await saveToNotebook(title, content, subtitle, category, data);
       if (res.success) {
         setSaved(true);
         setTimeout(() => setSaved(false), 5000);

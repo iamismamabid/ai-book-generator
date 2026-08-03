@@ -18,6 +18,7 @@ import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLa
 import { initFabricSnapping } from "@/hooks/useFabricSnap";
 import { COVER_TEMPLATES, resolveTemplateElements, CoverTemplate } from "@/lib/coverTemplates";
 import TemplateGalleryModal from "@/components/TemplateGalleryModal";
+import SaveToLibraryButton from "@/app/components/SaveToLibraryButton";
 import CoverMockup3DModal from "@/components/CoverMockup3DModal";
 import MarketplaceThumbnailPreviewModal from "@/components/MarketplaceThumbnailPreviewModal";
 import SeriesBrandingModal from "@/components/SeriesBrandingModal";
@@ -3807,6 +3808,12 @@ export default function FabricCoverStudio({
           >
             {isGenerating ? <Loader2 className="w-5 h-5 animate-spin"/> : <Download className="w-5 h-5"/>}
           </button>
+          <div className="pt-2 border-t border-slate-900 w-full flex justify-center">
+            <SaveToLibraryButton 
+              title={`KDP Cover Design (${trimSize.w}x${trimSize.h})`}
+              content={`Custom KDP Book Cover for ${pageCount} pages, trim size ${trimSize.w}x${trimSize.h} inches.`}
+            />
+          </div>
         </div>
       </div>
 

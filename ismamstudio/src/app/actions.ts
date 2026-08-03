@@ -605,3 +605,29 @@ Book concept: "${input}"`;
 
   return { success: true, results };
 }
+
+// 🎯 🎯 🎯 Universal "Save to My Library" Action for all user tiers
+export async function saveProjectToLibrary(title: string, content: string, subtitle?: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "Unauthorized. Please sign in to save projects to your library." };
+  }
+
+  try {
+    const book = await prisma.book.create({
+      data: {
+        userId: userId,
+        title: title.trim() || "Untitled KDP Project",
+        subtitle: subtitle || "Saved from KDPage Toolkit",
+        content: content || "Project contents saved to Library",
+      },
+    });
+
+    revalidatePath("/dashboard");
+    return { success: true, id: book.id };
+  } catch (err: any) {
+    console.error("Save to library failed:", err);
+    return { success: false, error: err?.message || "Failed to save to Library." };
+  }
+}
+

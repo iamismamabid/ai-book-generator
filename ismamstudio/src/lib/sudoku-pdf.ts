@@ -43,15 +43,20 @@ function drawSudokuGrid(
     { align: "center" }
   );
 
-  // Grid sizing
-  const gridSize = Math.min(width - 1.0, height - 2.6);
+  // Grid sizing: Standard Large KDP ratio (5.8" grid size) matching Word Search
+  const margin = 0.75;
+  const safeW = width - (margin * 2);
+  const safeH = height - (margin * 2);
+
+  const maxGridDimension = Math.min(5.8, safeW);
+  const gridSize = Math.min(maxGridDimension, safeH - 1.8);
   const cellSize = gridSize / 9;
   const startX = (width - gridSize) / 2;
-  const startY = 1.3;
+  const startY = margin + 0.45;
 
   // Draw thin cell borders first
-  doc.setLineWidth(0.005);
-  doc.setDrawColor(180, 180, 190);
+  doc.setLineWidth(0.008);
+  doc.setDrawColor(148, 163, 184);
 
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
@@ -62,8 +67,8 @@ function drawSudokuGrid(
   }
 
   // Draw thick 3x3 box borders on top
-  doc.setLineWidth(0.022);
-  doc.setDrawColor(25, 25, 35);
+  doc.setLineWidth(0.024);
+  doc.setDrawColor(15, 23, 42);
   for (let b = 0; b <= 3; b++) {
     const offset = b * cellSize * 3;
     // Vertical thick lines
@@ -72,7 +77,10 @@ function drawSudokuGrid(
     doc.line(startX, startY + offset, startX + gridSize, startY + offset);
   }
 
-  // Draw numbers
+  // Draw numbers with dynamic scaling
+  const numberFontSize = Math.max(16, Math.floor(cellSize * 36));
+  doc.setFontSize(numberFontSize);
+
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       const val = grid[r][c];
@@ -84,18 +92,16 @@ function drawSudokuGrid(
           // Solution answers in indigo
           doc.setTextColor(79, 70, 229);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(Math.floor(cellSize * 34));
         } else {
           // Puzzle givens in dark slate
           doc.setTextColor(15, 23, 42);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(Math.floor(cellSize * 34));
         }
 
         doc.text(
           val.toString(),
           x + cellSize / 2,
-          y + cellSize * 0.65,
+          y + cellSize * 0.68,
           { align: "center" }
         );
       }

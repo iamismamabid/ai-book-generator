@@ -6083,6 +6083,18 @@ export default function FabricCoverStudio({
             >
               <ZoomIn className="w-4 h-4"/>
             </button>
+
+            <div className="w-px h-5 bg-slate-200 mx-1" />
+
+            <button
+              onClick={handleGenerateCover}
+              disabled={isGenerating}
+              title="Compile & Download PDF Cover"
+              className="p-2 pl-3 pr-4 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5 shadow-sm shadow-indigo-600/30"
+            >
+              {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
+              <span className="text-[10px] font-black uppercase tracking-wider">{isGenerating ? "Compiling..." : "Download PDF"}</span>
+            </button>
           </div>
         </div>
 

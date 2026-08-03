@@ -69,9 +69,11 @@ export default function Header() {
             <GlobalSearchModal />
 
             <SignedIn>
+              {/* My Library link hidden
               <Link href="/dashboard" className="hidden sm:block text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-1">
                 My Library
               </Link>
+              */}
               <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95">
                 <Sparkles className="w-4 h-4" /> Creator Studio
               </Link>
@@ -118,6 +120,7 @@ export default function Header() {
                 <Sparkles className="w-4 h-4" /> Open Creator Studio
               </Link>
 
+              {/* My Library mobile link hidden
               <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
@@ -125,6 +128,7 @@ export default function Header() {
               >
                 <Layers className="w-4 h-4 text-indigo-500" /> My Saved Books &amp; Library
               </Link>
+              */}
             </SignedIn>
 
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-900">

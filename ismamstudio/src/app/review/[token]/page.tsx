@@ -1,5 +1,6 @@
 import { getCoverShare } from "@/app/actions";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -66,9 +67,9 @@ export default async function CoverReviewPage({
 
         <p className="text-[11px] font-semibold text-slate-500 text-center">
           This is a read-only preview shared for feedback. Made with{" "}
-          <a href="/" className="text-indigo-400 hover:text-indigo-300 underline">
+          <Link href="/" className="text-indigo-400 hover:text-indigo-300 underline">
             KDPage
-          </a>
+          </Link>
           .
         </p>
       </div>

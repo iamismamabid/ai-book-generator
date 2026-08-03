@@ -52,6 +52,7 @@ export default function SudokuClient() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [includeSolutions, setIncludeSolutions] = useState(true);
+  const [solutionsPerPage, setSolutionsPerPage] = useState<number>(4);
   const [includeCover, setIncludeCover] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
@@ -133,6 +134,7 @@ export default function SudokuClient() {
         trimSize: finalTrim,
         title: `Sudoku Puzzle Book`,
         includeSolutions: incSol,
+        solutionsPerPage,
         includeCover: incCover,
         coverState,
         isPremium,
@@ -277,6 +279,21 @@ export default function SudokuClient() {
                     />
                   </button>
                 </div>
+
+                {includeSolutions && (
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-2">Solutions per page</label>
+                    <select
+                      value={solutionsPerPage}
+                      onChange={(e) => setSolutionsPerPage(Number(e.target.value))}
+                      className="w-full bg-slate-950 border border-slate-900 rounded-lg px-4 py-2 text-white font-bold focus:outline-none focus:border-amber-500"
+                    >
+                      <option value={1}>1 solution per page (Large)</option>
+                      <option value={2}>2 solutions per page (Compact)</option>
+                      <option value={4}>4 solutions per page (Standard 2×2)</option>
+                    </select>
+                  </div>
+                )}
 
                 {/* Cover toggle */}
                 <div className="flex items-center justify-between pt-2 border-t border-slate-800/60">

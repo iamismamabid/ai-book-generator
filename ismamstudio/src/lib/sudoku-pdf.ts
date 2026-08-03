@@ -9,122 +9,108 @@ interface PdfOptions {
   trimSize: "6x9" | "8.5x11" | "5x8";
   title: string;
   includeSolutions?: boolean;
+  solutionsPerPage?: number; // 1, 2, or 4 per page
   includeCover?: boolean;
   coverState?: any;
   isPremium?: boolean;
 }
 
-function drawSudokuGrid(
+function getSolutionPackZones(count: number, x0: number, y0: number, safeW: number, safeH: number) {
+  if (count <= 1) return [{ x: x0, y: y0, w: safeW, h: safeH }];
+  if (count === 2) return [
+    { x: x0, y: y0, w: safeW, h: safeH / 2 - 0.2 },
+    { x: x0, y: y0 + safeH / 2 + 0.2, w: safeW, h: safeH / 2 - 0.2 },
+  ];
+  return [
+    { x: x0, y: y0, w: safeW / 2 - 0.15, h: safeH / 2 - 0.15 },
+    { x: x0 + safeW / 2 + 0.15, y: y0, w: safeW / 2 - 0.15, h: safeH / 2 - 0.15 },
+    { x: x0, y: y0 + safeH / 2 + 0.15, w: safeW / 2 - 0.15, h: safeH / 2 - 0.15 },
+    { x: x0 + safeW / 2 + 0.15, y: y0 + safeH / 2 + 0.15, w: safeW / 2 - 0.15, h: safeH / 2 - 0.15 },
+  ];
+}
+
+function drawSudokuTile(
   doc: jsPDF,
   grid: Grid,
-  width: number,
-  height: number,
+  x: number,
+  y: number,
+  size: number,
   isSolution: boolean,
   puzzleNumber: number,
-  title: string
+  showTitle: boolean = true
 ) {
-  // Header
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.setTextColor(20, 20, 30);
-  const label = isSolution
-    ? `${title} #${puzzleNumber} — Answer Key`
-    : `${title} #${puzzleNumber}`;
-  doc.text(label, width / 2, 0.65, { align: "center" });
+  if (showTitle) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(size > 4.5 ? 14 : 11);
+    doc.setTextColor(20, 20, 30);
+    const label = isSolution ? `Answer #${puzzleNumber}` : `Puzzle #${puzzleNumber}`;
+    doc.text(label, x + size / 2, y - 0.1, { align: "center" });
+  }
 
-  // Difficulty badge
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(100, 116, 139);
-  doc.text(
-    isSolution ? "Solution" : "Puzzle",
-    width / 2,
-    0.95,
-    { align: "center" }
-  );
+  const cellSize = size / 9;
 
-  // Grid sizing: Standard Large KDP ratio (5.8" grid size) matching Word Search
-  const margin = 0.75;
-  const safeW = width - (margin * 2);
-  const safeH = height - (margin * 2);
-
-  const maxGridDimension = Math.min(5.8, safeW);
-  const gridSize = Math.min(maxGridDimension, safeH - 1.8);
-  const cellSize = gridSize / 9;
-  const startX = (width - gridSize) / 2;
-  const startY = margin + 0.45;
-
-  // Draw thin cell borders first
+  // Thin cell borders
   doc.setLineWidth(0.008);
   doc.setDrawColor(148, 163, 184);
 
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
-      const x = startX + c * cellSize;
-      const y = startY + r * cellSize;
-      doc.rect(x, y, cellSize, cellSize);
+      const cellX = x + c * cellSize;
+      const cellY = y + r * cellSize;
+      doc.rect(cellX, cellY, cellSize, cellSize);
     }
   }
 
-  // Draw thick 3x3 box borders on top
+  // Thick 3x3 box borders
   doc.setLineWidth(0.024);
   doc.setDrawColor(15, 23, 42);
   for (let b = 0; b <= 3; b++) {
     const offset = b * cellSize * 3;
-    // Vertical thick lines
-    doc.line(startX + offset, startY, startX + offset, startY + gridSize);
-    // Horizontal thick lines
-    doc.line(startX, startY + offset, startX + gridSize, startY + offset);
+    doc.line(x + offset, y, x + offset, y + size);
+    doc.line(x, y + offset, x + size, y + offset);
   }
 
-  // Draw numbers with dynamic scaling
-  const numberFontSize = Math.max(16, Math.floor(cellSize * 36));
+  // Draw numbers
+  const numberFontSize = Math.max(9, Math.floor(cellSize * 36));
   doc.setFontSize(numberFontSize);
 
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       const val = grid[r][c];
       if (val !== 0) {
-        const x = startX + c * cellSize;
-        const y = startY + r * cellSize;
-
         if (isSolution) {
-          // Solution answers in indigo
           doc.setTextColor(79, 70, 229);
           doc.setFont("helvetica", "bold");
         } else {
-          // Puzzle givens in dark slate
           doc.setTextColor(15, 23, 42);
           doc.setFont("helvetica", "bold");
         }
 
         doc.text(
           val.toString(),
-          x + cellSize / 2,
-          y + cellSize * 0.68,
+          x + c * cellSize + cellSize / 2,
+          y + r * cellSize + cellSize * 0.68,
           { align: "center" }
         );
       }
     }
   }
 
-  // Reset
   doc.setTextColor(0);
-
-  // Page number footer
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(148, 163, 184);
-  doc.text(
-    `Page ${puzzleNumber}`,
-    width - 0.5,
-    height - 0.35,
-    { align: "right" }
-  );
 }
 
-export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
-  const { puzzles, title, trimSize, includeSolutions = true, includeCover = false, coverState = null, isPremium } = options;
+export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
+  const {
+    puzzles,
+    difficulty,
+    trimSize,
+    title,
+    includeSolutions = true,
+    solutionsPerPage = 4,
+    includeCover = false,
+    coverState = null,
+    isPremium,
+  } = options;
 
   let width = 8.5;
   let height = 11;
@@ -144,19 +130,61 @@ export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
     firstPageAdded = true;
   }
 
-  // ── Puzzle pages ──────────────────────────────────────────────
+  // ── Puzzle pages (1 per page - Large) ─────────────────────────
   puzzles.forEach((item, index) => {
     if (firstPageAdded || index > 0) doc.addPage();
     firstPageAdded = true;
-    drawSudokuGrid(doc, item.puzzle, width, height, false, index + 1, title);
+
+    const margin = 0.5;
+    const safeW = width - (margin * 2);
+    const safeH = height - (margin * 2);
+
+    const titleSpace = 0.45;
+    const gridSize = Math.min(safeW * 0.86, safeH - titleSpace - 0.4);
+    const startX = (width - gridSize) / 2;
+    const startY = margin + titleSpace + 0.2;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(20, 20, 30);
+    doc.text(`${title} #${index + 1}`, width / 2, margin + 0.35, { align: "center" });
+
+    drawSudokuTile(doc, item.puzzle, startX, startY, gridSize, false, index + 1, false);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Page ${index + 1}`, width - 0.5, height - 0.35, { align: "right" });
   });
 
-  // ── Solution pages (appended after all puzzles) ───────────────
+  // ── Solution pages (1, 2, or 4 per page) ─────────────────────
   if (includeSolutions) {
-    puzzles.forEach((item, index) => {
+    const solPerPage = Math.min(4, Math.max(1, solutionsPerPage));
+    const totalSolPages = Math.ceil(puzzles.length / solPerPage);
+
+    for (let p = 0; p < totalSolPages; p++) {
       doc.addPage();
-      drawSudokuGrid(doc, item.solution, width, height, true, index + 1, title);
-    });
+      const margin = 0.5;
+      const safeW = width - (margin * 2);
+      const safeH = height - (margin * 2);
+      const topReserved = 0.5;
+      const availH = safeH - topReserved;
+
+      const zones = getSolutionPackZones(solPerPage, margin, margin + topReserved, safeW, availH);
+
+      for (let z = 0; z < solPerPage; z++) {
+        const solIndex = p * solPerPage + z;
+        if (solIndex >= puzzles.length) break;
+
+        const zone = zones[z];
+        const titleSpace = 0.25;
+        const tileSize = Math.min(zone.w, zone.h - titleSpace);
+        const startX = zone.x + (zone.w - tileSize) / 2;
+        const startY = zone.y + titleSpace;
+
+        drawSudokuTile(doc, puzzles[solIndex].solution, startX, startY, tileSize, true, solIndex + 1, true);
+      }
+    }
   }
 
   // 3. Draw Back Cover if integrated
@@ -178,5 +206,10 @@ export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
     }
   }
 
+  return doc;
+}
+
+export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
+  const doc = await generateSudokuPdf(options);
   doc.save(filename);
 }

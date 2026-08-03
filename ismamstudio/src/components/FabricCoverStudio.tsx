@@ -881,8 +881,7 @@ export default function FabricCoverStudio({
       }
     });
 
-    canvas.renderAll();
-    canvas.fire("object:modified");
+    canvas.requestRenderAll();
   };
 
   const handleAutoAlignSpineText = () => {
@@ -1636,50 +1635,60 @@ export default function FabricCoverStudio({
   // listeners, so without this the exported/mocked-up/batched covers come
   // out with the background missing (solid color fills and photos alike).
   const paintCoverBackground = (ctx: CanvasRenderingContext2D) => {
-    const bg = coverBackgroundRef.current;
+    const bg = coverBackgroundRef.current || coverBackground;
     ctx.save();
+    try {
+      const backColor = bg.backCoverColor || "#0f172a";
+      const frontColor = bg.frontCoverColor || "#0f172a";
+      const backStart = bg.backCoverGradientStart || backColor;
+      const backEnd = bg.backCoverGradientEnd || backColor;
+      const frontStart = bg.frontCoverGradientStart || frontColor;
+      const frontEnd = bg.frontCoverGradientEnd || frontColor;
 
-    if (bg.backCoverType === 'gradient') {
-      const grad = ctx.createLinearGradient(0, 0, layout.spineLeftPx, 0);
-      grad.addColorStop(0, bg.backCoverGradientStart);
-      grad.addColorStop(1, bg.backCoverGradientEnd);
-      ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = bg.backCoverColor;
-    }
-    ctx.fillRect(0, 0, layout.spineLeftPx, layout.canvasHeight);
+      if (bg.backCoverType === 'gradient') {
+        const grad = ctx.createLinearGradient(0, 0, layout.spineLeftPx, 0);
+        grad.addColorStop(0, backStart);
+        grad.addColorStop(1, backEnd);
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = backColor;
+      }
+      ctx.fillRect(0, 0, layout.spineLeftPx, layout.canvasHeight);
 
-    if (bg.backCoverType === 'gradient' && bg.frontCoverType === 'gradient') {
-      const grad = ctx.createLinearGradient(layout.spineLeftPx, 0, layout.spineRightPx, 0);
-      grad.addColorStop(0, bg.backCoverGradientEnd);
-      grad.addColorStop(1, bg.frontCoverGradientStart);
-      ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = bg.backCoverColor;
-    }
-    ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
+      if (bg.backCoverType === 'gradient' && bg.frontCoverType === 'gradient') {
+        const grad = ctx.createLinearGradient(layout.spineLeftPx, 0, layout.spineRightPx, 0);
+        grad.addColorStop(0, backEnd);
+        grad.addColorStop(1, frontStart);
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = backColor;
+      }
+      ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
 
-    if (bg.frontCoverType === 'gradient') {
-      const grad = ctx.createLinearGradient(layout.spineRightPx, 0, layout.canvasWidth, 0);
-      grad.addColorStop(0, bg.frontCoverGradientStart);
-      grad.addColorStop(1, bg.frontCoverGradientEnd);
-      ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = bg.frontCoverColor;
-    }
-    ctx.fillRect(layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
+      if (bg.frontCoverType === 'gradient') {
+        const grad = ctx.createLinearGradient(layout.spineRightPx, 0, layout.canvasWidth, 0);
+        grad.addColorStop(0, frontStart);
+        grad.addColorStop(1, frontEnd);
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = frontColor;
+      }
+      ctx.fillRect(layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
 
-    if (fullCoverImageEl.current) {
-      ctx.drawImage(fullCoverImageEl.current, 0, 0, layout.canvasWidth, layout.canvasHeight);
+      if (fullCoverImageEl.current) {
+        ctx.drawImage(fullCoverImageEl.current, 0, 0, layout.canvasWidth, layout.canvasHeight);
+      }
+      if (backCoverImageEl.current) {
+        ctx.drawImage(backCoverImageEl.current, 0, 0, layout.spineLeftPx, layout.canvasHeight);
+      }
+      if (frontCoverImageEl.current) {
+        ctx.drawImage(frontCoverImageEl.current, layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
+      }
+    } catch (err) {
+      console.warn("Cover background paint fallback:", err);
+    } finally {
+      ctx.restore();
     }
-    if (backCoverImageEl.current) {
-      ctx.drawImage(backCoverImageEl.current, 0, 0, layout.spineLeftPx, layout.canvasHeight);
-    }
-    if (frontCoverImageEl.current) {
-      ctx.drawImage(frontCoverImageEl.current, layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
-    }
-
-    ctx.restore();
   };
 
   // Renders a fabric canvas to a data URL that includes the custom-painted

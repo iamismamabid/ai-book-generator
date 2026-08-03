@@ -296,16 +296,16 @@ export interface WordSearchStyle {
 
 const WORD_SEARCH_DEFAULT_STYLE: Required<WordSearchStyle> = {
   font: 'helvetica',
-  letterFontSize: 11,
-  lineWidth: 0.01,
+  letterFontSize: 16,
+  lineWidth: 0.012,
   cellColor: '#FFFFFF',
-  borderColor: '#F1F5F9',
+  borderColor: '#94A3B8',
   wordFont: 'helvetica',
-  wordFontSize: 9.5,
+  wordFontSize: 11,
   wordTextColor: '#000000',
   wordTextAlign: 'left',
   wordColumns: 3,
-  wordRowStep: 0.2,
+  wordRowStep: 0.22,
   highlightColor: '#E0E7FF',
   highlightTextColor: '#4F46E5',
   solutionHighlighter: 'fill',
@@ -382,9 +382,8 @@ export function drawWordSearchGrid(
     });
   }
 
-  // 3. Draw all letters on top
-  const baseLetterFontSize = s.letterFontSize || 11;
-  const scaledLetterFontSize = cellSize < 0.35 ? Math.max(6, Math.floor(baseLetterFontSize * (cellSize / 0.35))) : baseLetterFontSize;
+  // 3. Draw all letters on top with dynamic scaling based on cellSize
+  const scaledLetterFontSize = Math.max(9, Math.floor(cellSize * 36));
   doc.setFontSize(scaledLetterFontSize);
   
   data.grid.forEach((row: string[], r: number) => {
@@ -455,26 +454,24 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
 
-  const margin = 0.75;
+  const margin = 0.6;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  // Standard Large KDP ratio (5.8" - 6.0" grid size): clean, professional & balanced
-  const maxGridDimension = Math.min(5.8, safeW);
-  const titleSpace = 0.4;
-  const wordListSpace = isSolution ? 0.4 : 1.4;
-  const gridDrawSize = Math.min(maxGridDimension, safeH - titleSpace - wordListSpace);
+  const titleSpace = 0.5;
+  const wordListSpace = isSolution ? 0.4 : 1.6;
+  const gridDrawSize = Math.min(safeW * 0.86, safeH - titleSpace - wordListSpace);
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
-  const startY = margin + titleSpace + 0.2;
+  const startY = margin + titleSpace + 0.3;
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
 
   if (!isSolution) {
-    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridDrawSize + 0.25, w: gridDrawSize }, {
+    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridDrawSize + 0.3, w: gridDrawSize }, {
       isSolution,
       showHeading: true,
-      style: { wordColumns: 3, wordFontSize: 9.5 }
+      style: { wordColumns: 3, wordFontSize: 11, wordRowStep: 0.24 }
     });
   }
 };

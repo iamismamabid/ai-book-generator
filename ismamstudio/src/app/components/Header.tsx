@@ -69,11 +69,10 @@ export default function Header() {
             <GlobalSearchModal />
 
             <SignedIn>
-              {/* My Library link hidden
-              <Link href="/dashboard" className="hidden sm:block text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-1">
-                My Library
+              <Link href="/notebook" className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-1">
+                <BookOpen className="w-4 h-4 text-indigo-500" />
+                <span>My Notebook</span>
               </Link>
-              */}
               <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95">
                 <Sparkles className="w-4 h-4" /> Creator Studio
               </Link>
@@ -120,15 +119,13 @@ export default function Header() {
                 <Sparkles className="w-4 h-4" /> Open Creator Studio
               </Link>
 
-              {/* My Library mobile link hidden
               <Link
-                href="/dashboard"
+                href="/notebook"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-sm rounded-2xl flex items-center gap-3 border border-slate-200 dark:border-slate-800"
               >
-                <Layers className="w-4 h-4 text-indigo-500" /> My Saved Books &amp; Library
+                <BookOpen className="w-4 h-4 text-indigo-500" /> My Notebook (Saved Data)
               </Link>
-              */}
             </SignedIn>
 
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-900">

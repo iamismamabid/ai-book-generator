@@ -71,10 +71,10 @@ export default function SaveToNotebookButton({
 
       {saved && (
         <Link
-          href="/dashboard"
+          href="/notebook"
           className="text-[10px] font-bold text-emerald-600 hover:underline inline-flex items-center gap-1"
         >
-          Synced with Account — View in Dashboard →
+          Synced with Account — View in My Notebook →
         </Link>
       )}
 

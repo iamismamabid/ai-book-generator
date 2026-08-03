@@ -71,10 +71,10 @@ export default function SaveToLibraryButton({
 
       {saved && (
         <Link
-          href="/dashboard"
+          href="/notebook"
           className="text-[10px] font-bold text-emerald-600 hover:underline inline-flex items-center gap-1"
         >
-          View in My Library →
+          View in My Notebook →
         </Link>
       )}
 

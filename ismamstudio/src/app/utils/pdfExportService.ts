@@ -2246,8 +2246,8 @@ const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
 // ── Maze Solution Pack (1, 2, or 4 per page) ──────────────────────────────────
 const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
   const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
-  const margin = 0.5;
-  const topReserved = 1.2;
+  const margin = 0.35;
+  const topReserved = 0.8;
   const x0 = margin + xShift;
   const safeW = pageWidth - margin * 2;
   const safeH = pageHeight - topReserved - margin;
@@ -2257,17 +2257,19 @@ const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: nu
     const zone = zones[i];
     if (!zone || !entry.gridData) return;
     const data = entry.gridData;
-    const gridSize = data.grid.length;
-    const titleSpace = 0.28;
-    const cellSize = Math.min(zone.w / gridSize, (zone.h - titleSpace) / gridSize);
-    const mazeW = gridSize * cellSize;
+    const rows = data.grid.length;
+    const cols = data.grid[0].length;
+    const titleSpace = 0.25;
+    const cellSize = Math.min(zone.w / cols, (zone.h - titleSpace) / rows);
+    const mazeW = cols * cellSize;
+    const mazeH = rows * cellSize;
     const startX = zone.x + (zone.w - mazeW) / 2;
     const startY = zone.y + titleSpace;
 
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(15, 23, 42);
     doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
-    doc.setLineWidth(cellSize * 0.07); doc.setDrawColor(26, 26, 26);
+    doc.setLineWidth(Math.max(0.01, cellSize * 0.08)); doc.setDrawColor(15, 23, 42);
     data.grid.forEach((row: any[], r: number) => {
       row.forEach((cell: any, c: number) => {
         if (!cell.active) return;
@@ -2280,9 +2282,21 @@ const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: nu
       });
     });
 
-    // Draw solution path
+    // Start / End markers
+    const markerFontSize = Math.max(6, Math.floor(cellSize * 30));
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(markerFontSize);
+    if (data.start) {
+      doc.setTextColor(37, 99, 235);
+      doc.text("S", startX + data.start[1] * cellSize + cellSize / 2, startY + data.start[0] * cellSize + cellSize * 0.72, { align: "center" });
+    }
+    if (data.end) {
+      doc.setTextColor(220, 38, 38);
+      doc.text("E", startX + data.end[1] * cellSize + cellSize / 2, startY + data.end[0] * cellSize + cellSize * 0.72, { align: "center" });
+    }
+
+    // Draw high contrast bold solution path
     if (data.solution && data.solution.length > 0) {
-      doc.setLineWidth(cellSize * 0.1); doc.setDrawColor(239, 68, 68);
+      doc.setLineWidth(Math.max(0.018, cellSize * 0.16)); doc.setDrawColor(239, 68, 68);
       const path = data.solution;
       for (let pi = 0; pi < path.length - 1; pi++) {
         const p1 = path[pi]; const p2 = path[pi + 1];

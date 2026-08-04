@@ -197,7 +197,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     doc.text("Solutions", widthInches / 2, heightInches / 2, { align: "center" });
     
     let currentSolutionCount = 0;
-    const solutionMazeSize = (contentWidth - 0.5) / 2; // Split into 2 columns with spacing
+    const solutionMazeSize = (contentWidth - 0.3) / 2; // Maximum 2-column tile width (3.75" on 8.5x11)
 
     mazes.forEach((maze, index) => {
       // Every 4 solutions require a clean new page break
@@ -206,15 +206,15 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
         doc.setTextColor(15, 23, 42);
-        doc.text("Answer Keys", margin, margin + 0.2);
+        doc.text("Answer Keys", margin, margin + 0.15);
       }
 
       // Compute row and column positions dynamically for the 2x2 grid
       const colIndex = currentSolutionCount % 2;
       const rowIndex = Math.floor((currentSolutionCount % 4) / 2);
 
-      const x = margin + colIndex * (solutionMazeSize + 0.5);
-      const y = margin + 0.7 + rowIndex * (solutionMazeSize + 0.9);
+      const x = margin + colIndex * (solutionMazeSize + 0.3);
+      const y = margin + 0.45 + rowIndex * (solutionMazeSize + 0.5);
 
       // Label indicator over the micro-solution preview grid
       doc.setFont("helvetica", "bold");

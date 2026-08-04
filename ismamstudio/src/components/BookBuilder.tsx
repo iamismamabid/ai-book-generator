@@ -84,7 +84,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
   const [wordSearchSolutionsPerPage, setWordSearchSolutionsPerPage] = useState<1 | 2 | 4>(1);
   const [sudokuSolutionsPerPage, setSudokuSolutionsPerPage] = useState<1 | 2 | 4>(4);
   const [crosswordSolutionsPerPage, setCrosswordSolutionsPerPage] = useState<1 | 2 | 4>(2);
-  const [mazeSolutionsPerPage, setMazeSolutionsPerPage] = useState<1 | 2 | 4>(2);
+  const [mazeSolutionsPerPage, setMazeSolutionsPerPage] = useState<1 | 2 | 4>(1);
   const [kakuroSolutionsPerPage, setKakuroSolutionsPerPage] = useState<1 | 2 | 4>(2);
   const [wordScrambleSolutionsPerPage, setWordScrambleSolutionsPerPage] = useState<1 | 2 | 4>(2);
   const [cryptogramSolutionsPerPage, setCryptogramSolutionsPerPage] = useState<1 | 2 | 4>(2);

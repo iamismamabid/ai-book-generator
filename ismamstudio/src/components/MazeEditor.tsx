@@ -61,16 +61,16 @@ export function MazeEditor({ page, updatePage }: any) {
         const y2 = y1 + cellSize;
 
         if (cell.walls.top) {
-          lines.push(<line key={`t-${r}-${c}`} x1={x1} y1={y1} x2={x2} y2={y1} stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />);
+          lines.push(<line key={`t-${r}-${c}`} x1={x1} y1={y1} x2={x2} y2={y1} stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />);
         }
         if (cell.walls.bottom) {
-          lines.push(<line key={`b-${r}-${c}`} x1={x1} y1={y2} x2={x2} y2={y2} stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />);
+          lines.push(<line key={`b-${r}-${c}`} x1={x1} y1={y2} x2={x2} y2={y2} stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />);
         }
         if (cell.walls.right) {
-          lines.push(<line key={`r-${r}-${c}`} x1={x2} y1={y1} x2={x2} y2={y2} stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />);
+          lines.push(<line key={`r-${r}-${c}`} x1={x2} y1={y1} x2={x2} y2={y2} stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />);
         }
         if (cell.walls.left) {
-          lines.push(<line key={`l-${r}-${c}`} x1={x1} y1={y1} x2={x1} y2={y2} stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />);
+          lines.push(<line key={`l-${r}-${c}`} x1={x1} y1={y1} x2={x1} y2={y2} stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />);
         }
       });
     });
@@ -97,17 +97,17 @@ export function MazeEditor({ page, updatePage }: any) {
         }
       });
       pathLines.push(
-        <path key="sol-path" d={pathD} stroke="#EF4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.85" />
+        <path key="sol-path" d={pathD} stroke="#EF4444" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.9" />
       );
     }
 
     return (
-      <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="max-w-md mx-auto">
+      <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="max-w-2xl w-full mx-auto drop-shadow-md">
         <g>{lines}</g>
         <g>{pathLines}</g>
         {/* Start / End Labels */}
-        <text x={startCell[1] * cellSize + cellSize/2} y={startCell[0] * cellSize - 4} textAnchor="middle" fontSize="8" fontWeight="bold" fill="#10B981">START</text>
-        <text x={endCell[1] * cellSize + cellSize/2} y={endCell[0] * cellSize + cellSize + 10} textAnchor="middle" fontSize="8" fontWeight="bold" fill="#EF4444">EXIT</text>
+        <text x={startCell[1] * cellSize + cellSize/2} y={startCell[0] * cellSize - 4} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#2563EB">START</text>
+        <text x={endCell[1] * cellSize + cellSize/2} y={endCell[0] * cellSize + cellSize + 12} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#DC2626">EXIT</text>
       </svg>
     );
   };

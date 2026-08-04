@@ -75,7 +75,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     } else if (page.type === 'maze' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawMazeSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'maze' && page.config.gridData) {
-      drawMaze(doc, page, leftMarginShift, w);
+      drawMaze(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_scramble' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawWordScrambleSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_scramble' && page.config.scrambledData) {
@@ -763,23 +763,30 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
   doc.setTextColor(0);
 };
 
-// Helper: Draw Maze Challenge
-const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number) => {
+// Helper: Draw Maze Challenge (Full Page Printable Width)
+const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
   const data = page.config.gridData;
+  if (!data || !data.grid) return;
   const showSolution = page.config.showSolution || page.config.isSolution || false;
-  const gridSize = data.grid.length;
+  const rows = data.grid.length;
+  const cols = data.grid[0].length;
   
-  // Calculate dynamic cellSize to fit the trim width with safe margins (especially on 6"x9" and 5"x8" sizes)
-  const maxW = pageWidth - 1.0 - Math.abs(xShift);
-  const cellSize = Math.min(0.2, maxW / gridSize);
-  
-  const mazeWidth = gridSize * cellSize;
-  const startX = (pageWidth - mazeWidth) / 2 + xShift;
-  const startY = 1.6;
+  const margin = 0.5;
+  const safeW = pageWidth - (margin * 2);
+  const safeH = (pageHeight || 11) - (margin * 2);
+
+  const titleSpace = 0.4;
+  const mazeSize = Math.min(safeW, safeH - titleSpace - 0.4);
+  const cellSize = mazeSize / Math.max(rows, cols);
+
+  const mazeW = cols * cellSize;
+  const mazeH = rows * cellSize;
+  const startX = (pageWidth - mazeW) / 2 + xShift;
+  const startY = margin + titleSpace + 0.1;
 
   // Draw maze walls
-  doc.setLineWidth(cellSize * 0.075);
-  doc.setDrawColor(26, 26, 26);
+  doc.setLineWidth(Math.max(0.015, cellSize * 0.08));
+  doc.setDrawColor(15, 23, 42); // slate-900 bold black walls
 
   data.grid.forEach((row: any[], r: number) => {
     row.forEach((cell: any, c: number) => {
@@ -796,18 +803,25 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number) => {
     });
   });
 
-  // Start / Exit markers
+  // Start / Exit markers with bold typography
+  const markerFontSize = Math.max(8, Math.floor(cellSize * 32));
   doc.setFont("Helvetica", "bold");
-  doc.setFontSize(Math.max(6, Math.floor(cellSize * 40)));
-  doc.setTextColor(16, 185, 129); // Green
-  doc.text("START", startX + data.start[1] * cellSize + cellSize * 0.1, startY + data.start[0] * cellSize - cellSize * 0.25);
-  doc.setTextColor(239, 104, 104); // Red
-  doc.text("EXIT", startX + data.end[1] * cellSize + cellSize * 0.1, startY + data.end[0] * cellSize + cellSize + cellSize * 0.75);
+  doc.setFontSize(markerFontSize);
+
+  if (data.start) {
+    doc.setTextColor(37, 99, 235); // Blue-600 Start
+    doc.text("S", startX + data.start[1] * cellSize + cellSize / 2, startY + data.start[0] * cellSize + cellSize * 0.72, { align: "center" });
+  }
+
+  if (data.end) {
+    doc.setTextColor(220, 38, 38); // Red-600 Exit
+    doc.text("E", startX + data.end[1] * cellSize + cellSize / 2, startY + data.end[0] * cellSize + cellSize * 0.72, { align: "center" });
+  }
 
   // Draw Solution Path if checked
   if (showSolution && data.solution && data.solution.length > 0) {
-    doc.setLineWidth(cellSize * 0.1);
-    doc.setDrawColor(239, 68, 68); // Red
+    doc.setLineWidth(Math.max(0.02, cellSize * 0.15));
+    doc.setDrawColor(239, 68, 68); // Vibrant Red path
 
     const path = data.solution;
     for (let i = 0; i < path.length - 1; i++) {

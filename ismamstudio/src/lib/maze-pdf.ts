@@ -38,8 +38,8 @@ function drawMaze(
   const cols = grid[0].length;
   const cellSize = size / Math.max(rows, cols);
 
-  doc.setLineWidth(0.015); // Clear, crisp lines for printing
-  doc.setDrawColor(30, 41, 59); // Slate-800 color tone for premium feel
+  doc.setLineWidth(Math.max(0.015, cellSize * 0.08)); // Clear, crisp bold lines for printing
+  doc.setDrawColor(15, 23, 42); // Slate-900 bold black tone
 
   // 1. Draw Maze Walls
   for (let r = 0; r < rows; r++) {
@@ -59,16 +59,16 @@ function drawMaze(
 
   // 2. Draw Start (S) and End (E) Markers
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(cellSize * 25); // Scales dynamically with cell size
+  doc.setFontSize(Math.max(8, Math.floor(cellSize * 32))); // Scales dynamically with cell size
   doc.setTextColor(37, 99, 235); // Blue-600 for start
 
   const startX = xOffset + start[1] * cellSize + cellSize / 2;
-  const startY = yOffset + start[0] * cellSize + cellSize / 1.35;
+  const startY = yOffset + start[0] * cellSize + cellSize * 0.72;
   doc.text("S", startX, startY, { align: "center" });
 
   doc.setTextColor(220, 38, 38); // Red-600 for end
   const endX = xOffset + end[1] * cellSize + cellSize / 2;
-  const endY = yOffset + end[0] * cellSize + cellSize / 1.35;
+  const endY = yOffset + end[0] * cellSize + cellSize * 0.72;
   doc.text("E", endX, endY, { align: "center" });
 
   // 3. Draw Solution Path (if provided for the solutions section)

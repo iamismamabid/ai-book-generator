@@ -21,6 +21,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 
 const PROMPT_EXAMPLES = [
   {
@@ -341,8 +342,18 @@ export default function GeneratePage() {
                     <p className="text-xs text-slate-400 font-semibold">Please wait while the outline parameters compile</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-slate-500 text-xs font-bold">
-                  <Clock className="w-4 h-4 text-indigo-400" /> Auto-Saving
+                <div className="flex items-center gap-3">
+                  {activeCompletion.length > 0 && (
+                    <SaveToNotebookButton
+                      title={`AI Book Outline (${genre} - ${tone})`}
+                      content={activeCompletion}
+                      subtitle={`Genre: ${genre} | Target Audience: ${audience}`}
+                      category="ai-book"
+                    />
+                  )}
+                  <div className="flex items-center gap-2 text-slate-500 text-xs font-bold">
+                    <Clock className="w-4 h-4 text-indigo-400" /> Auto-Saving
+                  </div>
                 </div>
               </div>
 

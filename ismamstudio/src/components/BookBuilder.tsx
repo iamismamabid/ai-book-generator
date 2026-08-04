@@ -12,6 +12,7 @@ import { CryptogramEditor } from "./CryptogramEditor";
 import { MathPuzzleEditor } from "./MathPuzzleEditor";
 import { KakuroEditor } from "./KakuroEditor";
 import LowContentEditor from "./LowContentEditor";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { createPortal } from "react-dom";
@@ -358,10 +359,20 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
             </div>
             
             <div className="pt-2">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Autosave</span>
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-300 bg-slate-800/50 p-3 rounded-xl border border-slate-800">
-                <svg className="w-2.5 h-2.5 text-indigo-400 animate-pulse" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
-                <span>Draft Autosaved Locally</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Autosave & Cloud Sync</span>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-300 bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                  <svg className="w-2.5 h-2.5 text-indigo-400 animate-pulse" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
+                  <span>Draft Autosaved Locally</span>
+                </div>
+                <SaveToNotebookButton
+                  title={`All-in-One KDP Puzzle Book (${bookPages.length} Pages)`}
+                  content={`Complete KDP Activity Book with ${bookPages.length} pages generated in All-in-One Studio.`}
+                  subtitle={`Trim: ${selectedTrim} | Total Pages: ${bookPages.length}`}
+                  category="puzzle-book"
+                  data={{ pagesCount: bookPages.length, pages: bookPages }}
+                  className="w-full justify-center py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black text-[10px] uppercase tracking-wider"
+                />
               </div>
             </div>
           </div>

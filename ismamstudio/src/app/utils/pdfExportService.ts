@@ -468,16 +468,16 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
 
-  const margin = 0.6;
+  const margin = 0.35;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  const titleSpace = 0.5;
-  const wordListSpace = isSolution ? 0.4 : 1.6;
-  const gridDrawSize = Math.min(safeW * 0.86, safeH - titleSpace - wordListSpace);
+  const titleSpace = 0.3;
+  const wordListSpace = isSolution ? 0.3 : 1.4;
+  const gridDrawSize = Math.min(safeW, safeH - titleSpace - wordListSpace);
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
-  const startY = margin + titleSpace + 0.3;
+  const startY = margin + titleSpace + 0.1;
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
 
@@ -537,23 +537,21 @@ const drawWordSearchSolutionPack = (doc: any, page: any, xShift: number, pageWid
   });
 };
 
-// Helper: Draw Sudoku Grid (matches Word Search full large size in All-in-One Studio)
+// Helper: Draw Sudoku Grid (Ultra Large 7.8" Grid Size)
 const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
   
-  // Match Word Search margins exactly (margin=0.6, safeW * 0.86 factor removed for Sudoku)
-  const margin = 0.6;
+  const margin = 0.35;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  const titleSpace = 0.5;
-  // Sudoku fills as much of the page as possible (no 0.86 scaling factor)
+  const titleSpace = 0.3;
   const gridDrawSize = Math.min(safeW, safeH - titleSpace - 0.3);
   const cellSize = gridDrawSize / 9;
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
-  const startY = margin + titleSpace + 0.3;
+  const startY = margin + titleSpace + 0.1;
 
   // Draw thin cell borders first
   doc.setLineWidth(0.01);
@@ -763,7 +761,7 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
   doc.setTextColor(0);
 };
 
-// Helper: Draw Maze Challenge (Full Page Printable Width)
+// Helper: Draw Maze Challenge (Ultra Large 7.8" Grid Size)
 const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
   const data = page.config.gridData;
   if (!data || !data.grid) return;
@@ -771,12 +769,12 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHe
   const rows = data.grid.length;
   const cols = data.grid[0].length;
   
-  const margin = 0.5;
+  const margin = 0.35;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  const titleSpace = 0.4;
-  const mazeSize = Math.min(safeW, safeH - titleSpace - 0.4);
+  const titleSpace = 0.3;
+  const mazeSize = Math.min(safeW, safeH - titleSpace - 0.3);
   const cellSize = mazeSize / Math.max(rows, cols);
 
   const mazeW = cols * cellSize;

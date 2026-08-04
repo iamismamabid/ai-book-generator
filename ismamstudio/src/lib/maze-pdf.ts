@@ -114,7 +114,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     format: [widthInches, heightInches],
   });
 
-  const margin = 0.75;
+  const margin = 0.35;
   const contentWidth = widthInches - margin * 2;
   const contentHeight = heightInches - margin * 2;
 

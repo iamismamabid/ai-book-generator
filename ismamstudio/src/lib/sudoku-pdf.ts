@@ -135,12 +135,12 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     if (firstPageAdded || index > 0) doc.addPage();
     firstPageAdded = true;
 
-    const margin = 0.5;
+    const margin = 0.35;
     const safeW = width - (margin * 2);
     const safeH = height - (margin * 2);
 
-    const titleSpace = 0.4;
-    const gridSize = Math.min(safeW, safeH - titleSpace - 0.4);
+    const titleSpace = 0.3;
+    const gridSize = Math.min(safeW, safeH - titleSpace - 0.3);
     const startX = (width - gridSize) / 2;
     const startY = margin + titleSpace + 0.1;
 

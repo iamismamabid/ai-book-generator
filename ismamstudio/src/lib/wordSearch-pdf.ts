@@ -36,17 +36,16 @@ function drawWordSearchPage(
   const label = isSolution ? `${title} #${puzzleNumber} — Answer Key` : `${title} #${puzzleNumber}`;
   doc.text(label, width / 2, 0.65, { align: "center" });
 
-  const margin = 0.75;
+  const margin = 0.35;
   const safeW = width - (margin * 2);
   const safeH = height - (margin * 2);
 
-  const maxGridDimension = Math.min(5.8, safeW);
-  const titleSpace = 0.4;
-  const wordListSpace = isSolution ? 0.4 : 1.4;
-  const gridPx = Math.min(maxGridDimension, safeH - titleSpace - wordListSpace);
+  const titleSpace = 0.3;
+  const wordListSpace = isSolution ? 0.3 : 1.4;
+  const gridPx = Math.min(safeW, safeH - titleSpace - wordListSpace);
 
   const startX = (width - gridPx) / 2;
-  const startY = margin + titleSpace + 0.2;
+  const startY = margin + titleSpace + 0.15;
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridPx }, isSolution, style);
 

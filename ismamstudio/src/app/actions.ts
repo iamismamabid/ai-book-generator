@@ -639,19 +639,42 @@ export async function saveToNotebook(title: string, content: string, subtitle?: 
   }
 
   try {
-    const entry = await (prisma as any).notebook.create({
-      data: {
-        userId: userId,
-        title: title.trim() || "Untitled Notebook Entry",
-        subtitle: subtitle || "Permanent Cloud Storage Entry",
-        content: content || "",
-        category: category || "general",
-        data: data || null,
-      },
-    });
+    const notebookDelegate = (prisma as any).notebook;
+    let entryId = "";
+
+    if (notebookDelegate?.create) {
+      const entry = await notebookDelegate.create({
+        data: {
+          userId: userId,
+          title: title.trim() || "Untitled Notebook Entry",
+          subtitle: subtitle || "Permanent Cloud Storage Entry",
+          content: content || "",
+          category: category || "general",
+          data: data || null,
+        },
+      });
+      entryId = entry.id;
+    } else {
+      // Safe Raw SQL fallback if Prisma client delegate is not yet initialized
+      entryId = crypto.randomUUID();
+      const now = new Date();
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO "notebooks" ("id", "userId", "title", "subtitle", "content", "category", "data", "createdAt", "updatedAt")
+         VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9)`,
+        entryId,
+        userId,
+        title.trim() || "Untitled Notebook Entry",
+        subtitle || "Permanent Cloud Storage Entry",
+        content || "",
+        category || "general",
+        JSON.stringify(data || {}),
+        now,
+        now
+      );
+    }
 
     revalidatePath("/notebook");
-    return { success: true, id: entry.id };
+    return { success: true, id: entryId };
   } catch (err: any) {
     console.error("Save to notebook failed:", err);
     return { success: false, error: err?.message || "Failed to save to Notebook." };
@@ -666,9 +689,18 @@ export async function deleteNotebookEntry(id: string) {
   }
 
   try {
-    await (prisma as any).notebook.delete({
-      where: { id },
-    });
+    const notebookDelegate = (prisma as any).notebook;
+    if (notebookDelegate?.delete) {
+      await notebookDelegate.delete({
+        where: { id },
+      });
+    } else {
+      await prisma.$executeRawUnsafe(
+        `DELETE FROM "notebooks" WHERE "id" = $1 AND "userId" = $2`,
+        id,
+        userId
+      );
+    }
     revalidatePath("/notebook");
     return { success: true };
   } catch (err: any) {

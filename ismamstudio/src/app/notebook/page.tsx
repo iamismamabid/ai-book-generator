@@ -38,10 +38,18 @@ export default async function NotebookPage() {
   const premiumStatus = await checkPremiumStatus();
   let notebookItems: any[] = [];
   try {
-    notebookItems = await (prisma as any).notebook.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    });
+    const notebookDelegate = (prisma as any).notebook;
+    if (notebookDelegate?.findMany) {
+      notebookItems = await notebookDelegate.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+      });
+    } else {
+      notebookItems = await prisma.$queryRawUnsafe(
+        `SELECT * FROM "notebooks" WHERE "userId" = $1 ORDER BY "createdAt" DESC`,
+        userId
+      );
+    }
   } catch (error) {
     console.error("Failed to fetch notebook entries:", error);
   }

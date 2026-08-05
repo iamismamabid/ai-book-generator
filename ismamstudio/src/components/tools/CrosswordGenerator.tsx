@@ -414,10 +414,10 @@ export default function CrosswordGenerator() {
       <div className="w-80 bg-slate-900 text-slate-100 flex flex-col border-r border-slate-800 z-10">
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
           <button 
-            onClick={() => router.push("/studio")} 
+            onClick={() => router.push("/")} 
             className="flex items-center gap-2 text-slate-400 hover:text-white transition text-xs font-bold uppercase tracking-wider"
           >
-            <ArrowLeft className="w-4 h-4"/> Back
+            <ArrowLeft className="w-4 h-4"/> Back to Home
           </button>
           <div className="flex items-center gap-2 text-indigo-400 font-black text-xs uppercase bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
             <Sliders className="w-3.5 h-3.5"/> Crossword

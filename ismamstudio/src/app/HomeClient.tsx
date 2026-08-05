@@ -371,7 +371,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Cryptogram Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Create substitution cipher worksheets from custom quote libraries, complete with letter hints and solution keys formatted for publishing.
+                Create substitution cipher worksheets in bulk (up to 1,000+ pages) from custom quote libraries, complete with letter hints and formatted solution keys.
               </p>
             </div>
             <Link

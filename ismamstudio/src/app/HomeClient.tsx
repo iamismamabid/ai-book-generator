@@ -447,7 +447,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Crossword Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Compile custom crossword puzzles (10x10 to 20x20). Customize clues, adjust word placements, and export KDP paperback-ready PDF sheets.
+                Compile custom crossword &amp; word puzzles in bulk (10x10 to 20x20) up to 1,000+ pages with unlimited title &amp; clue customization.
               </p>
             </div>
             <Link

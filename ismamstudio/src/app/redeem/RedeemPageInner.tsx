@@ -269,13 +269,13 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
 
                   <div className="grid grid-cols-2 gap-3">
                     <Link
-                      href="/sign-up?redirect_url=/redeem"
+                      href={`/sign-up?redirect_url=${encodeURIComponent(code ? `/redeem?code=${code}` : "/redeem")}`}
                       className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl text-center text-sm shadow-lg shadow-indigo-600/15 transition-all"
                     >
                       Create Account
                     </Link>
                     <Link
-                      href="/sign-in?redirect_url=/redeem"
+                      href={`/sign-in?redirect_url=${encodeURIComponent(code ? `/redeem?code=${code}` : "/redeem")}`}
                       className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-3.5 px-4 rounded-xl text-center text-sm transition-all"
                     >
                       Sign In

@@ -6,9 +6,9 @@ export const metadata: Metadata = {
   description: "Activate your lifetime access to KDPage by entering your AppSumo redemption code.",
 };
 
-export default async function RedeemPage(props: { searchParams?: Promise<{ code?: string }> }) {
+export default async function RedeemPage(props: { searchParams?: Promise<{ code?: string; redemption_code?: string; key?: string; license_key?: string }> }) {
   const searchParams = await props.searchParams;
-  const initialCode = searchParams?.code || "";
+  const initialCode = searchParams?.code || searchParams?.redemption_code || searchParams?.key || searchParams?.license_key || "";
 
   return <RedeemPageInner initialCode={initialCode} />;
 }

@@ -329,7 +329,7 @@ function PricingSectionInner() {
     },
     {
       name: "Publisher Agency",
-      description: "Scale your publishing business with multiple brands and API access.",
+      description: "Scale your publishing business with multiple brands and team collaboration.",
       priceMonthly: 39,
       priceMonthlyOriginal: 49,
       priceAnnual: 34,
@@ -347,7 +347,7 @@ function PricingSectionInner() {
         "Advanced custom shapes & interior styling",
         "KDP Niche Hunter & Keyword Spy",
         "Priority high-speed generation queues",
-        "API access for automated generation",
+        "Bulk batch generation & CSV import",
         "Dedicated customer support manager",
       ],
       ctaText: "Start 7-Day Free Trial",
@@ -862,7 +862,7 @@ function PricingSkeleton() {
     { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 Chapter Outline / mo", "Access to free tools & KDP guides"] },
     { name: "Starter Creator", price: "$11.99", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
     { name: "Pro Studio", price: "$21", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Up to 10 Brand & pen-name profiles", "Full Sudoku Engine (Easy, Med, Hard)", "Shaped Labyrinth Generator (Circle, Heart)", "Word Search, Cryptogram & Scramble Studio", "30 AI Book Chapters & 15 Outlines / mo", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
-    { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "KDP Niche Hunter & Keyword Spy", "API access for automated generation", "Dedicated customer support manager"] },
+    { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "KDP Niche Hunter & Keyword Spy", "Bulk batch generation & CSV import", "Dedicated customer support manager"] },
   ];
 
   return (

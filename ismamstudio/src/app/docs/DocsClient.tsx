@@ -206,7 +206,7 @@ const ARTICLES: HelpArticle[] = [
       "Crossword Studio (/studio/crossword): Build 10x10 to 20x20 crossword grids with custom Across and Down clues.",
       "Cryptogram Studio (/studio/cryptogram): Convert famous quotes, jokes, or bible verses into letter-substitution cipher puzzles.",
       "Kakuro Engine (/studio/kakuro): Mathematical crossword-style number sum grids for brain-game enthusiasts.",
-      "Math Puzzles (/studio/math-puzzle): Addition, Multiplication, and Number Fill-in grids for kids' educational workbooks."
+      "Math Puzzles (/studio/math-puzzle): Addition, Multiplication, and Number Fill-in grids in 1-box or 2-box per page layouts for kids' educational workbooks."
     ]
   },
 

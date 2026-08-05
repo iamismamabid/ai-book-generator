@@ -390,7 +390,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Math Puzzle Builder</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Generate arithmetic, cross-number, and logic puzzle sheets for children, senior exercises, or educational KDP workbook niches.
+                Generate arithmetic, cross-number, and logic puzzle sheets in 1-box or 2-box per page layouts for kids, seniors, and KDP workbooks.
               </p>
             </div>
             <Link

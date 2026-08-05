@@ -138,10 +138,14 @@ export default function CrosswordGenerator() {
         return;
       }
 
-      const wordsPerPuzzle = Math.ceil(words.length / numPuzzles);
+      let fullWords = [...words];
+      while (fullWords.length < numPuzzles * 5) {
+        fullWords = [...fullWords, ...words];
+      }
+      const wordsPerPuzzle = Math.max(5, Math.ceil(fullWords.length / numPuzzles));
       for (let idx = 1; idx <= numPuzzles; idx++) {
-        const start = (idx - 1) * wordsPerPuzzle;
-        const chunk = words.slice(start, start + wordsPerPuzzle);
+        const start = ((idx - 1) * wordsPerPuzzle) % fullWords.length;
+        const chunk = fullWords.slice(start, start + wordsPerPuzzle);
         if (chunk.length > 0) {
           parsedPuzzlesList.push({
             title: `Crossword Puzzle #${idx}`,
@@ -458,15 +462,61 @@ export default function CrosswordGenerator() {
             </div>
 
             <div>
-              <label className="text-xs font-black uppercase text-slate-400 tracking-wider block mb-1.5">Number of Puzzles ({numPuzzles})</label>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Number of Puzzles</label>
+                <span className="text-[10px] font-bold text-amber-400">
+                  {premiumStatus.isPremium ? "Premium: Max 1,000 Puzzles" : "Free Limit: 20"}
+                </span>
+              </div>
               <input 
-                type="range" 
-                min="1" 
-                max="20" 
+                type="number" 
+                min={1} 
+                max={premiumStatus.isPremium ? 1000 : 20} 
                 value={numPuzzles} 
-                onChange={(e) => setNumPuzzles(Number(e.target.value))}
-                className="w-full accent-indigo-500"
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  const maxVal = premiumStatus.isPremium ? 1000 : 20;
+                  setNumPuzzles(Math.min(maxVal, Math.max(1, val)));
+                }}
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500 font-mono mb-2"
               />
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setNumPuzzles(5)}
+                  className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition"
+                >
+                  5
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNumPuzzles(20)}
+                  className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition"
+                >
+                  20
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNumPuzzles(50)}
+                  className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition"
+                >
+                  50
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNumPuzzles(100)}
+                  className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition"
+                >
+                  100
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNumPuzzles(1000)}
+                  className="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-[10px] font-black transition"
+                >
+                  ⚡ 1,000 Puzzles
+                </button>
+              </div>
             </div>
 
             <div>

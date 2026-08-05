@@ -271,45 +271,25 @@ export default function HomeClient() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-24">
+        <div className="max-w-2xl mx-auto mb-24">
           {/* 1. All-In-One Studio */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[320px]">
             <div>
-              <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Palette className="w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">All-In-One Studio</h3>
+              <h3 className="text-2xl font-black text-slate-800 group-hover:text-indigo-600 transition-colors duration-300 ease-in-out mb-3">All-In-One Creator Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Design custom crossword grids and word searches, drag & drop elements, and compile front/back covers with live KDP bleed guidelines.
+                Design 8+ puzzle types, build multi-page interiors, drag & drop elements, and compile front/back covers with live KDP bleed guidelines and auto-generated solution keys.
               </p>
             </div>
             <Link
               href="/studio"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-600 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mt-6"
+              className="inline-flex items-center gap-2 text-sm font-black text-indigo-600 hover:text-indigo-700 transition-colors duration-300 ease-in-out mt-6"
             >
               Open Creator Studio <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-
-          {/* 2. KDP Interiors Merge */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
-            <div>
-              <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
-                <CheckCircle2 className="w-7 h-7" />
-              </div>
-              <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">KDP Interiors Merge</h3>
-              <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Combine your custom puzzles, word searches, and activity pages into a single PDF document formatted with print-ready safety margins.
-              </p>
-            </div>
-            <Link
-              href="/studio"
-              className="inline-flex items-center gap-2 text-sm font-black text-slate-600 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mt-6"
-            >
-              Start Assembling <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
         </div>
 
         {/* Section 2: Premium Puzzle Engines */}

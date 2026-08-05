@@ -39,6 +39,60 @@ export default function CryptogramGenerator() {
   const [showGuides, setShowGuides] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
 
+  const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+
+  useEffect(() => {
+    async function loadPremium() {
+      try {
+        const { checkPremiumStatus } = await import("@/app/actions");
+        const res = await checkPremiumStatus();
+        setPremiumStatus(res as any);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadPremium();
+  }, []);
+
+  const generateBulkQuotes = (count: number) => {
+    const baseQuotes = [
+      "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
+      "SUCCESS IS NOT FINAL, FAILURE IS NOT FATAL: IT IS THE COURAGE TO CONTINUE THAT COUNTS.",
+      "BE THE CHANGE THAT YOU WISH TO SEE IN THE WORLD.",
+      "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY.",
+      "IMAGINATION IS MORE IMPORTANT THAN KNOWLEDGE. KNOWLEDGE IS LIMITED. IMAGINATION ENCIRCLES THE WORLD.",
+      "DO NOT GO WHERE THE PATH MAY LEAD, GO INSTEAD WHERE THERE IS NO PATH AND LEAVE A TRAIL.",
+      "THE FUTURE BELONGS TO THOSE WHO BELIEVE IN THE BEAUTY OF THEIR DREAMS.",
+      "WHAT LIES BEHIND US AND WHAT LIES BEFORE US ARE TINY MATTERS COMPARED TO WHAT LIES WITHIN US.",
+      "IT IS DURING OUR DARKEST MOMENTS THAT WE MUST FOCUS TO SEE THE LIGHT.",
+      "DO NOT WATCH THE CLOCK; DO WHAT IT DOES. KEEP GOING.",
+      "YOU DEFINE YOUR OWN LIFE. DON'T LET OTHER PEOPLE WRITE YOUR SCRIPT.",
+      "YOU ARE NEVER TOO OLD TO SET ANOTHER GOAL OR TO DREAM A NEW DREAM.",
+      "SPREAD LOVE EVERYWHERE YOU GO. LET NO ONE EVER COME TO YOU WITHOUT LEAVING HAPPIER.",
+      "BELIEVE YOU CAN AND YOU'RE HALFWAY THERE.",
+      "LIFE IS WHAT HAPPENS WHEN YOU'RE BUSY MAKING OTHER PLANS.",
+      "STAY HUNGRY, STAY FOOLISH.",
+      "YOUR TIME IS LIMITED, SO DON'T WASTE IT LIVING SOMEONE ELSE'S LIFE.",
+      "TURN YOUR WOUNDS INTO WISDOM.",
+      "HAPPINESS DEPENDS UPON OURSELVES.",
+      "SIMPLICITY IS THE ULTIMATE SOPHISTICATION."
+    ];
+
+    const maxCount = premiumStatus.isPremium ? count : Math.min(count, 7);
+    const generated: string[] = [];
+    for (let i = 0; i < maxCount; i++) {
+      const base = baseQuotes[i % baseQuotes.length];
+      if (i < baseQuotes.length) {
+        generated.push(base);
+      } else {
+        generated.push(`${base} (PUZZLE #${i + 1})`);
+      }
+    }
+
+    const text = generated.join("\n");
+    setInputText(text);
+  };
+
   // Substitution mapping states
   const [cipherMap, setCipherMap] = useState<Record<string, string>>({});
   const [puzzles, setPuzzles] = useState<Array<{
@@ -425,22 +479,44 @@ export default function CryptogramGenerator() {
           
           {/* Quotes textarea */}
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-1">
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Phrases / Quotes</label>
-              <button 
-                onClick={() => setInputText(DEFAULT_QUOTES.join("\n"))}
-                className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition flex items-center gap-1"
-                title="Reset to defaults"
-              >
-                <RefreshCw className="w-2.5 h-2.5"/> Default Quotes
-              </button>
+              <span className="text-[10px] font-bold text-amber-400">
+                {premiumStatus.isPremium ? "Premium: Max 1,000 Puzzles" : "Free Limit: 7"}
+              </span>
             </div>
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Enter phrases, one per line..."
-              className="w-full h-44 bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs font-semibold focus:border-indigo-500 focus:outline-none transition-colors duration-200 text-slate-200 resize-none font-mono"
+              className="w-full h-36 bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs font-semibold focus:border-indigo-500 focus:outline-none transition-colors duration-200 text-slate-200 resize-none font-mono"
             />
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <button 
+                onClick={() => setInputText(DEFAULT_QUOTES.join("\n"))}
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg text-[10px] font-bold transition"
+              >
+                Defaults (7)
+              </button>
+              <button
+                onClick={() => generateBulkQuotes(50)}
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition"
+              >
+                50 Quotes
+              </button>
+              <button
+                onClick={() => generateBulkQuotes(100)}
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition"
+              >
+                100 Quotes
+              </button>
+              <button
+                onClick={() => generateBulkQuotes(1000)}
+                className="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-[10px] font-black transition"
+              >
+                ⚡ 1,000 Puzzles
+              </button>
+            </div>
           </div>
 
           <div className="h-px bg-slate-800/60" />

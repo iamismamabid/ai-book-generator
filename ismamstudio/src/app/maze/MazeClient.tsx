@@ -113,11 +113,11 @@ export default function MazeGeneratorPage() {
     loadPremium();
   }, []);
 
-  const maxMazes = premiumStatus.isPremium ? 1000 : 5;
+  const maxMazes = 1000;
 
   const handleBookCountChange = (val: number) => {
     let count = Math.max(1, val);
-    if (premiumStatus.checked && count > maxMazes) {
+    if (count > maxMazes) {
       count = maxMazes;
     }
     setBookCount(count);
@@ -278,8 +278,8 @@ export default function MazeGeneratorPage() {
                 <div>
                   <label className="block text-sm text-slate-400 mb-2">
                     Number of Puzzles
-                    <span className="ml-1 text-[10px] text-slate-500">
-                      {premiumStatus.isPremium ? "(Max 1000)" : "(Max 5)"}
+                    <span className="ml-1 text-[10px] text-amber-400 font-bold">
+                      (Max 1000)
                     </span>
                   </label>
                   <input
@@ -288,8 +288,38 @@ export default function MazeGeneratorPage() {
                     max={maxMazes}
                     value={bookCount}
                     onChange={(e) => handleBookCountChange(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-900 rounded-lg px-4 py-2 text-white font-mono"
+                    className="w-full bg-slate-950 border border-slate-900 rounded-lg px-4 py-2 text-white font-mono mb-2"
                   />
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setBookCount(10)}
+                      className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-[10px] font-bold transition border border-slate-800"
+                    >
+                      10
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBookCount(50)}
+                      className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-[10px] font-bold transition border border-slate-800"
+                    >
+                      50
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBookCount(100)}
+                      className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-[10px] font-bold transition border border-slate-800"
+                    >
+                      100
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBookCount(1000)}
+                      className="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded text-[10px] font-black transition"
+                    >
+                      ⚡ 1,000 Puzzles
+                    </button>
+                  </div>
                 </div>
 
                 <div>

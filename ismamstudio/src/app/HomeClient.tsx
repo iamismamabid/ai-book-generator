@@ -31,6 +31,7 @@ import dynamic from "next/dynamic";
 
 import TrustpilotWidget from "./components/TrustpilotWidget";
 import UserReviewsSection from "./components/UserReviewsSection";
+import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 const PricingSection = dynamic(() => import("../components/PricingSection"), {
   ssr: true,
@@ -459,7 +460,7 @@ export default function HomeClient() {
           </div>
 
           {/* 9. AI Novel Writer & Outliner */}
-          {!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN && (
+          {AI_FEATURES_ENABLED && (
             <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
               <div>
                 <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">

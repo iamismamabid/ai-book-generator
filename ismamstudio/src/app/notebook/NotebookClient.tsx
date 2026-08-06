@@ -63,7 +63,7 @@ export default function NotebookClient({ items }: NotebookClientProps) {
           </div>
           <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Your Notebook is Empty</h3>
           <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md font-medium mb-6">
-            Use the "Save to My Notebook" button on any studio page or tool to permanently store your items separately from AI books.
+            Use the "Save to My Notebook" button on any studio page or tool to permanently store your items in your account.
           </p>
           <Link
             href="/studio"
@@ -200,7 +200,7 @@ export default function NotebookClient({ items }: NotebookClientProps) {
                   const dest = OPEN_IN_DESTINATIONS[selectedItem.category || ""];
                   const { label, href } = dest
                     ? { label: dest.label, href: dest.href(selectedItem.id) }
-                    : { label: "Open in Studio", href: "/generate" };
+                    : { label: "Open in Studio", href: "/studio" };
                   return (
                     <Link
                       href={href}

@@ -6,6 +6,11 @@ import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, Cre
 import Link from "next/link";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
+// Plan features that advertise AI are hidden while AI features are off. The
+// previous check looked for the substrings "ai chapter"/"ai writer", which
+// never matched any actual feature string ("AI Book Chapters" doesn't contain
+// "ai chapter"), so nothing was ever filtered.
+import { visibleFeatures } from "@/lib/features";
 
 function PricingSectionInner() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
@@ -480,8 +485,7 @@ function PricingSectionInner() {
 
           {/* Features Checklist */}
           <ul className="space-y-4">
-            {plan.features
-              .filter((f: string) => !process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || (!f.toLowerCase().includes("ai chapter") && !f.toLowerCase().includes("ai writer")))
+            {visibleFeatures(plan.features)
               .map((feature: any, fIndex: number) => (
                 <li key={fIndex} className="flex items-start gap-3 font-semibold text-sm leading-snug text-slate-700 dark:text-slate-300">
                   <div className={`mt-0.5 p-0.5 rounded-full border shrink-0 ${plan.popular
@@ -894,8 +898,7 @@ function PricingSkeleton() {
               </div>
               <div className={`h-px mb-8 ${plan.popular ? 'bg-slate-200 dark:bg-slate-800' : 'bg-slate-200 dark:bg-slate-900'}`} />
               <ul className="space-y-3">
-                {plan.features
-                  .filter((f: string) => !process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || (!f.toLowerCase().includes("ai chapter") && !f.toLowerCase().includes("ai writer")))
+                {visibleFeatures(plan.features)
                   .map((f, i) => (
                     <li key={i} className="flex items-start gap-3 font-semibold text-sm leading-snug text-slate-700 dark:text-slate-300">
                       <Check className={`w-4 h-4 shrink-0 mt-0.5 ${plan.popular ? 'text-amber-600' : 'text-teal-400'}`} />

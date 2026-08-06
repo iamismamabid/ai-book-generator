@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, FileText } from "lucide-react";
 import type { Metadata } from "next";
+import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 export const metadata: Metadata = {
   title: "Terms of Service | KDPage Help Center",
@@ -78,7 +79,7 @@ export default function TermsOfServicePage() {
               </p>
             </section>
 
-            {!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN && (
+            {AI_FEATURES_ENABLED && (
               <section className="space-y-3">
                 <h2 className="text-xl font-bold text-white">6. Chapter Writer Content & Ownership Disclosure</h2>
                 <p>

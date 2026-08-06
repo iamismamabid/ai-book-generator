@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 import { checkPremiumStatus, deleteBook } from "../actions";
+import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -111,7 +112,7 @@ export default async function DashboardPage() {
             {upgradeHint}
           </div>
 
-          {!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN && (
+          {AI_FEATURES_ENABLED && (
             <Link 
               href="/generate" 
               className="bg-indigo-600 text-white px-10 py-4 rounded-full font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1 active:scale-95"
@@ -149,7 +150,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN && (
+          {AI_FEATURES_ENABLED && (
             <Link 
               href="/generate" 
               className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"

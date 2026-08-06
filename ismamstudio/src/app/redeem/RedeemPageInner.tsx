@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect, useTransition } from "react";
 import { ArrowLeft, Gift, AlertCircle, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
 import { redeemAppSumoCode, checkPremiumStatus } from "../actions";
+import { visibleFeatures } from "@/lib/features";
 import { useAuth } from "@clerk/nextjs";
 
 interface RedeemPageInnerProps {
@@ -218,7 +219,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
               <div className="space-y-3">
                 <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Your Activated Limits:</h3>
                 <ul className="space-y-2">
-                  {redeemedTier.limits.map((limit, idx) => (
+                  {visibleFeatures(redeemedTier.limits).map((limit: string, idx: number) => (
                     <li key={idx} className="flex items-start gap-2 text-xs font-semibold text-slate-300 leading-relaxed">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                       <span>{limit}</span>

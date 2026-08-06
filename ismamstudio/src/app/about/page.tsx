@@ -55,7 +55,7 @@ export default function AboutPage() {
               Self-publishing on Amazon KDP offers immense passive income opportunities, but formatting interiors and designing wrap-around covers can be an absolute nightmare. Authors spend hours adjusting margins, calculating spine sizes, and wrestling with design tools just to have their uploads rejected by Amazon&apos;s review team.
             </p>
             <p className="text-slate-300 text-sm md:text-base leading-relaxed font-medium">
-              We built <strong className="text-white">KDPage</strong> to simplify this entire workflow. By combining 8+ vector puzzle generators (Sudoku, Mazes, Word Search) with an intelligent cover canvas, 24/7 automated support, and AI story outlines, we allow creators to go from idea to publication-ready PDFs in less than 30 seconds.
+              We built <strong className="text-white">KDPage</strong> to simplify this entire workflow. By combining 8+ vector puzzle generators (Sudoku, Mazes, Word Search) with an intelligent cover canvas and 24/7 automated support, we allow creators to go from idea to publication-ready PDFs in less than 30 seconds.
             </p>
           </div>
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { AI_FEATURES_ENABLED } from "@/lib/features";
 import { 
   Search, 
   BookOpen, 
@@ -273,7 +274,7 @@ const ARTICLES: HelpArticle[] = [
   {
     id: "ai-book-generator-guide",
     category: "publishing",
-    categoryLabel: "AI & KDP Publishing",
+    categoryLabel: "KDP Publishing",
     title: "AI Book Generator: Writing Chapter Outlines & Story Text",
     summary: "Use OpenAI-powered prompts to generate chapter structures, non-fiction guides, and fiction story outlines.",
     readTime: "3 min read",
@@ -292,7 +293,7 @@ const ARTICLES: HelpArticle[] = [
   {
     id: "kdp-keyword-niche-spy-guide",
     category: "publishing",
-    categoryLabel: "AI & KDP Publishing",
+    categoryLabel: "KDP Publishing",
     title: "KDP Niche Hunter & Keyword Research Guide",
     summary: "Find low-competition, high-profit KDP niches and optimize your 7 backend keyword slots on Amazon.",
     readTime: "3 min read",
@@ -305,7 +306,7 @@ const ARTICLES: HelpArticle[] = [
   {
     id: "exporting-uploading-to-amazon-kdp",
     category: "publishing",
-    categoryLabel: "AI & KDP Publishing",
+    categoryLabel: "KDP Publishing",
     title: "Final Checklist: Exporting & Uploading to Amazon KDP",
     summary: "Pre-flight checklist to guarantee 100% approval when uploading your manuscript PDF to KDP Book Shelf.",
     readTime: "2 min read",
@@ -329,7 +330,10 @@ export default function DocsClient() {
   const [expandedArticleId, setExpandedArticleId] = useState<string | null>("quickstart-5-min-book");
 
   const filteredArticles = ARTICLES.filter((article) => {
-    const matchesSearch = 
+    // Hide docs for the AI Book Generator while that feature is turned off.
+    if (!AI_FEATURES_ENABLED && article.id === "ai-book-generator-guide") return false;
+
+    const matchesSearch =
       article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       article.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
       article.content.some(c => c.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -344,7 +348,7 @@ export default function DocsClient() {
     { id: "getting-started", label: "🚀 Getting Started" },
     { id: "puzzle-engines", label: "🧩 Puzzle Engines" },
     { id: "cover-formatting", label: "🎨 Cover & Formatting" },
-    { id: "publishing", label: "🤖 AI & KDP Publishing" }
+    { id: "publishing", label: "📚 KDP Publishing" }
   ];
 
   return (

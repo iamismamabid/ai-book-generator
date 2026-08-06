@@ -16,10 +16,11 @@ export const metadata: Metadata = {
 };
 
 import { redirect } from "next/navigation";
+import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 export default function Page() {
-  if (process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) {
-    redirect("/dashboard");
+  if (!AI_FEATURES_ENABLED) {
+    redirect("/studio");
   }
   return <GeneratePage />;
 }

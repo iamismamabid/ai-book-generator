@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import ToolShell from "@/components/tools/ToolShell";
 import QRCode from "qrcode";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import { getNotebookEntryData } from "@/app/actions";
 import { QrCode, Download, Info, Link2, Mail, Phone, Type } from "lucide-react";
 
 type Mode = "url" | "text" | "email" | "phone";
@@ -23,6 +25,26 @@ export default function QrCodeGenerator() {
   const [bg, setBg] = useState<string>("#ffffff");
   const [ecLevel, setEcLevel] = useState<"L" | "M" | "Q" | "H">("M");
   const [error, setError] = useState<string>("");
+
+  // Restore a saved My Notebook entry (via ?notebookId=...).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+    if (!notebookId) return;
+
+    getNotebookEntryData(notebookId)
+      .then((res) => {
+        if (!res.success || !res.data) return;
+        const d: any = res.data;
+        if (d.mode) setMode(d.mode);
+        if (typeof d.value === "string") setValue(d.value);
+        if (typeof d.size === "number") setSize(d.size);
+        if (typeof d.fg === "string") setFg(d.fg);
+        if (typeof d.bg === "string") setBg(d.bg);
+        if (d.ecLevel) setEcLevel(d.ecLevel);
+      })
+      .catch((err) => console.error("Failed to load notebook entry:", err));
+  }, []);
 
   const payload = (() => {
     const v = value.trim();
@@ -186,6 +208,14 @@ export default function QrCodeGenerator() {
             >
               <Download className="w-4 h-4" /> Download PNG ({size}×{size})
             </button>
+
+            <SaveToNotebookButton
+              title={`QR Code (${mode})`}
+              content={value || "Empty QR code"}
+              category="qr-code-generator"
+              data={{ mode, value, size, fg, bg, ecLevel }}
+              className="w-full justify-center"
+            />
           </div>
 
           <div className="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 flex items-start gap-3">

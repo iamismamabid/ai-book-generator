@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ToolShell from "@/components/tools/ToolShell";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import { getNotebookEntryData } from "@/app/actions";
 import { Copyright, Copy, Check, Download, FileText, Info } from "lucide-react";
 
 type BookType = "fiction" | "nonfiction" | "lowcontent";
@@ -67,6 +69,30 @@ export default function CopyrightPageGenerator() {
   const [coverDesigner, setCoverDesigner] = useState("");
   const [country, setCountry] = useState("the United States of America");
   const [copied, setCopied] = useState(false);
+
+  // Restore a saved My Notebook entry (via ?notebookId=...).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+    if (!notebookId) return;
+
+    getNotebookEntryData(notebookId)
+      .then((res) => {
+        if (!res.success || !res.data) return;
+        const d: any = res.data;
+        if (typeof d.title === "string") setTitle(d.title);
+        if (typeof d.author === "string") setAuthor(d.author);
+        if (typeof d.year === "string") setYear(d.year);
+        if (typeof d.publisher === "string") setPublisher(d.publisher);
+        if (typeof d.isbn === "string") setIsbn(d.isbn);
+        if (typeof d.edition === "string") setEdition(d.edition);
+        if (d.bookType) setBookType(d.bookType);
+        if (typeof d.includeMoralRights === "boolean") setIncludeMoralRights(d.includeMoralRights);
+        if (typeof d.coverDesigner === "string") setCoverDesigner(d.coverDesigner);
+        if (typeof d.country === "string") setCountry(d.country);
+      })
+      .catch((err) => console.error("Failed to load notebook entry:", err));
+  }, []);
 
   const output = useMemo(
     () =>
@@ -258,6 +284,14 @@ export default function CopyrightPageGenerator() {
                 </button>
               </div>
             </div>
+
+            <SaveToNotebookButton
+              title={title ? `Copyright Page: ${title}` : "Untitled Copyright Page"}
+              content={output}
+              category="copyright-page"
+              data={{ title, author, year, publisher, isbn, edition, bookType, includeMoralRights, coverDesigner, country }}
+              className="w-full justify-center"
+            />
 
             {/* Book page mockup */}
             <div className="bg-[#faf7f0] text-slate-800 rounded-2xl p-10 md:p-14 shadow-inner min-h-[480px] flex flex-col justify-center">

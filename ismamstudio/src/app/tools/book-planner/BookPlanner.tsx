@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ToolShell from "@/components/tools/ToolShell";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import { getNotebookEntryData } from "@/app/actions";
 import {
   BookOpen, Plus, Trash2, ChevronUp, ChevronDown, Download, Users,
   StickyNote, LayoutList, BarChart2, Info,
@@ -86,8 +88,25 @@ export default function BookPlanner() {
   const [tab, setTab] = useState<"outline" | "characters" | "notes">("outline");
   const [loaded, setLoaded] = useState(false);
 
-  // Load from localStorage
+  // Load from localStorage, unless a saved My Notebook entry takes priority
+  // (via ?notebookId=...).
   useEffect(() => {
+    const notebookId = typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("notebookId")
+      : null;
+
+    if (notebookId) {
+      getNotebookEntryData(notebookId)
+        .then((res) => {
+          if (res.success && res.data) {
+            setState({ ...EMPTY, ...res.data });
+          }
+        })
+        .catch((err) => console.error("Failed to load notebook entry:", err))
+        .finally(() => setLoaded(true));
+      return;
+    }
+
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setState({ ...EMPTY, ...JSON.parse(raw) });
@@ -248,6 +267,14 @@ export default function BookPlanner() {
             >
               <Download className="w-3.5 h-3.5" /> Export Outline (.txt)
             </button>
+
+            <SaveToNotebookButton
+              title={state.title || "Untitled Book Plan"}
+              content={`${state.genre || "Book"} plan: ${state.chapters.length} chapters, ${totalWords.toLocaleString()}/${state.targetWords.toLocaleString()} words, ${state.characters.length} characters.`}
+              category="book-planner"
+              data={state}
+              className="w-full justify-center"
+            />
           </div>
 
           {/* Templates */}

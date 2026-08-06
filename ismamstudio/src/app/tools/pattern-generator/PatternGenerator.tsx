@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import ToolShell from "@/components/tools/ToolShell";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import { getNotebookEntryData } from "@/app/actions";
 import { Palette, Download, Info } from "lucide-react";
 
 type PatternName =
@@ -151,6 +153,25 @@ export default function PatternGenerator() {
   const [scale, setScale] = useState<number>(64);
   const [lineWidth, setLineWidth] = useState<number>(4);
   const [exportIdx, setExportIdx] = useState<number>(0);
+
+  // Restore a saved My Notebook entry (via ?notebookId=...).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+    if (!notebookId) return;
+
+    getNotebookEntryData(notebookId)
+      .then((res) => {
+        if (!res.success || !res.data) return;
+        const d: any = res.data;
+        if (d.pattern) setPattern(d.pattern);
+        if (typeof d.fg === "string") setFg(d.fg);
+        if (typeof d.bg === "string") setBg(d.bg);
+        if (typeof d.scale === "number") setScale(d.scale);
+        if (typeof d.lineWidth === "number") setLineWidth(d.lineWidth);
+      })
+      .catch((err) => console.error("Failed to load notebook entry:", err));
+  }, []);
 
   const render = useCallback(() => {
     if (!tileRef.current) tileRef.current = document.createElement("canvas");
@@ -309,6 +330,14 @@ export default function PatternGenerator() {
             >
               <Download className="w-4 h-4" /> Download PNG
             </button>
+
+            <SaveToNotebookButton
+              title={`Pattern: ${pattern}`}
+              content={`${pattern} pattern, ${fg} on ${bg}, scale ${scale}.`}
+              category="pattern-generator"
+              data={{ pattern, fg, bg, scale, lineWidth }}
+              className="w-full justify-center"
+            />
           </div>
         </div>
 

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import { getNotebookEntryData } from "@/app/actions";
 import { 
   ArrowLeft, Upload, FileSpreadsheet, Plus, Trash2, 
   Play, CheckCircle2, Loader2, Sparkles, Download, RefreshCw, AlertCircle 
@@ -45,6 +47,26 @@ export default function BulkGeneratorClient() {
   const [newDifficulty, setNewDifficulty] = useState<BatchItem["difficulty"]>("Medium");
   const [newCount, setNewCount] = useState(30);
   const [newTrim, setNewTrim] = useState<BatchItem["trimSize"]>("8.5x11");
+
+  // Restore a saved My Notebook entry (via ?notebookId=...). Generated
+  // pdfBlob/downloadUrl can't survive being saved as JSON, so restored items
+  // always come back as a fresh Pending queue ready to run again.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+    if (!notebookId) return;
+
+    getNotebookEntryData(notebookId)
+      .then((res) => {
+        if (!res.success || !res.data?.items) return;
+        const restored: BatchItem[] = res.data.items.map((it: any) => ({
+          id: it.id, title: it.title, type: it.type, difficulty: it.difficulty,
+          count: it.count, trimSize: it.trimSize, status: "Pending" as const,
+        }));
+        setItems(restored);
+      })
+      .catch((err) => console.error("Failed to load notebook entry:", err));
+  }, []);
 
   const logMessage = (msg: string) => {
     setConsoleLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
@@ -348,12 +370,18 @@ export default function BulkGeneratorClient() {
                   <FileSpreadsheet className="w-5 h-5 text-yellow-500" /> Queue Manager ({items.length} Books)
                 </h2>
                 <div className="flex gap-2">
-                  <button 
-                    onClick={clearAll} 
+                  <button
+                    onClick={clearAll}
                     className="px-3.5 py-1.5 bg-slate-950 border border-slate-800 text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-slate-900 transition text-slate-400"
                   >
                     Clear Queue
                   </button>
+                  <SaveToNotebookButton
+                    title={`Batch Queue (${items.length} Books)`}
+                    content={`Bulk generation queue: ${items.map(i => `${i.title} (${i.type}, ${i.count}x, ${i.difficulty})`).join("; ")}`}
+                    category="bulk-generator"
+                    data={{ items: items.map(({ id, title, type, difficulty, count, trimSize }) => ({ id, title, type, difficulty, count, trimSize })) }}
+                  />
                   <button
                     onClick={runBatchQueue}
                     disabled={isProcessing || items.length === 0}

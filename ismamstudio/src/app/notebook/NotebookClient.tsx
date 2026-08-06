@@ -42,6 +42,13 @@ const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) =
   "word-search": { label: "Open in Word Search Studio", href: (id) => `/tools/word-search?notebookId=${id}` },
   sudoku: { label: "Open in Sudoku Generator", href: (id) => `/sudoku?notebookId=${id}` },
   maze: { label: "Open in Maze Generator", href: (id) => `/maze?notebookId=${id}` },
+  "book-planner": { label: "Open in Book Planner", href: (id) => `/tools/book-planner?notebookId=${id}` },
+  "copyright-page": { label: "Open in Copyright Page Generator", href: (id) => `/tools/copyright-page-generator?notebookId=${id}` },
+  "bulk-generator": { label: "Open in Bulk Generator", href: (id) => `/tools/bulk-generator?notebookId=${id}` },
+  "isbn-generator": { label: "Open in ISBN Generator", href: (id) => `/tools/isbn-generator?notebookId=${id}` },
+  "word-cloud": { label: "Open in Word Cloud Generator", href: (id) => `/tools/word-cloud?notebookId=${id}` },
+  "pattern-generator": { label: "Open in Pattern Generator", href: (id) => `/tools/pattern-generator?notebookId=${id}` },
+  "qr-code-generator": { label: "Open in QR Code Generator", href: (id) => `/tools/qr-code-generator?notebookId=${id}` },
 };
 
 export default function NotebookClient({ items }: NotebookClientProps) {

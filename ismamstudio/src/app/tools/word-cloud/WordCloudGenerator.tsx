@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import ToolShell from "@/components/tools/ToolShell";
 import { splitWords, STOPWORDS } from "@/components/tools/textStats";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import { getNotebookEntryData } from "@/app/actions";
 import { Cloud, Download, RefreshCw, Info } from "lucide-react";
 
 const SCHEMES: Record<string, { bg: string; colors: string[] }> = {
@@ -40,6 +42,25 @@ export default function WordCloudGenerator() {
   const [filterStops, setFilterStops] = useState<boolean>(true);
   const [seed, setSeed] = useState<number>(1);
   const [wordCount, setWordCount] = useState<number>(0);
+
+  // Restore a saved My Notebook entry (via ?notebookId=...).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+    if (!notebookId) return;
+
+    getNotebookEntryData(notebookId)
+      .then((res) => {
+        if (!res.success || !res.data) return;
+        const d: any = res.data;
+        if (typeof d.text === "string") setText(d.text);
+        if (typeof d.maxWords === "number") setMaxWords(d.maxWords);
+        if (typeof d.scheme === "string") setScheme(d.scheme);
+        if (typeof d.allowRotate === "boolean") setAllowRotate(d.allowRotate);
+        if (typeof d.filterStops === "boolean") setFilterStops(d.filterStops);
+      })
+      .catch((err) => console.error("Failed to load notebook entry:", err));
+  }, []);
 
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -238,6 +259,14 @@ export default function WordCloudGenerator() {
                 <Download className="w-3.5 h-3.5" /> Download PNG
               </button>
             </div>
+
+            <SaveToNotebookButton
+              title={`Word Cloud (${wordCount} words, ${scheme})`}
+              content={text.slice(0, 500)}
+              category="word-cloud"
+              data={{ text, maxWords, scheme, allowRotate, filterStops }}
+              className="w-full justify-center"
+            />
           </div>
         </div>
 

@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import { getNotebookEntryData } from "@/app/actions";
+import {
   ArrowLeft, 
   Copy, 
   Check, 
@@ -101,6 +103,29 @@ export default function IsbnGenerator() {
   useEffect(() => {
     validateAndCompute();
   }, [rawIsbnInput, addPriceCode, currency, priceInput]);
+
+  // Restore a saved My Notebook entry (via ?notebookId=...). Only the raw
+  // inputs are restored -- meta is derived and recomputes from the effect above.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+    if (!notebookId) return;
+
+    getNotebookEntryData(notebookId)
+      .then((res) => {
+        if (!res.success || !res.data) return;
+        const d: any = res.data;
+        if (typeof d.rawIsbnInput === "string") setRawIsbnInput(d.rawIsbnInput);
+        if (typeof d.addPriceCode === "boolean") setAddPriceCode(d.addPriceCode);
+        if (typeof d.currency === "string") setCurrency(d.currency);
+        if (typeof d.priceInput === "string") setPriceInput(d.priceInput);
+        if (d.barcodeSize) setBarcodeSize(d.barcodeSize);
+        if (typeof d.barColor === "string") setBarColor(d.barColor);
+        if (typeof d.bgColor === "string") setBgColor(d.bgColor);
+        if (typeof d.showTextBelow === "boolean") setShowTextBelow(d.showTextBelow);
+      })
+      .catch((err) => console.error("Failed to load notebook entry:", err));
+  }, []);
 
   const validateAndCompute = () => {
     let clean = rawIsbnInput.replace(/[- ]/g, "").toUpperCase();
@@ -882,6 +907,14 @@ export default function IsbnGenerator() {
                       <Printer className="w-3.5 h-3.5" /> Download PNG (300 DPI)
                     </button>
                   </div>
+
+                  <SaveToNotebookButton
+                    title={`ISBN Barcode (${meta.isbn})`}
+                    content={`ISBN ${meta.isbn}${addPriceCode ? `, price code ${currency} ${priceInput}` : ""}, ${barcodeSize} size.`}
+                    category="isbn-generator"
+                    data={{ rawIsbnInput, addPriceCode, currency, priceInput, barcodeSize, barColor, bgColor, showTextBelow }}
+                    className="w-full justify-center"
+                  />
                 </div>
               )}
 

@@ -235,10 +235,17 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
       for (let i = 0; i < pages.length; i += perPage) {
         const batch = pages.slice(i, i + perPage);
         if (perPage === 1) {
+          const origIndex = bookPages.findIndex(bPage => bPage.id === batch[0].id);
+          const actualPageNum = origIndex >= 0 ? origIndex + 1 : i + 1;
           newSolPages.push({
             id: Date.now() + Math.random(),
             type,
-            config: { ...JSON.parse(JSON.stringify(batch[0].config)), isSolution: true, showSolution: true }
+            config: {
+              ...JSON.parse(JSON.stringify(batch[0].config)),
+              isSolution: true,
+              showSolution: true,
+              pageNumber: actualPageNum
+            }
           });
         } else {
           newSolPages.push({
@@ -248,7 +255,13 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
               isSolution: true,
               isMultiSolution: true,
               solutionGroup: batch.map((p, idx) => {
-                const entry: any = { puzzleIndex: i + idx + 1, [dataKey]: JSON.parse(JSON.stringify(p.config[dataKey])) };
+                const origIndex = bookPages.findIndex(bPage => bPage.id === p.id);
+                const actualPageNum = origIndex >= 0 ? origIndex + 1 : i + idx + 1;
+                const entry: any = {
+                  puzzleIndex: actualPageNum,
+                  pageNumber: actualPageNum,
+                  [dataKey]: JSON.parse(JSON.stringify(p.config[dataKey]))
+                };
                 extraKeys.forEach(k => { if (p.config[k] !== undefined) entry[k] = p.config[k]; });
                 return entry;
               }),

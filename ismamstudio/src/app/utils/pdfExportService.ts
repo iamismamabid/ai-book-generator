@@ -530,10 +530,8 @@ const drawWordSearchSolutionPack = (doc: any, page: any, xShift: number, pageWid
     const startX = zone.x + (zone.w - gridDrawSize) / 2;
     const startY = zone.y + titleSpace;
 
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.2, { align: "center" });
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.2, { align: "center" });
 
     drawWordSearchGrid(doc, entry.gridData, { x: startX, y: startY, size: gridDrawSize }, true);
   });
@@ -620,10 +618,8 @@ const drawSudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
     const startX = zone.x + (zone.w - gridDrawSize) / 2;
     const startY = zone.y + titleSpace;
 
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.2, { align: "center" });
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.2, { align: "center" });
 
     const data = entry.gridData;
     const cellSize = gridDrawSize / 9;
@@ -2268,8 +2264,9 @@ const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: nu
     const startX = zone.x + (zone.w - mazeW) / 2;
     const startY = zone.y + titleSpace;
 
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(15, 23, 42);
-    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
     doc.setLineWidth(Math.max(0.01, cellSize * 0.08)); doc.setDrawColor(15, 23, 42);
     data.grid.forEach((row: any[], r: number) => {

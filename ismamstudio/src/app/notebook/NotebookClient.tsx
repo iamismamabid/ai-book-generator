@@ -200,6 +200,14 @@ export default function NotebookClient({ items }: NotebookClientProps) {
                     <span>Open in Book Builder</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
+                ) : selectedItem.category === "word-search" ? (
+                  <Link
+                    href={`/tools/word-search?notebookId=${selectedItem.id}`}
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md"
+                  >
+                    <span>Open in Word Search Studio</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
                 ) : (
                   <Link
                     href="/generate"

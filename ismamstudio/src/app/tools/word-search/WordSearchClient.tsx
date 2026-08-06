@@ -8,7 +8,7 @@ import { generatePuzzleGrid, WordSearchShape } from "../../utils/puzzleEngine";
 import { WORD_SEARCH_THEMES, WORD_SEARCH_THEME_CATEGORIES } from "@/lib/wordSearchThemes";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import { useRouter } from "next/navigation";
-import { checkPremiumStatus } from "@/app/actions";
+import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
 
 const WORD_SEARCH_SHAPES: { id: WordSearchShape; label: string }[] = [
     { id: "square", label: "Square" },
@@ -97,6 +97,50 @@ export default function WordSearchStudio() {
             setWordsPerPage(prev => Math.min(prev, theme.words.length));
         }
     };
+
+    // Restore a saved My Notebook entry (via /tools/word-search?notebookId=...)
+    // back into these generator settings.
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+        if (!notebookId) return;
+
+        getNotebookEntryData(notebookId).then((res) => {
+            if (!res.success || !res.data) return;
+            const d: any = res.data;
+
+            if (d.trimSize) {
+                const match = TRIM_SIZES.find(t => t.label === d.trimSize.label);
+                if (match) setTrimSize(match);
+            }
+            if (typeof d.totalPuzzles === "number") setTotalPuzzles(d.totalPuzzles);
+            if (typeof d.gridSize === "number") setGridSize(d.gridSize);
+            if (typeof d.wordsPerPage === "number") setWordsPerPage(d.wordsPerPage);
+            if (typeof d.puzzlesPerPage === "number") setPuzzlesPerPage(d.puzzlesPerPage);
+            if (d.puzzleAlign) setPuzzleAlign(d.puzzleAlign);
+            if (typeof d.solutionsPerPage === "number") setSolutionsPerPage(d.solutionsPerPage);
+            if (d.solutionAlign) setSolutionAlign(d.solutionAlign);
+            if (d.lettersFont) setLettersFont(d.lettersFont);
+            if (typeof d.letterTextSize === "number") setLetterTextSize(d.letterTextSize);
+            if (typeof d.lineWidth === "number") setLineWidth(d.lineWidth);
+            if (d.cellColor) setCellColor(d.cellColor);
+            if (d.borderColor) setBorderColor(d.borderColor);
+            if (d.textCase) setTextCase(d.textCase);
+            if (d.wordsSort) setWordsSort(d.wordsSort);
+            if (d.wordTextAlign) setWordTextAlign(d.wordTextAlign);
+            if (d.wordFont) setWordFont(d.wordFont);
+            if (typeof d.wordTextSize === "number") setWordTextSize(d.wordTextSize);
+            if (d.wordTextColor) setWordTextColor(d.wordTextColor);
+            if (d.solutionHighlighter) setSolutionHighlighter(d.solutionHighlighter);
+            if (typeof d.useFirstLineAsTitle === "boolean") setUseFirstLineAsTitle(d.useFirstLineAsTitle);
+            if (typeof d.includeCover === "boolean") setIncludeCover(d.includeCover);
+            if (typeof d.words === "string") setWords(d.words);
+            if (d.puzzleShape) setPuzzleShape(d.puzzleShape);
+            if (typeof d.selectedThemeId === "string") setSelectedThemeId(d.selectedThemeId);
+            if (typeof d.hiddenMessage === "string") setHiddenMessage(d.hiddenMessage);
+        }).catch((err) => console.error("Failed to load notebook entry:", err));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // 🚨 COVER STUDIO PRO STATES 🚨
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -612,9 +656,18 @@ export default function WordSearchStudio() {
                             <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 shrink-0">
                                 <button onClick={handleGeneratePreview} className="w-full flex items-center justify-center gap-2 bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all border border-slate-200"><Eye className="w-4 h-4" /> Live Preview</button>
                                 <button onClick={() => setIsExportModalOpen(true)} disabled={isGenerating} className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md transition-all active:scale-95"><Download className="w-4 h-4" /> Download KDP PDF</button>
-                                <SaveToNotebookButton 
-                                    title={`Word Search Collection (${totalPuzzles} Puzzles)`} 
-                                    content={`Word Search interior with ${wordsPerPage} words per puzzle, ${puzzlesPerPage} puzzles per page, trim size ${trimSize.w}x${trimSize.h}`} 
+                                <SaveToNotebookButton
+                                    title={`Word Search Collection (${totalPuzzles} Puzzles)`}
+                                    content={`Word Search interior with ${wordsPerPage} words per puzzle, ${puzzlesPerPage} puzzles per page, trim size ${trimSize.w}x${trimSize.h}`}
+                                    category="word-search"
+                                    data={{
+                                        trimSize, totalPuzzles, gridSize, wordsPerPage,
+                                        puzzlesPerPage, puzzleAlign, solutionsPerPage, solutionAlign,
+                                        lettersFont, letterTextSize, lineWidth, cellColor, borderColor, textCase,
+                                        wordsSort, wordTextAlign, wordFont, wordTextSize, wordTextColor,
+                                        solutionHighlighter, useFirstLineAsTitle, includeCover,
+                                        words, puzzleShape, selectedThemeId, hiddenMessage,
+                                    }}
                                     className="w-full justify-center"
                                 />
                                 <CoverStudioCTA trimSize={`${trimSize.w}x${trimSize.h}`} />

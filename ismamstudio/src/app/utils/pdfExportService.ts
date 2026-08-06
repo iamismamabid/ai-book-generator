@@ -44,7 +44,11 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(18);
       const isSol = page.config.isSolution || false;
-      const title = `${page.type.replace('_', ' ').toUpperCase()}${isSol ? ' (SOLUTION)' : ''}`;
+      const isMultiSol = page.config.isMultiSolution || false;
+      const solSuffix = isSol
+        ? (!isMultiSol && page.config.pageNumber ? ` (PAGE ${page.config.pageNumber} SOLUTION)` : ' (SOLUTION)')
+        : '';
+      const title = `${page.type.replace('_', ' ').toUpperCase()}${solSuffix}`;
       const titleWidth = doc.getTextWidth(title);
       doc.text(title, (w - titleWidth) / 2 + leftMarginShift, 0.6);
 
@@ -512,7 +516,7 @@ const getSolutionPackZones = (count: number, x0: number, y0: number, safeW: numb
 };
 
 const drawWordSearchSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
   const margin = 0.5;
   const topReserved = 1.4; // matches drawWordSearch's own startY, below the generic page title
   const x0 = margin + xShift;
@@ -600,7 +604,7 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
 };
 
 const drawSudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
   const margin = 0.5;
   const topReserved = 1.2;
   const x0 = margin + xShift;
@@ -2135,7 +2139,7 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
 
 // ── Crossword Solution Pack (1, 2, or 4 per page) ─────────────────────────────
 const drawCrosswordSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
   const margin = 0.5;
   const topReserved = 1.2;
   const x0 = margin + xShift;
@@ -2158,7 +2162,8 @@ const drawCrosswordSolutionPack = (doc: any, page: any, xShift: number, pageWidt
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(0);
-    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
     doc.setLineWidth(cellSize * 0.033);
     doc.setDrawColor(30, 41, 59);
@@ -2184,7 +2189,7 @@ const drawCrosswordSolutionPack = (doc: any, page: any, xShift: number, pageWidt
 
 // ── Kakuro Solution Pack (1, 2, or 4 per page) ─────────────────────────────────
 const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
   const margin = 0.5;
   const topReserved = 1.2;
   const x0 = margin + xShift;
@@ -2206,7 +2211,8 @@ const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(0);
-    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
@@ -2243,7 +2249,7 @@ const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
 
 // ── Maze Solution Pack (1, 2, or 4 per page) ──────────────────────────────────
 const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const group: { gridData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
   const margin = 0.35;
   const topReserved = 0.8;
   const x0 = margin + xShift;
@@ -2309,7 +2315,7 @@ const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: nu
 
 // ── Word Scramble Solution Pack (1, 2, or 4 per page) ─────────────────────────
 const drawWordScrambleSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const group: { scrambledData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const group: { scrambledData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
   const margin = 0.5;
   const topReserved = 1.2;
   const x0 = margin + xShift;
@@ -2323,7 +2329,8 @@ const drawWordScrambleSolutionPack = (doc: any, page: any, xShift: number, pageW
     const data = entry.scrambledData;
 
     doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
-    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
     const titleSpace = 0.28;
     const words = data.original || [];
@@ -2343,7 +2350,7 @@ const drawWordScrambleSolutionPack = (doc: any, page: any, xShift: number, pageW
 
 // ── Cryptogram Solution Pack (1, 2, or 4 per page) ────────────────────────────
 const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const group: { cryptogramData: any; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const group: { cryptogramData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
   const margin = 0.5;
   const topReserved = 1.2;
   const x0 = margin + xShift;
@@ -2357,7 +2364,8 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     const data = entry.cryptogramData;
 
     doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
-    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
     const titleSpace = 0.32;
     // Show decoded text wrapped in zone
@@ -2392,7 +2400,7 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
 
 // ── Math Puzzle Solution Pack (1, 2, or 4 per page) ───────────────────────────
 const drawMathPuzzleSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const group: { puzzleData: any; puzzleType: string; puzzleIndex: number }[] = page.config.solutionGroup || [];
+  const group: { puzzleData: any; puzzleType: string; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
   const margin = 0.5;
   const topReserved = 1.2;
   const x0 = margin + xShift;
@@ -2407,7 +2415,8 @@ const drawMathPuzzleSolutionPack = (doc: any, page: any, xShift: number, pageWid
     const puzzleType = entry.puzzleType || "addition";
 
     doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
-    doc.text(`Answer #${entry.puzzleIndex}`, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
     const titleSpace = 0.3;
     const availH = zone.h - titleSpace;

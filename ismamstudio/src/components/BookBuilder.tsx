@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, AlertCircle, AlertTriangle, GripVertical, Info } from "lucide-react";
+import BookVersionHistoryModal from "./BookVersionHistoryModal";
+import { BookVersion } from "@/lib/bookVersions";
+import { History, Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, AlertCircle, AlertTriangle, GripVertical, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
@@ -71,6 +72,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
 
   // Template Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
 
 
   // Premium Export Modal States
@@ -100,8 +102,18 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
     }
   }, []);
 
-  // Validation Hook
-  const { isValid, errors, validateBook, clearValidation } = useBookValidation();
+  const getBookSnapshot = () => ({
+    pageCount: bookPages.length,
+    trimSize: selectedTrim.label,
+    bookPages: JSON.parse(JSON.stringify(bookPages)),
+  });
+
+  const handleRestoreBookVersion = (ver: BookVersion) => {
+    if (ver.bookPages && ver.bookPages.length > 0) {
+      setBookPages(ver.bookPages);
+      setActiveIndex(0);
+    }
+  };
 
   // Validate book whenever pages or export modal state changes
   useEffect(() => {
@@ -406,9 +418,18 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
             <div className="pt-2">
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Autosave & Cloud Sync</span>
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-300 bg-slate-800/50 p-3 rounded-xl border border-slate-800">
-                  <svg className="w-2.5 h-2.5 text-indigo-400 animate-pulse" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
-                  <span>Draft Autosaved Locally</span>
+                <div className="flex items-center justify-between text-xs font-bold text-slate-300 bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-2.5 h-2.5 text-indigo-400 animate-pulse" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg>
+                    <span>Draft Autosaved</span>
+                  </div>
+                  <button
+                    onClick={() => setIsVersionHistoryOpen(true)}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-slate-700/80 hover:bg-slate-700 text-amber-300 hover:text-amber-200 border border-slate-600/60 rounded-lg text-[10px] font-bold uppercase transition cursor-pointer active:scale-95"
+                    title="View named version checkpoints"
+                  >
+                    <History className="w-3 h-3" /> Versions
+                  </button>
                 </div>
                 <SaveToNotebookButton
                   title={`All-in-One KDP Puzzle Book (${bookPages.length} Pages)`}
@@ -893,6 +914,14 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         </div>
       </div>,
       document.body
+    )}
+    {isVersionHistoryOpen && (
+      <BookVersionHistoryModal
+        isOpen={isVersionHistoryOpen}
+        onClose={() => setIsVersionHistoryOpen(false)}
+        getSnapshot={getBookSnapshot}
+        onRestore={handleRestoreBookVersion}
+      />
     )}
   </>
   );

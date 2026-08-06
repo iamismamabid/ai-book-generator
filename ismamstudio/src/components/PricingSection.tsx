@@ -318,7 +318,7 @@ function PricingSectionInner() {
         "Full Sudoku Engine (Easy, Med, Hard difficulties)",
         "Shaped Labyrinth Generator (Circle & Heart shapes)",
         "Word Search, Cryptogram & Word Scramble Studio",
-        "Math Puzzles, Kakuros & 15 AI Outlines / mo",
+        "Math Puzzle & Kakuro Generators",
         "30 AI Book Chapters / mo",
         "Premium Cover & Interior Canvas Studio",
         "Priority Customer Support (under 12 hours)",

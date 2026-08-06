@@ -3,12 +3,19 @@ import { streamText } from 'ai';
 import { auth } from "@clerk/nextjs/server";
 import { checkPremiumStatus, getUserUsage } from "../../actions";
 import { getPostHogClient } from "@/lib/posthog-server";
+import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 // 🚨 Next.js-কে নির্দেশ দেওয়া যেন সে ডাটা আটকে (Buffer) না রাখে
 export const dynamic = 'force-dynamic'; 
 export const maxDuration = 60; // এআইয়ের ভাবার সময় বাড়িয়ে দেওয়া
 
 export async function POST(req: Request) {
+  // ১. AI ফিচার বন্ধ থাকলে এখানেই থামা — UI লুকানো থাকলেও এন্ডপয়েন্টটি
+  // সরাসরি কল করা যেত, তাই সার্ভার-সাইডেও বন্ধ রাখা হয়েছে।
+  if (!AI_FEATURES_ENABLED) {
+    return new Response("Not Found", { status: 404 });
+  }
+
   // ২. ইউজার লগ-ইন করা আছে কি না চেক করা
   const { userId } = await auth();
   if (!userId) {

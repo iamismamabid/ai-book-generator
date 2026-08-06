@@ -8,6 +8,7 @@ import {
   BookMarked, PenTool, Hash, RefreshCw, BarChart2, ShieldAlert, Loader2, AlertTriangle
 } from "lucide-react";
 import type { PdfValidationReport } from "@/lib/pdfValidator";
+import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 // jsPDF (pdfFormatter), pdf-lib (pdfValidator) and JSZip (epubExport) together
 // added ~380 KB to the initial /tools bundle even though most visitors never
@@ -647,6 +648,10 @@ export default function FreeToolsHub() {
   ];
 
   const filteredTools = toolsList.filter((t) => {
+    // The bulk listing generator writes copy with a language model, so it's
+    // hidden along with the rest of the AI features.
+    if (!AI_FEATURES_ENABLED && t.id === "bulk-listing-generator") return false;
+
     const q = searchQuery.trim().toLowerCase();
 
     // If typing a search query, ignore active category tab so matching tools aren't hidden

@@ -52,7 +52,7 @@ export default function RefundPolicyPage() {
               </p>
               <p className="p-4 bg-slate-950/60 rounded-xl border border-slate-800 text-slate-300 text-xs leading-relaxed">
                 <strong className="text-amber-400 block mb-1">Usage-Based Credit Limitation:</strong>
-                Where a plan includes usage-based resources (AI line art generation credits, book exports, or AI-assisted content features), refund requests may be declined if **more than 20%** of the plan's monthly resource allowance has been consumed at the time of the request.
+                Where a plan includes usage-based resources (vector line art credits, book exports, or other metered features), refund requests may be declined if **more than 20%** of the plan's monthly resource allowance has been consumed at the time of the request.
               </p>
             </section>
 

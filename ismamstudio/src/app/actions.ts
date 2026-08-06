@@ -6,6 +6,7 @@ import { Groq } from "groq-sdk";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "crypto";
+import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 
 // Look! No import line here anymore.
@@ -20,6 +21,7 @@ function getGroqClient() {
 
 // ১. নতুন বই তৈরি করার ফাংশন
 export async function createBook(formData: FormData) {
+  if (!AI_FEATURES_ENABLED) throw new Error("This feature is unavailable.");
   const groq = getGroqClient();
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -84,6 +86,7 @@ export async function deleteBook(id: string) {
 
 // ৩. নেক্সট চ্যাপ্টার জেনারেট করার ফাংশন
 export async function generateNextChapter(bookId: string, outline: string, title: string) {
+  if (!AI_FEATURES_ENABLED) throw new Error("This feature is unavailable.");
   const groq = getGroqClient();
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -538,6 +541,8 @@ export interface KdpListingResult {
 // AI-generated Amazon KDP listing metadata (title/subtitle/description/keywords/
 // categories) for a batch of book concepts at once — the "bulk listing helper".
 export async function generateBulkKdpListings(bookConcepts: string[]): Promise<{ success: boolean; results?: KdpListingResult[]; error?: string }> {
+  if (!AI_FEATURES_ENABLED) return { success: false, error: "This feature is unavailable." };
+
   const { userId } = await auth();
   if (!userId) return { success: false, error: "Unauthorized. Please sign in." };
 

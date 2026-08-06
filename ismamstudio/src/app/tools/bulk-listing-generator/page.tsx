@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import BulkListingGeneratorClient from "./BulkListingGeneratorClient";
+import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 export const metadata: Metadata = {
   title: "Bulk KDP Listing Generator | KDPage",
@@ -16,5 +18,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
+  // This tool writes listings with a language model, so it's gated with the
+  // rest of the AI features.
+  if (!AI_FEATURES_ENABLED) {
+    redirect("/tools");
+  }
   return <BulkListingGeneratorClient />;
 }

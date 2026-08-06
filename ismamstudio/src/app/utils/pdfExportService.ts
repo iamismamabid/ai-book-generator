@@ -618,7 +618,10 @@ const drawSudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
     if (!zone || !entry.gridData) return;
 
     const titleSpace = 0.3;
-    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace);
+    // Cap at a standard answer-key size instead of stretching to fill the
+    // whole zone -- a solution grid only needs to be read, not written in,
+    // so it shouldn't grow as large as the puzzle's own grid.
+    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace, 4.5);
     const startX = zone.x + (zone.w - gridDrawSize) / 2;
     const startY = zone.y + titleSpace;
 

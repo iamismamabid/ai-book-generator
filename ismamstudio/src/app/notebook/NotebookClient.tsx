@@ -95,7 +95,7 @@ export default function NotebookClient({ items }: NotebookClientProps) {
                   <span>View Entry</span>
                 </button>
 
-                <form action={deleteNotebookEntry.bind(null, item.id)}>
+                <form action={async () => { await deleteNotebookEntry(item.id); }}>
                   <button
                     title="Delete from My Notebook"
                     className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all cursor-pointer"

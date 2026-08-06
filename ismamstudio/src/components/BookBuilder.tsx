@@ -230,57 +230,6 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
     const puzzleTypes = ['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle', 'kakuro'];
     const puzzlePages = bookPages.filter((page) => puzzleTypes.includes(page.type) && !page.config.isSolution);
 
-    // Helper to pack any puzzle type N-per-page
-    const packSolutions = (pages: any[], perPage: 1 | 2 | 4, type: string, dataKey: string, extraKeys: string[] = []) => {
-      for (let i = 0; i < pages.length; i += perPage) {
-        const batch = pages.slice(i, i + perPage);
-        if (perPage === 1) {
-          const origIndex = bookPages.findIndex(bPage => bPage.id === batch[0].id);
-          const actualPageNum = origIndex >= 0 ? origIndex + 1 : i + 1;
-          newSolPages.push({
-            id: Date.now() + Math.random(),
-            type,
-            config: {
-              ...JSON.parse(JSON.stringify(batch[0].config)),
-              isSolution: true,
-              showSolution: true,
-              pageNumber: actualPageNum
-            }
-          });
-        } else {
-          newSolPages.push({
-            id: Date.now() + Math.random(),
-            type,
-            config: {
-              isSolution: true,
-              isMultiSolution: true,
-              solutionGroup: batch.map((p, idx) => {
-                const origIndex = bookPages.findIndex(bPage => bPage.id === p.id);
-                const actualPageNum = origIndex >= 0 ? origIndex + 1 : i + idx + 1;
-                const entry: any = {
-                  puzzleIndex: actualPageNum,
-                  pageNumber: actualPageNum,
-                  [dataKey]: JSON.parse(JSON.stringify(p.config[dataKey]))
-                };
-                extraKeys.forEach(k => { if (p.config[k] !== undefined) entry[k] = p.config[k]; });
-                return entry;
-              }),
-            }
-          });
-        }
-      }
-    };
-
-    const byType = (t: string) => puzzlePages.filter(p => p.type === t);
-
-    // Extract distinct puzzle type order matching the exact order they appear in the book
-    const distinctTypesInOrder: string[] = [];
-    bookPages.forEach((p) => {
-      if (puzzleTypes.includes(p.type) && !p.config?.isSolution && !distinctTypesInOrder.includes(p.type)) {
-        distinctTypesInOrder.push(p.type);
-      }
-    });
-
     const configMap: Record<string, { perPage: 1 | 2 | 4; dataKey: string; extraKeys?: string[] }> = {
       crossword: { perPage: crosswordSolutionsPerPage, dataKey: 'gridData' },
       word_search: { perPage: wordSearchSolutionsPerPage, dataKey: 'gridData' },
@@ -292,30 +241,69 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
       math_puzzle: { perPage: mathPuzzleSolutionsPerPage, dataKey: 'puzzleData', extraKeys: ['puzzleType'] },
     };
 
-    distinctTypesInOrder.forEach((t) => {
-      const spec = configMap[t];
-      if (spec) {
-        packSolutions(byType(t), spec.perPage, t, spec.dataKey, spec.extraKeys || []);
+    const makeSinglePage = (p: any, pageNum: number) => ({
+      id: Date.now() + Math.random(),
+      type: p.type,
+      config: {
+        ...JSON.parse(JSON.stringify(p.config)),
+        isSolution: true,
+        showSolution: true,
+        pageNumber: pageNum,
       }
     });
+
+    const makeGroupPage = (type: string, dataKey: string, extraKeys: string[], batch: { p: any; pageNum: number }[]) => ({
+      id: Date.now() + Math.random(),
+      type,
+      config: {
+        isSolution: true,
+        isMultiSolution: true,
+        solutionGroup: batch.map(({ p, pageNum }) => {
+          const entry: any = {
+            puzzleIndex: pageNum,
+            pageNumber: pageNum,
+            [dataKey]: JSON.parse(JSON.stringify(p.config[dataKey]))
+          };
+          extraKeys.forEach(k => { if (p.config[k] !== undefined) entry[k] = p.config[k]; });
+          return entry;
+        }),
+      }
+    });
+
+    // Walk the book once and only pack puzzles into a shared solution page
+    // when they're the same type AND back-to-back in the book. A puzzle of
+    // another type sitting in between breaks the run, so its solution never
+    // ends up bundled with (and mislabeled next to) an unrelated page.
+    let i = 0;
+    while (i < puzzlePages.length) {
+      const type = puzzlePages[i].type;
+      const spec = configMap[type];
+      if (!spec) { i++; continue; }
+
+      const run: { p: any; pageNum: number }[] = [];
+      let j = i;
+      while (j < puzzlePages.length && puzzlePages[j].type === type) {
+        const origIndex = bookPages.findIndex(bPage => bPage.id === puzzlePages[j].id);
+        run.push({ p: puzzlePages[j], pageNum: origIndex >= 0 ? origIndex + 1 : j + 1 });
+        j++;
+      }
+
+      for (let k = 0; k < run.length; k += spec.perPage) {
+        const batch = run.slice(k, k + spec.perPage);
+        if (spec.perPage === 1) {
+          newSolPages.push(makeSinglePage(batch[0].p, batch[0].pageNum));
+        } else {
+          newSolPages.push(makeGroupPage(type, spec.dataKey, spec.extraKeys || [], batch));
+        }
+      }
+
+      i = j;
+    }
 
     if (newSolPages.length === 0) {
       alert("No puzzle pages found to generate solutions for.");
       return;
     }
-
-    // Solutions were built one puzzle-type block at a time, which groups all
-    // crosswords, then all sudokus, etc. Re-sort the resulting pages by the
-    // earliest original page number each one covers so the solutions section
-    // actually climbs in the same order the puzzles appear in the book,
-    // instead of jumping around by type.
-    const minPageNum = (page: any) => {
-      if (page.config.isMultiSolution && page.config.solutionGroup) {
-        return Math.min(...page.config.solutionGroup.map((e: any) => e.pageNumber ?? Infinity));
-      }
-      return page.config.pageNumber ?? Infinity;
-    };
-    newSolPages.sort((a, b) => minPageNum(a) - minPageNum(b));
 
     // Strip out any pre-existing solution pages and append fresh solutions in correct order
     const cleanPages = bookPages.filter(p => !p.config?.isSolution);

@@ -260,21 +260,40 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
     const byType = (t: string) => puzzlePages.filter(p => p.type === t);
 
-    packSolutions(byType('crossword'), crosswordSolutionsPerPage, 'crossword', 'gridData');
-    packSolutions(byType('word_search'), wordSearchSolutionsPerPage, 'word_search', 'gridData');
-    packSolutions(byType('sudoku'), sudokuSolutionsPerPage, 'sudoku', 'gridData');
-    packSolutions(byType('kakuro'), kakuroSolutionsPerPage, 'kakuro', 'gridData');
-    packSolutions(byType('maze'), mazeSolutionsPerPage, 'maze', 'gridData');
-    packSolutions(byType('word_scramble'), wordScrambleSolutionsPerPage, 'word_scramble', 'scrambledData');
-    packSolutions(byType('cryptogram'), cryptogramSolutionsPerPage, 'cryptogram', 'cryptogramData');
-    packSolutions(byType('math_puzzle'), mathPuzzleSolutionsPerPage, 'math_puzzle', 'puzzleData', ['puzzleType']);
+    // Extract distinct puzzle type order matching the exact order they appear in the book
+    const distinctTypesInOrder: string[] = [];
+    bookPages.forEach((p) => {
+      if (puzzleTypes.includes(p.type) && !p.config?.isSolution && !distinctTypesInOrder.includes(p.type)) {
+        distinctTypesInOrder.push(p.type);
+      }
+    });
+
+    const configMap: Record<string, { perPage: 1 | 2 | 4; dataKey: string; extraKeys?: string[] }> = {
+      crossword: { perPage: crosswordSolutionsPerPage, dataKey: 'gridData' },
+      word_search: { perPage: wordSearchSolutionsPerPage, dataKey: 'gridData' },
+      sudoku: { perPage: sudokuSolutionsPerPage, dataKey: 'gridData' },
+      kakuro: { perPage: kakuroSolutionsPerPage, dataKey: 'gridData' },
+      maze: { perPage: mazeSolutionsPerPage, dataKey: 'gridData' },
+      word_scramble: { perPage: wordScrambleSolutionsPerPage, dataKey: 'scrambledData' },
+      cryptogram: { perPage: cryptogramSolutionsPerPage, dataKey: 'cryptogramData' },
+      math_puzzle: { perPage: mathPuzzleSolutionsPerPage, dataKey: 'puzzleData', extraKeys: ['puzzleType'] },
+    };
+
+    distinctTypesInOrder.forEach((t) => {
+      const spec = configMap[t];
+      if (spec) {
+        packSolutions(byType(t), spec.perPage, t, spec.dataKey, spec.extraKeys || []);
+      }
+    });
 
     if (newSolPages.length === 0) {
       alert("No puzzle pages found to generate solutions for.");
       return;
     }
 
-    setBookPages([...bookPages, ...newSolPages]);
+    // Strip out any pre-existing solution pages and append fresh solutions in correct order
+    const cleanPages = bookPages.filter(p => !p.config?.isSolution);
+    setBookPages([...cleanPages, ...newSolPages]);
     setSolutionsStatus('success');
     setTimeout(() => {
       setSolutionsStatus('idle');

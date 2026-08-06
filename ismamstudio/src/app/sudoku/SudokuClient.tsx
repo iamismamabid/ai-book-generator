@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku';
 import DownloadButton from "@/components/DownloadButton";
 import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock, Download } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
-import { checkPremiumStatus } from "../actions";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import { checkPremiumStatus, getNotebookEntryData } from "../actions";
 
 // Live preview — puzzle grid
 function SudokuPreview({ grid, isSolution = false }: { grid: Grid; isSolution?: boolean }) {
@@ -69,11 +70,19 @@ export default function SudokuClient() {
     };
   }>({ checked: false, isPremium: false, plan: "free" });
 
+  // True when this page was opened to restore a saved My Notebook entry, so
+  // the plan-based defaults below don't clobber the restored settings.
+  const isRestoringRef = useRef(
+    typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).has("notebookId")
+  );
+
   useEffect(() => {
     async function loadPremium() {
       try {
         const res = await checkPremiumStatus();
         setPremiumStatus(res as any);
+        if (isRestoringRef.current) return;
         if (res.plan === "free") {
           setDifficulty("easy");
           setBookCount(5);
@@ -89,6 +98,26 @@ export default function SudokuClient() {
       }
     }
     loadPremium();
+  }, []);
+
+  // Restore a saved My Notebook entry (via /sudoku?notebookId=...).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+    if (!notebookId) return;
+
+    getNotebookEntryData(notebookId)
+      .then((res) => {
+        if (!res.success || !res.data) return;
+        const d: any = res.data;
+        if (d.difficulty) setDifficulty(d.difficulty);
+        if (typeof d.bookCount === "number") setBookCount(d.bookCount);
+        if (d.trimSize) setTrimSize(d.trimSize);
+        if (typeof d.includeSolutions === "boolean") setIncludeSolutions(d.includeSolutions);
+        if (typeof d.solutionsPerPage === "number") setSolutionsPerPage(d.solutionsPerPage);
+        if (typeof d.includeCover === "boolean") setIncludeCover(d.includeCover);
+      })
+      .catch((err) => console.error("Failed to load notebook entry:", err));
   }, []);
 
   const maxPuzzles =
@@ -348,6 +377,14 @@ export default function SudokuClient() {
                 )}
                 {" "}= <span className="text-white font-black">{bookCount * (includeSolutions ? 2 : 1)}</span> total pages
               </div>
+
+              <SaveToNotebookButton
+                title={`Sudoku Collection (${bookCount} Puzzles)`}
+                content={`Sudoku interior with ${bookCount} ${difficulty} puzzles, trim size ${trimSize}${includeSolutions ? `, solutions ${solutionsPerPage} per page` : ", no solutions"}.`}
+                category="sudoku"
+                data={{ difficulty, bookCount, trimSize, includeSolutions, solutionsPerPage, includeCover }}
+                className="w-full justify-center"
+              />
 
               <CoverStudioCTA trimSize={trimSize} />
             </div>

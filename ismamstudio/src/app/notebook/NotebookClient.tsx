@@ -32,6 +32,18 @@ interface NotebookClientProps {
   items: NotebookItem[];
 }
 
+// Where each saved entry reopens, keyed by the category its save button set.
+// The tool at the far end reads ?notebookId= and restores the entry's data.
+// Cover Studio is the exception: it has its own account-level cover project
+// sync that reloads on mount, so it just needs the right tab.
+const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) => string }> = {
+  cover: { label: "Open in Cover Studio", href: () => "/studio?tab=cover" },
+  "puzzle-book": { label: "Open in Book Builder", href: (id) => `/studio?notebookId=${id}` },
+  "word-search": { label: "Open in Word Search Studio", href: (id) => `/tools/word-search?notebookId=${id}` },
+  sudoku: { label: "Open in Sudoku Generator", href: (id) => `/sudoku?notebookId=${id}` },
+  maze: { label: "Open in Maze Generator", href: (id) => `/maze?notebookId=${id}` },
+};
+
 export default function NotebookClient({ items }: NotebookClientProps) {
   const [selectedItem, setSelectedItem] = useState<NotebookItem | null>(null);
   const [copied, setCopied] = useState(false);
@@ -184,39 +196,21 @@ export default function NotebookClient({ items }: NotebookClientProps) {
               </span>
 
               <div className="flex items-center gap-3">
-                {selectedItem.category === "cover" ? (
-                  <Link
-                    href="/studio?tab=cover"
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md"
-                  >
-                    <span>Open in Cover Studio</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
-                ) : selectedItem.category === "puzzle-book" ? (
-                  <Link
-                    href={`/studio?notebookId=${selectedItem.id}`}
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md"
-                  >
-                    <span>Open in Book Builder</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
-                ) : selectedItem.category === "word-search" ? (
-                  <Link
-                    href={`/tools/word-search?notebookId=${selectedItem.id}`}
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md"
-                  >
-                    <span>Open in Word Search Studio</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
-                ) : (
-                  <Link
-                    href="/generate"
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md"
-                  >
-                    <span>Open in Studio</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
-                )}
+                {(() => {
+                  const dest = OPEN_IN_DESTINATIONS[selectedItem.category || ""];
+                  const { label, href } = dest
+                    ? { label: dest.label, href: dest.href(selectedItem.id) }
+                    : { label: "Open in Studio", href: "/generate" };
+                  return (
+                    <Link
+                      href={href}
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md"
+                    >
+                      <span>{label}</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Link>
+                  );
+                })()}
               </div>
             </div>
 

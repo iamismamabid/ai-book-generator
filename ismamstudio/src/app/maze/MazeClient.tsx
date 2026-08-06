@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { generateMaze, MazeGrid, Shape } from "@/lib/maze";
 import DownloadButton from "@/components/DownloadButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { Lock, Download } from "lucide-react";
-import { checkPremiumStatus } from "@/app/actions";
+import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
 
 function MazePreview({ 
   grid, 
@@ -91,11 +92,19 @@ export default function MazeGeneratorPage() {
     };
   }>({ checked: false, isPremium: false, plan: "free" });
 
+  // True when this page was opened to restore a saved My Notebook entry, so
+  // the plan-based defaults below don't clobber the restored settings.
+  const isRestoringRef = useRef(
+    typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).has("notebookId")
+  );
+
   useEffect(() => {
     async function loadPremium() {
       try {
         const res = await checkPremiumStatus();
         setPremiumStatus(res as any);
+        if (isRestoringRef.current) return;
         if (res.plan === "free") {
           setShape("square");
           setBookCount(5);
@@ -111,6 +120,26 @@ export default function MazeGeneratorPage() {
       }
     }
     loadPremium();
+  }, []);
+
+  // Restore a saved My Notebook entry (via /maze?notebookId=...).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+    if (!notebookId) return;
+
+    getNotebookEntryData(notebookId)
+      .then((res) => {
+        if (!res.success || !res.data) return;
+        const d: any = res.data;
+        if (d.shape) setShape(d.shape);
+        if (typeof d.gridSize === "number") setGridSize(d.gridSize);
+        if (typeof d.bookCount === "number") setBookCount(d.bookCount);
+        if (d.trimSize) setTrimSize(d.trimSize);
+        if (typeof d.includeSolutions === "boolean") setIncludeSolutions(d.includeSolutions);
+        if (typeof d.includeCover === "boolean") setIncludeCover(d.includeCover);
+      })
+      .catch((err) => console.error("Failed to load notebook entry:", err));
   }, []);
 
   const maxMazes = 1000;
@@ -386,6 +415,14 @@ export default function MazeGeneratorPage() {
                 <Download className="w-3.5 h-3.5" />
                 Download Free Sample Labyrinth PDF (300 DPI Vector)
               </button>
+
+              <SaveToNotebookButton
+                title={`Maze Collection (${bookCount} Puzzles)`}
+                content={`Maze interior with ${bookCount} ${shape} mazes at ${gridSize}x${gridSize}, trim size ${trimSize}${includeSolutions ? ", with solutions" : ", no solutions"}.`}
+                category="maze"
+                data={{ shape, gridSize, bookCount, trimSize, includeSolutions, includeCover }}
+                className="w-full justify-center"
+              />
 
               <CoverStudioCTA trimSize={trimSize} />
             </div>

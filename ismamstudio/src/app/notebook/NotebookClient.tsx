@@ -186,10 +186,18 @@ export default function NotebookClient({ items }: NotebookClientProps) {
               <div className="flex items-center gap-3">
                 {selectedItem.category === "cover" ? (
                   <Link
-                    href="/studio"
+                    href="/studio?tab=cover"
                     className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md"
                   >
                     <span>Open in Cover Studio</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                ) : selectedItem.category === "puzzle-book" ? (
+                  <Link
+                    href={`/studio?notebookId=${selectedItem.id}`}
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md"
+                  >
+                    <span>Open in Book Builder</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
                 ) : (

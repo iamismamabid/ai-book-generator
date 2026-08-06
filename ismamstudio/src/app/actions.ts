@@ -681,6 +681,42 @@ export async function saveToNotebook(title: string, content: string, subtitle?: 
   }
 }
 
+// 📖 Fetch a single Notebook entry's saved data (used to restore it back into
+// the editor it was saved from — e.g. Book Builder reloading a saved bookPages array).
+export async function getNotebookEntryData(id: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "Unauthorized. Please sign in." };
+  }
+
+  try {
+    const notebookDelegate = (prisma as any).notebook;
+    let entry: any = null;
+
+    if (notebookDelegate?.findFirst) {
+      entry = await notebookDelegate.findFirst({
+        where: { id, userId },
+      });
+    } else {
+      const rows = await prisma.$queryRawUnsafe(
+        `SELECT * FROM "notebooks" WHERE "id" = $1 AND "userId" = $2 LIMIT 1`,
+        id,
+        userId
+      );
+      entry = Array.isArray(rows) ? rows[0] : null;
+    }
+
+    if (!entry) {
+      return { success: false, error: "Notebook entry not found." };
+    }
+
+    return { success: true, title: entry.title, category: entry.category, data: entry.data };
+  } catch (err: any) {
+    console.error("Fetch notebook entry failed:", err);
+    return { success: false, error: err?.message || "Failed to load Notebook entry." };
+  }
+}
+
 // 🗑️ Delete Notebook Entry Action
 export async function deleteNotebookEntry(id: string) {
   const { userId } = await auth();

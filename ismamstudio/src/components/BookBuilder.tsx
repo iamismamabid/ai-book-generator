@@ -60,7 +60,7 @@ const TRIM_SIZES = [
   { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
 ];
 
-export default function BookBuilder({ coverState }: { coverState?: any }) {
+export default function BookBuilder({ coverState, initialPages }: { coverState?: any; initialPages?: any[] }) {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
@@ -114,6 +114,12 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
 
   useEffect(() => {
+    // Restoring a saved My Notebook entry (via /studio?notebookId=...) takes
+    // priority over whatever draft happens to be sitting in localStorage.
+    if (initialPages && initialPages.length > 0) {
+      setBookPages(initialPages);
+      return;
+    }
     const saved = localStorage.getItem("kdp-book-draft");
     if (saved) {
       try {
@@ -122,6 +128,7 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
         console.error("Error parsing saved draft", e);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

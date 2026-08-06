@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
-import { checkPremiumStatus, saveCoverProject, loadCoverProject } from "../actions";
+import { checkPremiumStatus, saveCoverProject, loadCoverProject, getNotebookEntryData } from "../actions";
 
 // Dynamic imports — both components use browser-only APIs (canvas, localStorage)
 const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
@@ -23,6 +23,11 @@ export default function MasterStudioApp() {
   const [isMounted, setIsMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'interior' | 'cover'>('interior');
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+  // Populated when arriving via /studio?notebookId=... (e.g. "Open in Studio"
+  // from a saved My Notebook entry) so Book Builder restores those exact pages
+  // instead of whatever draft is sitting in localStorage.
+  const [notebookInitialPages, setNotebookInitialPages] = useState<any[] | null>(null);
+  const [notebookLoadState, setNotebookLoadState] = useState<'idle' | 'loading' | 'done'>('idle');
   // Cloud sync status for the Cover Studio project — surfaced in the header so
   // users can see their work is actually persisted to their account, not just
   // sitting in this browser's localStorage.
@@ -37,6 +42,20 @@ export default function MasterStudioApp() {
       const tab = params.get("tab");
       if (tab === "cover" || tab === "interior") {
         setActiveTab(tab);
+      }
+
+      const notebookId = params.get("notebookId");
+      if (notebookId) {
+        setActiveTab("interior");
+        setNotebookLoadState("loading");
+        getNotebookEntryData(notebookId)
+          .then((res) => {
+            if (res.success && res.data?.pages) {
+              setNotebookInitialPages(res.data.pages);
+            }
+          })
+          .catch((err) => console.error("Failed to load notebook entry:", err))
+          .finally(() => setNotebookLoadState("done"));
       }
     }
   }, []);
@@ -184,7 +203,7 @@ export default function MasterStudioApp() {
     trimSize
   ]);
 
-  if (!isMounted) {
+  if (!isMounted || notebookLoadState === "loading") {
 
     return (
       <div className="min-h-screen flex items-center justify-center text-indigo-500 bg-slate-950">
@@ -292,6 +311,7 @@ export default function MasterStudioApp() {
                   trimSize,
                   ...coverBackground
                 }}
+                initialPages={notebookInitialPages ?? undefined}
               />
             </motion.div>
           ) : (

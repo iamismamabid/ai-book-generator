@@ -3809,9 +3809,10 @@ export default function FabricCoverStudio({
             {isGenerating ? <Loader2 className="w-5 h-5 animate-spin"/> : <Download className="w-5 h-5"/>}
           </button>
           <div className="pt-2 border-t border-slate-900 w-full flex justify-center">
-            <SaveToNotebookButton 
+            <SaveToNotebookButton
               title={`KDP Cover Design (${trimSize.w}x${trimSize.h})`}
               content={`Custom KDP Book Cover for ${pageCount} pages, trim size ${trimSize.w}x${trimSize.h} inches.`}
+              category="cover"
             />
           </div>
         </div>

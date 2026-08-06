@@ -530,7 +530,9 @@ const drawWordSearchSolutionPack = (doc: any, page: any, xShift: number, pageWid
     if (!zone || !entry.gridData) return;
 
     const titleSpace = 0.3;
-    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace);
+    // Cap at a standard answer-key size instead of stretching to fill the
+    // whole zone when this puzzle is alone on the page.
+    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace, 4.5);
     const startX = zone.x + (zone.w - gridDrawSize) / 2;
     const startY = zone.y + titleSpace;
 
@@ -2205,7 +2207,9 @@ const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
     if (!zone || !entry.gridData) return;
     const { grid, rows, cols } = entry.gridData;
     const titleSpace = 0.28;
-    const cellSize = Math.min((zone.w) / cols, (zone.h - titleSpace) / rows);
+    // Cap at a standard answer-key size instead of stretching to fill the
+    // whole zone when this puzzle is alone on the page.
+    const cellSize = Math.min((zone.w) / cols, (zone.h - titleSpace) / rows, 4.5 / cols, 4.5 / rows);
     const gridW = cellSize * cols;
     const gridH = cellSize * rows;
     const startX = zone.x + (zone.w - gridW) / 2;
@@ -2267,7 +2271,9 @@ const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: nu
     const rows = data.grid.length;
     const cols = data.grid[0].length;
     const titleSpace = 0.25;
-    const cellSize = Math.min(zone.w / cols, (zone.h - titleSpace) / rows);
+    // Cap at a standard answer-key size instead of stretching to fill the
+    // whole zone when this puzzle is alone on the page.
+    const cellSize = Math.min(zone.w / cols, (zone.h - titleSpace) / rows, 4.5 / cols, 4.5 / rows);
     const mazeW = cols * cellSize;
     const mazeH = rows * cellSize;
     const startX = zone.x + (zone.w - mazeW) / 2;

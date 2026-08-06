@@ -42,11 +42,11 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     // Page Title (except for title/blank pages)
     if (page.type !== 'title' && page.type !== 'blank') {
       doc.setFont("Helvetica", "bold");
-      doc.setFontSize(20);
+      doc.setFontSize(18);
       const isSol = page.config.isSolution || false;
       const title = `${page.type.replace('_', ' ').toUpperCase()}${isSol ? ' (SOLUTION)' : ''}`;
       const titleWidth = doc.getTextWidth(title);
-      doc.text(title, (w - titleWidth) / 2 + leftMarginShift, 0.8);
+      doc.text(title, (w - titleWidth) / 2 + leftMarginShift, 0.6);
 
       // Render Page Number
       if (includePageNumbers) {
@@ -772,17 +772,17 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHe
   const cols = data.grid[0].length;
   
   const margin = 0.7;
+  const topReserved = 1.35;
   const safeW = pageWidth - (margin * 2);
-  const safeH = (pageHeight || 11) - (margin * 2);
+  const safeH = (pageHeight || 11) - topReserved - margin;
 
-  const titleSpace = 0.3;
-  const mazeSize = Math.min(safeW * 0.82, safeH - titleSpace - 0.3);
+  const mazeSize = Math.min(safeW * 0.85, safeH - 0.2);
   const cellSize = mazeSize / Math.max(rows, cols);
 
   const mazeW = cols * cellSize;
   const mazeH = rows * cellSize;
   const startX = (pageWidth - mazeW) / 2 + xShift;
-  const startY = margin + titleSpace + 0.1;
+  const startY = topReserved + (safeH - mazeH) / 2;
 
   // Draw maze walls
   doc.setLineWidth(Math.max(0.015, cellSize * 0.08));
@@ -1819,21 +1819,21 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
   const isSolution = page.config.isSolution || false;
 
   const marginL = 0.75 + xShift;
-  const marginR = 0.5;
-  const marginT = 1.4;
+  const marginR = 0.75;
+  const marginT = 1.35;
   const marginB = 0.75;
 
   const contentW = pageWidth - (0.75 + marginR);
 
-  // Box sizing
-  const charBoxW = 0.24;
-  const charBoxH = 0.28;
-  const charSpacing = 0.06;
-  const wordSpacing = 0.26;
-  const lineStepY = 0.75;
+  // Large Print box sizing for high KDP readability
+  const charBoxW = 0.36;
+  const charBoxH = 0.42;
+  const charSpacing = 0.08;
+  const wordSpacing = 0.32;
+  const lineStepY = 0.9;
 
-  let curX = marginL + 0.2;
-  let curY = marginT + 0.4;
+  let curX = marginL;
+  let curY = marginT + 0.2;
 
   // Safe bottom: leave room for cipher labels below boxes + footer
   // On solution pages also reserve 1.5" for the substitution key

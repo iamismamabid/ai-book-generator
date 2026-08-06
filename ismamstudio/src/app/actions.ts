@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "crypto";
 import { AI_FEATURES_ENABLED } from "@/lib/features";
+import { getTeamOwnerIdForMember, getWorkspaceUserIds, seatLimitForPlan } from "@/lib/team";
 
 
 // Look! No import line here anymore.
@@ -311,12 +312,18 @@ export async function getUserUsage() {
 
 // 🎯 ৭. ইউজারের প্রিমিয়াম স্ট্যাটাস চেক করার ফাংশন
 export async function checkPremiumStatus() {
-  const { userId } = await auth();
+  const { userId: signedInUserId } = await auth();
   const defaultFreeLimits = { tier: 0, brands: 1, aiChapters: 0, puzzles: ["easy"], maxBookCount: 5 };
 
-  if (!userId) {
+  if (!signedInUserId) {
     return { checked: true, isPremium: false, reason: "unauthorized", plan: "free", limits: defaultFreeLimits };
   }
+
+  // A team member's plan/seats/features are the team owner's, not their own --
+  // that's the point of a paid seat. Resolve status against the owner's
+  // account below; everything else in this function is unchanged.
+  const teamOwnerId = await getTeamOwnerIdForMember(signedInUserId).catch(() => null);
+  const userId = teamOwnerId ?? signedInUserId;
 
   try {
     // ১. ডাটাবেসে AppSumo redemption কোড চেক করা
@@ -387,6 +394,193 @@ export async function checkPremiumStatus() {
   }
 
   return { checked: true, isPremium: false, reason: "free_tier", plan: "free", limits: defaultFreeLimits };
+}
+
+// 👥 Team seats -- shared-workspace collaboration for Agency/Tier4/Tier5 plans.
+// An invite is a copyable link (no transactional email service is wired up
+// in this app), accepted by whoever is signed in with the matching email --
+// that's the security boundary in place of email delivery.
+
+const INVITE_TTL_DAYS = 7;
+
+export async function getTeamData() {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "Unauthorized." } as const;
+
+  const ownedTeam = await prisma.team.findUnique({
+    where: { ownerId: userId },
+    include: { members: true, invites: { where: { status: "pending" } } },
+  });
+
+  if (ownedTeam) {
+    const premium = await checkPremiumStatus();
+    const seatLimit = seatLimitForPlan(premium.plan);
+    const memberIds = ownedTeam.members.map((m) => m.userId);
+    const client = await clerkClient();
+    const members = await Promise.all(
+      memberIds.map(async (id) => {
+        try {
+          const u = await client.users.getUser(id);
+          return { userId: id, email: u.emailAddresses[0]?.emailAddress || "", joinedAt: ownedTeam.members.find((m) => m.userId === id)!.joinedAt };
+        } catch {
+          return { userId: id, email: "(unknown)", joinedAt: new Date() };
+        }
+      })
+    );
+
+    return {
+      success: true,
+      role: "owner" as const,
+      seatLimit,
+      seatsUsed: 1 + members.length + ownedTeam.invites.length,
+      members,
+      pendingInvites: ownedTeam.invites.map((i) => ({ id: i.id, email: i.email, createdAt: i.createdAt, expiresAt: i.expiresAt, token: i.token })),
+    };
+  }
+
+  const membership = await prisma.teamMember.findUnique({ where: { userId }, include: { team: true } });
+  if (membership) {
+    const client = await clerkClient();
+    let ownerEmail = "(unknown)";
+    try {
+      const owner = await client.users.getUser(membership.team.ownerId);
+      ownerEmail = owner.emailAddresses[0]?.emailAddress || ownerEmail;
+    } catch {}
+    return { success: true, role: "member" as const, ownerEmail };
+  }
+
+  const premium = await checkPremiumStatus();
+  return { success: true, role: "solo" as const, seatLimit: seatLimitForPlan(premium.plan), plan: premium.plan };
+}
+
+export async function inviteTeamMember(email: string) {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "Unauthorized." };
+
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail || !cleanEmail.includes("@")) {
+    return { success: false, error: "Enter a valid email address." };
+  }
+
+  // A member of someone else's team can't also own one.
+  const existingMembership = await prisma.teamMember.findUnique({ where: { userId } });
+  if (existingMembership) {
+    return { success: false, error: "You're already part of another team." };
+  }
+
+  const premium = await checkPremiumStatus();
+  const seatLimit = seatLimitForPlan(premium.plan);
+  if (seatLimit <= 1) {
+    return { success: false, error: "Team seats aren't included on your current plan. Upgrade to Agency to invite collaborators." };
+  }
+
+  const team = await prisma.team.upsert({
+    where: { ownerId: userId },
+    create: { ownerId: userId },
+    update: {},
+    include: { members: true, invites: { where: { status: "pending" } } },
+  });
+
+  const currentUsage = 1 + team.members.length + team.invites.length;
+  if (currentUsage >= seatLimit) {
+    return { success: false, error: `You've used all ${seatLimit} seats on your plan.` };
+  }
+
+  const user = await currentUser();
+  if (user?.emailAddresses.some((e) => e.emailAddress.toLowerCase() === cleanEmail)) {
+    return { success: false, error: "You can't invite yourself." };
+  }
+  if (team.members.some((m) => m.userId === userId)) {
+    return { success: false, error: "That person is already on your team." };
+  }
+  if (team.invites.some((i) => i.email === cleanEmail)) {
+    return { success: false, error: "That person already has a pending invite." };
+  }
+
+  const token = randomUUID();
+  await prisma.teamInvite.create({
+    data: {
+      teamId: team.id,
+      email: cleanEmail,
+      token,
+      invitedBy: userId,
+      expiresAt: new Date(Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  revalidatePath("/team");
+  return { success: true, token };
+}
+
+export async function revokeTeamInvite(inviteId: string) {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "Unauthorized." };
+
+  const invite = await prisma.teamInvite.findUnique({ where: { id: inviteId }, include: { team: true } });
+  if (!invite || invite.team.ownerId !== userId) {
+    return { success: false, error: "Invite not found." };
+  }
+
+  await prisma.teamInvite.delete({ where: { id: inviteId } });
+  revalidatePath("/team");
+  return { success: true };
+}
+
+export async function removeTeamMember(memberUserId: string) {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "Unauthorized." };
+
+  const team = await prisma.team.findUnique({ where: { ownerId: userId } });
+  if (!team) return { success: false, error: "You don't own a team." };
+
+  await prisma.teamMember.deleteMany({ where: { teamId: team.id, userId: memberUserId } });
+  revalidatePath("/team");
+  return { success: true };
+}
+
+export async function leaveTeam() {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "Unauthorized." };
+
+  await prisma.teamMember.deleteMany({ where: { userId } });
+  revalidatePath("/team");
+  return { success: true };
+}
+
+export async function acceptTeamInvite(token: string) {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "Please sign in first." };
+
+  const invite = await prisma.teamInvite.findUnique({ where: { token } });
+  if (!invite || invite.status !== "pending") {
+    return { success: false, error: "This invite is no longer valid." };
+  }
+  if (invite.expiresAt < new Date()) {
+    return { success: false, error: "This invite has expired." };
+  }
+
+  const user = await currentUser();
+  const signedInEmail = user?.emailAddresses.find((e) => e.emailAddress.toLowerCase() === invite.email)?.emailAddress;
+  if (!signedInEmail) {
+    return { success: false, error: `This invite was sent to ${invite.email}. Sign in with that email to accept it.` };
+  }
+
+  if (invite.teamId && (await prisma.team.findUnique({ where: { id: invite.teamId } }))?.ownerId === userId) {
+    return { success: false, error: "You can't join your own team." };
+  }
+
+  const existingMembership = await prisma.teamMember.findUnique({ where: { userId } });
+  if (existingMembership) {
+    return { success: false, error: "You're already part of a team. Leave it first to accept a new invite." };
+  }
+
+  await prisma.$transaction([
+    prisma.teamMember.create({ data: { teamId: invite.teamId, userId } }),
+    prisma.teamInvite.update({ where: { id: invite.id }, data: { status: "accepted" } }),
+  ]);
+
+  revalidatePath("/team");
+  return { success: true };
 }
 
 // Persists the Cover Studio's current project to the signed-in user's account.
@@ -695,18 +889,19 @@ export async function getNotebookEntryData(id: string) {
   }
 
   try {
+    const workspaceUserIds = await getWorkspaceUserIds(userId);
     const notebookDelegate = (prisma as any).notebook;
     let entry: any = null;
 
     if (notebookDelegate?.findFirst) {
       entry = await notebookDelegate.findFirst({
-        where: { id, userId },
+        where: { id, userId: { in: workspaceUserIds } },
       });
     } else {
       const rows = await prisma.$queryRawUnsafe(
-        `SELECT * FROM "notebooks" WHERE "id" = $1 AND "userId" = $2 LIMIT 1`,
+        `SELECT * FROM "notebooks" WHERE "id" = $1 AND "userId" = ANY($2)`,
         id,
-        userId
+        workspaceUserIds
       );
       entry = Array.isArray(rows) ? rows[0] : null;
     }
@@ -730,16 +925,22 @@ export async function deleteNotebookEntry(id: string) {
   }
 
   try {
+    const workspaceUserIds = await getWorkspaceUserIds(userId);
     const notebookDelegate = (prisma as any).notebook;
-    if (notebookDelegate?.delete) {
-      await notebookDelegate.delete({
-        where: { id },
+    if (notebookDelegate?.deleteMany) {
+      // deleteMany (not delete-by-id) so ownership/workspace membership is
+      // enforced as part of the query -- the Prisma-delegate path previously
+      // used delete({ where: { id } }) with no owner check at all, which let
+      // any signed-in user delete any entry by id via this branch (the raw
+      // SQL fallback below was the only path that ever checked userId).
+      await notebookDelegate.deleteMany({
+        where: { id, userId: { in: workspaceUserIds } },
       });
     } else {
       await prisma.$executeRawUnsafe(
-        `DELETE FROM "notebooks" WHERE "id" = $1 AND "userId" = $2`,
+        `DELETE FROM "notebooks" WHERE "id" = $1 AND "userId" = ANY($2)`,
         id,
-        userId
+        workspaceUserIds
       );
     }
     revalidatePath("/notebook");

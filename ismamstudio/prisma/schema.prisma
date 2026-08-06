@@ -113,3 +113,50 @@ model AppSumoValidCode {
 
   @@map("appsumo_valid_codes")
 }
+
+// A shared workspace. The owner is the plan/seat holder (Clerk userId, not a
+// foreign key to the User model above since that table isn't populated by
+// the current auth flow) -- members work inside the owner's plan and see
+// the owner's Notebook-saved projects, rather than each holding a separate
+// subscription.
+model Team {
+  id        String   @id @default(uuid())
+  ownerId   String   @unique
+  createdAt DateTime @default(now())
+
+  members TeamMember[]
+  invites TeamInvite[]
+
+  @@map("teams")
+}
+
+// A Clerk user can belong to at most one team (as a member) -- userId is
+// unique so workspace membership is never ambiguous.
+model TeamMember {
+  id       String   @id @default(uuid())
+  teamId   String
+  userId   String   @unique
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@map("team_members")
+}
+
+model TeamInvite {
+  id        String    @id @default(uuid())
+  teamId    String
+  email     String
+  token     String    @unique
+  status    String    @default("pending") // "pending" | "accepted" | "revoked"
+  invitedBy String
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@index([email])
+  @@map("team_invites")
+}

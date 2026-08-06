@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import GlobalSearchModal from '@/app/components/GlobalSearchModal';
-import { Menu, X, Sparkles, BookOpen, Wrench, CreditCard, LayoutGrid, Layers } from 'lucide-react';
+import { Menu, X, Sparkles, BookOpen, Wrench, CreditCard, LayoutGrid, Layers, Users } from 'lucide-react';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -78,7 +78,11 @@ export default function Header() {
               </Link>
 
               <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800 flex items-center">
-                <UserButton afterSignOutUrl="/" />
+                <UserButton afterSignOutUrl="/">
+                  <UserButton.MenuItems>
+                    <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
+                  </UserButton.MenuItems>
+                </UserButton>
               </div>
             </SignedIn>
 

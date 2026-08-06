@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { checkPremiumStatus, deleteNotebookEntry } from "../actions";
+import { getWorkspaceUserIds } from "@/lib/team";
 import { BookOpen, Sparkles, Trash2, ArrowRight, ShieldCheck, Cloud, Plus } from "lucide-react";
 
 import NotebookClient from "./NotebookClient";
@@ -36,20 +37,23 @@ export default async function NotebookPage() {
     );
   }
 
-  // Fetch account status & notebook entries (completely separate from Book model)
+  // Fetch account status & notebook entries (completely separate from Book model).
+  // Scoped to the whole workspace, not just this exact userId, so a team
+  // shares one Notebook rather than each member seeing only their own saves.
   const premiumStatus = await checkPremiumStatus();
+  const workspaceUserIds = await getWorkspaceUserIds(userId);
   let notebookItems: any[] = [];
   try {
     const notebookDelegate = (prisma as any).notebook;
     if (notebookDelegate?.findMany) {
       notebookItems = await notebookDelegate.findMany({
-        where: { userId },
+        where: { userId: { in: workspaceUserIds } },
         orderBy: { createdAt: "desc" },
       });
     } else {
       notebookItems = await prisma.$queryRawUnsafe(
-        `SELECT * FROM "notebooks" WHERE "userId" = $1 ORDER BY "createdAt" DESC`,
-        userId
+        `SELECT * FROM "notebooks" WHERE "userId" = ANY($1) ORDER BY "createdAt" DESC`,
+        workspaceUserIds
       );
     }
   } catch (error) {

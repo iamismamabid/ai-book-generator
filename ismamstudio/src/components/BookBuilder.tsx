@@ -499,25 +499,25 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
 
         {bookPages.length > 0 && bookPages[activeIndex] ? (
           <div className="h-full pt-8">
-            {bookPages[activeIndex].type === 'crossword' && (
-              <CrosswordEditor
-                key={bookPages[activeIndex].id}
-                page={bookPages[activeIndex]}
-                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
-              />
-            )}
-            {bookPages[activeIndex].type === 'word_search' && bookPages[activeIndex].config.isMultiSolution && (
+            {bookPages[activeIndex].config.isMultiSolution && (
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center space-y-2">
                 <p className="text-sm font-black text-slate-700 dark:text-slate-200">
                   Combined Answer Key Page
                 </p>
                 <p className="text-xs font-semibold text-slate-500 max-w-md mx-auto">
                   This page packs {bookPages[activeIndex].config.solutionGroup?.length || 0} answer keys
-                  (#{bookPages[activeIndex].config.solutionGroup?.map((s: any) => s.puzzleIndex).join(', #')})
+                  (Page{(bookPages[activeIndex].config.solutionGroup?.length || 0) > 1 ? 's' : ''} {bookPages[activeIndex].config.solutionGroup?.map((s: any) => s.pageNumber ?? s.puzzleIndex).join(', ')})
                   onto one page — generated automatically by "Auto-Build Solutions". Edit the individual
                   puzzle pages instead; this page regenerates from them.
                 </p>
               </div>
+            )}
+            {bookPages[activeIndex].type === 'crossword' && !bookPages[activeIndex].config.isMultiSolution && (
+              <CrosswordEditor
+                key={bookPages[activeIndex].id}
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+              />
             )}
             {bookPages[activeIndex].type === 'word_search' && !bookPages[activeIndex].config.isMultiSolution && (
               <WordSearchEditor
@@ -526,42 +526,42 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
-            {bookPages[activeIndex].type === 'sudoku' && (
+            {bookPages[activeIndex].type === 'sudoku' && !bookPages[activeIndex].config.isMultiSolution && (
               <SudokuEditor
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
-            {bookPages[activeIndex].type === 'maze' && (
+            {bookPages[activeIndex].type === 'maze' && !bookPages[activeIndex].config.isMultiSolution && (
               <MazeEditor
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
-            {bookPages[activeIndex].type === 'word_scramble' && (
+            {bookPages[activeIndex].type === 'word_scramble' && !bookPages[activeIndex].config.isMultiSolution && (
               <WordScrambleEditor
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
-            {bookPages[activeIndex].type === 'cryptogram' && (
+            {bookPages[activeIndex].type === 'cryptogram' && !bookPages[activeIndex].config.isMultiSolution && (
               <CryptogramEditor
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
-            {bookPages[activeIndex].type === 'math_puzzle' && (
+            {bookPages[activeIndex].type === 'math_puzzle' && !bookPages[activeIndex].config.isMultiSolution && (
               <MathPuzzleEditor
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
-            {bookPages[activeIndex].type === 'kakuro' && (
+            {bookPages[activeIndex].type === 'kakuro' && !bookPages[activeIndex].config.isMultiSolution && (
               <KakuroEditor
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}

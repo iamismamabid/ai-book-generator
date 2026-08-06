@@ -468,13 +468,15 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
 
-  const margin = 0.35;
+  const margin = 0.7;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
   const titleSpace = 0.3;
   const wordListSpace = isSolution ? 0.3 : 1.4;
-  const gridDrawSize = Math.min(safeW, safeH - titleSpace - wordListSpace);
+  // Balanced KDP layout: grid stays well short of full page width, leaving
+  // proper breathing room instead of running edge-to-edge.
+  const gridDrawSize = Math.min(safeW * 0.82, safeH - titleSpace - wordListSpace);
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
   const startY = margin + titleSpace + 0.1;
@@ -542,12 +544,12 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
   
-  const margin = 0.35;
+  const margin = 0.7;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
   const titleSpace = 0.3;
-  const gridDrawSize = Math.min(safeW, safeH - titleSpace - 0.3);
+  const gridDrawSize = Math.min(safeW * 0.82, safeH - titleSpace - 0.3);
   const cellSize = gridDrawSize / 9;
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
@@ -769,12 +771,12 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHe
   const rows = data.grid.length;
   const cols = data.grid[0].length;
   
-  const margin = 0.35;
+  const margin = 0.7;
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
   const titleSpace = 0.3;
-  const mazeSize = Math.min(safeW, safeH - titleSpace - 0.3);
+  const mazeSize = Math.min(safeW * 0.82, safeH - titleSpace - 0.3);
   const cellSize = mazeSize / Math.max(rows, cols);
 
   const mazeW = cols * cellSize;

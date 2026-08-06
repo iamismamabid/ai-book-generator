@@ -1,4 +1,4 @@
-import DocsClient from "../docs/DocsClient";
+import DocsClient from "@/app/docs/DocsClient";
 
 export const metadata = {
   title: "Help Center & Documentation | KDPage — KDP Book Creator",

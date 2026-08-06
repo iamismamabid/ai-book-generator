@@ -479,8 +479,12 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const titleSpace = 0.3;
   const wordListSpace = isSolution ? 0.3 : 1.4;
   // Balanced KDP layout: grid stays well short of full page width, leaving
-  // proper breathing room instead of running edge-to-edge.
-  const gridDrawSize = Math.min(safeW * 0.82, safeH - titleSpace - wordListSpace);
+  // proper breathing room instead of running edge-to-edge. The solution
+  // grid is capped smaller still -- it's an answer key, not a second
+  // full-size puzzle to solve.
+  const gridDrawSize = isSolution
+    ? Math.min(safeW * 0.82, safeH - titleSpace - wordListSpace, 4.5)
+    : Math.min(safeW * 0.82, safeH - titleSpace - wordListSpace);
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
   const startY = margin + titleSpace + 0.1;
@@ -553,7 +557,11 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
   const safeH = (pageHeight || 11) - (margin * 2);
 
   const titleSpace = 0.3;
-  const gridDrawSize = Math.min(safeW * 0.82, safeH - titleSpace - 0.3);
+  // The solution grid is an answer key, not a second full-size puzzle to
+  // solve, so cap it smaller than the puzzle's own grid.
+  const gridDrawSize = isSolution
+    ? Math.min(safeW * 0.82, safeH - titleSpace - 0.3, 4.5)
+    : Math.min(safeW * 0.82, safeH - titleSpace - 0.3);
   const cellSize = gridDrawSize / 9;
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
@@ -679,8 +687,12 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const maxH = pageHeight - (marginY * 2);
 
-  // Calculate cell size that fits both width and height constraints
-  const cellSize = Math.min(maxW / cols, maxH / rows);
+  // Calculate cell size that fits both width and height constraints. The
+  // solution grid is an answer key, not a second full-size puzzle to solve,
+  // so cap it smaller than the puzzle's own grid.
+  const cellSize = isSolution
+    ? Math.min(maxW / cols, maxH / rows, 4.5 / cols, 4.5 / rows)
+    : Math.min(maxW / cols, maxH / rows);
   const gridW = cellSize * cols;
   const gridH = cellSize * rows;
 
@@ -781,7 +793,11 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHe
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - topReserved - margin;
 
-  const mazeSize = Math.min(safeW * 0.85, safeH - 0.2);
+  // The solution maze is an answer key, not a second full-size puzzle to
+  // solve, so cap it smaller than the puzzle's own "ultra large" grid.
+  const mazeSize = showSolution
+    ? Math.min(safeW * 0.85, safeH - 0.2, 4.5)
+    : Math.min(safeW * 0.85, safeH - 0.2);
   const cellSize = mazeSize / Math.max(rows, cols);
 
   const mazeW = cols * cellSize;

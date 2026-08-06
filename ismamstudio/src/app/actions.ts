@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "../lib/prisma";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { Groq } from "groq-sdk";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -747,6 +747,32 @@ export async function deleteNotebookEntry(id: string) {
   } catch (err: any) {
     console.error("Delete notebook entry failed:", err);
     return { success: false, error: err?.message || "Failed to delete item." };
+  }
+}
+
+// 🎓 Mark a first-run interactive tour as seen, so it doesn't replay on
+// every visit. Stored on Clerk publicMetadata (already how plan/premium
+// status is read elsewhere) rather than a new DB table, since it's a small
+// per-user flag with no query/reporting need of its own.
+export async function markTourSeen(tourKey: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "Unauthorized." };
+  }
+
+  try {
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const seenTours = { ...((user.publicMetadata as any)?.seenTours || {}), [tourKey]: true };
+
+    await client.users.updateUserMetadata(userId, {
+      publicMetadata: { ...user.publicMetadata, seenTours },
+    });
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Mark tour seen failed:", err);
+    return { success: false, error: err?.message || "Failed to update tour status." };
   }
 }
 

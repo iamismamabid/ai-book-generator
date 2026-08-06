@@ -13,6 +13,7 @@ import { MathPuzzleEditor } from "./MathPuzzleEditor";
 import { KakuroEditor } from "./KakuroEditor";
 import LowContentEditor from "./LowContentEditor";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import BookBuilderTour from "./BookBuilderTour";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { createPortal } from "react-dom";
@@ -389,9 +390,13 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         <div className="w-72 p-5 space-y-6 flex flex-col h-full justify-between">
           <div className="space-y-6">
             <div>
-              <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-4 font-sans">Content Creator</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Content Creator</h2>
+                <BookBuilderTour />
+              </div>
               <button
                 onClick={() => setIsAddModalOpen(true)}
+                data-tour="add-page-btn"
                 className="btn-premium-primary w-full py-4 rounded-2xl normal-case text-sm"
               >
                 <Plus className="w-4 h-4" /> Add New Page
@@ -418,7 +423,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
           </div>
 
           {/* Bulk Utility Section */}
-          <div className="pt-4 border-t border-slate-800 space-y-2">
+          <div className="pt-4 border-t border-slate-800 space-y-2" data-tour="solutions-settings">
             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Solutions Per Page</span>
             {([
               ['Word Search', wordSearchSolutionsPerPage, setWordSearchSolutionsPerPage],
@@ -445,6 +450,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
             ))}
             <button
               onClick={autoGenerateAllSolutions}
+              data-tour="auto-solutions-btn"
               className={`w-full py-3 border rounded-2xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] cursor-pointer ${
                 solutionsStatus === 'success'
                   ? "bg-emerald-500/20 border-emerald-500/35 text-emerald-400"
@@ -605,7 +611,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
           rightOpen ? "absolute md:relative right-0 top-0 h-full z-30 shadow-2xl" : "relative"
         }`}
       >
-        <div className="w-[304px] p-5 flex flex-col h-full justify-between">
+        <div className="w-[304px] p-5 flex flex-col h-full justify-between" data-tour="outline-panel">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-black text-xs uppercase text-slate-400 dark:text-slate-500 tracking-wider">Book Outline ({bookPages.length} Pages)</h2>
             <button
@@ -645,16 +651,20 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
           </div>
 
           {/* PDF Export Button */}
-          {bookPages.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800" data-tour="export-section">
+            {bookPages.length > 0 ? (
               <button
                 onClick={() => setIsExportModalOpen(true)}
                 className="btn-premium-primary w-full py-3.5 normal-case text-sm"
               >
                 <FileDown className="w-4 h-4" /> Configure &amp; Export PDF →
               </button>
-            </div>
-          )}
+            ) : (
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 text-center py-2">
+                Add a page to unlock PDF export
+              </p>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>

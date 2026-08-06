@@ -687,12 +687,15 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const maxH = pageHeight - (marginY * 2);
 
-  // Calculate cell size that fits both width and height constraints. The
+  // Calculate cell size that fits both width and height constraints, capped
+  // so a small grid (e.g. 6x6) doesn't balloon into oversized cells -- other
+  // number-grid puzzles like Sudoku stay around ~0.65in/cell regardless of
+  // grid size, so match that instead of stretching to fill the page. The
   // solution grid is an answer key, not a second full-size puzzle to solve,
-  // so cap it smaller than the puzzle's own grid.
+  // so it's capped smaller still.
   const cellSize = isSolution
-    ? Math.min(maxW / cols, maxH / rows, 4.5 / cols, 4.5 / rows)
-    : Math.min(maxW / cols, maxH / rows);
+    ? Math.min(maxW / cols, maxH / rows, 4.5 / cols, 4.5 / rows, 0.65)
+    : Math.min(maxW / cols, maxH / rows, 0.65);
   const gridW = cellSize * cols;
   const gridH = cellSize * rows;
 
@@ -2224,8 +2227,9 @@ const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
     const { grid, rows, cols } = entry.gridData;
     const titleSpace = 0.28;
     // Cap at a standard answer-key size instead of stretching to fill the
-    // whole zone when this puzzle is alone on the page.
-    const cellSize = Math.min((zone.w) / cols, (zone.h - titleSpace) / rows, 4.5 / cols, 4.5 / rows);
+    // whole zone when this puzzle is alone on the page, and match the
+    // ~0.65in/cell weight other number-grid puzzles (Sudoku) use.
+    const cellSize = Math.min((zone.w) / cols, (zone.h - titleSpace) / rows, 4.5 / cols, 4.5 / rows, 0.65);
     const gridW = cellSize * cols;
     const gridH = cellSize * rows;
     const startX = zone.x + (zone.w - gridW) / 2;

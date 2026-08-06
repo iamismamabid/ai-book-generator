@@ -304,6 +304,19 @@ export default function BookBuilder({ coverState }: { coverState?: any }) {
       return;
     }
 
+    // Solutions were built one puzzle-type block at a time, which groups all
+    // crosswords, then all sudokus, etc. Re-sort the resulting pages by the
+    // earliest original page number each one covers so the solutions section
+    // actually climbs in the same order the puzzles appear in the book,
+    // instead of jumping around by type.
+    const minPageNum = (page: any) => {
+      if (page.config.isMultiSolution && page.config.solutionGroup) {
+        return Math.min(...page.config.solutionGroup.map((e: any) => e.pageNumber ?? Infinity));
+      }
+      return page.config.pageNumber ?? Infinity;
+    };
+    newSolPages.sort((a, b) => minPageNum(a) - minPageNum(b));
+
     // Strip out any pre-existing solution pages and append fresh solutions in correct order
     const cleanPages = bookPages.filter(p => !p.config?.isSolution);
     setBookPages([...cleanPages, ...newSolPages]);

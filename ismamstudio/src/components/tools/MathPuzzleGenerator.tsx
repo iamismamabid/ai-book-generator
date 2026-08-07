@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import { generateUniquePuzzle } from "@/lib/puzzleDedup";
 import { checkPremiumStatus } from "@/app/actions";
 
 const TRIM_SIZES = [
@@ -84,22 +85,32 @@ export default function MathPuzzleGenerator() {
     const minVal = difficulty === "easy" ? 1 : difficulty === "medium" ? 5 : 10;
     const maxVal = difficulty === "easy" ? 9 : difficulty === "medium" ? 20 : 50;
     const totalPuzzles = numPages * puzzlesPerPage;
+    // Easy difficulty draws from only (maxVal-minVal+1)^4 possible grids --
+    // as few as 6,561 at easy -- so a large book can plausibly repeat a
+    // grid exactly without this guard.
+    const seenGrids = new Set<string>();
 
     for (let p = 0; p < totalPuzzles; p++) {
-      const a = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
-      const b = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
-      const d = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
-      const e = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+      const grid = generateUniquePuzzle(
+        () => {
+          const a = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+          const b = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+          const d = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+          const e = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
 
-      const c = a + b;
-      const f = d + e;
-      const g = a + d;
-      const h = b + e;
-      const i = c + f; // mathematically (a+b) + (d+e) === (a+d) + (b+e)
+          const c = a + b;
+          const f = d + e;
+          const g = a + d;
+          const h = b + e;
+          const i = c + f; // mathematically (a+b) + (d+e) === (a+d) + (b+e)
 
-      const grid = [a, b, c, d, e, f, g, h, i];
+          return [a, b, c, d, e, f, g, h, i];
+        },
+        (g) => g.join(","),
+        seenGrids
+      );
 
-      // Hide indexes based on difficulty: 
+      // Hide indexes based on difficulty:
       // easy: hide 3 cells, medium: hide 5, hard: hide 7
       const hideCount = difficulty === "easy" ? 3 : difficulty === "medium" ? 5 : 7;
       const hiddenIndices: number[] = [];
@@ -120,18 +131,28 @@ export default function MathPuzzleGenerator() {
     const list: MultiplicationPuzzle[] = [];
     const size = 4; // factor size: 1-9 for times tables
     const totalPuzzles = numPages * puzzlesPerPage;
+    // Only 9^4 possible factor sets per side -- repeats are plausible at
+    // high book volumes without this guard.
+    const seenFactorSets = new Set<string>();
 
     for (let p = 0; p < totalPuzzles; p++) {
-      const rowFactors = Array.from({ length: size }, () => Math.floor(Math.random() * 9) + 1);
-      const colFactors = Array.from({ length: size }, () => Math.floor(Math.random() * 9) + 1);
+      const { rowFactors, colFactors, grid } = generateUniquePuzzle(
+        () => {
+          const rowFactors = Array.from({ length: size }, () => Math.floor(Math.random() * 9) + 1);
+          const colFactors = Array.from({ length: size }, () => Math.floor(Math.random() * 9) + 1);
 
-      const grid: number[][] = [];
-      for (let r = 0; r < size; r++) {
-        grid[r] = [];
-        for (let c = 0; c < size; c++) {
-          grid[r][c] = rowFactors[r] * colFactors[c];
-        }
-      }
+          const grid: number[][] = [];
+          for (let r = 0; r < size; r++) {
+            grid[r] = [];
+            for (let c = 0; c < size; c++) {
+              grid[r][c] = rowFactors[r] * colFactors[c];
+            }
+          }
+          return { rowFactors, colFactors, grid };
+        },
+        (p) => `${p.rowFactors.join(",")}|${p.colFactors.join(",")}`,
+        seenFactorSets
+      );
 
       const rHide = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 4;
       const cHide = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 4;
@@ -168,21 +189,31 @@ export default function MathPuzzleGenerator() {
     const list: NumberFillPuzzle[] = [];
     const size = 4;
     const totalPuzzles = numPages * puzzlesPerPage;
+    // 9^16 possible grids is large, but the same book-scale volumes that
+    // motivate this guard elsewhere make it cheap insurance here too.
+    const seenGrids = new Set<string>();
 
     for (let p = 0; p < totalPuzzles; p++) {
-      const grid: number[][] = [];
-      const rowSums = Array(size).fill(0);
-      const colSums = Array(size).fill(0);
+      const { grid, rowSums, colSums } = generateUniquePuzzle(
+        () => {
+          const grid: number[][] = [];
+          const rowSums = Array(size).fill(0);
+          const colSums = Array(size).fill(0);
 
-      for (let r = 0; r < size; r++) {
-        grid[r] = [];
-        for (let c = 0; c < size; c++) {
-          const val = Math.floor(Math.random() * 9) + 1; // 1-9
-          grid[r][c] = val;
-          rowSums[r] += val;
-          colSums[c] += val;
-        }
-      }
+          for (let r = 0; r < size; r++) {
+            grid[r] = [];
+            for (let c = 0; c < size; c++) {
+              const val = Math.floor(Math.random() * 9) + 1; // 1-9
+              grid[r][c] = val;
+              rowSums[r] += val;
+              colSums[c] += val;
+            }
+          }
+          return { grid, rowSums, colSums };
+        },
+        (p) => p.grid.flat().join(","),
+        seenGrids
+      );
 
       const hideCount = difficulty === "easy" ? 4 : difficulty === "medium" ? 8 : 12;
       const hiddenCells: Array<[number, number]> = [];

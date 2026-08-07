@@ -5,6 +5,8 @@
 // (exactly one path between any two cells, no loops) restricted to the
 // chosen shape.
 
+import { generateUniquePuzzle } from "./puzzleDedup";
+
 export type Shape = "square" | "circle" | "heart";
 
 export interface Cell {
@@ -241,6 +243,22 @@ export function solveMaze(
   return []; // no path found (shouldn't happen for a connected maze)
 }
 
+// Serializes a maze's wall layout + start/end into a compact signature.
+// Small grids (common at "easy" difficulty) have a limited enough number of
+// distinct perfect mazes that a large book can plausibly repeat one exactly.
+function mazeSignature(m: { grid: MazeGrid; start: [number, number]; end: [number, number] }): string {
+  const walls = m.grid
+    .map((row) =>
+      row
+        .map((cell) =>
+          cell.active ? `${+cell.walls.top}${+cell.walls.right}${+cell.walls.bottom}${+cell.walls.left}` : "x"
+        )
+        .join("")
+    )
+    .join("|");
+  return `${walls}#${m.start.join(",")}#${m.end.join(",")}`;
+}
+
 export function generateMazeBook(
   count: number,
   rows: number,
@@ -248,8 +266,9 @@ export function generateMazeBook(
   shape: Shape
 ): { grid: MazeGrid; start: [number, number]; end: [number, number] }[] {
   const mazes = [];
+  const seen = new Set<string>();
   for (let i = 0; i < count; i++) {
-    mazes.push(generateMaze({ rows, cols, shape }));
+    mazes.push(generateUniquePuzzle(() => generateMaze({ rows, cols, shape }), mazeSignature, seen));
   }
   return mazes;
 }

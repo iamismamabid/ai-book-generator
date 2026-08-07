@@ -9,6 +9,7 @@ import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import { generateKakuro, KakuroPuzzle } from "@/lib/kakuro";
 import { checkPremiumStatus } from "@/app/actions";
+import { generateUniquePuzzle } from "@/lib/puzzleDedup";
 
 const TRIM_SIZES = [
   { id: "6x9", label: "6\" x 9\" (Novel)", w: 6, h: 9 },
@@ -84,8 +85,16 @@ export default function KakuroGenerator() {
     setIsDownloading(true);
     try {
       const generatedPuzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[] = [];
+      // Small grid sizes (e.g. 4x4/6x6 at easy difficulty) admit a limited
+      // enough number of distinct solved layouts that a large book can
+      // plausibly repeat one exactly without this guard.
+      const seenSolutions = new Set<string>();
       for (let p = 0; p < numPages; p++) {
-        const sol = generateKakuro(sizeId, difficulty);
+        const sol = generateUniquePuzzle(
+          () => generateKakuro(sizeId, difficulty),
+          (s) => s.grid.map((row) => row.map((cell) => (cell.type === "white" ? cell.value : "#")).join(",")).join("|"),
+          seenSolutions
+        );
         const puz = JSON.parse(JSON.stringify(sol)) as KakuroPuzzle;
         puz.grid.forEach(row => {
           row.forEach(cell => {

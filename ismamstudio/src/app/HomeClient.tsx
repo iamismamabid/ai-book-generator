@@ -810,7 +810,7 @@ export default function HomeClient() {
                   "As a web developer and software engineer and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, making it tedious to compile a single book. I knew there had to be a more efficient and integrated way."
                 </p>
                 <p>
-                  "That is why I built KDPage. My goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. I wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."
+                  "That is why we built KDPage. Our goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. We wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."
                 </p>
                 <p>
                   "Whether you are just starting your KDP journey or scaling a publishing agency, this studio is designed to grow with you. With flexible options — including monthly, annual, and lifetime access plans — we keep premium tools accessible so you can keep 100% of your royalties and focus on what matters: creating."

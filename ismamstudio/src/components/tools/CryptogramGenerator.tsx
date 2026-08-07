@@ -36,7 +36,7 @@ export default function CryptogramGenerator() {
   const [puzzlesPerPage, setPuzzlesPerPage] = useState<1 | 2 | 3>(2);
   const [includeAnswers, setIncludeAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
-  const [showGuides, setShowGuides] = useState<boolean>(true);
+  const [showGuides, setShowGuides] = useState<boolean>(false);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
 
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });

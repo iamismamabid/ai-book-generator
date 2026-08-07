@@ -50,7 +50,7 @@ export default function WordScrambleGenerator() {
   }, []);
   const [includeAnswers, setIncludeAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
-  const [showGuides, setShowGuides] = useState<boolean>(true);
+  const [showGuides, setShowGuides] = useState<boolean>(false);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
   
   // Puzzle data states

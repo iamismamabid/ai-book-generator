@@ -27,7 +27,7 @@ export default function KakuroGenerator() {
   const [numPages, setNumPages] = useState<number>(5);
   const [showAnswers, setShowAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
-  const [showGuides, setShowGuides] = useState<boolean>(true);
+  const [showGuides, setShowGuides] = useState<boolean>(false);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
 
   // Preview puzzle state

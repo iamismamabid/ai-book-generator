@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { checkPremiumStatus } from "@/app/actions";
 
 const DEFAULT_WORDS = [
@@ -574,6 +575,14 @@ export default function WordScrambleGenerator() {
             {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
             Download Print PDF
           </button>
+
+          <SaveToNotebookButton
+            title={`Word Scramble Collection (${puzzles.length} Puzzles)`}
+            content={`Word Scramble interior with ${puzzles.length} ${difficulty} puzzles, trim size ${trimSize.id}${includeAnswers ? ", with solutions" : ", no solutions"}.`}
+            category="word-scramble"
+            data={{ puzzlesCount: puzzles.length, difficulty, trimSize: trimSize.id, includeAnswers, includeCover, hasBleed, inputText }}
+            className="w-full justify-center"
+          />
 
           <CoverStudioCTA trimSize={trimSize.id} />
         </div>

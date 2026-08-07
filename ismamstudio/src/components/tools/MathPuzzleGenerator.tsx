@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { generateUniquePuzzle } from "@/lib/puzzleDedup";
 import { checkPremiumStatus } from "@/app/actions";
 
@@ -884,6 +885,14 @@ export default function MathPuzzleGenerator() {
             {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
             Download Print PDF
           </button>
+
+          <SaveToNotebookButton
+            title={`Math Puzzle (${puzzleType.toUpperCase()})`}
+            content={`Math puzzle collection (${puzzleType}) with ${numPages} pages, ${puzzlesPerPage} per page, trim size ${trimSize.id}.`}
+            category="math-puzzle"
+            data={{ puzzleType, difficulty, trimSize: trimSize.id, numPages, puzzlesPerPage, showAnswers, includeCover, hasBleed }}
+            className="w-full justify-center"
+          />
 
           <CoverStudioCTA trimSize={trimSize.id} />
         </div>

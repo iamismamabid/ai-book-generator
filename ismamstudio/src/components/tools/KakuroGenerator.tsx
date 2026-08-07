@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { generateKakuro, KakuroPuzzle } from "@/lib/kakuro";
 import { checkPremiumStatus } from "@/app/actions";
 import { generateUniquePuzzle } from "@/lib/puzzleDedup";
@@ -394,6 +395,13 @@ export default function KakuroGenerator() {
             </div>
 
             {/* Quick Actions / Cover Studio Link */}
+            <SaveToNotebookButton
+              title={`Kakuro Collection (${numPages} Puzzles)`}
+              content={`Kakuro interior with ${numPages} ${difficulty} puzzles, trim size ${trimSize.id}${showAnswers ? ", with solutions" : ", no solutions"}.`}
+              category="kakuro"
+              data={{ numPages, difficulty, trimSize: trimSize.id, showAnswers, includeCover, hasBleed }}
+              className="w-full justify-center"
+            />
             <CoverStudioCTA />
           </div>
 

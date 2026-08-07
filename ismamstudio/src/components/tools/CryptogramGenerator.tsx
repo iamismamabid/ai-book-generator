@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -687,6 +688,14 @@ export default function CryptogramGenerator() {
             {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
             Download Print PDF
           </button>
+
+          <SaveToNotebookButton
+            title={`Cryptogram Collection (${puzzles.length} Puzzles)`}
+            content={`Cryptogram interior with ${puzzles.length} puzzles, ${puzzlesPerPage} per page, trim size ${trimSize.id}${includeAnswers ? ", with solutions" : ", no solutions"}.`}
+            category="cryptogram"
+            data={{ puzzlesCount: puzzles.length, puzzlesPerPage, trimSize: trimSize.id, includeAnswers, includeCover, hasBleed, inputText }}
+            className="w-full justify-center"
+          />
 
           <CoverStudioCTA trimSize={trimSize.id} />
         </div>

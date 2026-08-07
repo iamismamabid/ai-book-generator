@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { checkPremiumStatus } from "@/app/actions";
 import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
 
@@ -607,6 +608,14 @@ export default function CrosswordGenerator() {
             {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
             Download Print PDF
           </button>
+
+          <SaveToNotebookButton
+            title={`Crossword Collection (${puzzles.length} Puzzles)`}
+            content={`Crossword interior with ${puzzles.length} puzzles, trim size ${trimSize.id}${includeAnswers ? ", with solutions" : ", no solutions"}.`}
+            category="crossword"
+            data={{ puzzlesCount: puzzles.length, trimSize: trimSize.id, includeAnswers, includeCover, hasBleed, inputText }}
+            className="w-full justify-center"
+          />
 
           <CoverStudioCTA trimSize={trimSize.id} />
         </div>

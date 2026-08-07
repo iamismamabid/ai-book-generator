@@ -325,6 +325,13 @@ export async function checkPremiumStatus() {
   const teamOwnerId = await getTeamOwnerIdForMember(signedInUserId).catch(() => null);
   const userId = teamOwnerId ?? signedInUserId;
 
+  // A transient Clerk/Prisma hiccup shouldn't silently downgrade a paying
+  // customer to free tier -- retry once before giving up, and label the
+  // eventual fallback distinctly ("status_check_failed") from a genuine
+  // free-tier user ("free_tier") so callers can tell an outage apart from
+  // someone who simply isn't premium, instead of treating both the same.
+  const MAX_ATTEMPTS = 2;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   try {
     // ১. ডাটাবেসে AppSumo redemption কোড চেক করা
     const redemptionsCount = await prisma.appSumoRedemption.count({
@@ -389,11 +396,22 @@ export async function checkPremiumStatus() {
         };
       }
     }
+
+    // No error and no premium signal found -- this is a genuine free-tier
+    // user, not a failed check. Return immediately, don't retry.
+    return { checked: true, isPremium: false, reason: "free_tier", plan: "free", limits: defaultFreeLimits };
   } catch (error) {
-    console.error("Error in checkPremiumStatus:", error);
+    console.error(`checkPremiumStatus attempt ${attempt}/${MAX_ATTEMPTS} failed:`, error);
+    if (attempt === MAX_ATTEMPTS) {
+      return { checked: true, isPremium: false, reason: "status_check_failed", plan: "free", limits: defaultFreeLimits };
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
   }
 
-  return { checked: true, isPremium: false, reason: "free_tier", plan: "free", limits: defaultFreeLimits };
+  // Unreachable -- the loop above always returns -- but keeps TS satisfied
+  // that every path returns a value.
+  return { checked: true, isPremium: false, reason: "status_check_failed", plan: "free", limits: defaultFreeLimits };
 }
 
 // 👥 Team seats -- shared-workspace collaboration for Agency/Tier4/Tier5 plans.

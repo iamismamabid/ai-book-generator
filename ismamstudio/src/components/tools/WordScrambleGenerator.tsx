@@ -177,7 +177,7 @@ export default function WordScrambleGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
       
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
       ]);
@@ -213,7 +213,11 @@ export default function WordScrambleGenerator() {
         doc.setFontSize(22);
         doc.setTextColor(30, 41, 59); // slate-800
         doc.text(`Word Scramble #${puzzle.index}`, marginL + contentW / 2, marginT + 0.3, { align: "center" });
-        
+
+        if (finalGuides) {
+          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+        }
+
         // Subtitle instructions
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
@@ -314,12 +318,16 @@ export default function WordScrambleGenerator() {
         doc.setFontSize(22);
         doc.setTextColor(30, 41, 59);
         doc.text("Answer Key", marginL + contentW / 2, marginT + 0.3, { align: "center" });
-        
+
+        if (finalGuides) {
+          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+        }
+
         // Divider line
         doc.setLineWidth(0.015);
         doc.setDrawColor(226, 232, 240);
         doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
-        
+
         // Render 2 or 4 mini-keys per page
         const gridCols = 2;
         const colW = contentW / gridCols;
@@ -339,6 +347,9 @@ export default function WordScrambleGenerator() {
             doc.setTextColor(30, 41, 59);
             doc.text("Answer Key (Cont.)", marginL + contentW / 2, marginT + 0.3, { align: "center" });
             doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
+            if (finalGuides) {
+              drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+            }
           }
           
           doc.setFont("helvetica", "bold");

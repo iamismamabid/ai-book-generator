@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import { MazeGrid, Shape, solveMaze } from "./maze";
-import { drawCoverPagePart, drawWatermark } from "../app/utils/pdfExportService";
+import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 
 interface PdfOptions {
   mazes: {
@@ -15,6 +15,8 @@ interface PdfOptions {
   includeCover?: boolean;
   coverState?: any;
   isPremium?: boolean;
+  hasBleed?: boolean;
+  showGuides?: boolean;
 }
 
 const TRIM_SIZES: Record<string, [number, number]> = {
@@ -103,9 +105,14 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     includeSolutions = true,
     includeCover = false,
     coverState = null,
+    hasBleed = false,
+    showGuides = false,
   } = options;
 
-  const [widthInches, heightInches] = TRIM_SIZES[trimSize] || TRIM_SIZES["8.5x11"];
+  const [baseWidthInches, baseHeightInches] = TRIM_SIZES[trimSize] || TRIM_SIZES["8.5x11"];
+  const bleed = hasBleed ? 0.125 : 0;
+  const widthInches = baseWidthInches + bleed * 2;
+  const heightInches = baseHeightInches + bleed * 2;
 
   // Initialize jsPDF with inches context
   const doc = new jsPDF({
@@ -178,6 +185,10 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     // Draw the clean template puzzle without solution
     drawMaze(doc, maze.grid, maze.start, maze.end, mazeX, mazeY, mazeSize);
 
+    if (showGuides) {
+      drawMarginGuides(doc, margin, margin, margin, margin, widthInches, heightInches);
+    }
+
     // Footer info
     doc.setFontSize(9);
     doc.setTextColor(148, 163, 184);
@@ -207,6 +218,9 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
         doc.setFontSize(16);
         doc.setTextColor(15, 23, 42);
         doc.text("Answer Keys", margin, margin + 0.15);
+        if (showGuides) {
+          drawMarginGuides(doc, margin, margin, margin, margin, widthInches, heightInches);
+        }
       }
 
       // Compute row and column positions dynamically for the 2x2 grid

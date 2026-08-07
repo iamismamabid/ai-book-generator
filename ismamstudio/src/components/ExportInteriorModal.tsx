@@ -82,6 +82,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
     plan?: string;
     isTrial?: boolean;
     daysRemaining?: number;
+    reason?: string;
   }>({
     checked: false,
     isPremium: false,
@@ -104,10 +105,13 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
         plan: res.plan,
         isTrial: (res as any).isTrial || false,
         daysRemaining: (res as any).daysRemaining,
+        reason: (res as any).reason,
       });
     } catch (e) {
       console.error("Failed to check premium status:", e);
-      setPremiumStatus({ checked: true, isPremium: false });
+      // Distinct from a genuine free-tier user -- this is a client-side
+      // failure to even reach checkPremiumStatus, not a status it returned.
+      setPremiumStatus({ checked: true, isPremium: false, reason: "status_check_failed" });
     }
   };
 
@@ -251,15 +255,41 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
               </div>
             </div>
 
+            {/* Account Status Check Failed -- distinct from genuinely being on
+                the free plan, so a paying customer isn't told they're on
+                free tier just because a status check failed transiently. */}
+            {!premiumStatus.isPremium && premiumStatus.reason === "status_check_failed" && (
+              <div className="p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
+                <div className="flex gap-2 items-start">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-black text-slate-900 block">Couldn&apos;t Verify Your Account</span>
+                    <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
+                      We couldn&apos;t confirm your plan due to a temporary connection issue -- this is not a reflection of your actual plan. Please retry before exporting.
+                    </p>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-rose-200/50 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={fetchPremiumStatus}
+                    className="text-[10px] font-black uppercase tracking-wider text-indigo-600 hover:text-indigo-500 cursor-pointer"
+                  >
+                    Retry Check →
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Free Plan Warning Banner */}
-            {!premiumStatus.isPremium && (
+            {!premiumStatus.isPremium && premiumStatus.reason !== "status_check_failed" && (
               <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
                 <div className="flex gap-2 items-start">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-black text-slate-900 block">Free Account Sample Warning</span>
                     <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
-                      Exported KDP interior compile files will include a light diagonal **"SAMPLE - KDPAGE"** watermark on all pages. 
+                      Exported KDP interior compile files will include a light diagonal **"SAMPLE - KDPAGE"** watermark on all pages.
                     </p>
                   </div>
                 </div>

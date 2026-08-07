@@ -194,7 +194,7 @@ export default function CrosswordGenerator() {
   }) => {
     if (puzzles.length === 0) return;
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, isPremium } = options;
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides, isPremium } = options;
 
     setTimeout(async () => {
       let finalW = 8.5;
@@ -211,7 +211,7 @@ export default function CrosswordGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
       ]);
@@ -239,6 +239,10 @@ export default function CrosswordGenerator() {
         doc.setFontSize(20);
         doc.setTextColor(30, 41, 59);
         doc.text(titleText, marginL + contentW / 2, marginT + 0.3, { align: "center" });
+
+        if (finalGuides) {
+          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+        }
 
         doc.setLineWidth(0.015);
         doc.setDrawColor(226, 232, 240);

@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import { KakuroGrid, KakuroPuzzle } from "./kakuro";
-import { drawCoverPagePart, drawWatermark } from "../app/utils/pdfExportService";
+import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 
 interface KakuroPdfOptions {
   puzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[];
@@ -11,6 +11,8 @@ interface KakuroPdfOptions {
   includeCover?: boolean;
   coverState?: any;
   isPremium?: boolean;
+  hasBleed?: boolean;
+  showGuides?: boolean;
 }
 
 export function drawKakuroGridPDF(
@@ -20,7 +22,8 @@ export function drawKakuroGridPDF(
   height: number,
   isSolution: boolean,
   puzzleNumber: number,
-  title: string
+  title: string,
+  showGuides: boolean = false
 ) {
   const { grid, rows, cols } = puzzle;
 
@@ -38,6 +41,10 @@ export function drawKakuroGridPDF(
   const marginY = 1.2;
   const maxW = width - (marginX * 2);
   const maxH = height - (marginY * 2);
+
+  if (showGuides) {
+    drawMarginGuides(doc, marginX, marginX, marginY, 0.5, width, height);
+  }
 
   // Calculate cell size that fits both width and height constraints
   const cellSize = Math.min(maxW / cols, maxH / rows);
@@ -139,12 +146,16 @@ export function drawKakuroGridPDF(
 }
 
 export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: string) {
-  const { puzzles, title, trimSize, includeSolutions = true, includeCover = false, coverState = null, isPremium } = options;
+  const { puzzles, title, trimSize, includeSolutions = true, includeCover = false, coverState = null, isPremium, hasBleed = false, showGuides = false } = options;
 
   let width = 8.5;
   let height = 11;
   if (trimSize === "6x9") { width = 6; height = 9; }
   if (trimSize === "5x8") { width = 5; height = 8; }
+
+  const bleed = hasBleed ? 0.125 : 0;
+  width += bleed * 2;
+  height += bleed * 2;
 
   const doc = new jsPDF({
     orientation: "portrait",
@@ -163,14 +174,14 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
   puzzles.forEach((item, index) => {
     if (firstPageAdded || index > 0) doc.addPage();
     firstPageAdded = true;
-    drawKakuroGridPDF(doc, item.puzzle, width, height, false, index + 1, title);
+    drawKakuroGridPDF(doc, item.puzzle, width, height, false, index + 1, title, showGuides);
   });
 
   // ── Solution pages (appended after all puzzles) ───────────────
   if (includeSolutions) {
     puzzles.forEach((item, index) => {
       doc.addPage();
-      drawKakuroGridPDF(doc, item.solution, width, height, true, index + 1, title);
+      drawKakuroGridPDF(doc, item.solution, width, height, true, index + 1, title, showGuides);
     });
   }
 

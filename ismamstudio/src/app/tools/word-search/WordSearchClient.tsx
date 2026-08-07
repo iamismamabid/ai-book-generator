@@ -242,6 +242,13 @@ export default function WordSearchStudio() {
         }
     };
 
+    // Caps how large an individual letter cell is allowed to render, in
+    // inches. Without this, a small grid (few letters) stretches to fill
+    // its whole zone just like a dense one, producing oversized, unbalanced
+    // letters -- capping by grid dimension keeps cell size consistent with
+    // standard published word search books regardless of letter count.
+    const STANDARD_WORD_SEARCH_CELL_IN = 0.45;
+
     // 🖨️ INTERIOR PDF ZONE MATHEMATICS
     const getZones = (itemsPerPage: number, safeW: number, safeH: number, margin: number) => {
         if (itemsPerPage === 1) return [{ x: margin, y: margin, w: safeW, h: safeH }];
@@ -329,7 +336,7 @@ export default function WordSearchStudio() {
                 const { grid, words: pageWords, mask, active } = bookPuzzles[puzIndex];
 
                 const titleSpace = 0.4; const wordListSpace = puzzlesPerPage === 4 ? 0.8 : 1.5;
-                const gridDrawSize = Math.min(zone.w, zone.h - titleSpace - wordListSpace);
+                const gridDrawSize = Math.min(zone.w, zone.h - titleSpace - wordListSpace, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
 
                 let startX = zone.x;
                 if (puzzleAlign === 'center') startX = zone.x + (zone.w - gridDrawSize)/2;
@@ -374,7 +381,7 @@ export default function WordSearchStudio() {
                     const { grid, words: pageWords, mask, active, hiddenMessage: solHiddenMessage } = bookPuzzles[solIndex];
 
                     const titleSpace = 0.4;
-                    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace);
+                    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
 
                     let startX = zone.x;
                     if (solutionAlign === 'center') startX = zone.x + (zone.w - gridDrawSize)/2;

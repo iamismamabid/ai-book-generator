@@ -42,7 +42,12 @@ function drawWordSearchPage(
 
   const titleSpace = 0.3;
   const wordListSpace = isSolution ? 0.3 : 1.4;
-  const gridPx = Math.min(safeW, safeH - titleSpace - wordListSpace);
+  // Caps cell size so a small grid (few letters) doesn't stretch to fill
+  // the whole page the way a dense one legitimately does -- keeps letters
+  // at a standard, professionally-proportioned size regardless of grid
+  // dimensions.
+  const STANDARD_CELL_IN = 0.45;
+  const gridPx = Math.min(safeW, safeH - titleSpace - wordListSpace, data.grid.length * STANDARD_CELL_IN);
 
   const startX = (width - gridPx) / 2;
   const startY = margin + titleSpace + 0.15;

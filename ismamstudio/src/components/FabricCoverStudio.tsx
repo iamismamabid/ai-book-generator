@@ -1442,6 +1442,11 @@ export default function FabricCoverStudio({
   // Paper Type Selection ('white' | 'cream' | 'color')
   const [paperType, setPaperType] = useState<'white' | 'cream' | 'color'>('white');
 
+  // Cover Finish is a reminder note only -- KDP's laminate choice (matte vs
+  // glossy) is picked separately at upload time and has no effect on spine
+  // width or any layout math, unlike paper type.
+  const [coverFinish, setCoverFinish] = useState<'matte' | 'glossy'>('matte');
+
   // Helper for KDP interior margin guidelines
   const getKdpGutterReference = (pages: number) => {
     if (pages <= 150) return { gutter: '0.375" (9.6 mm)', outsideNoBleed: '0.25" (6.4 mm)', outsideBleed: '0.375" (9.6 mm)' };
@@ -5816,6 +5821,21 @@ export default function FabricCoverStudio({
                   <option value="cream">Cream Paper (0.002500"/pg)</option>
                   <option value="color">Color Paper (0.002347"/pg)</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-600 block mb-1">Cover Finish</label>
+                <select
+                  value={coverFinish}
+                  onChange={(e) => setCoverFinish(e.target.value as any)}
+                  className="w-full text-xs font-bold p-2.5 bg-white border border-slate-200 rounded-xl"
+                >
+                  <option value="matte">Matte</option>
+                  <option value="glossy">Glossy</option>
+                </select>
+                <p className="text-[10px] text-slate-400 font-semibold mt-1">
+                  Reminder only — this laminate finish is selected separately when you upload to KDP and doesn't change spine width or any layout math.
+                </p>
               </div>
 
               <div>

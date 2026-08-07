@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { getGutterMargin } from '@/lib/pdfFormatter';
 
 export interface Page {
   id: string | number;
@@ -27,7 +28,7 @@ export function useBookValidation() {
     errors: [],
   });
 
-  const validateBook = useCallback((pages: Page[]): ValidationState => {
+  const validateBook = useCallback((pages: Page[], opts?: { gutterMarginEnabled?: boolean }): ValidationState => {
     const errors: ValidationError[] = [];
     const puzzleTypes = [
       'crossword',
@@ -81,6 +82,18 @@ export function useBookValidation() {
         });
       }
     });
+
+    // ─── Rule 4: Binding Gutter Margin Check ───────────────────────────────
+    // KDP requires a wider inside margin as page count grows (0.375" up to
+    // 150 pages, rising to 0.875" past 700) so text/puzzle content doesn't
+    // get lost in the spine after binding.
+    const requiredGutter = getGutterMargin(pages.length);
+    if (requiredGutter > 0.375 && !opts?.gutterMarginEnabled) {
+      errors.push({
+        type: 'warning',
+        message: `Your book has ${pages.length} pages, which requires at least a ${requiredGutter}" binding gutter per KDP guidelines. Enable "Double-Sided Gutter Margin" before exporting so content isn't lost in the spine.`
+      });
+    }
 
     const isValid = !errors.some((err) => err.type === 'error');
     const hasWarnings = errors.some((err) => err.type === 'warning');

@@ -18,6 +18,7 @@ import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import BookBuilderTour from "./BookBuilderTour";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
 import { useBookValidation } from "@/hooks/useBookValidation";
+import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
 import { createPortal } from "react-dom";
 import {
   DndContext,
@@ -121,11 +122,27 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
   // Validate book whenever pages or export modal state changes
   useEffect(() => {
     if (isExportModalOpen) {
-      validateBook(bookPages);
+      validateBook(bookPages, { gutterMarginEnabled: gutterMargin });
     } else {
       clearValidation();
     }
-  }, [isExportModalOpen, bookPages, validateBook, clearValidation]);
+  }, [isExportModalOpen, bookPages, gutterMargin, validateBook, clearValidation]);
+
+  // KDP Compliance: check raster cover image resolution whenever the export
+  // modal is open with a cover included. Puzzle grids are pure vector so they
+  // never need this -- only user-uploaded cover images can be under 300 DPI.
+  const [coverDpiChecks, setCoverDpiChecks] = useState<ImageResolutionCheck[]>([]);
+  useEffect(() => {
+    if (!isExportModalOpen || !includeCover || !coverState) {
+      setCoverDpiChecks([]);
+      return;
+    }
+    let cancelled = false;
+    checkCoverImageResolution(coverState, selectedTrim.w, selectedTrim.h).then((results) => {
+      if (!cancelled) setCoverDpiChecks(results);
+    });
+    return () => { cancelled = true; };
+  }, [isExportModalOpen, includeCover, coverState, selectedTrim]);
 
 
 
@@ -884,6 +901,35 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
                         <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
                       )}
                       <span>{err.message}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* KDP Cover Image Resolution Check (auto-runs when a cover is included) */}
+            {includeCover && coverDpiChecks.length > 0 && (
+              <div className="p-4 surface-panel space-y-2">
+                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Cover Print Resolution</span>
+                <div className="space-y-1.5">
+                  {coverDpiChecks.map((check, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex gap-2 items-center p-2 rounded-lg text-[9px] font-semibold ${
+                        check.isLowRes
+                          ? 'bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400'
+                          : 'bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400'
+                      }`}
+                    >
+                      {check.isLowRes ? (
+                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                      ) : (
+                        <Info className="w-4 h-4 text-emerald-500 shrink-0" />
+                      )}
+                      <span>
+                        {check.label}: ~{check.effectiveDpi} DPI
+                        {check.isLowRes ? ' — below KDP\'s 300 DPI minimum, may print blurry. Use a higher-resolution image.' : ' — meets KDP\'s 300 DPI minimum.'}
+                      </span>
                     </div>
                   ))}
                 </div>

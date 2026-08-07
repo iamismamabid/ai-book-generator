@@ -6,6 +6,16 @@ import { checkPremiumStatus, redeemAppSumoCode } from "@/app/actions";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { createPortal } from "react-dom";
+import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
+
+// Physical trim dimensions for the standard KDP trim-size values used across
+// the standalone puzzle tools -- needed to turn a cover image's raw pixel
+// size into an effective print DPI.
+const TRIM_DIMENSIONS_IN: Record<string, [number, number]> = {
+  "6x9": [6, 9],
+  "8.5x11": [8.5, 11],
+  "5x8": [5, 8],
+};
 
 export interface TrimSizeOption<T extends string> {
   value: T;
@@ -139,6 +149,23 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
       }
     }
   }, [isOpen]);
+
+  // KDP Compliance: auto-check raster cover image resolution whenever a
+  // cover is included. Puzzle grids themselves are pure vector (resolution
+  // independent) so this only ever applies to Cover Studio images.
+  const [coverDpiChecks, setCoverDpiChecks] = useState<ImageResolutionCheck[]>([]);
+  useEffect(() => {
+    const dims = TRIM_DIMENSIONS_IN[trimSize];
+    if (!isOpen || !includeCover || !coverState || !dims) {
+      setCoverDpiChecks([]);
+      return;
+    }
+    let cancelled = false;
+    checkCoverImageResolution(coverState, dims[0], dims[1]).then((results) => {
+      if (!cancelled) setCoverDpiChecks(results);
+    });
+    return () => { cancelled = true; };
+  }, [isOpen, includeCover, coverState, trimSize]);
 
   const handleRedeemCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -299,6 +326,31 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                     <span>
                       <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the All-In-One Studio.
                     </span>
+                  </div>
+                )}
+
+                {includeCover && coverDpiChecks.length > 0 && (
+                  <div className="space-y-1.5">
+                    {coverDpiChecks.map((check, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex gap-2 items-center p-2 rounded-lg text-[9px] font-semibold ${
+                          check.isLowRes
+                            ? 'bg-amber-50 border border-amber-200 text-amber-800'
+                            : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                        }`}
+                      >
+                        {check.isLowRes ? (
+                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                        ) : (
+                          <Info className="w-4 h-4 text-emerald-600 shrink-0" />
+                        )}
+                        <span>
+                          {check.label}: ~{check.effectiveDpi} DPI
+                          {check.isLowRes ? " — below KDP's 300 DPI minimum, may print blurry. Use a higher-resolution image." : " — meets KDP's 300 DPI minimum."}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

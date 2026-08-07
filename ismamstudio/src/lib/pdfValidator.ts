@@ -1,6 +1,76 @@
 import { PDFDocument } from "pdf-lib";
 import { getGutterMargin } from "./pdfFormatter";
 
+export interface ImageResolutionCheck {
+  label: string;
+  effectiveDpi: number;
+  isLowRes: boolean;
+}
+
+// KDP flags cover images under ~300 DPI as likely to print blurry. Interior
+// puzzle grids never need this check -- they're drawn as vector shapes/text,
+// so they're resolution-independent by construction. Only the raster cover
+// images (frontCoverImage/backCoverImage/fullCoverImage from Cover Studio)
+// carry real DPI risk, since they're user-uploaded bitmaps stretched to fill
+// a fixed print area.
+export async function checkCoverImageResolution(
+  coverState: any,
+  trimWidthIn: number,
+  trimHeightIn: number
+): Promise<ImageResolutionCheck[]> {
+  if (typeof window === "undefined" || !coverState) return [];
+  const bleed = 0.125;
+
+  const targets: { src: string; label: string; wIn: number; hIn: number }[] = [];
+
+  if (coverState.fullCoverImage) {
+    const spineWidth = coverState.spineWidth || 0.2;
+    targets.push({
+      src: coverState.fullCoverImage,
+      label: "Full Wraparound Cover Image",
+      wIn: trimWidthIn * 2 + spineWidth + bleed * 2,
+      hIn: trimHeightIn + bleed * 2,
+    });
+  } else {
+    if (coverState.frontCoverImage) {
+      targets.push({
+        src: coverState.frontCoverImage,
+        label: "Front Cover Image",
+        wIn: trimWidthIn + bleed,
+        hIn: trimHeightIn + bleed * 2,
+      });
+    }
+    if (coverState.backCoverImage) {
+      targets.push({
+        src: coverState.backCoverImage,
+        label: "Back Cover Image",
+        wIn: trimWidthIn + bleed,
+        hIn: trimHeightIn + bleed * 2,
+      });
+    }
+  }
+
+  const results = await Promise.all(
+    targets.map(
+      (t) =>
+        new Promise<ImageResolutionCheck | null>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            if (!img.naturalWidth || !img.naturalHeight) return resolve(null);
+            const dpiX = img.naturalWidth / t.wIn;
+            const dpiY = img.naturalHeight / t.hIn;
+            const effectiveDpi = Math.round(Math.min(dpiX, dpiY));
+            resolve({ label: t.label, effectiveDpi, isLowRes: effectiveDpi < 300 });
+          };
+          img.onerror = () => resolve(null);
+          img.src = t.src;
+        })
+    )
+  );
+
+  return results.filter((r): r is ImageResolutionCheck => r !== null);
+}
+
 export interface PdfValidationReport {
   success: boolean;
   pageCount: number;

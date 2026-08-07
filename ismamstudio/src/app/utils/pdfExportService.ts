@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { getGutterMargin } from "@/lib/pdfFormatter";
 
 export interface ExportOptions {
   includeCover?: boolean;
@@ -24,6 +25,11 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
   const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [w, h] });
   let firstPageAdded = false;
 
+  // KDP's required binding gutter scales with page count (0.375" up to 150
+  // pages, rising to 0.875" past 700) -- a flat 0.375" shift under-serves
+  // thicker books and risks content getting lost in the spine.
+  const requiredGutter = getGutterMargin(bookPages.length);
+
   if (includeCover && coverState) {
     await drawCoverPagePart(doc, coverState, 'front', w, h);
     firstPageAdded = true;
@@ -37,7 +43,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     firstPageAdded = true;
 
     // Apply gutter margin if requested
-    const leftMarginShift = gutterMargin ? (index % 2 === 0 ? 0.375 : 0) : 0;
+    const leftMarginShift = gutterMargin ? (index % 2 === 0 ? requiredGutter : 0) : 0;
 
     // Page Title (except for title/blank pages)
     if (page.type !== 'title' && page.type !== 'blank') {

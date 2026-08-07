@@ -96,13 +96,15 @@ export default function CrosswordGenerator() {
   const parseAndGeneratePuzzles = () => {
     setIsGenerating(true);
     
-    // Parse puzzles separated by '#' or just standard rows
+    const maxAllowed = premiumStatus.isPremium ? 1000 : 20;
+    const targetCount = Math.min(numPuzzles, maxAllowed);
+
+    // Parse puzzles separated by '#' or standard word/clue rows
     const sections = inputText.split(/#\s*Puzzle\s*\d+/i);
-    const parsedPuzzlesList: Array<{ title: string; words: Array<{ word: string; clue: string }> }> = [];
+    const parsedTemplatesList: Array<{ title: string; words: Array<{ word: string; clue: string }> }> = [];
 
     if (sections.length > 1) {
       // Markdown header style
-      let titleIdx = 1;
       sections.forEach((sec) => {
         const lines = sec.split("\n").map(l => l.trim()).filter(l => l.length > 0);
         if (lines.length === 0) return;
@@ -116,14 +118,14 @@ export default function CrosswordGenerator() {
         });
         
         if (words.length > 0) {
-          parsedPuzzlesList.push({
-            title: `Crossword Puzzle #${titleIdx++}`,
+          parsedTemplatesList.push({
+            title: "Crossword Puzzle",
             words
           });
         }
       });
     } else {
-      // Fallback: Group words into the specified number of puzzles
+      // Fallback: Group words into chunks
       const lines = inputText.split("\n").map(l => l.trim()).filter(l => l.length > 0);
       const words: Array<{ word: string; clue: string }> = [];
       lines.forEach(l => {
@@ -133,37 +135,32 @@ export default function CrosswordGenerator() {
         }
       });
 
-      if (words.length === 0) {
-        alert("Please enter words and clues (e.g. REACT, A UI library)");
-        setIsGenerating(false);
-        return;
-      }
-
-      let fullWords = [...words];
-      while (fullWords.length < numPuzzles * 5) {
-        fullWords = [...fullWords, ...words];
-      }
-      const wordsPerPuzzle = Math.max(5, Math.ceil(fullWords.length / numPuzzles));
-      for (let idx = 1; idx <= numPuzzles; idx++) {
-        const start = ((idx - 1) * wordsPerPuzzle) % fullWords.length;
-        const chunk = fullWords.slice(start, start + wordsPerPuzzle);
-        if (chunk.length > 0) {
-          parsedPuzzlesList.push({
-            title: `Crossword Puzzle #${idx}`,
-            words: chunk
-          });
-        }
+      if (words.length > 0) {
+        parsedTemplatesList.push({
+          title: "Crossword Puzzle",
+          words
+        });
       }
     }
 
-    if (parsedPuzzlesList.length === 0) {
+    if (parsedTemplatesList.length === 0) {
       alert("No valid crossword puzzles found in the text area.");
       setIsGenerating(false);
       return;
     }
 
-    // Generate puzzle grids
-    const generated = parsedPuzzlesList.map((p, index) => {
+    // Build targetCount puzzles by cycling through available templates
+    const finalPuzzlesList: Array<{ title: string; words: Array<{ word: string; clue: string }> }> = [];
+    for (let i = 0; i < targetCount; i++) {
+      const tmpl = parsedTemplatesList[i % parsedTemplatesList.length];
+      finalPuzzlesList.push({
+        title: `Crossword Puzzle #${i + 1}`,
+        words: [...tmpl.words]
+      });
+    }
+
+    // Generate puzzle grids for all targetCount puzzles
+    const generated = finalPuzzlesList.map((p, index) => {
       const { grid, placedWords } = generateCrosswordGrid(p.words, gridSize);
       return {
         index: index + 1,

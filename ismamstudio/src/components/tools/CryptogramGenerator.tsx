@@ -134,15 +134,29 @@ export default function CryptogramGenerator() {
   const parseAndGeneratePuzzles = () => {
     setIsGenerating(true);
     const mapping = generateCipherMapping();
-    const lines = inputText
+    const rawLines = inputText
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
 
-    if (lines.length === 0) {
+    if (rawLines.length === 0) {
       alert("Please add some quotes or phrases first.");
       setIsGenerating(false);
       return;
+    }
+
+    // The "Free Limit: 7" / "Premium: Max 1,000" label above the textarea is
+    // only true if it's enforced here too -- the quick-fill buttons already
+    // capped themselves, but someone pasting quotes directly bypassed both
+    // the free-tier limit and the 1,000 safety ceiling entirely.
+    const maxAllowed = premiumStatus.isPremium ? 1000 : 7;
+    const lines = rawLines.slice(0, maxAllowed);
+    if (rawLines.length > maxAllowed) {
+      alert(
+        premiumStatus.isPremium
+          ? `Capped at ${maxAllowed} puzzles per book. Generated the first ${maxAllowed} of your ${rawLines.length} phrases.`
+          : `Free plan is limited to ${maxAllowed} puzzles. Generated the first ${maxAllowed} of your ${rawLines.length} phrases -- upgrade for up to 1,000.`
+      );
     }
 
     setQuotes(lines);

@@ -623,19 +623,6 @@ export default function WordScrambleGenerator() {
                 paddingRight: "30px"
               }}
             >
-              {/* Guidelines overlay for visual inspection */}
-              {showGuides && (
-                <>
-                  {/* Inside gutter guidelines */}
-                  <div className="absolute top-0 bottom-0 left-0 border-r border-dashed border-rose-400/40 pointer-events-none" style={{ width: "45px" }} />
-                  <div className="absolute top-0 bottom-0 right-0 border-l border-dashed border-rose-400/40 pointer-events-none" style={{ width: "30px" }} />
-                  <div className="absolute left-0 right-0 top-0 border-b border-dashed border-rose-400/40 pointer-events-none" style={{ height: "40px" }} />
-                  <div className="absolute left-0 right-0 bottom-0 border-t border-dashed border-rose-400/40 pointer-events-none" style={{ height: "40px" }} />
-                  
-                  <span className="absolute bottom-1 right-2 text-[8px] font-black text-rose-500 opacity-60">SAFE PRINT AREA</span>
-                </>
-              )}
-
               {/* Live Preview Page Content */}
               <div className="flex flex-col h-full justify-between">
                 

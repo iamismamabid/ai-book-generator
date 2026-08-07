@@ -73,7 +73,7 @@ function drawSudokuTile(
   }
 
   // Draw numbers
-  const numberFontSize = Math.max(9, Math.floor(cellSize * 36));
+  const numberFontSize = Math.max(8, Math.floor(cellSize * 30));
   doc.setFontSize(numberFontSize);
 
   for (let r = 0; r < 9; r++) {
@@ -91,7 +91,7 @@ function drawSudokuTile(
         doc.text(
           val.toString(),
           x + c * cellSize + cellSize / 2,
-          y + r * cellSize + cellSize * 0.68,
+          y + r * cellSize + cellSize * 0.66,
           { align: "center" }
         );
       }
@@ -138,35 +138,40 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     firstPageAdded = true;
   }
 
-  // ── Puzzle pages (1 per page - Large) ─────────────────────────
+  // ── Puzzle pages (1 per page - Standard KDP Book Format) ─────────
   puzzles.forEach((item, index) => {
     if (firstPageAdded || index > 0) doc.addPage();
     firstPageAdded = true;
 
-    const margin = 0.35;
-    const safeW = width - (margin * 2);
-    const safeH = height - (margin * 2);
+    // Standard professional KDP puzzle sizing (centered with clean margins)
+    let maxGridSize = 5.4; // Standard for 8.5x11
+    if (trimSize === "6x9") maxGridSize = 4.2;
+    if (trimSize === "5x8") maxGridSize = 3.5;
 
-    const titleSpace = 0.3;
-    const gridSize = Math.min(safeW, safeH - titleSpace - 0.3);
+    const safeMarginX = 0.65;
+    const safeW = width - (safeMarginX * 2);
+    const safeH = height - 1.5;
+
+    const gridSize = Math.min(maxGridSize, safeW, safeH);
     const startX = (width - gridSize) / 2;
-    const startY = margin + titleSpace + 0.1;
+    const startY = (height - gridSize) / 2 - 0.1;
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
+    doc.setFontSize(16);
     doc.setTextColor(20, 20, 30);
-    doc.text(`${title} #${index + 1}`, width / 2, margin + 0.35, { align: "center" });
+    doc.text(`${title} #${index + 1}`, width / 2, startY - 0.35, { align: "center" });
 
     drawSudokuTile(doc, item.puzzle, startX, startY, gridSize, false, index + 1, false);
 
     if (showGuides) {
+      const margin = 0.5;
       drawMarginGuides(doc, margin, margin, margin, margin, width, height);
     }
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setTextColor(148, 163, 184);
-    doc.text(`Page ${index + 1}`, width - 0.5, height - 0.35, { align: "right" });
+    doc.text(`Page ${index + 1}`, width - 0.5, height - 0.4, { align: "right" });
   });
 
   // ── Solution pages (1, 2, or 4 per page) ─────────────────────

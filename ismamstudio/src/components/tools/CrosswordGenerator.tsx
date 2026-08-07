@@ -48,7 +48,7 @@ export default function CrosswordGenerator() {
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [includeAnswers, setIncludeAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
-  const [showGuides, setShowGuides] = useState<boolean>(false);
+  const [showGuides, setShowGuides] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
   const csvInputRef = useRef<HTMLInputElement>(null);
 

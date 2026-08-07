@@ -695,7 +695,7 @@ export default function WordSearchStudio() {
                         
                         <div className="col-span-1 lg:col-span-3 bg-slate-100 rounded-xl shadow-inner border border-slate-200 flex flex-col items-center justify-center p-8 relative overflow-y-auto">
                             {previewGrid && answerMask ? (
-                                <div className="bg-white p-8 shadow-xl rounded-sm w-full max-w-xl aspect-[8.5/11] flex flex-col relative">
+                                <div className="bg-white p-8 shadow-xl rounded-sm w-full max-w-xl aspect-[8.5/11] flex flex-col relative" style={{ borderColor, borderWidth: `${lineWidth}px` }}>
                                     <button onClick={() => setShowAnswers(!showAnswers)} className="absolute top-4 right-4 bg-slate-100 p-2 rounded-full text-slate-600 hover:bg-slate-200 z-20">{showAnswers ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}</button>
                                     
                                     <h3 className="font-bold text-xl mb-4" style={{ textAlign: puzzleAlign, fontFamily: lettersFont }}>

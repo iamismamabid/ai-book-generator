@@ -41,20 +41,30 @@ export default function CryptogramGenerator() {
 
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
 
-  useEffect(() => {
-    async function loadPremium() {
-      try {
-        const { checkPremiumStatus } = await import("@/app/actions");
-        const res = await checkPremiumStatus();
-        setPremiumStatus(res as any);
-      } catch (err) {
-        console.error(err);
-      }
+  // Fetches plan status fresh rather than trusting whatever `premiumStatus`
+  // happened to hold at render time. The initial useEffect below populates it
+  // for the UI label, but relying on that same state to gate generation had a
+  // race: clicking Generate before the async load resolved (or before a
+  // newly-redeemed plan reflected) silently fell back to the free-tier
+  // default and capped a genuinely premium account at 7.
+  const getFreshPremiumStatus = async () => {
+    try {
+      const { checkPremiumStatus } = await import("@/app/actions");
+      const res = await checkPremiumStatus();
+      setPremiumStatus(res as any);
+      return res as any;
+    } catch (err) {
+      console.error(err);
+      return premiumStatus;
     }
-    loadPremium();
+  };
+
+  useEffect(() => {
+    getFreshPremiumStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const generateBulkQuotes = (count: number) => {
+  const generateBulkQuotes = async (count: number) => {
     const baseQuotes = [
       "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
       "SUCCESS IS NOT FINAL, FAILURE IS NOT FATAL: IT IS THE COURAGE TO CONTINUE THAT COUNTS.",
@@ -78,7 +88,8 @@ export default function CryptogramGenerator() {
       "SIMPLICITY IS THE ULTIMATE SOPHISTICATION."
     ];
 
-    const maxCount = premiumStatus.isPremium ? count : Math.min(count, 7);
+    const freshStatus = await getFreshPremiumStatus();
+    const maxCount = freshStatus.isPremium ? count : Math.min(count, 7);
     const generated: string[] = [];
     for (let i = 0; i < maxCount; i++) {
       const base = baseQuotes[i % baseQuotes.length];
@@ -131,7 +142,7 @@ export default function CryptogramGenerator() {
       .join("");
   };
 
-  const parseAndGeneratePuzzles = () => {
+  const parseAndGeneratePuzzles = async () => {
     setIsGenerating(true);
     const mapping = generateCipherMapping();
     const rawLines = inputText
@@ -148,12 +159,16 @@ export default function CryptogramGenerator() {
     // The "Free Limit: 7" / "Premium: Max 1,000" label above the textarea is
     // only true if it's enforced here too -- the quick-fill buttons already
     // capped themselves, but someone pasting quotes directly bypassed both
-    // the free-tier limit and the 1,000 safety ceiling entirely.
-    const maxAllowed = premiumStatus.isPremium ? 1000 : 7;
+    // the free-tier limit and the 1,000 safety ceiling entirely. Fetched
+    // fresh (not the possibly-stale `premiumStatus` state) so a premium
+    // account isn't capped just because this ran before the initial status
+    // load resolved.
+    const freshStatus = await getFreshPremiumStatus();
+    const maxAllowed = freshStatus.isPremium ? 1000 : 7;
     const lines = rawLines.slice(0, maxAllowed);
     if (rawLines.length > maxAllowed) {
       alert(
-        premiumStatus.isPremium
+        freshStatus.isPremium
           ? `Capped at ${maxAllowed} puzzles per book. Generated the first ${maxAllowed} of your ${rawLines.length} phrases.`
           : `Free plan is limited to ${maxAllowed} puzzles. Generated the first ${maxAllowed} of your ${rawLines.length} phrases -- upgrade for up to 1,000.`
       );

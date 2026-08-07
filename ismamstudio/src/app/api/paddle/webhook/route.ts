@@ -33,18 +33,18 @@ export async function POST(request: Request) {
     
     let plan = "free";
     if (
-      priceId === cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) ||
-      priceId === cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL)
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kwbgsarn24e1rn46dhadfcnx") ||
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL) || "pri_01kwbh8envq2yez7j7hsd1y679")
     ) {
       plan = "starter";
     } else if (
-      priceId === cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) ||
-      priceId === cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL)
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) || "pri_01kwbgyfhhq6h86av5qycv52fs") ||
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL) || "pri_01kwbh4d3njs6ywbv9qr1wae79")
     ) {
       plan = "pro";
     } else if (
-      priceId === cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY) ||
-      priceId === cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL)
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY) || "pri_01kwbwhfxnebsj6nds4m65jjrq") ||
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL) || "pri_01kwbwkrk1w7tnc318ga4d6xt6")
     ) {
       plan = "agency";
     }

@@ -138,12 +138,12 @@ function PricingSectionInner() {
     const planIdKey = `${planKey}_${isAnnualBilling ? "annual" : "monthly"}`;
 
     const priceIds: Record<string, string | undefined> = {
-      "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY),
-      "starter_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL),
-      "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY),
-      "pro_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL),
-      "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY),
-      "agency_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL),
+      "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kwbgsarn24e1rn46dhadfcnx",
+      "starter_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL) || "pri_01kwbh8envq2yez7j7hsd1y679",
+      "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) || "pri_01kwbgyfhhq6h86av5qycv52fs",
+      "pro_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL) || "pri_01kwbh4d3njs6ywbv9qr1wae79",
+      "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY) || "pri_01kwbwhfxnebsj6nds4m65jjrq",
+      "agency_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL) || "pri_01kwbwkrk1w7tnc318ga4d6xt6",
     };
 
     const selectedPriceId = priceIds[planIdKey];

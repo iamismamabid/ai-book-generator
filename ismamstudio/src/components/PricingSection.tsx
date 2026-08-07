@@ -96,6 +96,18 @@ function PricingSectionInner() {
                   console.error("Trustpilot Invitation Error:", tpErr);
                 }
               }
+            } else if (event?.name === "checkout.error" || event?.name === "checkout.payment.failed") {
+              // Paddle.Checkout.open() doesn't throw synchronously for a bad/archived
+              // price ID -- the overlay opens and Paddle rejects it internally, which
+              // previously surfaced nowhere in our code (this eventCallback only
+              // handled checkout.completed). Surfacing it here turns a silent failure
+              // into a visible one with Paddle's actual rejection reason.
+              console.error("Paddle Checkout Error Event:", event);
+              posthog.capture("paddle_checkout_error", event?.data || {});
+              const paddleMessage = event?.data?.error?.detail || event?.data?.error?.code || event?.name;
+              alert(`Checkout failed: ${paddleMessage}. Please contact support@kdpage.com with this message if it persists.`);
+            } else if (event?.name === "checkout.warning") {
+              console.warn("Paddle Checkout Warning Event:", event);
             }
           }
         };

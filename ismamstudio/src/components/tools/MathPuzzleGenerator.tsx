@@ -47,7 +47,7 @@ export default function MathPuzzleGenerator() {
   const router = useRouter();
 
   // Settings
-  const [puzzleType, setPuzzleType] = useState<PuzzleType>("addition");
+  const [puzzleType, setPuzzleType] = useState<PuzzleType>("multiplication");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [numPages, setNumPages] = useState<number>(3);

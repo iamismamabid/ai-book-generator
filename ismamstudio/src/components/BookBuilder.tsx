@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import BookVersionHistoryModal from "./BookVersionHistoryModal";
 import { BookVersion } from "@/lib/bookVersions";
 import { History, Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, AlertCircle, AlertTriangle, GripVertical, Info } from "lucide-react";
@@ -114,6 +115,8 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
       setActiveIndex(0);
     }
   };
+
+  const { isValid, errors, validateBook, clearValidation } = useBookValidation();
 
   // Validate book whenever pages or export modal state changes
   useEffect(() => {

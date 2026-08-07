@@ -248,7 +248,7 @@ export default function MathPuzzleGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
       ]);
@@ -277,6 +277,10 @@ export default function MathPuzzleGenerator() {
       for (let pIdx = 0; pIdx < numPages; pIdx++) {
         if (firstPageAdded || pIdx > 0) doc.addPage();
         firstPageAdded = true;
+
+        if (finalGuides) {
+          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+        }
 
         // Title Header
         // Title strings
@@ -381,6 +385,9 @@ export default function MathPuzzleGenerator() {
         doc.setTextColor(30, 41, 59);
         doc.text("Answer Key", marginL + contentW / 2, marginT + 0.3, { align: "center" });
         doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
+        if (finalGuides) {
+          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+        }
 
         const totalPuzzles = numPages * puzzlesPerPage;
         const gridH = 4.0;
@@ -396,6 +403,9 @@ export default function MathPuzzleGenerator() {
             doc.setTextColor(30, 41, 59);
             doc.text("Answer Key (Cont.)", marginL + contentW / 2, marginT + 0.3, { align: "center" });
             doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
+            if (finalGuides) {
+              drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+            }
           }
 
           const startY = marginT + 1.1 + row * gridH;

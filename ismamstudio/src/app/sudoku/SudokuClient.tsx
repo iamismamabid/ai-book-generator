@@ -148,10 +148,12 @@ export default function SudokuClient() {
     coverState: any;
     includeSolutions: boolean;
     trimSize: "6x9" | "8.5x11" | "5x8";
+    hasBleed?: boolean;
+    showGuides?: boolean;
     isPremium?: boolean;
   }) => {
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, isPremium } = options;
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, isPremium } = options;
 
     const count = Math.max(1, bookCount);
     const puzzles = generateSudokuBook(count, difficulty);
@@ -166,6 +168,8 @@ export default function SudokuClient() {
         solutionsPerPage,
         includeCover: incCover,
         coverState,
+        hasBleed,
+        showGuides,
         isPremium,
       },
       `sudoku-${difficulty}-${count}puzzles.pdf`

@@ -274,9 +274,11 @@ export default function WordSearchStudio() {
         coverState: any;
         includeSolutions: boolean;
         trimSize: "6x9" | "8.5x11" | "5x8";
+        hasBleed?: boolean;
+        showGuides?: boolean;
         isPremium?: boolean;
     }) => {
-        const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, isPremium } = options;
+        const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, isPremium } = options;
         setIsGenerating(true);
         const { cleanedWords, titleText } = getCleanMasterList();
         if (cleanedWords.length < wordsPerPage) { alert(`Add more words!`); setIsGenerating(false); return; }
@@ -293,7 +295,11 @@ export default function WordSearchStudio() {
             finalH = 8;
         }
 
-        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList }] = await Promise.all([
+        const bleed = hasBleed ? 0.125 : 0;
+        finalW += bleed * 2;
+        finalH += bleed * 2;
+
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }] = await Promise.all([
             import("jspdf"),
             import("../../utils/pdfExportService"),
         ]);
@@ -322,6 +328,9 @@ export default function WordSearchStudio() {
         for (let p = 0; p < totalPuzPages; p++) {
             if (firstPageAdded || p > 0) doc.addPage();
             firstPageAdded = true;
+            if (showGuides) {
+                drawMarginGuides(doc, margin, margin, margin, margin, finalW, finalH);
+            }
             for (let z = 0; z < puzzlesPerPage; z++) {
                 const puzIndex = (p * puzzlesPerPage) + z;
                 if (puzIndex >= totalPuzzles) break;
@@ -367,6 +376,9 @@ export default function WordSearchStudio() {
 
             for (let p = 0; p < totalSolPages; p++) {
                 doc.addPage();
+                if (showGuides) {
+                    drawMarginGuides(doc, margin, margin, margin, margin, finalW, finalH);
+                }
                 for (let z = 0; z < solutionsPerPage; z++) {
                     const solIndex = (p * solutionsPerPage) + z;
                     if (solIndex >= totalPuzzles) break;

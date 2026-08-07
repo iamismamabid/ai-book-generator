@@ -203,7 +203,7 @@ export default function CryptogramGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
       ]);
@@ -259,6 +259,10 @@ export default function CryptogramGenerator() {
         doc.setLineWidth(0.015);
         doc.setDrawColor(226, 232, 240);
         doc.line(marginL, marginT + 0.7, marginL + contentW, marginT + 0.7);
+
+        if (finalGuides) {
+          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+        }
 
         // Page Number Footer
         doc.setFont("helvetica", "normal");
@@ -375,6 +379,10 @@ export default function CryptogramGenerator() {
         doc.setDrawColor(226, 232, 240);
         doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
 
+        if (finalGuides) {
+          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+        }
+
         // A. Print Cipher Key alphabet mapping
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
@@ -410,6 +418,9 @@ export default function CryptogramGenerator() {
           if (ansY + 1.0 > pageH - marginB) {
             doc.addPage();
             ansY = marginT + 0.5;
+            if (finalGuides) {
+              drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+            }
           }
 
           doc.setFont("helvetica", "bold");

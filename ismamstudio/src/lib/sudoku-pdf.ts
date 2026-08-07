@@ -1,7 +1,7 @@
 // src/lib/sudoku-pdf.ts
 import { jsPDF } from "jspdf";
 import { Grid, Difficulty } from "./sudokuGenerator";
-import { drawCoverPagePart, drawWatermark } from "../app/utils/pdfExportService";
+import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 
 interface PdfOptions {
   puzzles: { puzzle: Grid; solution: Grid }[];
@@ -13,6 +13,8 @@ interface PdfOptions {
   includeCover?: boolean;
   coverState?: any;
   isPremium?: boolean;
+  hasBleed?: boolean;
+  showGuides?: boolean;
 }
 
 function getSolutionPackZones(count: number, x0: number, y0: number, safeW: number, safeH: number) {
@@ -110,12 +112,18 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     includeCover = false,
     coverState = null,
     isPremium,
+    hasBleed = false,
+    showGuides = false,
   } = options;
 
   let width = 8.5;
   let height = 11;
   if (trimSize === "6x9") { width = 6; height = 9; }
   if (trimSize === "5x8") { width = 5; height = 8; }
+
+  const bleed = hasBleed ? 0.125 : 0;
+  width += bleed * 2;
+  height += bleed * 2;
 
   const doc = new jsPDF({
     orientation: "portrait",
@@ -151,6 +159,10 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
 
     drawSudokuTile(doc, item.puzzle, startX, startY, gridSize, false, index + 1, false);
 
+    if (showGuides) {
+      drawMarginGuides(doc, margin, margin, margin, margin, width, height);
+    }
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(148, 163, 184);
@@ -169,6 +181,10 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
       const safeH = height - (margin * 2);
       const topReserved = 0.5;
       const availH = safeH - topReserved;
+
+      if (showGuides) {
+        drawMarginGuides(doc, margin, margin, margin, margin, width, height);
+      }
 
       const zones = getSolutionPackZones(solPerPage, margin, margin + topReserved, safeW, availH);
 

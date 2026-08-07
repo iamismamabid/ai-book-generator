@@ -80,7 +80,7 @@ export default function KakuroGenerator() {
     hasBleed: boolean;
     showGuides: boolean;
   }) => {
-    const { includeCover: incCover, coverState, includeSolutions, trimSize: finalTrimSize } = options;
+    const { includeCover: incCover, coverState, includeSolutions, trimSize: finalTrimSize, hasBleed, showGuides } = options;
     setIsDownloading(true);
     try {
       const generatedPuzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[] = [];
@@ -106,6 +106,8 @@ export default function KakuroGenerator() {
         includeSolutions: includeSolutions,
         includeCover: incCover,
         coverState,
+        hasBleed,
+        showGuides,
         isPremium: premiumStatus.isPremium
       }, `Kakuro_${sizeId}_${difficulty}_${numPages}_Pages.pdf`);
     } catch (e) {

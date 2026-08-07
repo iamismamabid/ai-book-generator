@@ -3,19 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AI_FEATURES_ENABLED } from "@/lib/features";
-import { 
-  Search, 
-  BookOpen, 
-  Sparkles, 
-  HelpCircle, 
-  Key, 
-  Grid3x3, 
-  Palette, 
-  Printer, 
-  FileText, 
-  Sliders, 
-  CheckCircle2, 
-  ChevronRight, 
+import {
+  Search,
+  BookOpen,
+  Sparkles,
+  HelpCircle,
+  Key,
+  Grid3x3,
+  Palette,
+  Printer,
+  FileText,
+  Sliders,
+  CheckCircle2,
+  ChevronRight,
   ChevronDown,
   ArrowLeft,
   Mail,
@@ -337,7 +337,7 @@ export default function DocsClient() {
       article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       article.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
       article.content.some(c => c.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+
     const matchesCategory = selectedCategory === "all" || article.category === selectedCategory;
 
     return matchesSearch && matchesCategory;
@@ -353,7 +353,7 @@ export default function DocsClient() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-50 py-16 px-4 sm:px-6 relative overflow-hidden">
-      
+
       {/* Background Glows */}
       <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl translate-y-1/2 pointer-events-none" />
@@ -411,11 +411,10 @@ export default function DocsClient() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
-                selectedCategory === cat.id
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${selectedCategory === cat.id
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-105"
                   : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-800"
-              }`}
+                }`}
             >
               {cat.label}
             </button>
@@ -444,11 +443,10 @@ export default function DocsClient() {
               return (
                 <div
                   key={article.id}
-                  className={`bg-white dark:bg-slate-900 border rounded-2xl transition-all duration-300 overflow-hidden ${
-                    isExpanded 
-                      ? "border-indigo-500/50 shadow-xl shadow-indigo-500/5 ring-1 ring-indigo-500/30" 
+                  className={`bg-white dark:bg-slate-900 border rounded-2xl transition-all duration-300 overflow-hidden ${isExpanded
+                      ? "border-indigo-500/50 shadow-xl shadow-indigo-500/5 ring-1 ring-indigo-500/30"
                       : "border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm"
-                  }`}
+                    }`}
                 >
                   {/* Article Header (Clickable Accordion) */}
                   <button
@@ -456,11 +454,10 @@ export default function DocsClient() {
                     className="w-full text-left p-6 flex items-start justify-between gap-4 cursor-pointer focus:outline-none"
                   >
                     <div className="flex items-start gap-4">
-                      <div className={`p-3 rounded-xl shrink-0 ${
-                        isExpanded 
-                          ? "bg-indigo-600 text-white" 
+                      <div className={`p-3 rounded-xl shrink-0 ${isExpanded
+                          ? "bg-indigo-600 text-white"
                           : "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900"
-                      }`}>
+                        }`}>
                         <BookOpen className="w-5 h-5" />
                       </div>
 
@@ -482,11 +479,10 @@ export default function DocsClient() {
                       </div>
                     </div>
 
-                    <div className={`p-2 rounded-xl border shrink-0 transition-transform duration-300 ${
-                      isExpanded 
-                        ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-300 dark:border-slate-700 rotate-180" 
+                    <div className={`p-2 rounded-xl border shrink-0 transition-transform duration-300 ${isExpanded
+                        ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-300 dark:border-slate-700 rotate-180"
                         : "bg-slate-50 dark:bg-slate-950 text-slate-400 border-slate-200 dark:border-slate-800"
-                    }`}>
+                      }`}>
                       <ChevronDown className="w-5 h-5" />
                     </div>
                   </button>
@@ -494,7 +490,7 @@ export default function DocsClient() {
                   {/* Expanded Body Content */}
                   {isExpanded && (
                     <div className="px-6 pb-6 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-6">
-                      
+
                       {/* Description Paragraphs */}
                       <div className="space-y-3">
                         {article.content.map((p, idx) => (

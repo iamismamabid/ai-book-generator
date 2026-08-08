@@ -411,7 +411,7 @@ export function drawWordSearchGrid(
 
     const padX = cellSize * 0.42;
     const halfH = cellSize * 0.36;
-    const radius = cellSize * 0.18;
+    const radius = cellSize * 0.11;
 
     const drawWords = (dx: number, dy: number, fill: string) => {
       data.words.forEach((w: any) => {

@@ -730,7 +730,7 @@ export default function WordSearchStudio() {
                                             }))}
                                         </div>
                                         {showAnswers && solutionHighlighter === 'apple' && (() => {
-                                            const padX = 0.42, halfH = 0.36, rx = 0.11;
+                                            const padX = 0.38, halfH = 0.26, rx = 0.09;
                                             const wordRect = (w: any, dx: number, dy: number) => {
                                                 const cx = (w.startC + w.endC) / 2 + 0.5 + dx;
                                                 const cy = (w.startR + w.endR) / 2 + 0.5 + dy;

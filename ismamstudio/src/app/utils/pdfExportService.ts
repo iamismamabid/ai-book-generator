@@ -409,9 +409,9 @@ export function drawWordSearchGrid(
       ctx.closePath();
     };
 
-    const padX = cellSize * 0.42;
-    const halfH = cellSize * 0.36;
-    const radius = cellSize * 0.11;
+    const padX = cellSize * 0.38;
+    const halfH = cellSize * 0.26;
+    const radius = cellSize * 0.09;
 
     const drawWords = (dx: number, dy: number, fill: string) => {
       data.words.forEach((w: any) => {

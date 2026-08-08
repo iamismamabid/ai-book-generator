@@ -381,15 +381,15 @@ export function drawWordSearchGrid(
     });
   });
 
-  // 2. "Apple style" solution markers: a true rotated rounded rectangle (mostly
-  // straight sides, small rounded corners -- not a full stadium/pill) along each
-  // found word, lifted off the page by a layered shadow underneath. jsPDF's
-  // roundedRect doesn't rotate, so the shape is built manually via context2d:
-  // translate+rotate to the word's angle, then trace a rounded-rect path with
-  // bezierCurveTo corners (context2d.arcTo/roundRect aren't implemented in this
-  // jsPDF build). Translucency keeps the letters (drawn in their normal dark
-  // color in step 3) readable through it. Where two words overlap (e.g. crossing
-  // diagonals), the color just layers darker instead of an ambiguous crossing.
+  // 2. "Apple style" solution markers: a small rounded square on each of a found
+  // word's letter cells, lifted off the page by a layered shadow underneath.
+  // A continuous band spanning the whole word (the previous approach) always
+  // blends heavily wherever two words' bands overlap, however thin -- since
+  // it's one filled shape stretching across many cells. Per-cell squares only
+  // overlap with a crossing word at the exact shared cell, not across a whole
+  // diagonal swath, so multiple crossing words stay visually distinct. Adjacent
+  // same-word cells sit close enough to read as one connected path (a small
+  // gap between them, like connected chips, rather than a solid unbroken band).
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.saveGraphicsState();
     const ctx = doc.context2d;
@@ -409,34 +409,35 @@ export function drawWordSearchGrid(
       ctx.closePath();
     };
 
-    const padX = cellSize * 0.38;
-    const halfH = cellSize * 0.26;
-    const radius = cellSize * 0.09;
+    const cellHalf = cellSize * 0.43;
+    const radius = cellSize * 0.14;
 
-    const drawWords = (dx: number, dy: number, fill: string) => {
+    const drawCells = (dx: number, dy: number, fill: string) => {
       data.words.forEach((w: any) => {
-        const sX = zone.x + (w.startC * cellSize) + (cellSize / 2) + dx;
-        const sY = zone.y + (w.startR * cellSize) + (cellSize / 2) + dy;
-        const eX = zone.x + (w.endC * cellSize) + (cellSize / 2) + dx;
-        const eY = zone.y + (w.endR * cellSize) + (cellSize / 2) + dy;
-        const angle = Math.atan2(eY - sY, eX - sX);
-        const len = Math.hypot(eX - sX, eY - sY);
-        ctx.save();
-        ctx.translate(sX, sY);
-        ctx.rotate(angle);
-        roundedRectPath(-padX, -halfH, len + padX, halfH, radius);
-        ctx.fillStyle = fill;
-        ctx.fill();
-        ctx.restore();
+        const dR = Math.sign(w.endR - w.startR);
+        const dC = Math.sign(w.endC - w.startC);
+        const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
+        for (let i = 0; i <= steps; i++) {
+          const r = w.startR + dR * i;
+          const c = w.startC + dC * i;
+          const cx = zone.x + (c * cellSize) + (cellSize / 2) + dx;
+          const cy = zone.y + (r * cellSize) + (cellSize / 2) + dy;
+          ctx.save();
+          ctx.translate(cx, cy);
+          roundedRectPath(-cellHalf, -cellHalf, cellHalf, cellHalf, radius);
+          ctx.fillStyle = fill;
+          ctx.fill();
+          ctx.restore();
+        }
       });
     };
 
     // Shadow pass 1: wide, faint -- simulates the soft outer edge of a blur.
-    drawWords(cellSize * 0.09, cellSize * 0.10, "rgba(100,116,139,0.10)");
+    drawCells(cellSize * 0.09, cellSize * 0.10, "rgba(100,116,139,0.10)");
     // Shadow pass 2: tighter, darker -- simulates the core of the shadow.
-    drawWords(cellSize * 0.05, cellSize * 0.06, "rgba(71,85,105,0.22)");
+    drawCells(cellSize * 0.05, cellSize * 0.06, "rgba(71,85,105,0.22)");
     // Main pass: light gray, on top, no offset.
-    drawWords(0, 0, "rgba(203,213,225,0.62)");
+    drawCells(0, 0, "rgba(203,213,225,0.62)");
 
     doc.restoreGraphicsState();
   }

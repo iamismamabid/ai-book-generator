@@ -730,14 +730,16 @@ export default function WordSearchStudio() {
                                             }))}
                                         </div>
                                         {showAnswers && solutionHighlighter === 'apple' && (() => {
-                                            const padX = 0.38, halfH = 0.26, rx = 0.09;
-                                            const wordRect = (w: any, dx: number, dy: number) => {
-                                                const cx = (w.startC + w.endC) / 2 + 0.5 + dx;
-                                                const cy = (w.startR + w.endR) / 2 + 0.5 + dy;
-                                                const len = Math.hypot(w.endC - w.startC, w.endR - w.startR);
-                                                const angle = Math.atan2(w.endR - w.startR, w.endC - w.startC) * (180 / Math.PI);
-                                                const width = len + padX * 2, height = halfH * 2;
-                                                return { x: cx - width / 2, y: cy - height / 2, width, height, transform: `rotate(${angle} ${cx} ${cy})` };
+                                            const cellHalf = 0.43, rx = 0.14;
+                                            const wordCells = (w: any, dx: number, dy: number) => {
+                                                const dR = Math.sign(w.endR - w.startR);
+                                                const dC = Math.sign(w.endC - w.startC);
+                                                const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
+                                                return Array.from({ length: steps + 1 }, (_, i) => {
+                                                    const cx = w.startC + dC * i + 0.5 + dx;
+                                                    const cy = w.startR + dR * i + 0.5 + dy;
+                                                    return { x: cx - cellHalf, y: cy - cellHalf, width: cellHalf * 2, height: cellHalf * 2 };
+                                                });
                                             };
                                             return (
                                                 <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -746,12 +748,12 @@ export default function WordSearchStudio() {
                                                             <feGaussianBlur in="SourceGraphic" stdDeviation="0.10" />
                                                         </filter>
                                                     </defs>
-                                                    {cleanWordsList.map((w, i) => (
-                                                        <rect key={i} {...wordRect(w, 0.09, 0.10)} rx={rx} fill="#475569" opacity="0.3" filter="url(#ws-highlight-shadow)" />
-                                                    ))}
-                                                    {cleanWordsList.map((w, i) => (
-                                                        <rect key={i} {...wordRect(w, 0, 0)} rx={rx} fill="#CBD5E1" opacity="0.62" />
-                                                    ))}
+                                                    {cleanWordsList.flatMap((w, i) => wordCells(w, 0.09, 0.10).map((cell, j) => (
+                                                        <rect key={`${i}-${j}`} {...cell} rx={rx} fill="#475569" opacity="0.3" filter="url(#ws-highlight-shadow)" />
+                                                    )))}
+                                                    {cleanWordsList.flatMap((w, i) => wordCells(w, 0, 0).map((cell, j) => (
+                                                        <rect key={`${i}-${j}`} {...cell} rx={rx} fill="#CBD5E1" opacity="0.62" />
+                                                    )))}
                                                 </svg>
                                             );
                                         })()}

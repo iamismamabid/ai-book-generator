@@ -335,9 +335,6 @@ export default function WordSearchStudio() {
         for (let p = 0; p < totalPuzPages; p++) {
             if (firstPageAdded || p > 0) doc.addPage();
             firstPageAdded = true;
-            if (showGuides) {
-                drawMarginGuides(doc, margin, margin, margin, margin, finalW, finalH);
-            }
             for (let z = 0; z < puzzlesPerPage; z++) {
                 const puzIndex = (p * puzzlesPerPage) + z;
                 if (puzIndex >= totalPuzzles) break;
@@ -383,9 +380,6 @@ export default function WordSearchStudio() {
 
             for (let p = 0; p < totalSolPages; p++) {
                 doc.addPage();
-                if (showGuides) {
-                    drawMarginGuides(doc, margin, margin, margin, margin, finalW, finalH);
-                }
                 for (let z = 0; z < solutionsPerPage; z++) {
                     const solIndex = (p * solutionsPerPage) + z;
                     if (solIndex >= totalPuzzles) break;

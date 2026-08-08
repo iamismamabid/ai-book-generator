@@ -381,29 +381,20 @@ export function drawWordSearchGrid(
     });
   });
 
-  // 2. "Apple style" solution connector lines are drawn next (above backgrounds, below letters)
+  // 2. "Apple style" solution connector lines (thick round-capped capsule pill shape)
   if (isSolution && s.solutionHighlighter === 'apple') {
-    doc.setLineWidth(cellSize * 0.08);
-    doc.setDrawColor(120, 120, 120);
-    doc.setLineJoin("round");
+    doc.saveGraphicsState();
+    doc.setLineWidth(cellSize * 0.72);
+    doc.setLineCap("round");
+    doc.setDrawColor(226, 232, 240); // Soft slate pill background
     data.words.forEach((w: any) => {
       const sX = zone.x + (w.startC * cellSize) + (cellSize / 2);
       const sY = zone.y + (w.startR * cellSize) + (cellSize / 2);
       const eX = zone.x + (w.endC * cellSize) + (cellSize / 2);
       const eY = zone.y + (w.endR * cellSize) + (cellSize / 2);
-      const angle = Math.atan2(eY - sY, eX - sX);
-      const pad = cellSize * 0.40;
-      const len = Math.hypot(eX - sX, eY - sY);
-      const c = [{ x: -pad, y: -pad }, { x: len + pad, y: -pad }, { x: len + pad, y: pad }, { x: -pad, y: pad }]
-        .map(pt => ({
-          x: sX + (pt.x * Math.cos(angle) - pt.y * Math.sin(angle)),
-          y: sY + (pt.x * Math.sin(angle) + pt.y * Math.cos(angle)),
-        }));
-      doc.lines(
-        [[c[1].x - c[0].x, c[1].y - c[0].y], [c[2].x - c[1].x, c[2].y - c[1].y], [c[3].x - c[2].x, c[3].y - c[2].y]],
-        c[0].x, c[0].y, [1, 1], 'S', true
-      );
+      doc.line(sX, sY, eX, eY);
     });
+    doc.restoreGraphicsState();
   }
 
   // 3. Draw all letters on top with dynamic scaling based on cellSize
@@ -421,9 +412,9 @@ export function drawWordSearchGrid(
       doc.setFont(s.font, isWordLetter || s.letterBold ? "bold" : "normal");
 
       if (isWordLetter) {
-        doc.setTextColor(s.highlightTextColor);
+        doc.setTextColor(15, 23, 42); // Crisp dark text for answer letters
       } else if (isSolution && (s.solutionHighlighter === 'fade' || s.solutionHighlighter === 'apple')) {
-        doc.setTextColor(210, 210, 210);
+        doc.setTextColor(148, 163, 184); // Soft faded gray text for distractor letters
       } else {
         doc.setTextColor(30, 41, 59);
       }

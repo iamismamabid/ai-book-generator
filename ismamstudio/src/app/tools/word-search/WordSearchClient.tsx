@@ -731,17 +731,10 @@ export default function WordSearchStudio() {
                                         </div>
                                         {showAnswers && solutionHighlighter === 'apple' && (
                                             <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                                                {cleanWordsList.map((w, i) => {
-                                                    const dR = Math.sign(w.endR - w.startR);
-                                                    const dC = Math.sign(w.endC - w.startC);
-                                                    const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
-                                                    return Array.from({ length: steps + 1 }, (_, s) => {
-                                                        const r = w.startR + dR * s;
-                                                        const c = w.startC + dC * s;
-                                                        return <rect key={`${i}-${s}`} x={c + 0.04} y={r + 0.04} width={0.92} height={0.92}
-                                                            fill="none" stroke="#141414" strokeWidth="0.07" />;
-                                                    });
-                                                })}
+                                                {cleanWordsList.map((w, i) => (
+                                                    <line key={i} x1={w.startC + 0.5} y1={w.startR + 0.5} x2={w.endC + 0.5} y2={w.endR + 0.5}
+                                                        stroke="#FDE047" strokeWidth="0.75" strokeLinecap="round" opacity="0.45" />
+                                                ))}
                                             </svg>
                                         )}
                                     </div>

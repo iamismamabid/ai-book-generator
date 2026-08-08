@@ -381,25 +381,29 @@ export function drawWordSearchGrid(
     });
   });
 
-  // 2. "Apple style" solution markers: a bold border boxed around each of a found
-  // word's letter cells. Horizontal/vertical runs share an edge between adjacent
-  // boxes so they read as one connected outline. Diagonal words get the same
-  // per-cell boxing (not a connector line) -- when a grid has two or more diagonal
-  // words, their lines can cross and form an ambiguous "X", which per-cell boxes
-  // never do since each box only touches its neighbors at a corner.
+  // 2. "Apple style" solution markers: a translucent highlighter-pen stroke along
+  // each found word. A thick round-capped line renders as a rounded-rectangle
+  // (stadium) shape with no extra path math, and low opacity keeps the letters
+  // (drawn in their normal dark color in step 3, not white) readable through it --
+  // like a real highlighter marker. Where two words' strokes overlap (e.g. crossing
+  // diagonals), the color simply layers darker, the way real highlighter ink does,
+  // instead of forming an ambiguous line-crossing.
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.saveGraphicsState();
-    doc.setDrawColor(20, 20, 20);
-    doc.setLineWidth(cellSize * 0.07);
+    try {
+      if (doc.GState) doc.setGState(new doc.GState({ opacity: 0.45 }));
+    } catch {
+      // ignore GState errors (older browsers / standalone pdf compatibility)
+    }
+    doc.setDrawColor(253, 224, 71);
+    doc.setLineWidth(cellSize * 0.75);
+    doc.setLineCap('round');
     data.words.forEach((w: any) => {
-      const dR = Math.sign(w.endR - w.startR);
-      const dC = Math.sign(w.endC - w.startC);
-      const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
-      for (let i = 0; i <= steps; i++) {
-        const r = w.startR + dR * i;
-        const c = w.startC + dC * i;
-        doc.rect(zone.x + (c * cellSize), zone.y + (r * cellSize), cellSize, cellSize, "S");
-      }
+      const sX = zone.x + (w.startC * cellSize) + (cellSize / 2);
+      const sY = zone.y + (w.startR * cellSize) + (cellSize / 2);
+      const eX = zone.x + (w.endC * cellSize) + (cellSize / 2);
+      const eY = zone.y + (w.endR * cellSize) + (cellSize / 2);
+      doc.line(sX, sY, eX, eY);
     });
     doc.restoreGraphicsState();
   }

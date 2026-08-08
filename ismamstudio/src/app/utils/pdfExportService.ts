@@ -332,7 +332,7 @@ const WORD_SEARCH_DEFAULT_STYLE: Required<WordSearchStyle> = {
   wordRowStep: 0.22,
   highlightColor: '#E0E7FF',
   highlightTextColor: '#4F46E5',
-  solutionHighlighter: 'fill',
+  solutionHighlighter: 'apple',
   letterBold: true,
 };
 

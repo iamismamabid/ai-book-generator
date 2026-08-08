@@ -124,6 +124,78 @@ export default function ComparePage() {
             </table>
           </div>
 
+          <div className="pt-8 border-t border-slate-800 space-y-6">
+            <div className="text-center md:text-left">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-black uppercase tracking-wider mb-2">
+                <Shield className="w-3.5 h-3.5" /> Market Comparison
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                KDPage vs. Other KDP Tools
+              </h2>
+              <p className="text-slate-400 text-sm font-semibold mt-1">
+                See how KDPage stacks up against legacy publishing software like Book Bolt, Canva, and Tangent Templates.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs md:text-sm">
+                <thead>
+                  <tr className="border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                    <th className="py-4 px-4">Feature / Capability</th>
+                    <th className="py-4 px-4 text-center text-indigo-400 font-black">KDPage Studio</th>
+                    <th className="py-4 px-4 text-center">Book Bolt</th>
+                    <th className="py-4 px-4 text-center">Canva Pro</th>
+                    <th className="py-4 px-4 text-center">Tangent Templates</th>
+                  </tr>
+                </thead>
+                <tbody className="text-slate-300 font-semibold">
+                  <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
+                    <td className="py-4 px-4 font-bold text-white">8 Standalone & Bulk Puzzle Generators</td>
+                    <td className="py-4 px-4 text-center bg-indigo-500/10"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center text-slate-500">Basic Only</td>
+                    <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center text-slate-500">Limited</td>
+                  </tr>
+                  <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
+                    <td className="py-4 px-4 font-bold text-white">Fabric.js Cover Studio + Spine Calculation</td>
+                    <td className="py-4 px-4 text-center bg-indigo-500/10"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center text-slate-500">Basic Editor</td>
+                    <td className="py-4 px-4 text-center text-slate-500">No Spine Calc</td>
+                    <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+                  </tr>
+                  <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
+                    <td className="py-4 px-4 font-bold text-white">Bulk 1,000 Puzzle PDF Compiler</td>
+                    <td className="py-4 px-4 text-center bg-indigo-500/10"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+                  </tr>
+                  <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
+                    <td className="py-4 px-4 font-bold text-white">Vector SVG & Source File Exports</td>
+                    <td className="py-4 px-4 text-center bg-indigo-500/10"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center"><Check className="w-4 h-4 text-emerald-400 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+                  </tr>
+                  <tr className="border-b border-slate-900 hover:bg-slate-900/10 transition-colors">
+                    <td className="py-4 px-4 font-bold text-white">25+ Free KDP Tools (Spine, ROI, ISBN)</td>
+                    <td className="py-4 px-4 text-center bg-indigo-500/10"><Check className="w-4 h-4 text-indigo-400 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center text-slate-500">Few</td>
+                    <td className="py-4 px-4 text-center"><X className="w-4 h-4 text-rose-500 mx-auto" /></td>
+                    <td className="py-4 px-4 text-center text-slate-500">Few</td>
+                  </tr>
+                  <tr className="hover:bg-slate-900/10 transition-colors">
+                    <td className="py-4 px-4 font-bold text-white">AppSumo Lifetime Deal Options</td>
+                    <td className="py-4 px-4 text-center bg-indigo-500/10 font-bold text-indigo-400">Yes (LTD Tiers)</td>
+                    <td className="py-4 px-4 text-center text-rose-400 font-semibold">$19-$29/mo Only</td>
+                    <td className="py-4 px-4 text-center text-rose-400 font-semibold">$13/mo Only</td>
+                    <td className="py-4 px-4 text-center text-slate-400">$59 One-time</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
             <Link
               href="/studio"

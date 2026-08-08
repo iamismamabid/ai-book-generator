@@ -381,63 +381,57 @@ export function drawWordSearchGrid(
     });
   });
 
-  // 2. "Apple style" solution markers: a small rounded square on each of a found
-  // word's letter cells, lifted off the page by a layered shadow underneath.
-  // A continuous band spanning the whole word (the previous approach) always
-  // blends heavily wherever two words' bands overlap, however thin -- since
-  // it's one filled shape stretching across many cells. Per-cell squares only
-  // overlap with a crossing word at the exact shared cell, not across a whole
-  // diagonal swath, so multiple crossing words stay visually distinct. Adjacent
-  // same-word cells sit close enough to read as one connected path (a small
-  // gap between them, like connected chips, rather than a solid unbroken band).
+  // 2. "Apple style" solution markers: each found word is its own opaque pill
+  // ("sticker") with a shadow, a border, and a fill -- drawn as one complete
+  // unit per word, in order, so a later word's opaque sticker fully overwrites
+  // whatever an earlier word left underneath at any crossing point. Translucent
+  // fills (earlier approach) always blend into a wash wherever two shapes
+  // overlap, however small the shapes are, because alpha blending combines the
+  // colors instead of one simply covering the other -- opacity near 1 on the
+  // border+fill is what actually stops that "merging" look, not shape or size.
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.saveGraphicsState();
-    const ctx = doc.context2d;
-    const K = 0.5522847498; // cubic-bezier circular-arc approximation constant
-
-    const roundedRectPath = (x0: number, y0: number, x1: number, y1: number, r: number) => {
-      ctx.beginPath();
-      ctx.moveTo(x0 + r, y0);
-      ctx.lineTo(x1 - r, y0);
-      ctx.bezierCurveTo(x1 - r + r * K, y0, x1, y0 + r - r * K, x1, y0 + r);
-      ctx.lineTo(x1, y1 - r);
-      ctx.bezierCurveTo(x1, y1 - r + r * K, x1 - r + r * K, y1, x1 - r, y1);
-      ctx.lineTo(x0 + r, y1);
-      ctx.bezierCurveTo(x0 + r - r * K, y1, x0, y1 - r + r * K, x0, y1 - r);
-      ctx.lineTo(x0, y0 + r);
-      ctx.bezierCurveTo(x0, y0 + r - r * K, x0 + r - r * K, y0, x0 + r, y0);
-      ctx.closePath();
+    const setOpacity = (v: number) => {
+      try {
+        if (doc.GState) doc.setGState(new doc.GState({ opacity: v }));
+      } catch {
+        // ignore GState errors (older browsers / standalone pdf compatibility)
+      }
     };
+    doc.setLineCap('round');
 
-    const cellHalf = cellSize * 0.43;
-    const radius = cellSize * 0.14;
+    const padX = cellSize * 0.40;
+    const pillWidth = cellSize * 0.68; // full pill thickness (round caps -> true stadium shape)
+    const borderExtra = cellSize * 0.09; // how much wider the border pass is than the fill pass
 
-    const drawCells = (dx: number, dy: number, fill: string) => {
-      data.words.forEach((w: any) => {
-        const dR = Math.sign(w.endR - w.startR);
-        const dC = Math.sign(w.endC - w.startC);
-        const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
-        for (let i = 0; i <= steps; i++) {
-          const r = w.startR + dR * i;
-          const c = w.startC + dC * i;
-          const cx = zone.x + (c * cellSize) + (cellSize / 2) + dx;
-          const cy = zone.y + (r * cellSize) + (cellSize / 2) + dy;
-          ctx.save();
-          ctx.translate(cx, cy);
-          roundedRectPath(-cellHalf, -cellHalf, cellHalf, cellHalf, radius);
-          ctx.fillStyle = fill;
-          ctx.fill();
-          ctx.restore();
-        }
-      });
-    };
+    data.words.forEach((w: any) => {
+      const sX = zone.x + (w.startC * cellSize) + (cellSize / 2);
+      const sY = zone.y + (w.startR * cellSize) + (cellSize / 2);
+      const eX = zone.x + (w.endC * cellSize) + (cellSize / 2);
+      const eY = zone.y + (w.endR * cellSize) + (cellSize / 2);
+      const angle = Math.atan2(eY - sY, eX - sX);
+      const dirX = Math.cos(angle), dirY = Math.sin(angle);
+      const lsX = sX - dirX * padX, lsY = sY - dirY * padX;
+      const leX = eX + dirX * padX, leY = eY + dirY * padX;
 
-    // Shadow pass 1: wide, faint -- simulates the soft outer edge of a blur.
-    drawCells(cellSize * 0.09, cellSize * 0.10, "rgba(100,116,139,0.10)");
-    // Shadow pass 2: tighter, darker -- simulates the core of the shadow.
-    drawCells(cellSize * 0.05, cellSize * 0.06, "rgba(71,85,105,0.22)");
-    // Main pass: light gray, on top, no offset.
-    drawCells(0, 0, "rgba(203,213,225,0.62)");
+      // Shadow: soft, offset down-right, behind this word's own border+fill.
+      setOpacity(0.24);
+      doc.setDrawColor(100, 116, 139);
+      doc.setLineWidth(pillWidth + borderExtra);
+      doc.line(lsX + cellSize * 0.06, lsY + cellSize * 0.07, leX + cellSize * 0.06, leY + cellSize * 0.07);
+
+      // Border: opaque, slightly wider than the fill so it forms a visible ring.
+      setOpacity(0.95);
+      doc.setDrawColor(100, 116, 139);
+      doc.setLineWidth(pillWidth + borderExtra);
+      doc.line(lsX, lsY, leX, leY);
+
+      // Fill: opaque light gray, on top, narrower than the border.
+      setOpacity(0.98);
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(pillWidth);
+      doc.line(lsX, lsY, leX, leY);
+    });
 
     doc.restoreGraphicsState();
   }

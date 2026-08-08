@@ -730,30 +730,27 @@ export default function WordSearchStudio() {
                                             }))}
                                         </div>
                                         {showAnswers && solutionHighlighter === 'apple' && (() => {
-                                            const cellHalf = 0.43, rx = 0.14;
-                                            const wordCells = (w: any, dx: number, dy: number) => {
-                                                const dR = Math.sign(w.endR - w.startR);
-                                                const dC = Math.sign(w.endC - w.startC);
-                                                const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
-                                                return Array.from({ length: steps + 1 }, (_, i) => {
-                                                    const cx = w.startC + dC * i + 0.5 + dx;
-                                                    const cy = w.startR + dR * i + 0.5 + dy;
-                                                    return { x: cx - cellHalf, y: cy - cellHalf, width: cellHalf * 2, height: cellHalf * 2 };
-                                                });
-                                            };
+                                            const padX = 0.40, pillWidth = 0.68, borderExtra = 0.09;
                                             return (
                                                 <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                                                    <defs>
-                                                        <filter id="ws-highlight-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                                                            <feGaussianBlur in="SourceGraphic" stdDeviation="0.10" />
-                                                        </filter>
-                                                    </defs>
-                                                    {cleanWordsList.flatMap((w, i) => wordCells(w, 0.09, 0.10).map((cell, j) => (
-                                                        <rect key={`${i}-${j}`} {...cell} rx={rx} fill="#475569" opacity="0.3" filter="url(#ws-highlight-shadow)" />
-                                                    )))}
-                                                    {cleanWordsList.flatMap((w, i) => wordCells(w, 0, 0).map((cell, j) => (
-                                                        <rect key={`${i}-${j}`} {...cell} rx={rx} fill="#CBD5E1" opacity="0.62" />
-                                                    )))}
+                                                    {cleanWordsList.map((w, i) => {
+                                                        const sX = w.startC + 0.5, sY = w.startR + 0.5;
+                                                        const eX = w.endC + 0.5, eY = w.endR + 0.5;
+                                                        const angle = Math.atan2(eY - sY, eX - sX);
+                                                        const dirX = Math.cos(angle), dirY = Math.sin(angle);
+                                                        const lsX = sX - dirX * padX, lsY = sY - dirY * padX;
+                                                        const leX = eX + dirX * padX, leY = eY + dirY * padX;
+                                                        return (
+                                                            <g key={i}>
+                                                                <line x1={lsX + 0.06} y1={lsY + 0.07} x2={leX + 0.06} y2={leY + 0.07}
+                                                                    stroke="#64748B" strokeWidth={pillWidth + borderExtra} strokeLinecap="round" opacity="0.24" />
+                                                                <line x1={lsX} y1={lsY} x2={leX} y2={leY}
+                                                                    stroke="#64748B" strokeWidth={pillWidth + borderExtra} strokeLinecap="round" opacity="0.95" />
+                                                                <line x1={lsX} y1={lsY} x2={leX} y2={leY}
+                                                                    stroke="#E2E8F0" strokeWidth={pillWidth} strokeLinecap="round" opacity="0.98" />
+                                                            </g>
+                                                        );
+                                                    })}
                                                 </svg>
                                             );
                                         })()}

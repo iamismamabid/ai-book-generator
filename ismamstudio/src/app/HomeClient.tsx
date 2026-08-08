@@ -132,6 +132,17 @@ export default function HomeClient() {
               </Link>
             </div>
 
+            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-200/60 text-xs font-bold text-slate-500">
+              <span className="text-slate-400 font-black uppercase tracking-wider text-[10px]">Quick Jump:</span>
+              <a href="#pricing" className="hover:text-indigo-600 hover:underline transition-colors">Pricing Plans</a>
+              <span>•</span>
+              <a href="#tools" className="hover:text-indigo-600 hover:underline transition-colors">Puzzle Engines</a>
+              <span>•</span>
+              <a href="#reviews" className="hover:text-indigo-600 hover:underline transition-colors">User Reviews</a>
+              <span>•</span>
+              <a href="#story" className="hover:text-indigo-600 hover:underline transition-colors">Founder Story</a>
+            </div>
+
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 mr-1">Best For:</span>
               <span className="text-xs font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
@@ -807,13 +818,13 @@ export default function HomeClient() {
 
               <div className="space-y-4 text-slate-600 text-sm md:text-base font-semibold leading-relaxed font-sans">
                 <p>
-                  "As a web developer and software engineer and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, making it tedious to compile a single book. I knew there had to be a more efficient and integrated way."
+                  "As a web developer, software engineer, and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, making it tedious to compile a single book. I knew there had to be a more efficient and integrated way."
                 </p>
                 <p>
-                  "That is why we built KDPage. Our goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. We wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."
+                  "That is why I built KDPage. My goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. I wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."
                 </p>
                 <p>
-                  "Whether you are just starting your KDP journey or scaling a publishing agency, this studio is designed to grow with you. With flexible options — including monthly, annual, and lifetime access plans — we keep premium tools accessible so you can keep 100% of your royalties and focus on what matters: creating."
+                  "Whether you are just starting your KDP journey or scaling a publishing agency, this studio is designed to grow with you. With flexible options — including monthly, annual, and lifetime access plans — I keep premium tools accessible so you can keep 100% of your royalties and focus on what matters: creating."
                 </p>
               </div>
 

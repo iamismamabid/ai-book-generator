@@ -161,12 +161,13 @@ export default function ExamplesPage() {
                   </div>
                 )}
                 {item.previewType === "maze" && (
-                  <div className="w-full flex items-center justify-center p-1 bg-slate-50 border border-slate-200 rounded aspect-square">
-                    <div className="text-[6px] font-mono leading-none select-none text-slate-600 font-black">
-                      {"#####\n#S  #\n# #E#\n#####".split("\n").map((r, i) => (
-                        <div key={i}>{r}</div>
-                      ))}
-                    </div>
+                  <div className="w-full flex flex-col items-center justify-center p-1.5 bg-rose-50/60 border border-rose-100 rounded-lg aspect-square">
+                    <svg viewBox="0 0 100 100" className="w-14 h-14 text-rose-500 fill-rose-500/15 stroke-rose-600 stroke-[3]">
+                      <path d="M 50,30 C 50,15 30,10 20,25 C 10,40 25,60 50,85 C 75,60 90,40 80,25 C 70,10 50,15 50,30 Z" />
+                      <path d="M 50,38 C 50,26 35,22 28,32 C 20,44 32,58 50,75 C 68,58 80,44 72,32 C 65,22 50,26 50,38 Z" fill="none" strokeDasharray="4 3" />
+                      <path d="M 50,46 C 50,38 40,34 35,40 C 30,48 38,56 50,65 C 62,56 70,48 65,40 C 60,34 50,38 50,46 Z" fill="none" />
+                    </svg>
+                    <span className="text-[5.5px] font-black text-rose-600 uppercase tracking-widest mt-0.5">Heart Vector Mask</span>
                   </div>
                 )}
                 {item.previewType === "word-search" && (

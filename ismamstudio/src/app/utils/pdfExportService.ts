@@ -381,30 +381,47 @@ export function drawWordSearchGrid(
     });
   });
 
-  // 2. "Apple style" solution markers: a translucent highlighter-pen stroke along
-  // each found word. A thick round-capped line renders as a rounded-rectangle
-  // (stadium) shape with no extra path math, and low opacity keeps the letters
-  // (drawn in their normal dark color in step 3, not white) readable through it --
-  // like a real highlighter marker. Where two words' strokes overlap (e.g. crossing
-  // diagonals), the color simply layers darker, the way real highlighter ink does,
+  // 2. "Apple style" solution markers: a soft light-gray "brushed silver" stroke
+  // along each found word, lifted off the page by a faint offset shadow pass
+  // underneath -- a premium/elevated look instead of a bright highlighter-pen
+  // color. A thick round-capped line renders as a rounded-rectangle (stadium)
+  // shape with no extra path math, and translucency keeps the letters (drawn in
+  // their normal dark color in step 3) readable through it. Where two words'
+  // strokes overlap (e.g. crossing diagonals), the color just layers darker
   // instead of forming an ambiguous line-crossing.
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.saveGraphicsState();
+    const strokeWords = (dx: number, dy: number) => {
+      data.words.forEach((w: any) => {
+        const sX = zone.x + (w.startC * cellSize) + (cellSize / 2) + dx;
+        const sY = zone.y + (w.startR * cellSize) + (cellSize / 2) + dy;
+        const eX = zone.x + (w.endC * cellSize) + (cellSize / 2) + dx;
+        const eY = zone.y + (w.endR * cellSize) + (cellSize / 2) + dy;
+        doc.line(sX, sY, eX, eY);
+      });
+    };
+    doc.setLineCap('round');
+
+    // Shadow pass: offset slightly down-right, dark and faint.
     try {
-      if (doc.GState) doc.setGState(new doc.GState({ opacity: 0.45 }));
+      if (doc.GState) doc.setGState(new doc.GState({ opacity: 0.18 }));
     } catch {
       // ignore GState errors (older browsers / standalone pdf compatibility)
     }
-    doc.setDrawColor(253, 224, 71);
+    doc.setDrawColor(100, 116, 139);
+    doc.setLineWidth(cellSize * 0.78);
+    strokeWords(cellSize * 0.05, cellSize * 0.06);
+
+    // Main pass: light gray, on top, no offset.
+    try {
+      if (doc.GState) doc.setGState(new doc.GState({ opacity: 0.55 }));
+    } catch {
+      // ignore GState errors (older browsers / standalone pdf compatibility)
+    }
+    doc.setDrawColor(203, 213, 225);
     doc.setLineWidth(cellSize * 0.75);
-    doc.setLineCap('round');
-    data.words.forEach((w: any) => {
-      const sX = zone.x + (w.startC * cellSize) + (cellSize / 2);
-      const sY = zone.y + (w.startR * cellSize) + (cellSize / 2);
-      const eX = zone.x + (w.endC * cellSize) + (cellSize / 2);
-      const eY = zone.y + (w.endR * cellSize) + (cellSize / 2);
-      doc.line(sX, sY, eX, eY);
-    });
+    strokeWords(0, 0);
+
     doc.restoreGraphicsState();
   }
 

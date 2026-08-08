@@ -12,7 +12,7 @@ import {
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
   AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil,
   Image as ImageIcon, ZoomIn, ZoomOut, Group as GroupIcon, Ungroup as UngroupIcon, Store,
-  Paintbrush, ClipboardPaste, ImageOff
+  Paintbrush, ClipboardPaste, ImageOff, RefreshCw, FlipHorizontal, FlipVertical, SlidersHorizontal
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -884,6 +884,8 @@ export default function FabricCoverStudio({
   // an object (object actions) or empty canvas (paste only).
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; hasTarget: boolean; bgRegion: 'front' | 'back' | 'full' | null } | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
+  const replaceImageInputRef = useRef<HTMLInputElement>(null);
+  const imageAdjustmentsRef = useRef<HTMLDivElement>(null);
   const [activeToolTab, setActiveToolTab] = useState<'elements' | 'shapes' | 'graphics' | 'presets' | 'uploads' | 'draw' | 'settings' | null>('elements');
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState("#000000");
@@ -3192,6 +3194,27 @@ export default function FabricCoverStudio({
     canvas.fire("object:modified", { target: activeObject });
   };
 
+  // Swaps the underlying image source in place via Fabric's own setSrc, which
+  // keeps the object's current position/scale/rotation/crop untouched --
+  // unlike removing and re-adding a fresh image, which would reset all of it.
+  const handleReplaceImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file later
+    if (!file || !canvas || !activeObject || activeObject.type !== "image") return;
+    const reader = new FileReader();
+    reader.onload = (event: any) => {
+      (activeObject as fabric.Image).setSrc(event.target.result, () => {
+        canvas.requestRenderAll();
+        canvas.fire("object:modified", { target: activeObject });
+      }, { crossOrigin: "anonymous" });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const jumpToImageAdjustments = () => {
+    imageAdjustmentsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   // Right-clicking an object selects it first (matching standard design-tool
   // behavior) and opens a floating menu at the cursor; right-clicking empty
   // canvas offers Paste (plus Remove Background Photo if the click landed on
@@ -4522,7 +4545,7 @@ export default function FabricCoverStudio({
 
             {/* Photoshop-style Image Adjustments */}
             {activeObject.type === 'image' && (
-              <div className="space-y-3 pt-2 border-t border-slate-100">
+              <div ref={imageAdjustmentsRef} className="space-y-3 pt-2 border-t border-slate-100">
                 <div className="flex justify-between items-center">
                   <h4 className="text-[9px] font-black text-slate-400 uppercase">Image Adjustments</h4>
                   <button
@@ -6481,6 +6504,14 @@ export default function FabricCoverStudio({
           </div>
         </div>
 
+        <input
+          type="file"
+          accept="image/*"
+          ref={replaceImageInputRef}
+          onChange={handleReplaceImageFile}
+          className="hidden"
+        />
+
         {contextMenu && (
           <div
             ref={contextMenuRef}
@@ -6498,6 +6529,23 @@ export default function FabricCoverStudio({
                 <button onClick={() => { duplicateSelected(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
                   <Copy className="w-3.5 h-3.5 text-slate-400" /> Duplicate <span className="ml-auto text-[10px] text-slate-400">Ctrl+D</span>
                 </button>
+                {activeObject?.type === 'image' && (
+                  <>
+                    <div className="h-px bg-slate-100 my-1" />
+                    <button onClick={() => { replaceImageInputRef.current?.click(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                      <RefreshCw className="w-3.5 h-3.5 text-slate-400" /> Replace Image
+                    </button>
+                    <button onClick={() => { toggleFlipX(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                      <FlipHorizontal className="w-3.5 h-3.5 text-slate-400" /> Flip Horizontal
+                    </button>
+                    <button onClick={() => { toggleFlipY(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                      <FlipVertical className="w-3.5 h-3.5 text-slate-400" /> Flip Vertical
+                    </button>
+                    <button onClick={() => { jumpToImageAdjustments(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" /> Edit Image
+                    </button>
+                  </>
+                )}
                 <div className="h-px bg-slate-100 my-1" />
                 <button onClick={() => { copyStyleFromActive(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
                   <Paintbrush className="w-3.5 h-3.5 text-slate-400" /> Copy Style <span className="ml-auto text-[10px] text-slate-400">Ctrl+Alt+C</span>

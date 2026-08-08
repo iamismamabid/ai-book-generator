@@ -88,7 +88,13 @@ export default function MasterStudioApp() {
     fullCoverImage: '',
     backCoverTextureId: '',
     frontCoverTextureId: '',
-    fullCoverTextureId: ''
+    fullCoverTextureId: '',
+    backCoverImageOffsetX: 0,
+    backCoverImageOffsetY: 0,
+    frontCoverImageOffsetX: 0,
+    frontCoverImageOffsetY: 0,
+    fullCoverImageOffsetX: 0,
+    fullCoverImageOffsetY: 0
   });
 
   const [coverElements, setCoverElements] = useState<any[]>([]);
@@ -114,7 +120,13 @@ export default function MasterStudioApp() {
       fullCoverImage: data.fullCoverImage ?? '',
       backCoverTextureId: data.backCoverTextureId ?? '',
       frontCoverTextureId: data.frontCoverTextureId ?? '',
-      fullCoverTextureId: data.fullCoverTextureId ?? ''
+      fullCoverTextureId: data.fullCoverTextureId ?? '',
+      backCoverImageOffsetX: data.backCoverImageOffsetX ?? 0,
+      backCoverImageOffsetY: data.backCoverImageOffsetY ?? 0,
+      frontCoverImageOffsetX: data.frontCoverImageOffsetX ?? 0,
+      frontCoverImageOffsetY: data.frontCoverImageOffsetY ?? 0,
+      fullCoverImageOffsetX: data.fullCoverImageOffsetX ?? 0,
+      fullCoverImageOffsetY: data.fullCoverImageOffsetY ?? 0
     };
     setCoverBackground(loadedBg);
     if (data.coverElements) setCoverElements(data.coverElements);

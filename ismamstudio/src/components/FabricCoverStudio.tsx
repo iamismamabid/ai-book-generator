@@ -517,44 +517,39 @@ const TRIM_SIZES = [
   { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
 ];
 
+export interface CoverBackgroundState {
+  backCoverColor: string;
+  backCoverType: 'solid' | 'gradient';
+  backCoverGradientStart: string;
+  backCoverGradientEnd: string;
+  frontCoverColor: string;
+  frontCoverType: 'solid' | 'gradient';
+  frontCoverGradientStart: string;
+  frontCoverGradientEnd: string;
+  backCoverImage: string;
+  frontCoverImage: string;
+  fullCoverImage: string;
+  backCoverTextureId: string;
+  frontCoverTextureId: string;
+  fullCoverTextureId: string;
+  // Pan offset (in canvas px, from center) for repositioning a "cover-fit"
+  // background photo within its frame without ever leaving a gap at the edges.
+  backCoverImageOffsetX: number;
+  backCoverImageOffsetY: number;
+  frontCoverImageOffsetX: number;
+  frontCoverImageOffsetY: number;
+  fullCoverImageOffsetX: number;
+  fullCoverImageOffsetY: number;
+}
+
 interface FabricCoverStudioProps {
   trimSize: { label: string; w: number; h: number };
   setTrimSize: (size: any) => void;
   pageCount: number;
   setPageCount: (cnt: number) => void;
-  
-  coverBackground: {
-    backCoverColor: string;
-    backCoverType: 'solid' | 'gradient';
-    backCoverGradientStart: string;
-    backCoverGradientEnd: string;
-    frontCoverColor: string;
-    frontCoverType: 'solid' | 'gradient';
-    frontCoverGradientStart: string;
-    frontCoverGradientEnd: string;
-    backCoverImage: string;
-    frontCoverImage: string;
-    fullCoverImage: string;
-    backCoverTextureId: string;
-    frontCoverTextureId: string;
-    fullCoverTextureId: string;
-  };
-  setCoverBackground: React.Dispatch<React.SetStateAction<{
-    backCoverColor: string;
-    backCoverType: 'solid' | 'gradient';
-    backCoverGradientStart: string;
-    backCoverGradientEnd: string;
-    frontCoverColor: string;
-    frontCoverType: 'solid' | 'gradient';
-    frontCoverGradientStart: string;
-    frontCoverGradientEnd: string;
-    backCoverImage: string;
-    frontCoverImage: string;
-    fullCoverImage: string;
-    backCoverTextureId: string;
-    frontCoverTextureId: string;
-    fullCoverTextureId: string;
-  }>>;
+
+  coverBackground: CoverBackgroundState;
+  setCoverBackground: React.Dispatch<React.SetStateAction<CoverBackgroundState>>;
 
   showKdpGuides: boolean;
   setShowKdpGuides: (show: boolean) => void;
@@ -768,21 +763,64 @@ export default function FabricCoverStudio({
     setCoverBackground(prev => ({ ...prev, frontCoverGradientEnd: val }));
     if (canvas) canvas.renderAll();
   };
+  // A newly-picked photo resets its pan offset to 0 (centered) -- an offset
+  // tuned for the previous photo's aspect ratio wouldn't mean anything for a
+  // different image.
   const setBackCoverImage = (val: string) => {
-    coverBackgroundRef.current = { ...coverBackgroundRef.current, backCoverImage: val };
-    setCoverBackground(prev => ({ ...prev, backCoverImage: val }));
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, backCoverImage: val, backCoverImageOffsetX: 0, backCoverImageOffsetY: 0 };
+    setCoverBackground(prev => ({ ...prev, backCoverImage: val, backCoverImageOffsetX: 0, backCoverImageOffsetY: 0 }));
     if (canvas) canvas.renderAll();
   };
   const setFrontCoverImage = (val: string) => {
-    coverBackgroundRef.current = { ...coverBackgroundRef.current, frontCoverImage: val };
-    setCoverBackground(prev => ({ ...prev, frontCoverImage: val }));
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, frontCoverImage: val, frontCoverImageOffsetX: 0, frontCoverImageOffsetY: 0 };
+    setCoverBackground(prev => ({ ...prev, frontCoverImage: val, frontCoverImageOffsetX: 0, frontCoverImageOffsetY: 0 }));
     if (canvas) canvas.renderAll();
   };
   const setFullCoverImage = (val: string) => {
-    coverBackgroundRef.current = { ...coverBackgroundRef.current, fullCoverImage: val };
-    setCoverBackground(prev => ({ ...prev, fullCoverImage: val }));
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, fullCoverImage: val, fullCoverImageOffsetX: 0, fullCoverImageOffsetY: 0 };
+    setCoverBackground(prev => ({ ...prev, fullCoverImage: val, fullCoverImageOffsetX: 0, fullCoverImageOffsetY: 0 }));
     if (canvas) canvas.renderAll();
   };
+
+  // Drag-to-pan state for background photos (front/back/full cover), which
+  // paint directly onto the canvas outside Fabric's object model (see
+  // paintCoverBackground) and so need their own mouse handling rather than
+  // Fabric's normal object drag.
+  const bgDragRef = useRef<{
+    region: 'front' | 'back' | 'full';
+    startPointerX: number; startPointerY: number;
+    startOffsetX: number; startOffsetY: number;
+  } | null>(null);
+
+  const getBackgroundRegionRect = (region: 'front' | 'back' | 'full') => {
+    if (region === 'full') return { destX: 0, destY: 0, destW: layout.canvasWidth, destH: layout.canvasHeight };
+    if (region === 'back') return { destX: 0, destY: 0, destW: layout.spineLeftPx, destH: layout.canvasHeight };
+    return { destX: layout.spineRightPx, destY: 0, destW: layout.canvasWidth - layout.spineRightPx, destH: layout.canvasHeight };
+  };
+
+  const clampBackgroundOffset = (region: 'front' | 'back' | 'full', img: HTMLImageElement, offsetX: number, offsetY: number) => {
+    const { destW, destH } = getBackgroundRegionRect(region);
+    const imgW = img.naturalWidth || img.width;
+    const imgH = img.naturalHeight || img.height;
+    if (!imgW || !imgH) return { x: 0, y: 0 };
+    const coverScale = Math.max(destW / imgW, destH / imgH);
+    const maxOffsetX = Math.max(0, (imgW * coverScale - destW) / 2);
+    const maxOffsetY = Math.max(0, (imgH * coverScale - destH) / 2);
+    return {
+      x: Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX)),
+      y: Math.max(-maxOffsetY, Math.min(maxOffsetY, offsetY)),
+    };
+  };
+
+  const setBackgroundImageOffset = (region: 'front' | 'back' | 'full', offsetX: number, offsetY: number) => {
+    const key = region === 'front' ? 'frontCoverImageOffsetX' : region === 'back' ? 'backCoverImageOffsetX' : 'fullCoverImageOffsetX';
+    const keyY = region === 'front' ? 'frontCoverImageOffsetY' : region === 'back' ? 'backCoverImageOffsetY' : 'fullCoverImageOffsetY';
+    coverBackgroundRef.current = { ...coverBackgroundRef.current, [key]: offsetX, [keyY]: offsetY };
+    setCoverBackground(prev => ({ ...prev, [key]: offsetX, [keyY]: offsetY }));
+  };
+
+  const getBackgroundImageEl = (region: 'front' | 'back' | 'full') =>
+    region === 'front' ? frontCoverImageEl.current : region === 'back' ? backCoverImageEl.current : fullCoverImageEl.current;
 
   // Ref to hold saveState function to call it when coverBackground updates
   const saveStateRef = useRef<() => void>(() => {});
@@ -1681,6 +1719,43 @@ export default function FabricCoverStudio({
   // renders through an internal clone that never fires bound render event
   // listeners, so without this the exported/mocked-up/batched covers come
   // out with the background missing (solid color fills and photos alike).
+  // Draws an image to cover a rect edge-to-edge (like CSS background-size:
+  // cover) with no distortion, clipped so it can never spill outside the
+  // rect even while panned. offsetX/offsetY shift which part of the image
+  // is visible; drawCoverImage itself doesn't clamp them (see
+  // clampBackgroundOffset) since a stale/unclamped offset from before a
+  // trim-size change should still render sanely rather than throw.
+  const drawCoverImage = (
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
+    destX: number, destY: number, destW: number, destH: number,
+    offsetX: number, offsetY: number
+  ) => {
+    const imgW = img.naturalWidth || img.width;
+    const imgH = img.naturalHeight || img.height;
+    if (!imgW || !imgH) return;
+    const coverScale = Math.max(destW / imgW, destH / imgH);
+    const scaledW = imgW * coverScale;
+    const scaledH = imgH * coverScale;
+    const maxOffsetX = Math.max(0, (scaledW - destW) / 2);
+    const maxOffsetY = Math.max(0, (scaledH - destH) / 2);
+    const clampedOffsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX));
+    const clampedOffsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, offsetY));
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(destX, destY, destW, destH);
+    ctx.clip();
+    ctx.drawImage(
+      img,
+      destX - (scaledW - destW) / 2 + clampedOffsetX,
+      destY - (scaledH - destH) / 2 + clampedOffsetY,
+      scaledW,
+      scaledH
+    );
+    ctx.restore();
+  };
+
   const paintCoverBackground = (ctx: CanvasRenderingContext2D) => {
     const bg = coverBackgroundRef.current || coverBackground;
     ctx.save();
@@ -1723,13 +1798,16 @@ export default function FabricCoverStudio({
       ctx.fillRect(layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
 
       if (fullCoverImageEl.current) {
-        ctx.drawImage(fullCoverImageEl.current, 0, 0, layout.canvasWidth, layout.canvasHeight);
+        drawCoverImage(ctx, fullCoverImageEl.current, 0, 0, layout.canvasWidth, layout.canvasHeight,
+          bg.fullCoverImageOffsetX || 0, bg.fullCoverImageOffsetY || 0);
       }
       if (backCoverImageEl.current) {
-        ctx.drawImage(backCoverImageEl.current, 0, 0, layout.spineLeftPx, layout.canvasHeight);
+        drawCoverImage(ctx, backCoverImageEl.current, 0, 0, layout.spineLeftPx, layout.canvasHeight,
+          bg.backCoverImageOffsetX || 0, bg.backCoverImageOffsetY || 0);
       }
       if (frontCoverImageEl.current) {
-        ctx.drawImage(frontCoverImageEl.current, layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
+        drawCoverImage(ctx, frontCoverImageEl.current, layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight,
+          bg.frontCoverImageOffsetX || 0, bg.frontCoverImageOffsetY || 0);
       }
     } catch (err) {
       console.warn("Cover background paint fallback:", err);
@@ -1775,6 +1853,9 @@ export default function FabricCoverStudio({
     // Remove legacy render listeners
     canvas.off("before:render");
     canvas.off("after:render");
+    canvas.off("mouse:down");
+    canvas.off("mouse:move");
+    canvas.off("mouse:up");
 
     // Paint backgrounds BEFORE drawing objects (so they sit behind all elements)
     canvas.on("before:render", () => {
@@ -1866,6 +1947,75 @@ export default function FabricCoverStudio({
 
         ctx.restore();
       }
+    });
+
+    // Background photos are painted straight onto the canvas (above) rather
+    // than added as Fabric objects, so they get their own drag-to-pan mouse
+    // handling here instead of Fabric's normal per-object dragging. Only
+    // starts a pan when the click didn't land on an actual Fabric object
+    // (opt.target), so decorative images/text on top keep working normally.
+    const regionForPointer = (x: number, y: number): 'front' | 'back' | 'full' | null => {
+      const bg = coverBackgroundRef.current;
+      if (bg.fullCoverImage && fullCoverImageEl.current) return 'full';
+      if (x < layout.spineLeftPx && bg.backCoverImage && backCoverImageEl.current) return 'back';
+      if (x > layout.spineRightPx && bg.frontCoverImage && frontCoverImageEl.current) return 'front';
+      return null;
+    };
+
+    canvas.on("mouse:down", (opt: any) => {
+      if (opt.target) return;
+      const pointer = canvas.getPointer(opt.e);
+      const region = regionForPointer(pointer.x, pointer.y);
+      if (!region) return;
+      const bg = coverBackgroundRef.current;
+      const startOffsetX = region === 'front' ? (bg.frontCoverImageOffsetX || 0) : region === 'back' ? (bg.backCoverImageOffsetX || 0) : (bg.fullCoverImageOffsetX || 0);
+      const startOffsetY = region === 'front' ? (bg.frontCoverImageOffsetY || 0) : region === 'back' ? (bg.backCoverImageOffsetY || 0) : (bg.fullCoverImageOffsetY || 0);
+      bgDragRef.current = { region, startPointerX: pointer.x, startPointerY: pointer.y, startOffsetX, startOffsetY };
+      // Suppress Fabric's own rubber-band selection box, which would
+      // otherwise also try to start on this same empty-canvas mousedown.
+      canvas.selection = false;
+      canvas.defaultCursor = 'grabbing';
+      canvas.setCursor('grabbing');
+    });
+
+    canvas.on("mouse:move", (opt: any) => {
+      const drag = bgDragRef.current;
+      if (!drag) {
+        if (!opt.target) {
+          const pointer = canvas.getPointer(opt.e);
+          const hovering = regionForPointer(pointer.x, pointer.y);
+          canvas.defaultCursor = hovering ? 'grab' : 'default';
+        }
+        return;
+      }
+      const img = getBackgroundImageEl(drag.region);
+      if (!img) return;
+      const pointer = canvas.getPointer(opt.e);
+      const rawOffsetX = drag.startOffsetX + (pointer.x - drag.startPointerX);
+      const rawOffsetY = drag.startOffsetY + (pointer.y - drag.startPointerY);
+      const clamped = clampBackgroundOffset(drag.region, img, rawOffsetX, rawOffsetY);
+      coverBackgroundRef.current = {
+        ...coverBackgroundRef.current,
+        ...(drag.region === 'front' ? { frontCoverImageOffsetX: clamped.x, frontCoverImageOffsetY: clamped.y }
+          : drag.region === 'back' ? { backCoverImageOffsetX: clamped.x, backCoverImageOffsetY: clamped.y }
+          : { fullCoverImageOffsetX: clamped.x, fullCoverImageOffsetY: clamped.y }),
+      };
+      canvas.requestRenderAll();
+    });
+
+    canvas.on("mouse:up", () => {
+      const drag = bgDragRef.current;
+      if (!drag) return;
+      bgDragRef.current = null;
+      canvas.selection = true;
+      canvas.defaultCursor = 'grab';
+      const bg = coverBackgroundRef.current;
+      const finalOffsetX = drag.region === 'front' ? (bg.frontCoverImageOffsetX || 0) : drag.region === 'back' ? (bg.backCoverImageOffsetX || 0) : (bg.fullCoverImageOffsetX || 0);
+      const finalOffsetY = drag.region === 'front' ? (bg.frontCoverImageOffsetY || 0) : drag.region === 'back' ? (bg.backCoverImageOffsetY || 0) : (bg.fullCoverImageOffsetY || 0);
+      // Commit to React state (persists/saves) only once, at drag end —
+      // matching Fabric's own object:modified-on-release pattern rather than
+      // firing a state update on every intermediate frame of the drag.
+      setBackgroundImageOffset(drag.region, finalOffsetX, finalOffsetY);
     });
 
     canvas.renderAll();
@@ -3270,7 +3420,10 @@ export default function FabricCoverStudio({
         fullCoverImage: '',
         backCoverTextureId: '',
         frontCoverTextureId: '',
-        fullCoverTextureId: ''
+        fullCoverTextureId: '',
+        backCoverImageOffsetX: 0, backCoverImageOffsetY: 0,
+        frontCoverImageOffsetX: 0, frontCoverImageOffsetY: 0,
+        fullCoverImageOffsetX: 0, fullCoverImageOffsetY: 0
       };
     } else {
       newBg = {
@@ -3287,7 +3440,10 @@ export default function FabricCoverStudio({
         fullCoverImage: '',
         backCoverTextureId: '',
         frontCoverTextureId: '',
-        fullCoverTextureId: ''
+        fullCoverTextureId: '',
+        backCoverImageOffsetX: 0, backCoverImageOffsetY: 0,
+        frontCoverImageOffsetX: 0, frontCoverImageOffsetY: 0,
+        fullCoverImageOffsetX: 0, fullCoverImageOffsetY: 0
       };
     }
     coverBackgroundRef.current = newBg;
@@ -3460,6 +3616,9 @@ export default function FabricCoverStudio({
         backCoverTextureId: '',
         frontCoverTextureId: '',
         fullCoverTextureId: '',
+        backCoverImageOffsetX: 0, backCoverImageOffsetY: 0,
+        frontCoverImageOffsetX: 0, frontCoverImageOffsetY: 0,
+        fullCoverImageOffsetX: 0, fullCoverImageOffsetY: 0,
       };
       coverBackgroundRef.current = newBg;
       setCoverBackground(newBg);

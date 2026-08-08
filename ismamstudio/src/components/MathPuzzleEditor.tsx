@@ -640,7 +640,7 @@ export function MathPuzzleEditor({
                 <span className="text-xs font-black uppercase tracking-widest text-slate-800">
                   {PUZZLE_TYPE_LABEL[puzzleType]} #1{isSolution && activeBatchIndex === 0 && <span className="text-indigo-600"> (Solution)</span>}
                 </span>
-                <div style={{ zoom: 0.55 } as React.CSSProperties}>
+                <div style={{ zoom: 0.35 } as React.CSSProperties}>
                   <MathGridBlock puzzleType={puzzleType} data={activeEntry.puzzleData} isSolution={isSolution && activeBatchIndex === 0} />
                 </div>
               </div>
@@ -650,7 +650,7 @@ export function MathPuzzleEditor({
                   <span className="text-xs font-black uppercase tracking-widest text-slate-800">
                     {PUZZLE_TYPE_LABEL[puzzleType]} #2{isSolution && activeBatchIndex === 0 && <span className="text-indigo-600"> (Solution)</span>}
                   </span>
-                  <div style={{ zoom: 0.55 } as React.CSSProperties}>
+                  <div style={{ zoom: 0.35 } as React.CSSProperties}>
                     <MathGridBlock puzzleType={puzzleType} data={activeEntry.puzzleDataB} isSolution={isSolution && activeBatchIndex === 0} />
                   </div>
                 </div>

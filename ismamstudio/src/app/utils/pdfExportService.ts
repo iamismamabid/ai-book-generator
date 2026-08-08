@@ -382,13 +382,15 @@ export function drawWordSearchGrid(
   });
 
   // 2. "Apple style" solution markers: a soft light-gray "brushed silver" stroke
-  // along each found word, lifted off the page by a faint offset shadow pass
-  // underneath -- a premium/elevated look instead of a bright highlighter-pen
-  // color. A thick round-capped line renders as a rounded-rectangle (stadium)
-  // shape with no extra path math, and translucency keeps the letters (drawn in
-  // their normal dark color in step 3) readable through it. Where two words'
-  // strokes overlap (e.g. crossing diagonals), the color just layers darker
-  // instead of forming an ambiguous line-crossing.
+  // along each found word, lifted off the page by a layered shadow underneath --
+  // a premium/elevated look instead of a bright highlighter-pen color. jsPDF has
+  // no native blur, so the shadow is approximated with two passes of increasing
+  // size and decreasing opacity, which reads as a soft graduated shadow rather
+  // than one hard-edged offset copy. A thick round-capped line renders as a
+  // rounded-rectangle (stadium) shape with no extra path math, and translucency
+  // keeps the letters (drawn in their normal dark color in step 3) readable
+  // through it. Where two words' strokes overlap (e.g. crossing diagonals), the
+  // color just layers darker instead of forming an ambiguous line-crossing.
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.saveGraphicsState();
     const strokeWords = (dx: number, dy: number) => {
@@ -400,26 +402,31 @@ export function drawWordSearchGrid(
         doc.line(sX, sY, eX, eY);
       });
     };
+    const setOpacity = (v: number) => {
+      try {
+        if (doc.GState) doc.setGState(new doc.GState({ opacity: v }));
+      } catch {
+        // ignore GState errors (older browsers / standalone pdf compatibility)
+      }
+    };
     doc.setLineCap('round');
 
-    // Shadow pass: offset slightly down-right, dark and faint.
-    try {
-      if (doc.GState) doc.setGState(new doc.GState({ opacity: 0.18 }));
-    } catch {
-      // ignore GState errors (older browsers / standalone pdf compatibility)
-    }
+    // Shadow pass 1: wide, faint -- simulates the soft outer edge of a blur.
+    setOpacity(0.10);
     doc.setDrawColor(100, 116, 139);
-    doc.setLineWidth(cellSize * 0.78);
+    doc.setLineWidth(cellSize * 0.94);
+    strokeWords(cellSize * 0.09, cellSize * 0.10);
+
+    // Shadow pass 2: tighter, darker -- simulates the core of the shadow.
+    setOpacity(0.22);
+    doc.setDrawColor(71, 85, 105);
+    doc.setLineWidth(cellSize * 0.80);
     strokeWords(cellSize * 0.05, cellSize * 0.06);
 
     // Main pass: light gray, on top, no offset.
-    try {
-      if (doc.GState) doc.setGState(new doc.GState({ opacity: 0.55 }));
-    } catch {
-      // ignore GState errors (older browsers / standalone pdf compatibility)
-    }
+    setOpacity(0.62);
     doc.setDrawColor(203, 213, 225);
-    doc.setLineWidth(cellSize * 0.75);
+    doc.setLineWidth(cellSize * 0.70);
     strokeWords(0, 0);
 
     doc.restoreGraphicsState();

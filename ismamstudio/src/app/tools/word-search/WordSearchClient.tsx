@@ -731,13 +731,19 @@ export default function WordSearchStudio() {
                                         </div>
                                         {showAnswers && solutionHighlighter === 'apple' && (
                                             <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                                                <defs>
+                                                    <filter id="ws-highlight-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                                                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.16" />
+                                                    </filter>
+                                                </defs>
                                                 {cleanWordsList.map((w, i) => (
-                                                    <line key={`shadow-${i}`} x1={w.startC + 0.55} y1={w.startR + 0.56} x2={w.endC + 0.55} y2={w.endR + 0.56}
-                                                        stroke="#64748B" strokeWidth="0.78" strokeLinecap="round" opacity="0.18" />
+                                                    <line key={`shadow-${i}`} x1={w.startC + 0.59} y1={w.startR + 0.60} x2={w.endC + 0.59} y2={w.endR + 0.60}
+                                                        stroke="#475569" strokeWidth="0.8" strokeLinecap="round" opacity="0.3"
+                                                        filter="url(#ws-highlight-shadow)" />
                                                 ))}
                                                 {cleanWordsList.map((w, i) => (
                                                     <line key={i} x1={w.startC + 0.5} y1={w.startR + 0.5} x2={w.endC + 0.5} y2={w.endR + 0.5}
-                                                        stroke="#CBD5E1" strokeWidth="0.75" strokeLinecap="round" opacity="0.55" />
+                                                        stroke="#CBD5E1" strokeWidth="0.70" strokeLinecap="round" opacity="0.62" />
                                                 ))}
                                             </svg>
                                         )}

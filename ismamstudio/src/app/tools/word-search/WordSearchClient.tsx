@@ -732,11 +732,6 @@ export default function WordSearchStudio() {
                                         {showAnswers && solutionHighlighter === 'apple' && (
                                             <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
                                                 {cleanWordsList.map((w, i) => {
-                                                    const isDiagonal = w.startR !== w.endR && w.startC !== w.endC;
-                                                    if (isDiagonal) {
-                                                        return <line key={i} x1={w.startC + 0.5} y1={w.startR + 0.5} x2={w.endC + 0.5} y2={w.endR + 0.5}
-                                                            stroke="#141414" strokeWidth="0.06" />;
-                                                    }
                                                     const dR = Math.sign(w.endR - w.startR);
                                                     const dC = Math.sign(w.endC - w.startC);
                                                     const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));

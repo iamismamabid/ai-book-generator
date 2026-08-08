@@ -381,34 +381,24 @@ export function drawWordSearchGrid(
     });
   });
 
-  // 2. "Apple style" solution markers are drawn next (above backgrounds, below letters).
-  // Horizontal/vertical words get a bold border boxed around each of their letter
-  // cells -- adjacent boxes share an edge so the run reads as one connected outline.
-  // Diagonal words can't share cell edges that way, so they get a plain connector
-  // line between their start/end centers instead.
+  // 2. "Apple style" solution markers: a bold border boxed around each of a found
+  // word's letter cells. Horizontal/vertical runs share an edge between adjacent
+  // boxes so they read as one connected outline. Diagonal words get the same
+  // per-cell boxing (not a connector line) -- when a grid has two or more diagonal
+  // words, their lines can cross and form an ambiguous "X", which per-cell boxes
+  // never do since each box only touches its neighbors at a corner.
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.saveGraphicsState();
     doc.setDrawColor(20, 20, 20);
+    doc.setLineWidth(cellSize * 0.07);
     data.words.forEach((w: any) => {
-      const isDiagonal = w.startR !== w.endR && w.startC !== w.endC;
-      if (isDiagonal) {
-        doc.setLineWidth(cellSize * 0.06);
-        doc.setLineCap('butt');
-        const sX = zone.x + (w.startC * cellSize) + (cellSize / 2);
-        const sY = zone.y + (w.startR * cellSize) + (cellSize / 2);
-        const eX = zone.x + (w.endC * cellSize) + (cellSize / 2);
-        const eY = zone.y + (w.endR * cellSize) + (cellSize / 2);
-        doc.line(sX, sY, eX, eY);
-      } else {
-        doc.setLineWidth(cellSize * 0.07);
-        const dR = Math.sign(w.endR - w.startR);
-        const dC = Math.sign(w.endC - w.startC);
-        const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
-        for (let i = 0; i <= steps; i++) {
-          const r = w.startR + dR * i;
-          const c = w.startC + dC * i;
-          doc.rect(zone.x + (c * cellSize), zone.y + (r * cellSize), cellSize, cellSize, "S");
-        }
+      const dR = Math.sign(w.endR - w.startR);
+      const dC = Math.sign(w.endC - w.startC);
+      const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
+      for (let i = 0; i <= steps; i++) {
+        const r = w.startR + dR * i;
+        const c = w.startC + dC * i;
+        doc.rect(zone.x + (c * cellSize), zone.y + (r * cellSize), cellSize, cellSize, "S");
       }
     });
     doc.restoreGraphicsState();

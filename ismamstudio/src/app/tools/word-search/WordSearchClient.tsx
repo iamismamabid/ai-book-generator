@@ -730,27 +730,24 @@ export default function WordSearchStudio() {
                                             }))}
                                         </div>
                                         {showAnswers && solutionHighlighter === 'apple' && (() => {
-                                            const padX = 0.40, pillWidth = 0.68, borderExtra = 0.09;
+                                            const padX = 0.38, halfH = 0.26, rx = 0.09, borderExtra = 0.05;
+                                            const wordRect = (w: any, dx: number, dy: number, grow: number) => {
+                                                const cx = (w.startC + w.endC) / 2 + 0.5 + dx;
+                                                const cy = (w.startR + w.endR) / 2 + 0.5 + dy;
+                                                const len = Math.hypot(w.endC - w.startC, w.endR - w.startR);
+                                                const angle = Math.atan2(w.endR - w.startR, w.endC - w.startC) * (180 / Math.PI);
+                                                const width = len + (padX + grow) * 2, height = (halfH + grow) * 2;
+                                                return { x: cx - width / 2, y: cy - height / 2, width, height, rx: rx + grow, transform: `rotate(${angle} ${cx} ${cy})` };
+                                            };
                                             return (
                                                 <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                                                    {cleanWordsList.map((w, i) => {
-                                                        const sX = w.startC + 0.5, sY = w.startR + 0.5;
-                                                        const eX = w.endC + 0.5, eY = w.endR + 0.5;
-                                                        const angle = Math.atan2(eY - sY, eX - sX);
-                                                        const dirX = Math.cos(angle), dirY = Math.sin(angle);
-                                                        const lsX = sX - dirX * padX, lsY = sY - dirY * padX;
-                                                        const leX = eX + dirX * padX, leY = eY + dirY * padX;
-                                                        return (
-                                                            <g key={i}>
-                                                                <line x1={lsX + 0.06} y1={lsY + 0.07} x2={leX + 0.06} y2={leY + 0.07}
-                                                                    stroke="#64748B" strokeWidth={pillWidth + borderExtra} strokeLinecap="round" opacity="0.24" />
-                                                                <line x1={lsX} y1={lsY} x2={leX} y2={leY}
-                                                                    stroke="#64748B" strokeWidth={pillWidth + borderExtra} strokeLinecap="round" opacity="0.95" />
-                                                                <line x1={lsX} y1={lsY} x2={leX} y2={leY}
-                                                                    stroke="#E2E8F0" strokeWidth={pillWidth} strokeLinecap="round" opacity="0.98" />
-                                                            </g>
-                                                        );
-                                                    })}
+                                                    {cleanWordsList.map((w, i) => (
+                                                        <g key={i}>
+                                                            <rect {...wordRect(w, 0.06, 0.07, borderExtra)} fill="#64748B" opacity="0.24" />
+                                                            <rect {...wordRect(w, 0, 0, borderExtra)} fill="#64748B" opacity="0.95" />
+                                                            <rect {...wordRect(w, 0, 0, 0)} fill="#E2E8F0" opacity="0.98" />
+                                                        </g>
+                                                    ))}
                                                 </svg>
                                             );
                                         })()}

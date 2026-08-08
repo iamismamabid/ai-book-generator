@@ -381,16 +381,23 @@ export function drawWordSearchGrid(
     });
   });
 
-  // 2. "Apple style" solution markers: each found word is its own opaque pill
-  // ("sticker") with a shadow, a border, and a fill -- drawn as one complete
-  // unit per word, in order, so a later word's opaque sticker fully overwrites
-  // whatever an earlier word left underneath at any crossing point. Translucent
-  // fills (earlier approach) always blend into a wash wherever two shapes
-  // overlap, however small the shapes are, because alpha blending combines the
-  // colors instead of one simply covering the other -- opacity near 1 on the
-  // border+fill is what actually stops that "merging" look, not shape or size.
+  // 2. "Apple style" solution markers: each found word is its own opaque rounded-
+  // rectangle "sticker" (flat sides, small rounded corners -- not a full pill)
+  // with a shadow, a border, and a fill, drawn as one complete unit per word, in
+  // order, so a later word's opaque sticker fully overwrites whatever an earlier
+  // word left underneath at any crossing point. Translucent fills (an earlier
+  // approach) always blend into a wash wherever two shapes overlap, however
+  // small the shapes are, because alpha blending combines the colors instead of
+  // one simply covering the other -- opacity near 1 on the border+fill is what
+  // actually stops that "merging" look, not shape or size. The rectangle can't
+  // rotate via jsPDF's built-in roundedRect, so it's built manually via
+  // context2d: translate+rotate to the word's angle, then trace a rounded-rect
+  // path with bezierCurveTo corners (context2d.arcTo/roundRect aren't
+  // implemented in this jsPDF build).
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.saveGraphicsState();
+    const ctx = doc.context2d;
+    const K = 0.5522847498; // cubic-bezier circular-arc approximation constant
     const setOpacity = (v: number) => {
       try {
         if (doc.GState) doc.setGState(new doc.GState({ opacity: v }));
@@ -398,11 +405,25 @@ export function drawWordSearchGrid(
         // ignore GState errors (older browsers / standalone pdf compatibility)
       }
     };
-    doc.setLineCap('round');
 
-    const padX = cellSize * 0.40;
-    const pillWidth = cellSize * 0.68; // full pill thickness (round caps -> true stadium shape)
-    const borderExtra = cellSize * 0.09; // how much wider the border pass is than the fill pass
+    const roundedRectPath = (x0: number, y0: number, x1: number, y1: number, r: number) => {
+      ctx.beginPath();
+      ctx.moveTo(x0 + r, y0);
+      ctx.lineTo(x1 - r, y0);
+      ctx.bezierCurveTo(x1 - r + r * K, y0, x1, y0 + r - r * K, x1, y0 + r);
+      ctx.lineTo(x1, y1 - r);
+      ctx.bezierCurveTo(x1, y1 - r + r * K, x1 - r + r * K, y1, x1 - r, y1);
+      ctx.lineTo(x0 + r, y1);
+      ctx.bezierCurveTo(x0 + r - r * K, y1, x0, y1 - r + r * K, x0, y1 - r);
+      ctx.lineTo(x0, y0 + r);
+      ctx.bezierCurveTo(x0, y0 + r - r * K, x0 + r - r * K, y0, x0 + r, y0);
+      ctx.closePath();
+    };
+
+    const padX = cellSize * 0.38;
+    const halfH = cellSize * 0.26;
+    const radius = cellSize * 0.09;
+    const borderExtra = cellSize * 0.05; // how much bigger the border pass is than the fill pass
 
     data.words.forEach((w: any) => {
       const sX = zone.x + (w.startC * cellSize) + (cellSize / 2);
@@ -410,27 +431,25 @@ export function drawWordSearchGrid(
       const eX = zone.x + (w.endC * cellSize) + (cellSize / 2);
       const eY = zone.y + (w.endR * cellSize) + (cellSize / 2);
       const angle = Math.atan2(eY - sY, eX - sX);
-      const dirX = Math.cos(angle), dirY = Math.sin(angle);
-      const lsX = sX - dirX * padX, lsY = sY - dirY * padX;
-      const leX = eX + dirX * padX, leY = eY + dirY * padX;
+      const len = Math.hypot(eX - sX, eY - sY);
+
+      const drawPill = (dx: number, dy: number, grow: number, fill: string, opacity: number) => {
+        setOpacity(opacity);
+        ctx.save();
+        ctx.translate(sX + dx, sY + dy);
+        ctx.rotate(angle);
+        roundedRectPath(-padX - grow, -halfH - grow, len + padX + grow, halfH + grow, radius + grow);
+        ctx.fillStyle = fill;
+        ctx.fill();
+        ctx.restore();
+      };
 
       // Shadow: soft, offset down-right, behind this word's own border+fill.
-      setOpacity(0.24);
-      doc.setDrawColor(100, 116, 139);
-      doc.setLineWidth(pillWidth + borderExtra);
-      doc.line(lsX + cellSize * 0.06, lsY + cellSize * 0.07, leX + cellSize * 0.06, leY + cellSize * 0.07);
-
-      // Border: opaque, slightly wider than the fill so it forms a visible ring.
-      setOpacity(0.95);
-      doc.setDrawColor(100, 116, 139);
-      doc.setLineWidth(pillWidth + borderExtra);
-      doc.line(lsX, lsY, leX, leY);
-
-      // Fill: opaque light gray, on top, narrower than the border.
-      setOpacity(0.98);
-      doc.setDrawColor(226, 232, 240);
-      doc.setLineWidth(pillWidth);
-      doc.line(lsX, lsY, leX, leY);
+      drawPill(cellSize * 0.06, cellSize * 0.07, borderExtra, "#64748B", 0.24);
+      // Border: opaque, slightly bigger than the fill so it forms a visible ring.
+      drawPill(0, 0, borderExtra, "#64748B", 0.95);
+      // Fill: opaque light gray, on top, at normal size.
+      drawPill(0, 0, 0, "#E2E8F0", 0.98);
     });
 
     doc.restoreGraphicsState();

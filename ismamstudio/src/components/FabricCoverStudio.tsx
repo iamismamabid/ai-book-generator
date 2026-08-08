@@ -12,7 +12,7 @@ import {
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
   AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil,
   Image as ImageIcon, ZoomIn, ZoomOut, Group as GroupIcon, Ungroup as UngroupIcon, Store,
-  Paintbrush, ClipboardPaste, ImageOff, RefreshCw, FlipHorizontal, FlipVertical, SlidersHorizontal
+  Paintbrush, ClipboardPaste, ImageOff, RefreshCw, FlipHorizontal, FlipVertical, SlidersHorizontal, Pipette
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -524,6 +524,10 @@ const TRIM_SIZES = [
 // both directions regardless of the photo's own aspect ratio.
 const BACKGROUND_PAN_OVERSCAN = 1.3;
 
+// Canva-style smart alignment: how close (in canvas px) an edge/center has to
+// get to a candidate line before it snaps and shows the pink guide.
+const SNAP_THRESHOLD = 6;
+
 export interface CoverBackgroundState {
   backCoverColor: string;
   backCoverType: 'solid' | 'gradient';
@@ -798,6 +802,12 @@ export default function FabricCoverStudio({
     startPointerX: number; startPointerY: number;
     startOffsetX: number; startOffsetY: number;
   } | null>(null);
+
+  // Populated during object:moving (canvas-init effect) with the canvas-space
+  // positions of any alignment lines the dragged object just snapped to,
+  // cleared on mouse:up; drawn in the before:render/after:render effect's
+  // after:render handler alongside the KDP guides.
+  const alignGuidesRef = useRef<{ vertical: number[]; horizontal: number[] }>({ vertical: [], horizontal: [] });
 
   const getBackgroundRegionRect = (region: 'front' | 'back' | 'full') => {
     if (region === 'full') return { destX: 0, destY: 0, destW: layout.canvasWidth, destH: layout.canvasHeight };
@@ -1267,6 +1277,22 @@ export default function FabricCoverStudio({
     }
   };
 
+  // Native browser eyedropper (Chrome/Edge only -- no polyfill exists for
+  // Firefox/Safari, so callers must check eyedropperSupported before showing
+  // the button at all) -- lets a color be sampled from anywhere on screen,
+  // including a photo on the canvas, not just from a preset palette.
+  const eyedropperSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
+  const pickColorFromScreen = async (property: 'fill' | 'stroke', setter: (v: string) => void) => {
+    if (!eyedropperSupported) return;
+    try {
+      const result = await new (window as any).EyeDropper().open();
+      setter(result.sRGBHex);
+      updateActiveObjectProperty(property, result.sRGBHex, true);
+    } catch {
+      // User pressed Escape / cancelled the pick -- nothing to do.
+    }
+  };
+
   // alignTextToSpine is declared further down; this ref lets the earlier
   // property-update path call it without reordering the whole component.
   const refitSpineTextRef = useRef<(() => void) | null>(null);
@@ -1622,6 +1648,55 @@ export default function FabricCoverStudio({
     fCanvas.on("object:scaling", syncActiveObjectDimensions);
     fCanvas.on("object:moving", syncActiveObjectDimensions);
 
+    // Smart alignment guides: snaps the dragged object's edges/center to the
+    // canvas center or another object's edges/center, matching Canva's pink
+    // snap-line behavior. Runs against getBoundingRect(true) so it accounts
+    // for the object's current rotation/scale, not just its raw left/top.
+    const handleObjectMovingSnap = (opt: any) => {
+      const obj = opt.target;
+      if (!obj) return;
+      const rect = obj.getBoundingRect(true);
+      const objXs = [rect.left, rect.left + rect.width / 2, rect.left + rect.width];
+      const objYs = [rect.top, rect.top + rect.height / 2, rect.top + rect.height];
+
+      const candidateXs = [0, layout.canvasWidth / 2, layout.canvasWidth];
+      const candidateYs = [0, layout.canvasHeight / 2, layout.canvasHeight];
+      fCanvas.getObjects().forEach((other) => {
+        if (other === obj) return;
+        const r = other.getBoundingRect(true);
+        candidateXs.push(r.left, r.left + r.width / 2, r.left + r.width);
+        candidateYs.push(r.top, r.top + r.height / 2, r.top + r.height);
+      });
+
+      let bestDx = 0, bestDxDist = SNAP_THRESHOLD, vLine: number | null = null;
+      for (const ox of objXs) for (const cx of candidateXs) {
+        const d = Math.abs(ox - cx);
+        if (d < bestDxDist) { bestDxDist = d; bestDx = cx - ox; vLine = cx; }
+      }
+      let bestDy = 0, bestDyDist = SNAP_THRESHOLD, hLine: number | null = null;
+      for (const oy of objYs) for (const cy of candidateYs) {
+        const d = Math.abs(oy - cy);
+        if (d < bestDyDist) { bestDyDist = d; bestDy = cy - oy; hLine = cy; }
+      }
+
+      if (bestDx !== 0 || bestDy !== 0) {
+        obj.set({ left: (obj.left || 0) + bestDx, top: (obj.top || 0) + bestDy });
+        obj.setCoords();
+      }
+      alignGuidesRef.current = {
+        vertical: vLine !== null ? [vLine] : [],
+        horizontal: hLine !== null ? [hLine] : [],
+      };
+      fCanvas.requestRenderAll();
+    };
+    const clearAlignGuides = () => {
+      if (!alignGuidesRef.current.vertical.length && !alignGuidesRef.current.horizontal.length) return;
+      alignGuidesRef.current = { vertical: [], horizontal: [] };
+      fCanvas.requestRenderAll();
+    };
+    fCanvas.on("object:moving", handleObjectMovingSnap);
+    fCanvas.on("mouse:up", clearAlignGuides);
+
     // Selection events
     const syncSelection = (e: any) => {
       const obj = e.selected ? e.selected[0] : null;
@@ -1975,6 +2050,29 @@ export default function FabricCoverStudio({
         ctx.fillStyle = "rgba(249, 115, 22, 0.6)";
         ctx.fillText("SAFETY ZONE", layout.frontLiveLeftPx + 4, labelBaseY + 22);
 
+        ctx.restore();
+      }
+
+      // Smart alignment guide lines -- drawn regardless of showKdpGuides
+      // since they're a drag-time aid, not a togglable layout guide.
+      const guides = alignGuidesRef.current;
+      if (guides.vertical.length || guides.horizontal.length) {
+        ctx.save();
+        ctx.strokeStyle = "#FF3EA5";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([]);
+        guides.vertical.forEach((x) => {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, layout.canvasHeight);
+          ctx.stroke();
+        });
+        guides.horizontal.forEach((y) => {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(layout.canvasWidth, y);
+          ctx.stroke();
+        });
         ctx.restore();
       }
     });
@@ -4763,6 +4861,15 @@ export default function FabricCoverStudio({
                       }}
                       className="flex-1 text-xs font-semibold uppercase px-2 py-1 border border-slate-200 rounded-lg text-center font-mono"
                     />
+                    {eyedropperSupported && (
+                      <button
+                        onClick={() => pickColorFromScreen('fill', setObjectColor)}
+                        title="Pick color from screen"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 cursor-pointer flex-shrink-0"
+                      >
+                        <Pipette className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -4861,6 +4968,15 @@ export default function FabricCoverStudio({
                           }}
                           className="flex-1 text-xs font-semibold uppercase px-2 py-1 border border-slate-200 rounded-lg text-center font-mono"
                         />
+                        {eyedropperSupported && (
+                          <button
+                            onClick={() => pickColorFromScreen('stroke', setObjectStrokeColor)}
+                            title="Pick color from screen"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 cursor-pointer flex-shrink-0"
+                          >
+                            <Pipette className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     )}
                     {objectStrokeColor !== "transparent" && (

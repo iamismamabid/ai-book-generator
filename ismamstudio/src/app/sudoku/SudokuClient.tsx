@@ -143,6 +143,26 @@ export default function SudokuClient() {
     }, 50);
   };
 
+  // Fetches plan status fresh rather than trusting whatever `premiumStatus`
+  // happened to hold at render time -- see handleDownloadSample below for
+  // the concrete issue this (combined with a fixed sample size) closes.
+  const getFreshPremiumStatus = async () => {
+    try {
+      const res = await checkPremiumStatus();
+      setPremiumStatus(res as any);
+      return res as any;
+    } catch (err) {
+      console.error(err);
+      return premiumStatus;
+    }
+  };
+
+  const tierMaxFor = (plan: string) =>
+    plan === "free" ? 5 :
+      plan === "starter" ? 20 :
+        plan === "pro" ? 50 :
+          500;
+
   const handleDownloadPdf = async (options: {
     includeCover: boolean;
     coverState: any;
@@ -150,12 +170,12 @@ export default function SudokuClient() {
     trimSize: "6x9" | "8.5x11" | "5x8";
     hasBleed?: boolean;
     showGuides?: boolean;
-    isPremium?: boolean;
   }) => {
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, isPremium } = options;
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides } = options;
 
-    const count = Math.max(1, bookCount);
+    const freshStatus = await getFreshPremiumStatus();
+    const count = Math.min(Math.max(1, bookCount), tierMaxFor(freshStatus.plan));
     const puzzles = generateSudokuBook(count, difficulty);
     const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');
     await downloadSudokuPdf(
@@ -170,11 +190,41 @@ export default function SudokuClient() {
         coverState,
         hasBleed,
         showGuides,
-        isPremium,
+        isPremium: freshStatus.isPremium,
       },
       `sudoku-${difficulty}-${count}puzzles.pdf`
     );
     setIsDownloading(false);
+  };
+
+  // A genuinely small, fixed-size sample -- always exactly 10 puzzles and
+  // never watermarked, regardless of plan. Previously this reused the
+  // user-adjustable bookCount and hardcoded isPremium: true, so while
+  // bookCount was tier-clamped, the label's promised "10" wasn't actually
+  // enforced (it downloaded whatever bookCount currently held).
+  const SAMPLE_SUDOKU_COUNT = 10;
+  const handleDownloadSample = async () => {
+    setIsDownloading(true);
+    try {
+      const puzzles = generateSudokuBook(SAMPLE_SUDOKU_COUNT, difficulty);
+      const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');
+      await downloadSudokuPdf(
+        {
+          puzzles,
+          difficulty,
+          trimSize: "6x9",
+          title: `Free Sample Sudoku Book`,
+          includeSolutions: true,
+          solutionsPerPage,
+          includeCover: false,
+          coverState: null,
+          isPremium: true,
+        },
+        `sudoku-${difficulty}-free-sample.pdf`
+      );
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const tabs = [
@@ -365,7 +415,7 @@ export default function SudokuClient() {
               />
 
               <button
-                onClick={() => handleDownloadPdf({ includeCover: false, coverState: null, includeSolutions: true, trimSize: "6x9", isPremium: true })}
+                onClick={handleDownloadSample}
                 disabled={isDownloading}
                 className="w-full bg-slate-900/80 hover:bg-slate-900 text-amber-400 font-bold py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-500/60 transition text-xs flex items-center justify-center gap-2"
               >

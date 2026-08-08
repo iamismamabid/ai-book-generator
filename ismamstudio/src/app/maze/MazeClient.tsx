@@ -142,11 +142,19 @@ export default function MazeGeneratorPage() {
       .catch((err) => console.error("Failed to load notebook entry:", err));
   }, []);
 
-  const maxMazes = 1000;
+  // Tier-aware ceiling, mirroring Sudoku's structure -- previously a flat
+  // 1000 regardless of plan, so a free/anonymous user could set bookCount
+  // arbitrarily high and, combined with the sample button below hardcoding
+  // isPremium: true, download a full-size, watermark-free book for free.
+  const maxMazes =
+    premiumStatus.plan === "free" ? 5 :
+      premiumStatus.plan === "starter" ? 20 :
+        premiumStatus.plan === "pro" ? 50 :
+          500;
 
   const handleBookCountChange = (val: number) => {
     let count = Math.max(1, val);
-    if (count > maxMazes) {
+    if (premiumStatus.checked && count > maxMazes) {
       count = maxMazes;
     }
     setBookCount(count);
@@ -166,6 +174,28 @@ export default function MazeGeneratorPage() {
     }, 50);
   };
 
+  // Fetches plan status fresh rather than trusting whatever `premiumStatus`
+  // happened to hold at render time -- a stale value (or a caller simply
+  // claiming isPremium: true) previously let a free/anonymous user download
+  // an uncapped, unwatermarked book. See handleDownloadSample below for the
+  // concrete exploit this closes.
+  const getFreshPremiumStatus = async () => {
+    try {
+      const res = await checkPremiumStatus();
+      setPremiumStatus(res as any);
+      return res as any;
+    } catch (err) {
+      console.error(err);
+      return premiumStatus;
+    }
+  };
+
+  const tierMaxFor = (plan: string) =>
+    plan === "free" ? 5 :
+      plan === "starter" ? 20 :
+        plan === "pro" ? 50 :
+          500;
+
   const handleDownloadPdf = async (options: {
     includeCover: boolean;
     coverState: any;
@@ -173,12 +203,16 @@ export default function MazeGeneratorPage() {
     trimSize: "6x9" | "8.5x11" | "5x8";
     hasBleed?: boolean;
     showGuides?: boolean;
-    isPremium?: boolean;
   }) => {
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, isPremium } = options;
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides } = options;
     try {
-      const mazes = generateMazeBook(bookCount, gridSize, gridSize, shape);
+      // Re-verify and re-clamp against the real plan at generation time --
+      // isPremium and the puzzle count both come from this fresh check, not
+      // from local state or anything the caller passed in.
+      const freshStatus = await getFreshPremiumStatus();
+      const finalCount = Math.min(bookCount, tierMaxFor(freshStatus.plan));
+      const mazes = generateMazeBook(finalCount, gridSize, gridSize, shape);
 
       const { downloadMazePdf } = await import("@/lib/maze-pdf");
       await downloadMazePdf(
@@ -192,12 +226,43 @@ export default function MazeGeneratorPage() {
           coverState,
           hasBleed,
           showGuides,
-          isPremium,
+          isPremium: freshStatus.isPremium,
         },
-        `maze-${shape}-${bookCount}puzzles.pdf`
+        `maze-${shape}-${finalCount}puzzles.pdf`
       );
     } catch (err) {
       console.error("Failed to download PDF:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // A genuinely small, fixed-size sample -- always exactly 10 mazes and
+  // never watermarked, regardless of plan. Previously this reused the
+  // user-adjustable bookCount (which had no upper bound for free users) and
+  // hardcoded isPremium: true, so a free/anonymous visitor could set the
+  // count field to hundreds and download a full, unwatermarked book at $0.
+  const SAMPLE_MAZE_COUNT = 10;
+  const handleDownloadSample = async () => {
+    setIsDownloading(true);
+    try {
+      const mazes = generateMazeBook(SAMPLE_MAZE_COUNT, gridSize, gridSize, shape);
+      const { downloadMazePdf } = await import("@/lib/maze-pdf");
+      await downloadMazePdf(
+        {
+          mazes,
+          shape,
+          trimSize: "6x9",
+          includeSolutions: true,
+          title: `Free Sample ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
+          includeCover: false,
+          coverState: null,
+          isPremium: true,
+        },
+        `maze-${shape}-free-sample.pdf`
+      );
+    } catch (err) {
+      console.error("Failed to download sample PDF:", err);
     } finally {
       setIsDownloading(false);
     }
@@ -410,12 +475,12 @@ export default function MazeGeneratorPage() {
               />
 
               <button
-                onClick={() => handleDownloadPdf({ includeCover: false, coverState: null, includeSolutions: true, trimSize: "6x9", isPremium: true })}
+                onClick={handleDownloadSample}
                 disabled={isDownloading}
                 className="w-full bg-slate-900/80 hover:bg-slate-900 text-amber-400 font-bold py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-500/60 transition text-xs flex items-center justify-center gap-2"
               >
                 <Download className="w-3.5 h-3.5" />
-                Download Free Sample Labyrinth PDF (300 DPI Vector)
+                Download 10 Free Sample Mazes PDF (300 DPI Vector)
               </button>
 
               <SaveToNotebookButton

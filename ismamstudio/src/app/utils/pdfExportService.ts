@@ -381,18 +381,35 @@ export function drawWordSearchGrid(
     });
   });
 
-  // 2. "Apple style" solution connector lines (thick round-capped capsule pill shape)
+  // 2. "Apple style" solution markers are drawn next (above backgrounds, below letters).
+  // Horizontal/vertical words get a bold border boxed around each of their letter
+  // cells -- adjacent boxes share an edge so the run reads as one connected outline.
+  // Diagonal words can't share cell edges that way, so they get a plain connector
+  // line between their start/end centers instead.
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.saveGraphicsState();
-    doc.setLineWidth(cellSize * 0.72);
-    doc.setLineCap("round");
-    doc.setDrawColor(226, 232, 240); // Soft slate pill background
+    doc.setDrawColor(20, 20, 20);
     data.words.forEach((w: any) => {
-      const sX = zone.x + (w.startC * cellSize) + (cellSize / 2);
-      const sY = zone.y + (w.startR * cellSize) + (cellSize / 2);
-      const eX = zone.x + (w.endC * cellSize) + (cellSize / 2);
-      const eY = zone.y + (w.endR * cellSize) + (cellSize / 2);
-      doc.line(sX, sY, eX, eY);
+      const isDiagonal = w.startR !== w.endR && w.startC !== w.endC;
+      if (isDiagonal) {
+        doc.setLineWidth(cellSize * 0.06);
+        doc.setLineCap('butt');
+        const sX = zone.x + (w.startC * cellSize) + (cellSize / 2);
+        const sY = zone.y + (w.startR * cellSize) + (cellSize / 2);
+        const eX = zone.x + (w.endC * cellSize) + (cellSize / 2);
+        const eY = zone.y + (w.endR * cellSize) + (cellSize / 2);
+        doc.line(sX, sY, eX, eY);
+      } else {
+        doc.setLineWidth(cellSize * 0.07);
+        const dR = Math.sign(w.endR - w.startR);
+        const dC = Math.sign(w.endC - w.startC);
+        const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
+        for (let i = 0; i <= steps; i++) {
+          const r = w.startR + dR * i;
+          const c = w.startC + dC * i;
+          doc.rect(zone.x + (c * cellSize), zone.y + (r * cellSize), cellSize, cellSize, "S");
+        }
+      }
     });
     doc.restoreGraphicsState();
   }
@@ -412,9 +429,9 @@ export function drawWordSearchGrid(
       doc.setFont(s.font, isWordLetter || s.letterBold ? "bold" : "normal");
 
       if (isWordLetter) {
-        doc.setTextColor(15, 23, 42); // Crisp dark text for answer letters
+        doc.setTextColor(s.solutionHighlighter === 'apple' ? '#000000' : s.highlightTextColor);
       } else if (isSolution && (s.solutionHighlighter === 'fade' || s.solutionHighlighter === 'apple')) {
-        doc.setTextColor(148, 163, 184); // Soft faded gray text for distractor letters
+        doc.setTextColor(210, 210, 210);
       } else {
         doc.setTextColor(30, 41, 59);
       }

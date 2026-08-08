@@ -722,7 +722,7 @@ export default function WordSearchStudio() {
                                                             backgroundColor: isMessageCell ? '#FCD34D' : (showAnswers && solutionHighlighter === 'fill' && answerMask[r][c]) ? '#E2E8F0' : cellColor,
                                                             borderWidth: `${lineWidth}px`, borderColor,
                                                             fontFamily: lettersFont,
-                                                            color: (showAnswers && solutionHighlighter === 'fade' && !answerMask[r][c] && !isMessageCell) ? '#D1D5DB' : '#000000'
+                                                            color: (showAnswers && (solutionHighlighter === 'fade' || solutionHighlighter === 'apple') && !answerMask[r][c] && !isMessageCell) ? '#D1D5DB' : '#000000'
                                                         }}>
                                                         {letter}
                                                     </div>
@@ -732,8 +732,20 @@ export default function WordSearchStudio() {
                                         {showAnswers && solutionHighlighter === 'apple' && (
                                             <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
                                                 {cleanWordsList.map((w, i) => {
-                                                    const len = Math.hypot(w.endC - w.startC, w.endR - w.startR); const ang = Math.atan2(w.endR - w.startR, w.endC - w.startC) * (180 / Math.PI);
-                                                    return <rect key={i} x={w.startC + 0.1} y={w.startR + 0.1} width={len + 0.8} height={0.8} rx="0.4" transform={`rotate(${ang}, ${w.startC + 0.5}, ${w.startR + 0.5})`} fill="transparent" stroke="#94A3B8" strokeWidth="0.08" />
+                                                    const isDiagonal = w.startR !== w.endR && w.startC !== w.endC;
+                                                    if (isDiagonal) {
+                                                        return <line key={i} x1={w.startC + 0.5} y1={w.startR + 0.5} x2={w.endC + 0.5} y2={w.endR + 0.5}
+                                                            stroke="#141414" strokeWidth="0.06" />;
+                                                    }
+                                                    const dR = Math.sign(w.endR - w.startR);
+                                                    const dC = Math.sign(w.endC - w.startC);
+                                                    const steps = Math.max(Math.abs(w.endR - w.startR), Math.abs(w.endC - w.startC));
+                                                    return Array.from({ length: steps + 1 }, (_, s) => {
+                                                        const r = w.startR + dR * s;
+                                                        const c = w.startC + dC * s;
+                                                        return <rect key={`${i}-${s}`} x={c + 0.04} y={r + 0.04} width={0.92} height={0.92}
+                                                            fill="none" stroke="#141414" strokeWidth="0.07" />;
+                                                    });
                                                 })}
                                             </svg>
                                         )}

@@ -517,6 +517,12 @@ const TRIM_SIZES = [
   { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
 ];
 
+// A background photo scaled to the bare minimum that covers its frame has
+// zero pan room in whichever axis its aspect ratio already matches the
+// frame's -- scaling a bit past that minimum guarantees real drag room in
+// both directions regardless of the photo's own aspect ratio.
+const BACKGROUND_PAN_OVERSCAN = 1.3;
+
 export interface CoverBackgroundState {
   backCoverColor: string;
   backCoverType: 'solid' | 'gradient';
@@ -803,7 +809,11 @@ export default function FabricCoverStudio({
     const imgW = img.naturalWidth || img.width;
     const imgH = img.naturalHeight || img.height;
     if (!imgW || !imgH) return { x: 0, y: 0 };
-    const coverScale = Math.max(destW / imgW, destH / imgH);
+    // Scaling to the bare minimum that covers the frame leaves zero pan room
+    // in whichever axis the image's aspect ratio already matches the frame's
+    // -- BACKGROUND_PAN_OVERSCAN scales a bit past that minimum so there's
+    // always real drag room in both directions, not just one.
+    const coverScale = Math.max(destW / imgW, destH / imgH) * BACKGROUND_PAN_OVERSCAN;
     const maxOffsetX = Math.max(0, (imgW * coverScale - destW) / 2);
     const maxOffsetY = Math.max(0, (imgH * coverScale - destH) / 2);
     return {
@@ -1734,7 +1744,7 @@ export default function FabricCoverStudio({
     const imgW = img.naturalWidth || img.width;
     const imgH = img.naturalHeight || img.height;
     if (!imgW || !imgH) return;
-    const coverScale = Math.max(destW / imgW, destH / imgH);
+    const coverScale = Math.max(destW / imgW, destH / imgH) * BACKGROUND_PAN_OVERSCAN;
     const scaledW = imgW * coverScale;
     const scaledH = imgH * coverScale;
     const maxOffsetX = Math.max(0, (scaledW - destW) / 2);
@@ -5337,6 +5347,34 @@ export default function FabricCoverStudio({
               </button>
             </div>
 
+            {/* Active background quick-remove -- surfaced here too (not just
+                in Settings) since this is where a background photo actually
+                gets applied, so removing one is discoverable right where it
+                was added. */}
+            {(backCoverImage || frontCoverImage || fullCoverImage) && (
+              <div className="space-y-1.5 bg-amber-50/60 p-2.5 rounded-xl border border-amber-200/50">
+                <label className="text-[10px] font-black text-amber-800 uppercase tracking-wider block">Active Background Photos</label>
+                {fullCoverImage && (
+                  <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-slate-200 text-[10px]">
+                    <span className="font-semibold text-slate-700">Full Cover</span>
+                    <button onClick={() => clearBackgroundImage('full')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Remove</button>
+                  </div>
+                )}
+                {backCoverImage && (
+                  <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-slate-200 text-[10px]">
+                    <span className="font-semibold text-slate-700">Back Cover</span>
+                    <button onClick={() => clearBackgroundImage('back')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Remove</button>
+                  </div>
+                )}
+                {frontCoverImage && (
+                  <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-slate-200 text-[10px]">
+                    <span className="font-semibold text-slate-700">Front Cover</span>
+                    <button onClick={() => clearBackgroundImage('front')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Remove</button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {graphicsSubTab === 'kdp-icons' ? (
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                 {KDP_ICONS_LIBRARY.map((category, catIdx) => (
@@ -5735,7 +5773,31 @@ export default function FabricCoverStudio({
         {activeToolTab === 'uploads' && (
           <div className="space-y-5">
             <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Custom Graphics</h3>
-            
+
+            {(backCoverImage || frontCoverImage || fullCoverImage) && (
+              <div className="space-y-1.5 bg-amber-50/60 p-2.5 rounded-xl border border-amber-200/50">
+                <label className="text-[10px] font-black text-amber-800 uppercase tracking-wider block">Active Background Photos</label>
+                {fullCoverImage && (
+                  <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-slate-200 text-[10px]">
+                    <span className="font-semibold text-slate-700">Full Cover</span>
+                    <button onClick={() => clearBackgroundImage('full')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Remove</button>
+                  </div>
+                )}
+                {backCoverImage && (
+                  <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-slate-200 text-[10px]">
+                    <span className="font-semibold text-slate-700">Back Cover</span>
+                    <button onClick={() => clearBackgroundImage('back')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Remove</button>
+                  </div>
+                )}
+                {frontCoverImage && (
+                  <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-slate-200 text-[10px]">
+                    <span className="font-semibold text-slate-700">Front Cover</span>
+                    <button onClick={() => clearBackgroundImage('front')} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Remove</button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-600 block">Upload Local Image</label>
               <label className="w-full p-3 bg-white border border-dashed border-slate-300 rounded-xl text-xs font-black flex flex-col items-center justify-center gap-2 hover:border-amber-400 hover:bg-slate-50/50 cursor-pointer transition-all text-slate-600">

@@ -625,10 +625,14 @@ export function MathPuzzleEditor({
           )}
         </div>
 
-        {/* Print-accurate page preview */}
+        {/* Print-accurate page preview. Sized to at least look page-shaped
+            via minHeight, but never clipped -- if the two grids need more
+            room than that ratio implies, the box grows instead of hiding
+            content (aspect-ratio + overflow-hidden previously clipped the
+            second grid on pages where it didn't fit the exact ratio). */}
         <div
-          className="relative bg-white shadow-2xl border border-dashed border-rose-300 w-full max-w-md mx-auto flex flex-col px-6 py-8 gap-6 overflow-hidden"
-          style={{ aspectRatio: `${aspectRatio}` }}
+          className="relative bg-white shadow-2xl border border-dashed border-rose-300 w-full max-w-md mx-auto flex flex-col px-6 py-8 gap-6 pb-10"
+          style={aspectRatio ? { minHeight: `calc(min(100%, 28rem) / ${aspectRatio})` } : undefined}
         >
           {activeEntry?.puzzleData ? (
             <>
@@ -636,7 +640,7 @@ export function MathPuzzleEditor({
                 <span className="text-xs font-black uppercase tracking-widest text-slate-800">
                   {PUZZLE_TYPE_LABEL[puzzleType]} #1{isSolution && activeBatchIndex === 0 && <span className="text-indigo-600"> (Solution)</span>}
                 </span>
-                <div className="scale-[0.55] origin-top -my-10 sm:-my-8">
+                <div className="scale-[0.55] origin-top">
                   <MathGridBlock puzzleType={puzzleType} data={activeEntry.puzzleData} isSolution={isSolution && activeBatchIndex === 0} />
                 </div>
               </div>
@@ -646,7 +650,7 @@ export function MathPuzzleEditor({
                   <span className="text-xs font-black uppercase tracking-widest text-slate-800">
                     {PUZZLE_TYPE_LABEL[puzzleType]} #2{isSolution && activeBatchIndex === 0 && <span className="text-indigo-600"> (Solution)</span>}
                   </span>
-                  <div className="scale-[0.55] origin-top -my-10 sm:-my-8">
+                  <div className="scale-[0.55] origin-top">
                     <MathGridBlock puzzleType={puzzleType} data={activeEntry.puzzleDataB} isSolution={isSolution && activeBatchIndex === 0} />
                   </div>
                 </div>

@@ -381,53 +381,62 @@ export function drawWordSearchGrid(
     });
   });
 
-  // 2. "Apple style" solution markers: a soft light-gray "brushed silver" stroke
-  // along each found word, lifted off the page by a layered shadow underneath --
-  // a premium/elevated look instead of a bright highlighter-pen color. jsPDF has
-  // no native blur, so the shadow is approximated with two passes of increasing
-  // size and decreasing opacity, which reads as a soft graduated shadow rather
-  // than one hard-edged offset copy. A thick round-capped line renders as a
-  // rounded-rectangle (stadium) shape with no extra path math, and translucency
-  // keeps the letters (drawn in their normal dark color in step 3) readable
-  // through it. Where two words' strokes overlap (e.g. crossing diagonals), the
-  // color just layers darker instead of forming an ambiguous line-crossing.
+  // 2. "Apple style" solution markers: a true rotated rounded rectangle (mostly
+  // straight sides, small rounded corners -- not a full stadium/pill) along each
+  // found word, lifted off the page by a layered shadow underneath. jsPDF's
+  // roundedRect doesn't rotate, so the shape is built manually via context2d:
+  // translate+rotate to the word's angle, then trace a rounded-rect path with
+  // bezierCurveTo corners (context2d.arcTo/roundRect aren't implemented in this
+  // jsPDF build). Translucency keeps the letters (drawn in their normal dark
+  // color in step 3) readable through it. Where two words overlap (e.g. crossing
+  // diagonals), the color just layers darker instead of an ambiguous crossing.
   if (isSolution && s.solutionHighlighter === 'apple') {
     doc.saveGraphicsState();
-    const strokeWords = (dx: number, dy: number) => {
+    const ctx = doc.context2d;
+    const K = 0.5522847498; // cubic-bezier circular-arc approximation constant
+
+    const roundedRectPath = (x0: number, y0: number, x1: number, y1: number, r: number) => {
+      ctx.beginPath();
+      ctx.moveTo(x0 + r, y0);
+      ctx.lineTo(x1 - r, y0);
+      ctx.bezierCurveTo(x1 - r + r * K, y0, x1, y0 + r - r * K, x1, y0 + r);
+      ctx.lineTo(x1, y1 - r);
+      ctx.bezierCurveTo(x1, y1 - r + r * K, x1 - r + r * K, y1, x1 - r, y1);
+      ctx.lineTo(x0 + r, y1);
+      ctx.bezierCurveTo(x0 + r - r * K, y1, x0, y1 - r + r * K, x0, y1 - r);
+      ctx.lineTo(x0, y0 + r);
+      ctx.bezierCurveTo(x0, y0 + r - r * K, x0 + r - r * K, y0, x0 + r, y0);
+      ctx.closePath();
+    };
+
+    const padX = cellSize * 0.42;
+    const halfH = cellSize * 0.36;
+    const radius = cellSize * 0.18;
+
+    const drawWords = (dx: number, dy: number, fill: string) => {
       data.words.forEach((w: any) => {
         const sX = zone.x + (w.startC * cellSize) + (cellSize / 2) + dx;
         const sY = zone.y + (w.startR * cellSize) + (cellSize / 2) + dy;
         const eX = zone.x + (w.endC * cellSize) + (cellSize / 2) + dx;
         const eY = zone.y + (w.endR * cellSize) + (cellSize / 2) + dy;
-        doc.line(sX, sY, eX, eY);
+        const angle = Math.atan2(eY - sY, eX - sX);
+        const len = Math.hypot(eX - sX, eY - sY);
+        ctx.save();
+        ctx.translate(sX, sY);
+        ctx.rotate(angle);
+        roundedRectPath(-padX, -halfH, len + padX, halfH, radius);
+        ctx.fillStyle = fill;
+        ctx.fill();
+        ctx.restore();
       });
     };
-    const setOpacity = (v: number) => {
-      try {
-        if (doc.GState) doc.setGState(new doc.GState({ opacity: v }));
-      } catch {
-        // ignore GState errors (older browsers / standalone pdf compatibility)
-      }
-    };
-    doc.setLineCap('round');
 
     // Shadow pass 1: wide, faint -- simulates the soft outer edge of a blur.
-    setOpacity(0.10);
-    doc.setDrawColor(100, 116, 139);
-    doc.setLineWidth(cellSize * 0.94);
-    strokeWords(cellSize * 0.09, cellSize * 0.10);
-
+    drawWords(cellSize * 0.09, cellSize * 0.10, "rgba(100,116,139,0.10)");
     // Shadow pass 2: tighter, darker -- simulates the core of the shadow.
-    setOpacity(0.22);
-    doc.setDrawColor(71, 85, 105);
-    doc.setLineWidth(cellSize * 0.80);
-    strokeWords(cellSize * 0.05, cellSize * 0.06);
-
+    drawWords(cellSize * 0.05, cellSize * 0.06, "rgba(71,85,105,0.22)");
     // Main pass: light gray, on top, no offset.
-    setOpacity(0.62);
-    doc.setDrawColor(203, 213, 225);
-    doc.setLineWidth(cellSize * 0.70);
-    strokeWords(0, 0);
+    drawWords(0, 0, "rgba(203,213,225,0.62)");
 
     doc.restoreGraphicsState();
   }

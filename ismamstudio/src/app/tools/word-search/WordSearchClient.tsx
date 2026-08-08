@@ -729,24 +729,32 @@ export default function WordSearchStudio() {
                                                 );
                                             }))}
                                         </div>
-                                        {showAnswers && solutionHighlighter === 'apple' && (
-                                            <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                                                <defs>
-                                                    <filter id="ws-highlight-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                                                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.16" />
-                                                    </filter>
-                                                </defs>
-                                                {cleanWordsList.map((w, i) => (
-                                                    <line key={`shadow-${i}`} x1={w.startC + 0.59} y1={w.startR + 0.60} x2={w.endC + 0.59} y2={w.endR + 0.60}
-                                                        stroke="#475569" strokeWidth="0.8" strokeLinecap="round" opacity="0.3"
-                                                        filter="url(#ws-highlight-shadow)" />
-                                                ))}
-                                                {cleanWordsList.map((w, i) => (
-                                                    <line key={i} x1={w.startC + 0.5} y1={w.startR + 0.5} x2={w.endC + 0.5} y2={w.endR + 0.5}
-                                                        stroke="#CBD5E1" strokeWidth="0.70" strokeLinecap="round" opacity="0.62" />
-                                                ))}
-                                            </svg>
-                                        )}
+                                        {showAnswers && solutionHighlighter === 'apple' && (() => {
+                                            const padX = 0.42, halfH = 0.36, rx = 0.18;
+                                            const wordRect = (w: any, dx: number, dy: number) => {
+                                                const cx = (w.startC + w.endC) / 2 + 0.5 + dx;
+                                                const cy = (w.startR + w.endR) / 2 + 0.5 + dy;
+                                                const len = Math.hypot(w.endC - w.startC, w.endR - w.startR);
+                                                const angle = Math.atan2(w.endR - w.startR, w.endC - w.startC) * (180 / Math.PI);
+                                                const width = len + padX * 2, height = halfH * 2;
+                                                return { x: cx - width / 2, y: cy - height / 2, width, height, transform: `rotate(${angle} ${cx} ${cy})` };
+                                            };
+                                            return (
+                                                <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                                                    <defs>
+                                                        <filter id="ws-highlight-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                                                            <feGaussianBlur in="SourceGraphic" stdDeviation="0.10" />
+                                                        </filter>
+                                                    </defs>
+                                                    {cleanWordsList.map((w, i) => (
+                                                        <rect key={i} {...wordRect(w, 0.09, 0.10)} rx={rx} fill="#475569" opacity="0.3" filter="url(#ws-highlight-shadow)" />
+                                                    ))}
+                                                    {cleanWordsList.map((w, i) => (
+                                                        <rect key={i} {...wordRect(w, 0, 0)} rx={rx} fill="#CBD5E1" opacity="0.62" />
+                                                    ))}
+                                                </svg>
+                                            );
+                                        })()}
                                     </div>
                                     <div className="w-full mt-6" style={{ textAlign: wordTextAlign, fontFamily: wordFont, color: wordTextColor }}>
                                         <h4 className="font-bold mb-2">Words to Find:</h4>

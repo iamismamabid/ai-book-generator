@@ -866,6 +866,12 @@ export default function FabricCoverStudio({
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
   const [clipboard, setClipboard] = useState<any>(null);
   const [isObjectLocked, setIsObjectLocked] = useState(false);
+  // Right-click context menu: x/y are viewport (fixed-position) screen
+  // coordinates for placing the floating menu, independent of the canvas's
+  // own CSS zoom scale. hasTarget tracks whether the right-click landed on
+  // an object (object actions) or empty canvas (paste only).
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; hasTarget: boolean } | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
   const [activeToolTab, setActiveToolTab] = useState<'elements' | 'shapes' | 'graphics' | 'presets' | 'uploads' | 'draw' | 'settings' | null>('elements');
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState("#000000");
@@ -3133,6 +3139,57 @@ export default function FabricCoverStudio({
       canvas.requestRenderAll();
     });
   };
+
+  // Right-clicking an object selects it first (matching standard design-tool
+  // behavior) and opens a floating menu at the cursor; right-clicking empty
+  // canvas offers Paste only. e.clientX/Y are used directly for menu
+  // placement since the menu itself is fixed-position (viewport
+  // coordinates), unaffected by the canvas's own CSS zoom transform --
+  // finding the actual target object still goes through Fabric's own
+  // findTarget, which (like getPointer) correctly compensates for that zoom.
+  const handleCanvasContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!canvas) return;
+    const target = canvas.findTarget(e.nativeEvent as any, false);
+    if (target) {
+      canvas.setActiveObject(target);
+      canvas.requestRenderAll();
+    } else {
+      canvas.discardActiveObject();
+      canvas.requestRenderAll();
+    }
+    // Clamp so the menu never renders partly off-screen when right-clicking
+    // near the viewport's right or bottom edge (rough estimate of the
+    // menu's own footprint since it isn't measured yet at this point).
+    const menuWidth = 190, menuHeight = 340;
+    const x = Math.min(e.clientX, window.innerWidth - menuWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - menuHeight - 8);
+    setContextMenu({ x: Math.max(8, x), y: Math.max(8, y), hasTarget: !!target });
+  };
+
+  // Close the context menu on any click elsewhere, Escape, or scroll --
+  // only registered while it's actually open, matching the standard
+  // dropdown/menu dismissal pattern. Clicks inside the menu itself are
+  // ignored here so a mousedown on a menu button doesn't unmount it before
+  // that button's own onClick (which fires later, on mouseup) can run --
+  // each menu action closes the menu itself after running.
+  useEffect(() => {
+    if (!contextMenu) return;
+    const close = (e?: MouseEvent) => {
+      if (e && contextMenuRef.current && contextMenuRef.current.contains(e.target as Node)) return;
+      setContextMenu(null);
+    };
+    const closeOnEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') setContextMenu(null); };
+    const closeOnScroll = () => setContextMenu(null);
+    window.addEventListener('mousedown', close);
+    window.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('scroll', closeOnScroll, true);
+    return () => {
+      window.removeEventListener('mousedown', close);
+      window.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('scroll', closeOnScroll, true);
+    };
+  }, [contextMenu]);
 
   const handleSearchUnsplash = async () => {
     if (!searchQuery.trim()) return;
@@ -6362,10 +6419,63 @@ export default function FabricCoverStudio({
               boxShadow: "var(--shadow-soft-lg)"
             }}
             className="relative bg-white rounded-sm ring-1 ring-slate-300 overflow-hidden cursor-default flex-shrink-0"
+            onContextMenu={handleCanvasContextMenu}
           >
             <canvas ref={canvasRef} />
           </div>
         </div>
+
+        {contextMenu && (
+          <div
+            ref={contextMenuRef}
+            style={{ position: 'fixed', left: contextMenu.x, top: contextMenu.y, zIndex: 200 }}
+            className="w-[190px] bg-white rounded-xl border border-slate-200 shadow-xl py-1.5 text-xs font-semibold text-slate-700"
+          >
+            {contextMenu.hasTarget ? (
+              <>
+                <button onClick={() => { copySelected(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                  <Copy className="w-3.5 h-3.5 text-slate-400" /> Copy <span className="ml-auto text-[10px] text-slate-400">Ctrl+C</span>
+                </button>
+                <button onClick={() => { cutSelected(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                  <Scissors className="w-3.5 h-3.5 text-slate-400" /> Cut <span className="ml-auto text-[10px] text-slate-400">Ctrl+X</span>
+                </button>
+                <button onClick={() => { duplicateSelected(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                  <Copy className="w-3.5 h-3.5 text-slate-400" /> Duplicate <span className="ml-auto text-[10px] text-slate-400">Ctrl+D</span>
+                </button>
+                <div className="h-px bg-slate-100 my-1" />
+                <button onClick={() => { bringToFront(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                  <ChevronsUp className="w-3.5 h-3.5 text-slate-400" /> Bring to Front
+                </button>
+                <button onClick={() => { bringForward(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                  <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> Bring Forward
+                </button>
+                <button onClick={() => { sendBackward(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> Send Backward
+                </button>
+                <button onClick={() => { sendToBack(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                  <ChevronsDown className="w-3.5 h-3.5 text-slate-400" /> Send to Back
+                </button>
+                <div className="h-px bg-slate-100 my-1" />
+                <button onClick={() => { toggleLockSelected(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                  {isObjectLocked ? <Unlock className="w-3.5 h-3.5 text-slate-400" /> : <Lock className="w-3.5 h-3.5 text-slate-400" />}
+                  {isObjectLocked ? 'Unlock' : 'Lock'} <span className="ml-auto text-[10px] text-slate-400">Ctrl+L</span>
+                </button>
+                <div className="h-px bg-slate-100 my-1" />
+                <button onClick={() => { deleteSelected(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-red-50 text-red-600 text-left">
+                  <Trash2 className="w-3.5 h-3.5" /> Delete <span className="ml-auto text-[10px] text-red-400">Del</span>
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => { if (clipboard) pasteSelected(); setContextMenu(null); }}
+                disabled={!clipboard}
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Clipboard className="w-3.5 h-3.5 text-slate-400" /> Paste <span className="ml-auto text-[10px] text-slate-400">Ctrl+V</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Instructions Bar */}
         <div className="mt-4 flex gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white py-2.5 px-6 rounded-full border border-slate-200 shadow-sm">

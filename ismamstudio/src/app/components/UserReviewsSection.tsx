@@ -54,7 +54,7 @@ const REVIEWS: ReviewItem[] = [
 
 export default function UserReviewsSection() {
   return (
-    <section className="relative z-10 max-w-7xl mx-auto px-6 py-16">
+    <section id="reviews" className="relative z-10 max-w-7xl mx-auto px-6 py-16">
       <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-[2.5rem] p-8 md:p-12 shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-8 border-b border-slate-100">

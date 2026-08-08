@@ -134,13 +134,13 @@ export default function HomeClient() {
 
             <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-200/60 text-xs font-bold text-slate-500">
               <span className="text-slate-400 font-black uppercase tracking-wider text-[10px]">Quick Jump:</span>
-              <a href="#pricing" className="hover:text-indigo-600 hover:underline transition-colors">Pricing Plans</a>
+              <Link href="/pricing" className="hover:text-indigo-600 hover:underline transition-colors">Pricing Plans</Link>
               <span>•</span>
               <a href="#tools" className="hover:text-indigo-600 hover:underline transition-colors">Puzzle Engines</a>
               <span>•</span>
               <a href="#reviews" className="hover:text-indigo-600 hover:underline transition-colors">User Reviews</a>
               <span>•</span>
-              <a href="#story" className="hover:text-indigo-600 hover:underline transition-colors">Founder Story</a>
+              <a href="#founder-story" className="hover:text-indigo-600 hover:underline transition-colors">Founder Story</a>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -305,7 +305,7 @@ export default function HomeClient() {
         </div>
 
         {/* Section 2: Premium Puzzle Engines */}
-        <div className="text-center mb-16 border-t border-slate-100 pt-16">
+        <div id="tools" className="text-center mb-16 border-t border-slate-100 pt-16">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 text-amber-600 text-xs font-black uppercase tracking-wider mb-3">
             💎 Premium Puzzle Tools
           </span>

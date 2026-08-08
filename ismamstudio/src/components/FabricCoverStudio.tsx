@@ -11,7 +11,8 @@ import {
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
   AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil,
-  Image as ImageIcon, ZoomIn, ZoomOut, Group as GroupIcon, Ungroup as UngroupIcon, Store
+  Image as ImageIcon, ZoomIn, ZoomOut, Group as GroupIcon, Ungroup as UngroupIcon, Store,
+  Paintbrush, ClipboardPaste, ImageOff
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -832,6 +833,16 @@ export default function FabricCoverStudio({
   const getBackgroundImageEl = (region: 'front' | 'back' | 'full') =>
     region === 'front' ? frontCoverImageEl.current : region === 'back' ? backCoverImageEl.current : fullCoverImageEl.current;
 
+  // Shared by the drag-to-pan mouse handlers and the right-click context menu
+  // (to offer "Remove Background Photo" when right-clicking directly on one).
+  const regionForPointer = (x: number, y: number): 'front' | 'back' | 'full' | null => {
+    const bg = coverBackgroundRef.current;
+    if (bg.fullCoverImage && fullCoverImageEl.current) return 'full';
+    if (x < layout.spineLeftPx && bg.backCoverImage && backCoverImageEl.current) return 'back';
+    if (x > layout.spineRightPx && bg.frontCoverImage && frontCoverImageEl.current) return 'front';
+    return null;
+  };
+
   // Ref to hold saveState function to call it when coverBackground updates
   const saveStateRef = useRef<() => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -865,12 +876,13 @@ export default function FabricCoverStudio({
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
   const [clipboard, setClipboard] = useState<any>(null);
+  const [copiedStyle, setCopiedStyle] = useState<Record<string, any> | null>(null);
   const [isObjectLocked, setIsObjectLocked] = useState(false);
   // Right-click context menu: x/y are viewport (fixed-position) screen
   // coordinates for placing the floating menu, independent of the canvas's
   // own CSS zoom scale. hasTarget tracks whether the right-click landed on
   // an object (object actions) or empty canvas (paste only).
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; hasTarget: boolean } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; hasTarget: boolean; bgRegion: 'front' | 'back' | 'full' | null } | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const [activeToolTab, setActiveToolTab] = useState<'elements' | 'shapes' | 'graphics' | 'presets' | 'uploads' | 'draw' | 'settings' | null>('elements');
   const [isDrawingMode, setIsDrawingMode] = useState(false);
@@ -1970,13 +1982,8 @@ export default function FabricCoverStudio({
     // handling here instead of Fabric's normal per-object dragging. Only
     // starts a pan when the click didn't land on an actual Fabric object
     // (opt.target), so decorative images/text on top keep working normally.
-    const regionForPointer = (x: number, y: number): 'front' | 'back' | 'full' | null => {
-      const bg = coverBackgroundRef.current;
-      if (bg.fullCoverImage && fullCoverImageEl.current) return 'full';
-      if (x < layout.spineLeftPx && bg.backCoverImage && backCoverImageEl.current) return 'back';
-      if (x > layout.spineRightPx && bg.frontCoverImage && frontCoverImageEl.current) return 'front';
-      return null;
-    };
+    // (regionForPointer is defined at component scope, shared with the
+    // right-click context menu's "Remove Background Photo" option.)
 
     canvas.on("mouse:down", (opt: any) => {
       if (opt.target) return;
@@ -3140,23 +3147,72 @@ export default function FabricCoverStudio({
     });
   };
 
+  const isTextLikeObject = (o: fabric.Object | null | undefined): boolean =>
+    !!o && (o.type === 'i-text' || o.type === 'text' || o.type === 'textbox');
+
+  // Captures the subset of style properties that make sense to hand off to
+  // another object (fill/stroke/opacity/shadow/blend, plus the text-specific
+  // ones when the source is text) -- geometry (position/size/rotation) is
+  // deliberately excluded since "style" shouldn't move or resize anything.
+  const copyStyleFromActive = () => {
+    if (!activeObject) return;
+    const o = activeObject as any;
+    const style: Record<string, any> = {
+      fill: o.fill,
+      stroke: o.stroke,
+      strokeWidth: o.strokeWidth,
+      strokeDashArray: o.strokeDashArray,
+      opacity: o.opacity,
+      shadow: o.shadow ? new fabric.Shadow(o.shadow) : null,
+      globalCompositeOperation: o.globalCompositeOperation,
+    };
+    if (isTextLikeObject(activeObject)) {
+      Object.assign(style, {
+        fontFamily: o.fontFamily,
+        fontSize: o.fontSize,
+        fontWeight: o.fontWeight,
+        fontStyle: o.fontStyle,
+        underline: o.underline,
+        charSpacing: o.charSpacing,
+        textAlign: o.textAlign,
+        lineHeight: o.lineHeight,
+      });
+    }
+    setCopiedStyle(style);
+  };
+
+  const pasteStyleToActive = () => {
+    if (!canvas || !activeObject || !copiedStyle) return;
+    const { fontFamily, fontSize, fontWeight, fontStyle, underline, charSpacing, textAlign, lineHeight, ...common } = copiedStyle;
+    activeObject.set(common);
+    if (isTextLikeObject(activeObject)) {
+      (activeObject as any).set({ fontFamily, fontSize, fontWeight, fontStyle, underline, charSpacing, textAlign, lineHeight });
+    }
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
   // Right-clicking an object selects it first (matching standard design-tool
   // behavior) and opens a floating menu at the cursor; right-clicking empty
-  // canvas offers Paste only. e.clientX/Y are used directly for menu
-  // placement since the menu itself is fixed-position (viewport
-  // coordinates), unaffected by the canvas's own CSS zoom transform --
-  // finding the actual target object still goes through Fabric's own
-  // findTarget, which (like getPointer) correctly compensates for that zoom.
+  // canvas offers Paste (plus Remove Background Photo if the click landed on
+  // one). e.clientX/Y are used directly for menu placement since the menu
+  // itself is fixed-position (viewport coordinates), unaffected by the
+  // canvas's own CSS zoom transform -- finding the actual target object
+  // still goes through Fabric's own findTarget, which (like getPointer)
+  // correctly compensates for that zoom.
   const handleCanvasContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!canvas) return;
     const target = canvas.findTarget(e.nativeEvent as any, false);
+    let bgRegion: 'front' | 'back' | 'full' | null = null;
     if (target) {
       canvas.setActiveObject(target);
       canvas.requestRenderAll();
     } else {
       canvas.discardActiveObject();
       canvas.requestRenderAll();
+      const pointer = canvas.getPointer(e.nativeEvent as any);
+      bgRegion = regionForPointer(pointer.x, pointer.y);
     }
     // Clamp so the menu never renders partly off-screen when right-clicking
     // near the viewport's right or bottom edge (rough estimate of the
@@ -3164,7 +3220,7 @@ export default function FabricCoverStudio({
     const menuWidth = 190, menuHeight = 340;
     const x = Math.min(e.clientX, window.innerWidth - menuWidth - 8);
     const y = Math.min(e.clientY, window.innerHeight - menuHeight - 8);
-    setContextMenu({ x: Math.max(8, x), y: Math.max(8, y), hasTarget: !!target });
+    setContextMenu({ x: Math.max(8, x), y: Math.max(8, y), hasTarget: !!target, bgRegion });
   };
 
   // Close the context menu on any click elsewhere, Escape, or scroll --
@@ -6443,6 +6499,17 @@ export default function FabricCoverStudio({
                   <Copy className="w-3.5 h-3.5 text-slate-400" /> Duplicate <span className="ml-auto text-[10px] text-slate-400">Ctrl+D</span>
                 </button>
                 <div className="h-px bg-slate-100 my-1" />
+                <button onClick={() => { copyStyleFromActive(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+                  <Paintbrush className="w-3.5 h-3.5 text-slate-400" /> Copy Style <span className="ml-auto text-[10px] text-slate-400">Ctrl+Alt+C</span>
+                </button>
+                <button
+                  onClick={() => { pasteStyleToActive(); setContextMenu(null); }}
+                  disabled={!copiedStyle}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ClipboardPaste className="w-3.5 h-3.5 text-slate-400" /> Paste Style <span className="ml-auto text-[10px] text-slate-400">Ctrl+Alt+V</span>
+                </button>
+                <div className="h-px bg-slate-100 my-1" />
                 <button onClick={() => { bringToFront(); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
                   <ChevronsUp className="w-3.5 h-3.5 text-slate-400" /> Bring to Front
                 </button>
@@ -6466,14 +6533,31 @@ export default function FabricCoverStudio({
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => { if (clipboard) pasteSelected(); setContextMenu(null); }}
-                disabled={!clipboard}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Clipboard className="w-3.5 h-3.5 text-slate-400" /> Paste <span className="ml-auto text-[10px] text-slate-400">Ctrl+V</span>
-              </button>
+              <>
+                <button
+                  onClick={() => { if (clipboard) pasteSelected(); setContextMenu(null); }}
+                  disabled={!clipboard}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Clipboard className="w-3.5 h-3.5 text-slate-400" /> Paste <span className="ml-auto text-[10px] text-slate-400">Ctrl+V</span>
+                </button>
+                {contextMenu.bgRegion && (
+                  <>
+                    <div className="h-px bg-slate-100 my-1" />
+                    <button
+                      onClick={() => { clearBackgroundImage(contextMenu.bgRegion!); setContextMenu(null); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-red-50 text-red-600 text-left"
+                    >
+                      <ImageOff className="w-3.5 h-3.5" /> Remove Background Photo
+                    </button>
+                  </>
+                )}
+              </>
             )}
+            <div className="h-px bg-slate-100 my-1" />
+            <button onClick={() => { setShowKdpGuides(!showKdpGuides); setContextMenu(null); }} className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left">
+              <LayoutTemplate className="w-3.5 h-3.5 text-slate-400" /> {showKdpGuides ? 'Hide Guides' : 'Show Guides'}
+            </button>
           </div>
         )}
 

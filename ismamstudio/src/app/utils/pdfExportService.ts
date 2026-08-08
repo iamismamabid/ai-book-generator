@@ -1963,43 +1963,34 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
 };
 
 // Helper: Draw Math Puzzle Grid
-const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const puzzleType = page.config.puzzleType || "addition";
-  const puzzle = page.config.puzzleData;
-  const isSolution = page.config.isSolution || false;
+// Height (in inches) of a single math puzzle grid, used both to lay out two
+// boxes on one page and by the look-ahead page-break guard below.
+const getMathGridHeight = (puzzleType: string): number => {
+  if (puzzleType === "addition") return 3 * 0.55 + 2 * 0.45; // 3 rows + 2 gaps
+  return 5 * 0.55; // multiplication / number_fill: 5 rows
+};
 
-  const contentW = pageWidth - 1.25;
-  void contentW; // reserved for future use
-
-  // ── Look-ahead page-break guard ─────────────────────────────────────────
-  // Calculate how tall the grid will be and ensure it fits above the footer.
-  // If not, force a new page BEFORE drawing anything.
-  const bottomMargin = 0.65; // safe bottom boundary in inches
-  const gridStartY = 1.6;    // all grids begin at this Y on each page
-
-  let gridH = 0;
-  if (puzzleType === "addition") {
-    // 3 rows × 0.55" + 2 gaps × 0.45"
-    gridH = 3 * 0.55 + 2 * 0.45;
-  } else if (puzzleType === "multiplication" || puzzleType === "number_fill") {
-    // 5 rows × 0.55"
-    gridH = 5 * 0.55;
-  }
-
-  const totalNeeded = gridStartY + gridH + 0.3; // grid bottom + small buffer
-
-  if (totalNeeded > pageHeight - bottomMargin) {
-    // Not enough room — add a new page and reprint the section title
-    doc.addPage();
-    const isSol = page.config.isSolution || false;
-    const titleText = `${puzzleType.replace("_", " ").toUpperCase()}${isSol ? " (SOLUTION)" : ""}`;
+// Draws one math puzzle grid (addition/multiplication/number_fill) at a given
+// vertical offset, with an optional label above it. Extracted from
+// drawMathPuzzle so a page can hold either one box (legacy single-puzzle
+// pages) or two boxes stacked with a divider between them.
+const drawMathPuzzleBox = (
+  doc: any,
+  puzzleType: string,
+  puzzle: any,
+  xShift: number,
+  pageWidth: number,
+  startY: number,
+  isSolution: boolean,
+  label?: string
+) => {
+  if (label) {
     doc.setFont("Helvetica", "bold");
-    doc.setFontSize(20);
-    doc.setTextColor(0);
-    const titleW = doc.getTextWidth(titleText);
-    doc.text(titleText, (pageWidth - titleW) / 2 + xShift, 0.8);
+    doc.setFontSize(11);
+    doc.setTextColor(79, 70, 229);
+    const labelW = doc.getTextWidth(label);
+    doc.text(label, (pageWidth - labelW) / 2 + xShift, startY - 0.2);
   }
-  // ────────────────────────────────────────────────────────────────────────
 
   if (puzzleType === "addition") {
     // 3x3 Addition Grid
@@ -2008,7 +1999,6 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
     const boxH = 0.55;
     const cellSpacing = 0.45;
     const startX = (pageWidth - (size * boxW + (size - 1) * cellSpacing)) / 2 + xShift;
-    const startY = 1.6;
 
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
@@ -2057,7 +2047,6 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
     const cellW = 0.55;
     const cellH = 0.55;
     const startX = (pageWidth - size * cellW) / 2 + xShift;
-    const startY = 1.6;
 
     doc.setLineWidth(0.012);
     doc.setDrawColor(30, 41, 59);
@@ -2122,7 +2111,6 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
     const cellW = 0.55;
     const cellH = 0.55;
     const startX = (pageWidth - size * cellW) / 2 + xShift;
-    const startY = 1.6;
 
     doc.setLineWidth(0.012);
     doc.setDrawColor(30, 41, 59);
@@ -2165,6 +2153,55 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
   }
 
   doc.setTextColor(0);
+};
+
+const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const puzzleType = page.config.puzzleType || "addition";
+  const puzzleA = page.config.puzzleData;
+  const puzzleB = page.config.puzzleDataB;
+  const isSolution = page.config.isSolution || false;
+  const gridH = getMathGridHeight(puzzleType);
+  const bottomMargin = 0.65; // safe bottom boundary in inches
+
+  // ── Look-ahead page-break guard ─────────────────────────────────────────
+  // Two boxes stacked need roughly double the height of one, plus a label
+  // and divider between them. Ensure it fits above the footer; if not,
+  // force a new page BEFORE drawing anything.
+  const labelSpace = 0.3;
+  const dividerSpace = 0.35;
+  const totalNeeded = puzzleB
+    ? 1.5 + (labelSpace + gridH) * 2 + dividerSpace + 0.3
+    : 1.6 + gridH + 0.3;
+
+  if (totalNeeded > pageHeight - bottomMargin) {
+    // Not enough room — add a new page and reprint the section title
+    doc.addPage();
+    const isSol = page.config.isSolution || false;
+    const titleText = `${puzzleType.replace("_", " ").toUpperCase()}${isSol ? " (SOLUTION)" : ""}`;
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(0);
+    const titleW = doc.getTextWidth(titleText);
+    doc.text(titleText, (pageWidth - titleW) / 2 + xShift, 0.8);
+  }
+  // ────────────────────────────────────────────────────────────────────────
+
+  if (puzzleB) {
+    // Two boxes on one page, each labeled, separated by a divider line.
+    const startYA = 1.5 + labelSpace;
+    drawMathPuzzleBox(doc, puzzleType, puzzleA, xShift, pageWidth, startYA, isSolution, "Math Puzzle #1");
+
+    const dividerY = startYA + gridH + dividerSpace / 2;
+    doc.setLineWidth(0.01);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(0.75 + xShift, dividerY, pageWidth - 0.75 + xShift, dividerY);
+
+    const startYB = startYA + gridH + dividerSpace + labelSpace;
+    drawMathPuzzleBox(doc, puzzleType, puzzleB, xShift, pageWidth, startYB, isSolution, "Math Puzzle #2");
+  } else {
+    // Legacy single-box page (or a page created before this feature existed).
+    drawMathPuzzleBox(doc, puzzleType, puzzleA, xShift, pageWidth, 1.6, isSolution);
+  }
 };
 
 // ── Crossword Solution Pack (1, 2, or 4 per page) ─────────────────────────────

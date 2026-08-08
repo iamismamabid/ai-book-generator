@@ -6,7 +6,7 @@ import { RefreshCw, Download } from "lucide-react";
 // ==========================================
 // 📄 PDF EXPORT LOGIC (1 Huge Block Per Page)
 // ==========================================
-const downloadMathPuzzlesPDF = async (puzzleData: any, puzzleType: string) => {
+const downloadMathPuzzlesPDF = async (puzzleData: any, puzzleDataB: any, puzzleType: string) => {
   const { default: jsPDF } = await import("jspdf");
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -17,26 +17,27 @@ const downloadMathPuzzlesPDF = async (puzzleData: any, puzzleType: string) => {
   else if (puzzleType === "multiplication") title = "Multiplication Table";
   else if (puzzleType === "number_fill") title = "Number Sums Puzzle";
 
-  // --- PAGE 1: The Puzzle (Huge Block) ---
-  let currentY = 40; // Push down slightly so it sits nicely in the middle of the page
-  pdf.setFontSize(28);
-  pdf.setFont("helvetica", "bold");
-  pdf.setTextColor(0, 0, 0);
-  pdf.text(title, pageWidth / 2, currentY, { align: "center" });
+  const drawPuzzlePage = (data: any, label: string, isSolution: boolean, addPageFirst: boolean) => {
+    if (addPageFirst) pdf.addPage();
+    let currentY = 40;
+    pdf.setFontSize(28);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(isSolution ? 65 : 0, isSolution ? 105 : 0, isSolution ? 225 : 0);
+    pdf.text(isSolution ? `${label} (Solution Key)` : label, pageWidth / 2, currentY, { align: "center" });
 
-  currentY += 25;
-  drawSpecificPuzzle(pdf, puzzleData, puzzleType, false, currentY, pageWidth);
+    currentY += 25;
+    drawSpecificPuzzle(pdf, data, puzzleType, isSolution, currentY, pageWidth);
+  };
 
-  // --- PAGE 2: The Solution (Huge Block) ---
-  pdf.addPage(); // Force the solution to a completely new page
+  // Puzzle #1 (puzzle + solution)
+  drawPuzzlePage(puzzleData, `${title} #1`, false, false);
+  drawPuzzlePage(puzzleData, `${title} #1`, true, true);
 
-  currentY = 40;
-  pdf.setFontSize(28);
-  pdf.setTextColor(65, 105, 225); // Blue title for the solution
-  pdf.text(`${title} (Solution Key)`, pageWidth / 2, currentY, { align: "center" });
-
-  currentY += 25;
-  drawSpecificPuzzle(pdf, puzzleData, puzzleType, true, currentY, pageWidth);
+  // Puzzle #2 (puzzle + solution), if a second grid exists
+  if (puzzleDataB) {
+    drawPuzzlePage(puzzleDataB, `${title} #2`, false, true);
+    drawPuzzlePage(puzzleDataB, `${title} #2`, true, true);
+  }
 
   pdf.save(`${title.replace(/\s+/g, '_')}.pdf`);
 };
@@ -219,6 +220,12 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
   const [puzzleData, setPuzzleData] = useState<any>(
     page?.config?.puzzleData || null
   );
+  // A book page fits two compact math grids -- generated and stored
+  // alongside puzzleData so the interior PDF prints both on the same page
+  // instead of leaving most of it blank.
+  const [puzzleDataB, setPuzzleDataB] = useState<any>(
+    page?.config?.puzzleDataB || null
+  );
   const [isMounted, setIsMounted] = useState(false);
 
   const isSolution = page?.config?.isSolution || false;
@@ -336,22 +343,24 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
     return { grid, rowSums, colSums, hiddenCells };
   };
 
-  const handleGenerate = () => {
-    let result: any = null;
-    if (puzzleType === "addition") {
-      result = generateAdditionPuzzle();
-    } else if (puzzleType === "multiplication") {
-      result = generateMultiplicationPuzzle();
-    } else if (puzzleType === "number_fill") {
-      result = generateNumberFillPuzzle();
-    }
+  const generateOne = () => {
+    if (puzzleType === "addition") return generateAdditionPuzzle();
+    if (puzzleType === "multiplication") return generateMultiplicationPuzzle();
+    return generateNumberFillPuzzle();
+  };
 
-    setPuzzleData(result);
+  const handleGenerate = () => {
+    const resultA = generateOne();
+    const resultB = generateOne();
+
+    setPuzzleData(resultA);
+    setPuzzleDataB(resultB);
     if (updatePage) {
       updatePage({
         puzzleType,
         difficulty,
-        puzzleData: result,
+        puzzleData: resultA,
+        puzzleDataB: resultB,
         isSolution
       });
     }
@@ -363,6 +372,7 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
         puzzleType,
         difficulty,
         puzzleData,
+        puzzleDataB,
         isSolution: solMode
       });
     }
@@ -370,7 +380,7 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
 
   const handleDownloadPDF = async () => {
     if (!puzzleData) return;
-    await downloadMathPuzzlesPDF(puzzleData, puzzleType);
+    await downloadMathPuzzlesPDF(puzzleData, puzzleDataB, puzzleType);
   };
 
   useEffect(() => {
@@ -491,157 +501,16 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
         </p>
 
         {puzzleData ? (
-          <div className="w-full max-w-3xl flex-1 flex flex-col justify-start items-center pt-4">
+          <div className="w-full max-w-3xl flex-1 flex flex-col justify-start items-center pt-4 gap-3">
+            <span className="text-xs font-black uppercase tracking-widest text-indigo-500 self-start">Math Puzzle #1</span>
+            <MathGridBlock puzzleType={puzzleType} data={puzzleData} isSolution={isSolution} />
 
-            {/* Addition Grid */}
-            {puzzleType === "addition" && puzzleData.hiddenIndices && (
-              <div className="grid grid-cols-3 gap-y-12 gap-x-12 relative p-10 bg-slate-50/50 border border-slate-200 rounded-3xl">
-                {puzzleData.grid.map((val: number, idx: number) => {
-                  const r = Math.floor(idx / 3);
-                  const c = idx % 3;
-                  const isHidden = puzzleData.hiddenIndices.includes(idx) && !isSolution;
-                  const isAnswer = isSolution && puzzleData.hiddenIndices.includes(idx);
-
-                  return (
-                    <div key={idx} className="relative flex items-center justify-center">
-                      <div
-                        className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl flex items-center justify-center text-3xl font-black border-2 shadow-sm transition-all
-                          ${isHidden
-                            ? "bg-white border-dashed border-slate-300 text-transparent"
-                            : isAnswer
-                              ? "bg-indigo-50 border-indigo-300 text-indigo-700"
-                              : "bg-white border-slate-800 text-slate-800"
-                          }
-                        `}
-                      >
-                        {!isHidden ? val : ""}
-                      </div>
-
-                      {c < 2 && (
-                        <span className="absolute -right-8 text-3xl font-extrabold text-slate-400">
-                          {c === 0 ? "+" : "="}
-                        </span>
-                      )}
-                      {r < 2 && (
-                        <span className="absolute -bottom-9 text-3xl font-extrabold text-slate-400">
-                          {r === 0 ? "+" : "="}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Multiplication Grid */}
-            {puzzleType === "multiplication" && puzzleData.colFactors && (
-              <div className="grid grid-cols-5 gap-2 md:gap-3 border-4 border-slate-900 bg-white p-3 md:p-5 rounded-3xl shadow-xl w-full">
-                {Array.from({ length: 5 }).map((_, r) =>
-                  Array.from({ length: 5 }).map((_, c) => {
-                    const isHeader = r === 0 || c === 0;
-
-                    if (r === 0 && c === 0) {
-                      return (
-                        <div key="0-0" className="aspect-square w-full flex items-center justify-center font-black text-indigo-600 bg-indigo-50 border-2 border-indigo-100 rounded-2xl text-2xl md:text-4xl">
-                          ×
-                        </div>
-                      );
-                    }
-
-                    let displayedVal = "";
-                    let isHidden = false;
-                    let isAnswer = false;
-
-                    if (r === 0) {
-                      const val = puzzleData.colFactors[c - 1];
-                      isHidden = puzzleData.hiddenCols.includes(c - 1) && !isSolution;
-                      isAnswer = isSolution && puzzleData.hiddenCols.includes(c - 1);
-                      displayedVal = String(val);
-                    } else if (c === 0) {
-                      const val = puzzleData.rowFactors[r - 1];
-                      isHidden = puzzleData.hiddenRows.includes(r - 1) && !isSolution;
-                      isAnswer = isSolution && puzzleData.hiddenRows.includes(r - 1);
-                      displayedVal = String(val);
-                    } else {
-                      const val = puzzleData.grid[r - 1][c - 1];
-                      isHidden = puzzleData.hiddenProducts.some((p: any) => p[0] === r - 1 && p[1] === c - 1) && !isSolution;
-                      isAnswer = isSolution && puzzleData.hiddenProducts.some((p: any) => p[0] === r - 1 && p[1] === c - 1);
-                      displayedVal = String(val);
-                    }
-
-                    return (
-                      <div
-                        key={`${r}-${c}`}
-                        className={`aspect-square w-full flex items-center justify-center text-2xl md:text-4xl font-bold border-2 rounded-2xl transition-all duration-300
-                          ${isHeader
-                            ? "bg-slate-100 border-slate-200 text-slate-800 font-extrabold"
-                            : "border-slate-200"
-                          }
-                          ${isHidden
-                            ? "bg-slate-50 border-dashed border-slate-300 text-transparent"
-                            : isAnswer
-                              ? "bg-indigo-50 border-indigo-300 text-indigo-700 font-extrabold"
-                              : "text-slate-800"
-                          }
-                        `}
-                      >
-                        {!isHidden ? displayedVal : ""}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            )}
-
-            {/* Number Fill (Sums Grid) */}
-            {puzzleType === "number_fill" && puzzleData.hiddenCells && (
-              <div className="grid grid-cols-5 gap-2 md:gap-3 border-4 border-slate-900 bg-white p-3 md:p-5 rounded-3xl shadow-xl w-full">
-                {Array.from({ length: 5 }).map((_, r) =>
-                  Array.from({ length: 5 }).map((_, c) => {
-                    const isSumHeader = r === 4 || c === 4;
-
-                    if (r === 4 && c === 4) {
-                      return <div key="corner" className="aspect-square w-full bg-transparent" />;
-                    }
-
-                    let displayedVal = "";
-                    let isHidden = false;
-                    let isAnswer = false;
-
-                    if (isSumHeader) {
-                      const sumVal = r === 4 ? puzzleData.colSums[c] : puzzleData.rowSums[r];
-                      displayedVal = String(sumVal);
-                    } else {
-                      const val = puzzleData.grid[r][c];
-                      isHidden = puzzleData.hiddenCells.some((cell: any) => cell[0] === r && cell[1] === c) && !isSolution;
-                      isAnswer = isSolution && puzzleData.hiddenCells.some((cell: any) => cell[0] === r && cell[1] === c);
-                      displayedVal = String(val);
-                    }
-
-                    return (
-                      <div
-                        key={`${r}-${c}`}
-                        className={`aspect-square w-full flex items-center justify-center text-xl md:text-3xl font-bold border-2 rounded-2xl transition-all duration-300
-                          ${isSumHeader
-                            ? "bg-indigo-50 border-indigo-100 text-indigo-700 font-black"
-                            : "border-slate-200"
-                          }
-                          ${isHidden
-                            ? "bg-slate-50 border-dashed border-slate-300 text-transparent"
-                            : isAnswer
-                              ? "bg-indigo-100 border-indigo-400 text-indigo-800 font-extrabold"
-                              : isSumHeader
-                                ? ""
-                                : "text-slate-800"
-                          }
-                        `}
-                      >
-                        {!isHidden ? displayedVal : ""}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+            {puzzleDataB && (
+              <>
+                <div className="w-full h-px bg-slate-200 my-2" />
+                <span className="text-xs font-black uppercase tracking-widest text-indigo-500 self-start">Math Puzzle #2</span>
+                <MathGridBlock puzzleType={puzzleType} data={puzzleDataB} isSolution={isSolution} />
+              </>
             )}
           </div>
         ) : (
@@ -650,4 +519,165 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
       </div>
     </div>
   );
+}
+
+// One math puzzle grid (addition/multiplication/number_fill), extracted so
+// a page's two boxes (#1 and #2) render identically without duplicating the
+// grid markup for each puzzle type twice.
+function MathGridBlock({ puzzleType, data, isSolution }: { puzzleType: PuzzleType; data: any; isSolution: boolean }) {
+  if (puzzleType === "addition" && data.hiddenIndices) {
+    return (
+      <div className="grid grid-cols-3 gap-y-12 gap-x-12 relative p-10 bg-slate-50/50 border border-slate-200 rounded-3xl">
+        {data.grid.map((val: number, idx: number) => {
+          const r = Math.floor(idx / 3);
+          const c = idx % 3;
+          const isHidden = data.hiddenIndices.includes(idx) && !isSolution;
+          const isAnswer = isSolution && data.hiddenIndices.includes(idx);
+
+          return (
+            <div key={idx} className="relative flex items-center justify-center">
+              <div
+                className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl flex items-center justify-center text-3xl font-black border-2 shadow-sm transition-all
+                  ${isHidden
+                    ? "bg-white border-dashed border-slate-300 text-transparent"
+                    : isAnswer
+                      ? "bg-indigo-50 border-indigo-300 text-indigo-700"
+                      : "bg-white border-slate-800 text-slate-800"
+                  }
+                `}
+              >
+                {!isHidden ? val : ""}
+              </div>
+
+              {c < 2 && (
+                <span className="absolute -right-8 text-3xl font-extrabold text-slate-400">
+                  {c === 0 ? "+" : "="}
+                </span>
+              )}
+              {r < 2 && (
+                <span className="absolute -bottom-9 text-3xl font-extrabold text-slate-400">
+                  {r === 0 ? "+" : "="}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (puzzleType === "multiplication" && data.colFactors) {
+    return (
+      <div className="grid grid-cols-5 gap-2 md:gap-3 border-4 border-slate-900 bg-white p-3 md:p-5 rounded-3xl shadow-xl w-full">
+        {Array.from({ length: 5 }).map((_, r) =>
+          Array.from({ length: 5 }).map((_, c) => {
+            const isHeader = r === 0 || c === 0;
+
+            if (r === 0 && c === 0) {
+              return (
+                <div key="0-0" className="aspect-square w-full flex items-center justify-center font-black text-indigo-600 bg-indigo-50 border-2 border-indigo-100 rounded-2xl text-2xl md:text-4xl">
+                  ×
+                </div>
+              );
+            }
+
+            let displayedVal = "";
+            let isHidden = false;
+            let isAnswer = false;
+
+            if (r === 0) {
+              const val = data.colFactors[c - 1];
+              isHidden = data.hiddenCols.includes(c - 1) && !isSolution;
+              isAnswer = isSolution && data.hiddenCols.includes(c - 1);
+              displayedVal = String(val);
+            } else if (c === 0) {
+              const val = data.rowFactors[r - 1];
+              isHidden = data.hiddenRows.includes(r - 1) && !isSolution;
+              isAnswer = isSolution && data.hiddenRows.includes(r - 1);
+              displayedVal = String(val);
+            } else {
+              const val = data.grid[r - 1][c - 1];
+              isHidden = data.hiddenProducts.some((p: any) => p[0] === r - 1 && p[1] === c - 1) && !isSolution;
+              isAnswer = isSolution && data.hiddenProducts.some((p: any) => p[0] === r - 1 && p[1] === c - 1);
+              displayedVal = String(val);
+            }
+
+            return (
+              <div
+                key={`${r}-${c}`}
+                className={`aspect-square w-full flex items-center justify-center text-2xl md:text-4xl font-bold border-2 rounded-2xl transition-all duration-300
+                  ${isHeader
+                    ? "bg-slate-100 border-slate-200 text-slate-800 font-extrabold"
+                    : "border-slate-200"
+                  }
+                  ${isHidden
+                    ? "bg-slate-50 border-dashed border-slate-300 text-transparent"
+                    : isAnswer
+                      ? "bg-indigo-50 border-indigo-300 text-indigo-700 font-extrabold"
+                      : "text-slate-800"
+                  }
+                `}
+              >
+                {!isHidden ? displayedVal : ""}
+              </div>
+            );
+          })
+        )}
+      </div>
+    );
+  }
+
+  if (puzzleType === "number_fill" && data.hiddenCells) {
+    return (
+      <div className="grid grid-cols-5 gap-2 md:gap-3 border-4 border-slate-900 bg-white p-3 md:p-5 rounded-3xl shadow-xl w-full">
+        {Array.from({ length: 5 }).map((_, r) =>
+          Array.from({ length: 5 }).map((_, c) => {
+            const isSumHeader = r === 4 || c === 4;
+
+            if (r === 4 && c === 4) {
+              return <div key="corner" className="aspect-square w-full bg-transparent" />;
+            }
+
+            let displayedVal = "";
+            let isHidden = false;
+            let isAnswer = false;
+
+            if (isSumHeader) {
+              const sumVal = r === 4 ? data.colSums[c] : data.rowSums[r];
+              displayedVal = String(sumVal);
+            } else {
+              const val = data.grid[r][c];
+              isHidden = data.hiddenCells.some((cell: any) => cell[0] === r && cell[1] === c) && !isSolution;
+              isAnswer = isSolution && data.hiddenCells.some((cell: any) => cell[0] === r && cell[1] === c);
+              displayedVal = String(val);
+            }
+
+            return (
+              <div
+                key={`${r}-${c}`}
+                className={`aspect-square w-full flex items-center justify-center text-xl md:text-3xl font-bold border-2 rounded-2xl transition-all duration-300
+                  ${isSumHeader
+                    ? "bg-indigo-50 border-indigo-100 text-indigo-700 font-black"
+                    : "border-slate-200"
+                  }
+                  ${isHidden
+                    ? "bg-slate-50 border-dashed border-slate-300 text-transparent"
+                    : isAnswer
+                      ? "bg-indigo-100 border-indigo-400 text-indigo-800 font-extrabold"
+                      : isSumHeader
+                        ? ""
+                        : "text-slate-800"
+                  }
+                `}
+              >
+                {!isHidden ? displayedVal : ""}
+              </div>
+            );
+          })
+        )}
+      </div>
+    );
+  }
+
+  return null;
 }

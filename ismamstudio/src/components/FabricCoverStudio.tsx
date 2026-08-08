@@ -24,6 +24,7 @@ import MarketplaceThumbnailPreviewModal from "@/components/MarketplaceThumbnailP
 import SeriesBrandingModal from "@/components/SeriesBrandingModal";
 import BackgroundRemoverModal from "@/components/BackgroundRemoverModal";
 import FontPicker from "@/components/FontPicker";
+import DesktopRecommendedBanner from "@/components/DesktopRecommendedBanner";
 import { loadGoogleFontFamilies } from "@/lib/loadGoogleFont";
 import { COVER_TEXTURES, TEXTURE_CATEGORIES, renderTexture, CoverTexture } from "@/lib/coverTextures";
 import VersionHistoryModal from "@/components/VersionHistoryModal";
@@ -3682,7 +3683,10 @@ export default function FabricCoverStudio({
 
 
   return (
-    <div className="flex flex-1 overflow-hidden h-full">
+    <div className="flex flex-1 overflow-hidden h-full relative">
+      <div className="absolute top-0 inset-x-0 z-40">
+        <DesktopRecommendedBanner message="For the best cover design experience, we recommend using a laptop or desktop screen." />
+      </div>
       {/* 1. Far Left Tool Picker Toolbar */}
       <div className="w-16 bg-slate-950 flex flex-col items-center py-6 gap-5 border-r border-slate-900 z-20 text-slate-400">
         <button

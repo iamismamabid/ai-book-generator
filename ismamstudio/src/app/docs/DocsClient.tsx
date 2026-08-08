@@ -81,7 +81,7 @@ const ARTICLES: HelpArticle[] = [
       "• 2 Codes ($79) = Pro Studio Plan (All 8 Puzzle Engines, Shaped Mazes, Custom Sizes, 100 Line Art Credits/mo)",
       "• 3 Codes ($149) = Publisher Agency Plan (Everything in Pro + 300 Line Art Credits/mo, 3 Team Seats, 25 Brand Profiles, Bulk Batch Studio)",
       "• 4 Codes ($249) = Agency Plus Plan (Everything in Tier 3 + 5,000 Exports/mo, 50 Brand Profiles, Priority Support)",
-      "• 5 Codes ($399) = Agency Max Plan (Everything in Tier 4 + 10,000 Exports/mo, 100 Brand Profiles, 1,000 AI Chapters/mo, 1-on-1 Account Manager)"
+      "• 5 Codes ($399) = Agency Max Plan (Everything in Tier 4 + 10,000 Exports/mo, 100 Brand Profiles, 1-on-1 Account Manager)"
     ],
     steps: [
       "Log in to your KDPage account (or create a free account at /sign-up).",

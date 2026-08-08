@@ -65,6 +65,29 @@ export default function MathPuzzleGenerator() {
     }
     loadPremium();
   }, []);
+
+  // Fetches plan status fresh rather than trusting whatever `premiumStatus`
+  // happened to hold at render time -- numPages was only ever clamped
+  // against that possibly-stale state, so a genuinely premium account could
+  // get capped to the free-tier limit if this ran before the async mount
+  // check resolved (or before a newly-redeemed plan reflected).
+  const getFreshPremiumStatus = async () => {
+    try {
+      const res = await checkPremiumStatus();
+      setPremiumStatus(res as any);
+      return res as any;
+    } catch (err) {
+      console.error(err);
+      return premiumStatus;
+    }
+  };
+
+  const tierMaxFor = (plan: string) =>
+    plan === "free" ? 3 :
+      plan === "starter" ? 25 :
+        plan === "pro" ? 75 :
+          1000;
+
   const [showAnswers, setShowAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
@@ -232,8 +255,21 @@ export default function MathPuzzleGenerator() {
   };
 
   // Trigger generators
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setIsGenerating(true);
+
+    // Re-verify against the real plan before generating. If numPages is
+    // currently above what the fresh check allows, correct it and defer --
+    // the useEffect below re-runs handleGenerate once numPages updates, so
+    // this pass simply doesn't generate against a too-high stale value.
+    const freshStatus = await getFreshPremiumStatus();
+    const maxAllowed = tierMaxFor(freshStatus.plan);
+    if (numPages > maxAllowed) {
+      setNumPages(maxAllowed);
+      setIsGenerating(false);
+      return;
+    }
+
     setTimeout(() => {
       if (puzzleType === "addition") {
         generateAdditionPuzzles();
@@ -774,17 +810,17 @@ export default function MathPuzzleGenerator() {
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex justify-between mb-1.5">
                 <span>Number of Pages</span>
                 <span className="text-amber-400 font-bold">
-                  {premiumStatus.isPremium ? "Premium: Max 1000" : "Free Limit: 3"}
+                  Max {tierMaxFor(premiumStatus.plan)} Pages ({premiumStatus.plan === "free" ? "Free" : premiumStatus.plan})
                 </span>
               </label>
               <input
                 type="number"
                 min="1"
-                max={premiumStatus.isPremium ? 1000 : 3}
+                max={tierMaxFor(premiumStatus.plan)}
                 value={numPages}
                 onChange={(e) => {
                   let val = Math.max(1, parseInt(e.target.value) || 1);
-                  const maxLimit = premiumStatus.isPremium ? 1000 : 3;
+                  const maxLimit = tierMaxFor(premiumStatus.plan);
                   if (val > maxLimit) val = maxLimit;
                   setNumPages(val);
                 }}

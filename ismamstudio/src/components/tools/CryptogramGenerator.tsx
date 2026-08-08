@@ -65,6 +65,12 @@ export default function CryptogramGenerator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const tierMaxFor = (plan: string) =>
+    plan === "free" ? 7 :
+      plan === "starter" ? 100 :
+        plan === "pro" ? 300 :
+          1000;
+
   const generateBulkQuotes = async (count: number) => {
     const baseQuotes = [
       "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -90,7 +96,7 @@ export default function CryptogramGenerator() {
     ];
 
     const freshStatus = await getFreshPremiumStatus();
-    const maxCount = freshStatus.isPremium ? count : Math.min(count, 7);
+    const maxCount = Math.min(count, tierMaxFor(freshStatus.plan));
     const generated: string[] = [];
     for (let i = 0; i < maxCount; i++) {
       const base = baseQuotes[i % baseQuotes.length];
@@ -165,7 +171,7 @@ export default function CryptogramGenerator() {
     // account isn't capped just because this ran before the initial status
     // load resolved.
     const freshStatus = await getFreshPremiumStatus();
-    const maxAllowed = freshStatus.isPremium ? 1000 : 7;
+    const maxAllowed = tierMaxFor(freshStatus.plan);
     const lines = rawLines.slice(0, maxAllowed);
     if (rawLines.length > maxAllowed) {
       alert(
@@ -523,7 +529,7 @@ export default function CryptogramGenerator() {
             <div className="flex justify-between items-center flex-wrap gap-1">
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Phrases / Quotes</label>
               <span className="text-[10px] font-bold text-amber-400">
-                {premiumStatus.isPremium ? "Premium: Max 1,000 Puzzles" : "Free Limit: 7"}
+                Max {tierMaxFor(premiumStatus.plan)} Puzzles ({premiumStatus.plan === "free" ? "Free" : premiumStatus.plan})
               </span>
             </div>
             <textarea

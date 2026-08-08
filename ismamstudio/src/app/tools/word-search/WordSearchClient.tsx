@@ -476,6 +476,20 @@ export default function WordSearchStudio() {
         setIsGenerating(false);
     };
 
+    // Before the premium check resolves, show a loading state rather than
+    // falling through to the full editor -- the actual export/watermark
+    // decision is already safe either way (handleGenerateInterior takes
+    // isPremium from ExportInteriorModal's own fresh check, not this local
+    // state), but a free user could otherwise see the unlocked editor UI
+    // flash briefly before the lock screen replaces it.
+    if (!premiumStatus.checked) {
+        return (
+            <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+            </div>
+        );
+    }
+
     if (premiumStatus.checked && (premiumStatus.plan === "free" || premiumStatus.plan === "starter")) {
         return (
             <div className="min-h-screen bg-[#0b0f19] text-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">

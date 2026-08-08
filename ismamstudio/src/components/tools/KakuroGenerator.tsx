@@ -50,6 +50,30 @@ export default function KakuroGenerator() {
     loadPremium();
   }, []);
 
+  // Fetches plan status fresh rather than trusting whatever `premiumStatus`
+  // happened to hold at render time -- handleDownload previously used this
+  // local state directly (not even routed through the export modal's own
+  // check) for both the numPages cap and the watermark decision, so a
+  // stale/default value at mount time could wrongly watermark a genuinely
+  // premium account, or (the opposite direction) let a page count set
+  // before the mount check resolved slip through uncapped.
+  const getFreshPremiumStatus = async () => {
+    try {
+      const res = await checkPremiumStatus();
+      setPremiumStatus(res as any);
+      return res as any;
+    } catch (err) {
+      console.error(err);
+      return premiumStatus;
+    }
+  };
+
+  const tierMaxFor = (plan: string) =>
+    plan === "free" ? 5 :
+      plan === "starter" ? 50 :
+        plan === "pro" ? 200 :
+          1000;
+
   const handleGeneratePreview = () => {
     setIsGenerating(true);
     try {
@@ -85,12 +109,15 @@ export default function KakuroGenerator() {
     const { includeCover: incCover, coverState, includeSolutions, trimSize: finalTrimSize, hasBleed, showGuides } = options;
     setIsDownloading(true);
     try {
+      const freshStatus = await getFreshPremiumStatus();
+      const finalNumPages = Math.min(numPages, tierMaxFor(freshStatus.plan));
+
       const generatedPuzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[] = [];
       // Small grid sizes (e.g. 4x4/6x6 at easy difficulty) admit a limited
       // enough number of distinct solved layouts that a large book can
       // plausibly repeat one exactly without this guard.
       const seenSolutions = new Set<string>();
-      for (let p = 0; p < numPages; p++) {
+      for (let p = 0; p < finalNumPages; p++) {
         const sol = generateUniquePuzzle(
           () => generateKakuro(sizeId, difficulty),
           (s) => s.grid.map((row) => row.map((cell) => (cell.type === "white" ? cell.value : "#")).join(",")).join("|"),
@@ -118,8 +145,8 @@ export default function KakuroGenerator() {
         coverState,
         hasBleed,
         showGuides,
-        isPremium: premiumStatus.isPremium
-      }, `Kakuro_${sizeId}_${difficulty}_${numPages}_Pages.pdf`);
+        isPremium: freshStatus.isPremium
+      }, `Kakuro_${sizeId}_${difficulty}_${finalNumPages}_Pages.pdf`);
     } catch (e) {
       console.error(e);
     }
@@ -238,17 +265,17 @@ export default function KakuroGenerator() {
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Number of Pages</label>
                   <span className="text-[10px] font-black text-indigo-400">
-                    {premiumStatus.isPremium ? "Premium: Max 1000" : "Free Limit: 5"}
+                    Max {tierMaxFor(premiumStatus.plan)} ({premiumStatus.plan === "free" ? "Free" : premiumStatus.plan})
                   </span>
                 </div>
                 <input
                   type="number"
                   min="1"
-                  max={premiumStatus.isPremium ? 1000 : 5}
+                  max={tierMaxFor(premiumStatus.plan)}
                   value={numPages}
                   onChange={(e) => {
                     let val = Math.max(1, parseInt(e.target.value) || 1);
-                    const maxLimit = premiumStatus.isPremium ? 1000 : 5;
+                    const maxLimit = tierMaxFor(premiumStatus.plan);
                     if (val > maxLimit) val = maxLimit;
                     setNumPages(val);
                   }}

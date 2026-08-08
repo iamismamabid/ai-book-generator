@@ -49,6 +49,29 @@ export default function WordScrambleGenerator() {
     }
     loadPremium();
   }, []);
+
+  // Fetches plan status fresh rather than trusting whatever `premiumStatus`
+  // happened to hold at render time -- the numPages input was only ever
+  // clamped using that possibly-stale state, so a genuinely premium account
+  // could get capped to the free-tier limit if this ran before the async
+  // mount check resolved (or before a newly-redeemed plan reflected).
+  const getFreshPremiumStatus = async () => {
+    try {
+      const res = await checkPremiumStatus();
+      setPremiumStatus(res as any);
+      return res as any;
+    } catch (err) {
+      console.error(err);
+      return premiumStatus;
+    }
+  };
+
+  const tierMaxFor = (plan: string) =>
+    plan === "free" ? 3 :
+      plan === "starter" ? 50 :
+        plan === "pro" ? 200 :
+          1000;
+
   const [includeAnswers, setIncludeAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
@@ -68,28 +91,34 @@ export default function WordScrambleGenerator() {
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   // Parse words & generate puzzles
-  const parseAndGeneratePuzzles = () => {
+  const parseAndGeneratePuzzles = async () => {
     setIsGenerating(true);
-    
+
     // Parse words from textarea
     const parsed = inputText
       .split("\n")
       .map(w => w.trim().toUpperCase())
       .filter(w => w.length > 0 && /^[A-Z]+$/.test(w)); // letters only
-      
+
     if (parsed.length === 0) {
       alert("Please enter at least a few valid words (letters only).");
       setIsGenerating(false);
       return;
     }
-    
+
     setWords(parsed);
-    
+
+    // Re-verify and re-clamp against the real plan at generation time --
+    // don't trust numPages just because the input's onChange clamped it
+    // against a possibly-stale premiumStatus.
+    const freshStatus = await getFreshPremiumStatus();
+    const finalNumPages = Math.min(numPages, tierMaxFor(freshStatus.plan));
+
     // Distribute words to pages
     const generated: typeof puzzles = [];
-    const wordsPerPage = Math.ceil(parsed.length / numPages);
-    
-    for (let p = 0; p < numPages; p++) {
+    const wordsPerPage = Math.ceil(parsed.length / finalNumPages);
+
+    for (let p = 0; p < finalNumPages; p++) {
       const startIndex = p * wordsPerPage;
       const originalList = parsed.slice(startIndex, startIndex + wordsPerPage);
       
@@ -488,17 +517,17 @@ export default function WordScrambleGenerator() {
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex justify-between block mb-1.5">
                 <span>Number of Pages</span>
                 <span className="text-amber-400 font-bold">
-                  {premiumStatus.isPremium ? "Premium: Max 1000" : "Free Limit: 3"}
+                  Max {tierMaxFor(premiumStatus.plan)} Pages ({premiumStatus.plan === "free" ? "Free" : premiumStatus.plan})
                 </span>
               </label>
               <input
                 type="number"
                 min="1"
-                max={premiumStatus.isPremium ? 1000 : 3}
+                max={tierMaxFor(premiumStatus.plan)}
                 value={numPages}
                 onChange={(e) => {
                   let val = Math.max(1, parseInt(e.target.value) || 1);
-                  const maxLimit = premiumStatus.isPremium ? 1000 : 3;
+                  const maxLimit = tierMaxFor(premiumStatus.plan);
                   if (val > maxLimit) val = maxLimit;
                   setNumPages(val);
                 }}

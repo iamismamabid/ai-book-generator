@@ -79,6 +79,29 @@ export default function CrosswordGenerator() {
     loadPremium();
   }, []);
 
+  // Fetches plan status fresh rather than trusting whatever `premiumStatus`
+  // happened to hold at render time -- the initial useEffect above populates
+  // it for the UI label, but relying on that same state to gate generation
+  // had a race: clicking Generate before the async load resolved (or before
+  // a newly-redeemed plan reflected) silently fell back to the free-tier
+  // default and capped a genuinely premium account too low.
+  const getFreshPremiumStatus = async () => {
+    try {
+      const res = await checkPremiumStatus();
+      setPremiumStatus(res as any);
+      return res as any;
+    } catch (err) {
+      console.error(err);
+      return premiumStatus;
+    }
+  };
+
+  const tierMaxFor = (plan: string) =>
+    plan === "free" ? 20 :
+      plan === "starter" ? 100 :
+        plan === "pro" ? 250 :
+          1000;
+
   // Parse file CSV/TXT
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,10 +116,11 @@ export default function CrosswordGenerator() {
     e.target.value = "";
   };
 
-  const parseAndGeneratePuzzles = () => {
+  const parseAndGeneratePuzzles = async () => {
     setIsGenerating(true);
-    
-    const maxAllowed = premiumStatus.isPremium ? 1000 : 20;
+
+    const freshStatus = await getFreshPremiumStatus();
+    const maxAllowed = tierMaxFor(freshStatus.plan);
     const targetCount = Math.min(numPuzzles, maxAllowed);
 
     // Parse puzzles separated by '#' or standard word/clue rows
@@ -467,17 +491,17 @@ export default function CrosswordGenerator() {
               <div className="flex justify-between items-center mb-1.5">
                 <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Number of Puzzles</label>
                 <span className="text-[10px] font-bold text-amber-400">
-                  {premiumStatus.isPremium ? "Premium: Max 1,000 Puzzles" : "Free Limit: 20"}
+                  Max {tierMaxFor(premiumStatus.plan)} Puzzles ({premiumStatus.plan === "free" ? "Free" : premiumStatus.plan})
                 </span>
               </div>
-              <input 
-                type="number" 
-                min={1} 
-                max={premiumStatus.isPremium ? 1000 : 20} 
-                value={numPuzzles} 
+              <input
+                type="number"
+                min={1}
+                max={tierMaxFor(premiumStatus.plan)}
+                value={numPuzzles}
                 onChange={(e) => {
                   const val = Number(e.target.value);
-                  const maxVal = premiumStatus.isPremium ? 1000 : 20;
+                  const maxVal = tierMaxFor(premiumStatus.plan);
                   setNumPuzzles(Math.min(maxVal, Math.max(1, val)));
                 }}
                 className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500 font-mono mb-2"

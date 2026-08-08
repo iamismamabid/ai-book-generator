@@ -176,6 +176,20 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
     setActiveIndex(bookPages.length);
   };
 
+  // Bulk variant of addPage -- used by editors (e.g. Math Puzzle Builder)
+  // that can generate a whole batch of pages at once instead of one at a
+  // time. Returns the created page objects (with their real ids) so the
+  // calling editor can navigate/edit them individually right after.
+  const addMultiplePages = (type: string, configs: any[]) => {
+    const newPages = configs.map((cfg) => ({
+      id: Date.now() + Math.random(),
+      type,
+      config: JSON.parse(JSON.stringify(cfg)),
+    }));
+    setBookPages((prev) => [...prev, ...newPages]);
+    return newPages;
+  };
+
   const removePage = (indexToRemove: number) => {
     const updated = bookPages.filter((_, idx) => idx !== indexToRemove);
     setBookPages(updated);
@@ -601,6 +615,11 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                updatePageById={updatePageConfig}
+                bulkAddPages={(configs: any[]) => addMultiplePages('math_puzzle', configs)}
+                trimSize={selectedTrim}
+                trimSizeOptions={TRIM_SIZES}
+                onTrimSizeChange={setSelectedTrim}
               />
             )}
             {bookPages[activeIndex].type === 'kakuro' && !bookPages[activeIndex].config.isMultiSolution && (

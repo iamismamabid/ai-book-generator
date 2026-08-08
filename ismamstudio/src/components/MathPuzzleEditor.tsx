@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { RefreshCw, Download } from "lucide-react";
+import { RefreshCw, Download, Plus } from "lucide-react";
 
 // ==========================================
 // 📄 PDF EXPORT LOGIC (1 Huge Block Per Page)
@@ -210,25 +210,50 @@ type PuzzleType = "addition" | "multiplication" | "number_fill";
 // ==========================================
 // ⚛️ REACT COMPONENT
 // ==========================================
-export function MathPuzzleEditor({ page, updatePage }: any) {
+interface BatchEntry {
+  id: number;
+  puzzleData: any;
+  puzzleDataB: any;
+}
+
+const PUZZLE_TYPE_LABEL: Record<PuzzleType, string> = {
+  addition: "Addition Grid",
+  multiplication: "Multiplication Grid",
+  number_fill: "Number Sums Grid",
+};
+
+export function MathPuzzleEditor({
+  page,
+  updatePage,
+  updatePageById,
+  bulkAddPages,
+  trimSize,
+  trimSizeOptions,
+  onTrimSizeChange,
+}: any) {
   const [puzzleType, setPuzzleType] = useState<PuzzleType>(
     page?.config?.puzzleType || "addition"
   );
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
     page?.config?.difficulty || "easy"
   );
-  const [puzzleData, setPuzzleData] = useState<any>(
-    page?.config?.puzzleData || null
-  );
-  // A book page fits two compact math grids -- generated and stored
-  // alongside puzzleData so the interior PDF prints both on the same page
-  // instead of leaving most of it blank.
-  const [puzzleDataB, setPuzzleDataB] = useState<any>(
-    page?.config?.puzzleDataB || null
-  );
   const [isMounted, setIsMounted] = useState(false);
+  const [numPagesToAdd, setNumPagesToAdd] = useState(5);
+
+  // A book page fits two compact math grids -- generated and stored as
+  // puzzleData/puzzleDataB so the interior PDF prints both on the same page
+  // instead of leaving most of it blank. batchPages holds every page this
+  // editing session is previewing: the original active page (index 0) plus
+  // any pages created via "Generate & Add Pages", navigable via the P#
+  // tabs below -- mirroring the standalone Math Puzzle tool's paginated
+  // preview instead of only ever showing one page at a time.
+  const [batchPages, setBatchPages] = useState<BatchEntry[]>(() => [
+    { id: page.id, puzzleData: page?.config?.puzzleData || null, puzzleDataB: page?.config?.puzzleDataB || null },
+  ]);
+  const [activeBatchIndex, setActiveBatchIndex] = useState(0);
 
   const isSolution = page?.config?.isSolution || false;
+  const activeEntry = batchPages[activeBatchIndex];
 
   const generateAdditionPuzzle = () => {
     const minVal = difficulty === "easy" ? 1 : difficulty === "medium" ? 5 : 10;
@@ -349,56 +374,103 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
     return generateNumberFillPuzzle();
   };
 
+  // Writes one batch entry's puzzle data back to its real book page --
+  // index 0 is always the originally active page (uses updatePage), any
+  // bulk-added pages use updatePageById since they aren't "active" in
+  // BookBuilder's own sense.
+  const persistEntry = (index: number, entryId: number, puzzleData: any, puzzleDataB: any, solOverride?: boolean) => {
+    const config = {
+      puzzleType,
+      difficulty,
+      puzzleData,
+      puzzleDataB,
+      isSolution: index === 0 ? (solOverride ?? isSolution) : false,
+    };
+    if (index === 0) {
+      updatePage?.(config);
+    } else {
+      updatePageById?.(entryId, config);
+    }
+  };
+
+  // Regenerates just the page currently shown in the preview (whichever P#
+  // tab is active), not the whole batch.
   const handleGenerate = () => {
     const resultA = generateOne();
     const resultB = generateOne();
+    const idx = activeBatchIndex;
+    const entryId = batchPages[idx].id;
 
-    setPuzzleData(resultA);
-    setPuzzleDataB(resultB);
-    if (updatePage) {
-      updatePage({
-        puzzleType,
-        difficulty,
-        puzzleData: resultA,
-        puzzleDataB: resultB,
-        isSolution
-      });
-    }
+    setBatchPages((prev) => prev.map((entry, i) => (i === idx ? { ...entry, puzzleData: resultA, puzzleDataB: resultB } : entry)));
+    persistEntry(idx, entryId, resultA, resultB);
+  };
+
+  // Generates N new book pages (each with two grids) in one go and appends
+  // them to both the real book and this editor's local preview list, so
+  // they're immediately browsable via the P# tabs -- the batch equivalent
+  // of clicking "Regenerate" N times and adding a page each time.
+  const handleBulkGenerate = () => {
+    if (!bulkAddPages) return;
+    const count = Math.max(1, Math.min(200, numPagesToAdd));
+    const generated = Array.from({ length: count }, () => ({
+      puzzleData: generateOne(),
+      puzzleDataB: generateOne(),
+    }));
+    const configs = generated.map((g) => ({
+      puzzleType,
+      difficulty,
+      puzzleData: g.puzzleData,
+      puzzleDataB: g.puzzleDataB,
+      isSolution: false,
+    }));
+    const newPages = bulkAddPages(configs);
+    const nextStartIndex = batchPages.length;
+    setBatchPages((prev) => [
+      ...prev,
+      ...newPages.map((p: any, i: number) => ({ id: p.id, puzzleData: generated[i].puzzleData, puzzleDataB: generated[i].puzzleDataB })),
+    ]);
+    setActiveBatchIndex(nextStartIndex);
   };
 
   const handleToggleMode = (solMode: boolean) => {
-    if (updatePage) {
-      updatePage({
-        puzzleType,
-        difficulty,
-        puzzleData,
-        puzzleDataB,
-        isSolution: solMode
-      });
-    }
+    const first = batchPages[0];
+    persistEntry(0, first.id, first.puzzleData, first.puzzleDataB, solMode);
   };
 
   const handleDownloadPDF = async () => {
-    if (!puzzleData) return;
-    await downloadMathPuzzlesPDF(puzzleData, puzzleDataB, puzzleType);
+    if (!activeEntry?.puzzleData) return;
+    await downloadMathPuzzlesPDF(activeEntry.puzzleData, activeEntry.puzzleDataB, puzzleType);
   };
 
+  // Puzzle type / difficulty changes regenerate only the original page
+  // (index 0) and drop any bulk-added preview pages -- they were generated
+  // for the previous type/difficulty, so mixing them into this session's
+  // preview would render stale data under the new type. The actual book
+  // pages already created are untouched; they just leave this local list.
   useEffect(() => {
+    const resultA = generateOne();
+    const resultB = generateOne();
+    setBatchPages((prev) => [{ id: prev[0].id, puzzleData: resultA, puzzleDataB: resultB }]);
+    setActiveBatchIndex(0);
+
     if (isMounted) {
-      handleGenerate();
+      persistEntry(0, page.id, resultA, resultB);
     } else {
       setIsMounted(true);
-      if (!puzzleData) {
-        handleGenerate();
+      if (!page?.config?.puzzleData) {
+        persistEntry(0, page.id, resultA, resultB);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puzzleType, difficulty]);
 
+  const trimLabel = trimSize?.label || (trimSize ? `${trimSize.w}" x ${trimSize.h}"` : null);
+  const aspectRatio = trimSize?.w && trimSize?.h ? trimSize.w / trimSize.h : 6 / 9;
+
   return (
     <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 h-full p-2 sm:p-4 overflow-y-auto">
       {/* Options Panel */}
-      <div className="w-full lg:w-80 lg:shrink-0 flex flex-col gap-4 bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+      <div className="w-full lg:w-80 lg:shrink-0 flex flex-col gap-4 bg-slate-50 border border-slate-200 p-5 rounded-2xl overflow-y-auto">
         <div>
           <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Page Mode</h3>
           <div className="grid grid-cols-2 gap-2">
@@ -426,22 +498,22 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
         <div className="h-px bg-slate-200" />
 
         <div>
-          <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Puzzle Grid Type</h3>
+          <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Puzzle Type</h3>
           <div className="space-y-2">
-            {(["addition", "multiplication", "number_fill"] as PuzzleType[]).map((t) => (
+            {(["addition", "multiplication", "number_fill"] as PuzzleType[]).map((t, i) => (
               <button
                 key={t}
                 onClick={() => setPuzzleType(t)}
-                className={`w-full py-2.5 px-4 rounded-xl text-left text-xs font-bold capitalize transition border ${puzzleType === t
+                className={`w-full py-2.5 px-4 rounded-xl text-left text-xs font-bold transition border ${puzzleType === t
                     ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
                     : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                   }`}
               >
-                {t === "addition"
+                {i + 1}. {t === "addition"
                   ? "Addition Equation Grid"
                   : t === "multiplication"
                     ? "Multiplication Times Table"
-                    : "Number Sums Fill"}
+                    : "Number Sums Grid (Kakuro-lite)"}
               </button>
             ))}
           </div>
@@ -450,7 +522,7 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
         <div className="h-px bg-slate-200" />
 
         <div>
-          <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Difficulty</h3>
+          <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Difficulty Level</h3>
           <div className="grid grid-cols-3 gap-2">
             {(["easy", "medium", "hard"] as const).map((d) => (
               <button
@@ -467,55 +539,127 @@ export function MathPuzzleEditor({ page, updatePage }: any) {
           </div>
         </div>
 
+        {trimSizeOptions && trimSizeOptions.length > 0 && (
+          <>
+            <div className="h-px bg-slate-200" />
+            <div>
+              <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Book Trim Size</h3>
+              <select
+                value={trimSize?.label}
+                onChange={(e) => {
+                  const found = trimSizeOptions.find((t: any) => t.label === e.target.value);
+                  if (found) onTrimSizeChange?.(found);
+                }}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 outline-none"
+              >
+                {trimSizeOptions.map((t: any, i: number) => (
+                  <option key={i} value={t.label}>{t.label}</option>
+                ))}
+              </select>
+              <p className="text-[10px] text-slate-400 font-semibold mt-1">Applies to the whole book, not just this page.</p>
+            </div>
+          </>
+        )}
+
+        <div className="h-px bg-slate-200" />
+
+        <div>
+          <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Number of Pages</h3>
+          <input
+            type="number"
+            min={1}
+            max={200}
+            value={numPagesToAdd}
+            onChange={(e) => setNumPagesToAdd(Math.max(1, Math.min(200, parseInt(e.target.value) || 1)))}
+            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 outline-none"
+          />
+          <p className="text-[10px] text-slate-400 font-semibold mt-1">Premium: max 200 pages ({numPagesToAdd * 2} puzzles) per batch.</p>
+        </div>
+
         <button
           onClick={handleGenerate}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 mt-4"
+          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 mt-2"
         >
-          <RefreshCw className="w-4 h-4" /> Regenerate Math Grid
+          <RefreshCw className="w-4 h-4" /> Regenerate Grid
         </button>
+
+        {bulkAddPages && (
+          <button
+            onClick={handleBulkGenerate}
+            className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> Generate &amp; Add {numPagesToAdd} Page{numPagesToAdd > 1 ? "s" : ""}
+          </button>
+        )}
 
         <button
           onClick={handleDownloadPDF}
-          className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 mt-2 transition-all"
+          className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all"
         >
-          <Download className="w-4 h-4" /> Download as PDF
+          <Download className="w-4 h-4" /> Download Print PDF
         </button>
       </div>
 
-      {/* Canvas Area */}
-      <div className="flex-1 min-w-0 bg-white p-4 sm:p-6 lg:p-10 shadow-2xl border border-slate-200 min-h-[400px] lg:min-h-[700px] flex flex-col items-center overflow-y-auto">
-        <h1 className="text-4xl font-black text-center mb-2 uppercase tracking-widest text-slate-800">
-          {puzzleType === "addition"
-            ? "Addition Grid"
-            : puzzleType === "multiplication"
-              ? "Multiplication Table"
-              : "Number Sums"}
-          {isSolution && <span className="text-indigo-600"> (Solution)</span>}
-        </h1>
-        <p className="text-sm text-slate-400 uppercase tracking-widest mb-10 text-center max-w-sm">
-          {puzzleType === "addition"
-            ? "Fill in the blank boxes to make all equations correct."
-            : puzzleType === "multiplication"
-              ? "Fill in the missing factors and products."
-              : "Complete the grid so rows/cols match the targets."}
-        </p>
+      {/* Preview Panel */}
+      <div className="flex-1 min-w-0 flex flex-col items-center gap-3 overflow-y-auto">
+        <div className="w-full flex items-center justify-between gap-2 flex-wrap">
+          {batchPages.length > 1 ? (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Active Preview:</span>
+              {batchPages.map((entry, i) => (
+                <button
+                  key={entry.id}
+                  onClick={() => setActiveBatchIndex(i)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase transition ${i === activeBatchIndex
+                      ? "bg-indigo-600 text-white"
+                      : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
+                    }`}
+                >
+                  P#{i + 1}
+                </button>
+              ))}
+            </div>
+          ) : <span />}
+          {trimLabel && (
+            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Trim Size: {trimLabel}</span>
+          )}
+        </div>
 
-        {puzzleData ? (
-          <div className="w-full max-w-3xl flex-1 flex flex-col justify-start items-center pt-4 gap-3">
-            <span className="text-xs font-black uppercase tracking-widest text-indigo-500 self-start">Math Puzzle #1</span>
-            <MathGridBlock puzzleType={puzzleType} data={puzzleData} isSolution={isSolution} />
+        {/* Print-accurate page preview */}
+        <div
+          className="relative bg-white shadow-2xl border border-dashed border-rose-300 w-full max-w-md mx-auto flex flex-col px-6 py-8 gap-6 overflow-hidden"
+          style={{ aspectRatio: `${aspectRatio}` }}
+        >
+          {activeEntry?.puzzleData ? (
+            <>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs font-black uppercase tracking-widest text-slate-800">
+                  {PUZZLE_TYPE_LABEL[puzzleType]} #1{isSolution && activeBatchIndex === 0 && <span className="text-indigo-600"> (Solution)</span>}
+                </span>
+                <div className="scale-[0.55] origin-top -my-10 sm:-my-8">
+                  <MathGridBlock puzzleType={puzzleType} data={activeEntry.puzzleData} isSolution={isSolution && activeBatchIndex === 0} />
+                </div>
+              </div>
 
-            {puzzleDataB && (
-              <>
-                <div className="w-full h-px bg-slate-200 my-2" />
-                <span className="text-xs font-black uppercase tracking-widest text-indigo-500 self-start">Math Puzzle #2</span>
-                <MathGridBlock puzzleType={puzzleType} data={puzzleDataB} isSolution={isSolution} />
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="text-center text-slate-400 mt-20">Click generate to load math grid.</div>
-        )}
+              {activeEntry.puzzleDataB && (
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-800">
+                    {PUZZLE_TYPE_LABEL[puzzleType]} #2{isSolution && activeBatchIndex === 0 && <span className="text-indigo-600"> (Solution)</span>}
+                  </span>
+                  <div className="scale-[0.55] origin-top -my-10 sm:-my-8">
+                    <MathGridBlock puzzleType={puzzleType} data={activeEntry.puzzleDataB} isSolution={isSolution && activeBatchIndex === 0} />
+                  </div>
+                </div>
+              )}
+
+              <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-slate-300">
+                Page Preview Only
+              </span>
+            </>
+          ) : (
+            <div className="m-auto text-slate-400 text-sm text-center px-6">Click generate to load math grid.</div>
+          )}
+        </div>
       </div>
     </div>
   );

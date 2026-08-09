@@ -745,11 +745,18 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
     </button>
 
     {mounted && isAddModalOpen && createPortal(
-      <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-2xl w-full p-6 relative animate-in zoom-in-95 duration-200" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
+      <div
+        className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        onClick={() => setIsAddModalOpen(false)}
+      >
+        <div
+          className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-2xl w-full p-6 relative animate-in zoom-in-95 duration-200"
+          style={{ boxShadow: "var(--shadow-soft-lg)" }}
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             onClick={() => setIsAddModalOpen(false)}
-            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 transition-colors duration-200"
+            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 transition-colors duration-200 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -814,8 +821,15 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
     )}
 
     {mounted && isExportModalOpen && createPortal(
-      <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
+      <div
+        className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        onClick={() => setIsExportModalOpen(false)}
+      >
+        <div
+          className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200"
+          style={{ boxShadow: "var(--shadow-soft-lg)" }}
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             onClick={() => setIsExportModalOpen(false)}
             className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 transition-colors duration-200 cursor-pointer"

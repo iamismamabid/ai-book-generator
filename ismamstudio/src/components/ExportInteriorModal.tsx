@@ -307,6 +307,21 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
               </div>
             )}
 
+            {/* 300 DPI Resolution Indicator */}
+            <div className="p-3 bg-indigo-50/80 border border-indigo-200/70 text-indigo-950 rounded-2xl text-[11px] font-semibold mb-4 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-600 text-white tracking-wide">
+                  300 DPI
+                </span>
+                <span className="font-bold text-slate-800 text-[11px]">
+                  Print-Ready Vector PDF Output (Amazon KDP & IngramSpark Compliant)
+                </span>
+              </div>
+              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider shrink-0">
+                Max Quality
+              </span>
+            </div>
+
             {/* Premium Activated Indicator */}
             {premiumStatus.isPremium && (
               <div className="p-4 bg-emerald-50 border border-emerald-200/50 text-emerald-950 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
@@ -318,7 +333,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                       {premiumStatus.isTrial && premiumStatus.daysRemaining !== undefined ? (
                         <>You have <span className="font-black text-emerald-600">{premiumStatus.daysRemaining} days remaining</span> in your free trial. </>
                       ) : null}
-                      High-res watermark-free vector PDF exports are fully unlocked!
+                      High-res 300 DPI watermark-free vector PDF exports are fully unlocked!
                     </p>
                   </div>
                 </div>

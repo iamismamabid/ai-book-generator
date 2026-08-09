@@ -123,15 +123,66 @@ export function SudokuGenerator() {
             </select>
           </div>
 
-          <button
-            onClick={handlePreview}
-            disabled={isGenerating}
-            className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-50"
-          >
-            {isGenerating ? "Generating..." : "Preview a puzzle"}
-          </button>
+          {/* 300 DPI Print-Ready Badge */}
+          <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs font-bold text-amber-400">
+            <span className="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+              300 DPI
+            </span>
+            <span>Print-Ready High-Resolution Exports (KDP Compliant)</span>
+          </div>
 
-          {/* Inline Download Button to bypass missing file dependencies */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handlePreview}
+              disabled={isGenerating}
+              className="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-50 text-sm"
+            >
+              {isGenerating ? "Generating..." : "Preview a Puzzle"}
+            </button>
+
+            <button
+              onClick={() => {
+                if (!currentPuzzle) return alert("Generate a preview puzzle first!");
+                const canvas = document.createElement("canvas");
+                const size = trimSize === "8.5x11" ? 2550 : trimSize === "6x9" ? 1800 : 1500;
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return;
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(0, 0, size, size);
+                const cellSize = size / 9;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.font = `bold ${cellSize * 0.5}px sans-serif`;
+                ctx.fillStyle = "#0F172A";
+
+                for (let r = 0; r < 9; r++) {
+                  for (let c = 0; c < 9; c++) {
+                    const x = c * cellSize;
+                    const y = r * cellSize;
+                    const val = currentPuzzle.puzzle[r][c];
+                    ctx.lineWidth = (r % 3 === 0 || c % 3 === 0) ? size * 0.006 : size * 0.002;
+                    ctx.strokeStyle = "#1E293B";
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+                    if (val !== 0) {
+                      ctx.fillText(String(val), x + cellSize / 2, y + cellSize / 2);
+                    }
+                  }
+                }
+                const link = document.createElement("a");
+                link.href = canvas.toDataURL("image/png");
+                link.download = `sudoku-puzzle-300dpi-${difficulty}.png`;
+                link.click();
+              }}
+              disabled={!currentPuzzle}
+              className="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.97] disabled:opacity-40 text-sm flex items-center justify-center gap-1.5"
+            >
+              📷 Download 300 DPI PNG
+            </button>
+          </div>
+
+          {/* Inline Download Button for PDF */}
           <button
             onClick={handleDownloadPdf}
             disabled={isDownloading}
@@ -141,21 +192,21 @@ export function SudokuGenerator() {
             {isDownloading ? (
               <>
                 <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-950 border-t-transparent"></span>
-                Downloading...
+                Downloading 300 DPI PDF...
               </>
             ) : (
-              "Download PDF"
+              "Download 300 DPI PDF Book"
             )}
           </button>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-          <h3 className="text-lg font-bold mb-4">Live preview</h3>
+          <h3 className="text-lg font-bold mb-4">Live Preview (300 DPI Ready)</h3>
           {currentPuzzle ? (
             <SudokuPreview grid={currentPuzzle.puzzle} />
           ) : (
             <div className="aspect-square flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-2xl">
-              Click "Preview a puzzle" to see a sample
+              Click "Preview a Puzzle" to see a sample
             </div>
           )}
         </div>

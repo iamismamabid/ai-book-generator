@@ -102,7 +102,7 @@ export function MazeEditor({ page, updatePage }: any) {
     }
 
     return (
-      <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="max-w-2xl w-full mx-auto drop-shadow-md">
+      <svg id="maze-svg-element" width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="max-w-2xl w-full mx-auto drop-shadow-md">
         <g>{lines}</g>
         <g>{pathLines}</g>
         {/* Start / End Labels */}
@@ -150,6 +150,14 @@ export function MazeEditor({ page, updatePage }: any) {
           </div>
         </div>
 
+        {/* 300 DPI Print-Ready Badge */}
+        <div className="flex items-center gap-2 p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs font-bold text-indigo-900">
+          <span className="bg-indigo-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+            300 DPI
+          </span>
+          <span>Print-Ready High-Res Maze (KDP Compliant)</span>
+        </div>
+
         <button 
           onClick={toggleSolution} 
           className="w-full bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
@@ -163,6 +171,39 @@ export function MazeEditor({ page, updatePage }: any) {
               <Eye className="w-4 h-4"/> Show Solution
             </>
           )}
+        </button>
+
+        <button 
+          onClick={() => {
+            const svgEl = document.querySelector("#maze-svg-element");
+            if (!svgEl) return alert("Generate a maze first!");
+            const canvas = document.createElement("canvas");
+            const size = 2550; // 8.5" @ 300 DPI
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, size, size);
+
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgEl);
+            const img = new Image();
+            const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(svgBlob);
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0, size, size);
+              URL.revokeObjectURL(url);
+              const a = document.createElement("a");
+              a.href = canvas.toDataURL("image/png");
+              a.download = `maze-300dpi-${shape}-${gridSize}x${gridSize}.png`;
+              a.click();
+            };
+            img.src = url;
+          }}
+          className="w-full bg-slate-800 hover:bg-slate-700 text-indigo-400 font-bold py-3 rounded-lg flex items-center justify-center gap-2 text-xs"
+        >
+          📷 Download 300 DPI PNG
         </button>
 
         <button 

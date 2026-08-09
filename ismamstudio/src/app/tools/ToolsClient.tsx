@@ -317,8 +317,8 @@ export default function FreeToolsHub() {
       name: "Free KDP Sudoku Generator",
       badge: "Popular",
       category: "Design",
-      description: "Generate 100% mathematically unique Sudoku puzzle grids (Easy to Hard) with solution pages.",
-      features: ["Single-solution guaranteed", "Large print formatting", "2x2 solution layouts"],
+      description: "Generate 100% mathematically unique Sudoku puzzle grids (Easy to Hard) with 300 DPI solution pages.",
+      features: ["300 DPI Print-Ready PDF & PNG", "Single-solution guaranteed", "Large print formatting"],
       keywords: ["sudoku", "sudokus", "sudokos", "number puzzle", "logic grid", "puzzle", "interior"],
       link: "/sudoku"
     },

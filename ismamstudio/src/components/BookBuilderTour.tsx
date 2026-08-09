@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Joyride, EVENTS, type EventData, type Step } from "react-joyride";
 import { markTourSeen } from "@/app/actions";
+import { Sparkles } from "lucide-react";
 
 const TOUR_KEY = "bookBuilder";
 
@@ -106,13 +107,14 @@ export default function BookBuilderTour() {
           buttonBack: { color: "#94a3b8" },
         }}
       />
-      {/* Manual restart, in case someone skipped it or wants a refresher */}
+      {/* Manual restart in attractive Golden Box Pill */}
       <button
         onClick={() => setRun(true)}
-        className="hidden md:flex items-center gap-1 text-[9px] font-bold text-slate-500 hover:text-indigo-400 transition-colors cursor-pointer"
-        title="Replay the Book Builder tour"
+        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-amber-300/60"
+        title="Replay interactive studio walkthrough tour"
       >
-        Replay tour
+        <Sparkles className="w-3 h-3 text-slate-950 fill-slate-950" />
+        <span>Replay Tour</span>
       </button>
     </>
   );

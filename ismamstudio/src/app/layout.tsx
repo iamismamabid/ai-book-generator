@@ -65,6 +65,19 @@ export default function RootLayout({
     <ClerkProvider>
       {/* 🎯 html ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
       <html lang="en" className={`scroll-smooth ${inter.variable}`} suppressHydrationWarning>
+        <head>
+          {/* Runs before first paint so a saved dark-mode preference is applied
+              immediately -- ThemeProvider only sets the `dark` class inside a
+              useEffect, which fires after hydration and caused a light->dark
+              flash on every load for users with theme=dark saved. Mirrors
+              ThemeProvider's own localStorage logic exactly so the two never
+              disagree. */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+            }}
+          />
+        </head>
         {/* 🎯 body ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
         <body
           className="bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased font-sans selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-300"

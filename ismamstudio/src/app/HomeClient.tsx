@@ -12,7 +12,6 @@ import {
   Download,
   Shield,
   Layers,
-  Sliders,
   X,
   Key,
   Calculator,
@@ -718,72 +717,6 @@ export default function HomeClient() {
                 </div>
               );
             })}
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* How it Works Section */}
-      <section id="how-it-works" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-100">
-
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-black uppercase tracking-wider mb-3">
-            <Compass className="w-4 h-4 text-indigo-500 animate-pulse" /> Step-by-Step Workflow
-          </div>
-          <h2 className="text-3xl md:text-5xl font-black text-slate-800 tracking-tight">
-            How KDPage Works
-          </h2>
-          <p className="text-slate-600 text-sm md:text-base font-semibold max-w-xl mx-auto mt-4 leading-relaxed">
-            Create publication-ready KDP book interiors and covers in three simple, automated steps.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-          {/* Step 1 */}
-          <div className="bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-in-out">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-[4rem] group-hover:bg-indigo-100 transition-colors duration-300" />
-            <div className="space-y-4 relative z-10">
-              <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 border border-indigo-100">
-                <Sliders className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-black text-slate-800">1. Configure Trim & Bleed</h3>
-              <p className="text-slate-600 text-xs md:text-sm font-semibold leading-relaxed">
-                Choose standard KDP sizes (6"x9", 8.5"x11"), margin guidelines, and page sizes. Our layouts automatically compute gutter bleed margins so your book passes KDP reviews without margin violations.
-              </p>
-            </div>
-            <div className="text-indigo-100 font-black text-6xl select-none text-right">01</div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-in-out">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-[4rem] group-hover:bg-purple-100 transition-colors duration-300" />
-            <div className="space-y-4 relative z-10">
-              <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 border border-purple-100">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-black text-slate-800">2. Generate Puzzles & Text</h3>
-              <p className="text-slate-600 text-xs md:text-sm font-semibold leading-relaxed">
-                Use our puzzle generator engine to create infinite unique Sudokus, mazes, cryptograms, and word search grids. Auto-generate complete chapter outlines and write full-text chapters with our advanced Chapter Writer tool.
-              </p>
-            </div>
-            <div className="text-purple-100 font-black text-6xl select-none text-right">02</div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-in-out">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-[4rem] group-hover:bg-emerald-100 transition-colors duration-300" />
-            <div className="space-y-4 relative z-10">
-              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 border border-emerald-100">
-                <Download className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-black text-slate-800">3. Export Print-Ready PDF</h3>
-              <p className="text-slate-600 text-xs md:text-sm font-semibold leading-relaxed">
-                Compile your entire creation (puzzles, dividers, solutions, and custom covers) into a high-fidelity vector PDF. Download and upload directly to Amazon KDP, Etsy, or IngramSpark instantly.
-              </p>
-            </div>
-            <div className="text-emerald-100 font-black text-6xl select-none text-right">03</div>
           </div>
 
         </div>

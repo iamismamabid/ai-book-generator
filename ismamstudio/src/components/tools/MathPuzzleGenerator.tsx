@@ -162,8 +162,16 @@ export default function MathPuzzleGenerator() {
     for (let p = 0; p < totalPuzzles; p++) {
       const { rowFactors, colFactors, grid } = generateUniquePuzzle(
         () => {
-          const rowFactors = Array.from({ length: size }, () => Math.floor(Math.random() * 9) + 1);
-          const colFactors = Array.from({ length: size }, () => Math.floor(Math.random() * 9) + 1);
+          // Sampled without replacement (shuffle 1-9, take the first `size`)
+          // so the same multiplier never repeats across a puzzle's own rows
+          // or its own columns -- with replacement, a 4-factor pull from
+          // 1-9 collides often enough to make grids feel repetitive.
+          const pickUniqueFactors = () =>
+            Array.from({ length: 9 }, (_, i) => i + 1)
+              .sort(() => 0.5 - Math.random())
+              .slice(0, size);
+          const rowFactors = pickUniqueFactors();
+          const colFactors = pickUniqueFactors();
 
           const grid: number[][] = [];
           for (let r = 0; r < size; r++) {

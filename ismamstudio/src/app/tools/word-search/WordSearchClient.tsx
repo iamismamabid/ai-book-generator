@@ -356,7 +356,7 @@ export default function WordSearchStudio() {
 
                 // Draw grid + word bank via the shared word search PDF primitives
                 // (also used by pdfExportService.ts and the bulk generator)
-                drawWordSearchGrid(doc, { grid, words: pageWords, mask, active }, { x: startX, y: startY, size: gridDrawSize }, false, {
+                drawWordSearchGrid(doc, { grid, words: pageWords, mask, active, shape: puzzleShape }, { x: startX, y: startY, size: gridDrawSize }, false, {
                     font: lettersFont,
                     letterFontSize: letterTextSize * (gridDrawSize / 6.5),
                     lineWidth: lineWidth * 0.01,
@@ -408,7 +408,7 @@ export default function WordSearchStudio() {
 
                     // Highlighted answer grid via the shared word search PDF primitive
                     // (also used by pdfExportService.ts and the bulk generator)
-                    drawWordSearchGrid(doc, { grid, words: pageWords, mask, active, hiddenMessage: solHiddenMessage }, { x: startX, y: startY, size: gridDrawSize }, true, {
+                    drawWordSearchGrid(doc, { grid, words: pageWords, mask, active, shape: puzzleShape, hiddenMessage: solHiddenMessage }, { x: startX, y: startY, size: gridDrawSize }, true, {
                         font: lettersFont,
                         letterFontSize: letterTextSize * (gridDrawSize / 6.5),
                         highlightColor: '#E2E8F0',

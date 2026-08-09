@@ -79,6 +79,7 @@ export interface WordSearchGridData {
   mask: boolean[][];
   /** true = inside the shape and part of the rendered puzzle; false = outside, not drawn */
   active: boolean[][];
+  shape?: WordSearchShape;
   /** Words from the input list that couldn't be placed (grid/shape too small) */
   skippedWords?: string[];
   /** Present only when a hidden message was requested and successfully laid out */
@@ -226,7 +227,7 @@ export function generatePuzzleGrid(
     }
   }
 
-  return { grid, words: placedWords, mask, active, skippedWords: skippedWords.length ? skippedWords : undefined, hiddenMessage };
+  return { grid, words: placedWords, mask, active, shape, skippedWords: skippedWords.length ? skippedWords : undefined, hiddenMessage };
 }
 
 // --- CRISS-CROSS (INTERLOCKING FILL-IN) GENERATOR ---

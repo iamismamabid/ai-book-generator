@@ -338,7 +338,7 @@ const WORD_SEARCH_DEFAULT_STYLE: Required<WordSearchStyle> = {
 
 export function drawWordSearchGrid(
   doc: any,
-  data: { grid: string[][]; words: any[]; mask: boolean[][]; active?: boolean[][]; hiddenMessage?: { cells: { r: number; c: number }[] } },
+  data: { grid: string[][]; words: any[]; mask: boolean[][]; active?: boolean[][]; shape?: string; hiddenMessage?: { cells: { r: number; c: number }[] } },
   zone: { x: number; y: number; size: number },
   isSolution: boolean,
   style: Partial<WordSearchStyle> = {}
@@ -351,9 +351,10 @@ export function drawWordSearchGrid(
   // silhouette instead of a full rectangle. Unshaped puzzles have no `active`
   // grid at all, so every cell draws as before.
   const isActive = (r: number, c: number) => !data.active || data.active[r][c];
+  const isShaped = Boolean(data.active && (data.shape ? data.shape !== 'square' : true));
   const hiddenMessageCells = new Set((data.hiddenMessage?.cells || []).map(({ r, c }) => `${r},${c}`));
 
-  // 1. Draw all cell backgrounds and borders first
+  // 1. Draw all cell backgrounds first (and cell borders for square puzzles)
   data.grid.forEach((row: string[], r: number) => {
     row.forEach((letter: string, c: number) => {
       if (!isActive(r, c)) return;
@@ -365,7 +366,8 @@ export function drawWordSearchGrid(
       doc.setDrawColor(s.borderColor);
       doc.setLineWidth(s.lineWidth);
       doc.setFillColor(s.cellColor);
-      doc.rect(x, y, cellSize, cellSize, "FD");
+      // For shaped puzzles (e.g. circle, heart, diamond), fill cells without drawing individual square box borders around every letter
+      doc.rect(x, y, cellSize, cellSize, (isShaped || s.lineWidth <= 0) ? "F" : "FD");
 
       if (isSolution && s.solutionHighlighter === 'fill' && isWordLetter) {
         doc.setFillColor(s.highlightColor);
@@ -380,6 +382,29 @@ export function drawWordSearchGrid(
       }
     });
   });
+
+  // Draw smooth outer shape outline for shaped puzzles (circle, diamond, etc.)
+  if (isShaped && (s.lineWidth > 0 || !style.lineWidth)) {
+    doc.setDrawColor(s.borderColor);
+    doc.setLineWidth(Math.max(s.lineWidth || 0.015, 0.015));
+    const currentShape = data.shape || 'circle';
+
+    if (currentShape === 'circle' || (!data.shape && data.active)) {
+      const centerX = zone.x + (zone.size / 2);
+      const centerY = zone.y + (zone.size / 2);
+      const radius = (zone.size / 2) - (cellSize * 0.1);
+      doc.circle(centerX, centerY, radius, "S");
+    } else if (currentShape === 'diamond') {
+      const cx = zone.x + zone.size / 2;
+      const cy = zone.y + zone.size / 2;
+      const rx = (zone.size / 2) - (cellSize * 0.1);
+      const ry = (zone.size / 2) - (cellSize * 0.1);
+      doc.line(cx, cy - ry, cx + rx, cy);
+      doc.line(cx + rx, cy, cx, cy + ry);
+      doc.line(cx, cy + ry, cx - rx, cy);
+      doc.line(cx - rx, cy, cx, cy - ry);
+    }
+  }
 
   // 2. "Apple style" solution markers: each found word is its own opaque rounded-
   // rectangle "sticker" (flat sides, small rounded corners -- not a full pill)

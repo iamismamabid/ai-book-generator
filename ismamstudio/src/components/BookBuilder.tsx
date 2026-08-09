@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import BookVersionHistoryModal from "./BookVersionHistoryModal";
 import { BookVersion } from "@/lib/bookVersions";
-import { History, Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, AlertCircle, AlertTriangle, GripVertical, Info } from "lucide-react";
+import { History, Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, AlertCircle, AlertTriangle, GripVertical, Info, Undo2, Redo2, Clipboard, ClipboardPaste } from "lucide-react";
 import { motion } from "framer-motion";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
@@ -68,6 +68,20 @@ const TRIM_SIZES = [
 export default function BookBuilder({ coverState, initialPages }: { coverState?: any; initialPages?: any[] }) {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
+
+  // Undo/redo history (page-list level: add/remove/duplicate/reorder/paste/
+  // edit-settings all flow through setBookPages, so watching that one state
+  // covers everything without threading history calls through every mutator).
+  // Debounced so a slider drag or a burst of typed characters inside a page's
+  // settings collapses into one undo step instead of one per keystroke.
+  const historyRef = useRef<string[]>([]);
+  const historyStepRef = useRef<number>(-1);
+  const isUpdatingHistory = useRef(false);
+  const historyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [historyStep, setHistoryStep] = useState<number>(-1);
+  const [historyLength, setHistoryLength] = useState<number>(0);
+  const [clipboardPage, setClipboardPage] = useState<any>(null);
+  const [contextMenuPage, setContextMenuPage] = useState<{ x: number; y: number; index: number } | null>(null);
 
   // Collapsible Sidebars States
   const [leftOpen, setLeftOpen] = useState(true);
@@ -171,6 +185,65 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
     }
   }, [bookPages]);
 
+  useEffect(() => {
+    if (isUpdatingHistory.current) {
+      isUpdatingHistory.current = false;
+      if (historyDebounceRef.current) clearTimeout(historyDebounceRef.current);
+      return;
+    }
+    if (historyDebounceRef.current) clearTimeout(historyDebounceRef.current);
+    historyDebounceRef.current = setTimeout(() => {
+      const snapshot = JSON.stringify(bookPages);
+      const sliced = historyRef.current.slice(0, historyStepRef.current + 1);
+      if (sliced[sliced.length - 1] === snapshot) return;
+      // Cap at 50 steps so the JSON snapshots (each a full copy of every
+      // page's config, including generated puzzle grids) don't grow without
+      // bound in a long editing session.
+      const next = [...sliced, snapshot].slice(-50);
+      historyRef.current = next;
+      historyStepRef.current = next.length - 1;
+      setHistoryStep(historyStepRef.current);
+      setHistoryLength(next.length);
+    }, 500);
+    return () => { if (historyDebounceRef.current) clearTimeout(historyDebounceRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookPages]);
+
+  const handleUndo = () => {
+    if (historyStepRef.current <= 0) return;
+    if (historyDebounceRef.current) clearTimeout(historyDebounceRef.current);
+    isUpdatingHistory.current = true;
+    const prevStep = historyStepRef.current - 1;
+    setBookPages(JSON.parse(historyRef.current[prevStep]));
+    historyStepRef.current = prevStep;
+    setHistoryStep(prevStep);
+  };
+
+  const handleRedo = () => {
+    if (historyStepRef.current >= historyRef.current.length - 1) return;
+    if (historyDebounceRef.current) clearTimeout(historyDebounceRef.current);
+    isUpdatingHistory.current = true;
+    const nextStep = historyStepRef.current + 1;
+    setBookPages(JSON.parse(historyRef.current[nextStep]));
+    historyStepRef.current = nextStep;
+    setHistoryStep(nextStep);
+  };
+
+  const copyPage = (index: number) => {
+    if (index < 0 || index >= bookPages.length) return;
+    setClipboardPage(JSON.parse(JSON.stringify(bookPages[index])));
+  };
+
+  const pastePage = (afterIndex: number) => {
+    if (!clipboardPage) return;
+    const insertAt = Math.min(afterIndex + 1, bookPages.length);
+    const newPage = { ...JSON.parse(JSON.stringify(clipboardPage)), id: Date.now() + Math.random() };
+    const updated = [...bookPages];
+    updated.splice(insertAt, 0, newPage);
+    setBookPages(updated);
+    setActiveIndex(insertAt);
+  };
+
   const addPage = (type: string, initialConfig: any = {}) => {
     const clonedConfig = JSON.parse(JSON.stringify(initialConfig));
     setBookPages([...bookPages, { id: Date.now() + Math.random(), type, config: clonedConfig }]);
@@ -247,6 +320,61 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
     if (activeIndex === idx) setActiveIndex(idx + 1);
     else if (activeIndex === idx + 1) setActiveIndex(idx);
   };
+
+  // Keyboard shortcuts for page-list operations. Skipped while typing in any
+  // input/textarea so they don't fight with normal text editing inside a
+  // page's own settings panel.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement as HTMLElement)?.isContentEditable) return;
+
+      const key = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      } else if ((e.ctrlKey || e.metaKey) && (key === 'y' || (key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        handleRedo();
+      } else if ((e.ctrlKey || e.metaKey) && key === 'c') {
+        e.preventDefault();
+        copyPage(activeIndex);
+      } else if ((e.ctrlKey || e.metaKey) && key === 'v') {
+        e.preventDefault();
+        pastePage(activeIndex);
+      } else if ((e.ctrlKey || e.metaKey) && key === 'd') {
+        e.preventDefault();
+        duplicatePage(activeIndex);
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        const activePage = bookPages[activeIndex];
+        if (activePage && !(activeIndex === 0 && activePage.type === 'title')) {
+          e.preventDefault();
+          removePage(activeIndex);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeIndex, bookPages, clipboardPage]);
+
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!contextMenuPage) return;
+    const close = (e?: MouseEvent) => {
+      if (e && contextMenuRef.current && contextMenuRef.current.contains(e.target as Node)) return;
+      setContextMenuPage(null);
+    };
+    const closeOnEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') setContextMenuPage(null); };
+    const closeOnScroll = () => setContextMenuPage(null);
+    window.addEventListener('mousedown', close);
+    window.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('scroll', closeOnScroll, true);
+    return () => {
+      window.removeEventListener('mousedown', close);
+      window.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('scroll', closeOnScroll, true);
+    };
+  }, [contextMenuPage]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -452,8 +580,38 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
               >
                 <Plus className="w-4 h-4" /> Add New Page
               </button>
+
+              <div className="flex items-center gap-1.5 mt-2">
+                <button
+                  onClick={handleUndo}
+                  disabled={historyStep <= 0}
+                  title="Undo (Ctrl+Z)"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-800/50 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                >
+                  <Undo2 className="w-3.5 h-3.5" />
+                  <span className="text-[10px] font-black uppercase">Undo</span>
+                </button>
+                <button
+                  onClick={handleRedo}
+                  disabled={historyStep >= historyLength - 1}
+                  title="Redo (Ctrl+Y)"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-800/50 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                >
+                  <Redo2 className="w-3.5 h-3.5" />
+                  <span className="text-[10px] font-black uppercase">Redo</span>
+                </button>
+                <button
+                  onClick={() => pastePage(activeIndex)}
+                  disabled={!clipboardPage}
+                  title="Paste Copied Page (Ctrl+V)"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-800/50 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                >
+                  <ClipboardPaste className="w-3.5 h-3.5" />
+                  <span className="text-[10px] font-black uppercase">Paste</span>
+                </button>
+              </div>
             </div>
-            
+
             <div className="pt-2">
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Autosave & Cloud Sync</span>
               <div className="flex flex-col gap-2">
@@ -709,6 +867,14 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
                     onMoveDown={() => movePageDown(i)}
                     onDuplicate={() => duplicatePage(i)}
                     onRemove={() => removePage(i)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setActiveIndex(i);
+                      const menuWidth = 190, menuHeight = 260;
+                      const x = Math.min(e.clientX, window.innerWidth - menuWidth - 8);
+                      const y = Math.min(e.clientY, window.innerHeight - menuHeight - 8);
+                      setContextMenuPage({ x: Math.max(8, x), y: Math.max(8, y), index: i });
+                    }}
                   />
                 ))}
               </SortableContext>
@@ -1010,6 +1176,60 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         onRestore={handleRestoreBookVersion}
       />
     )}
+    {mounted && contextMenuPage && createPortal(
+      <div
+        ref={contextMenuRef}
+        style={{ position: 'fixed', left: contextMenuPage.x, top: contextMenuPage.y, zIndex: 99999 }}
+        className="w-[190px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300"
+      >
+        <button
+          onClick={() => { copyPage(contextMenuPage.index); setContextMenuPage(null); }}
+          className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-left cursor-pointer"
+        >
+          <Clipboard className="w-3.5 h-3.5 text-slate-400" /> Copy <span className="ml-auto text-[10px] text-slate-400">Ctrl+C</span>
+        </button>
+        <button
+          onClick={() => { pastePage(contextMenuPage.index); setContextMenuPage(null); }}
+          disabled={!clipboardPage}
+          className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-left cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <ClipboardPaste className="w-3.5 h-3.5 text-slate-400" /> Paste <span className="ml-auto text-[10px] text-slate-400">Ctrl+V</span>
+        </button>
+        <button
+          onClick={() => { duplicatePage(contextMenuPage.index); setContextMenuPage(null); }}
+          className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-left cursor-pointer"
+        >
+          <Copy className="w-3.5 h-3.5 text-slate-400" /> Duplicate <span className="ml-auto text-[10px] text-slate-400">Ctrl+D</span>
+        </button>
+        <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
+        <button
+          onClick={() => { movePageUp(contextMenuPage.index); setContextMenuPage(null); }}
+          disabled={contextMenuPage.index === 0}
+          className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-left cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> Move Up
+        </button>
+        <button
+          onClick={() => { movePageDown(contextMenuPage.index); setContextMenuPage(null); }}
+          disabled={contextMenuPage.index === bookPages.length - 1}
+          className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-left cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> Move Down
+        </button>
+        {!(contextMenuPage.index === 0 && bookPages[contextMenuPage.index]?.type === 'title') && (
+          <>
+            <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
+            <button
+              onClick={() => { removePage(contextMenuPage.index); setContextMenuPage(null); }}
+              className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 text-left cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Delete <span className="ml-auto text-[10px] text-red-400">Del</span>
+            </button>
+          </>
+        )}
+      </div>,
+      document.body
+    )}
   </>
   );
 }
@@ -1084,6 +1304,7 @@ interface SortablePageItemProps {
   onMoveDown: () => void;
   onDuplicate: () => void;
   onRemove: () => void;
+  onContextMenu: (e: React.MouseEvent) => void;
 }
 
 function SortablePageItem({
@@ -1096,6 +1317,7 @@ function SortablePageItem({
   onMoveDown,
   onDuplicate,
   onRemove,
+  onContextMenu,
 }: SortablePageItemProps) {
   const isTitlePage = index === 0 && page.type === 'title';
 
@@ -1124,6 +1346,7 @@ function SortablePageItem({
       ref={setNodeRef}
       style={style}
       onClick={onSelect}
+      onContextMenu={onContextMenu}
       className={`group p-2.5 rounded-xl border flex justify-between items-center transition-all duration-200 select-none ${
         isDragging ? 'opacity-50 border-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30 shadow-md' : ''
       } ${

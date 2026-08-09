@@ -183,7 +183,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
       const res = await redeemAppSumoCode(appsumoCode.trim());
       if (res.success) {
         setRedemptionSuccess("AppSumo Code redeemed successfully! Downloads unlocked.");
-        setPremiumStatus({ checked: true, isPremium: true });
+        await fetchPremiumStatus();
         setAppsumoCode("");
       } else {
         setRedemptionError(res.error || "Failed to redeem code. Please try again.");

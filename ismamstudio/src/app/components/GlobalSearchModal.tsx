@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, X, Sparkles, Command, ArrowRight, ChevronRight, BookOpen, Calculator, PenTool, Hash, Shield } from "lucide-react";
@@ -210,8 +211,13 @@ export default function GlobalSearchModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Listen for Cmd+K / Ctrl+K keyboard shortcuts
   useEffect(() => {
@@ -301,8 +307,13 @@ export default function GlobalSearchModal() {
         </div>
       </button>
 
-      {/* 🔍 Fullscreen Search Modal Overlay */}
-      {isOpen && (
+      {/* 🔍 Fullscreen Search Modal Overlay -- portaled to document.body since
+          this component is nested inside the fixed Header, and a non-portaled
+          fixed-position overlay there doesn't reliably capture clicks across
+          the full viewport (its own stacking context stays scoped to the
+          Header's, so clicks on outside content beyond the Header's own DOM
+          boundary can land on that content instead of this overlay). */}
+      {mounted && isOpen && createPortal(
         <div
           className="fixed inset-0 z-[99999] flex items-start justify-center pt-16 sm:pt-24 px-4"
           onClick={() => setIsOpen(false)}
@@ -492,7 +503,8 @@ export default function GlobalSearchModal() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

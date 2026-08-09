@@ -20,11 +20,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       setIsDark(true);
-    } else if (savedTheme === 'light') {
-      setIsDark(false);
     } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDark(prefersDark);
+      setIsDark(false);
+      localStorage.setItem('theme', 'light');
     }
   }, []);
 

@@ -89,14 +89,15 @@ export default function HomeClient() {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 font-sans selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#FAFAFA] text-slate-700 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden relative">
+
+      {/* Soft ambient blooms for White & Cream Theme */}
+      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-indigo-100/40 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="absolute top-1/3 right-0 w-[700px] h-[700px] bg-purple-100/30 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none" />
+      <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-amber-100/30 rounded-full blur-3xl translate-y-1/3 pointer-events-none" />
 
       {/* ── HERO SECTION ── */}
-      <section className="relative pt-8 pb-16 md:pt-14 md:pb-24 px-6 overflow-hidden">
-        {/* Decorative Background Elements */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-gradient-to-b from-indigo-500/10 via-purple-500/5 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute top-1/4 left-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      <section className="relative pt-8 pb-16 md:pt-14 md:pb-24 px-6 overflow-hidden z-10">
 
         <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">

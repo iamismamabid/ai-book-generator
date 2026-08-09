@@ -12,7 +12,8 @@ import {
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
   AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil,
   Image as ImageIcon, ZoomIn, ZoomOut, Group as GroupIcon, Ungroup as UngroupIcon, Store,
-  Paintbrush, ClipboardPaste, ImageOff, RefreshCw, FlipHorizontal, FlipVertical, SlidersHorizontal, Pipette
+  Paintbrush, ClipboardPaste, ImageOff, RefreshCw, FlipHorizontal, FlipVertical, SlidersHorizontal, Pipette,
+  Keyboard, X as XIcon
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
@@ -887,6 +888,7 @@ export default function FabricCoverStudio({
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
   const [clipboard, setClipboard] = useState<any>(null);
   const [copiedStyle, setCopiedStyle] = useState<Record<string, any> | null>(null);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isObjectLocked, setIsObjectLocked] = useState(false);
   // Right-click context menu: x/y are viewport (fixed-position) screen
   // coordinates for placing the floating menu, independent of the canvas's
@@ -1317,6 +1319,48 @@ export default function FabricCoverStudio({
     }
   };
 
+  // Canva-style one-click text effects: curated shadow/stroke/fill combos on
+  // top of the existing manual shadow controls, rather than a distinct effect
+  // system -- so a preset can always be fine-tuned afterward with the same
+  // sliders. Restricted to properties fabric.Text/IText already supports
+  // natively (stroke/shadow), even though the manual "Border Settings" panel
+  // hides those controls for text objects.
+  const applyTextEffectPreset = (preset: 'none' | 'shadow' | 'lift' | 'hollow' | 'neon') => {
+    if (!canvas || !activeObject) return;
+    const currentFill = (typeof activeObject.fill === 'string' && activeObject.fill !== 'transparent')
+      ? activeObject.fill as string
+      : '#000000';
+
+    if (preset === 'none') {
+      activeObject.set({ shadow: undefined, stroke: undefined, strokeWidth: 0 });
+      setObjectHasShadow(false);
+    } else if (preset === 'hollow') {
+      activeObject.set({ fill: 'transparent', stroke: currentFill, strokeWidth: 2, shadow: undefined });
+      setObjectColor('transparent');
+      setObjectStrokeColor(currentFill);
+      setObjectStrokeWidth(2);
+      setObjectHasShadow(false);
+    } else {
+      const config = preset === 'shadow'
+        ? { color: 'rgba(0,0,0,0.45)', blur: 6, offsetX: 3, offsetY: 3 }
+        : preset === 'lift'
+        ? { color: 'rgba(0,0,0,0.35)', blur: 22, offsetX: 0, offsetY: 8 }
+        : { color: currentFill, blur: 18, offsetX: 0, offsetY: 0 }; // neon
+      activeObject.set({
+        shadow: new fabric.Shadow(config),
+        stroke: undefined,
+        strokeWidth: 0,
+      });
+      setObjectHasShadow(true);
+      setObjectShadowColor(config.color);
+      setObjectShadowBlur(config.blur);
+      setObjectShadowOffsetX(config.offsetX);
+      setObjectShadowOffsetY(config.offsetY);
+    }
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
   // Rebuilds the fabric.Image filter stack from scratch (non-destructive — always
   // recomputed from the original pixels, so overrides can be applied in any order
   // without compounding). Any single param can be overridden while the rest fall
@@ -1363,6 +1407,32 @@ export default function FabricCoverStudio({
     if (saveHistory) {
       canvas.fire("object:modified", { target: img });
     }
+  };
+
+  // Canva-style one-click photo filter presets -- tuned combinations of the
+  // same brightness/contrast/saturation/hue/grayscale/sepia filters the
+  // manual sliders below control, so a preset is just a starting point the
+  // sliders can still fine-tune afterward. Blur/sharpen/pixelate/noise are
+  // left untouched since those are compositing effects, not color grading.
+  const IMAGE_FILTER_PRESETS = {
+    original: { brightness: 0, contrast: 0, saturation: 0, hue: 0, grayscale: false, sepia: false, invert: false },
+    bw: { brightness: 0, contrast: 0.05, saturation: 0, hue: 0, grayscale: true, sepia: false, invert: false },
+    vintage: { brightness: 0.04, contrast: -0.08, saturation: -0.2, hue: 8, grayscale: false, sepia: true, invert: false },
+    warm: { brightness: 0.05, contrast: 0, saturation: 0.15, hue: 12, grayscale: false, sepia: false, invert: false },
+    cool: { brightness: 0.02, contrast: 0, saturation: 0.05, hue: -18, grayscale: false, sepia: false, invert: false },
+    fade: { brightness: 0.08, contrast: -0.25, saturation: -0.15, hue: 0, grayscale: false, sepia: false, invert: false },
+  } as const;
+
+  const applyImageFilterPreset = (name: keyof typeof IMAGE_FILTER_PRESETS) => {
+    const preset = IMAGE_FILTER_PRESETS[name];
+    setImgBrightness(preset.brightness);
+    setImgContrast(preset.contrast);
+    setImgSaturation(preset.saturation);
+    setImgHue(preset.hue);
+    setImgGrayscale(preset.grayscale);
+    setImgSepia(preset.sepia);
+    setImgInvert(preset.invert);
+    applyImageFilters(preset, true);
   };
 
   const handleOpenBgRemover = () => {
@@ -1497,7 +1567,13 @@ export default function FabricCoverStudio({
       }
 
       const key = e.key.toLowerCase();
-      if ((e.ctrlKey || e.metaKey) && key === 'z') {
+      if ((e.ctrlKey || e.metaKey) && e.altKey && key === 'c') {
+        e.preventDefault();
+        handlersRef.current.copyStyleFromActive();
+      } else if ((e.ctrlKey || e.metaKey) && e.altKey && key === 'v') {
+        e.preventDefault();
+        handlersRef.current.pasteStyleToActive();
+      } else if ((e.ctrlKey || e.metaKey) && key === 'z') {
         e.preventDefault();
         handlersRef.current.handleUndo();
       } else if ((e.ctrlKey || e.metaKey) && key === 'y') {
@@ -1659,8 +1735,23 @@ export default function FabricCoverStudio({
       const objXs = [rect.left, rect.left + rect.width / 2, rect.left + rect.width];
       const objYs = [rect.top, rect.top + rect.height / 2, rect.top + rect.height];
 
-      const candidateXs = [0, layout.canvasWidth / 2, layout.canvasWidth];
-      const candidateYs = [0, layout.canvasHeight / 2, layout.canvasHeight];
+      // KDP guide lines (trim/bleed, spine edges, and both covers' safety-zone
+      // boundaries) are snap candidates too, alongside canvas center and other
+      // objects -- these are the lines that actually matter for a book cover,
+      // since content bleeding past them is the most common KDP rejection.
+      const candidateXs = [
+        0, layout.canvasWidth / 2, layout.canvasWidth,
+        layout.trimLeftPx, layout.trimRightPx,
+        layout.spineLeftPx, layout.spineRightPx, layout.spineCenterPx,
+        layout.backLiveLeftPx, layout.backLiveRightPx, layout.backCoverCenterPx,
+        layout.frontLiveLeftPx, layout.frontLiveRightPx, layout.frontCoverCenterPx,
+      ];
+      const candidateYs = [
+        0, layout.canvasHeight / 2, layout.canvasHeight,
+        layout.trimTopPx, layout.trimBottomPx,
+        layout.backLiveTopPx, layout.backLiveBottomPx,
+        layout.frontLiveTopPx, layout.frontLiveBottomPx,
+      ];
       fCanvas.getObjects().forEach((other) => {
         if (other === obj) return;
         const r = other.getBoundingRect(true);
@@ -4055,15 +4146,17 @@ export default function FabricCoverStudio({
   };
 
   // Bind keyboard shortcut handler references
-  handlersRef.current = { 
-    handleUndo, 
-    handleRedo, 
+  handlersRef.current = {
+    handleUndo,
+    handleRedo,
     deleteSelected,
     copySelected,
     cutSelected,
     pasteSelected,
     duplicateSelected,
     toggleLockSelected,
+    copyStyleFromActive,
+    pasteStyleToActive,
     handleNudge: (key: string, shiftKey: boolean) => {
       if (!canvas) return;
       const active = canvas.getActiveObject();
@@ -4436,6 +4529,28 @@ export default function FabricCoverStudio({
                   </div>
                 </div>
 
+                {/* Text Effects */}
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Effects</label>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {([
+                      { key: 'none', label: 'None' },
+                      { key: 'shadow', label: 'Shadow' },
+                      { key: 'lift', label: 'Lift' },
+                      { key: 'hollow', label: 'Hollow' },
+                      { key: 'neon', label: 'Neon' },
+                    ] as const).map((fx) => (
+                      <button
+                        key={fx.key}
+                        onClick={() => applyTextEffectPreset(fx.key)}
+                        className="py-1.5 rounded-lg border border-slate-200 bg-white hover:border-indigo-400 hover:bg-slate-50 text-slate-700 text-[8px] font-black uppercase transition-colors cursor-pointer"
+                      >
+                        {fx.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Spacing & Height */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
@@ -4668,6 +4783,28 @@ export default function FabricCoverStudio({
                 >
                   <Scissors className="w-3.5 h-3.5" /> Remove Background
                 </button>
+
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Filters</label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {([
+                      { key: 'original', label: 'Original' },
+                      { key: 'bw', label: 'B&W' },
+                      { key: 'vintage', label: 'Vintage' },
+                      { key: 'warm', label: 'Warm' },
+                      { key: 'cool', label: 'Cool' },
+                      { key: 'fade', label: 'Fade' },
+                    ] as const).map((f) => (
+                      <button
+                        key={f.key}
+                        onClick={() => applyImageFilterPreset(f.key)}
+                        className="py-1.5 rounded-lg border border-slate-200 bg-white hover:border-indigo-400 hover:bg-slate-50 text-slate-700 text-[8px] font-black uppercase transition-colors cursor-pointer"
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 <div className="space-y-1">
                   <div className="flex justify-between text-[9px] font-black text-slate-400 uppercase">
@@ -6600,6 +6737,16 @@ export default function FabricCoverStudio({
               {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
               <span className="text-[10px] font-black uppercase tracking-wider">{isGenerating ? "Compiling..." : "Download PDF"}</span>
             </button>
+
+            <div className="w-px h-5 bg-slate-200 mx-1" />
+
+            <button
+              onClick={() => setIsShortcutsOpen(true)}
+              title="Keyboard Shortcuts"
+              className="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-all duration-150 active:scale-[0.94]"
+            >
+              <Keyboard className="w-4 h-4"/>
+            </button>
           </div>
         </div>
 
@@ -6732,6 +6879,52 @@ export default function FabricCoverStudio({
           <span>Right: Front Cover</span>
         </div>
       </div>
+
+      {isShortcutsOpen && (
+        <div
+          className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4"
+          onClick={() => setIsShortcutsOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-black uppercase tracking-wide text-slate-800 flex items-center gap-2">
+                <Keyboard className="w-4 h-4 text-indigo-500" /> Keyboard Shortcuts
+              </h3>
+              <button
+                onClick={() => setIsShortcutsOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+              >
+                <XIcon className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-1.5 text-xs">
+              {[
+                ["Undo", "Ctrl+Z"],
+                ["Redo", "Ctrl+Y"],
+                ["Copy", "Ctrl+C"],
+                ["Cut", "Ctrl+X"],
+                ["Paste", "Ctrl+V"],
+                ["Duplicate", "Ctrl+D"],
+                ["Copy Style", "Ctrl+Alt+C"],
+                ["Paste Style", "Ctrl+Alt+V"],
+                ["Lock / Unlock", "Ctrl+L"],
+                ["Delete", "Delete / Backspace"],
+                ["Nudge 1px", "Arrow Keys"],
+                ["Nudge 10px", "Shift + Arrow Keys"],
+                ["Right-click object/canvas", "Context Menu"],
+              ].map(([label, combo]) => (
+                <div key={label} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0">
+                  <span className="font-semibold text-slate-600">{label}</span>
+                  <kbd className="px-2 py-1 rounded-md bg-slate-100 text-slate-700 font-mono text-[10px] font-bold">{combo}</kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <TemplateGalleryModal
         isOpen={isTemplateGalleryOpen}

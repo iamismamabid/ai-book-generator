@@ -2494,13 +2494,35 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
     const titleSpace = 0.32;
-    // Show decoded text wrapped in zone
-    doc.setFont("Helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(30, 41, 59);
-    const words = (data.original || "").split(" ");
-    let lineX = zone.x + 0.1;
-    let lineY = zone.y + titleSpace;
     const lineStep = 0.22;
     const maxX = zone.x + zone.w - 0.1;
+    const words = (data.original || "").split(" ");
+
+    // getSolutionPackZones hands back the *entire page* as one zone when a
+    // cryptogram is alone on its solution page (unlike the grid-based puzzle
+    // types, which already cap their drawn size instead of stretching -- see
+    // drawSudokuSolutionPack). A short decoded sentence pinned to the top of
+    // a full-page zone left most of the page blank with the sentence and
+    // cipher key stranded far apart. Pre-measuring the wrap here lets the
+    // whole block (sentence + cipher key) be vertically centered in the
+    // zone instead, matching how a 2-or-4-per-page layout already looks.
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(9);
+    let measureX = zone.x + 0.1;
+    let lineCount = 1;
+    words.forEach((word: string) => {
+      const ww = doc.getTextWidth(word + " ");
+      if (measureX + ww > maxX) { measureX = zone.x + 0.1; lineCount++; }
+      measureX += ww;
+    });
+    const cipherKeyHeight = data.cipherMap ? 0.35 : 0;
+    const contentHeight = lineCount * lineStep + cipherKeyHeight;
+    const availableHeight = zone.h - titleSpace;
+    const contentStartY = zone.y + titleSpace + Math.max(0, (availableHeight - contentHeight) / 2);
+
+    // Show decoded text wrapped in zone, starting from the centered block top.
+    doc.setFont("Helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(30, 41, 59);
+    let lineX = zone.x + 0.1;
+    let lineY = contentStartY + lineStep;
     words.forEach((word: string) => {
       const ww = doc.getTextWidth(word + " ");
       if (lineX + ww > maxX) { lineX = zone.x + 0.1; lineY += lineStep; }
@@ -2511,14 +2533,16 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
       }
     });
 
-    // Mini cipher key at bottom of zone
+    // Mini cipher key just below the decoded text block, not pinned to the
+    // zone's bottom edge (which, on a lone full-page zone, could sit far
+    // below the text with a large empty gap in between).
     if (data.cipherMap) {
-      const keyY = zone.y + zone.h - 0.2;
+      const keyY = lineY + 0.25;
       doc.setFont("Courier", "bold"); doc.setFontSize(6); doc.setTextColor(100, 116, 139);
       const half1 = "ABCDEFGHIJKLM".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}`).join(" ");
       const half2 = "NOPQRSTUVWXYZ".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}`).join(" ");
-      doc.text(half1, zone.x + 0.1, keyY - 0.1);
-      doc.text(half2, zone.x + 0.1, keyY);
+      doc.text(half1, zone.x + 0.1, keyY);
+      doc.text(half2, zone.x + 0.1, keyY + 0.1);
     }
   });
   doc.setTextColor(0);

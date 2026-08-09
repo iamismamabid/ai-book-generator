@@ -6957,10 +6957,10 @@ export default function FabricCoverStudio({
           onClick={() => setIsShortcutsOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"
+            className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
               <h3 className="text-sm font-black uppercase tracking-wide text-slate-800 flex items-center gap-2">
                 <Keyboard className="w-4 h-4 text-indigo-500" /> Keyboard Shortcuts
               </h3>
@@ -6971,7 +6971,7 @@ export default function FabricCoverStudio({
                 <XIcon className="w-4 h-4" />
               </button>
             </div>
-            <div className="space-y-1.5 text-xs">
+            <div className="space-y-1.5 text-xs px-6 py-4 overflow-y-auto">
               {[
                 ["Undo", "Ctrl+Z"],
                 ["Redo", "Ctrl+Y"],

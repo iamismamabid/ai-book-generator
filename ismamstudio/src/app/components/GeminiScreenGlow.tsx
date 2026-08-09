@@ -9,12 +9,40 @@ interface ClickEffect {
 }
 
 export default function GeminiScreenGlow() {
+  const [enabled, setEnabled] = useState(false);
   const [clickRipples, setClickRipples] = useState<ClickEffect[]>([]);
   const rippleIdRef = useRef(0);
 
   useEffect(() => {
+    // Check initial user setting (Default is OFF / false)
+    if (typeof window !== "undefined") {
+      const savedSetting = localStorage.getItem("geminiGlowEnabled");
+      if (savedSetting === "true") {
+        setEnabled(true);
+      } else {
+        setEnabled(false);
+      }
+    }
+
+    // Listen for custom toggle events from settings menu / footer
+    const handleToggleEvent = (e: Event) => {
+      const customEvt = e as CustomEvent<{ enabled: boolean }>;
+      if (customEvt.detail !== undefined) {
+        setEnabled(customEvt.detail.enabled);
+      } else {
+        const savedSetting = localStorage.getItem("geminiGlowEnabled");
+        setEnabled(savedSetting === "true");
+      }
+    };
+
+    window.addEventListener("geminiGlowToggle", handleToggleEvent);
+    return () => window.removeEventListener("geminiGlowToggle", handleToggleEvent);
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
+
     const handleClick = (e: MouseEvent) => {
-      // Add radial Gemini click flare at exact click coordinates
       const newId = ++rippleIdRef.current;
       const newRipple: ClickEffect = {
         id: newId,
@@ -24,7 +52,6 @@ export default function GeminiScreenGlow() {
 
       setClickRipples((prev) => [...prev.slice(-4), newRipple]);
 
-      // Remove ripple flare after animation finishes (900ms)
       setTimeout(() => {
         setClickRipples((prev) => prev.filter((r) => r.id !== newId));
       }, 900);
@@ -34,7 +61,10 @@ export default function GeminiScreenGlow() {
     return () => {
       window.removeEventListener("click", handleClick);
     };
-  }, []);
+  }, [enabled]);
+
+  // If disabled by default, render nothing
+  if (!enabled) return null;
 
   return (
     <>
@@ -140,7 +170,7 @@ export default function GeminiScreenGlow() {
       <div className="gemini-ambient-glow gemini-glow-bottom-right" />
       <div className="gemini-ambient-glow gemini-glow-bottom-left" />
 
-      {/* Dynamic Gemini Click Light Ray Wave (At Click Location Only) */}
+      {/* Dynamic Gemini Click Light Ray Wave */}
       {clickRipples.map((ripple) => (
         <div
           key={ripple.id}

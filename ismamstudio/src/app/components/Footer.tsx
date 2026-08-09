@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Shield, BookOpen } from "lucide-react";
+import GlowSettingToggle from "@/app/components/GlowSettingToggle";
 
 export default function Footer() {
   return (
@@ -119,6 +120,7 @@ export default function Footer() {
             © {new Date().getFullYear()} KDPage. All rights reserved.
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4">
+            <GlowSettingToggle />
             <span className="text-[10px] bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/10 shrink-0">
               100% KDP spec compliant
             </span>

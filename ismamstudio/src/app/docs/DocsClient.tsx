@@ -398,11 +398,33 @@ export default function DocsClient() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="mr-4 text-xs font-bold text-slate-400 hover:text-slate-600"
+                  className="px-3 text-xs font-bold text-slate-400 hover:text-slate-600"
                 >
                   Clear
                 </button>
               )}
+            </div>
+          </div>
+
+          {/* Official YouTube Walkthrough Card */}
+          <div className="max-w-4xl mx-auto pt-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl text-left space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-xs font-black text-white uppercase tracking-wider">Official Video Tutorial</span>
+                </div>
+                <span className="text-xs font-bold text-slate-400">Complete Demo &amp; Walkthrough</span>
+              </div>
+              <div className="aspect-video w-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+                <iframe
+                  src="https://www.youtube.com/embed/OCrO925cK1c"
+                  title="KDPage Full Video Walkthrough"
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
             </div>
           </div>
         </div>

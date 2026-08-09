@@ -86,17 +86,19 @@ export default function HomeClient() {
   const [activeVideoTab, setActiveVideoTab] = useState<"interior" | "cover">("interior");
   const [leadEmail, setLeadEmail] = useState("");
   const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-slate-700 overflow-hidden relative" suppressHydrationWarning>
+    <div className="min-h-screen bg-[#0b0f19] text-slate-100 font-sans selection:bg-indigo-500 selection:text-white overflow-x-hidden">
 
-      {/* Soft ambient blooms */}
-      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-indigo-100/40 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse-glow" />
-      <div className="absolute top-1/3 right-0 w-[700px] h-[700px] bg-purple-100/30 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 animate-pulse-glow" style={{ animationDelay: '-4s' }} />
-      <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-blue-100/30 rounded-full blur-3xl translate-y-1/3 animate-pulse-glow" style={{ animationDelay: '-2s' }} />
+      {/* ── HERO SECTION ── */}
+      <section className="relative pt-8 pb-16 md:pt-14 md:pb-24 px-6 overflow-hidden">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-gradient-to-b from-indigo-500/10 via-purple-500/5 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute top-1/4 left-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Two-Column Hero Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-24">
+        <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
           {/* Left Column: Headline and CTAs */}
@@ -122,14 +124,13 @@ export default function HomeClient() {
                 Start Creating Now
                 <ArrowRight className="w-5 h-5 text-white" />
               </Link>
-              <Link
-                href="https://app.arcade.software/share/zwSHISc2CSSG683DpmUh"
-                target="_blank"
+              <button
+                onClick={() => setIsVideoModalOpen(true)}
                 className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 font-black text-lg shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
               >
                 <Play className="w-5 h-5 text-orange-500 fill-orange-500" />
-                Try Interactive Studio Demo
-              </Link>
+                Watch Official Video Demo
+              </button>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-200/60 text-xs font-bold text-slate-500">
@@ -219,6 +220,7 @@ export default function HomeClient() {
             </div>
           </div>
 
+        </div>
         </div>
       </section>
 
@@ -1004,6 +1006,35 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      {/* 🎬 YouTube Official Video Modal */}
+      {isVideoModalOpen && (
+        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl relative">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Play className="w-5 h-5 text-orange-500 fill-orange-500" />
+                <h3 className="text-base font-black text-white">KDPage Full Walkthrough &amp; Demo</h3>
+              </div>
+              <button
+                onClick={() => setIsVideoModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="aspect-video w-full">
+              <iframe
+                src="https://www.youtube.com/embed/OCrO925cK1c?autoplay=1"
+                title="KDPage Full Walkthrough & Demo"
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

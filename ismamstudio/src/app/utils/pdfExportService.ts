@@ -2525,13 +2525,19 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     });
 
     // Wrap the A-Z cipher key into as many lines as the zone width needs --
-    // at the larger full-page font size, all 26 "A→X" tokens no longer fit
+    // at the larger full-page font size, all 26 "A>X" tokens no longer fit
     // on two fixed lines and were overflowing off the right edge of the page.
+    // Uses a plain ">" rather than the unicode arrow: jsPDF's standard
+    // Courier font has no glyph for U+2192, so it both renders as mojibake
+    // AND is measured/encoded with the wrong width, which made getTextWidth
+    // under-count each token -- packing more tokens per line than jsPDF
+    // could actually fit, so it silently dropped everything past the point
+    // where the real (wider) rendered text ran off the page.
     let cipherLines: string[] = [];
     const cipherLineHeight = (sizeTier.cipher / 72) * 1.55;
     if (data.cipherMap) {
       doc.setFont("Courier", "bold"); doc.setFontSize(sizeTier.cipher);
-      const tokens = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}  `);
+      const tokens = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l: string) => `${l}>${data.cipherMap[l] || "_"}  `);
       let curLine = "";
       let curX = zone.x + 0.15;
       tokens.forEach((tok: string) => {

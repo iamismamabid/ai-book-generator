@@ -1068,6 +1068,9 @@ export default function FabricCoverStudio({
   const [objectTextAlign, setObjectTextAlign] = useState("left");
   const [objectWidth, setObjectWidth] = useState(100);
   const [objectHeight, setObjectHeight] = useState(100);
+  const [objectPosX, setObjectPosX] = useState(0);
+  const [objectPosY, setObjectPosY] = useState(0);
+  const [objectAngle, setObjectAngle] = useState(0);
   const [objectFlipX, setObjectFlipX] = useState(false);
   const [objectFlipY, setObjectFlipY] = useState(false);
 
@@ -1557,6 +1560,34 @@ export default function FabricCoverStudio({
     canvas.fire("object:modified", { target: activeObject });
   };
 
+  const handleExactPosX = (val: number) => {
+    if (!canvas || !activeObject) return;
+    setObjectPosX(val);
+    activeObject.set({ left: val });
+    activeObject.setCoords();
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const handleExactPosY = (val: number) => {
+    if (!canvas || !activeObject) return;
+    setObjectPosY(val);
+    activeObject.set({ top: val });
+    activeObject.setCoords();
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
+  const handleExactAngle = (val: number) => {
+    if (!canvas || !activeObject) return;
+    const normalized = ((val % 360) + 360) % 360;
+    setObjectAngle(normalized);
+    activeObject.rotate(normalized);
+    activeObject.setCoords();
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+  };
+
   // Keyboard Shortcuts via stable handler refs (initialized empty to avoid TDZ errors)
   const handlersRef = useRef<any>({});
 
@@ -1712,17 +1743,21 @@ export default function FabricCoverStudio({
       setLayers([...fCanvas.getObjects()].reverse());
     };
 
-    // Helper to sync dimensions during scaling/moving
+    // Helper to sync dimensions/position during scaling/moving/rotating
     const syncActiveObjectDimensions = () => {
       const active = fCanvas.getActiveObject();
       if (active) {
         setObjectWidth(Math.round((active.width || 0) * (active.scaleX || 1)));
         setObjectHeight(Math.round((active.height || 0) * (active.scaleY || 1)));
+        setObjectPosX(Math.round(active.left || 0));
+        setObjectPosY(Math.round(active.top || 0));
+        setObjectAngle(Math.round(active.angle || 0));
       }
     };
 
     fCanvas.on("object:scaling", syncActiveObjectDimensions);
     fCanvas.on("object:moving", syncActiveObjectDimensions);
+    fCanvas.on("object:rotating", syncActiveObjectDimensions);
 
     // Smart alignment guides: snaps the dragged object's edges/center to the
     // canvas center or another object's edges/center, matching Canva's pink
@@ -1796,6 +1831,9 @@ export default function FabricCoverStudio({
       if (obj) {
         setObjectWidth(Math.round((obj.width || 0) * (obj.scaleX || 1)));
         setObjectHeight(Math.round((obj.height || 0) * (obj.scaleY || 1)));
+        setObjectPosX(Math.round(obj.left || 0));
+        setObjectPosY(Math.round(obj.top || 0));
+        setObjectAngle(Math.round(obj.angle || 0));
       }
     };
     fCanvas.on("selection:created", syncSelection);
@@ -5202,6 +5240,39 @@ export default function FabricCoverStudio({
                       min="1"
                       value={objectHeight}
                       onChange={(e) => handleExactHeight(parseInt(e.target.value) || 0)}
+                      className="w-full p-1.5 border border-slate-200 rounded-lg outline-none font-sans text-center"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Exact position & rotation */}
+              {!(activeObject as any).id?.startsWith('barcode') && (
+                <div className="grid grid-cols-3 gap-2 text-[10px] font-bold">
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">X (px)</label>
+                    <input
+                      type="number"
+                      value={objectPosX}
+                      onChange={(e) => handleExactPosX(parseInt(e.target.value) || 0)}
+                      className="w-full p-1.5 border border-slate-200 rounded-lg outline-none font-sans text-center"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Y (px)</label>
+                    <input
+                      type="number"
+                      value={objectPosY}
+                      onChange={(e) => handleExactPosY(parseInt(e.target.value) || 0)}
+                      className="w-full p-1.5 border border-slate-200 rounded-lg outline-none font-sans text-center"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Rotate (°)</label>
+                    <input
+                      type="number"
+                      value={objectAngle}
+                      onChange={(e) => handleExactAngle(parseInt(e.target.value) || 0)}
                       className="w-full p-1.5 border border-slate-200 rounded-lg outline-none font-sans text-center"
                     />
                   </div>

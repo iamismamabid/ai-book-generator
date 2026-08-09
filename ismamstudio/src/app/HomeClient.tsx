@@ -295,7 +295,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-indigo-600 transition-colors duration-300 ease-in-out mb-3">All-In-One Creator Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Design 8+ puzzle types, build multi-page interiors, drag & drop elements, and compile front/back covers with live KDP bleed guidelines and auto-generated solution keys.
+                Build multi-page interiors and covers in one workspace, with live KDP bleed guides and auto-generated solution keys.
               </p>
             </div>
             <Link
@@ -329,7 +329,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Labyrinth Designer</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Generate 50+ unique maze shapes (Square, Circle, Heart masks) with mathematically guaranteed single-solution output and KDP safety margins.
+                Square, Circle &amp; Heart mazes with single-solution paths and KDP-safe margins.
               </p>
             </div>
             <Link
@@ -348,7 +348,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Sudoku Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Compile print-ready Sudoku puzzle grids (Easy, Medium, Hard) in bulk with mathematically guaranteed single-solution uniqueness.
+                Bulk Sudoku grids, Easy to Hard, each verified for exactly one solution.
               </p>
             </div>
             <Link
@@ -367,7 +367,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Word Search Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Import custom word lists or CSVs to build unique Word Search grids. Adjust fonts, highlighter options, and export interior sheets.
+                Import a word list or CSV, build the grid, export the interior sheet.
               </p>
             </div>
             <Link
@@ -386,7 +386,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Cryptogram Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Create substitution cipher worksheets in bulk (up to 1,000+ pages) from custom quote libraries, complete with letter hints and formatted solution keys.
+                Substitution-cipher worksheets from your own quotes, up to 1,000+ pages.
               </p>
             </div>
             <Link
@@ -405,7 +405,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Math Puzzle Builder</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Generate arithmetic, cross-number, and logic puzzle sheets in 1-box or 2-box per page layouts for kids, seniors, and KDP workbooks.
+                Arithmetic and logic-grid sheets for kids, seniors, and workbooks.
               </p>
             </div>
             <Link
@@ -424,7 +424,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Word Scramble Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Scramble custom word lists to build activity worksheets. Customize difficulty, borders, layout guides, and download PDF sheets.
+                Scramble your word list into activity worksheets, ready to export.
               </p>
             </div>
             <Link
@@ -443,7 +443,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Kakuro Generator</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Design crossword-style number sums logic puzzles. Select grids from 4x4 up to 9x17, adjust difficulty from easy to expert, and export print-ready PDFs.
+                Number-sum logic grids, 4x4 to 9x17, Easy to Expert.
               </p>
             </div>
             <Link
@@ -462,7 +462,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Crossword Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                Compile custom crossword &amp; word puzzles in bulk (10x10 to 20x20) up to 1,000+ pages with unlimited title &amp; clue customization.
+                Custom crosswords, 10x10 to 20x20, up to 1,000+ pages, your clues.
               </p>
             </div>
             <Link
@@ -867,7 +867,7 @@ export default function HomeClient() {
             Built for Bestselling <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">KDP Authors</span>
           </h2>
           <p className="text-slate-600 text-base md:text-lg max-w-xl mx-auto font-medium">
-            3 Core guarantees that ensure your books pass Amazon KDP review every single time.
+            3 technical foundations built into every book you create with KDPage.
           </p>
           <TrustpilotWidget />
         </div>
@@ -879,14 +879,14 @@ export default function HomeClient() {
               <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-black">
                 🛡️
               </div>
-              <h3 className="text-lg font-black text-slate-900 tracking-tight">100% KDP Print Guarantee</h3>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">KDP-Spec Formatting</h3>
               <p className="text-slate-600 text-sm font-semibold leading-relaxed">
-                Automatic gutter margins (0.375" - 0.5") based on total page count. Guaranteed no margin or bleed violations during Amazon KDP review.
+                Automatic gutter margins (0.375" - 0.5") based on total page count, calculated to meet Amazon KDP's bleed and safety-margin specifications.
               </p>
             </div>
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Bleed &amp; Safety</span>
-              <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Guaranteed</span>
+              <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Spec-Compliant</span>
             </div>
           </div>
 
@@ -924,6 +924,9 @@ export default function HomeClient() {
             </div>
           </div>
         </div>
+        <p className="text-center text-[11px] text-slate-400 font-semibold mt-8 max-w-2xl mx-auto">
+          Final approval remains subject to Amazon KDP's own review process and content policies.
+        </p>
       </section>
 
       {/* Pricing & FAQ Section */}

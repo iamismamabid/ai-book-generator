@@ -288,7 +288,7 @@ export default function HomeClient() {
 
         <div className="max-w-2xl mx-auto mb-24">
           {/* 1. All-In-One Studio */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[320px]">
+          <div className="gemini-hover-card group relative bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between h-[320px]">
             <div>
               <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Palette className="w-7 h-7" />
@@ -322,7 +322,7 @@ export default function HomeClient() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* 3. Labyrinth Designer */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+          <div className="gemini-hover-card group relative bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Compass className="w-7 h-7" />
@@ -341,7 +341,7 @@ export default function HomeClient() {
           </div>
 
           {/* 4. Sudoku Studio */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+          <div className="gemini-hover-card group relative bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Grid3x3 className="w-7 h-7" />
@@ -360,7 +360,7 @@ export default function HomeClient() {
           </div>
 
           {/* 5. Word Search Studio */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+          <div className="gemini-hover-card group relative bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Download className="w-7 h-7" />
@@ -379,7 +379,7 @@ export default function HomeClient() {
           </div>
 
           {/* 6. Cryptogram Studio */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+          <div className="gemini-hover-card group relative bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Key className="w-7 h-7" />
@@ -398,7 +398,7 @@ export default function HomeClient() {
           </div>
 
           {/* 7. Math Puzzle Builder */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+          <div className="gemini-hover-card group relative bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Calculator className="w-7 h-7" />
@@ -417,7 +417,7 @@ export default function HomeClient() {
           </div>
 
           {/* 8. Word Scramble Studio */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+          <div className="gemini-hover-card group relative bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Shuffle className="w-7 h-7" />
@@ -436,7 +436,7 @@ export default function HomeClient() {
           </div>
 
           {/* 8.5. Kakuro Generator */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+          <div className="gemini-hover-card group relative bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Hash className="w-7 h-7" />
@@ -455,7 +455,7 @@ export default function HomeClient() {
           </div>
 
           {/* 8.6. Crossword Studio */}
-          <div className="group relative bg-white border border-slate-200/70 shadow-sm hover:shadow-lg hover:shadow-slate-200/60 rounded-[2.5rem] p-8 hover:-translate-y-2 transition-all duration-300 ease-in-out flex flex-col justify-between h-[360px]">
+          <div className="gemini-hover-card group relative bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 flex flex-col justify-between h-[360px]">
             <div>
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:bg-teal-500 group-hover:text-white transition-all duration-300 ease-in-out shadow-inner">
                 <Grid3x3 className="w-7 h-7" />

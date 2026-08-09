@@ -11,5 +11,9 @@ export default async function Page() {
     redirect("/dashboard"); // Replace with your desired post-login route
   }
 
-  return <SignIn />;
+  return (
+    <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center py-20 px-4">
+      <SignIn signUpUrl="/sign-up" initialValues={{ emailAddress: "" }} />
+    </div>
+  );
 }

@@ -142,7 +142,7 @@ export default function AboutPage() {
               &quot;That is why we built KDPage. Our goal was to create a single, automated, and genuinely premium workspace that empowers independent authors and publishers. We engineered our platform to generate mathematically verified puzzles, shape-masked labyrinths, and print-compliant cover layouts in under 30 seconds.&quot;
             </p>
             <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed italic border-l-2 border-indigo-500/50 pl-4 py-1">
-              &quot;Whether you are just starting your KDP publishing journey or scaling a commercial publishing agency, our team and platform are built to grow with you. With flexible access options — including monthly, annual, and lifetime access plans — we keep enterprise-grade tools accessible so you can retain 100% of your royalties and focus on what matters most: creating and scaling.&quot;
+              &quot;Whether you are just starting your KDP publishing journey or scaling a commercial publishing agency, our team and platform are built to grow with you. With flexible access options — including monthly and annual plans — we keep enterprise-grade tools accessible so you can retain 100% of your royalties and focus on what matters most: creating and scaling.&quot;
             </p>
 
             <div className="pt-2 text-xs text-slate-400 font-semibold flex items-center justify-between">

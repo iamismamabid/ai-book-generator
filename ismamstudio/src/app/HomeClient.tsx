@@ -591,7 +591,7 @@ export default function HomeClient() {
                   "That is why I built KDPage. My goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. I wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."
                 </p>
                 <p>
-                  "Whether you are just starting your KDP journey or scaling a publishing agency, this studio is designed to grow with you. With flexible options — including monthly, annual, and lifetime access plans — I keep premium tools accessible so you can keep 100% of your royalties and focus on what matters: creating."
+                  "Whether you are just starting your KDP journey or scaling a publishing agency, this studio is designed to grow with you. With flexible options — including monthly and annual plans — I keep premium tools accessible so you can keep 100% of your royalties and focus on what matters: creating."
                 </p>
               </div>
 

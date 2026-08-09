@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Palette,
@@ -41,6 +42,11 @@ export default function HomeClient() {
   const [leadEmail, setLeadEmail] = useState("");
   const [leadSubmitted, setLeadSubmitted] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-slate-700 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden relative">
@@ -768,39 +774,41 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* 🎬 YouTube Official Video Modal */}
-      {isVideoModalOpen && (
+      {/* 🎬 YouTube Official Video Modal (Portaled to document.body) */}
+      {mounted && isVideoModalOpen && createPortal(
         <div
-          className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-[999999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
           onClick={() => setIsVideoModalOpen(false)}
         >
           <div
-            className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl relative"
+            className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
               <div className="flex items-center gap-2">
                 <Play className="w-5 h-5 text-orange-500 fill-orange-500" />
                 <h3 className="text-base font-black text-white">KDPage Full Walkthrough &amp; Demo</h3>
               </div>
               <button
                 onClick={() => setIsVideoModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition"
+                className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition cursor-pointer"
+                aria-label="Close video modal"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="aspect-video w-full">
+            <div className="aspect-video w-full bg-black">
               <iframe
-                src="https://www.youtube.com/embed/OCrO925cK1c?autoplay=1"
+                src="https://www.youtube.com/embed/OCrO925cK1c?autoplay=1&rel=0"
                 title="KDPage Full Walkthrough & Demo"
                 className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

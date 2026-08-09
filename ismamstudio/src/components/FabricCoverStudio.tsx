@@ -906,6 +906,33 @@ export default function FabricCoverStudio({
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState("#000000");
   const [drawingWidth, setDrawingWidth] = useState(4);
+  const [brushType, setBrushType] = useState<'pen' | 'marker' | 'highlighter'>('pen');
+
+  // Canva-style pen/marker/highlighter picker -- all three are the same
+  // fabric.PencilBrush, just with different width/opacity/line-cap defaults.
+  // Highlighter's translucency comes from baking alpha into the brush's own
+  // rgba color (Fabric brushes have no separate opacity property).
+  const BRUSH_PRESETS: Record<typeof brushType, { width: number; alpha: number; cap: CanvasLineCap }> = {
+    pen: { width: 4, alpha: 1, cap: 'round' },
+    marker: { width: 14, alpha: 1, cap: 'round' },
+    highlighter: { width: 22, alpha: 0.35, cap: 'butt' },
+  };
+
+  const hexToRgba = (hex: string, alpha: number) => {
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16) || 0;
+    const g = parseInt(clean.substring(2, 4), 16) || 0;
+    const b = parseInt(clean.substring(4, 6), 16) || 0;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  const applyBrushSettings = (type: typeof brushType, color: string, width: number) => {
+    if (!canvas || !canvas.freeDrawingBrush) return;
+    const preset = BRUSH_PRESETS[type];
+    canvas.freeDrawingBrush.color = hexToRgba(color, preset.alpha);
+    canvas.freeDrawingBrush.width = width;
+    (canvas.freeDrawingBrush as any).strokeLineCap = preset.cap;
+  };
 
   const toggleDrawingMode = (forceState?: boolean) => {
     if (!canvas) return;
@@ -914,23 +941,25 @@ export default function FabricCoverStudio({
     canvas.isDrawingMode = nextMode;
     if (nextMode) {
       canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-      canvas.freeDrawingBrush.color = drawingColor;
-      canvas.freeDrawingBrush.width = drawingWidth;
+      applyBrushSettings(brushType, drawingColor, drawingWidth);
     }
+  };
+
+  const handleBrushTypeChange = (type: typeof brushType) => {
+    setBrushType(type);
+    const presetWidth = BRUSH_PRESETS[type].width;
+    setDrawingWidth(presetWidth);
+    applyBrushSettings(type, drawingColor, presetWidth);
   };
 
   const handleDrawingColorChange = (color: string) => {
     setDrawingColor(color);
-    if (canvas && canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush.color = color;
-    }
+    applyBrushSettings(brushType, color, drawingWidth);
   };
 
   const handleDrawingWidthChange = (width: number) => {
     setDrawingWidth(width);
-    if (canvas && canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush.width = width;
-    }
+    applyBrushSettings(brushType, drawingColor, width);
   };
   const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
   const [graphicsSubTab, setGraphicsSubTab] = useState<'kdp-icons' | 'unsplash'>('kdp-icons');
@@ -6428,6 +6457,30 @@ export default function FabricCoverStudio({
               <Pencil className="w-4 h-4" />
               {isDrawingMode ? 'Pause Freehand Draw' : 'Activate Pencil Brush'}
             </button>
+
+            {/* Brush Type */}
+            <div className="space-y-2 p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <label className="text-xs font-bold text-slate-600 block">Tool</label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([
+                  { key: 'pen', label: 'Pen' },
+                  { key: 'marker', label: 'Marker' },
+                  { key: 'highlighter', label: 'Highlighter' },
+                ] as const).map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => handleBrushTypeChange(t.key)}
+                    className={`py-2 px-1 text-[10px] font-black uppercase rounded-lg border transition-all ${
+                      brushType === t.key
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Brush Size Controls */}
             <div className="space-y-3 p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm">

@@ -25,7 +25,7 @@ export default function Header() {
         <span className="group-hover:translate-x-1 transition-transform inline-block shrink-0">→</span>
       </Link>
 
-      <nav className="bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-900/50 glass-card transition-colors duration-300" suppressHydrationWarning>
+      <nav className="bg-[#0b0f19]/95 backdrop-blur-xl border-b border-slate-800/80 text-slate-100 shadow-xl transition-colors duration-300" suppressHydrationWarning>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between" suppressHydrationWarning>
 
           {/* Brand Logo */}
@@ -44,22 +44,22 @@ export default function Header() {
 
           {/* Central Standard Navigation Links (Desktop) */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8 mx-auto">
-            <Link href="/" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <Link href="/" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Home
             </Link>
-            <Link href="/#features" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <Link href="/#features" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Features
             </Link>
-            <Link href="/#pricing" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <Link href="/#pricing" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Pricing
             </Link>
-            <Link href="/#examples" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <Link href="/#examples" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Examples
             </Link>
-            <Link href="/blog" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <Link href="/blog" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Blog
             </Link>
-            <Link href="/tools" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <Link href="/tools" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Free Tools
             </Link>
           </div>
@@ -71,15 +71,15 @@ export default function Header() {
             <ThemeToggle />
 
             <SignedIn>
-              <Link href="/notebook" className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-1">
-                <BookOpen className="w-4 h-4 text-indigo-500" />
+              <Link href="/notebook" className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1">
+                <BookOpen className="w-4 h-4 text-indigo-400" />
                 <span>My Notebook</span>
               </Link>
-              <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95">
+              <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95">
                 <Sparkles className="w-4 h-4" /> Creator Studio
               </Link>
 
-              <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800 flex items-center">
+              <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-800 flex items-center">
                 <UserButton afterSignOutUrl="/">
                   <UserButton.MenuItems>
                     <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
@@ -90,12 +90,12 @@ export default function Header() {
 
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-1.5 sm:px-2">
+                <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2">
                   Sign In
                 </button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <button className="bg-slate-900 dark:bg-slate-800 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:shadow-lg transition-all active:scale-95">
+                <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all active:scale-95">
                   Sign Up
                 </button>
               </SignUpButton>
@@ -104,7 +104,7 @@ export default function Header() {
             {/* Mobile Hamburger Toggle Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+              className="md:hidden p-2 rounded-xl text-slate-200 hover:bg-slate-900 transition-colors"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

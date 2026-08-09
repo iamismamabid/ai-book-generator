@@ -32,6 +32,7 @@ import { loadGoogleFontFamilies } from "@/lib/loadGoogleFont";
 import { COVER_TEXTURES, TEXTURE_CATEGORIES, renderTexture, CoverTexture } from "@/lib/coverTextures";
 import VersionHistoryModal from "@/components/VersionHistoryModal";
 import { CoverVersion } from "@/lib/coverVersions";
+import { BrandKit, loadBrandKit, addBrandColor, removeBrandColor, addBrandFont, removeBrandFont } from "@/lib/brandKit";
 import { relayoutLegacyElements, layoutsDiffer } from "@/lib/coverRelayout";
 import ShareReviewModal from "@/components/ShareReviewModal";
 
@@ -890,6 +891,8 @@ export default function FabricCoverStudio({
   const [clipboard, setClipboard] = useState<any>(null);
   const [copiedStyle, setCopiedStyle] = useState<Record<string, any> | null>(null);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [brandKit, setBrandKit] = useState<BrandKit>({ colors: [], fonts: [] });
+  useEffect(() => { setBrandKit(loadBrandKit()); }, []);
   const [isObjectLocked, setIsObjectLocked] = useState(false);
   // Right-click context menu: x/y are viewport (fixed-position) screen
   // coordinates for placing the floating menu, independent of the canvas's
@@ -1329,32 +1332,37 @@ export default function FabricCoverStudio({
   // sliders. Restricted to properties fabric.Text/IText already supports
   // natively (stroke/shadow), even though the manual "Border Settings" panel
   // hides those controls for text objects.
-  const applyTextEffectPreset = (preset: 'none' | 'shadow' | 'lift' | 'hollow' | 'neon') => {
+  const applyTextEffectPreset = (preset: 'none' | 'shadow' | 'lift' | 'hollow' | 'neon' | 'background') => {
     if (!canvas || !activeObject) return;
     const currentFill = (typeof activeObject.fill === 'string' && activeObject.fill !== 'transparent')
       ? activeObject.fill as string
       : '#000000';
+    // Every preset starts from a clean slate so switching between them (e.g.
+    // Background -> Neon) doesn't leave a stray highlight box or outline behind.
+    (activeObject as any).set({ shadow: undefined, stroke: undefined, strokeWidth: 0, textBackgroundColor: '' });
+    setObjectHasShadow(false);
 
-    if (preset === 'none') {
-      activeObject.set({ shadow: undefined, stroke: undefined, strokeWidth: 0 });
-      setObjectHasShadow(false);
-    } else if (preset === 'hollow') {
-      activeObject.set({ fill: 'transparent', stroke: currentFill, strokeWidth: 2, shadow: undefined });
+    if (preset === 'hollow') {
+      activeObject.set({ fill: 'transparent', stroke: currentFill, strokeWidth: 2 });
       setObjectColor('transparent');
       setObjectStrokeColor(currentFill);
       setObjectStrokeWidth(2);
-      setObjectHasShadow(false);
-    } else {
+    } else if (preset === 'background') {
+      // Highlight box behind the text, per line (fabric.Text's native
+      // textBackgroundColor) -- picks a contrasting color off the fill's
+      // rough lightness so it stays readable without a manual color control.
+      const r = parseInt(currentFill.slice(1, 3), 16) || 0;
+      const g = parseInt(currentFill.slice(3, 5), 16) || 0;
+      const b = parseInt(currentFill.slice(5, 7), 16) || 0;
+      const isLightFill = (r * 299 + g * 587 + b * 114) / 1000 > 150;
+      (activeObject as any).set({ textBackgroundColor: isLightFill ? '#000000' : '#FFFFFF' });
+    } else if (preset !== 'none') {
       const config = preset === 'shadow'
         ? { color: 'rgba(0,0,0,0.45)', blur: 6, offsetX: 3, offsetY: 3 }
         : preset === 'lift'
         ? { color: 'rgba(0,0,0,0.35)', blur: 22, offsetX: 0, offsetY: 8 }
         : { color: currentFill, blur: 18, offsetX: 0, offsetY: 0 }; // neon
-      activeObject.set({
-        shadow: new fabric.Shadow(config),
-        stroke: undefined,
-        strokeWidth: 0,
-      });
+      activeObject.set({ shadow: new fabric.Shadow(config) });
       setObjectHasShadow(true);
       setObjectShadowColor(config.color);
       setObjectShadowBlur(config.blur);
@@ -4482,7 +4490,16 @@ export default function FabricCoverStudio({
                   />
                 </div>
                 <div>
-                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Font Family</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase">Font Family</label>
+                    <button
+                      onClick={() => setBrandKit(addBrandFont(objectFontFamily))}
+                      title="Save to Brand Kit"
+                      className="text-slate-400 hover:text-amber-500 cursor-pointer"
+                    >
+                      <Star className="w-3 h-3" />
+                    </button>
+                  </div>
                   <FontPicker
                     value={objectFontFamily}
                     curatedCategories={FONT_CATEGORIES}
@@ -4491,6 +4508,22 @@ export default function FabricCoverStudio({
                       updateActiveObjectProperty("fontFamily", font);
                     }}
                   />
+                  {brandKit.fonts.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {brandKit.fonts.map((font) => (
+                        <button
+                          key={font}
+                          onClick={() => { setObjectFontFamily(font); updateActiveObjectProperty("fontFamily", font); }}
+                          onDoubleClick={() => setBrandKit(removeBrandFont(font))}
+                          title={`${font} (double-click to remove)`}
+                          style={{ fontFamily: font }}
+                          className="px-2 py-1 rounded-lg border border-slate-200 bg-white hover:border-indigo-400 text-[10px] text-slate-700 cursor-pointer"
+                        >
+                          {font}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -4571,13 +4604,14 @@ export default function FabricCoverStudio({
                 {/* Text Effects */}
                 <div>
                   <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Effects</label>
-                  <div className="grid grid-cols-5 gap-1.5">
+                  <div className="grid grid-cols-3 gap-1.5">
                     {([
                       { key: 'none', label: 'None' },
                       { key: 'shadow', label: 'Shadow' },
                       { key: 'lift', label: 'Lift' },
                       { key: 'hollow', label: 'Hollow' },
                       { key: 'neon', label: 'Neon' },
+                      { key: 'background', label: 'Background' },
                     ] as const).map((fx) => (
                       <button
                         key={fx.key}
@@ -5046,6 +5080,28 @@ export default function FabricCoverStudio({
                         <Pipette className="w-3.5 h-3.5" />
                       </button>
                     )}
+                    <button
+                      onClick={() => setBrandKit(addBrandColor(objectColor.startsWith("#") ? objectColor : "#FFFFFF"))}
+                      title="Save to Brand Kit"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-amber-500 cursor-pointer flex-shrink-0"
+                    >
+                      <Star className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {brandKit.colors.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {brandKit.colors.map((hex) => (
+                      <button
+                        key={hex}
+                        onClick={() => { setObjectColor(hex); updateActiveObjectProperty("fill", hex, true); }}
+                        onDoubleClick={() => setBrandKit(removeBrandColor(hex))}
+                        title={`${hex} (double-click to remove)`}
+                        style={{ backgroundColor: hex }}
+                        className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer hover:scale-110 transition-transform"
+                      />
+                    ))}
                   </div>
                 )}
 

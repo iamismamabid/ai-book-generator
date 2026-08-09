@@ -273,16 +273,16 @@ export default function GlobalSearchModal() {
       <button
         onClick={() => setIsOpen(true)}
         className="relative flex items-center gap-2.5 pl-3.5 pr-2.5 py-2 rounded-full border transition-all duration-300 group
-          bg-gradient-to-r from-slate-50 to-white
-          border-slate-200/80
-          hover:border-indigo-400/60
-          hover:shadow-[0_0_0_3px_rgba(99,102,241,0.10),_0_2px_12px_rgba(99,102,241,0.10)]
+          bg-slate-900/90
+          border-slate-800
+          hover:border-indigo-500/60
+          hover:shadow-[0_0_0_3px_rgba(99,102,241,0.15)]
           active:scale-95 shadow-sm"
         title="Search all KDP tools & generators (Cmd+K)"
         aria-label="Open search"
       >
         {/* Animated gradient background on hover */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/[0.07] to-violet-500/[0.07] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/10 to-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         <div className="relative flex items-center gap-2">
           {/* Animated search icon */}
@@ -290,12 +290,12 @@ export default function GlobalSearchModal() {
             <Search className="w-3.5 h-3.5 text-white" />
           </div>
 
-          <span className="hidden sm:block text-sm font-bold text-slate-500 group-hover:text-indigo-600 transition-colors duration-200 whitespace-nowrap">
+          <span className="hidden sm:block text-sm font-bold text-slate-300 group-hover:text-white transition-colors duration-200 whitespace-nowrap">
             Search tools...
           </span>
 
           {/* Keyboard shortcut badge */}
-          <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-400 ml-1 group-hover:bg-indigo-50 group-hover:border-indigo-200 group-hover:text-indigo-500 transition-all duration-200">
+          <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[10px] font-black text-slate-400 ml-1 group-hover:border-indigo-500/40 group-hover:text-indigo-400 transition-all duration-200">
             ⌘K
           </kbd>
         </div>

@@ -2523,7 +2523,30 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
       if (measureX + ww > maxX) { measureX = zone.x + 0.15; lineCount++; }
       measureX += ww;
     });
-    const cipherKeyHeight = data.cipherMap ? sizeTier.cipherGap + 0.15 : 0;
+
+    // Wrap the A-Z cipher key into as many lines as the zone width needs --
+    // at the larger full-page font size, all 26 "A→X" tokens no longer fit
+    // on two fixed lines and were overflowing off the right edge of the page.
+    let cipherLines: string[] = [];
+    const cipherLineHeight = (sizeTier.cipher / 72) * 1.55;
+    if (data.cipherMap) {
+      doc.setFont("Courier", "bold"); doc.setFontSize(sizeTier.cipher);
+      const tokens = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}  `);
+      let curLine = "";
+      let curX = zone.x + 0.15;
+      tokens.forEach((tok: string) => {
+        const tw = doc.getTextWidth(tok);
+        if (curX + tw > maxX && curLine) {
+          cipherLines.push(curLine);
+          curLine = "";
+          curX = zone.x + 0.15;
+        }
+        curLine += tok;
+        curX += tw;
+      });
+      if (curLine) cipherLines.push(curLine);
+    }
+    const cipherKeyHeight = cipherLines.length ? sizeTier.cipherGap + cipherLines.length * cipherLineHeight : 0;
     const contentHeight = lineCount * lineStep + cipherKeyHeight;
     const availableHeight = zone.h - titleSpace;
     const contentStartY = zone.y + titleSpace + Math.max(0, (availableHeight - contentHeight) / 2);
@@ -2545,13 +2568,13 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     // Mini cipher key just below the decoded text block, not pinned to the
     // zone's bottom edge (which, on a lone full-page zone, could sit far
     // below the text with a large empty gap in between).
-    if (data.cipherMap) {
-      const keyY = lineY + sizeTier.cipherGap;
+    if (cipherLines.length) {
       doc.setFont("Courier", "bold"); doc.setFontSize(sizeTier.cipher); doc.setTextColor(100, 116, 139);
-      const half1 = "ABCDEFGHIJKLM".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}`).join(" ");
-      const half2 = "NOPQRSTUVWXYZ".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}`).join(" ");
-      doc.text(half1, zone.x + 0.15, keyY);
-      doc.text(half2, zone.x + 0.15, keyY + sizeTier.cipher * 0.018);
+      let keyY = lineY + sizeTier.cipherGap;
+      cipherLines.forEach((line) => {
+        doc.text(line.trim(), zone.x + 0.15, keyY);
+        keyY += cipherLineHeight;
+      });
     }
   });
   doc.setTextColor(0);

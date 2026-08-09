@@ -30,10 +30,10 @@ export default function GlowSettingToggle() {
           ? "bg-indigo-500/20 border-indigo-500/40 text-indigo-300 shadow-sm"
           : "bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
       }`}
-      title="Toggle Gemini Click & Screen Glow Rays (Default: OFF)"
+      title="Toggle KDPage Click & Screen Glow Rays (Default: OFF)"
     >
       <Sparkles className={`w-3.5 h-3.5 ${enabled ? "text-indigo-400 animate-pulse" : "text-slate-500"}`} />
-      <span>Gemini Glow Effects: <strong className={enabled ? "text-indigo-400" : "text-slate-500"}>{enabled ? "ON" : "OFF"}</strong></span>
+      <span>KDPage Glow Effect: <strong className={enabled ? "text-indigo-400" : "text-slate-500"}>{enabled ? "ON" : "OFF"}</strong></span>
     </button>
   );
 }

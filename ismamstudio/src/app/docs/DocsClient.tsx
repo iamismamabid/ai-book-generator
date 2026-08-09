@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { getYouTubeEmbedUrl } from "@/lib/videoConfig";
 import { AI_FEATURES_ENABLED } from "@/lib/features";
 import {
   Search,
@@ -418,7 +419,7 @@ export default function DocsClient() {
               </div>
               <div className="aspect-video w-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
                 <iframe
-                  src="https://www.youtube.com/embed/OCrO925cK1c"
+                  src={getYouTubeEmbedUrl()}
                   title="KDPage Full Video Walkthrough"
                   className="w-full h-full border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

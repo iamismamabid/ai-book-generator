@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { getYouTubeEmbedUrl } from "@/lib/videoConfig";
 import {
   Palette,
   Grid3x3,
@@ -799,7 +800,7 @@ export default function HomeClient() {
             </div>
             <div className="aspect-video w-full bg-black">
               <iframe
-                src="https://www.youtube.com/embed/OCrO925cK1c?autoplay=1&rel=0"
+                src={getYouTubeEmbedUrl(undefined, true)}
                 title="KDPage Full Walkthrough & Demo"
                 className="w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

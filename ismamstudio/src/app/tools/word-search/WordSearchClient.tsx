@@ -538,7 +538,13 @@ export default function WordSearchStudio() {
             
             <header className="mb-6 flex justify-between items-center max-w-[1600px] mx-auto w-full">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-500/20">IS</div>
+                    <Link href="/" className="flex items-center gap-2 group shrink-0">
+                        <img
+                            src="/logo_transparent.png"
+                            alt="KDPage Logo"
+                            className="w-10 h-10 object-contain rounded-xl drop-shadow-md group-hover:scale-105 transition-transform"
+                        />
+                    </Link>
                     <div>
                         <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
                             KDPage

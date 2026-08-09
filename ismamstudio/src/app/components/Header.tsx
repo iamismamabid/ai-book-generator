@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import GlobalSearchModal from '@/app/components/GlobalSearchModal';
+import { ThemeToggle } from '@/app/components/ThemeToggle';
 import { Menu, X, Sparkles, BookOpen, Wrench, CreditCard, LayoutGrid, Layers, Users } from 'lucide-react';
 
 export default function Header() {
@@ -67,6 +68,7 @@ export default function Header() {
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {/* Global Search Modal */}
             <GlobalSearchModal />
+            <ThemeToggle />
 
             <SignedIn>
               <Link href="/notebook" className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-1">

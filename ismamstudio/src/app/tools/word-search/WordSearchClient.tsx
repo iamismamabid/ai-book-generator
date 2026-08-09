@@ -370,7 +370,13 @@ export default function WordSearchStudio() {
 
                 const wordRowStep = 0.22;
                 const wordColumns = puzzlesPerPage === 4 ? 2 : 3;
-                drawWordSearchWordList(doc, pageWords, { x: zone.x, y: startY + gridDrawSize + 0.3 - wordRowStep, w: zone.w }, {
+                // Match the word list's x/width to the grid's actual drawn
+                // bounds (startX/gridDrawSize), not the full zone -- when
+                // puzzleAlign is 'center' the grid is narrower than the zone
+                // and centered within it, so using zone.x/zone.w here made
+                // the word list start to the left of the grid instead of
+                // lining up under it, regardless of the chosen text align.
+                drawWordSearchWordList(doc, pageWords, { x: startX, y: startY + gridDrawSize + 0.3 - wordRowStep, w: gridDrawSize }, {
                     style: { wordFont, wordFontSize: wordTextSize, wordTextColor, wordTextAlign, wordColumns, wordRowStep },
                 });
             }

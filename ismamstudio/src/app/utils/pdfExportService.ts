@@ -512,10 +512,15 @@ export function drawWordSearchWordList(
   doc.setTextColor(isSolution ? "#94A3B8" : s.wordTextColor);
 
   const colWidth = zone.w / s.wordColumns;
+  // jsPDF's align:"center" centers the text ON the given x, so x itself has
+  // to move to the column's midpoint for center alignment -- using the
+  // column's left edge for both modes (as before) made "Center" render no
+  // differently from "Left" plus an off-by-half-column shift.
   words.forEach((w: any, idx: number) => {
     const rowIdx = Math.floor(idx / s.wordColumns);
     const colIdx = idx % s.wordColumns;
-    const x = zone.x + (colIdx * colWidth);
+    const colLeft = zone.x + (colIdx * colWidth);
+    const x = s.wordTextAlign === 'center' ? colLeft + colWidth / 2 : colLeft;
     const y = zone.y + headingOffset + ((rowIdx + 1) * wordRowStep);
     doc.text(w.text, x, y, { align: s.wordTextAlign });
   });

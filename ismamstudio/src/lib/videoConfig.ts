@@ -29,7 +29,7 @@ export function extractYouTubeId(urlOrId: string = ""): string {
 }
 
 export const DEMO_YOUTUBE_VIDEO_ID =
-  extractYouTubeId(process.env.NEXT_PUBLIC_DEMO_YOUTUBE_ID || "");
+  extractYouTubeId(process.env.NEXT_PUBLIC_DEMO_YOUTUBE_ID || "https://youtu.be/OCrO925cK1c");
 
 export const getYouTubeEmbedUrl = (
   urlOrId: string = DEMO_YOUTUBE_VIDEO_ID,

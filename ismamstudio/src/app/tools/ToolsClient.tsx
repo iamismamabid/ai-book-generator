@@ -891,8 +891,14 @@ export default function FreeToolsHub() {
 
         {/* Dynamic Modals for Interactive Tools */}
         {activeInteractiveTool && (
-          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pt-28 bg-stone-950/40 backdrop-blur-sm">
-            <div className="relative w-full max-w-2xl bg-[#fbfaf7] border border-stone-200 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+          <div
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pt-28 bg-stone-950/40 backdrop-blur-sm"
+            onClick={() => setActiveInteractiveTool(null)}
+          >
+            <div
+              className="relative w-full max-w-2xl bg-[#fbfaf7] border border-stone-200 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
               
               {/* Modal Header */}
               <div className="px-6 py-4 border-b border-stone-200 flex justify-between items-center bg-white/60">

@@ -87,13 +87,13 @@ export default function Header() {
             </SignedIn>
 
             <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2">
+              <SignInButton mode="modal" initialValues={{ emailAddress: "" }}>
+                <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2 cursor-pointer">
                   Sign In
                 </button>
               </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all active:scale-95">
+              <SignUpButton mode="modal" initialValues={{ emailAddress: "" }}>
+                <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all active:scale-95 cursor-pointer">
                   Sign Up
                 </button>
               </SignUpButton>

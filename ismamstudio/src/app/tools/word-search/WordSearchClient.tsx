@@ -362,7 +362,10 @@ export default function WordSearchStudio() {
                     lineWidth: lineWidth * 0.01,
                     cellColor,
                     borderColor,
-                    letterBold: false,
+                    // Matches the live-preview grid cells, which render bold
+                    // unconditionally (font-bold) -- this override was the one
+                    // thing making the exported PDF look thinner than the preview.
+                    letterBold: true,
                 });
 
                 const wordRowStep = 0.22;
@@ -405,7 +408,7 @@ export default function WordSearchStudio() {
                         highlightColor: '#E2E8F0',
                         highlightTextColor: '#000000',
                         solutionHighlighter: solutionHighlighter === 'grayout' ? 'fade' : solutionHighlighter,
-                        letterBold: false,
+                        letterBold: true,
                     });
                 }
             }

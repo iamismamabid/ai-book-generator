@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { fabric } from "fabric";
 import { 
   Type, Square, Circle as CircleIcon, Star, Ruler, 
@@ -6951,9 +6952,9 @@ export default function FabricCoverStudio({
         </div>
       </div>
 
-      {isShortcutsOpen && (
+      {isShortcutsOpen && createPortal(
         <div
-          className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[99999] bg-black/40 flex items-center justify-center p-4"
           onClick={() => setIsShortcutsOpen(false)}
         >
           <div
@@ -6994,7 +6995,8 @@ export default function FabricCoverStudio({
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <TemplateGalleryModal

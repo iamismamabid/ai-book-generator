@@ -3,6 +3,7 @@ import { ThemeProvider } from '@/app/components/ThemeProvider';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import CustomCursor from '@/app/components/CustomCursor';
+import GeminiScreenGlow from '@/app/components/GeminiScreenGlow';
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -81,6 +82,7 @@ export default function RootLayout({
 
           <ThemeProvider>
             <CustomCursor />
+            <GeminiScreenGlow />
             {/* Professional Floating Navbar */}
             <Header />
 

@@ -2484,18 +2484,27 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
   const safeH = pageHeight - topReserved - margin;
   const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
 
+  // Scale type size to how much room each solution actually gets: a lone
+  // cryptogram on a full-page zone should read like a poster, not be stuck
+  // at the same small size used when 4 share a page.
+  const sizeTier = group.length <= 1
+    ? { title: 18, sentence: 26, cipher: 12, lineStep: 0.46, cipherGap: 0.5 }
+    : group.length === 2
+    ? { title: 14, sentence: 16, cipher: 9, lineStep: 0.32, cipherGap: 0.36 }
+    : { title: 10, sentence: 9, cipher: 6, lineStep: 0.22, cipherGap: 0.25 };
+
   group.forEach((entry, i) => {
     const zone = zones[i];
     if (!zone || !entry.cryptogramData) return;
     const data = entry.cryptogramData;
 
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.title); doc.setTextColor(0);
     const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
-    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.3, { align: "center" });
 
-    const titleSpace = 0.32;
-    const lineStep = 0.22;
-    const maxX = zone.x + zone.w - 0.1;
+    const titleSpace = 0.32 + (sizeTier.title - 10) * 0.02;
+    const lineStep = sizeTier.lineStep;
+    const maxX = zone.x + zone.w - 0.15;
     const words = (data.original || "").split(" ");
 
     // getSolutionPackZones hands back the *entire page* as one zone when a
@@ -2506,26 +2515,26 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     // cipher key stranded far apart. Pre-measuring the wrap here lets the
     // whole block (sentence + cipher key) be vertically centered in the
     // zone instead, matching how a 2-or-4-per-page layout already looks.
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(9);
-    let measureX = zone.x + 0.1;
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.sentence);
+    let measureX = zone.x + 0.15;
     let lineCount = 1;
     words.forEach((word: string) => {
       const ww = doc.getTextWidth(word + " ");
-      if (measureX + ww > maxX) { measureX = zone.x + 0.1; lineCount++; }
+      if (measureX + ww > maxX) { measureX = zone.x + 0.15; lineCount++; }
       measureX += ww;
     });
-    const cipherKeyHeight = data.cipherMap ? 0.35 : 0;
+    const cipherKeyHeight = data.cipherMap ? sizeTier.cipherGap + 0.15 : 0;
     const contentHeight = lineCount * lineStep + cipherKeyHeight;
     const availableHeight = zone.h - titleSpace;
     const contentStartY = zone.y + titleSpace + Math.max(0, (availableHeight - contentHeight) / 2);
 
     // Show decoded text wrapped in zone, starting from the centered block top.
-    doc.setFont("Helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(30, 41, 59);
-    let lineX = zone.x + 0.1;
+    doc.setFont("Helvetica", "normal"); doc.setFontSize(sizeTier.sentence); doc.setTextColor(30, 41, 59);
+    let lineX = zone.x + 0.15;
     let lineY = contentStartY + lineStep;
     words.forEach((word: string) => {
       const ww = doc.getTextWidth(word + " ");
-      if (lineX + ww > maxX) { lineX = zone.x + 0.1; lineY += lineStep; }
+      if (lineX + ww > maxX) { lineX = zone.x + 0.15; lineY += lineStep; }
       if (lineY < zone.y + zone.h - 0.1) {
         doc.setFont("Helvetica", "bold"); doc.setTextColor(79, 70, 229);
         doc.text(word + " ", lineX, lineY);
@@ -2537,12 +2546,12 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     // zone's bottom edge (which, on a lone full-page zone, could sit far
     // below the text with a large empty gap in between).
     if (data.cipherMap) {
-      const keyY = lineY + 0.25;
-      doc.setFont("Courier", "bold"); doc.setFontSize(6); doc.setTextColor(100, 116, 139);
+      const keyY = lineY + sizeTier.cipherGap;
+      doc.setFont("Courier", "bold"); doc.setFontSize(sizeTier.cipher); doc.setTextColor(100, 116, 139);
       const half1 = "ABCDEFGHIJKLM".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}`).join(" ");
       const half2 = "NOPQRSTUVWXYZ".split("").map((l: string) => `${l}→${data.cipherMap[l] || "_"}`).join(" ");
-      doc.text(half1, zone.x + 0.1, keyY);
-      doc.text(half2, zone.x + 0.1, keyY + 0.1);
+      doc.text(half1, zone.x + 0.15, keyY);
+      doc.text(half2, zone.x + 0.15, keyY + sizeTier.cipher * 0.018);
     }
   });
   doc.setTextColor(0);

@@ -55,9 +55,6 @@ export default function Header() {
             <Link href="/#pricing" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Pricing
             </Link>
-            <Link href="/examples" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
-              Examples
-            </Link>
             <Link href="/blog" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Blog
             </Link>

@@ -55,9 +55,15 @@ export default function HomeClient() {
 
           {/* Left Column: Headline and CTAs */}
           <div className="lg:col-span-6 text-left space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200/80 text-indigo-600 text-xs font-black uppercase tracking-[0.2em] shadow-sm">
-              <Sparkles className="w-4 h-4 text-indigo-500" />
-              The Ultimate Publishing Suite for KDP Self-Publishers
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200/80 text-indigo-600 text-xs font-black uppercase tracking-[0.2em] shadow-sm">
+                <Sparkles className="w-4 h-4 text-indigo-500" />
+                The Ultimate Publishing Suite for KDP Self-Publishers
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-black uppercase tracking-wider shadow-sm">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                Join 500+ Publishers
+              </div>
             </div>
 
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-slate-800 tracking-tight leading-[1.1]">

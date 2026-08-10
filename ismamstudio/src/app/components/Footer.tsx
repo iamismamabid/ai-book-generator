@@ -38,6 +38,9 @@ export default function Footer() {
                 <Link href="/" className="text-slate-400 hover:text-indigo-400 transition-colors">Home</Link>
               </li>
               <li>
+                <Link href="/about" className="text-slate-400 hover:text-indigo-400 transition-colors">About Us &amp; Founder Story</Link>
+              </li>
+              <li>
                 <Link href="/#features" className="text-slate-400 hover:text-indigo-400 transition-colors">Features</Link>
               </li>
               <li>

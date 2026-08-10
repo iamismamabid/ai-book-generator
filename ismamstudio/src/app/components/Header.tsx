@@ -46,6 +46,9 @@ export default function Header() {
             <Link href="/" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Home
             </Link>
+            <Link href="/about" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
+              About
+            </Link>
             <Link href="/#features" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Features
             </Link>

@@ -677,6 +677,516 @@ function drawFoodIconGrid(
   }
 }
 
+// ── Shared scene accents (moon, sparkle) ─────────────────────────────────
+
+function drawCrescentMoon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, Math.PI * 0.5, Math.PI * 1.5, false);
+  ctx.arc(cx + r * 0.55, cy, r * 0.78, Math.PI * 1.5, Math.PI * 0.5, true);
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawSparkleStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+  ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
+  ctx.stroke();
+}
+
+// ── Botanical & Floral pattern icons ─────────────────────────────────────
+
+function drawMonsteraLeafIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.75);
+  ctx.bezierCurveTo(cx + r * 0.7, cy - r * 0.6, cx + r * 0.55, cy + r * 0.5, cx, cy + r * 0.8);
+  ctx.bezierCurveTo(cx - r * 0.55, cy + r * 0.5, cx - r * 0.7, cy - r * 0.6, cx, cy - r * 0.75);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.65); ctx.lineTo(cx, cy + r * 0.7);
+  [0.35, 0, -0.35].forEach((t) => {
+    const vy = cy + t * r;
+    ctx.moveTo(cx, vy); ctx.lineTo(cx + r * 0.4, vy - r * 0.15);
+    ctx.moveTo(cx, vy); ctx.lineTo(cx - r * 0.4, vy - r * 0.15);
+  });
+  ctx.stroke();
+  ([[-0.22, -0.1], [0.24, 0.15], [-0.18, 0.4]] as const).forEach(([dx, dy]) => {
+    ctx.beginPath();
+    ctx.ellipse(cx + dx * r, cy + dy * r, r * 0.09, r * 0.14, 0.3, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawPalmFrondIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + r * 0.85); ctx.lineTo(cx, cy - r * 0.85);
+  ctx.stroke();
+  for (let i = 1; i <= 5; i++) {
+    const t = i / 5.5;
+    const y = cy + r * 0.85 - t * r * 1.6;
+    const len = r * 0.65 * (1 - t * 0.3);
+    ctx.beginPath();
+    ctx.moveTo(cx, y);
+    ctx.quadraticCurveTo(cx + len * 0.7, y - len * 0.25, cx + len, y - len * 0.55);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx, y);
+    ctx.quadraticCurveTo(cx - len * 0.7, y - len * 0.25, cx - len, y - len * 0.55);
+    ctx.stroke();
+  }
+}
+
+function drawFernFrondIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + r * 0.85); ctx.lineTo(cx, cy - r * 0.85);
+  ctx.stroke();
+  for (let i = 1; i <= 8; i++) {
+    const t = i / 8.5;
+    const y = cy + r * 0.8 - t * r * 1.55;
+    const len = r * 0.32 * (1 - t * 0.5);
+    ctx.beginPath();
+    ctx.moveTo(cx, y); ctx.lineTo(cx + len, y - len * 0.5);
+    ctx.moveTo(cx, y); ctx.lineTo(cx - len, y - len * 0.5);
+    ctx.stroke();
+  }
+}
+
+function drawRoseIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  let a = 0, rr = r * 0.06;
+  ctx.moveTo(cx + rr, cy);
+  while (a < Math.PI * 5.5) {
+    a += 0.2;
+    rr = r * 0.06 + (r * 0.8) * (a / (Math.PI * 5.5));
+    ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.95, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function drawVineLeafIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.6);
+  ctx.quadraticCurveTo(cx + r * 0.55, cy - r * 0.25, cx, cy + r * 0.6);
+  ctx.quadraticCurveTo(cx - r * 0.55, cy - r * 0.25, cx, cy - r * 0.6);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + r * 0.55);
+  ctx.bezierCurveTo(cx + r * 0.4, cy + r * 0.7, cx + r * 0.15, cy + r * 1.0, cx + r * 0.5, cy + r * 1.05);
+  ctx.stroke();
+}
+
+function drawSucculentRosetteIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ([0.85, 0.55] as const).forEach((scale, ring) => {
+    const petals = ring === 0 ? 8 : 6;
+    for (let i = 0; i < petals; i++) {
+      const a = (i / petals) * Math.PI * 2 + ring * 0.3;
+      const px = cx + Math.cos(a) * r * scale * 0.15;
+      const py = cy + Math.sin(a) * r * scale * 0.15;
+      const tx = cx + Math.cos(a) * r * scale;
+      const ty = cy + Math.sin(a) * r * scale;
+      ctx.beginPath();
+      ctx.moveTo(px - Math.sin(a) * r * 0.13, py + Math.cos(a) * r * 0.13);
+      ctx.quadraticCurveTo(tx, ty, px + Math.sin(a) * r * 0.13, py - Math.cos(a) * r * 0.13);
+      ctx.stroke();
+    }
+  });
+}
+
+function drawCactusPotIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const potTop = cy + r * 0.35;
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.4, potTop); ctx.lineTo(cx - r * 0.3, cy + r * 0.85);
+  ctx.lineTo(cx + r * 0.3, cy + r * 0.85); ctx.lineTo(cx + r * 0.4, potTop);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.45, potTop); ctx.lineTo(cx + r * 0.45, potTop);
+  ctx.stroke();
+  const bw = r * 0.24, topY = cy - r * 0.75;
+  ctx.beginPath();
+  ctx.moveTo(cx - bw, potTop);
+  ctx.lineTo(cx - bw, topY + bw);
+  ctx.quadraticCurveTo(cx - bw, topY, cx, topY);
+  ctx.quadraticCurveTo(cx + bw, topY, cx + bw, topY + bw);
+  ctx.lineTo(cx + bw, potTop);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, topY + bw * 0.3); ctx.lineTo(cx, potTop);
+  ctx.stroke();
+  ([-1, 1] as const).forEach((side) => {
+    ctx.beginPath();
+    ctx.ellipse(cx + side * (bw + r * 0.18), cy - r * 0.15, r * 0.16, r * 0.28, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawLotusFlowerIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const baseX = cx, baseY = cy + r * 0.7;
+  [-0.75, -0.38, 0, 0.38, 0.75].forEach((off) => {
+    const angle = -Math.PI / 2 + off * 0.9;
+    const len = r * (1.05 - Math.abs(off) * 0.35);
+    const tipX = baseX + Math.cos(angle) * len, tipY = baseY + Math.sin(angle) * len;
+    const nx = -Math.sin(angle), ny = Math.cos(angle);
+    const w = r * 0.22;
+    ctx.beginPath();
+    ctx.moveTo(baseX, baseY);
+    ctx.quadraticCurveTo(baseX + Math.cos(angle) * len * 0.5 + nx * w, baseY + Math.sin(angle) * len * 0.5 + ny * w, tipX, tipY);
+    ctx.quadraticCurveTo(baseX + Math.cos(angle) * len * 0.5 - nx * w, baseY + Math.sin(angle) * len * 0.5 - ny * w, baseX, baseY);
+    ctx.stroke();
+  });
+}
+
+function drawLilyPadIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.75, 0.35, Math.PI * 2 - 0.35);
+  ctx.lineTo(cx, cy);
+  ctx.closePath();
+  ctx.stroke();
+  ([0.3, 0.5] as const).forEach((rr) => {
+    ctx.beginPath();
+    ctx.arc(cx, cy + r * 1.0, r * rr, Math.PI * 1.15, Math.PI * 1.85);
+    ctx.stroke();
+  });
+}
+
+// ── Cozy Objects & Still Life pattern icons ──────────────────────────────
+
+function drawCrystalClusterIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const shards: Array<readonly [number, number]> = [[-0.5, 1.1], [-0.15, 0.9], [0.2, 1.15], [0.5, 0.95]];
+  shards.forEach(([sx, sh]) => {
+    const bx = cx + sx * r, tipY = cy + r * 0.85 - sh * r * 0.95;
+    ctx.beginPath();
+    ctx.moveTo(bx - r * 0.14, cy + r * 0.85);
+    ctx.lineTo(bx - r * 0.08, tipY + r * 0.15);
+    ctx.lineTo(bx, tipY);
+    ctx.lineTo(bx + r * 0.08, tipY + r * 0.15);
+    ctx.lineTo(bx + r * 0.14, cy + r * 0.85);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(bx, tipY);
+    ctx.lineTo(bx, cy + r * 0.85);
+    ctx.stroke();
+  });
+}
+
+function drawVintageClockIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.82, 0, Math.PI * 2);
+  ctx.stroke();
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const r1 = r * 0.7, r2 = r * 0.82;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+    ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(cx, cy); ctx.lineTo(cx + r * 0.1, cy - r * 0.4);
+  ctx.moveTo(cx, cy); ctx.lineTo(cx + r * 0.45, cy + r * 0.15);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.05, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy - r * 0.95, r * 0.08, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function drawHourglassIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.5, cy - r * 0.85); ctx.lineTo(cx + r * 0.5, cy - r * 0.85);
+  ctx.lineTo(cx + r * 0.08, cy); ctx.lineTo(cx + r * 0.5, cy + r * 0.85);
+  ctx.lineTo(cx - r * 0.5, cy + r * 0.85); ctx.lineTo(cx - r * 0.08, cy);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.6, cy - r * 0.85); ctx.lineTo(cx + r * 0.6, cy - r * 0.85);
+  ctx.moveTo(cx - r * 0.6, cy + r * 0.85); ctx.lineTo(cx + r * 0.6, cy + r * 0.85);
+  ctx.stroke();
+  ([0.4, 0.55, 0.7] as const).forEach((t) => {
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.22 * (1 - t), cy + r * 0.85 * t);
+    ctx.lineTo(cx + r * 0.22 * (1 - t), cy + r * 0.85 * t);
+    ctx.stroke();
+  });
+}
+
+function drawLanternIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 1.0); ctx.lineTo(cx, cy - r * 0.8);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy - r * 0.72, r * 0.08, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.3, cy - r * 0.62); ctx.lineTo(cx + r * 0.3, cy - r * 0.62);
+  ctx.lineTo(cx + r * 0.42, cy + r * 0.5); ctx.lineTo(cx - r * 0.42, cy + r * 0.5);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.42, cy - r * 0.15); ctx.lineTo(cx + r * 0.42, cy - r * 0.15);
+  ctx.moveTo(cx - r * 0.42, cy + r * 0.15); ctx.lineTo(cx + r * 0.42, cy + r * 0.15);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.05);
+  ctx.quadraticCurveTo(cx + r * 0.12, cy + r * 0.15, cx, cy + r * 0.3);
+  ctx.quadraticCurveTo(cx - r * 0.12, cy + r * 0.15, cx, cy - r * 0.05);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.5, cy + r * 0.5); ctx.lineTo(cx + r * 0.5, cy + r * 0.5);
+  ctx.lineTo(cx + r * 0.3, cy + r * 0.68); ctx.lineTo(cx - r * 0.3, cy + r * 0.68);
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawCandleIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.rect(cx - r * 0.22, cy - r * 0.2, r * 0.44, r * 1.05);
+  ctx.stroke();
+  ([0.15, 0.4, 0.65] as const).forEach((t) => {
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.22, cy - r * 0.2 + r * 1.05 * t);
+    ctx.quadraticCurveTo(cx, cy - r * 0.2 + r * 1.05 * t + r * 0.05, cx + r * 0.22, cy - r * 0.2 + r * 1.05 * t);
+    ctx.stroke();
+  });
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.2); ctx.lineTo(cx, cy - r * 0.4);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.4);
+  ctx.quadraticCurveTo(cx + r * 0.16, cy - r * 0.62, cx, cy - r * 0.85);
+  ctx.quadraticCurveTo(cx - r * 0.16, cy - r * 0.62, cx, cy - r * 0.4);
+  ctx.stroke();
+}
+
+function drawBookshelfPattern(ctx: CanvasRenderingContext2D, margin: number, innerW: number, innerH: number, density: number) {
+  const shelves = Math.max(3, Math.min(5, Math.floor(density / 3)));
+  const shelfH = innerH / shelves;
+  for (let s = 0; s < shelves; s++) {
+    const y0 = margin + s * shelfH;
+    ctx.beginPath();
+    ctx.moveTo(margin, y0 + shelfH * 0.88);
+    ctx.lineTo(margin + innerW, y0 + shelfH * 0.88);
+    ctx.stroke();
+    let x = margin + 6;
+    let bookIdx = 0;
+    while (x < margin + innerW - 6) {
+      const bw = 14 + (bookIdx * 7) % 22;
+      const bh = shelfH * 0.7 + ((bookIdx * 13) % 10 - 5);
+      ctx.strokeRect(x, y0 + shelfH * 0.86 - bh, bw, bh);
+      ctx.beginPath();
+      ctx.moveTo(x + bw * 0.5, y0 + shelfH * 0.86 - bh + 4);
+      ctx.lineTo(x + bw * 0.5, y0 + shelfH * 0.86 - 6);
+      ctx.stroke();
+      x += bw + 4;
+      bookIdx++;
+    }
+  }
+}
+
+// ── Stained Glass & Architecture full-canvas patterns ────────────────────
+
+function drawMoroccanTilesPattern(ctx: CanvasRenderingContext2D, margin: number, innerW: number, innerH: number, density: number) {
+  const cols = Math.max(4, Math.min(7, Math.floor(density / 2.5)));
+  const cellW = innerW / cols;
+  const rows = Math.ceil(innerH / cellW);
+  for (let r = 0; r < rows; r++) {
+    const offset = r % 2 === 0 ? 0 : cellW / 2;
+    for (let c = -1; c <= cols; c++) {
+      const x = margin + c * cellW + cellW / 2 + offset;
+      const y = margin + r * cellW + cellW / 2;
+      if (x < margin - 1 || x > margin + innerW + 1) continue;
+      if (y > margin + innerH + cellW / 2) continue;
+      drawStar(ctx, x, y, cellW * 0.42, cellW * 0.18, 8);
+    }
+  }
+}
+
+function drawCozyWindowPattern(ctx: CanvasRenderingContext2D, margin: number, innerW: number, innerH: number) {
+  const wx = margin + innerW * 0.1, wy = margin + innerH * 0.08;
+  const ww = innerW * 0.8, wh = innerH * 0.75;
+  ctx.strokeRect(wx - 10, wy - 10, ww + 20, wh + 20);
+  ctx.strokeRect(wx, wy, ww, wh);
+  ([1 / 3, 2 / 3] as const).forEach((t) => {
+    ctx.beginPath(); ctx.moveTo(wx + ww * t, wy); ctx.lineTo(wx + ww * t, wy + wh); ctx.stroke();
+  });
+  ctx.beginPath(); ctx.moveTo(wx, wy + wh * 0.62); ctx.lineTo(wx + ww, wy + wh * 0.62); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(wx, wy + wh);
+  ctx.lineTo(wx + ww * 0.18, wy + wh * 0.72);
+  ctx.lineTo(wx + ww * 0.34, wy + wh * 0.88);
+  ctx.lineTo(wx + ww * 0.52, wy + wh * 0.68);
+  ctx.lineTo(wx + ww * 0.7, wy + wh * 0.86);
+  ctx.lineTo(wx + ww * 0.86, wy + wh * 0.74);
+  ctx.lineTo(wx + ww, wy + wh);
+  ctx.stroke();
+  drawCrescentMoon(ctx, wx + ww * 0.76, wy + wh * 0.26, ww * 0.09);
+  ([[0.15, 0.15], [0.28, 0.35], [0.45, 0.12]] as const).forEach(([px, py]) => drawSparkleStar(ctx, wx + ww * px, wy + wh * py, 6));
+}
+
+// ── Abstract & Art Deco full-canvas patterns ──────────────────────────────
+
+function drawArtDecoFansPattern(ctx: CanvasRenderingContext2D, margin: number, innerW: number, innerH: number, cx: number, cy: number, density: number) {
+  const fanR = Math.min(innerW, innerH) * 0.42;
+  const corners: Array<readonly [number, number, number, number]> = [
+    [margin, margin, 0, Math.PI / 2],
+    [margin + innerW, margin, Math.PI / 2, Math.PI],
+    [margin, margin + innerH, -Math.PI / 2, 0],
+    [margin + innerW, margin + innerH, Math.PI, Math.PI * 1.5],
+  ];
+  const rings = Math.max(4, Math.min(8, Math.floor(density / 2)));
+  corners.forEach(([fx, fy, a0, a1]) => {
+    for (let i = 1; i <= rings; i++) {
+      const r = (fanR / rings) * i;
+      ctx.beginPath();
+      ctx.arc(fx, fy, r, a0, a1);
+      ctx.stroke();
+    }
+    const spokes = 6;
+    for (let s = 0; s <= spokes; s++) {
+      const a = a0 + (a1 - a0) * (s / spokes);
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      ctx.lineTo(fx + Math.cos(a) * fanR, fy + Math.sin(a) * fanR);
+      ctx.stroke();
+    }
+  });
+  const dr = Math.min(innerW, innerH) * 0.1;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - dr); ctx.lineTo(cx + dr, cy); ctx.lineTo(cx, cy + dr); ctx.lineTo(cx - dr, cy);
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawOpticalSwirlsPattern(ctx: CanvasRenderingContext2D, cx: number, cy: number, innerW: number, innerH: number, density: number) {
+  const maxR = Math.min(innerW, innerH) * 0.48;
+  const rings = Math.max(8, Math.min(18, density));
+  for (let i = 1; i <= rings; i++) {
+    const baseR = (maxR / rings) * i;
+    const amp = maxR * 0.02;
+    const waves = 8 + (i % 3) * 2;
+    ctx.beginPath();
+    for (let a = 0; a <= Math.PI * 2 + 0.05; a += 0.05) {
+      const rr = baseR + Math.sin(a * waves + i) * amp;
+      const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+      if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+}
+
+// ── Landscapes & Celestial full-canvas patterns ───────────────────────────
+
+function drawMountainSunrisePattern(ctx: CanvasRenderingContext2D, margin: number, innerW: number, innerH: number, cx: number) {
+  const sunY = margin + innerH * 0.32;
+  for (let i = 0; i < 16; i++) {
+    const a = Math.PI + (i / 15) * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx, sunY);
+    ctx.lineTo(cx + Math.cos(a) * innerW * 0.55, sunY + Math.sin(a) * innerW * 0.55);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.arc(cx, sunY, innerH * 0.1, 0, Math.PI * 2);
+  ctx.stroke();
+  ([0.85, 0.72, 0.6] as const).forEach((baseT, ridgeI) => {
+    const y0 = margin + innerH * baseT;
+    ctx.beginPath();
+    ctx.moveTo(margin, margin + innerH);
+    const peaks = 5 - ridgeI;
+    for (let i = 0; i <= peaks; i++) {
+      const x = margin + (innerW / peaks) * i;
+      const y = y0 - (i % 2 === 0 ? innerH * 0.08 : 0);
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(margin + innerW, margin + innerH);
+    ctx.stroke();
+  });
+  ([0.2, 0.15] as const).forEach((t, i) => {
+    const y = margin + innerH * (0.15 + i * 0.1);
+    ctx.beginPath();
+    for (let x = margin + innerW * 0.1; x <= margin + innerW * 0.45; x += 8) {
+      const yy = y + Math.sin(x * 0.1) * 4;
+      if (x === margin + innerW * 0.1) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+    }
+    ctx.stroke();
+  });
+}
+
+function drawOceanWavesPattern(ctx: CanvasRenderingContext2D, margin: number, innerW: number, innerH: number) {
+  drawCrescentMoon(ctx, margin + innerW * 0.82, margin + innerH * 0.18, innerH * 0.08);
+  const rows = 3;
+  for (let row = 0; row < rows; row++) {
+    const y0 = margin + innerH * (0.45 + row * 0.18);
+    const crests = 4;
+    ctx.beginPath();
+    for (let i = 0; i <= crests; i++) {
+      const x = margin + (innerW / crests) * i;
+      const y = y0 + (i % 2 === 0 ? 0 : -innerH * 0.06);
+      if (i === 0) ctx.moveTo(x, y); else ctx.quadraticCurveTo(x - innerW / crests / 2, y - innerH * 0.05, x, y);
+    }
+    ctx.stroke();
+    for (let i = 0; i < crests; i += 2) {
+      const x = margin + (innerW / crests) * (i + 0.5);
+      ctx.beginPath();
+      ctx.arc(x, y0 - innerH * 0.09, innerH * 0.025, Math.PI * 0.2, Math.PI * 1.3);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawCelestialSkyPattern(ctx: CanvasRenderingContext2D, margin: number, innerW: number, innerH: number, cx: number) {
+  drawCrescentMoon(ctx, cx, margin + innerH * 0.32, innerH * 0.14);
+  const stars: Array<readonly [number, number]> = [[0.2, 0.15], [0.75, 0.2], [0.15, 0.45], [0.82, 0.5], [0.35, 0.65], [0.65, 0.7], [0.5, 0.85]];
+  stars.forEach(([px, py]) => drawSparkleStar(ctx, margin + innerW * px, margin + innerH * py, 8));
+  ctx.beginPath();
+  ctx.moveTo(margin + innerW * 0.2, margin + innerH * 0.15);
+  ctx.lineTo(margin + innerW * 0.15, margin + innerH * 0.45);
+  ctx.lineTo(margin + innerW * 0.35, margin + innerH * 0.65);
+  ctx.stroke();
+  for (let i = 0; i < 10; i++) {
+    const a = Math.PI * 1.1 + (i / 9) * Math.PI * 0.6;
+    ctx.beginPath();
+    ctx.moveTo(cx, margin + innerH * 0.32);
+    ctx.lineTo(cx + Math.cos(a) * innerH * 0.22, margin + innerH * 0.32 + Math.sin(a) * innerH * 0.22);
+    ctx.stroke();
+  }
+}
+
+function drawGalaxySwirlPattern(ctx: CanvasRenderingContext2D, cx: number, cy: number, innerW: number, innerH: number) {
+  const maxR = Math.min(innerW, innerH) * 0.42;
+  ([0, Math.PI] as const).forEach((offset) => {
+    ctx.beginPath();
+    let a = 0.3;
+    let first = true;
+    while (a < Math.PI * 2.6) {
+      const rr = maxR * 0.08 + maxR * 0.85 * (a / (Math.PI * 2.6));
+      const x = cx + Math.cos(a + offset) * rr, y = cy + Math.sin(a + offset) * rr;
+      if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
+      a += 0.15;
+    }
+    ctx.stroke();
+  });
+  ctx.beginPath();
+  ctx.arc(cx, cy, maxR * 0.1, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx + maxR * 0.65, cy - maxR * 0.55, maxR * 0.14, maxR * 0.14, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx + maxR * 0.65, cy - maxR * 0.55, maxR * 0.24, maxR * 0.07, 0.5, 0, Math.PI * 2);
+  ctx.stroke();
+  ([[0.15, 0.75], [0.85, 0.2], [0.75, 0.85], [0.1, 0.25]] as const).forEach(([px, py]) => {
+    ctx.beginPath();
+    ctx.arc(cx - maxR + px * maxR * 2, cy - maxR + py * maxR * 2, maxR * 0.02, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
 // ── European Flags ──────────────────────────────────────────────────────
 // Outline-only, same reasoning as the object clip-art above: this is a
 // coloring page, so a flag is just its border plus the dividing lines that
@@ -1073,6 +1583,38 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
     );
   } else if (pid === "boba_smoothies") {
     drawFoodIconGrid(ctx, [drawMasonJarIcon, drawFruitWedgeIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "tropical_palms") {
+    drawFoodIconGrid(ctx, [drawMonsteraLeafIcon, drawPalmFrondIcon, drawFernFrondIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "rose_lattice") {
+    drawFoodIconGrid(ctx, [drawRoseIcon, drawVineLeafIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "succulents") {
+    drawFoodIconGrid(ctx, [drawSucculentRosetteIcon, drawCactusPotIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "lotus_pond") {
+    drawFoodIconGrid(ctx, [drawLotusFlowerIcon, drawLilyPadIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "crystal_geode") {
+    drawFoodIconGrid(ctx, [drawCrystalClusterIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "vintage_clocks") {
+    drawFoodIconGrid(ctx, [drawVintageClockIcon, drawHourglassIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "lanterns_candles") {
+    drawFoodIconGrid(ctx, [drawLanternIcon, drawCandleIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "bookshelf_nook") {
+    drawBookshelfPattern(ctx, margin, innerW, innerH, density);
+  } else if (pid === "moroccan_tiles") {
+    drawMoroccanTilesPattern(ctx, margin, innerW, innerH, density);
+  } else if (pid === "cozy_window") {
+    drawCozyWindowPattern(ctx, margin, innerW, innerH);
+  } else if (pid === "art_deco_fans") {
+    drawArtDecoFansPattern(ctx, margin, innerW, innerH, cx, cy, density);
+  } else if (pid === "optical_swirls") {
+    drawOpticalSwirlsPattern(ctx, cx, cy, innerW, innerH, density);
+  } else if (pid === "mountain_sunrise") {
+    drawMountainSunrisePattern(ctx, margin, innerW, innerH, cx);
+  } else if (pid === "ocean_waves") {
+    drawOceanWavesPattern(ctx, margin, innerW, innerH);
+  } else if (pid === "celestial_sky") {
+    drawCelestialSkyPattern(ctx, margin, innerW, innerH, cx);
+  } else if (pid === "galaxy_swirl") {
+    drawGalaxySwirlPattern(ctx, cx, cy, innerW, innerH);
   } else if (pid.includes("mandala") || pid.includes("cosmic") || pid.includes("kaleidoscope") || pid.includes("sacred")) {
     // Draw radial Mandala
     const rings = density;

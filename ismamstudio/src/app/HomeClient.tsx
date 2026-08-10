@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import Link from "next/link";
-import { getYouTubeEmbedUrl } from "@/lib/videoConfig";
 import {
   Palette,
   Grid3x3,
@@ -14,11 +12,9 @@ import {
   Download,
   Shield,
   Layers,
-  X,
   Key,
   Calculator,
   Shuffle,
-  Play,
   Hash,
   QrCode,
   Scissors,
@@ -42,12 +38,6 @@ export default function HomeClient() {
   const [activeVideoTab, setActiveVideoTab] = useState<"interior" | "cover">("interior");
   const [leadEmail, setLeadEmail] = useState("");
   const [leadSubmitted, setLeadSubmitted] = useState(false);
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-slate-700 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden relative">
@@ -86,13 +76,6 @@ export default function HomeClient() {
                 Start Creating Now
                 <ArrowRight className="w-5 h-5 text-white" />
               </Link>
-              <button
-                onClick={() => setIsVideoModalOpen(true)}
-                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 font-black text-lg shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
-              >
-                <Play className="w-5 h-5 text-orange-500 fill-orange-500" />
-                Watch Official Video Demo
-              </button>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-200/60 text-xs font-bold text-slate-500">
@@ -774,44 +757,6 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
-
-      {/* 🎬 YouTube Official Video Modal (Portaled to document.body) */}
-      {mounted && isVideoModalOpen && createPortal(
-        <div
-          className="fixed inset-0 z-[999999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
-          onClick={() => setIsVideoModalOpen(false)}
-        >
-          <div
-            className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
-              <div className="flex items-center gap-2">
-                <Play className="w-5 h-5 text-orange-500 fill-orange-500" />
-                <h3 className="text-base font-black text-white">KDPage Full Walkthrough &amp; Demo</h3>
-              </div>
-              <button
-                onClick={() => setIsVideoModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition cursor-pointer"
-                aria-label="Close video modal"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="aspect-video w-full bg-black">
-              <iframe
-                src={getYouTubeEmbedUrl(undefined, true)}
-                title="KDPage Full Walkthrough & Demo"
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-
     </div>
   );
 }

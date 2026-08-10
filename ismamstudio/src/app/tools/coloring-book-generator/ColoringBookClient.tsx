@@ -25,6 +25,23 @@ import {
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import { PRESETS, PresetItem, drawColoringPattern } from "@/lib/coloringBookPatterns";
+import { checkPremiumStatus } from "@/app/actions";
+
+// Matches drawWatermark's look in pdfExportService.ts (used by every other
+// tool's PDF export) so free-tier output is consistently branded across the
+// whole app, not just this one tool's own style.
+function drawCanvasWatermark(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  ctx.save();
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = "#8C8C8C";
+  ctx.font = `bold ${Math.floor(w * 0.09)}px sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.translate(w / 2, h / 2);
+  ctx.rotate(-Math.PI / 4);
+  ctx.fillText("SAMPLE - KDPAGE", 0, 0);
+  ctx.restore();
+}
 
 // Trim sizes
 const TRIM_SIZES = [
@@ -49,6 +66,13 @@ export default function ColoringBookClient() {
   // Export States
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const [isPremium, setIsPremium] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkPremiumStatus()
+      .then((res: any) => setIsPremium(!!res.isPremium))
+      .catch(() => setIsPremium(false));
+  }, []);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -88,6 +112,7 @@ export default function ColoringBookClient() {
 
     // Draw high res copy
     ctx.drawImage(canvas, 0, 0, trimSize.pxW, trimSize.pxH);
+    if (!isPremium) drawCanvasWatermark(ctx, trimSize.pxW, trimSize.pxH);
 
     const link = document.createElement("a");
     link.download = `KDPage_${activePreset.id}_300DPI.png`;
@@ -101,7 +126,10 @@ export default function ColoringBookClient() {
     setExportProgress(10);
 
     try {
-      const { jsPDF } = await import("jspdf");
+      const [{ jsPDF }, { drawWatermark }] = await Promise.all([
+        import("jspdf"),
+        import("@/app/utils/pdfExportService"),
+      ]);
       const doc = new jsPDF({
         unit: "in",
         format: [trimSize.w, trimSize.h],
@@ -141,6 +169,8 @@ export default function ColoringBookClient() {
         doc.setFontSize(9);
         doc.setTextColor(100);
         doc.text(`Page ${p + 1}`, trimSize.w / 2, trimSize.h - 0.3, { align: "center" });
+
+        if (!isPremium) drawWatermark(doc, trimSize.w, trimSize.h);
 
         setExportProgress(Math.floor(((p + 1) / totalP) * 100));
       }
@@ -413,6 +443,14 @@ export default function ColoringBookClient() {
 
             {/* Export Actions */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
+              {isPremium === false && (
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300 rounded-xl text-[11px] font-semibold leading-relaxed">
+                  Free accounts export with a light "SAMPLE - KDPAGE" watermark.{" "}
+                  <Link href="/pricing" target="_blank" className="underline font-bold hover:text-amber-900 dark:hover:text-amber-200">
+                    Upgrade to remove it →
+                  </Link>
+                </div>
+              )}
               <button
                 onClick={handleDownloadPng}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-95 cursor-pointer"

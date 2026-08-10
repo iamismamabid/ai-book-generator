@@ -8,6 +8,7 @@ import {
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import GenericStudioTour from "@/components/GenericStudioTour";
 import { generateKakuro, KakuroPuzzle } from "@/lib/kakuro";
 import { checkPremiumStatus } from "@/app/actions";
 import { generateUniquePuzzle } from "@/lib/puzzleDedup";
@@ -184,13 +185,16 @@ export default function KakuroGenerator() {
             </div>
           </div>
 
-          <button
-            onClick={() => setIsExportModalOpen(true)}
-            className="px-6 py-3.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white font-black rounded-2xl text-xs transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.97] flex items-center justify-center gap-2 border border-indigo-500/20"
-            style={{ boxShadow: "var(--shadow-glow-primary)" }}
-          >
-            <Download className="w-4 h-4" /> Download PDF Interior
-          </button>
+          <div className="flex items-center gap-3">
+            <GenericStudioTour tourKey="kakuro" />
+            <button
+              onClick={() => setIsExportModalOpen(true)}
+              className="px-6 py-3.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white font-black rounded-2xl text-xs transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.97] flex items-center justify-center gap-2 border border-indigo-500/20"
+              style={{ boxShadow: "var(--shadow-glow-primary)" }}
+            >
+              <Download className="w-4 h-4" /> Download PDF Interior
+            </button>
+          </div>
         </div>
 
         {/* Dashboard Workspace Grid */}

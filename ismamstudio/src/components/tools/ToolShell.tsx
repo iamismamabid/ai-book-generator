@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, Sparkles, ChevronRight, HelpCircle } from "lucide-react";
 import { ReactNode } from "react";
+import GenericStudioTour, { PuzzleTourType } from "@/components/GenericStudioTour";
 
 interface Faq {
   q: string;
@@ -21,6 +22,8 @@ interface ToolShellProps {
   appCategory?: string;
   /** Optional FAQ list — rendered visibly at the bottom AND emitted as FAQPage JSON-LD */
   faqs?: Faq[];
+  /** Optional puzzle studio onboarding tour key */
+  tourKey?: PuzzleTourType;
 }
 
 const SITE_URL = "https://www.kdpage.com";
@@ -41,6 +44,7 @@ export default function ToolShell({
   maxWidth = "max-w-6xl",
   appCategory = "UtilitiesApplication",
   faqs,
+  tourKey,
 }: ToolShellProps) {
   const pathname = usePathname() || "";
   const pageUrl = `${SITE_URL}${pathname}`;
@@ -130,12 +134,15 @@ export default function ToolShell({
             </h1>
             <p className="text-slate-400 text-sm font-semibold mt-1 max-w-2xl">{subtitle}</p>
           </div>
-          <Link
-            href="/tools"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-indigo-400 transition-colors bg-slate-900/60 border border-slate-800 px-4 py-2 rounded-xl whitespace-nowrap"
-          >
-            <ArrowLeft className="w-4 h-4" /> All Free Tools
-          </Link>
+          <div className="flex items-center gap-2">
+            {tourKey && <GenericStudioTour tourKey={tourKey} />}
+            <Link
+              href="/tools"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-indigo-400 transition-colors bg-slate-900/60 border border-slate-800 px-4 py-2 rounded-xl whitespace-nowrap"
+            >
+              <ArrowLeft className="w-4 h-4" /> All Free Tools
+            </Link>
+          </div>
         </div>
 
         {children}

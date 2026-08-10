@@ -7,6 +7,7 @@ import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { generatePuzzleGrid, WordSearchShape } from "../../utils/puzzleEngine";
 import { WORD_SEARCH_THEMES, WORD_SEARCH_THEME_CATEGORIES } from "@/lib/wordSearchThemes";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
+import GenericStudioTour from "@/components/GenericStudioTour";
 import { useRouter } from "next/navigation";
 import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
 
@@ -568,12 +569,15 @@ export default function WordSearchStudio() {
                         </h1>
                     </div>
                 </div>
-                <div className="flex bg-slate-200 dark:bg-slate-900 p-1 rounded-full border border-slate-300 dark:border-slate-800">
-                    <button onClick={() => setActiveTab('interior')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'interior' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><Grid3x3 className="w-4 h-4"/> Interior</button>
-                    <Link href="/studio?tab=cover" className="px-4 py-2 rounded-full font-bold text-xs md:text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1.5">
-                        <Palette className="w-4 h-4"/> Cover Studio
-                    </Link>
-                    <button onClick={() => setActiveTab('guide')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'guide' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><BookOpen className="w-4 h-4"/> KDP Guide</button>
+                <div className="flex items-center gap-2">
+                    <GenericStudioTour tourKey="wordSearch" />
+                    <div className="flex bg-slate-200 dark:bg-slate-900 p-1 rounded-full border border-slate-300 dark:border-slate-800">
+                        <button onClick={() => setActiveTab('interior')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'interior' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><Grid3x3 className="w-4 h-4"/> Interior</button>
+                        <Link href="/studio?tab=cover" className="px-4 py-2 rounded-full font-bold text-xs md:text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1.5">
+                            <Palette className="w-4 h-4"/> Cover Studio
+                        </Link>
+                        <button onClick={() => setActiveTab('guide')} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all flex items-center gap-1.5 ${activeTab === 'guide' ? 'bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}><BookOpen className="w-4 h-4"/> KDP Guide</button>
+                    </div>
                 </div>
             </header>
 

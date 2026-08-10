@@ -8,6 +8,7 @@ import {
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import GenericStudioTour from "@/components/GenericStudioTour";
 import { checkPremiumStatus } from "@/app/actions";
 import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
 
@@ -449,8 +450,11 @@ export default function CrosswordGenerator() {
           >
             <ArrowLeft className="w-4 h-4"/> Back to Home
           </button>
-          <div className="flex items-center gap-2 text-indigo-400 font-black text-xs uppercase bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
-            <Sliders className="w-3.5 h-3.5"/> Crossword
+          <div className="flex items-center gap-2">
+            <GenericStudioTour tourKey="crossword" />
+            <div className="flex items-center gap-2 text-indigo-400 font-black text-xs uppercase bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
+              <Sliders className="w-3.5 h-3.5"/> Crossword
+            </div>
           </div>
         </div>
 

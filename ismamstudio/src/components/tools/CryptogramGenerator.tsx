@@ -8,6 +8,7 @@ import {
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import GenericStudioTour from "@/components/GenericStudioTour";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -521,8 +522,11 @@ export default function CryptogramGenerator() {
           >
             <ArrowLeft className="w-4 h-4"/> Back to Home
           </button>
-          <div className="flex items-center gap-2 text-amber-500 font-black text-xs uppercase bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
-            <Sliders className="w-3.5 h-3.5"/> Cipher
+          <div className="flex items-center gap-2">
+            <GenericStudioTour tourKey="cryptogram" />
+            <div className="flex items-center gap-2 text-amber-500 font-black text-xs uppercase bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+              <Sliders className="w-3.5 h-3.5"/> Cipher
+            </div>
           </div>
         </div>
 

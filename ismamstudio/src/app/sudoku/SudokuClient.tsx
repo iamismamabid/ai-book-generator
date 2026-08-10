@@ -8,6 +8,7 @@ import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock, Download } from "
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import GenericStudioTour from "@/components/GenericStudioTour";
 import { checkPremiumStatus, getNotebookEntryData } from "../actions";
 
 // Live preview — puzzle grid
@@ -240,19 +241,22 @@ export default function SudokuClient() {
       <div className="max-w-5xl mx-auto">
 
         {/* Page header */}
-        <div className="mb-10">
-          <button
-            onClick={() => router.push("/")}
-            className="text-slate-400 hover:text-amber-500 text-sm mb-4 transition-colors"
-          >
-            ← Back to Home
-          </button>
-          <h1 className="text-4xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent mb-2">
-            Sudoku Book Studio
-          </h1>
-          <p className="text-slate-400 text-sm font-semibold">
-            Compile print-ready Sudoku puzzle collections for Amazon KDP. Customize difficulty levels and export standard trims.
-          </p>
+        <div className="mb-10 flex items-start justify-between">
+          <div>
+            <button
+              onClick={() => router.push("/")}
+              className="text-slate-400 hover:text-amber-500 text-sm mb-4 transition-colors"
+            >
+              ← Back to Home
+            </button>
+            <h1 className="text-4xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent mb-2">
+              Sudoku Book Studio
+            </h1>
+            <p className="text-slate-400 text-sm font-semibold">
+              Compile print-ready Sudoku puzzle collections for Amazon KDP. Customize difficulty levels and export standard trims.
+            </p>
+          </div>
+          <GenericStudioTour tourKey="sudoku" />
         </div>
 
         {/* Tabs */}

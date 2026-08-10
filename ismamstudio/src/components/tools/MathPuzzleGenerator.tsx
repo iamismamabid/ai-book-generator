@@ -8,6 +8,7 @@ import {
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import GenericStudioTour from "@/components/GenericStudioTour";
 import { generateUniquePuzzle } from "@/lib/puzzleDedup";
 import { checkPremiumStatus } from "@/app/actions";
 
@@ -735,8 +736,11 @@ export default function MathPuzzleGenerator() {
           >
             <ArrowLeft className="w-4 h-4"/> Back to Home
           </button>
-          <div className="flex items-center gap-2 text-amber-500 font-black text-xs uppercase bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
-            <Sliders className="w-3.5 h-3.5"/> Math
+          <div className="flex items-center gap-2">
+            <GenericStudioTour tourKey="mathPuzzle" />
+            <div className="flex items-center gap-2 text-amber-500 font-black text-xs uppercase bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+              <Sliders className="w-3.5 h-3.5"/> Math
+            </div>
           </div>
         </div>
 

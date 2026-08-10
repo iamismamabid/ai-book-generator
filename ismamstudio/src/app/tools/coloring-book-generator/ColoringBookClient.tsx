@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
+import GenericStudioTour from "@/components/GenericStudioTour";
 import { PRESETS, PresetItem, drawColoringPattern } from "@/lib/coloringBookPatterns";
 import { checkPremiumStatus } from "@/app/actions";
 
@@ -694,6 +695,7 @@ export default function ColoringBookClient() {
           </div>
 
           <div className="flex items-center gap-2">
+            <GenericStudioTour tourKey="coloringBook" />
             <Link
               href="/tools"
               className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 transition"
@@ -737,88 +739,91 @@ export default function ColoringBookClient() {
           {/* ⚙️ Left Control Panel */}
           <div className="lg:col-span-5 space-y-6">
             
-            {/* Custom Upload Section */}
-            <div className="bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800/60 rounded-2xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider flex items-center gap-1.5">
-                  <Upload className="w-4 h-4" /> Custom Image → Line Art Converter
+            {/* Custom Upload & Template Selection */}
+            <div data-tour="select-template" className="space-y-6">
+              {/* Custom Upload Section */}
+              <div className="bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800/60 rounded-2xl p-5 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider flex items-center gap-1.5">
+                    <Upload className="w-4 h-4" /> Custom Image → Line Art Converter
+                  </label>
+                  {customImageName && (
+                    <button onClick={clearCustomUpload} className="text-[10px] text-red-500 hover:underline font-bold">
+                      Reset to Presets
+                    </button>
+                  )}
+                </div>
+
+                <label className="block w-full cursor-pointer bg-indigo-50/50 dark:bg-indigo-950/20 border-2 border-dashed border-indigo-300 dark:border-indigo-700/60 hover:border-indigo-500 rounded-xl p-4 text-center transition">
+                  <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                  <Upload className="w-6 h-6 text-indigo-500 mx-auto mb-1" />
+                  <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 block">
+                    {customImageName ? `Loaded: ${customImageName}` : "Click to upload PNG/JPG photo"}
+                  </span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                    Auto Sobel filter converts any photo into clean 300 DPI coloring line art!
+                  </span>
                 </label>
-                {customImageName && (
-                  <button onClick={clearCustomUpload} className="text-[10px] text-red-500 hover:underline font-bold">
-                    Reset to Presets
-                  </button>
-                )}
               </div>
 
-              <label className="block w-full cursor-pointer bg-indigo-50/50 dark:bg-indigo-950/20 border-2 border-dashed border-indigo-300 dark:border-indigo-700/60 hover:border-indigo-500 rounded-xl p-4 text-center transition">
-                <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                <Upload className="w-6 h-6 text-indigo-500 mx-auto mb-1" />
-                <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 block">
-                  {customImageName ? `Loaded: ${customImageName}` : "Click to upload PNG/JPG photo"}
-                </span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5">
-                  Auto Sobel filter converts any photo into clean 300 DPI coloring line art!
-                </span>
-              </label>
-            </div>
+              {/* Category Filter */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                    <Grid className="w-4 h-4 text-indigo-500" /> Category Filter
+                  </label>
+                  <span className="text-xs font-bold text-slate-500">{filteredPresets.length} Presets</span>
+                </div>
 
-            {/* Category Filter */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
+                <div className="flex flex-wrap gap-1.5">
+                  {["All", "Botanical & Floral", "Mandalas & Sacred Geometry", "Stained Glass & Architecture", "Landscapes & Celestial", "Food, Drinks & Kitchen", "Cozy Objects & Still Life", "Abstract & Art Deco", "Single Object Clip-Art", "European Flags", "North American Flags", "Concept Cars"].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        selectedCategory === cat
+                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Presets Grid */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
                 <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
-                  <Grid className="w-4 h-4 text-indigo-500" /> Category Filter
+                  <Sparkles className="w-4 h-4 text-amber-500" /> Select Design Template
                 </label>
-                <span className="text-xs font-bold text-slate-500">{filteredPresets.length} Presets</span>
-              </div>
 
-              <div className="flex flex-wrap gap-1.5">
-                {["All", "Botanical & Floral", "Mandalas & Sacred Geometry", "Stained Glass & Architecture", "Landscapes & Celestial", "Food, Drinks & Kitchen", "Cozy Objects & Still Life", "Abstract & Art Deco", "Single Object Clip-Art", "European Flags", "North American Flags", "Concept Cars"].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      selectedCategory === cat
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Presets Grid */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
-              <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-500" /> Select Design Template
-              </label>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[420px] overflow-y-auto pr-1">
-                {filteredPresets.map((preset) => (
-                  <button
-                    key={preset.id}
-                    onClick={() => {
-                      setCustomLineArt(null);
-                      setCustomImageName(null);
-                      setActivePreset(preset);
-                      setComplexity(preset.defaultComplexity);
-                    }}
-                    className={`p-2 rounded-xl border text-left transition-all ${
-                      activePreset.id === preset.id && !customLineArt
-                        ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 ring-2 ring-indigo-500/30 shadow-sm"
-                        : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
-                    }`}
-                  >
-                    <PresetThumbnail preset={preset} />
-                    <div className="text-[10.5px] font-black mt-1.5 leading-tight line-clamp-2">{preset.name}</div>
-                  </button>
-                ))}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[420px] overflow-y-auto pr-1">
+                  {filteredPresets.map((preset) => (
+                    <button
+                      key={preset.id}
+                      onClick={() => {
+                        setCustomLineArt(null);
+                        setCustomImageName(null);
+                        setActivePreset(preset);
+                        setComplexity(preset.defaultComplexity);
+                      }}
+                      className={`p-2 rounded-xl border text-left transition-all ${
+                        activePreset.id === preset.id && !customLineArt
+                          ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 ring-2 ring-indigo-500/30 shadow-sm"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
+                      }`}
+                    >
+                      <PresetThumbnail preset={preset} />
+                      <div className="text-[10.5px] font-black mt-1.5 leading-tight line-clamp-2">{preset.name}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Customization Settings */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-5">
+            <div data-tour="customization-controls" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-5">
               <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
                 <SlidersHorizontal className="w-4 h-4 text-emerald-500" /> Customization Controls
               </h3>
@@ -941,7 +946,7 @@ export default function ColoringBookClient() {
             </div>
 
             {/* Export Actions */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
+            <div data-tour="export-actions" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
               {isPremium === false && (
                 <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300 rounded-xl text-[11px] font-semibold leading-relaxed">
                   Free accounts export with a light "SAMPLE - KDPAGE" watermark.{" "}
@@ -994,7 +999,7 @@ export default function ColoringBookClient() {
           </div>
 
           {/* 🖼️ Right Canvas Live Preview Area */}
-          <div className="lg:col-span-7 bg-slate-200 dark:bg-slate-950 p-6 sm:p-10 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[650px]">
+          <div data-tour="interactive-coloring" className="lg:col-span-7 bg-slate-200 dark:bg-slate-950 p-6 sm:p-10 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[650px]">
 
             <div className="w-full max-w-[540px] flex items-center justify-between gap-2 mb-4">
               <button

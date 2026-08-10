@@ -7,6 +7,7 @@ import DownloadButton from "@/components/DownloadButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
+import GenericStudioTour from "@/components/GenericStudioTour";
 import { Lock, Download } from "lucide-react";
 import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
 
@@ -272,19 +273,22 @@ export default function MazeGeneratorPage() {
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-white p-6 md:p-12 max-w-7xl mx-auto">
-      <div className="mb-8 border-b border-slate-900 pb-6">
-        <button
-          onClick={() => router.push("/")}
-          className="text-slate-400 hover:text-amber-500 text-sm mb-4 block transition-colors"
-        >
-          ← Back to Home
-        </button>
-        <h1 className="text-4xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent mb-2">
-          Labyrinth Book Designer
-        </h1>
-        <p className="text-slate-400 text-sm font-semibold">
-          Generate print-ready shape-masked mazes (Square, Circle, Heart) perfect for Amazon KDP interiors.
-        </p>
+      <div className="mb-8 border-b border-slate-900 pb-6 flex items-start justify-between">
+        <div>
+          <button
+            onClick={() => router.push("/")}
+            className="text-slate-400 hover:text-amber-500 text-sm mb-4 block transition-colors"
+          >
+            ← Back to Home
+          </button>
+          <h1 className="text-4xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent mb-2">
+            Labyrinth Book Designer
+          </h1>
+          <p className="text-slate-400 text-sm font-semibold">
+            Generate print-ready shape-masked mazes (Square, Circle, Heart) perfect for Amazon KDP interiors.
+          </p>
+        </div>
+        <GenericStudioTour tourKey="maze" />
       </div>
 
       {/* Tab Buttons */}

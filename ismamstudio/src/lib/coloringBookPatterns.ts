@@ -5,7 +5,8 @@ export type NonLivingCategory =
   | "Landscapes & Celestial"
   | "Food, Drinks & Kitchen"
   | "Cozy Objects & Still Life"
-  | "Abstract & Art Deco";
+  | "Abstract & Art Deco"
+  | "Single Object Clip-Art";
 
 export interface PresetItem {
   id: string;
@@ -56,6 +57,20 @@ export const PRESETS: PresetItem[] = [
   // Abstract
   { id: "art_deco_fans", name: "Art Deco Fan Arches", category: "Abstract & Art Deco", description: "1920s Roaring Twenties geometric fan arches and brass line patterns", defaultComplexity: 13 },
   { id: "optical_swirls", name: "Optical Line Swirls", category: "Abstract & Art Deco", description: "Hypnotic 3D optical illusion ribbon swirls and wave tunnels", defaultComplexity: 18 },
+
+  // Single Object Clip-Art -- bold single-subject line art with a title
+  // label underneath, matching classic single-page coloring sheets
+  // (fruit/veggie flashcards, food & vehicle coloring books).
+  { id: "obj_banana", name: "Banana Clip-Art", category: "Single Object Clip-Art", description: "Single bold-outline banana with a title label", defaultComplexity: 12 },
+  { id: "obj_apple", name: "Apple Clip-Art", category: "Single Object Clip-Art", description: "Single bold-outline apple with stem and leaf", defaultComplexity: 12 },
+  { id: "obj_carrot", name: "Carrot Clip-Art", category: "Single Object Clip-Art", description: "Single bold-outline carrot with leafy top", defaultComplexity: 12 },
+  { id: "obj_tomato", name: "Tomato Clip-Art", category: "Single Object Clip-Art", description: "Single bold-outline tomato with a leafy calyx", defaultComplexity: 12 },
+  { id: "obj_broccoli", name: "Broccoli Clip-Art", category: "Single Object Clip-Art", description: "Single bold-outline broccoli floret cluster", defaultComplexity: 12 },
+  { id: "obj_strawberry", name: "Strawberry Clip-Art", category: "Single Object Clip-Art", description: "Single bold-outline strawberry with seeds and leaves", defaultComplexity: 12 },
+  { id: "obj_hamburger", name: "Hamburger Clip-Art", category: "Single Object Clip-Art", description: "Stacked bun, lettuce, patty and cheese layers", defaultComplexity: 12 },
+  { id: "obj_cupcake", name: "Cupcake Clip-Art", category: "Single Object Clip-Art", description: "Fluted wrapper, frosting swirl and cherry on top", defaultComplexity: 12 },
+  { id: "obj_teapot", name: "Teapot Clip-Art", category: "Single Object Clip-Art", description: "Round teapot with spout, handle and lid", defaultComplexity: 12 },
+  { id: "obj_hot_air_balloon", name: "Hot Air Balloon Clip-Art", category: "Single Object Clip-Art", description: "Balloon envelope, basket and connecting ropes", defaultComplexity: 12 },
 ];
 
 export const COLOR_BY_NUMBER_PALETTE = [
@@ -79,6 +94,335 @@ export interface ColoringPatternOptions {
   isMidnightMode: boolean;
   frameStyle: "ornamental" | "circle" | "minimal" | "none";
   seed: number;
+}
+
+// ── Single Object Clip-Art ─────────────────────────────────────────────────
+// Each drawer renders one bold-outline non-living subject centered at
+// (cx, cy), sized relative to `s` (roughly the icon's half-width). These are
+// plain outline coloring pages (no color-by-number numbering), matching
+// classic single-subject coloring sheets rather than the abstract/geometric
+// presets above.
+
+function drawBanana(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  // Thick curved body with blunt rounded ends (not tapered points) so it
+  // reads as a banana rather than a leaf.
+  const p0 = { x: cx + s * 0.15, y: cy - s * 1.0 };
+  const pc = { x: cx + s * 0.95, y: cy - s * 0.05 };
+  const p1 = { x: cx - s * 0.55, y: cy + s * 0.95 };
+  const w = s * 0.42;
+
+  ctx.beginPath();
+  ctx.moveTo(p0.x + w * 0.3, p0.y - w * 0.1);
+  ctx.quadraticCurveTo(pc.x + w, pc.y, p1.x + w * 0.5, p1.y + w * 0.3);
+  ctx.quadraticCurveTo(p1.x, p1.y + w * 0.9, p1.x - w * 0.5, p1.y + w * 0.3);
+  ctx.quadraticCurveTo(pc.x - w * 0.4, pc.y + w * 0.3, p0.x - w * 0.3, p0.y + w * 0.15);
+  ctx.quadraticCurveTo(p0.x, p0.y - w * 0.5, p0.x + w * 0.3, p0.y - w * 0.1);
+  ctx.stroke();
+  // stem
+  ctx.beginPath();
+  ctx.moveTo(p0.x, p0.y - w * 0.3);
+  ctx.lineTo(p0.x + s * 0.2, p0.y - s * 0.28);
+  ctx.stroke();
+  // ridge line
+  ctx.beginPath();
+  ctx.moveTo(cx + s * 0.25, cy - s * 0.5);
+  ctx.quadraticCurveTo(cx + s * 0.65, cy, cx + s * 0.05, cy + s * 0.55);
+  ctx.stroke();
+}
+
+function drawLeafCrown(ctx: CanvasRenderingContext2D, cx: number, capY: number, s: number, points: number, spread: number) {
+  for (let i = 0; i < points; i++) {
+    const t = points === 1 ? 0.5 : i / (points - 1);
+    const bx = cx - spread + t * spread * 2;
+    const outward = (t - 0.5) * 2;
+    const tipX = bx + outward * s * 0.15;
+    const tipY = capY - s * (0.55 - Math.abs(outward) * 0.15);
+    ctx.beginPath();
+    ctx.moveTo(bx - s * 0.06, capY);
+    ctx.lineTo(tipX, tipY);
+    ctx.lineTo(bx + s * 0.06, capY);
+    ctx.stroke();
+  }
+}
+
+function drawApple(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - s * 0.4);
+  ctx.bezierCurveTo(cx - s * 0.15, cy - s * 0.95, cx - s * 0.85, cy - s * 0.85, cx - s * 0.9, cy - s * 0.15);
+  ctx.bezierCurveTo(cx - s * 0.95, cy + s * 0.65, cx - s * 0.35, cy + s * 1.05, cx, cy + s * 1.0);
+  ctx.bezierCurveTo(cx + s * 0.35, cy + s * 1.05, cx + s * 0.95, cy + s * 0.65, cx + s * 0.9, cy - s * 0.15);
+  ctx.bezierCurveTo(cx + s * 0.85, cy - s * 0.85, cx + s * 0.15, cy - s * 0.95, cx, cy - s * 0.4);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - s * 0.75);
+  ctx.quadraticCurveTo(cx + s * 0.05, cy - s * 1.05, cx - s * 0.05, cy - s * 1.25);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - s * 1.05);
+  ctx.quadraticCurveTo(cx + s * 0.5, cy - s * 1.2, cx + s * 0.45, cy - s * 0.85);
+  ctx.quadraticCurveTo(cx + s * 0.15, cy - s * 0.85, cx, cy - s * 1.05);
+  ctx.stroke();
+}
+
+function drawCarrot(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const topW = s * 0.55;
+  const topY = cy - s * 0.6;
+  const tipY = cy + s * 1.1;
+  ctx.beginPath();
+  ctx.moveTo(cx - topW, topY);
+  ctx.quadraticCurveTo(cx - topW * 0.6, cy + s * 0.3, cx, tipY);
+  ctx.quadraticCurveTo(cx + topW * 0.6, cy + s * 0.3, cx + topW, topY);
+  ctx.quadraticCurveTo(cx, topY - s * 0.12, cx - topW, topY);
+  ctx.stroke();
+  for (let i = 1; i <= 3; i++) {
+    const ty = topY + ((tipY - topY) * i) / 4.2;
+    const tw = topW * (1 - i / 5) * 0.7;
+    ctx.beginPath();
+    ctx.moveTo(cx - tw, ty);
+    ctx.lineTo(cx + tw * 0.4, ty - s * 0.05);
+    ctx.stroke();
+  }
+  [-0.35, 0, 0.35].forEach((off) => {
+    ctx.beginPath();
+    const baseX = cx + off * topW * 0.6;
+    ctx.moveTo(baseX, topY - s * 0.05);
+    ctx.quadraticCurveTo(baseX + off * s * 0.3, topY - s * 0.9, baseX + off * s * 0.15, topY - s * 1.15);
+    ctx.quadraticCurveTo(baseX - off * s * 0.1, topY - s * 0.8, baseX, topY - s * 0.05);
+    ctx.stroke();
+  });
+}
+
+function drawTomato(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const bodyCy = cy + s * 0.15;
+  ctx.beginPath();
+  ctx.arc(cx, bodyCy, s * 0.85, 0, Math.PI * 2);
+  ctx.stroke();
+  drawLeafCrown(ctx, cx, bodyCy - s * 0.72, s, 5, s * 0.35);
+}
+
+function drawBroccoli(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.22, cy + s * 1.05);
+  ctx.lineTo(cx - s * 0.32, cy + s * 0.15);
+  ctx.lineTo(cx + s * 0.32, cy + s * 0.15);
+  ctx.lineTo(cx + s * 0.22, cy + s * 1.05);
+  ctx.stroke();
+  const bumps: [number, number, number][] = [
+    [-0.4, -0.35, 0.42], [0.0, -0.55, 0.48], [0.42, -0.35, 0.42],
+    [-0.62, 0.0, 0.34], [0.62, 0.0, 0.34], [-0.15, -0.05, 0.4], [0.2, -0.1, 0.4],
+  ];
+  bumps.forEach(([ox, oy, r]) => {
+    ctx.beginPath();
+    ctx.arc(cx + ox * s, cy + oy * s, r * s * 0.55, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawStrawberry(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const topY = cy - s * 0.55;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + s * 1.1);
+  ctx.bezierCurveTo(cx - s * 0.9, cy + s * 0.55, cx - s * 0.85, cy - s * 0.35, cx - s * 0.35, topY);
+  ctx.quadraticCurveTo(cx, topY - s * 0.15, cx + s * 0.35, topY);
+  ctx.bezierCurveTo(cx + s * 0.85, cy - s * 0.35, cx + s * 0.9, cy + s * 0.55, cx, cy + s * 1.1);
+  ctx.stroke();
+  [-0.1, 0.25, 0.6].forEach((ry, ri) => {
+    const count = 3 + ri;
+    for (let i = 0; i < count; i++) {
+      const t = count === 1 ? 0.5 : i / (count - 1);
+      const rowW = s * (0.55 - ri * 0.08);
+      const sx = cx - rowW + t * rowW * 2;
+      const sy = cy + ry * s;
+      ctx.beginPath();
+      ctx.ellipse(sx, sy, s * 0.045, s * 0.07, 0.3, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  });
+  drawLeafCrown(ctx, cx, topY + s * 0.05, s, 5, s * 0.32);
+}
+
+function drawHamburger(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const w = s * 1.1;
+  let y = cy - s * 1.0;
+  ctx.beginPath();
+  ctx.moveTo(cx - w, y + s * 0.35);
+  ctx.quadraticCurveTo(cx - w, y - s * 0.35, cx, y - s * 0.4);
+  ctx.quadraticCurveTo(cx + w, y - s * 0.35, cx + w, y + s * 0.35);
+  ctx.stroke();
+  [[-0.5, -0.05], [-0.15, -0.2], [0.2, -0.15], [0.5, 0]].forEach(([ox, oy]) => {
+    ctx.beginPath();
+    ctx.ellipse(cx + ox * w, y + oy * s + s * 0.1, s * 0.05, s * 0.08, 0.2, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  y += s * 0.35;
+  ctx.beginPath();
+  ctx.moveTo(cx - w, y);
+  for (let i = 0; i < 6; i++) {
+    const x1 = cx - w + ((w * 2) / 6) * (i + 0.5);
+    ctx.quadraticCurveTo(x1, y + (i % 2 === 0 ? -s * 0.18 : s * 0.18), cx - w + ((w * 2) / 6) * (i + 1), y);
+  }
+  ctx.stroke();
+  y += s * 0.22;
+  ctx.beginPath();
+  ctx.moveTo(cx - w * 0.95, y);
+  ctx.quadraticCurveTo(cx, y + s * 0.12, cx + w * 0.95, y);
+  ctx.lineTo(cx + w * 0.95, y + s * 0.28);
+  ctx.quadraticCurveTo(cx, y + s * 0.4, cx - w * 0.95, y + s * 0.28);
+  ctx.closePath();
+  ctx.stroke();
+  y += s * 0.3;
+  ctx.beginPath();
+  ctx.moveTo(cx + w * 0.6, y);
+  ctx.lineTo(cx + w * 1.05, y + s * 0.05);
+  ctx.lineTo(cx + w * 0.65, y + s * 0.25);
+  ctx.stroke();
+  y += s * 0.15;
+  ctx.beginPath();
+  ctx.moveTo(cx - w, y);
+  ctx.quadraticCurveTo(cx, y + s * 0.55, cx + w, y);
+  ctx.lineTo(cx + w, y + s * 0.02);
+  ctx.quadraticCurveTo(cx, y + s * 0.15, cx - w, y + s * 0.02);
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawCupcake(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const wrapTopY = cy + s * 0.15;
+  const wrapBotY = cy + s * 1.05;
+  const topW = s * 0.75, botW = s * 0.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - topW, wrapTopY);
+  ctx.lineTo(cx - botW, wrapBotY);
+  ctx.quadraticCurveTo(cx, wrapBotY + s * 0.08, cx + botW, wrapBotY);
+  ctx.lineTo(cx + topW, wrapTopY);
+  ctx.stroke();
+  const flutes = 5;
+  for (let i = 0; i <= flutes; i++) {
+    const t = i / flutes;
+    const xTop = cx - topW + t * topW * 2;
+    const xBot = cx - botW + t * botW * 2;
+    ctx.beginPath();
+    ctx.moveTo(xTop, wrapTopY);
+    ctx.quadraticCurveTo((xTop + xBot) / 2 + (i % 2 === 0 ? s * 0.05 : -s * 0.05), (wrapTopY + wrapBotY) / 2, xBot, wrapBotY);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(cx - topW * 0.95, wrapTopY);
+  ctx.bezierCurveTo(cx - topW * 0.7, cy - s * 0.55, cx - s * 0.25, cy - s * 0.15, cx, cy - s * 0.5);
+  ctx.bezierCurveTo(cx + s * 0.25, cy - s * 0.85, cx + topW * 0.7, cy - s * 0.6, cx + topW * 0.95, wrapTopY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - topW * 0.7, wrapTopY - s * 0.02);
+  ctx.quadraticCurveTo(cx, cy - s * 0.05, cx + topW * 0.7, wrapTopY - s * 0.02);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy - s * 0.85, s * 0.13, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - s * 0.98);
+  ctx.quadraticCurveTo(cx + s * 0.1, cy - s * 1.15, cx + s * 0.02, cy - s * 1.2);
+  ctx.stroke();
+}
+
+function drawTeapot(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + s * 0.15, s * 0.85, s * 0.65, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy - s * 0.5, s * 0.32, s * 0.1, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.12, cy - s * 0.55);
+  ctx.quadraticCurveTo(cx, cy - s * 0.85, cx + s * 0.12, cy - s * 0.55);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy - s * 0.68, s * 0.06, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx + s * 0.75, cy - s * 0.05);
+  ctx.quadraticCurveTo(cx + s * 1.25, cy - s * 0.15, cx + s * 1.3, cy - s * 0.45);
+  ctx.moveTo(cx + s * 0.65, cy + s * 0.2);
+  ctx.quadraticCurveTo(cx + s * 1.05, cy + s * 0.1, cx + s * 1.12, cy - s * 0.3);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.8, cy - s * 0.05);
+  ctx.bezierCurveTo(cx - s * 1.35, cy - s * 0.1, cx - s * 1.35, cy + s * 0.55, cx - s * 0.75, cy + s * 0.5);
+  ctx.stroke();
+}
+
+function drawHotAirBalloon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const topY = cy - s * 1.1;
+  const neckY = cy + s * 0.25;
+  const balW = s * 0.95;
+  ctx.beginPath();
+  ctx.moveTo(cx, topY);
+  ctx.bezierCurveTo(cx + balW, topY + s * 0.1, cx + balW * 0.75, cy + s * 0.05, cx + s * 0.25, neckY);
+  ctx.lineTo(cx - s * 0.25, neckY);
+  ctx.bezierCurveTo(cx - balW * 0.75, cy + s * 0.05, cx - balW, topY + s * 0.1, cx, topY);
+  ctx.stroke();
+  [-0.55, -0.28, 0, 0.28, 0.55].forEach((off) => {
+    ctx.beginPath();
+    ctx.moveTo(cx + off * balW * 0.05, topY + s * 0.02);
+    ctx.quadraticCurveTo(cx + off * balW * 1.1, cy, cx + off * s * 0.4, neckY);
+    ctx.stroke();
+  });
+  const bx = s * 0.35, byTop = cy + s * 0.55, byBot = cy + s * 0.95;
+  ctx.beginPath();
+  ctx.moveTo(cx - bx, byTop);
+  ctx.lineTo(cx - bx * 0.8, byBot);
+  ctx.lineTo(cx + bx * 0.8, byBot);
+  ctx.lineTo(cx + bx, byTop);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - bx * 0.4, byTop);
+  ctx.lineTo(cx - bx * 0.3, byBot);
+  ctx.moveTo(cx + bx * 0.4, byTop);
+  ctx.lineTo(cx + bx * 0.3, byBot);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.25, neckY);
+  ctx.lineTo(cx - bx, byTop);
+  ctx.moveTo(cx + s * 0.25, neckY);
+  ctx.lineTo(cx + bx, byTop);
+  ctx.stroke();
+}
+
+const OBJECT_DRAWERS: Record<string, (ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) => void> = {
+  obj_banana: drawBanana,
+  obj_apple: drawApple,
+  obj_carrot: drawCarrot,
+  obj_tomato: drawTomato,
+  obj_broccoli: drawBroccoli,
+  obj_strawberry: drawStrawberry,
+  obj_hamburger: drawHamburger,
+  obj_cupcake: drawCupcake,
+  obj_teapot: drawTeapot,
+  obj_hot_air_balloon: drawHotAirBalloon,
+};
+
+const OBJECT_LABELS: Record<string, string> = {
+  obj_banana: "Banana",
+  obj_apple: "Apple",
+  obj_carrot: "Carrot",
+  obj_tomato: "Tomato",
+  obj_broccoli: "Broccoli",
+  obj_strawberry: "Strawberry",
+  obj_hamburger: "Hamburger",
+  obj_cupcake: "Cupcake",
+  obj_teapot: "Teapot",
+  obj_hot_air_balloon: "Hot Air Balloon",
+};
+
+function drawObjectLabel(ctx: CanvasRenderingContext2D, text: string, cx: number, y: number, width: number, strokeColor: string, lineWidth: number) {
+  const fontSize = Math.max(24, Math.floor(width * 0.11));
+  ctx.font = `900 ${fontSize}px sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineWidth = Math.max(2, lineWidth * 0.9);
+  ctx.strokeStyle = strokeColor;
+  ctx.strokeText(text.toUpperCase(), cx, y);
 }
 
 /**
@@ -134,6 +478,21 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
     ctx.stroke();
   } else if (frameStyle === "minimal") {
     ctx.strokeRect(margin, margin, innerW, innerH);
+  }
+
+  // Single Object Clip-Art presets bypass the abstract pattern generator
+  // entirely: one bold centered subject + a big outlined title label, no
+  // color-by-number numbering (these are traditional single-page coloring
+  // sheets, not color-by-number grids).
+  if (OBJECT_DRAWERS[presetId]) {
+    const objCx = width / 2;
+    const objCy = margin + innerH * 0.42;
+    const objSize = Math.min(innerW, innerH) * 0.28;
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = strokeColor;
+    OBJECT_DRAWERS[presetId](ctx, objCx, objCy, objSize);
+    drawObjectLabel(ctx, OBJECT_LABELS[presetId] || presetId, objCx, margin + innerH * 0.82, innerW, strokeColor, lineWidth);
+    return;
   }
 
   // Pseudo-random helper seeded by seed state

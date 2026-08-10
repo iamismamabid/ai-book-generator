@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Users, Shield, Cpu, BookOpen } from "lucide-react";
+import { ArrowLeft, Users, Shield, Cpu, BookOpen, ExternalLink, Globe } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export default function AboutPage() {
         </div>
 
         <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 rounded-[2.5rem] p-8 md:p-12 shadow-2xl space-y-10">
-          
+
           {/* Header */}
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-500/25">
@@ -123,30 +123,69 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Creator / Founder Note */}
-          <div className="mt-8 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900 border border-indigo-500/20 rounded-3xl p-8 space-y-4 shadow-xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-black text-lg">
-                K
+          {/* Founder Section */}
+          <div className="mt-8 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900 border border-indigo-500/20 rounded-3xl p-8 space-y-6 shadow-xl">
+
+            {/* Founder Identity Card */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+              {/* Avatar */}
+              <div className="shrink-0">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-amber-500 p-0.5 shadow-lg">
+                  <div className="w-full h-full bg-[#0b0f19] rounded-[14px] flex flex-col items-center justify-center text-center">
+                    <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">IA</span>
+                    <span className="text-[8px] font-black uppercase text-slate-400 tracking-wider mt-0.5">Founder</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="text-white font-black text-lg">A Note from the Lead Creator</h3>
-                <p className="text-indigo-400 text-xs font-semibold">Software Engineer &amp; KDP Publisher</p>
+
+              {/* Name & Title */}
+              <div className="text-center sm:text-left space-y-2">
+                <div>
+                  <h3 className="text-white font-black text-xl">Ismam Abid</h3>
+                  <p className="text-indigo-400 text-sm font-bold">Founder &amp; Lead Developer · KDPage</p>
+                  <p className="text-slate-400 text-xs font-semibold mt-0.5">Software Engineer · Amazon KDP Self-Publisher</p>
+                </div>
+
+                {/* Social Links */}
+                <div className="flex items-center gap-3 justify-center sm:justify-start pt-1">
+                  <a
+                    href="https://www.linkedin.com/in/ismamabid"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/15 border border-indigo-500/25 text-indigo-400 hover:bg-indigo-600/25 hover:text-indigo-300 transition-all text-xs font-bold"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    LinkedIn
+                  </a>
+                  <a
+                    href="https://www.kdpage.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-slate-300 transition-all text-xs font-bold"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    kdpage.com
+                  </a>
+                </div>
               </div>
             </div>
 
-            <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed italic border-l-2 border-indigo-500/50 pl-4 py-1">
-              &quot;As a Software Engineer and active Amazon KDP publisher, I quickly realized how expensive and fragmented the book-creation process can be. Standard publishing tools were scattered across different clunky platforms, making it tedious to compile a single high-quality book. I knew there had to be a more integrated, high-performance way.&quot;
-            </p>
-            <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed italic border-l-2 border-indigo-500/50 pl-4 py-1">
-              &quot;That is why we built KDPage. Our goal was to create a single, automated, and genuinely premium workspace that empowers independent authors and publishers. We engineered our platform to generate mathematically verified puzzles, shape-masked labyrinths, and print-compliant cover layouts in under 30 seconds.&quot;
-            </p>
-            <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed italic border-l-2 border-indigo-500/50 pl-4 py-1">
-              &quot;Whether you are just starting your KDP publishing journey or scaling a commercial publishing agency, our team and platform are built to grow with you. With flexible access options — including monthly and annual plans — we keep enterprise-grade tools accessible so you can retain 100% of your royalties and focus on what matters most: creating and scaling.&quot;
-            </p>
+            {/* Founder Quotes */}
+            <div className="space-y-4">
+              <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed italic border-l-2 border-indigo-500/50 pl-4 py-1">
+                &quot;As a Software Engineer and active Amazon KDP publisher, I quickly realized how expensive and fragmented the book-creation process can be. Standard publishing tools were scattered across different clunky platforms, making it tedious to compile a single high-quality book. I knew there had to be a more integrated, high-performance way.&quot;
+              </p>
+              <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed italic border-l-2 border-indigo-500/50 pl-4 py-1">
+                &quot;That is why I built KDPage. My goal was to create a single, automated, and genuinely premium workspace that empowers independent authors and publishers. I engineered our platform to generate mathematically verified puzzles, shape-masked labyrinths, and print-compliant cover layouts in under 30 seconds.&quot;
+              </p>
+              <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed italic border-l-2 border-indigo-500/50 pl-4 py-1">
+                &quot;Whether you are just starting your KDP publishing journey or scaling a commercial publishing agency, KDPage is built to grow with you. With flexible access options — including monthly and annual plans — I keep enterprise-grade tools accessible so you can retain 100% of your royalties and focus on what matters most: creating and scaling.&quot;
+              </p>
+            </div>
 
-            <div className="pt-2 text-xs text-slate-400 font-semibold flex items-center justify-between">
-              <span>Have feedback or feature requests? Contact our team anytime at <a href="mailto:support@kdpage.com" className="text-indigo-400 hover:underline">support@kdpage.com</a></span>
+            <div className="text-xs text-slate-400 font-semibold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-t border-slate-800/60 pt-4">
+              <span>Built with ❤️ for KDP Self-Publishers worldwide.</span>
+              <span>Have feedback? Contact us at <a href="mailto:support@kdpage.com" className="text-indigo-400 hover:underline">support@kdpage.com</a></span>
             </div>
           </div>
 

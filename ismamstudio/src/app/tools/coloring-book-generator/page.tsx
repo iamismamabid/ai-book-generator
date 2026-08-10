@@ -4,7 +4,7 @@ import ColoringBookClient from "./ColoringBookClient";
 export const metadata: Metadata = {
   title: "KDP Coloring Book Generator & Color-by-Number Studio (300 DPI Print-Ready)",
   description:
-    "Generate thousands of editable non-living coloring book pages & color-by-number templates for Amazon KDP — Mandalas, Botanical, Stained Glass, Landscapes, Citrus Slices, Architecture & Celestial Patterns. 100% 300 DPI vector PDF & PNG exports.",
+    "Generate thousands of editable coloring book pages & color-by-number templates for Amazon KDP — Mandalas, Botanical, Stained Glass, Landscapes, Citrus Slices, Architecture, Flags, Concept Cars & Celestial Patterns. 100% 300 DPI vector PDF & PNG exports.",
   keywords: [
     "kdp coloring book generator",
     "color by number generator",

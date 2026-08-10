@@ -8,6 +8,16 @@ import { redirect } from "next/navigation";
 import { randomUUID } from "crypto";
 import { AI_FEATURES_ENABLED } from "@/lib/features";
 import { getTeamOwnerIdForMember, getWorkspaceUserIds, seatLimitForPlan } from "@/lib/team";
+import { checkRateLimit } from "@/lib/rateLimit";
+
+// Free/Starter share the same modest burst allowance since Free gets 0
+// AI actions anyway; paid tiers get a high-but-real ceiling so a runaway
+// script can't blow through a whole month's quota in seconds, without
+// meaningfully constraining a legitimate paying user.
+function burstLimitForPlan(plan: string): number {
+  if (plan === "pro" || plan === "agency" || plan === "tier4" || plan === "tier5") return 30;
+  return 3;
+}
 
 
 // Look! No import line here anymore.
@@ -40,6 +50,11 @@ export async function createBook(formData: FormData) {
 
   if (usage.outlinesCount >= maxOutlines) {
     throw new Error(`Your current plan tier is limited to ${maxOutlines} Outlines per month. Please upgrade your lifetime license.`);
+  }
+
+  const burstLimit = await checkRateLimit(userId, "createBook", burstLimitForPlan(premium.plan), 60 * 60 * 1000);
+  if (!burstLimit.allowed) {
+    throw new Error(`You're generating outlines too quickly. Please wait a bit and try again.`);
   }
 
   const prompt = formData.get("prompt") as string;
@@ -109,6 +124,11 @@ export async function generateNextChapter(bookId: string, outline: string, title
 
   if (usage.chaptersCount >= maxChapters) {
     throw new Error(`Your current plan tier is limited to ${maxChapters} Chapters per month. Please upgrade your lifetime license.`);
+  }
+
+  const burstLimit = await checkRateLimit(userId, "generateNextChapter", burstLimitForPlan(premium.plan), 60 * 60 * 1000);
+  if (!burstLimit.allowed) {
+    throw new Error(`You're generating chapters too quickly. Please wait a bit and try again.`);
   }
 
   const currentChapterCount = await prisma.chapter.count({
@@ -221,6 +241,14 @@ export async function redeemAppSumoCode(code: string) {
   try {
     const { userId } = await auth();
     if (!userId) return { success: false, error: "Unauthorized. Please sign in." };
+
+    // Flat limit for every account tier -- this guards against someone
+    // scripting their way through the code keyspace, not against generation
+    // cost, so paid plans don't get an exemption here.
+    const rateLimit = await checkRateLimit(userId, "redeemAppSumoCode", 10, 10 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return { success: false, error: `Too many attempts. Please try again in ${Math.ceil((rateLimit.retryAfterSeconds || 60) / 60)} minute(s).` };
+    }
 
     const user = await currentUser();
     const email = user?.emailAddresses[0]?.emailAddress || "";

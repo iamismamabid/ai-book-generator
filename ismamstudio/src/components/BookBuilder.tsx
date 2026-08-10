@@ -959,7 +959,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
               { type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
               { type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
               { type: 'kakuro', config: { sizeId: '6x6', difficulty: 'medium' }, label: 'Kakuro Puzzle', desc: 'Crossword-style number sums logic grids', icon: '🔢', color: 'bg-orange-50 border-orange-200 text-orange-600' },
-              { type: 'coloring_book', config: { presetId: 'citrus_slices', complexity: 12, lineWidth: 3, isColorByNumber: true, isMidnightMode: false, frameStyle: 'ornamental', seed: Math.floor(Math.random() * 10000) }, label: 'Coloring Page', desc: 'Non-living color-by-number art, 27 presets', icon: '🎨', color: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600' },
+              { type: 'coloring_book', config: { presetId: 'citrus_slices', complexity: 12, lineWidth: 3, isColorByNumber: true, isMidnightMode: false, frameStyle: 'ornamental', seed: Math.floor(Math.random() * 10000) }, label: 'Coloring Page', desc: 'Color-by-number art, 67+ presets', icon: '🎨', color: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600' },
 
               // Low-Content journal/planner templates
               { type: 'low_content', config: { template: 'lined_journal' }, label: 'Lined Journal', desc: 'Horizontal writing lines', icon: '📖', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },

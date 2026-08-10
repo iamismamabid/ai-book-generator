@@ -24,6 +24,7 @@ import {
   Paintbrush,
   Eraser,
   PaintBucket,
+  CheckSquare,
   Undo2,
   Redo2,
   Trash2
@@ -137,6 +138,11 @@ export default function ColoringBookClient() {
   const colorCanvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  // Guards against rapid Undo/Redo clicks: each loadSnapshot() call claims a
+  // token, and an in-flight image load only paints the canvas if it's still
+  // the most recent request -- otherwise a slow, stale load could overwrite
+  // a newer, faster one and leave the canvas showing the wrong history step.
+  const snapshotLoadTokenRef = useRef(0);
 
   // Render procedure on Canvas
   const drawPattern = useCallback(() => {
@@ -193,8 +199,10 @@ export default function ColoringBookClient() {
     const canvas = colorCanvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
+    const token = ++snapshotLoadTokenRef.current;
     const img = new window.Image();
     img.onload = () => {
+      if (snapshotLoadTokenRef.current !== token) return; // superseded by a newer undo/redo
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
     };
@@ -282,6 +290,36 @@ export default function ColoringBookClient() {
     }
 
     colorCtx.putImageData(colorImage, 0, 0);
+  };
+
+  // Fills every colorable pixel on the page at once (everything that isn't
+  // drawn ink), regardless of which enclosed region it belongs to -- unlike
+  // the fill bucket, this doesn't need connectivity/flood traversal.
+  const handleFillAll = () => {
+    const lineCanvas = canvasRef.current;
+    const colorCanvas = colorCanvasRef.current;
+    if (!lineCanvas || !colorCanvas) return;
+    const w = colorCanvas.width;
+    const h = colorCanvas.height;
+    const lineCtx = lineCanvas.getContext("2d");
+    const colorCtx = colorCanvas.getContext("2d");
+    if (!lineCtx || !colorCtx) return;
+
+    const lineData = lineCtx.getImageData(0, 0, w, h).data;
+    const colorImage = colorCtx.getImageData(0, 0, w, h);
+    const data = colorImage.data;
+    const fillColor = hexToRgb(brushColor);
+
+    for (let i = 0; i < data.length; i += 4) {
+      if (lineData[i + 3] > 40) continue; // leave drawn ink alone
+      data[i] = fillColor.r;
+      data[i + 1] = fillColor.g;
+      data[i + 2] = fillColor.b;
+      data[i + 3] = 255;
+    }
+
+    colorCtx.putImageData(colorImage, 0, 0);
+    pushHistory();
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -469,7 +507,7 @@ export default function ColoringBookClient() {
                 </span>
               </h1>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold hidden sm:block">
-                Non-Living Objects & Color-by-Number Interior Generator for KDP
+                Coloring Page & Color-by-Number Interior Generator for KDP
               </p>
             </div>
           </div>
@@ -488,7 +526,7 @@ export default function ColoringBookClient() {
       {/* Main Studio Area */}
       <main className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8">
         
-        {/* 🛡️ Non-Living Guarantee Alert Banner */}
+        {/* 🛡️ Template Library Alert Banner */}
         <div className="mb-6 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
@@ -504,7 +542,7 @@ export default function ColoringBookClient() {
                 </span>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 font-medium">
-                Strictly non-living subjects only — Mandalas, Stained Glass, Landscapes, Citrus Slices, Architecture &amp; Cozy Still Life. Zero humans, animals, or living beings.
+                Mandalas, Stained Glass, Landscapes, Citrus Slices, Architecture, Cozy Still Life, Flags &amp; Concept Cars — 67+ ready-to-export templates.
               </p>
             </div>
           </div>
@@ -791,6 +829,13 @@ export default function ColoringBookClient() {
                     title="Fill Bucket"
                   >
                     <PaintBucket className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleFillAll}
+                    className="p-2 rounded-lg transition cursor-pointer text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                    title="Select All / Fill Everything"
+                  >
+                    <CheckSquare className="w-4 h-4" />
                   </button>
                 </div>
 

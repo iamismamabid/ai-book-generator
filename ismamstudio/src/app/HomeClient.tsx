@@ -427,7 +427,7 @@ export default function HomeClient() {
               </div>
               <h3 className="text-2xl font-black text-slate-800 group-hover:text-amber-500 transition-colors duration-300 ease-in-out mb-3">Coloring Book Studio</h3>
               <p className="text-slate-600 text-sm leading-relaxed font-semibold">
-                100% non-living coloring &amp; color-by-number pages -- mandalas, clip-art, and more.
+                Coloring &amp; color-by-number pages -- mandalas, clip-art, flags, cars, and more.
               </p>
             </div>
             <Link

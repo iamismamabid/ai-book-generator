@@ -27,7 +27,16 @@ import {
   CheckSquare,
   Undo2,
   Redo2,
-  Trash2
+  Trash2,
+  Pipette,
+  Type,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Upload,
+  Save,
+  FolderOpen,
+  BookmarkCheck
 } from "lucide-react";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
@@ -50,10 +59,13 @@ function drawCanvasWatermark(ctx: CanvasRenderingContext2D, w: number, h: number
   ctx.restore();
 }
 
-const QUICK_PALETTE = [
-  "#EF4444", "#F97316", "#EAB308", "#84CC16", "#22C55E",
-  "#14B8A6", "#3B82F6", "#6366F1", "#A855F7", "#EC4899",
-  "#78350F", "#000000",
+// 30 Curated Premium Colors Palette
+const EXTENDED_PALETTE = [
+  "#EF4444", "#F97316", "#F59E0B", "#EAB308", "#84CC16", "#10B981",
+  "#06B6D4", "#0EA5E9", "#3B82F6", "#6366F1", "#8B5CF6", "#A855F7",
+  "#D946EF", "#EC4899", "#F43F5E", "#78350F", "#92400E", "#B45309",
+  "#15803D", "#047857", "#0369A1", "#1D4ED8", "#4338CA", "#6B21A8",
+  "#9D174D", "#FFFFFF", "#E2E8F0", "#94A3B8", "#475569", "#000000",
 ];
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
@@ -62,9 +74,62 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
 
-// Small static preview of a preset's pattern, rendered once and never
-// re-rendered on parent state changes (complexity/lineWidth/etc. only affect
-// the live canvas, not these thumbnails) so browsing templates stays fast.
+// Sobel Filter: Converts any uploaded color image into high-contrast line art
+function convertImageToLineArt(img: HTMLImageElement, width: number, height: number): ImageData {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0, width, height);
+  const srcData = ctx.getImageData(0, 0, width, height);
+  const data = srcData.data;
+
+  // 1. Grayscale
+  const gray = new Uint8Array(width * height);
+  for (let i = 0; i < data.length; i += 4) {
+    gray[i / 4] = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+  }
+
+  const outImage = ctx.createImageData(width, height);
+  const outData = outImage.data;
+
+  // 2. Sobel edge detection operator
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const idx = y * width + x;
+
+      const gx =
+        -1 * gray[(y - 1) * width + (x - 1)] + 1 * gray[(y - 1) * width + (x + 1)] +
+        -2 * gray[y * width + (x - 1)] + 2 * gray[y * width + (x + 1)] +
+        -1 * gray[(y + 1) * width + (x - 1)] + 1 * gray[(y + 1) * width + (x + 1)];
+
+      const gy =
+        -1 * gray[(y - 1) * width + (x - 1)] - 2 * gray[(y - 1) * width + x] - 1 * gray[(y - 1) * width + (x + 1)] +
+        1 * gray[(y + 1) * width + (x - 1)] + 2 * gray[(y + 1) * width + x] + 1 * gray[(y + 1) * width + (x + 1)];
+
+      const mag = Math.sqrt(gx * gx + gy * gy);
+      const isEdge = mag > 45;
+      const outIdx = idx * 4;
+
+      if (isEdge) {
+        // Black outline ink
+        outData[outIdx] = 15;
+        outData[outIdx + 1] = 23;
+        outData[outIdx + 2] = 42;
+        outData[outIdx + 3] = 255;
+      } else {
+        // Transparent background
+        outData[outIdx] = 255;
+        outData[outIdx + 1] = 255;
+        outData[outIdx + 2] = 255;
+        outData[outIdx + 3] = 0;
+      }
+    }
+  }
+  return outImage;
+}
+
+// Small static preview of a preset's pattern
 function PresetThumbnail({ preset }: { preset: PresetItem }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -114,19 +179,37 @@ export default function ColoringBookClient() {
   const [seed, setSeed] = useState<number>(42);
   const [bookPagesCount, setBookPagesCount] = useState<number>(30);
 
+  // Custom Image Upload State
+  const [customLineArt, setCustomLineArt] = useState<ImageData | null>(null);
+  const [customImageName, setCustomImageName] = useState<string | null>(null);
+
   // Export States
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
 
-  // Interactive "Preview Coloring" canvas state -- a fun/demo layer for
-  // trying out colors in-browser. Purely a preview: it never touches the
-  // blank line-art PNG/PDF export used for the actual KDP interior.
+  // Interactive "Preview Coloring" canvas state
   const [isColoringMode, setIsColoringMode] = useState(false);
-  const [activeTool, setActiveTool] = useState<"brush" | "eraser" | "fill">("brush");
-  const [brushColor, setBrushColor] = useState<string>(QUICK_PALETTE[0]);
+  const [activeTool, setActiveTool] = useState<"brush" | "eraser" | "fill" | "eyedropper" | "text">("brush");
+  const [brushColor, setBrushColor] = useState<string>(EXTENDED_PALETTE[0]);
   const [brushSize, setBrushSize] = useState<number>(18);
   const [history, setHistory] = useState<{ stack: string[]; index: number }>({ stack: [], index: -1 });
+
+  // Text Tool State
+  const [textInput, setTextInput] = useState<string>("My Coloring Book");
+  const [textSize, setTextSize] = useState<number>(36);
+  const [fontFamily, setFontFamily] = useState<"sans-serif" | "serif" | "cursive">("sans-serif");
+
+  // Zoom & Pan State
+  const [zoomLevel, setZoomLevel] = useState<number>(1.0);
+
+  // Toast State
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   useEffect(() => {
     checkPremiumStatus()
@@ -138,10 +221,6 @@ export default function ColoringBookClient() {
   const colorCanvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
-  // Guards against rapid Undo/Redo clicks: each loadSnapshot() call claims a
-  // token, and an in-flight image load only paints the canvas if it's still
-  // the most recent request -- otherwise a slow, stale load could overwrite
-  // a newer, faster one and leave the canvas showing the wrong history step.
   const snapshotLoadTokenRef = useRef(0);
 
   // Render procedure on Canvas
@@ -151,28 +230,55 @@ export default function ColoringBookClient() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    drawColoringPattern(ctx, canvas.width, canvas.height, {
-      presetId: activePreset.id,
-      complexity,
-      lineWidth,
-      isColorByNumber,
-      isMidnightMode,
-      frameStyle,
-      seed,
-      transparentBg: isColoringMode,
-    });
-  }, [activePreset, complexity, frameStyle, isColorByNumber, isMidnightMode, lineWidth, seed, isColoringMode]);
+    if (customLineArt) {
+      // Paint uploaded custom line art
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.putImageData(customLineArt, 0, 0);
+    } else {
+      drawColoringPattern(ctx, canvas.width, canvas.height, {
+        presetId: activePreset.id,
+        complexity,
+        lineWidth,
+        isColorByNumber,
+        isMidnightMode,
+        frameStyle,
+        seed,
+        transparentBg: isColoringMode,
+      });
+    }
+  }, [activePreset, complexity, frameStyle, isColorByNumber, isMidnightMode, lineWidth, seed, isColoringMode, customLineArt]);
 
   useEffect(() => {
     drawPattern();
-    // The line art just changed shape, so any painted colors underneath no
-    // longer line up -- reset the paint layer and its undo/redo history.
     const colorCanvas = colorCanvasRef.current;
     if (!colorCanvas) return;
     const cctx = colorCanvas.getContext("2d");
     if (cctx) cctx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
     setHistory({ stack: [colorCanvas.toDataURL()], index: 0 });
   }, [drawPattern]);
+
+  // Custom File Upload Handler
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const img = new window.Image();
+    img.onload = () => {
+      const lineArtData = convertImageToLineArt(img, 850, 1100);
+      setCustomLineArt(lineArtData);
+      setCustomImageName(file.name);
+      showToast(`Uploaded ${file.name} as custom line art!`);
+    };
+    img.src = URL.createObjectURL(file);
+  };
+
+  const clearCustomUpload = () => {
+    setCustomLineArt(null);
+    setCustomImageName(null);
+    showToast("Reverted to preset template.");
+  };
 
   const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = colorCanvasRef.current;
@@ -202,7 +308,7 @@ export default function ColoringBookClient() {
     const token = ++snapshotLoadTokenRef.current;
     const img = new window.Image();
     img.onload = () => {
-      if (snapshotLoadTokenRef.current !== token) return; // superseded by a newer undo/redo
+      if (snapshotLoadTokenRef.current !== token) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
     };
@@ -235,8 +341,69 @@ export default function ColoringBookClient() {
     pushHistory();
   };
 
-  // Flood-fills the clicked region of the color layer, using the line-art
-  // layer's ink as the wall mask so fills stop at the drawn outlines.
+  // Eyedropper Color Picker
+  const sampleColorAt = (x: number, y: number) => {
+    const colorCanvas = colorCanvasRef.current;
+    const lineCanvas = canvasRef.current;
+    if (!colorCanvas || !lineCanvas) return;
+
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = colorCanvas.width;
+    tempCanvas.height = colorCanvas.height;
+    const tCtx = tempCanvas.getContext("2d")!;
+    tCtx.drawImage(colorCanvas, 0, 0);
+    tCtx.drawImage(lineCanvas, 0, 0);
+
+    const pixel = tCtx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
+    if (pixel[3] > 0) {
+      const hex = "#" + ((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1);
+      setBrushColor(hex);
+      setActiveTool("brush");
+      showToast(`Color picked: ${hex}`);
+    }
+  };
+
+  // Text Tool Execution
+  const drawTextAt = (x: number, y: number) => {
+    if (!textInput.trim()) return;
+    const colorCanvas = colorCanvasRef.current;
+    const ctx = colorCanvas?.getContext("2d");
+    if (!colorCanvas || !ctx) return;
+
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.font = `bold ${textSize}px ${fontFamily}`;
+    ctx.fillStyle = brushColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(textInput, x, y);
+    ctx.restore();
+
+    pushHistory();
+    showToast(`Added text "${textInput}" to page!`);
+  };
+
+  // Save Progress to localStorage
+  const handleSaveProgress = () => {
+    const colorCanvas = colorCanvasRef.current;
+    if (!colorCanvas) return;
+    const data = colorCanvas.toDataURL();
+    localStorage.setItem(`kdpage_coloring_progress_${activePreset.id}`, data);
+    showToast("Coloring progress saved locally! 💾");
+  };
+
+  // Load Progress from localStorage
+  const handleLoadProgress = () => {
+    const saved = localStorage.getItem(`kdpage_coloring_progress_${activePreset.id}`);
+    if (!saved) {
+      alert("No saved progress found for this template.");
+      return;
+    }
+    loadSnapshot(saved);
+    showToast("Coloring progress loaded! 📂");
+  };
+
+  // Flood Fill
   const floodFill = (startX: number, startY: number) => {
     const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
@@ -255,7 +422,7 @@ export default function ColoringBookClient() {
     const isWall = (idx: number) => lineData[idx + 3] > 40;
 
     const startIdx = (sy * w + sx) * 4;
-    if (isWall(startIdx)) return; // clicked directly on a drawn line
+    if (isWall(startIdx)) return;
 
     const colorImage = colorCtx.getImageData(0, 0, w, h);
     const data = colorImage.data;
@@ -292,9 +459,6 @@ export default function ColoringBookClient() {
     colorCtx.putImageData(colorImage, 0, 0);
   };
 
-  // Fills every colorable pixel on the page at once (everything that isn't
-  // drawn ink), regardless of which enclosed region it belongs to -- unlike
-  // the fill bucket, this doesn't need connectivity/flood traversal.
   const handleFillAll = () => {
     const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
@@ -311,7 +475,7 @@ export default function ColoringBookClient() {
     const fillColor = hexToRgb(brushColor);
 
     for (let i = 0; i < data.length; i += 4) {
-      if (lineData[i + 3] > 40) continue; // leave drawn ink alone
+      if (lineData[i + 3] > 40) continue;
       data[i] = fillColor.r;
       data[i + 1] = fillColor.g;
       data[i + 2] = fillColor.b;
@@ -329,6 +493,16 @@ export default function ColoringBookClient() {
     if (!canvas || !ctx) return;
     canvas.setPointerCapture(e.pointerId);
     const pt = getCanvasPoint(e);
+
+    if (activeTool === "eyedropper") {
+      sampleColorAt(pt.x, pt.y);
+      return;
+    }
+
+    if (activeTool === "text") {
+      drawTextAt(pt.x, pt.y);
+      return;
+    }
 
     if (activeTool === "fill") {
       floodFill(pt.x, pt.y);
@@ -399,14 +573,12 @@ export default function ColoringBookClient() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Create high-res export canvas @ 300 DPI
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = trimSize.pxW;
     exportCanvas.height = trimSize.pxH;
     const ctx = exportCanvas.getContext("2d");
     if (!ctx) return;
 
-    // Draw high res copy
     ctx.drawImage(canvas, 0, 0, trimSize.pxW, trimSize.pxH);
     if (!isPremium) drawCanvasWatermark(ctx, trimSize.pxW, trimSize.pxH);
 
@@ -434,10 +606,6 @@ export default function ColoringBookClient() {
 
       const totalP = Math.max(1, Math.min(100, bookPagesCount));
 
-      // Each page gets its own offscreen canvas re-rendered with a distinct
-      // seed -- reusing the single on-screen preview canvas here previously
-      // meant every page in the export was an identical copy of whatever was
-      // currently shown, despite the book claiming "endless variation".
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width = trimSize.pxW;
       pageCanvas.height = trimSize.pxH;
@@ -447,15 +615,20 @@ export default function ColoringBookClient() {
         if (p > 0) doc.addPage([trimSize.w, trimSize.h]);
 
         if (pageCtx) {
-          drawColoringPattern(pageCtx, pageCanvas.width, pageCanvas.height, {
-            presetId: activePreset.id,
-            complexity,
-            lineWidth,
-            isColorByNumber,
-            isMidnightMode,
-            frameStyle,
-            seed: seed + p * 137,
-          });
+          if (customLineArt) {
+            pageCtx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
+            pageCtx.putImageData(customLineArt, 0, 0);
+          } else {
+            drawColoringPattern(pageCtx, pageCanvas.width, pageCanvas.height, {
+              presetId: activePreset.id,
+              complexity,
+              lineWidth,
+              isColorByNumber,
+              isMidnightMode,
+              frameStyle,
+              seed: seed + p * 137,
+            });
+          }
           const imgData = pageCanvas.toDataURL("image/png", 1.0);
           doc.addImage(imgData, "PNG", 0, 0, trimSize.w, trimSize.h);
         }
@@ -488,6 +661,14 @@ export default function ColoringBookClient() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans">
       
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-2 animate-bounce">
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          {toastMessage}
+        </div>
+      )}
+
       {/* 🚀 Header */}
       <header className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -507,7 +688,7 @@ export default function ColoringBookClient() {
                 </span>
               </h1>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold hidden sm:block">
-                Coloring Page & Color-by-Number Interior Generator for KDP
+                Coloring Page &amp; Color-by-Number Interior Generator for KDP
               </p>
             </div>
           </div>
@@ -526,7 +707,7 @@ export default function ColoringBookClient() {
       {/* Main Studio Area */}
       <main className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8">
         
-        {/* 🛡️ Template Library Alert Banner */}
+        {/* 🛡️ Alert Banner */}
         <div className="mb-6 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
@@ -535,14 +716,14 @@ export default function ColoringBookClient() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-wider">
-                  Tons of Templates for Your Art &amp; Coloring Books
+                  Tons of Templates &amp; Custom Image Line-Art Generator
                 </h2>
                 <span className="bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full">
                   Verified Safe
                 </span>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 font-medium">
-                Mandalas, Stained Glass, Landscapes, Citrus Slices, Architecture, Cozy Still Life, Flags &amp; Concept Cars — 67+ ready-to-export templates.
+                Mandalas, Stained Glass, Landscapes, Citrus Slices, Architecture, Cozy Still Life, Flags &amp; Concept Cars — 67+ templates or convert your own image!
               </p>
             </div>
           </div>
@@ -556,6 +737,31 @@ export default function ColoringBookClient() {
           {/* ⚙️ Left Control Panel */}
           <div className="lg:col-span-5 space-y-6">
             
+            {/* Custom Upload Section */}
+            <div className="bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800/60 rounded-2xl p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider flex items-center gap-1.5">
+                  <Upload className="w-4 h-4" /> Custom Image → Line Art Converter
+                </label>
+                {customImageName && (
+                  <button onClick={clearCustomUpload} className="text-[10px] text-red-500 hover:underline font-bold">
+                    Reset to Presets
+                  </button>
+                )}
+              </div>
+
+              <label className="block w-full cursor-pointer bg-indigo-50/50 dark:bg-indigo-950/20 border-2 border-dashed border-indigo-300 dark:border-indigo-700/60 hover:border-indigo-500 rounded-xl p-4 text-center transition">
+                <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                <Upload className="w-6 h-6 text-indigo-500 mx-auto mb-1" />
+                <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 block">
+                  {customImageName ? `Loaded: ${customImageName}` : "Click to upload PNG/JPG photo"}
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                  Auto Sobel filter converts any photo into clean 300 DPI coloring line art!
+                </span>
+              </label>
+            </div>
+
             {/* Category Filter */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
@@ -593,11 +799,13 @@ export default function ColoringBookClient() {
                   <button
                     key={preset.id}
                     onClick={() => {
+                      setCustomLineArt(null);
+                      setCustomImageName(null);
                       setActivePreset(preset);
                       setComplexity(preset.defaultComplexity);
                     }}
                     className={`p-2 rounded-xl border text-left transition-all ${
-                      activePreset.id === preset.id
+                      activePreset.id === preset.id && !customLineArt
                         ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 ring-2 ring-indigo-500/30 shadow-sm"
                         : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
                     }`}
@@ -800,119 +1008,237 @@ export default function ColoringBookClient() {
                 <Paintbrush className="w-3.5 h-3.5" />
                 {isColoringMode ? "Exit Coloring Preview" : "Try Coloring This Page"}
               </button>
-              <div className="hidden sm:flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 text-xs font-bold shadow-sm">
-                <Eye className="w-3.5 h-3.5 text-indigo-500" />
-                <span>300 DPI Live Vector Canvas</span>
+
+              {/* Zoom Controls */}
+              <div className="flex items-center gap-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2 py-1 rounded-full border border-slate-200 dark:border-slate-800 text-xs font-bold shadow-sm">
+                <button
+                  onClick={() => setZoomLevel((z) => Math.max(0.75, z - 0.25))}
+                  className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                </button>
+                <span className="px-1 text-[11px] font-mono">{Math.round(zoomLevel * 100)}%</span>
+                <button
+                  onClick={() => setZoomLevel((z) => Math.min(2.5, z + 0.25))}
+                  className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                </button>
+                {zoomLevel !== 1.0 && (
+                  <button
+                    onClick={() => setZoomLevel(1.0)}
+                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition ml-1"
+                    title="Reset Zoom"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5 text-indigo-500" />
+                  </button>
+                )}
               </div>
             </div>
 
+            {/* Interactive Drawing Toolbar */}
             {isColoringMode && (
-              <div className="w-full max-w-[540px] mb-4 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-lg flex flex-wrap items-center gap-2.5">
-                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
-                  <button
-                    onClick={() => setActiveTool("brush")}
-                    className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "brush" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                    title="Brush"
-                  >
-                    <Paintbrush className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setActiveTool("eraser")}
-                    className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "eraser" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                    title="Eraser"
-                  >
-                    <Eraser className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setActiveTool("fill")}
-                    className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "fill" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                    title="Fill Bucket"
-                  >
-                    <PaintBucket className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleFillAll}
-                    className="p-2 rounded-lg transition cursor-pointer text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                    title="Select All / Fill Everything"
-                  >
-                    <CheckSquare className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  {QUICK_PALETTE.map((c) => (
+              <div className="w-full max-w-[540px] mb-4 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-lg space-y-2.5">
+                
+                {/* Main Tool Selectors */}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
                     <button
-                      key={c}
-                      onClick={() => setBrushColor(c)}
-                      style={{ background: c }}
-                      className={`w-5 h-5 rounded-full border-2 transition cursor-pointer ${brushColor === c ? "border-indigo-600 scale-110" : "border-white dark:border-slate-700"}`}
-                      title={c}
+                      onClick={() => setActiveTool("brush")}
+                      className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "brush" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                      title="Brush Tool"
+                    >
+                      <Paintbrush className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("eraser")}
+                      className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "eraser" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                      title="Eraser Tool"
+                    >
+                      <Eraser className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("fill")}
+                      className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "fill" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                      title="Flood Fill Bucket"
+                    >
+                      <PaintBucket className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("eyedropper")}
+                      className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "eyedropper" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                      title="Eyedropper Color Picker (Click canvas to pick color)"
+                    >
+                      <Pipette className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("text")}
+                      className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "text" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                      title="Text Tool (Click canvas to place text)"
+                    >
+                      <Type className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleFillAll}
+                      className="p-2 rounded-lg transition cursor-pointer text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                      title="Fill All Background Pixels"
+                    >
+                      <CheckSquare className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={handleSaveProgress}
+                      className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center gap-1 text-xs font-bold"
+                      title="Save Coloring Progress"
+                    >
+                      <Save className="w-4 h-4 text-emerald-500" /> Save
+                    </button>
+                    <button
+                      onClick={handleLoadProgress}
+                      className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center gap-1 text-xs font-bold"
+                      title="Load Saved Coloring Progress"
+                    >
+                      <FolderOpen className="w-4 h-4 text-amber-500" /> Load
+                    </button>
+                  </div>
+                </div>
+
+                {/* Text Tool Options Panel */}
+                {activeTool === "text" && (
+                  <div className="bg-indigo-50/60 dark:bg-indigo-950/30 p-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/40 flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                      placeholder="Type text to place on canvas..."
+                      className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold"
                     />
-                  ))}
-                  <input
-                    type="color"
-                    value={brushColor}
-                    onChange={(e) => setBrushColor(e.target.value)}
-                    className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0"
-                    title="Custom color"
-                  />
+                    <select
+                      value={fontFamily}
+                      onChange={(e) => setFontFamily(e.target.value as any)}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs font-bold"
+                    >
+                      <option value="sans-serif">Sans-Serif</option>
+                      <option value="serif">Serif Classic</option>
+                      <option value="cursive">Handwriting</option>
+                    </select>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-bold text-slate-400">Size</span>
+                      <input
+                        type="number"
+                        min="12"
+                        max="96"
+                        value={textSize}
+                        onChange={(e) => setTextSize(Number(e.target.value))}
+                        className="w-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1 text-xs font-bold text-center"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 30-Color Extended Palette Grid */}
+                <div>
+                  <div className="text-[10px] font-black uppercase text-slate-400 mb-1 flex items-center justify-between">
+                    <span>30-Color Pro Palette</span>
+                    <span className="font-mono text-indigo-500">{brushColor}</span>
+                  </div>
+                  <div className="grid grid-cols-10 sm:grid-cols-15 gap-1">
+                    {EXTENDED_PALETTE.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => setBrushColor(c)}
+                        style={{ background: c }}
+                        className={`w-4 h-4 sm:w-5 sm:h-5 rounded-md border transition cursor-pointer hover:scale-110 ${brushColor === c ? "ring-2 ring-indigo-600 scale-110 border-white" : "border-slate-300 dark:border-slate-700"}`}
+                        title={c}
+                      />
+                    ))}
+                    <input
+                      type="color"
+                      value={brushColor}
+                      onChange={(e) => setBrushColor(e.target.value)}
+                      className="w-4 h-4 sm:w-5 sm:h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+                      title="Custom Hex Picker"
+                    />
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-slate-400">Size</span>
-                  <input
-                    type="range"
-                    min="4"
-                    max="48"
-                    value={brushSize}
-                    onChange={(e) => setBrushSize(Number(e.target.value))}
-                    className="w-16 accent-indigo-600 cursor-pointer"
-                  />
+                {/* Secondary Controls (Brush Size, Undo/Redo, Download) */}
+                <div className="flex items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800 pt-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-slate-400">Brush Size</span>
+                    <input
+                      type="range"
+                      min="4"
+                      max="48"
+                      value={brushSize}
+                      onChange={(e) => setBrushSize(Number(e.target.value))}
+                      className="w-20 accent-indigo-600 cursor-pointer"
+                    />
+                    <span className="text-[10px] font-mono font-bold text-indigo-500">{brushSize}px</span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={handleUndo}
+                      disabled={history.index <= 0}
+                      className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      title="Undo"
+                    >
+                      <Undo2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleRedo}
+                      disabled={history.index >= history.stack.length - 1}
+                      className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      title="Redo"
+                    >
+                      <Redo2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleClearColors}
+                      className="p-1.5 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 cursor-pointer"
+                      title="Clear all colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleDownloadColoredPng}
+                    className="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition active:scale-95 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Colored PNG
+                  </button>
                 </div>
 
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={handleUndo}
-                    disabled={history.index <= 0}
-                    className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    title="Undo"
-                  >
-                    <Undo2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleRedo}
-                    disabled={history.index >= history.stack.length - 1}
-                    className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    title="Redo"
-                  >
-                    <Redo2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleClearColors}
-                    className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 cursor-pointer"
-                    title="Clear colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleDownloadColoredPng}
-                  className="ml-auto inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition active:scale-95 cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" /> Download Colored PNG
-                </button>
               </div>
             )}
 
-            {/* Canvas Container */}
-            <div className="bg-white shadow-2xl rounded-sm border border-slate-300 overflow-hidden relative aspect-[8.5/11] w-full max-w-[540px]">
+            {/* Canvas Container with Zoom Transform */}
+            <div
+              className="bg-white shadow-2xl rounded-sm border border-slate-300 overflow-hidden relative aspect-[8.5/11] w-full max-w-[540px] transition-transform duration-200"
+              style={{ transform: `scale(${zoomLevel})`, transformOrigin: "top center" }}
+            >
               <canvas
                 ref={colorCanvasRef}
                 width={850}
                 height={1100}
                 className="absolute inset-0 w-full h-full object-contain touch-none"
-                style={{ cursor: isColoringMode ? (activeTool === "fill" ? "crosshair" : "pointer") : "default" }}
+                style={{
+                  cursor: isColoringMode
+                    ? activeTool === "fill"
+                      ? "crosshair"
+                      : activeTool === "eyedropper"
+                      ? "copy"
+                      : activeTool === "text"
+                      ? "text"
+                      : "pointer"
+                    : "default",
+                }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
@@ -928,13 +1254,17 @@ export default function ColoringBookClient() {
 
             {isColoringMode && (
               <p className="mt-3 text-center text-[11px] text-slate-500 dark:text-slate-400 max-w-[540px]">
-                🎨 This is a fun in-browser preview -- it doesn&apos;t change the blank line-art PDF/PNG your book actually exports. Changing any setting on the left resets your coloring.
+                🎨 In-browser interactive preview canvas -- exports clean line-art PDF/PNG for KDP printing.
               </p>
             )}
 
             <div className="mt-4 text-center">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                Preset: <strong className="text-slate-900 dark:text-slate-100">{activePreset.name}</strong> ({activePreset.category})
+                {customImageName ? (
+                  <>Custom Uploaded Image: <strong className="text-indigo-600 dark:text-indigo-400">{customImageName}</strong></>
+                ) : (
+                  <>Preset: <strong className="text-slate-900 dark:text-slate-100">{activePreset.name}</strong> ({activePreset.category})</>
+                )}
               </span>
             </div>
 

@@ -42,7 +42,9 @@ import {
   Square,
   Star,
   Heart,
-  Flower2
+  Flower2,
+  MousePointer2,
+  Keyboard
 } from "lucide-react";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
@@ -236,7 +238,7 @@ export default function ColoringBookClient() {
 
   // Interactive "Preview Coloring" canvas state
   const [isColoringMode, setIsColoringMode] = useState(false);
-  const [activeTool, setActiveTool] = useState<"brush" | "eraser" | "fill" | "eyedropper" | "text" | "shape">("brush");
+  const [activeTool, setActiveTool] = useState<"select" | "brush" | "eraser" | "fill" | "eyedropper" | "text" | "shape">("brush");
   const [brushColor, setBrushColor] = useState<string>(EXTENDED_PALETTE[0]);
   const [brushSize, setBrushSize] = useState<number>(18);
   const [history, setHistory] = useState<{ stack: string[]; index: number }>({ stack: [], index: -1 });
@@ -253,6 +255,7 @@ export default function ColoringBookClient() {
 
   // Zoom & Pan State
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
+  const [showShortcutsModal, setShowShortcutsModal] = useState<boolean>(false);
 
   // Toast State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -267,6 +270,58 @@ export default function ColoringBookClient() {
       .then((res: any) => setIsPremium(!!res.isPremium))
       .catch(() => setIsPremium(false));
   }, []);
+
+  // Global Keyboard Shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+A, Ctrl+S, [, ])
+  useEffect(() => {
+    if (!isColoringMode) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+
+      if (cmdOrCtrl && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      } else if (cmdOrCtrl && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        handleRedo();
+      } else if (cmdOrCtrl && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        handleFillAll();
+        showToast("Select All / Fill Background (Ctrl+A)");
+      } else if (cmdOrCtrl && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        handleSaveProgress();
+      } else if (e.key === "[") {
+        setBrushSize((s) => Math.max(4, s - 4));
+      } else if (e.key === "]") {
+        setBrushSize((s) => Math.min(64, s + 4));
+      } else if (e.key.toLowerCase() === "v") {
+        setActiveTool("select");
+      } else if (e.key.toLowerCase() === "b") {
+        setActiveTool("brush");
+      } else if (e.key.toLowerCase() === "e") {
+        setActiveTool("eraser");
+      } else if (e.key.toLowerCase() === "g") {
+        setActiveTool("fill");
+      } else if (e.key.toLowerCase() === "i") {
+        setActiveTool("eyedropper");
+      } else if (e.key.toLowerCase() === "t") {
+        setActiveTool("text");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isColoringMode, history]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const colorCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -577,6 +632,11 @@ export default function ColoringBookClient() {
     if (!canvas || !ctx) return;
     canvas.setPointerCapture(e.pointerId);
     const pt = getCanvasPoint(e);
+
+    if (activeTool === "select") {
+      showToast("Pointer Select Mode — Canvas Focused");
+      return;
+    }
 
     if (activeTool === "eyedropper") {
       sampleColorAt(pt.x, pt.y);
@@ -1139,37 +1199,44 @@ export default function ColoringBookClient() {
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                   <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
                     <button
+                      onClick={() => setActiveTool("select")}
+                      className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "select" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                      title="Pointer Select Tool (V)"
+                    >
+                      <MousePointer2 className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => setActiveTool("brush")}
                       className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "brush" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                      title="Brush Tool"
+                      title="Brush Tool (B) - Use [ and ] to resize"
                     >
                       <Paintbrush className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setActiveTool("eraser")}
                       className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "eraser" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                      title="Eraser Tool"
+                      title="Eraser Tool (E)"
                     >
                       <Eraser className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setActiveTool("fill")}
                       className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "fill" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                      title="Flood Fill Bucket"
+                      title="Flood Fill Bucket (G)"
                     >
                       <PaintBucket className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setActiveTool("eyedropper")}
                       className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "eyedropper" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                      title="Eyedropper Color Picker (Click canvas to pick color)"
+                      title="Eyedropper Color Picker (I)"
                     >
                       <Pipette className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setActiveTool("text")}
                       className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "text" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                      title="Text Tool (Click canvas to place text)"
+                      title="Text Tool (T)"
                     >
                       <Type className="w-4 h-4" />
                     </button>
@@ -1183,7 +1250,7 @@ export default function ColoringBookClient() {
                     <button
                       onClick={handleFillAll}
                       className="p-2 rounded-lg transition cursor-pointer text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                      title="Fill All Background Pixels"
+                      title="Fill All / Select All Background Pixels (Ctrl+A)"
                     >
                       <CheckSquare className="w-4 h-4" />
                     </button>
@@ -1191,9 +1258,16 @@ export default function ColoringBookClient() {
 
                   <div className="flex items-center gap-1">
                     <button
+                      onClick={() => setShowShortcutsModal(!showShortcutsModal)}
+                      className={`p-2 rounded-lg transition cursor-pointer flex items-center gap-1 text-xs font-bold ${showShortcutsModal ? "bg-indigo-500 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
+                      title="Keyboard Shortcuts Cheat Sheet"
+                    >
+                      <Keyboard className="w-4 h-4" /> Keys
+                    </button>
+                    <button
                       onClick={handleSaveProgress}
                       className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center gap-1 text-xs font-bold"
-                      title="Save Coloring Progress"
+                      title="Save Coloring Progress (Ctrl+S)"
                     >
                       <Save className="w-4 h-4 text-emerald-500" /> Save
                     </button>
@@ -1206,6 +1280,29 @@ export default function ColoringBookClient() {
                     </button>
                   </div>
                 </div>
+
+                {/* Keyboard Shortcuts Cheat Sheet Panel */}
+                {showShortcutsModal && (
+                  <div className="bg-slate-900 text-slate-200 p-3 rounded-xl border border-slate-700 text-xs animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2">
+                      <span className="font-black text-indigo-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                        <Keyboard className="w-3.5 h-3.5" /> Studio Keyboard Shortcuts
+                      </span>
+                      <button onClick={() => setShowShortcutsModal(false)} className="text-slate-400 hover:text-white font-bold text-xs">✕</button>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+                      <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">Ctrl+Z</kbd> Undo</div>
+                      <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">Ctrl+Y</kbd> Redo</div>
+                      <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">Ctrl+A</kbd> Fill All / Select</div>
+                      <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">Ctrl+S</kbd> Save Progress</div>
+                      <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">[</kbd> / <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">]</kbd> Brush Size</div>
+                      <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">V</kbd> Pointer Select</div>
+                      <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">B</kbd> Brush Tool</div>
+                      <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">E</kbd> Eraser Tool</div>
+                      <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">G</kbd> Fill Bucket</div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Text Tool Options Panel */}
                 {activeTool === "text" && (

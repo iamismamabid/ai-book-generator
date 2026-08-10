@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail, Shield, BookOpen } from "lucide-react";
 import GlowSettingToggle from "@/app/components/GlowSettingToggle";
+import NewsletterLeadForm from "@/app/components/NewsletterLeadForm";
 
 export default function Footer() {
   return (
@@ -93,15 +94,18 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Support / Contact */}
+          {/* Support & Newsletter */}
           <div>
             <h4 className="text-white font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <Mail className="w-4 h-4 text-indigo-400" /> Contact Support
+              <Mail className="w-4 h-4 text-indigo-400" /> Newsletter &amp; Support
             </h4>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-3">
-              Need help? Feel free to contact our support team.
+              Subscribe for free KDP tool updates, interior templates, and publishing tips.
             </p>
-            <div className="space-y-3 flex flex-col items-start">
+            <div className="mb-4">
+              <NewsletterLeadForm source="footer_newsletter" />
+            </div>
+            <div className="space-y-3 flex flex-col items-start pt-1">
               <a
                 href="mailto:support@kdpage.com"
                 className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"

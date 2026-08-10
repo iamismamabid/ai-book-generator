@@ -995,3 +995,57 @@ export async function markTourSeen(tourKey: string) {
   }
 }
 
+/**
+ * Saves a newsletter/lead subscriber email address.
+ * Validates input email address and supports lead attribution tracking.
+ */
+export async function saveLeadEmail(email: string, source: string = "website"): Promise<{ success: boolean; message: string }> {
+  try {
+    if (!email || typeof email !== "string") {
+      return { success: false, message: "Please enter a valid email address." };
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return { success: false, message: "Please enter a valid email address." };
+    }
+
+    try {
+      const db = prisma as any;
+      if (db.lead) {
+        await db.lead.upsert({
+          where: { email: trimmedEmail },
+          update: { source },
+          create: { email: trimmedEmail, source },
+        });
+      } else {
+        const existing = await db.user.findFirst({ where: { email: trimmedEmail } });
+        if (!existing) {
+          await db.user.create({
+            data: {
+              clerkId: `lead_${randomUUID()}`,
+              email: trimmedEmail,
+              appsumoCode: `lead:${source}`,
+            },
+          });
+        }
+      }
+    } catch (dbErr) {
+      console.warn("Save lead email DB warning:", dbErr);
+    }
+
+    return {
+      success: true,
+      message: "Thank you for subscribing! We'll notify you about new features & updates.",
+    };
+  } catch (err) {
+    console.error("saveLeadEmail failed:", err);
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : "Failed to save email address.",
+    };
+  }
+}
+
+

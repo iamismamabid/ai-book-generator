@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎨 Coloring Word Search — Animals</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0c29;
+      --card: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.12);
+      --text: #f0f0f0;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      min-height: 100vh;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      user-select: none;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    header h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      background: linear-gradient(90deg, #ffd93d, #ff6b6b, #c77dff, #4d96ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(199,125,255,0.5));
+      letter-spacing: 1px;
+    }
+    header p {
+      color: rgba(255,255,255,0.55);
+      font-size: 1rem;
+      margin-top: 6px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stat-pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 8px 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+    }
+    .stat-pill span { color: #ffd93d; font-size: 1.1rem; }
+
+    .main {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 980px;
+    }
+
+    .grid-wrapper {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 20px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      gap: 3px;
+    }
+    .cell {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s, transform 0.1s;
+      color: #e0e0e0;
+      text-transform: uppercase;
+    }
+    .cell:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
+    .cell.selecting { background: rgba(255,255,255,0.28) !important; transform: scale(1.12); color:#fff !important; }
+    .cell.found { animation: popIn 0.35s ease; }
+
+    @keyframes popIn {
+      0%   { transform: scale(0.75); }
+      55%  { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+
+    /* 8 word colours */
+    .col-0 { background: rgba(255,107,107,0.55) !important; color:#fff !important; }
+    .col-1 { background: rgba(255,217,61,0.55)  !important; color:#1a1a1a !important; }
+    .col-2 { background: rgba(107,203,119,0.55) !important; color:#fff !important; }
+    .col-3 { background: rgba(77,150,255,0.55)  !important; color:#fff !important; }
+    .col-4 { background: rgba(199,125,255,0.55) !important; color:#fff !important; }
+    .col-5 { background: rgba(255,154,60,0.55)  !important; color:#fff !important; }
+    .col-6 { background: rgba(0,212,170,0.55)   !important; color:#1a1a1a !important; }
+    .col-7 { background: rgba(255,77,216,0.55)  !important; color:#fff !important; }
+
+    .word-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 22px 20px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      min-width: 210px;
+    }
+    .word-panel h2 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      text-align: center;
+      color: #ffd93d;
+      letter-spacing: 1px;
+    }
+    .word-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .word-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.93rem; font-weight: 700;
+      transition: all 0.3s;
+      letter-spacing: 1px;
+    }
+    .word-item .dot {
+      width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+    }
+    .word-item.found-word { text-decoration: line-through; opacity: 0.6; }
+    .word-item .chk { margin-left: auto; }
+
+    .btn-row {
+      display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; justify-content: center;
+    }
+    button {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 0.9rem;
+      padding: 10px 22px; border: none; border-radius: 50px;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.4px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #c77dff, #4d96ff);
+      color: #fff; box-shadow: 0 4px 20px rgba(199,125,255,0.4);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(199,125,255,0.5); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1); color: #fff;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.18); transform: translateY(-2px); }
+
+    /* Win overlay */
+    .win-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+    }
+    .win-overlay.show { display: flex; }
+    .win-card {
+      background: linear-gradient(135deg,#302b63,#24243e);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 28px; padding: 48px 56px; text-align: center;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      animation: slideUp 0.5s ease;
+    }
+    @keyframes slideUp {
+      from { transform:translateY(40px); opacity:0; }
+      to   { transform:translateY(0);    opacity:1; }
+    }
+    .win-card .trophy { font-size:5rem; display:block; margin-bottom:14px; }
+    .win-card h2 {
+      font-family:'Fredoka One',cursive; font-size:2.4rem;
+      background:linear-gradient(90deg,#ffd93d,#ff6b6b);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .win-card p { color:rgba(255,255,255,0.65); margin:12px 0 24px; font-size:1.05rem; }
+
+    @media(max-width:640px){
+      .cell{ width:26px; height:26px; font-size:.78rem; border-radius:5px; }
+      .grid{ gap:2px; }
+    }
+    @media print{
+      body{ background:white !important; color:black !important; }
+      .btn-row,.stats,header p,.win-overlay{ display:none !important; }
+      .cell{ color:black !important; border:1px solid #ccc; border-radius:4px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎨 Coloring Word Search</h1>
+  <p>Drag across letters to highlight hidden animals!</p>
+</header>
+
+<div class="stats">
+  <div class="stat-pill"><span>🔍</span>&nbsp;Found:&nbsp;<strong id="fc">0</strong>&nbsp;/&nbsp;<strong id="tc">0</strong></div>
+  <div class="stat-pill"><span>⏱️</span>&nbsp;Time:&nbsp;<strong id="timer">00:00</strong></div>
+</div>
+
+<div class="main">
+  <div class="grid-wrapper">
+    <div class="grid" id="grid"></div>
+    <div class="btn-row">
+      <button class="btn-primary"   onclick="resetGame()">🔄 New Puzzle</button>
+      <button class="btn-secondary" onclick="revealHint()">💡 Hint</button>
+      <button class="btn-secondary" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+
+  <div class="word-panel">
+    <h2>🐾 Find These!</h2>
+    <ul class="word-list" id="wordList"></ul>
+  </div>
+</div>
+
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card">
+    <span class="trophy">🏆</span>
+    <h2>Amazing!</h2>
+    <p id="winMsg">All animals found!</p>
+    <button class="btn-primary"
+      onclick="resetGame();document.getElementById('winOverlay').classList.remove('show')">
+      🎮 Play Again
+    </button>
+  </div>
+</div>
+
+<script>
+const ROWS=14, COLS=15;
+
+const WORDS=["ELEPHANT","TIGER","GIRAFFE","DOLPHIN","PENGUIN","KANGAROO","CHEETAH","LION","FLAMINGO","PANDA"];
+
+const COLORS=[
+  {css:'col-0',hex:'#ff6b6b'},
+  {css:'col-1',hex:'#ffd93d'},
+  {css:'col-2',hex:'#6bcb77'},
+  {css:'col-3',hex:'#4d96ff'},
+  {css:'col-4',hex:'#c77dff'},
+  {css:'col-5',hex:'#ff9a3c'},
+  {css:'col-6',hex:'#00d4aa'},
+  {css:'col-7',hex:'#ff4dd8'},
+];
+
+const DIRS=[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+let grid=[], placements=[], foundWords=new Set();
+let selecting=false, selStart=null, selCells=[];
+let timerInterval, seconds=0;
+
+/* ---- BUILD PUZZLE ---- */
+function buildPuzzle(){
+  const g=Array.from({length:ROWS},()=>Array(COLS).fill(''));
+  const pl=[];
+  WORDS.forEach((w,i)=>{
+    for(let att=0;att<300;att++){
+      const [dr,dc]=DIRS[Math.floor(Math.random()*8)];
+      const r0=Math.floor(Math.random()*ROWS), c0=Math.floor(Math.random()*COLS);
+      let ok=true; const cells=[];
+      for(let j=0;j<w.length;j++){
+        const r=r0+dr*j, c=c0+dc*j;
+        if(r<0||r>=ROWS||c<0||c>=COLS||(g[r][c]&&g[r][c]!==w[j])){ok=false;break;}
+        cells.push([r,c]);
+      }
+      if(ok){cells.forEach(([r,c],j)=>g[r][c]=w[j]); pl.push({word:w,cells,colorIdx:i%COLORS.length}); break;}
+    }
+  });
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(!g[r][c]) g[r][c]=ALPHA[Math.floor(Math.random()*26)];
+  return {g,pl};
+}
+
+/* ---- RENDER ---- */
+function getCell(r,c){return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);}
+
+function renderGrid(){
+  const el=document.getElementById('grid'); el.innerHTML='';
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const d=document.createElement('div');
+    d.className='cell'; d.textContent=grid[r][c];
+    d.dataset.r=r; d.dataset.c=c;
+    d.addEventListener('mousedown',onDown);
+    d.addEventListener('mouseenter',onEnter);
+    d.addEventListener('touchstart',onTStart,{passive:false});
+    d.addEventListener('touchmove',onTMove,{passive:false});
+    el.appendChild(d);
+  }
+  document.addEventListener('mouseup',onUp);
+  document.addEventListener('touchend',onUp);
+}
+
+function renderWords(){
+  const el=document.getElementById('wordList'); el.innerHTML='';
+  document.getElementById('tc').textContent=placements.length;
+  placements.forEach(({word,colorIdx})=>{
+    const li=document.createElement('li'); li.className='word-item'; li.id='wi-'+word;
+    const dot=document.createElement('div'); dot.className='dot';
+    dot.style.background=COLORS[colorIdx].hex; dot.style.boxShadow=`0 0 8px ${COLORS[colorIdx].hex}`;
+    li.appendChild(dot);
+    const txt=document.createTextNode(word); li.appendChild(txt);
+    const chk=document.createElement('span'); chk.className='chk'; li.appendChild(chk);
+    el.appendChild(li);
+  });
+}
+
+/* ---- SELECTION ---- */
+function lineCells(r0,c0,r1,c1){
+  const dr=Math.sign(r1-r0), dc=Math.sign(c1-c0);
+  const len=Math.max(Math.abs(r1-r0),Math.abs(c1-c0));
+  const out=[];
+  for(let i=0;i<=len;i++) out.push([r0+dr*i,c0+dc*i]);
+  return out;
+}
+function clearSel(){
+  selCells.forEach(([r,c])=>{const e=getCell(r,c);if(e)e.classList.remove('selecting');});
+  selCells=[];
+}
+function applySel(r0,c0,r1,c1){
+  clearSel();
+  selCells=lineCells(r0,c0,r1,c1);
+  selCells.forEach(([r,c])=>{const e=getCell(r,c);if(e&&!e.classList.contains('found'))e.classList.add('selecting');});
+}
+
+function onDown(e){
+  selecting=true;
+  const r=+e.currentTarget.dataset.r, c=+e.currentTarget.dataset.c;
+  selStart=[r,c]; applySel(r,c,r,c);
+}
+function onEnter(e){
+  if(!selecting)return;
+  const r=+e.currentTarget.dataset.r, c=+e.currentTarget.dataset.c;
+  applySel(...selStart,r,c);
+}
+function onUp(){
+  if(!selecting)return; selecting=false; checkSel(); clearSel();
+}
+function getTEl(e){const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);return el&&el.classList.contains('cell')?el:null;}
+function onTStart(e){e.preventDefault();const el=e.currentTarget;selecting=true;const r=+el.dataset.r,c=+el.dataset.c;selStart=[r,c];applySel(r,c,r,c);}
+function onTMove(e){e.preventDefault();const el=getTEl(e);if(!el||!selecting)return;const r=+el.dataset.r,c=+el.dataset.c;applySel(...selStart,r,c);}
+
+/* ---- CHECK ---- */
+function checkSel(){
+  if(!selCells.length)return;
+  const sel=selCells.map(([r,c])=>grid[r][c]).join('');
+  const rev=[...sel].reverse().join('');
+  for(const p of placements){
+    if(foundWords.has(p.word))continue;
+    if(sel===p.word||rev===p.word){markFound(p);return;}
+  }
+}
+
+function markFound({word,cells,colorIdx}){
+  foundWords.add(word);
+  cells.forEach(([r,c])=>{const e=getCell(r,c);if(e){e.classList.remove('selecting');e.classList.add('found',COLORS[colorIdx].css);}});
+  const li=document.getElementById('wi-'+word);
+  if(li){li.classList.add('found-word');li.querySelector('.chk').textContent='✅';}
+  document.getElementById('fc').textContent=foundWords.size;
+  pop();
+  if(foundWords.size===placements.length) setTimeout(showWin,650);
+}
+
+/* ---- HINT ---- */
+function revealHint(){
+  const rem=placements.filter(p=>!foundWords.has(p.word));
+  if(!rem.length)return;
+  const pick=rem[Math.floor(Math.random()*rem.length)];
+  const [r,c]=pick.cells[Math.floor(pick.cells.length/2)];
+  const el=getCell(r,c);
+  if(el){
+    el.style.transition='none';
+    el.style.background='rgba(255,255,0,0.5)';
+    el.style.transform='scale(1.4)';
+    setTimeout(()=>{el.style.transition='';el.style.background='';el.style.transform='';},1200);
+  }
+}
+
+/* ---- WIN ---- */
+function showWin(){
+  clearInterval(timerInterval);
+  const m=String(Math.floor(seconds/60)).padStart(2,'0');
+  const s=String(seconds%60).padStart(2,'0');
+  document.getElementById('winMsg').textContent=`All ${placements.length} animals found in ${m}:${s}! 🎉`;
+  document.getElementById('winOverlay').classList.add('show');
+}
+
+/* ---- TIMER ---- */
+function startTimer(){
+  seconds=0; clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    seconds++;
+    document.getElementById('timer').textContent=
+      String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+  },1000);
+}
+
+/* ---- SOUND ---- */
+function pop(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.setValueAtTime(520,ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(900,ctx.currentTime+0.12);
+    g.gain.setValueAtTime(0.18,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.28);
+    o.start(); o.stop(ctx.currentTime+0.28);
+  }catch(e){}
+}
+
+/* ---- RESET ---- */
+function resetGame(){
+  foundWords.clear(); selStart=null; selCells=[]; selecting=false;
+  const{g,pl}=buildPuzzle(); grid=g; placements=pl;
+  renderGrid(); renderWords();
+  document.getElementById('fc').textContent=0;
+  document.getElementById('timer').textContent='00:00';
+  startTimer();
+}
+
+resetGame();
+</script>
+</body>
+</html>

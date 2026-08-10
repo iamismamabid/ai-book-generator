@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Users, Shield, Cpu, BookOpen, ExternalLink, Globe } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -130,10 +131,16 @@ export default function AboutPage() {
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               {/* Avatar */}
               <div className="shrink-0">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-amber-500 p-0.5 shadow-lg">
-                  <div className="w-full h-full bg-[#0b0f19] rounded-[14px] flex flex-col items-center justify-center text-center">
-                    <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">IA</span>
-                    <span className="text-[8px] font-black uppercase text-slate-400 tracking-wider mt-0.5">Founder</span>
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-amber-500 p-0.5 shadow-lg">
+                  <div className="w-full h-full rounded-[14px] overflow-hidden relative">
+                    <Image
+                      src="/founder.jpg"
+                      alt="Ismam Abid — Founder of KDPage"
+                      fill
+                      sizes="96px"
+                      className="object-cover object-top"
+                      priority
+                    />
                   </div>
                 </div>
               </div>

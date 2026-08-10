@@ -15,6 +15,7 @@ const CATEGORIES = [
   "Abstract & Art Deco",
   "Single Object Clip-Art",
   "European Flags",
+  "North American Flags",
 ];
 
 export function ColoringBookEditor({ page, updatePage }: any) {

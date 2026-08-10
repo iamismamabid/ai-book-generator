@@ -7,7 +7,8 @@ export type NonLivingCategory =
   | "Cozy Objects & Still Life"
   | "Abstract & Art Deco"
   | "Single Object Clip-Art"
-  | "European Flags";
+  | "European Flags"
+  | "North American Flags";
 
 export interface PresetItem {
   id: string;
@@ -88,6 +89,20 @@ export const PRESETS: PresetItem[] = [
   { id: "flag_finland", name: "Finland Flag Outline", category: "European Flags", description: "Nordic cross flag", defaultComplexity: 12 },
   { id: "flag_switzerland", name: "Switzerland Flag Outline", category: "European Flags", description: "Square flag with centered cross", defaultComplexity: 12 },
   { id: "flag_uk", name: "United Kingdom Flag Outline", category: "European Flags", description: "Union Jack -- diagonal and straight crosses", defaultComplexity: 12 },
+
+  // North American Flags -- same outline-only approach as European Flags.
+  { id: "flag_usa", name: "United States Flag Outline", category: "North American Flags", description: "13 stripes with a starred canton", defaultComplexity: 12 },
+  { id: "flag_canada", name: "Canada Flag Outline", category: "North American Flags", description: "Vertical tribar with a center maple leaf", defaultComplexity: 12 },
+  { id: "flag_mexico", name: "Mexico Flag Outline", category: "North American Flags", description: "Vertical tricolor -- green, white, red", defaultComplexity: 12 },
+  { id: "flag_panama", name: "Panama Flag Outline", category: "North American Flags", description: "Quartered flag with two stars", defaultComplexity: 12 },
+  { id: "flag_guatemala", name: "Guatemala Flag Outline", category: "North American Flags", description: "Vertical tricolor -- blue, white, blue", defaultComplexity: 12 },
+  { id: "flag_costarica", name: "Costa Rica Flag Outline", category: "North American Flags", description: "Horizontal five-stripe flag", defaultComplexity: 12 },
+  { id: "flag_cuba", name: "Cuba Flag Outline", category: "North American Flags", description: "Five stripes with a starred triangle hoist", defaultComplexity: 12 },
+  { id: "flag_bahamas", name: "Bahamas Flag Outline", category: "North American Flags", description: "Three stripes with a triangle hoist", defaultComplexity: 12 },
+  { id: "flag_jamaica", name: "Jamaica Flag Outline", category: "North American Flags", description: "Diagonal cross (saltire) flag", defaultComplexity: 12 },
+  { id: "flag_dominican", name: "Dominican Republic Flag Outline", category: "North American Flags", description: "Centered cross with an emblem circle", defaultComplexity: 12 },
+  { id: "flag_honduras", name: "Honduras Flag Outline", category: "North American Flags", description: "Horizontal tricolor with five center stars", defaultComplexity: 12 },
+  { id: "flag_elsalvador", name: "El Salvador Flag Outline", category: "North American Flags", description: "Horizontal tricolor -- blue, white, blue", defaultComplexity: 12 },
 ];
 
 export const COLOR_BY_NUMBER_PALETTE = [
@@ -464,6 +479,121 @@ function drawUnionJackFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number
   ctx.beginPath(); ctx.moveTo(x0, hy1); ctx.lineTo(x1, hy1); ctx.stroke();
 }
 
+// ── North American Flags -- extra pattern drawers ─────────────────────────
+
+function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, outerR: number, innerR: number, points: number = 5) {
+  ctx.beginPath();
+  for (let i = 0; i < points * 2; i++) {
+    const r = i % 2 === 0 ? outerR : innerR;
+    const angle = (Math.PI / points) * i - Math.PI / 2;
+    const x = cx + Math.cos(angle) * r, y = cy + Math.sin(angle) * r;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawUsaFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  drawFlagBorder(ctx, cx, cy, w, h);
+  const x0 = cx - w / 2, y0 = cy - h / 2;
+  const stripeCount = 13;
+  const stripeH = h / stripeCount;
+  const cantonW = w * 0.42;
+  const cantonH = stripeH * 7;
+  for (let i = 1; i < stripeCount; i++) {
+    const y = y0 + stripeH * i;
+    ctx.beginPath();
+    if (i <= 6) {
+      ctx.moveTo(x0 + cantonW, y);
+    } else {
+      ctx.moveTo(x0, y);
+    }
+    ctx.lineTo(x0 + w, y);
+    ctx.stroke();
+  }
+  ctx.strokeRect(x0, y0, cantonW, cantonH);
+  const rows = 5, cols = 6;
+  const starR = Math.min(cantonW / cols, cantonH / rows) * 0.32;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const sx = x0 + (cantonW * (c + 0.5)) / cols;
+      const sy = y0 + (cantonH * (r + 0.5)) / rows;
+      drawStar(ctx, sx, sy, starR, starR * 0.42);
+    }
+  }
+}
+
+function drawMapleLeaf(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const pts: [number, number][] = [
+    [0, -1.0], [0.15, -0.55], [0.5, -0.62], [0.38, -0.32],
+    [0.75, -0.28], [0.55, -0.05], [0.68, 0.05], [0.4, 0.12],
+    [0.46, 0.42], [0.2, 0.28], [0.12, 0.5], [0, 0.3],
+    [-0.12, 0.5], [-0.2, 0.28], [-0.46, 0.42], [-0.4, 0.12],
+    [-0.68, 0.05], [-0.55, -0.05], [-0.75, -0.28], [-0.38, -0.32],
+    [-0.5, -0.62], [-0.15, -0.55],
+  ];
+  ctx.beginPath();
+  pts.forEach(([px, py], i) => {
+    const x = cx + px * s, y = cy + py * s;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + 0.3 * s);
+  ctx.lineTo(cx, cy + 0.55 * s);
+  ctx.stroke();
+}
+
+function drawCanadaFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  drawStripedFlag(ctx, cx, cy, w, h, 3, "vertical");
+  drawMapleLeaf(ctx, cx, cy, Math.min(w, h) * 0.32);
+}
+
+function drawSaltireFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  drawFlagBorder(ctx, cx, cy, w, h);
+  const x0 = cx - w / 2, y0 = cy - h / 2, x1 = cx + w / 2, y1 = cy + h / 2;
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1, y0); ctx.lineTo(x0, y1); ctx.stroke();
+}
+
+function drawTriangleHoistFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, stripeCount: number, withStar: boolean) {
+  drawStripedFlag(ctx, cx, cy, w, h, stripeCount, "horizontal");
+  const x0 = cx - w / 2, y0 = cy - h / 2, y1 = cy + h / 2;
+  const triTipX = x0 + w * 0.38;
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(triTipX, cy);
+  ctx.lineTo(x0, y1);
+  ctx.stroke();
+  if (withStar) drawStar(ctx, x0 + w * 0.14, cy, h * 0.13, h * 0.055);
+}
+
+function drawQuarteredFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  drawFlagBorder(ctx, cx, cy, w, h);
+  ctx.beginPath(); ctx.moveTo(cx, cy - h / 2); ctx.lineTo(cx, cy + h / 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx - w / 2, cy); ctx.lineTo(cx + w / 2, cy); ctx.stroke();
+  drawStar(ctx, cx - w * 0.25, cy - h * 0.25, h * 0.12, h * 0.05);
+  drawStar(ctx, cx + w * 0.25, cy + h * 0.25, h * 0.12, h * 0.05);
+}
+
+function drawCenteredCrossFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  drawFlagBorder(ctx, cx, cy, w, h);
+  const armW = Math.min(w, h) * 0.16;
+  ctx.strokeRect(cx - armW / 2, cy - h / 2, armW, h);
+  ctx.strokeRect(cx - w / 2, cy - armW / 2, w, armW);
+  ctx.beginPath();
+  ctx.arc(cx, cy, armW * 0.35, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function drawStripesWithCenterStars(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  drawStripedFlag(ctx, cx, cy, w, h, 3, "horizontal");
+  const r = h * 0.045;
+  const positions: [number, number][] = [[0, 0], [-0.18, -0.12], [0.18, -0.12], [-0.18, 0.12], [0.18, 0.12]];
+  positions.forEach(([dx, dy]) => drawStar(ctx, cx + dx * w, cy + dy * h, r, r * 0.45));
+}
+
 const OBJECT_DRAWERS: Record<string, (ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) => void> = {
   obj_banana: drawBanana,
   obj_apple: drawApple,
@@ -487,6 +617,18 @@ const OBJECT_DRAWERS: Record<string, (ctx: CanvasRenderingContext2D, cx: number,
   flag_finland: (ctx, cx, cy, s) => drawNordicCrossFlag(ctx, cx, cy, s * 1.7, s * 1.1),
   flag_switzerland: (ctx, cx, cy, s) => drawSwissCrossFlag(ctx, cx, cy, s * 1.3, s * 1.3),
   flag_uk: (ctx, cx, cy, s) => drawUnionJackFlag(ctx, cx, cy, s * 1.7, s * 1.1),
+  flag_usa: (ctx, cx, cy, s) => drawUsaFlag(ctx, cx, cy, s * 1.7, s * 1.1),
+  flag_canada: (ctx, cx, cy, s) => drawCanadaFlag(ctx, cx, cy, s * 1.7, s * 1.1),
+  flag_mexico: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
+  flag_panama: (ctx, cx, cy, s) => drawQuarteredFlag(ctx, cx, cy, s * 1.7, s * 1.1),
+  flag_guatemala: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
+  flag_costarica: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 5, "horizontal"),
+  flag_cuba: (ctx, cx, cy, s) => drawTriangleHoistFlag(ctx, cx, cy, s * 1.7, s * 1.1, 5, true),
+  flag_bahamas: (ctx, cx, cy, s) => drawTriangleHoistFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, false),
+  flag_jamaica: (ctx, cx, cy, s) => drawSaltireFlag(ctx, cx, cy, s * 1.7, s * 1.1),
+  flag_dominican: (ctx, cx, cy, s) => drawCenteredCrossFlag(ctx, cx, cy, s * 1.7, s * 1.1),
+  flag_honduras: (ctx, cx, cy, s) => drawStripesWithCenterStars(ctx, cx, cy, s * 1.7, s * 1.1),
+  flag_elsalvador: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "horizontal"),
 };
 
 const OBJECT_LABELS: Record<string, string> = {
@@ -512,6 +654,18 @@ const OBJECT_LABELS: Record<string, string> = {
   flag_finland: "Finland",
   flag_switzerland: "Switzerland",
   flag_uk: "United Kingdom",
+  flag_usa: "United States",
+  flag_canada: "Canada",
+  flag_mexico: "Mexico",
+  flag_panama: "Panama",
+  flag_guatemala: "Guatemala",
+  flag_costarica: "Costa Rica",
+  flag_cuba: "Cuba",
+  flag_bahamas: "Bahamas",
+  flag_jamaica: "Jamaica",
+  flag_dominican: "Dominican Republic",
+  flag_honduras: "Honduras",
+  flag_elsalvador: "El Salvador",
 };
 
 function drawObjectLabel(ctx: CanvasRenderingContext2D, text: string, cx: number, y: number, width: number, strokeColor: string, lineWidth: number) {

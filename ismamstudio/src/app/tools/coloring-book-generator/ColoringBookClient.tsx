@@ -239,7 +239,7 @@ export default function ColoringBookClient() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-wider">
-                  100% Non-Living Creature Guarantee (Halal &amp; Universal)
+                  Tons of Templates for Your Art &amp; Coloring Books
                 </h2>
                 <span className="bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full">
                   Verified Safe

@@ -8,9 +8,18 @@ const OUTER_GAP = 0.12; // gap from the true page/trim edge (print safety)
 const BAND_INNER = 0.5; // matches the app-wide content margin convention
 const CORNER_RESERVE = 0.55; // keep edge motifs clear of the corner accent
 
-function fillBandFrame(doc: any, x0: number, y0: number, x1: number, y1: number, ix0: number, iy0: number, ix1: number, iy1: number, color: string) {
+function fillBandFrame(doc: any, x0: number, y0: number, x1: number, y1: number, ix0: number, iy0: number, ix1: number, iy1: number, color: string, topNotchHalfWidth: number = 0) {
   doc.setFillColor(color);
-  doc.rect(x0, y0, x1 - x0, iy0 - y0, "F");
+  // Top strip: leave a notch clear around the page title (drawn separately,
+  // before this runs) instead of one continuous rect -- a solid dark fill
+  // painted over already-rendered black title text made it unreadable.
+  if (topNotchHalfWidth > 0) {
+    const centerX = (x0 + x1) / 2;
+    doc.rect(x0, y0, Math.max(0, centerX - topNotchHalfWidth - x0), iy0 - y0, "F");
+    doc.rect(centerX + topNotchHalfWidth, y0, Math.max(0, x1 - (centerX + topNotchHalfWidth)), iy0 - y0, "F");
+  } else {
+    doc.rect(x0, y0, x1 - x0, iy0 - y0, "F");
+  }
   doc.rect(x0, iy1, x1 - x0, y1 - iy1, "F");
   doc.rect(x0, iy0, ix0 - x0, iy1 - iy0, "F");
   doc.rect(ix1, iy0, x1 - ix1, iy1 - iy0, "F");
@@ -21,7 +30,8 @@ type Edge = "top" | "bottom" | "left" | "right";
 function walkEdges(
   x0: number, y0: number, x1: number, y1: number,
   centerlineInset: number, spacing: number,
-  cb: (x: number, y: number, edge: Edge, i: number) => void
+  cb: (x: number, y: number, edge: Edge, i: number) => void,
+  titleGapHalfWidth: number = 0
 ) {
   const cx0 = x0 + CORNER_RESERVE, cx1 = x1 - CORNER_RESERVE;
   const cy0 = y0 + CORNER_RESERVE, cy1 = y1 - CORNER_RESERVE;
@@ -29,9 +39,16 @@ function walkEdges(
   const bottomY = y1 - centerlineInset;
   const leftX = x0 + centerlineInset;
   const rightX = x1 - centerlineInset;
+  const centerX = (x0 + x1) / 2;
 
+  // Every puzzle page draws its own title centered along the top edge (e.g.
+  // "CRYPTOGRAM", "WORD SEARCH (SOLUTION)") -- without this gap, top-edge
+  // motifs land directly behind/through that text.
   let i = 0;
-  for (let x = cx0; x <= cx1; x += spacing) cb(x, topY, "top", i++);
+  for (let x = cx0; x <= cx1; x += spacing) {
+    if (Math.abs(x - centerX) < titleGapHalfWidth) continue;
+    cb(x, topY, "top", i++);
+  }
   i = 0;
   for (let y = cy0; y <= cy1; y += spacing) cb(rightX, y, "right", i++);
   i = 0;
@@ -48,10 +65,11 @@ function drawDiamond(doc: any, cx: number, cy: number, r: number, color: string)
 
 function drawBackToSchool(doc: any, x0: number, y0: number, x1: number, y1: number, colors: string[]) {
   const centerline = (BAND_INNER - OUTER_GAP) / 2 + OUTER_GAP;
+  const titleGap = Math.min((x1 - x0) * 0.32, 2.2);
   walkEdges(x0, y0, x1, y1, centerline, 0.34, (x, y, _edge, i) => {
     doc.setFillColor(colors[i % colors.length]);
     doc.circle(x, y, 0.062, "F");
-  });
+  }, titleGap);
 
   const corners: [number, number][] = [
     [x0 + centerline, y0 + centerline],
@@ -72,6 +90,7 @@ function drawBackToSchool(doc: any, x0: number, y0: number, x1: number, y1: numb
 function drawBotanical(doc: any, x0: number, y0: number, x1: number, y1: number, colors: string[]) {
   const [leaf, berry1, berry2] = [colors[0], colors[1], colors[2]];
   const centerline = (BAND_INNER - OUTER_GAP) / 2 + OUTER_GAP;
+  const titleGap = Math.min((x1 - x0) * 0.32, 2.2);
   walkEdges(x0, y0, x1, y1, centerline, 0.3, (x, y, edge, i) => {
     if (i % 2 === 0) {
       doc.setFillColor(leaf);
@@ -81,7 +100,7 @@ function drawBotanical(doc: any, x0: number, y0: number, x1: number, y1: number,
       doc.setFillColor(i % 4 === 1 ? berry1 : berry2);
       doc.circle(x, y, 0.045, "F");
     }
-  });
+  }, titleGap);
 
   const corners: [number, number][] = [
     [x0 + centerline, y0 + centerline],
@@ -104,13 +123,14 @@ function drawBotanical(doc: any, x0: number, y0: number, x1: number, y1: number,
 function drawNeonRetro(doc: any, x0: number, y0: number, x1: number, y1: number, colors: string[], bandBg: string) {
   const ix0 = x0 + (BAND_INNER - OUTER_GAP), iy0 = y0 + (BAND_INNER - OUTER_GAP);
   const ix1 = x1 - (BAND_INNER - OUTER_GAP), iy1 = y1 - (BAND_INNER - OUTER_GAP);
-  fillBandFrame(doc, x0, y0, x1, y1, ix0, iy0, ix1, iy1, bandBg);
+  const titleGap = Math.min((x1 - x0) * 0.32, 2.2);
+  fillBandFrame(doc, x0, y0, x1, y1, ix0, iy0, ix1, iy1, bandBg, titleGap);
 
   const centerline = (BAND_INNER - OUTER_GAP) / 2 + OUTER_GAP;
   walkEdges(x0, y0, x1, y1, centerline, 0.26, (x, y, _edge, i) => {
     doc.setFillColor(colors[i % colors.length]);
     doc.rect(x - 0.045, y - 0.045, 0.09, 0.09, "F");
-  });
+  }, titleGap);
 
   const corners: [number, number][] = [
     [x0 + centerline, y0 + centerline],
@@ -126,6 +146,7 @@ function drawNeonRetro(doc: any, x0: number, y0: number, x1: number, y1: number,
 
 function drawGeometric(doc: any, x0: number, y0: number, x1: number, y1: number, colors: string[]) {
   const centerline = (BAND_INNER - OUTER_GAP) / 2 + OUTER_GAP;
+  const titleGap = Math.min((x1 - x0) * 0.32, 2.2);
   walkEdges(x0, y0, x1, y1, centerline, 0.32, (x, y, _edge, i) => {
     const color = colors[i % colors.length];
     doc.setFillColor(color);
@@ -133,7 +154,7 @@ function drawGeometric(doc: any, x0: number, y0: number, x1: number, y1: number,
     if (shape === 0) doc.circle(x, y, 0.06, "F");
     else if (shape === 1) doc.rect(x - 0.055, y - 0.055, 0.11, 0.11, "F");
     else doc.triangle(x, y - 0.07, x + 0.065, y + 0.05, x - 0.065, y + 0.05, "F");
-  });
+  }, titleGap);
 
   const corners: [number, number][] = [
     [x0 + centerline, y0 + centerline],

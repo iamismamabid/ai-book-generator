@@ -36,7 +36,13 @@ import {
   Upload,
   Save,
   FolderOpen,
-  BookmarkCheck
+  BookmarkCheck,
+  Shapes,
+  Circle,
+  Square,
+  Star,
+  Heart,
+  Flower2
 } from "lucide-react";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
@@ -130,6 +136,45 @@ function convertImageToLineArt(img: HTMLImageElement, width: number, height: num
   return outImage;
 }
 
+// Vector Shape Path Generator for Stamp Tool
+function drawShapePath(ctx: CanvasRenderingContext2D, shape: string, cx: number, cy: number, size: number) {
+  const r = size / 2;
+  ctx.beginPath();
+
+  if (shape === "circle") {
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  } else if (shape === "rectangle") {
+    ctx.rect(cx - r, cy - r, size, size);
+  } else if (shape === "star") {
+    const points = 5;
+    for (let i = 0; i < points * 2; i++) {
+      const radius = i % 2 === 0 ? r : r * 0.42;
+      const angle = (i * Math.PI) / points - Math.PI / 2;
+      const x = cx + radius * Math.cos(angle);
+      const y = cy + radius * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+  } else if (shape === "heart") {
+    ctx.moveTo(cx, cy + r * 0.7);
+    ctx.bezierCurveTo(cx - r, cy, cx - r, cy - r, cx, cy - r * 0.3);
+    ctx.bezierCurveTo(cx + r, cy - r, cx + r, cy, cx, cy + r * 0.7);
+    ctx.closePath();
+  } else if (shape === "flower") {
+    const petals = 6;
+    for (let i = 0; i < petals; i++) {
+      const angle = (i * Math.PI * 2) / petals;
+      const px = cx + (r * 0.55) * Math.cos(angle);
+      const py = cy + (r * 0.55) * Math.sin(angle);
+      ctx.moveTo(px + r * 0.35, py);
+      ctx.arc(px, py, r * 0.35, 0, Math.PI * 2);
+    }
+    ctx.moveTo(cx + r * 0.25, cy);
+    ctx.arc(cx, cy, r * 0.25, 0, Math.PI * 2);
+  }
+}
+
 // Small static preview of a preset's pattern
 function PresetThumbnail({ preset }: { preset: PresetItem }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -191,7 +236,7 @@ export default function ColoringBookClient() {
 
   // Interactive "Preview Coloring" canvas state
   const [isColoringMode, setIsColoringMode] = useState(false);
-  const [activeTool, setActiveTool] = useState<"brush" | "eraser" | "fill" | "eyedropper" | "text">("brush");
+  const [activeTool, setActiveTool] = useState<"brush" | "eraser" | "fill" | "eyedropper" | "text" | "shape">("brush");
   const [brushColor, setBrushColor] = useState<string>(EXTENDED_PALETTE[0]);
   const [brushSize, setBrushSize] = useState<number>(18);
   const [history, setHistory] = useState<{ stack: string[]; index: number }>({ stack: [], index: -1 });
@@ -200,6 +245,11 @@ export default function ColoringBookClient() {
   const [textInput, setTextInput] = useState<string>("My Coloring Book");
   const [textSize, setTextSize] = useState<number>(36);
   const [fontFamily, setFontFamily] = useState<"sans-serif" | "serif" | "cursive">("sans-serif");
+
+  // Shape Stamp Tool State
+  const [selectedShape, setSelectedShape] = useState<"circle" | "rectangle" | "star" | "heart" | "flower">("circle");
+  const [shapeScale, setShapeScale] = useState<number>(80);
+  const [shapeMode, setShapeMode] = useState<"outline" | "filled">("outline");
 
   // Zoom & Pan State
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
@@ -384,6 +434,39 @@ export default function ColoringBookClient() {
     showToast(`Added text "${textInput}" to page!`);
   };
 
+  // Shape Stamp Placement Execution
+  const drawShapeAt = (x: number, y: number) => {
+    const lineCanvas = canvasRef.current;
+    const colorCanvas = colorCanvasRef.current;
+    if (!lineCanvas || !colorCanvas) return;
+
+    if (shapeMode === "outline") {
+      const ctx = lineCanvas.getContext("2d");
+      if (!ctx) return;
+      ctx.save();
+      ctx.strokeStyle = isMidnightMode ? "#FFFFFF" : "#0F172A";
+      ctx.lineWidth = Math.max(2, lineWidth);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      drawShapePath(ctx, selectedShape, x, y, shapeScale);
+      ctx.stroke();
+      ctx.restore();
+      showToast(`Stamped ${selectedShape} outline line-art (${shapeScale}px scale)!`);
+    } else {
+      const ctx = colorCanvas.getContext("2d");
+      if (!ctx) return;
+      ctx.save();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = brushColor;
+      drawShapePath(ctx, selectedShape, x, y, shapeScale);
+      ctx.fill();
+      ctx.restore();
+      showToast(`Stamped filled ${selectedShape} (${shapeScale}px scale)!`);
+    }
+
+    pushHistory();
+  };
+
   // Save Progress to localStorage
   const handleSaveProgress = () => {
     const colorCanvas = colorCanvasRef.current;
@@ -502,6 +585,11 @@ export default function ColoringBookClient() {
 
     if (activeTool === "text") {
       drawTextAt(pt.x, pt.y);
+      return;
+    }
+
+    if (activeTool === "shape") {
+      drawShapeAt(pt.x, pt.y);
       return;
     }
 
@@ -1086,6 +1174,13 @@ export default function ColoringBookClient() {
                       <Type className="w-4 h-4" />
                     </button>
                     <button
+                      onClick={() => setActiveTool("shape")}
+                      className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "shape" ? "bg-white dark:bg-slate-700 shadow-sm text-amber-500" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                      title="Shape Stamp Tool (Circle, Square, Star, Heart, Flower)"
+                    >
+                      <Shapes className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={handleFillAll}
                       className="p-2 rounded-lg transition cursor-pointer text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                       title="Fill All Background Pixels"
@@ -1141,6 +1236,77 @@ export default function ColoringBookClient() {
                         onChange={(e) => setTextSize(Number(e.target.value))}
                         className="w-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1 text-xs font-bold text-center"
                       />
+                    </div>
+                  </div>
+                )}
+
+                {/* Shape Stamp Tool Options Panel */}
+                {activeTool === "shape" && (
+                  <div className="bg-amber-50/60 dark:bg-amber-950/30 p-2.5 rounded-xl border border-amber-200 dark:border-amber-800/40 flex flex-wrap items-center gap-2.5">
+                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1">
+                      <button
+                        onClick={() => setSelectedShape("circle")}
+                        className={`p-1.5 rounded transition ${selectedShape === "circle" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Circle Shape"
+                      >
+                        <Circle className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("rectangle")}
+                        className={`p-1.5 rounded transition ${selectedShape === "rectangle" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Square / Rectangle Shape"
+                      >
+                        <Square className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("star")}
+                        className={`p-1.5 rounded transition ${selectedShape === "star" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Star Shape"
+                      >
+                        <Star className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("heart")}
+                        className={`p-1.5 rounded transition ${selectedShape === "heart" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Heart Shape"
+                      >
+                        <Heart className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("flower")}
+                        className={`p-1.5 rounded transition ${selectedShape === "flower" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Flower Shape"
+                      >
+                        <Flower2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold text-slate-500">Scale</span>
+                      <input
+                        type="range"
+                        min="20"
+                        max="250"
+                        value={shapeScale}
+                        onChange={(e) => setShapeScale(Number(e.target.value))}
+                        className="w-20 accent-amber-500 cursor-pointer"
+                      />
+                      <span className="text-[10px] font-mono font-bold text-amber-600">{shapeScale}px</span>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-[11px] font-bold">
+                      <button
+                        onClick={() => setShapeMode("outline")}
+                        className={`px-2 py-1 rounded-lg border transition ${shapeMode === "outline" ? "bg-amber-500 text-slate-950 border-amber-500" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600"}`}
+                      >
+                        Line-Art (Colorable)
+                      </button>
+                      <button
+                        onClick={() => setShapeMode("filled")}
+                        className={`px-2 py-1 rounded-lg border transition ${shapeMode === "filled" ? "bg-amber-500 text-slate-950 border-amber-500" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600"}`}
+                      >
+                        Solid Color
+                      </button>
                     </div>
                   </div>
                 )}

@@ -92,7 +92,7 @@ export default function HomeClient() {
               <span>•</span>
               <a href="#reviews" className="hover:text-indigo-600 hover:underline transition-colors">User Reviews</a>
               <span>•</span>
-              <a href="#founder-story" className="hover:text-indigo-600 hover:underline transition-colors">Founder Story</a>
+              <Link href="/about" className="hover:text-indigo-600 hover:underline transition-colors">About Us</Link>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -559,63 +559,6 @@ export default function HomeClient() {
           >
             See All 30+ Free Tools <ArrowRight className="w-4 h-4" />
           </Link>
-        </div>
-      </section>
-
-      {/* Founder's Story & Mission (Social Proof) */}
-      <section id="founder-story" className="relative z-10 max-w-4xl mx-auto px-6 py-24 border-t border-slate-100">
-        <div className="bg-white border border-slate-200/70 shadow-sm rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden">
-          {/* Decorative glows */}
-          <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-indigo-50 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute -right-20 -top-20 w-80 h-80 bg-purple-50 rounded-full blur-[100px] pointer-events-none" />
-
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
-            {/* Founder Avatar / Initial Grid */}
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-amber-500 p-0.5 shadow-lg shrink-0">
-              <div className="w-full h-full bg-white rounded-[22px] flex flex-col items-center justify-center text-center">
-                <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">IA</span>
-                <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider mt-1 font-sans">Founder</span>
-              </div>
-            </div>
-
-            <div className="space-y-6 text-center md:text-left">
-              <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-black uppercase tracking-wider mb-3">
-                  Our Mission & Story
-                </span>
-                <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight font-sans">
-                  Why I Built KDPage
-                </h2>
-                <p className="text-slate-400 text-xs font-bold mt-1 uppercase tracking-widest font-sans">
-                  A message from Ismam Abid, Creator of KDPage
-                </p>
-              </div>
-
-              <div className="space-y-4 text-slate-600 text-sm md:text-base font-semibold leading-relaxed font-sans">
-                <p>
-                  "As a web developer, software engineer, and self-publisher on Amazon KDP, I quickly realized how expensive and fragmented the book-creation process can be. Many standard publishing tools are scattered across different platforms, making it tedious to compile a single book. I knew there had to be a more efficient and integrated way."
-                </p>
-                <p>
-                  "That is why I built KDPage. My goal was to create a single, automated, and genuinely premium workspace that empowers independent publishers. I wanted to make it possible to design mathematically verified puzzles, shape-masked labyrinths, and professional cover layouts in under 30 seconds."
-                </p>
-                <p>
-                  "Whether you are just starting your KDP journey or scaling a publishing agency, this studio is designed to grow with you. With flexible options — including monthly and annual plans — I keep premium tools accessible so you can keep 100% of your royalties and focus on what matters: creating."
-                </p>
-              </div>
-
-              <div className="h-px bg-slate-100" />
-
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-sans">
-                <div className="text-xs font-bold text-slate-400">
-                  Built with ❤️ for KDP Self-Publishers worldwide.
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Actively Maintained &amp; Updated</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 

@@ -73,6 +73,8 @@ export const PRESETS: PresetItem[] = [
   { id: "obj_cupcake", name: "Cupcake Clip-Art", category: "Single Object Clip-Art", description: "Fluted wrapper, frosting swirl and cherry on top", defaultComplexity: 12 },
   { id: "obj_teapot", name: "Teapot Clip-Art", category: "Single Object Clip-Art", description: "Round teapot with spout, handle and lid", defaultComplexity: 12 },
   { id: "obj_hot_air_balloon", name: "Hot Air Balloon Clip-Art", category: "Single Object Clip-Art", description: "Balloon envelope, basket and connecting ropes", defaultComplexity: 12 },
+  { id: "obj_supercar", name: "Supercar Clip-Art", category: "Single Object Clip-Art", description: "Sleek sports car with a rear spoiler and alloy wheels", defaultComplexity: 12 },
+  { id: "obj_classic_car", name: "Classic Car Clip-Art", category: "Single Object Clip-Art", description: "Vintage car with round fenders, headlamp and bumper", defaultComplexity: 12 },
 
   // European Flags -- outline-only (this is a coloring page, not a filled
   // reference image), so each is just the flag border plus the dividing
@@ -418,6 +420,107 @@ function drawHotAirBalloon(ctx: CanvasRenderingContext2D, cx: number, cy: number
   ctx.moveTo(cx + s * 0.25, neckY);
   ctx.lineTo(cx + bx, byTop);
   ctx.stroke();
+}
+
+function drawSupercarIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const bodyY = cy + s * 0.15;
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.25, bodyY);
+  ctx.bezierCurveTo(cx - s * 1.32, bodyY - s * 0.15, cx - s * 1.15, bodyY - s * 0.3, cx - s * 0.95, bodyY - s * 0.32);
+  ctx.bezierCurveTo(cx - s * 0.75, bodyY - s * 0.55, cx - s * 0.5, bodyY - s * 0.68, cx - s * 0.15, bodyY - s * 0.7);
+  ctx.bezierCurveTo(cx + s * 0.15, bodyY - s * 0.72, cx + s * 0.35, bodyY - s * 0.6, cx + s * 0.45, bodyY - s * 0.42);
+  ctx.bezierCurveTo(cx + s * 0.6, bodyY - s * 0.3, cx + s * 0.85, bodyY - s * 0.28, cx + s * 1.05, bodyY - s * 0.18);
+  ctx.bezierCurveTo(cx + s * 1.25, bodyY - s * 0.1, cx + s * 1.35, bodyY, cx + s * 1.3, bodyY + s * 0.12);
+  ctx.lineTo(cx + s * 1.28, bodyY + s * 0.22);
+  ctx.lineTo(cx - s * 1.22, bodyY + s * 0.22);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.68, bodyY - s * 0.36);
+  ctx.bezierCurveTo(cx - s * 0.48, bodyY - s * 0.58, cx - s * 0.1, bodyY - s * 0.6, cx + s * 0.15, bodyY - s * 0.55);
+  ctx.bezierCurveTo(cx + s * 0.3, bodyY - s * 0.5, cx + s * 0.4, bodyY - s * 0.4, cx + s * 0.42, bodyY - s * 0.3);
+  ctx.lineTo(cx - s * 0.68, bodyY - s * 0.3);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.1, bodyY - s * 0.3);
+  ctx.lineTo(cx - s * 0.15, bodyY + s * 0.2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.15, bodyY - s * 0.34);
+  ctx.lineTo(cx - s * 1.15, bodyY - s * 0.56);
+  ctx.moveTo(cx - s * 0.9, bodyY - s * 0.38);
+  ctx.lineTo(cx - s * 0.9, bodyY - s * 0.56);
+  ctx.moveTo(cx - s * 1.2, bodyY - s * 0.58);
+  ctx.lineTo(cx - s * 0.85, bodyY - s * 0.58);
+  ctx.stroke();
+
+  ([-0.72, 0.72] as const).forEach((wx) => {
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.22, s * 0.33, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.22, s * 0.15, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+
+  ctx.beginPath();
+  ctx.ellipse(cx + s * 1.14, bodyY - s * 0.03, s * 0.08, s * 0.05, -0.3, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.18, bodyY - s * 0.1);
+  ctx.lineTo(cx - s * 1.05, bodyY - s * 0.1);
+  ctx.stroke();
+}
+
+function drawClassicCarIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const bodyY = cy + s * 0.2;
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.15, bodyY - s * 0.02);
+  ctx.bezierCurveTo(cx - s * 1.2, bodyY - s * 0.32, cx - s * 1.0, bodyY - s * 0.5, cx - s * 0.72, bodyY - s * 0.5);
+  ctx.lineTo(cx - s * 0.6, bodyY - s * 0.78);
+  ctx.lineTo(cx + s * 0.32, bodyY - s * 0.78);
+  ctx.lineTo(cx + s * 0.48, bodyY - s * 0.5);
+  ctx.bezierCurveTo(cx + s * 0.72, bodyY - s * 0.5, cx + s * 0.95, bodyY - s * 0.35, cx + s * 1.02, bodyY - s * 0.08);
+  ctx.bezierCurveTo(cx + s * 1.22, bodyY - s * 0.1, cx + s * 1.35, bodyY + s * 0.05, cx + s * 1.3, bodyY + s * 0.22);
+  ctx.lineTo(cx + s * 1.05, bodyY + s * 0.22);
+  ctx.bezierCurveTo(cx + s * 1.02, bodyY + s * 0.02, cx + s * 0.85, bodyY - s * 0.05, cx + s * 0.68, bodyY - s * 0.02);
+  ctx.bezierCurveTo(cx + s * 0.52, bodyY + s * 0.02, cx + s * 0.45, bodyY + s * 0.1, cx + s * 0.42, bodyY + s * 0.22);
+  ctx.lineTo(cx - s * 0.42, bodyY + s * 0.22);
+  ctx.bezierCurveTo(cx - s * 0.45, bodyY + s * 0.1, cx - s * 0.52, bodyY + s * 0.02, cx - s * 0.68, bodyY - s * 0.02);
+  ctx.bezierCurveTo(cx - s * 0.85, bodyY - s * 0.05, cx - s * 1.0, bodyY + s * 0.02, cx - s * 1.05, bodyY + s * 0.22);
+  ctx.lineTo(cx - s * 1.28, bodyY + s * 0.22);
+  ctx.bezierCurveTo(cx - s * 1.35, bodyY + s * 0.05, cx - s * 1.25, bodyY - s * 0.05, cx - s * 1.15, bodyY - s * 0.02);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.58, bodyY - s * 0.48);
+  ctx.lineTo(cx - s * 0.44, bodyY - s * 0.74);
+  ctx.moveTo(cx - s * 0.1, bodyY - s * 0.48);
+  ctx.lineTo(cx - s * 0.1, bodyY - s * 0.75);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(cx + s * 0.62, bodyY - s * 0.22, s * 0.09, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.3, bodyY + s * 0.28);
+  ctx.lineTo(cx + s * 1.28, bodyY + s * 0.28);
+  ctx.stroke();
+
+  ([-0.72, 0.72] as const).forEach((wx) => {
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.24, s * 0.3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.24, s * 0.13, 0, Math.PI * 2);
+    ctx.stroke();
+  });
 }
 
 // ── Food, Drinks & Kitchen pattern icons ────────────────────────────────
@@ -1371,6 +1474,8 @@ const OBJECT_DRAWERS: Record<string, (ctx: CanvasRenderingContext2D, cx: number,
   obj_cupcake: drawCupcake,
   obj_teapot: drawTeapot,
   obj_hot_air_balloon: drawHotAirBalloon,
+  obj_supercar: drawSupercarIcon,
+  obj_classic_car: drawClassicCarIcon,
   flag_france: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
   flag_italy: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
   flag_belgium: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
@@ -1407,6 +1512,8 @@ const OBJECT_LABELS: Record<string, string> = {
   obj_cupcake: "Cupcake",
   obj_teapot: "Teapot",
   obj_hot_air_balloon: "Hot Air Balloon",
+  obj_supercar: "Supercar",
+  obj_classic_car: "Classic Car",
   flag_france: "France",
   flag_italy: "Italy",
   flag_belgium: "Belgium",

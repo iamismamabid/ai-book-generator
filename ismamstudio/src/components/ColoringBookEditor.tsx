@@ -16,6 +16,7 @@ const CATEGORIES = [
   "Single Object Clip-Art",
   "European Flags",
   "North American Flags",
+  "Concept Cars",
 ];
 
 export function ColoringBookEditor({ page, updatePage }: any) {

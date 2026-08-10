@@ -8,7 +8,8 @@ export type NonLivingCategory =
   | "Abstract & Art Deco"
   | "Single Object Clip-Art"
   | "European Flags"
-  | "North American Flags";
+  | "North American Flags"
+  | "Concept Cars";
 
 export interface PresetItem {
   id: string;
@@ -73,8 +74,18 @@ export const PRESETS: PresetItem[] = [
   { id: "obj_cupcake", name: "Cupcake Clip-Art", category: "Single Object Clip-Art", description: "Fluted wrapper, frosting swirl and cherry on top", defaultComplexity: 12 },
   { id: "obj_teapot", name: "Teapot Clip-Art", category: "Single Object Clip-Art", description: "Round teapot with spout, handle and lid", defaultComplexity: 12 },
   { id: "obj_hot_air_balloon", name: "Hot Air Balloon Clip-Art", category: "Single Object Clip-Art", description: "Balloon envelope, basket and connecting ropes", defaultComplexity: 12 },
-  { id: "obj_supercar", name: "Supercar Clip-Art", category: "Single Object Clip-Art", description: "Sleek sports car with a rear spoiler and alloy wheels", defaultComplexity: 12 },
-  { id: "obj_classic_car", name: "Classic Car Clip-Art", category: "Single Object Clip-Art", description: "Vintage car with round fenders, headlamp and bumper", defaultComplexity: 12 },
+
+  // Concept Cars -- automotive design sketches: low, wide silhouettes with
+  // exotic-car styling cues (flared wheel arches, big wings, wedge noses).
+  // Generic archetypes only, no badges or exact proportions copied from any
+  // specific trademarked production car.
+  { id: "obj_supercar", name: "Wedge Hypercar Clip-Art", category: "Concept Cars", description: "Low wedge supercar with a rear spoiler and alloy wheels", defaultComplexity: 12 },
+  { id: "obj_classic_car", name: "Classic Car Clip-Art", category: "Concept Cars", description: "Vintage car with round fenders, headlamp and bumper", defaultComplexity: 12 },
+  { id: "obj_gt_coupe", name: "GT Coupe Clip-Art", category: "Concept Cars", description: "Flowing grand-tourer coupe with a long hood and fastback roof", defaultComplexity: 12 },
+  { id: "obj_track_car", name: "Wide-Body Track Car Clip-Art", category: "Concept Cars", description: "Flared fenders, front splitter and a tall rear wing", defaultComplexity: 12 },
+  { id: "obj_shooting_brake", name: "Shooting Brake Clip-Art", category: "Concept Cars", description: "Low sporty wagon with an elongated glass roofline", defaultComplexity: 12 },
+  { id: "obj_roadster", name: "Roadster Clip-Art", category: "Concept Cars", description: "Open-top convertible with a low windshield and headrest fairings", defaultComplexity: 12 },
+  { id: "obj_muscle_coupe", name: "Retro Muscle Coupe Clip-Art", category: "Concept Cars", description: "Long-hood muscle car with a hood scoop and fastback roof", defaultComplexity: 12 },
 
   // European Flags -- outline-only (this is a coloring page, not a filled
   // reference image), so each is just the flag border plus the dividing
@@ -540,6 +551,237 @@ function drawClassicCarIcon(ctx: CanvasRenderingContext2D, cx: number, cy: numbe
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(cx + wx * s, bodyY + s * 0.24, s * 0.13, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawGTCoupeIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const bodyY = cy + s * 0.18;
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.15, bodyY + s * 0.15);
+  ctx.lineTo(cx - s * 1.18, bodyY - s * 0.02);
+  ctx.quadraticCurveTo(cx - s * 1.1, bodyY - s * 0.18, cx - s * 0.9, bodyY - s * 0.2);
+  ctx.bezierCurveTo(cx - s * 0.75, bodyY - s * 0.55, cx - s * 0.55, bodyY - s * 0.68, cx - s * 0.25, bodyY - s * 0.66);
+  ctx.bezierCurveTo(cx - s * 0.02, bodyY - s * 0.65, cx + s * 0.12, bodyY - s * 0.58, cx + s * 0.22, bodyY - s * 0.42);
+  ctx.bezierCurveTo(cx + s * 0.4, bodyY - s * 0.32, cx + s * 0.65, bodyY - s * 0.28, cx + s * 0.85, bodyY - s * 0.2);
+  ctx.bezierCurveTo(cx + s * 1.05, bodyY - s * 0.14, cx + s * 1.25, bodyY - s * 0.08, cx + s * 1.32, bodyY + s * 0.08);
+  ctx.lineTo(cx + s * 1.28, bodyY + s * 0.2);
+  ctx.lineTo(cx - s * 1.12, bodyY + s * 0.2);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.62, bodyY - s * 0.4);
+  ctx.bezierCurveTo(cx - s * 0.5, bodyY - s * 0.58, cx - s * 0.15, bodyY - s * 0.6, cx + s * 0.08, bodyY - s * 0.5);
+  ctx.bezierCurveTo(cx + s * 0.16, bodyY - s * 0.46, cx + s * 0.2, bodyY - s * 0.4, cx + s * 0.2, bodyY - s * 0.32);
+  ctx.lineTo(cx - s * 0.62, bodyY - s * 0.32);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.15, bodyY - s * 0.32);
+  ctx.lineTo(cx - s * 0.2, bodyY + s * 0.2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.95, bodyY - s * 0.02);
+  ctx.lineTo(cx + s * 0.85, bodyY - s * 0.15);
+  ctx.stroke();
+
+  ([-0.68, 0.78] as const).forEach((wx) => {
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.2, s * 0.3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.2, s * 0.13, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawTrackCarIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const bodyY = cy + s * 0.22;
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.32, bodyY + s * 0.1);
+  ctx.lineTo(cx - s * 1.34, bodyY - s * 0.05);
+  ctx.lineTo(cx - s * 1.15, bodyY - s * 0.15);
+  ctx.quadraticCurveTo(cx - s * 0.95, bodyY - s * 0.42, cx - s * 0.72, bodyY - s * 0.3);
+  ctx.lineTo(cx - s * 0.5, bodyY - s * 0.6);
+  ctx.lineTo(cx - s * 0.1, bodyY - s * 0.65);
+  ctx.lineTo(cx + s * 0.25, bodyY - s * 0.58);
+  ctx.lineTo(cx + s * 0.5, bodyY - s * 0.32);
+  ctx.quadraticCurveTo(cx + s * 0.75, bodyY - s * 0.42, cx + s * 0.98, bodyY - s * 0.28);
+  ctx.lineTo(cx + s * 1.15, bodyY - s * 0.14);
+  ctx.lineTo(cx + s * 1.42, bodyY - s * 0.02);
+  ctx.lineTo(cx + s * 1.32, bodyY + s * 0.14);
+  ctx.lineTo(cx - s * 1.26, bodyY + s * 0.16);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.42, bodyY - s * 0.56);
+  ctx.lineTo(cx - s * 0.08, bodyY - s * 0.59);
+  ctx.lineTo(cx + s * 0.2, bodyY - s * 0.5);
+  ctx.lineTo(cx + s * 0.35, bodyY - s * 0.3);
+  ctx.lineTo(cx - s * 0.42, bodyY - s * 0.28);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.38, bodyY - s * 0.02);
+  ctx.lineTo(cx - s * 0.16, bodyY);
+  ctx.lineTo(cx - s * 0.22, bodyY + s * 0.1);
+  ctx.lineTo(cx - s * 0.44, bodyY + s * 0.08);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.05, bodyY - s * 0.1);
+  ctx.lineTo(cx - s * 1.05, bodyY - s * 0.55);
+  ctx.moveTo(cx - s * 0.85, bodyY - s * 0.15);
+  ctx.lineTo(cx - s * 0.85, bodyY - s * 0.55);
+  ctx.moveTo(cx - s * 1.12, bodyY - s * 0.58);
+  ctx.lineTo(cx - s * 0.78, bodyY - s * 0.58);
+  ctx.stroke();
+
+  ([-0.85, 0.88] as const).forEach((wx) => {
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.18, s * 0.3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.18, s * 0.13, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawShootingBrakeIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const bodyY = cy + s * 0.2;
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.15, bodyY + s * 0.16);
+  ctx.lineTo(cx - s * 1.2, bodyY - s * 0.15);
+  ctx.lineTo(cx - s * 1.0, bodyY - s * 0.35);
+  ctx.lineTo(cx - s * 0.2, bodyY - s * 0.42);
+  ctx.lineTo(cx + s * 0.3, bodyY - s * 0.38);
+  ctx.lineTo(cx + s * 0.55, bodyY - s * 0.22);
+  ctx.lineTo(cx + s * 1.0, bodyY - s * 0.14);
+  ctx.lineTo(cx + s * 1.35, bodyY);
+  ctx.lineTo(cx + s * 1.28, bodyY + s * 0.18);
+  ctx.lineTo(cx - s * 1.1, bodyY + s * 0.18);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.88, bodyY - s * 0.3);
+  ctx.lineTo(cx - s * 0.2, bodyY - s * 0.35);
+  ctx.lineTo(cx + s * 0.25, bodyY - s * 0.31);
+  ctx.lineTo(cx + s * 0.42, bodyY - s * 0.16);
+  ctx.lineTo(cx - s * 0.92, bodyY - s * 0.1);
+  ctx.closePath();
+  ctx.stroke();
+  ([-0.55, -0.05] as const).forEach((px) => {
+    ctx.beginPath();
+    ctx.moveTo(cx + px * s, bodyY - s * 0.33);
+    ctx.lineTo(cx + px * s - s * 0.02, bodyY - s * 0.11);
+    ctx.stroke();
+  });
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.95, bodyY - s * 0.04);
+  ctx.lineTo(cx + s * 0.9, bodyY - s * 0.11);
+  ctx.stroke();
+
+  ([-0.68, 0.82] as const).forEach((wx) => {
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.2, s * 0.28, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.2, s * 0.12, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawRoadsterIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const bodyY = cy + s * 0.2;
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.15, bodyY + s * 0.15);
+  ctx.lineTo(cx - s * 1.18, bodyY - s * 0.02);
+  ctx.lineTo(cx - s * 0.95, bodyY - s * 0.12);
+  ctx.quadraticCurveTo(cx - s * 0.75, bodyY - s * 0.28, cx - s * 0.55, bodyY - s * 0.22);
+  ctx.quadraticCurveTo(cx - s * 0.45, bodyY - s * 0.16, cx - s * 0.4, bodyY - s * 0.24);
+  ctx.quadraticCurveTo(cx - s * 0.3, bodyY - s * 0.3, cx - s * 0.15, bodyY - s * 0.22);
+  ctx.lineTo(cx - s * 0.05, bodyY - s * 0.14);
+  ctx.lineTo(cx + s * 0.05, bodyY - s * 0.42);
+  ctx.lineTo(cx + s * 0.18, bodyY - s * 0.4);
+  ctx.lineTo(cx + s * 0.35, bodyY - s * 0.2);
+  ctx.lineTo(cx + s * 0.95, bodyY - s * 0.15);
+  ctx.lineTo(cx + s * 1.3, bodyY - s * 0.02);
+  ctx.lineTo(cx + s * 1.25, bodyY + s * 0.18);
+  ctx.lineTo(cx - s * 1.1, bodyY + s * 0.18);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.05, bodyY - s * 0.05);
+  ctx.lineTo(cx - s * 0.1, bodyY + s * 0.18);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.9, bodyY - s * 0.02);
+  ctx.lineTo(cx + s * 0.7, bodyY - s * 0.1);
+  ctx.stroke();
+
+  ([-0.7, 0.78] as const).forEach((wx) => {
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.2, s * 0.3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.2, s * 0.13, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawMuscleCoupeIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  const bodyY = cy + s * 0.18;
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 1.2, bodyY + s * 0.18);
+  ctx.lineTo(cx - s * 1.22, bodyY - s * 0.05);
+  ctx.lineTo(cx - s * 1.0, bodyY - s * 0.15);
+  ctx.lineTo(cx - s * 0.85, bodyY - s * 0.4);
+  ctx.lineTo(cx - s * 0.68, bodyY - s * 0.3);
+  ctx.lineTo(cx - s * 0.45, bodyY - s * 0.58);
+  ctx.lineTo(cx - s * 0.1, bodyY - s * 0.63);
+  ctx.lineTo(cx + s * 0.2, bodyY - s * 0.58);
+  ctx.lineTo(cx + s * 0.35, bodyY - s * 0.4);
+  ctx.lineTo(cx + s * 1.15, bodyY - s * 0.32);
+  ctx.lineTo(cx + s * 1.35, bodyY - s * 0.15);
+  ctx.lineTo(cx + s * 1.28, bodyY + s * 0.15);
+  ctx.lineTo(cx - s * 1.15, bodyY + s * 0.18);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx + s * 0.55, bodyY - s * 0.36);
+  ctx.lineTo(cx + s * 0.72, bodyY - s * 0.42);
+  ctx.lineTo(cx + s * 0.92, bodyY - s * 0.4);
+  ctx.lineTo(cx + s * 0.85, bodyY - s * 0.33);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.6, bodyY - s * 0.36);
+  ctx.lineTo(cx - s * 0.3, bodyY - s * 0.53);
+  ctx.lineTo(cx + s * 0.05, bodyY - s * 0.55);
+  ctx.lineTo(cx + s * 0.22, bodyY - s * 0.4);
+  ctx.lineTo(cx - s * 0.6, bodyY - s * 0.32);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.95, bodyY - s * 0.05);
+  ctx.lineTo(cx + s * 1.0, bodyY - s * 0.2);
+  ctx.stroke();
+
+  ([-0.72, 0.85] as const).forEach((wx) => {
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.2, s * 0.3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + wx * s, bodyY + s * 0.2, s * 0.13, 0, Math.PI * 2);
     ctx.stroke();
   });
 }
@@ -1497,6 +1739,11 @@ const OBJECT_DRAWERS: Record<string, (ctx: CanvasRenderingContext2D, cx: number,
   obj_hot_air_balloon: drawHotAirBalloon,
   obj_supercar: drawSupercarIcon,
   obj_classic_car: drawClassicCarIcon,
+  obj_gt_coupe: drawGTCoupeIcon,
+  obj_track_car: drawTrackCarIcon,
+  obj_shooting_brake: drawShootingBrakeIcon,
+  obj_roadster: drawRoadsterIcon,
+  obj_muscle_coupe: drawMuscleCoupeIcon,
   flag_france: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
   flag_italy: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
   flag_belgium: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
@@ -1533,8 +1780,13 @@ const OBJECT_LABELS: Record<string, string> = {
   obj_cupcake: "Cupcake",
   obj_teapot: "Teapot",
   obj_hot_air_balloon: "Hot Air Balloon",
-  obj_supercar: "Supercar",
+  obj_supercar: "Wedge Hypercar",
   obj_classic_car: "Classic Car",
+  obj_gt_coupe: "GT Coupe",
+  obj_track_car: "Track Car",
+  obj_shooting_brake: "Shooting Brake",
+  obj_roadster: "Roadster",
+  obj_muscle_coupe: "Muscle Coupe",
   flag_france: "France",
   flag_italy: "Italy",
   flag_belgium: "Belgium",

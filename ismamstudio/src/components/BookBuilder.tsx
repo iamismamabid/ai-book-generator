@@ -13,6 +13,7 @@ import { WordScrambleEditor } from "./WordScrambleEditor";
 import { CryptogramEditor } from "./CryptogramEditor";
 import { MathPuzzleEditor } from "./MathPuzzleEditor";
 import { KakuroEditor } from "./KakuroEditor";
+import { ColoringBookEditor } from "./ColoringBookEditor";
 import LowContentEditor from "./LowContentEditor";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import BookBuilderTour from "./BookBuilderTour";
@@ -58,6 +59,7 @@ const GENERATED_CONTENT_KEY: Record<string, string> = {
   cryptogram: 'cryptogramData',
   math_puzzle: 'puzzleData',
   kakuro: 'gridData',
+  coloring_book: 'seed',
 };
 
 const TRIM_SIZES = [
@@ -795,6 +797,13 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
+            {bookPages[activeIndex].type === 'coloring_book' && (
+              <ColoringBookEditor
+                key={bookPages[activeIndex].id}
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+              />
+            )}
 
             {bookPages[activeIndex].type === 'low_content' && (
               <LowContentEditor
@@ -950,7 +959,8 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
               { type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
               { type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
               { type: 'kakuro', config: { sizeId: '6x6', difficulty: 'medium' }, label: 'Kakuro Puzzle', desc: 'Crossword-style number sums logic grids', icon: '🔢', color: 'bg-orange-50 border-orange-200 text-orange-600' },
-              
+              { type: 'coloring_book', config: { presetId: 'citrus_slices', complexity: 12, lineWidth: 3, isColorByNumber: true, isMidnightMode: false, frameStyle: 'ornamental', seed: Math.floor(Math.random() * 10000) }, label: 'Coloring Page', desc: 'Non-living color-by-number art, 27 presets', icon: '🎨', color: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600' },
+
               // Low-Content journal/planner templates
               { type: 'low_content', config: { template: 'lined_journal' }, label: 'Lined Journal', desc: 'Horizontal writing lines', icon: '📖', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
               { type: 'low_content', config: { template: 'dot_grid' }, label: 'Dot Grid Journal', desc: 'Subtle bullet journal grid', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },

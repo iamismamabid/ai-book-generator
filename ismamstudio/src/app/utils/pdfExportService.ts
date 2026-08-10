@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import { getGutterMargin } from "@/lib/pdfFormatter";
 import { drawPageBorderTheme } from "./borderThemeDrawing";
 import { BorderThemeId } from "@/lib/borderThemes";
+import { drawColoringPattern } from "@/lib/coloringBookPatterns";
 
 export interface ExportOptions {
   includeCover?: boolean;
@@ -102,6 +103,8 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       drawMathPuzzleSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'math_puzzle' && page.config.puzzleData) {
       drawMathPuzzle(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'coloring_book' && page.config.presetId) {
+      drawColoringBookPage(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'low_content') {
       drawLowContent(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'title') {
@@ -215,6 +218,42 @@ export function drawMarginGuides(doc: any, marginL: number, marginR: number, mar
     console.error("Error drawing margin guides:", err);
   }
 }
+
+// Helper: Draw a non-living coloring/color-by-number page. Renders the
+// shared canvas pattern offscreen at 300 DPI and embeds it as a PNG --
+// same raster-embed approach Cover Studio already uses for its own
+// canvas-based designs, since this art (mandalas, lattices, wave contours)
+// is generated procedurally on a 2D canvas, not drawn as jsPDF vector
+// primitives like the grid-based puzzle types.
+const drawColoringBookPage = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const margin = 0.5;
+  const topReserved = 0.95;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  if (safeW <= 0 || safeH <= 0) return;
+
+  const dpi = 300;
+  const pxW = Math.max(1, Math.round(safeW * dpi));
+  const pxH = Math.max(1, Math.round(safeH * dpi));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = pxW;
+  canvas.height = pxH;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  drawColoringPattern(ctx, pxW, pxH, {
+    presetId: page.config.presetId,
+    complexity: page.config.complexity ?? 12,
+    lineWidth: page.config.lineWidth ?? 3,
+    isColorByNumber: page.config.isColorByNumber ?? true,
+    isMidnightMode: page.config.isMidnightMode ?? false,
+    frameStyle: page.config.frameStyle || "ornamental",
+    seed: page.config.seed ?? 42,
+  });
+
+  doc.addImage(canvas.toDataURL("image/png", 1.0), "PNG", margin + xShift, topReserved, safeW, safeH);
+};
 
 // Helper: Draw Crossword Grid & Clues
 const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number) => {

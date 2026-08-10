@@ -420,6 +420,263 @@ function drawHotAirBalloon(ctx: CanvasRenderingContext2D, cx: number, cy: number
   ctx.stroke();
 }
 
+// ── Food, Drinks & Kitchen pattern icons ────────────────────────────────
+// Small stroke-only icons tiled in a grid by drawFoodIconGrid() below,
+// following the same grid-of-repeated-motifs approach as citrus_slices.
+
+function drawCoffeeCupIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.55, cy - r * 0.35);
+  ctx.lineTo(cx - r * 0.45, cy + r * 0.55);
+  ctx.quadraticCurveTo(cx, cy + r * 0.75, cx + r * 0.45, cy + r * 0.55);
+  ctx.lineTo(cx + r * 0.55, cy - r * 0.35);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy - r * 0.35, r * 0.55, r * 0.12, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx + r * 0.75, cy + r * 0.05, r * 0.22, r * 0.28, 0, -0.6, 2.3);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + r * 0.8, r * 0.72, r * 0.14, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  [-0.22, 0.22].forEach((off) => {
+    ctx.beginPath();
+    ctx.moveTo(cx + off * r, cy - r * 0.45);
+    ctx.bezierCurveTo(
+      cx + off * r - r * 0.18, cy - r * 0.75,
+      cx + off * r + r * 0.18, cy - r * 0.9,
+      cx + off * r, cy - r * 1.15
+    );
+    ctx.stroke();
+  });
+}
+
+function drawCoffeeBeanIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, r * 0.5, r * 0.75, Math.PI / 5, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.22, cy - r * 0.55);
+  ctx.quadraticCurveTo(cx, cy, cx + r * 0.22, cy + r * 0.55);
+  ctx.stroke();
+}
+
+function drawMacaronIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.arc(cx, cy - r * 0.02, r * 0.62, Math.PI, 0);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy + r * 0.18, r * 0.62, 0, Math.PI);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.62, cy - r * 0.02);
+  ctx.lineTo(cx - r * 0.62, cy + r * 0.18);
+  ctx.moveTo(cx + r * 0.62, cy - r * 0.02);
+  ctx.lineTo(cx + r * 0.62, cy + r * 0.18);
+  ctx.stroke();
+  ctx.beginPath();
+  const steps = 6;
+  for (let i = 0; i <= steps; i++) {
+    const x = cx - r * 0.55 + (r * 1.1 / steps) * i;
+    const y = cy + r * 0.08 + (i % 2 === 0 ? -r * 0.05 : r * 0.05);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  [[-0.22, -0.28], [0.08, -0.32], [0.3, -0.18]].forEach(([dx, dy]) => {
+    ctx.beginPath();
+    ctx.arc(cx + dx * r, cy + dy * r, r * 0.05, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawCroissantIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.65, cy + r * 0.15);
+  ctx.quadraticCurveTo(cx - r * 0.55, cy - r * 0.7, cx + r * 0.1, cy - r * 0.55);
+  ctx.quadraticCurveTo(cx + r * 0.6, cy - r * 0.4, cx + r * 0.65, cy - r * 0.02);
+  ctx.quadraticCurveTo(cx + r * 0.25, cy - r * 0.12, cx - r * 0.05, cy + r * 0.18);
+  ctx.quadraticCurveTo(cx - r * 0.3, cy + r * 0.42, cx - r * 0.65, cy + r * 0.15);
+  ctx.closePath();
+  ctx.stroke();
+  ([
+    [-0.38, -0.28, -0.12, 0.02],
+    [-0.1, -0.48, 0.18, -0.18],
+    [0.15, -0.45, 0.4, -0.05],
+  ] as const).forEach(([x1, y1, x2, y2]) => {
+    ctx.beginPath();
+    ctx.moveTo(cx + x1 * r, cy + y1 * r);
+    ctx.lineTo(cx + x2 * r, cy + y2 * r);
+    ctx.stroke();
+  });
+}
+
+function drawTartIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const scallops = 10;
+  ctx.beginPath();
+  for (let i = 0; i < scallops; i++) {
+    const a1 = (i / scallops) * Math.PI * 2;
+    const mx = cx + Math.cos(a1) * r * 0.68;
+    const my = cy + Math.sin(a1) * r * 0.68;
+    if (i === 0) ctx.moveTo(mx, my);
+    const a2 = ((i + 1) / scallops) * Math.PI * 2;
+    const ex = cx + Math.cos(a2) * r * 0.68;
+    const ey = cy + Math.sin(a2) * r * 0.68;
+    const bulgeA = (a1 + a2) / 2;
+    const bx = cx + Math.cos(bulgeA) * r * 0.82;
+    const by = cy + Math.sin(bulgeA) * r * 0.82;
+    ctx.quadraticCurveTo(bx, by, ex, ey);
+  }
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.42, 0, Math.PI * 2);
+  ctx.stroke();
+  [[-0.15, -0.1], [0.15, 0.05], [0, 0.22]].forEach(([dx, dy]) => {
+    ctx.beginPath();
+    ctx.arc(cx + dx * r, cy + dy * r, r * 0.09, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawTeacupIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.5, cy - r * 0.3);
+  ctx.lineTo(cx - r * 0.4, cy + r * 0.45);
+  ctx.quadraticCurveTo(cx, cy + r * 0.62, cx + r * 0.4, cy + r * 0.45);
+  ctx.lineTo(cx + r * 0.5, cy - r * 0.3);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy - r * 0.3, r * 0.5, r * 0.1, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx + r * 0.66, cy - r * 0.02, r * 0.18, r * 0.22, 0, -0.6, 2.3);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + r * 0.68, r * 0.68, r * 0.13, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.4);
+  ctx.bezierCurveTo(cx - r * 0.15, cy - r * 0.65, cx + r * 0.15, cy - r * 0.8, cx, cy - r * 1.0);
+  ctx.stroke();
+}
+
+function drawTeaLeafIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.7);
+  ctx.quadraticCurveTo(cx + r * 0.65, cy - r * 0.3, cx, cy + r * 0.7);
+  ctx.quadraticCurveTo(cx - r * 0.65, cy - r * 0.3, cx, cy - r * 0.7);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.6);
+  ctx.lineTo(cx, cy + r * 0.6);
+  [-0.3, 0, 0.3].forEach((t) => {
+    const vy = cy + t * r;
+    ctx.moveTo(cx, vy);
+    ctx.lineTo(cx + r * 0.3, vy - r * 0.12);
+    ctx.moveTo(cx, vy);
+    ctx.lineTo(cx - r * 0.3, vy - r * 0.12);
+  });
+  ctx.stroke();
+}
+
+function drawMasonJarIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const top = cy - r * 0.85, bot = cy + r * 0.75;
+  const wTop = r * 0.55, wBot = r * 0.68;
+  ctx.beginPath();
+  ctx.moveTo(cx - wTop, top + r * 0.18);
+  ctx.lineTo(cx - wTop, top + r * 0.35);
+  ctx.lineTo(cx - wBot, top + r * 0.65);
+  ctx.lineTo(cx - wBot, bot - r * 0.15);
+  ctx.quadraticCurveTo(cx - wBot, bot, cx - wBot + r * 0.15, bot);
+  ctx.lineTo(cx + wBot - r * 0.15, bot);
+  ctx.quadraticCurveTo(cx + wBot, bot, cx + wBot, bot - r * 0.15);
+  ctx.lineTo(cx + wBot, top + r * 0.65);
+  ctx.lineTo(cx + wTop, top + r * 0.35);
+  ctx.lineTo(cx + wTop, top + r * 0.18);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.rect(cx - wTop, top, wTop * 2, r * 0.18);
+  ctx.stroke();
+  [0.06, 0.11].forEach((off) => {
+    ctx.beginPath();
+    ctx.moveTo(cx - wTop, top + r * off);
+    ctx.lineTo(cx + wTop, top + r * off);
+    ctx.stroke();
+  });
+  ctx.beginPath();
+  ctx.moveTo(cx + r * 0.1, top - r * 0.05);
+  ctx.lineTo(cx + r * 0.35, top - r * 0.55);
+  ctx.stroke();
+  const pearlY = bot - r * 0.28;
+  [-0.32, -0.08, 0.16, 0.4].forEach((px, i) => {
+    ctx.beginPath();
+    ctx.arc(cx + px * r, pearlY - (i % 2) * r * 0.12, r * 0.08, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawFruitWedgeIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + r * 0.75);
+  ctx.lineTo(cx - r * 0.05, cy - r * 0.7);
+  ctx.arc(cx, cy - r * 0.7, r * 0.05, Math.PI, 0, false);
+  ctx.lineTo(cx + r * 0.65, cy + r * 0.6);
+  ctx.quadraticCurveTo(cx + r * 0.55, cy + r * 0.78, cx + r * 0.35, cy + r * 0.75);
+  ctx.closePath();
+  ctx.stroke();
+  for (let i = 1; i <= 3; i++) {
+    const t = i / 4;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + r * 0.7 * (1 - t) + r * -0.7 * t);
+    ctx.lineTo(cx + r * 0.6 * t, cy + r * 0.7 * (1 - t) * 0.6 + r * 0.1);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.7);
+  ctx.lineTo(cx, cy + r * 0.7);
+  ctx.stroke();
+}
+
+function drawFoodIconGrid(
+  ctx: CanvasRenderingContext2D,
+  icons: Array<(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) => void>,
+  margin: number,
+  innerW: number,
+  innerH: number,
+  density: number,
+  strokeColor: string,
+  width: number,
+  isColorByNumber: boolean
+) {
+  const cols = Math.ceil(Math.sqrt(density));
+  const rows = cols;
+  const stepX = innerW / cols;
+  const stepY = innerH / rows;
+  let numIdx = 1;
+  let idx = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = margin + c * stepX + stepX / 2;
+      const y = margin + r * stepY + stepY / 2;
+      const rad = Math.min(stepX, stepY) * 0.4;
+      icons[idx % icons.length](ctx, x, y, rad);
+      idx++;
+      if (isColorByNumber && (r + c) % 2 === 0) {
+        ctx.fillStyle = strokeColor;
+        ctx.font = `bold ${Math.max(10, Math.floor(width * 0.014))}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`${(numIdx % 9) + 1}`, x, y + rad + 14);
+        numIdx++;
+      }
+    }
+  }
+}
+
 // ── European Flags ──────────────────────────────────────────────────────
 // Outline-only, same reasoning as the object clip-art above: this is a
 // coloring page, so a flag is just its border plus the dividing lines that
@@ -756,7 +1013,7 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
   const pid = presetId;
   const density = complexity;
 
-  if (pid === "citrus_slices" || pid === "boba_smoothies") {
+  if (pid === "citrus_slices") {
     // Draw grid of citrus wheels / slices
     const cols = Math.ceil(Math.sqrt(density));
     const rows = cols;
@@ -804,6 +1061,18 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
         }
       }
     }
+  } else if (pid === "coffee_cups") {
+    drawFoodIconGrid(ctx, [drawCoffeeCupIcon, drawCoffeeBeanIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "pastry_display") {
+    drawFoodIconGrid(ctx, [drawMacaronIcon, drawCroissantIcon, drawTartIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "teapot_set") {
+    drawFoodIconGrid(
+      ctx,
+      [(c, x, y, r) => drawTeapot(c, x, y, r * 0.85), drawTeacupIcon, drawTeaLeafIcon],
+      margin, innerW, innerH, density, strokeColor, width, isColorByNumber
+    );
+  } else if (pid === "boba_smoothies") {
+    drawFoodIconGrid(ctx, [drawMasonJarIcon, drawFruitWedgeIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
   } else if (pid.includes("mandala") || pid.includes("cosmic") || pid.includes("kaleidoscope") || pid.includes("sacred")) {
     // Draw radial Mandala
     const rings = density;

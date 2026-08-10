@@ -6,7 +6,8 @@ export type NonLivingCategory =
   | "Food, Drinks & Kitchen"
   | "Cozy Objects & Still Life"
   | "Abstract & Art Deco"
-  | "Single Object Clip-Art";
+  | "Single Object Clip-Art"
+  | "European Flags";
 
 export interface PresetItem {
   id: string;
@@ -71,6 +72,22 @@ export const PRESETS: PresetItem[] = [
   { id: "obj_cupcake", name: "Cupcake Clip-Art", category: "Single Object Clip-Art", description: "Fluted wrapper, frosting swirl and cherry on top", defaultComplexity: 12 },
   { id: "obj_teapot", name: "Teapot Clip-Art", category: "Single Object Clip-Art", description: "Round teapot with spout, handle and lid", defaultComplexity: 12 },
   { id: "obj_hot_air_balloon", name: "Hot Air Balloon Clip-Art", category: "Single Object Clip-Art", description: "Balloon envelope, basket and connecting ropes", defaultComplexity: 12 },
+
+  // European Flags -- outline-only (this is a coloring page, not a filled
+  // reference image), so each is just the flag border plus the dividing
+  // lines a colorist needs to know where each region starts/stops.
+  { id: "flag_france", name: "France Flag Outline", category: "European Flags", description: "Vertical tricolor -- blue, white, red", defaultComplexity: 12 },
+  { id: "flag_italy", name: "Italy Flag Outline", category: "European Flags", description: "Vertical tricolor -- green, white, red", defaultComplexity: 12 },
+  { id: "flag_belgium", name: "Belgium Flag Outline", category: "European Flags", description: "Vertical tricolor -- black, yellow, red", defaultComplexity: 12 },
+  { id: "flag_ireland", name: "Ireland Flag Outline", category: "European Flags", description: "Vertical tricolor -- green, white, orange", defaultComplexity: 12 },
+  { id: "flag_germany", name: "Germany Flag Outline", category: "European Flags", description: "Horizontal tricolor -- black, red, gold", defaultComplexity: 12 },
+  { id: "flag_netherlands", name: "Netherlands Flag Outline", category: "European Flags", description: "Horizontal tricolor -- red, white, blue", defaultComplexity: 12 },
+  { id: "flag_austria", name: "Austria Flag Outline", category: "European Flags", description: "Horizontal tribar -- red, white, red", defaultComplexity: 12 },
+  { id: "flag_poland", name: "Poland Flag Outline", category: "European Flags", description: "Horizontal bicolor -- white over red", defaultComplexity: 12 },
+  { id: "flag_sweden", name: "Sweden Flag Outline", category: "European Flags", description: "Nordic cross flag", defaultComplexity: 12 },
+  { id: "flag_finland", name: "Finland Flag Outline", category: "European Flags", description: "Nordic cross flag", defaultComplexity: 12 },
+  { id: "flag_switzerland", name: "Switzerland Flag Outline", category: "European Flags", description: "Square flag with centered cross", defaultComplexity: 12 },
+  { id: "flag_uk", name: "United Kingdom Flag Outline", category: "European Flags", description: "Union Jack -- diagonal and straight crosses", defaultComplexity: 12 },
 ];
 
 export const COLOR_BY_NUMBER_PALETTE = [
@@ -389,6 +406,64 @@ function drawHotAirBalloon(ctx: CanvasRenderingContext2D, cx: number, cy: number
   ctx.stroke();
 }
 
+// ── European Flags ──────────────────────────────────────────────────────
+// Outline-only, same reasoning as the object clip-art above: this is a
+// coloring page, so a flag is just its border plus the dividing lines that
+// mark where each colored region starts, not the actual colors.
+
+function drawFlagBorder(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  ctx.strokeRect(cx - w / 2, cy - h / 2, w, h);
+}
+
+function drawStripedFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, count: number, orientation: "horizontal" | "vertical") {
+  drawFlagBorder(ctx, cx, cy, w, h);
+  const x0 = cx - w / 2, y0 = cy - h / 2;
+  for (let i = 1; i < count; i++) {
+    ctx.beginPath();
+    if (orientation === "vertical") {
+      const x = x0 + (w / count) * i;
+      ctx.moveTo(x, y0);
+      ctx.lineTo(x, y0 + h);
+    } else {
+      const y = y0 + (h / count) * i;
+      ctx.moveTo(x0, y);
+      ctx.lineTo(x0 + w, y);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawNordicCrossFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  drawFlagBorder(ctx, cx, cy, w, h);
+  const x0 = cx - w / 2, y0 = cy - h / 2;
+  const vX = x0 + w * 0.36;
+  const vHalf = w * 0.065, hHalf = h * 0.11;
+  ctx.beginPath(); ctx.moveTo(vX - vHalf, y0); ctx.lineTo(vX - vHalf, y0 + h); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(vX + vHalf, y0); ctx.lineTo(vX + vHalf, y0 + h); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x0, cy - hHalf); ctx.lineTo(x0 + w, cy - hHalf); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x0, cy + hHalf); ctx.lineTo(x0 + w, cy + hHalf); ctx.stroke();
+}
+
+function drawSwissCrossFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  drawFlagBorder(ctx, cx, cy, w, h);
+  const armW = w * 0.22, armLen = h * 0.5;
+  ctx.strokeRect(cx - armW / 2, cy - armLen / 2, armW, armLen);
+  ctx.strokeRect(cx - armLen / 2, cy - armW / 2, armLen, armW);
+}
+
+function drawUnionJackFlag(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number) {
+  drawFlagBorder(ctx, cx, cy, w, h);
+  const x0 = cx - w / 2, y0 = cy - h / 2, x1 = cx + w / 2, y1 = cy + h / 2;
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1, y0); ctx.lineTo(x0, y1); ctx.stroke();
+  const vx0 = cx - w * 0.09, vx1 = cx + w * 0.09;
+  ctx.beginPath(); ctx.moveTo(vx0, y0); ctx.lineTo(vx0, y1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(vx1, y0); ctx.lineTo(vx1, y1); ctx.stroke();
+  const hy0 = cy - h * 0.13, hy1 = cy + h * 0.13;
+  ctx.beginPath(); ctx.moveTo(x0, hy0); ctx.lineTo(x1, hy0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x0, hy1); ctx.lineTo(x1, hy1); ctx.stroke();
+}
+
 const OBJECT_DRAWERS: Record<string, (ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) => void> = {
   obj_banana: drawBanana,
   obj_apple: drawApple,
@@ -400,6 +475,18 @@ const OBJECT_DRAWERS: Record<string, (ctx: CanvasRenderingContext2D, cx: number,
   obj_cupcake: drawCupcake,
   obj_teapot: drawTeapot,
   obj_hot_air_balloon: drawHotAirBalloon,
+  flag_france: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
+  flag_italy: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
+  flag_belgium: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
+  flag_ireland: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "vertical"),
+  flag_germany: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "horizontal"),
+  flag_netherlands: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "horizontal"),
+  flag_austria: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 3, "horizontal"),
+  flag_poland: (ctx, cx, cy, s) => drawStripedFlag(ctx, cx, cy, s * 1.7, s * 1.1, 2, "horizontal"),
+  flag_sweden: (ctx, cx, cy, s) => drawNordicCrossFlag(ctx, cx, cy, s * 1.7, s * 1.1),
+  flag_finland: (ctx, cx, cy, s) => drawNordicCrossFlag(ctx, cx, cy, s * 1.7, s * 1.1),
+  flag_switzerland: (ctx, cx, cy, s) => drawSwissCrossFlag(ctx, cx, cy, s * 1.3, s * 1.3),
+  flag_uk: (ctx, cx, cy, s) => drawUnionJackFlag(ctx, cx, cy, s * 1.7, s * 1.1),
 };
 
 const OBJECT_LABELS: Record<string, string> = {
@@ -413,6 +500,18 @@ const OBJECT_LABELS: Record<string, string> = {
   obj_cupcake: "Cupcake",
   obj_teapot: "Teapot",
   obj_hot_air_balloon: "Hot Air Balloon",
+  flag_france: "France",
+  flag_italy: "Italy",
+  flag_belgium: "Belgium",
+  flag_ireland: "Ireland",
+  flag_germany: "Germany",
+  flag_netherlands: "Netherlands",
+  flag_austria: "Austria",
+  flag_poland: "Poland",
+  flag_sweden: "Sweden",
+  flag_finland: "Finland",
+  flag_switzerland: "Switzerland",
+  flag_uk: "United Kingdom",
 };
 
 function drawObjectLabel(ctx: CanvasRenderingContext2D, text: string, cx: number, y: number, width: number, strokeColor: string, lineWidth: number) {

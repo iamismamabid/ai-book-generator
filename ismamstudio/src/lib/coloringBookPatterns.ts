@@ -423,57 +423,78 @@ function drawHotAirBalloon(ctx: CanvasRenderingContext2D, cx: number, cy: number
 }
 
 function drawSupercarIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
-  const bodyY = cy + s * 0.15;
+  const bodyY = cy + s * 0.2;
+
+  // Main wedge silhouette (low pointed nose, flat roof, fastback tail)
   ctx.beginPath();
-  ctx.moveTo(cx - s * 1.25, bodyY);
-  ctx.bezierCurveTo(cx - s * 1.32, bodyY - s * 0.15, cx - s * 1.15, bodyY - s * 0.3, cx - s * 0.95, bodyY - s * 0.32);
-  ctx.bezierCurveTo(cx - s * 0.75, bodyY - s * 0.55, cx - s * 0.5, bodyY - s * 0.68, cx - s * 0.15, bodyY - s * 0.7);
-  ctx.bezierCurveTo(cx + s * 0.15, bodyY - s * 0.72, cx + s * 0.35, bodyY - s * 0.6, cx + s * 0.45, bodyY - s * 0.42);
-  ctx.bezierCurveTo(cx + s * 0.6, bodyY - s * 0.3, cx + s * 0.85, bodyY - s * 0.28, cx + s * 1.05, bodyY - s * 0.18);
-  ctx.bezierCurveTo(cx + s * 1.25, bodyY - s * 0.1, cx + s * 1.35, bodyY, cx + s * 1.3, bodyY + s * 0.12);
-  ctx.lineTo(cx + s * 1.28, bodyY + s * 0.22);
-  ctx.lineTo(cx - s * 1.22, bodyY + s * 0.22);
+  ctx.moveTo(cx - s * 1.3, bodyY + s * 0.15);
+  ctx.lineTo(cx - s * 1.3, bodyY - s * 0.08);
+  ctx.lineTo(cx - s * 1.05, bodyY - s * 0.2);
+  ctx.lineTo(cx - s * 0.55, bodyY - s * 0.62);
+  ctx.lineTo(cx - s * 0.2, bodyY - s * 0.7);
+  ctx.lineTo(cx + s * 0.15, bodyY - s * 0.68);
+  ctx.lineTo(cx + s * 0.5, bodyY - s * 0.36);
+  ctx.lineTo(cx + s * 1.0, bodyY - s * 0.2);
+  ctx.lineTo(cx + s * 1.38, bodyY - s * 0.06);
+  ctx.lineTo(cx + s * 1.3, bodyY + s * 0.15);
+  ctx.lineTo(cx - s * 1.25, bodyY + s * 0.2);
   ctx.closePath();
   ctx.stroke();
 
+  // Windshield + side glass panel
   ctx.beginPath();
-  ctx.moveTo(cx - s * 0.68, bodyY - s * 0.36);
-  ctx.bezierCurveTo(cx - s * 0.48, bodyY - s * 0.58, cx - s * 0.1, bodyY - s * 0.6, cx + s * 0.15, bodyY - s * 0.55);
-  ctx.bezierCurveTo(cx + s * 0.3, bodyY - s * 0.5, cx + s * 0.4, bodyY - s * 0.4, cx + s * 0.42, bodyY - s * 0.3);
-  ctx.lineTo(cx - s * 0.68, bodyY - s * 0.3);
+  ctx.moveTo(cx - s * 0.5, bodyY - s * 0.58);
+  ctx.lineTo(cx - s * 0.18, bodyY - s * 0.63);
+  ctx.lineTo(cx + s * 0.12, bodyY - s * 0.61);
+  ctx.lineTo(cx + s * 0.4, bodyY - s * 0.36);
+  ctx.lineTo(cx - s * 0.1, bodyY - s * 0.32);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.02, bodyY - s * 0.62);
+  ctx.lineTo(cx - s * 0.08, bodyY - s * 0.33);
+  ctx.stroke();
+
+  // Side air intake scoop just ahead of the rear wheel
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.5, bodyY - s * 0.02);
+  ctx.lineTo(cx - s * 0.28, bodyY);
+  ctx.lineTo(cx - s * 0.34, bodyY + s * 0.13);
+  ctx.lineTo(cx - s * 0.56, bodyY + s * 0.11);
   ctx.closePath();
   ctx.stroke();
 
+  // Beltline crease
   ctx.beginPath();
-  ctx.moveTo(cx - s * 0.1, bodyY - s * 0.3);
-  ctx.lineTo(cx - s * 0.15, bodyY + s * 0.2);
+  ctx.moveTo(cx - s * 0.95, bodyY - s * 0.1);
+  ctx.lineTo(cx + s * 0.65, bodyY - s * 0.22);
   ctx.stroke();
 
+  // Rear wing on struts, mounted flush on the trunk deck edge
   ctx.beginPath();
-  ctx.moveTo(cx - s * 1.15, bodyY - s * 0.34);
-  ctx.lineTo(cx - s * 1.15, bodyY - s * 0.56);
-  ctx.moveTo(cx - s * 0.9, bodyY - s * 0.38);
-  ctx.lineTo(cx - s * 0.9, bodyY - s * 0.56);
-  ctx.moveTo(cx - s * 1.2, bodyY - s * 0.58);
-  ctx.lineTo(cx - s * 0.85, bodyY - s * 0.58);
+  ctx.moveTo(cx - s * 1.15, bodyY - s * 0.152);
+  ctx.lineTo(cx - s * 1.15, bodyY - s * 0.48);
+  ctx.moveTo(cx - s * 0.95, bodyY - s * 0.284);
+  ctx.lineTo(cx - s * 0.95, bodyY - s * 0.48);
+  ctx.moveTo(cx - s * 1.2, bodyY - s * 0.5);
+  ctx.lineTo(cx - s * 0.9, bodyY - s * 0.5);
   ctx.stroke();
 
-  ([-0.72, 0.72] as const).forEach((wx) => {
+  // Angular headlight slit
+  ctx.beginPath();
+  ctx.moveTo(cx + s * 1.14, bodyY - s * 0.1);
+  ctx.lineTo(cx + s * 1.29, bodyY - s * 0.02);
+  ctx.stroke();
+
+  // Wheels
+  ([-0.78, 0.78] as const).forEach((wx) => {
     ctx.beginPath();
-    ctx.arc(cx + wx * s, bodyY + s * 0.22, s * 0.33, 0, Math.PI * 2);
+    ctx.arc(cx + wx * s, bodyY + s * 0.22, s * 0.27, 0, Math.PI * 2);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(cx + wx * s, bodyY + s * 0.22, s * 0.15, 0, Math.PI * 2);
+    ctx.arc(cx + wx * s, bodyY + s * 0.22, s * 0.11, 0, Math.PI * 2);
     ctx.stroke();
   });
-
-  ctx.beginPath();
-  ctx.ellipse(cx + s * 1.14, bodyY - s * 0.03, s * 0.08, s * 0.05, -0.3, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx - s * 1.18, bodyY - s * 0.1);
-  ctx.lineTo(cx - s * 1.05, bodyY - s * 0.1);
-  ctx.stroke();
 }
 
 function drawClassicCarIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number) {

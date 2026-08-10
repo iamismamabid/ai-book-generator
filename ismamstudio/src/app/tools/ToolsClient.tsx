@@ -313,6 +313,20 @@ export default function FreeToolsHub() {
   const toolsList: ToolItem[] = [
     // 1. Puzzle & Interior Generators
     {
+      id: "coloring-book-generator",
+      name: "Coloring Book & Color-by-Number Studio",
+      badge: "Halal & 300 DPI",
+      category: "Design",
+      description: "Generate 100% non-living coloring pages & color-by-number templates — Mandalas, Stained Glass, Citrus Slices, Landscapes, Architecture & Celestial Patterns. 300 DPI vector PDF/PNG exports.",
+      features: [
+        "100% Non-Living Subjects (Halal & Universal — No Humans/Animals)",
+        "Color-by-Number Mode with Palette Key Header",
+        "7 Categories: Mandalas, Floral, Stained Glass, Landscapes, Citrus, Cozy, Abstract",
+        "Export 300 DPI PNG Single Pages & Full KDP Book Interiors"
+      ],
+      link: "/tools/coloring-book-generator"
+    },
+    {
       id: "sudoku-generator",
       name: "Free KDP Sudoku Generator",
       badge: "Popular",

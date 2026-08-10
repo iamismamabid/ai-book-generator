@@ -447,6 +447,7 @@ export default function ExportButton({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         showSolutionsToggle={false}
+        showBorderThemePicker={false}
         defaultTrimSize="6x9"
         trimSizeOptions={TRIM_SIZE_OPTIONS}
         onExport={handleExportPDF}

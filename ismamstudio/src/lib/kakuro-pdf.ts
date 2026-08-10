@@ -1,6 +1,8 @@
 import { jsPDF } from "jspdf";
 import { KakuroGrid, KakuroPuzzle } from "./kakuro";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
+import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
+import { BorderThemeId } from "./borderThemes";
 
 interface KakuroPdfOptions {
   puzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[];
@@ -13,6 +15,7 @@ interface KakuroPdfOptions {
   isPremium?: boolean;
   hasBleed?: boolean;
   showGuides?: boolean;
+  borderTheme?: BorderThemeId;
 }
 
 export function drawKakuroGridPDF(
@@ -146,7 +149,7 @@ export function drawKakuroGridPDF(
 }
 
 export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: string) {
-  const { puzzles, title, trimSize, includeSolutions = true, includeCover = false, coverState = null, isPremium, hasBleed = false, showGuides = false } = options;
+  const { puzzles, title, trimSize, includeSolutions = true, includeCover = false, coverState = null, isPremium, hasBleed = false, showGuides = false, borderTheme } = options;
 
   let width = 8.5;
   let height = 11;
@@ -191,15 +194,17 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
     await drawCoverPagePart(doc, coverState, 'back', width, height);
   }
 
-  // Apply watermark to all interior pages if not premium
-  if (isPremium === false) {
+  // Apply watermark (free tier) and the decorative border theme to every
+  // interior page, skipping the front/back cover pages.
+  if (isPremium === false || (borderTheme && borderTheme !== "none")) {
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       const isFrontCover = includeCover && coverState && i === 1;
       const isBackCover = includeCover && coverState && i === totalPages;
       if (!isFrontCover && !isBackCover) {
         doc.setPage(i);
-        drawWatermark(doc, width, height);
+        if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, width, height);
+        if (isPremium === false) drawWatermark(doc, width, height);
       }
     }
   }

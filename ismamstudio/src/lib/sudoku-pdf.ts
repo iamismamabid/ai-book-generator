@@ -2,6 +2,8 @@
 import { jsPDF } from "jspdf";
 import { Grid, Difficulty } from "./sudokuGenerator";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
+import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
+import { BorderThemeId } from "./borderThemes";
 
 interface PdfOptions {
   puzzles: { puzzle: Grid; solution: Grid }[];
@@ -15,6 +17,7 @@ interface PdfOptions {
   isPremium?: boolean;
   hasBleed?: boolean;
   showGuides?: boolean;
+  borderTheme?: BorderThemeId;
 }
 
 function getSolutionPackZones(count: number, x0: number, y0: number, safeW: number, safeH: number) {
@@ -114,6 +117,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     isPremium,
     hasBleed = false,
     showGuides = false,
+    borderTheme,
   } = options;
 
   let width = 8.5;
@@ -214,15 +218,17 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     await drawCoverPagePart(doc, coverState, 'back', width, height);
   }
 
-  // Apply watermark to all interior pages if not premium
-  if (isPremium === false) {
+  // Apply watermark (free tier) and the decorative border theme to every
+  // interior page, skipping the front/back cover pages.
+  if (isPremium === false || (borderTheme && borderTheme !== "none")) {
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       const isFrontCover = includeCover && coverState && i === 1;
       const isBackCover = includeCover && coverState && i === totalPages;
       if (!isFrontCover && !isBackCover) {
         doc.setPage(i);
-        drawWatermark(doc, width, height);
+        if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, width, height);
+        if (isPremium === false) drawWatermark(doc, width, height);
       }
     }
   }

@@ -170,9 +170,10 @@ export default function SudokuClient() {
     trimSize: "6x9" | "8.5x11" | "5x8";
     hasBleed?: boolean;
     showGuides?: boolean;
+    borderTheme?: import("@/lib/borderThemes").BorderThemeId;
   }) => {
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides } = options;
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
 
     const freshStatus = await getFreshPremiumStatus();
     const count = Math.min(Math.max(1, bookCount), tierMaxFor(freshStatus.plan));
@@ -191,6 +192,7 @@ export default function SudokuClient() {
         hasBleed,
         showGuides,
         isPremium: freshStatus.isPremium,
+        borderTheme,
       },
       `sudoku-${difficulty}-${count}puzzles.pdf`
     );

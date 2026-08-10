@@ -17,6 +17,7 @@ import LowContentEditor from "./LowContentEditor";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import BookBuilderTour from "./BookBuilderTour";
 import { exportBookToPDF } from "@/app/utils/pdfExportService";
+import { BORDER_THEMES, BorderThemeId } from "@/lib/borderThemes";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
 import DesktopRecommendedBanner from "@/components/DesktopRecommendedBanner";
@@ -98,6 +99,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [gutterMargin, setGutterMargin] = useState(false);
   const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);
+  const [borderTheme, setBorderTheme] = useState<BorderThemeId>("none");
   const [isExporting, setIsExporting] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [solutionsStatus, setSolutionsStatus] = useState<'idle' | 'success'>('idle');
@@ -505,7 +507,8 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         coverState,
         includePageNumbers,
         gutterMargin,
-        trimSize: selectedTrim
+        trimSize: selectedTrim,
+        borderTheme,
       });
     } catch (e) {
       console.error("Failed to export PDF", e);
@@ -1083,6 +1086,31 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
                   <option key={idx} value={t.label}>{t.label}</option>
                 ))}
               </select>
+            </div>
+
+            {/* Decorative Page Border Theme */}
+            <div className="p-3.5 surface-panel">
+              <label className="text-xs font-black text-slate-800 dark:text-slate-100 block mb-1">Page Border Theme</label>
+              <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase mb-2.5">Decorative frame on every page, content stays untouched</span>
+              <div className="grid grid-cols-5 gap-2">
+                {BORDER_THEMES.map((theme) => (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    onClick={() => setBorderTheme(theme.id)}
+                    title={theme.name}
+                    className={`aspect-square rounded-xl border-2 flex items-center justify-center transition cursor-pointer ${
+                      borderTheme === theme.id ? "border-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900" : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                    }`}
+                    style={theme.id === "none" ? { background: "#fff" } : { background: theme.swatch }}
+                  >
+                    {theme.id === "none" && <span className="text-[9px] font-black text-slate-400 uppercase">None</span>}
+                  </button>
+                ))}
+              </div>
+              <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block mt-2">
+                {BORDER_THEMES.find((t) => t.id === borderTheme)?.name}
+              </span>
             </div>
 
             {/* Book Validation Checklist */}

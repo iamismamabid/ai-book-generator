@@ -7,6 +7,7 @@ import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
+import { BORDER_THEMES, BorderThemeId } from "@/lib/borderThemes";
 
 // Physical trim dimensions for the standard KDP trim-size values used across
 // the standalone puzzle tools -- needed to turn a cover image's raw pixel
@@ -44,11 +45,14 @@ interface ExportInteriorModalProps<T extends string = "6x9" | "8.5x11" | "5x8"> 
     showGuides: boolean;
     includePageNumbers?: boolean;
     isPremium?: boolean;
+    borderTheme?: BorderThemeId;
   }) => void | Promise<void>;
   defaultTrimSize?: T;
   showSolutionsToggle?: boolean;
   /** Override the selectable trim sizes. Defaults to the standard 3-size KDP set. */
   trimSizeOptions?: TrimSizeOption<T>[];
+  /** Hide the decorative page-border picker -- irrelevant for prose/manuscript exports. */
+  showBorderThemePicker?: boolean;
 }
 
 export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" | "5x8">({
@@ -58,6 +62,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
   defaultTrimSize = "8.5x11" as T,
   showSolutionsToggle = true,
   trimSizeOptions,
+  showBorderThemePicker = true,
 }: ExportInteriorModalProps<T>) {
   const trimOptions = (trimSizeOptions ?? DEFAULT_TRIM_OPTIONS) as unknown as TrimSizeOption<T>[];
   const { userId, isLoaded, isSignedIn } = useAuth();
@@ -66,6 +71,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
   const [trimSize, setTrimSize] = useState<T>(defaultTrimSize);
   const [hasBleed, setHasBleed] = useState(false);
   const [showGuides, setShowGuides] = useState(false);
+  const [borderTheme, setBorderTheme] = useState<BorderThemeId>("none");
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [coverState, setCoverState] = useState<any>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -213,6 +219,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
         hasBleed,
         showGuides,
         isPremium: premiumStatus.isPremium,
+        borderTheme,
       });
       onClose();
     } catch (err) {
@@ -470,6 +477,33 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   />
                 </div>
               </div>
+
+              {/* Decorative Page Border Theme */}
+              {showBorderThemePicker && (
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60">
+                <label className="text-xs font-black text-slate-800 block mb-1">Page Border Theme</label>
+                <span className="text-[9px] font-bold text-slate-400 block uppercase mb-3">Decorative frame around each page, content area stays untouched</span>
+                <div className="grid grid-cols-5 gap-2">
+                  {BORDER_THEMES.map((theme) => (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      onClick={() => setBorderTheme(theme.id)}
+                      title={theme.name}
+                      className={`aspect-square rounded-xl border-2 flex items-center justify-center transition cursor-pointer ${
+                        borderTheme === theme.id ? "border-indigo-600 ring-2 ring-indigo-200" : "border-slate-200 hover:border-slate-300"
+                      }`}
+                      style={theme.id === "none" ? { background: "#fff" } : { background: theme.swatch }}
+                    >
+                      {theme.id === "none" && <span className="text-[9px] font-black text-slate-400 uppercase">None</span>}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[9px] font-bold text-slate-500 block mt-2">
+                  {BORDER_THEMES.find((t) => t.id === borderTheme)?.name}
+                </span>
+              </div>
+              )}
 
               {/* Solution Keys option if applicable */}
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 flex justify-between items-center">

@@ -105,8 +105,9 @@ export default function KakuroGenerator() {
     trimSize: "6x9" | "8.5x11" | "5x8";
     hasBleed: boolean;
     showGuides: boolean;
+    borderTheme?: import("@/lib/borderThemes").BorderThemeId;
   }) => {
-    const { includeCover: incCover, coverState, includeSolutions, trimSize: finalTrimSize, hasBleed, showGuides } = options;
+    const { includeCover: incCover, coverState, includeSolutions, trimSize: finalTrimSize, hasBleed, showGuides, borderTheme } = options;
     setIsDownloading(true);
     try {
       const freshStatus = await getFreshPremiumStatus();
@@ -145,7 +146,8 @@ export default function KakuroGenerator() {
         coverState,
         hasBleed,
         showGuides,
-        isPremium: freshStatus.isPremium
+        isPremium: freshStatus.isPremium,
+        borderTheme,
       }, `Kakuro_${sizeId}_${difficulty}_${finalNumPages}_Pages.pdf`);
     } catch (e) {
       console.error(e);

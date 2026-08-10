@@ -1,5 +1,7 @@
 import { jsPDF } from "jspdf";
 import { getGutterMargin } from "@/lib/pdfFormatter";
+import { drawPageBorderTheme } from "./borderThemeDrawing";
+import { BorderThemeId } from "@/lib/borderThemes";
 
 export interface ExportOptions {
   includeCover?: boolean;
@@ -8,6 +10,7 @@ export interface ExportOptions {
   gutterMargin?: boolean;
   trimSize?: { label: string; w: number; h: number };
   isPremium?: boolean;
+  borderTheme?: BorderThemeId;
 }
 
 export const exportBookToPDF = async (bookPages: any[], options: ExportOptions = {}) => {
@@ -16,7 +19,8 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     coverState = null,
     includePageNumbers = true,
     gutterMargin = false,
-    trimSize = { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 }
+    trimSize = { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
+    borderTheme,
   } = options;
 
   const w = trimSize.w;
@@ -120,7 +124,10 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       doc.text(authorText, (w - authorW) / 2 + leftMarginShift, h * 0.68);
     }
 
-    // Apply watermark if free tier
+    // Apply the decorative border theme and the free-tier watermark
+    if (borderTheme && borderTheme !== "none") {
+      drawPageBorderTheme(doc, borderTheme, w, h, leftMarginShift);
+    }
     if (options.isPremium === false) {
       drawWatermark(doc, w, h);
     }

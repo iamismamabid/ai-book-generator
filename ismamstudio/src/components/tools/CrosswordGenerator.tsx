@@ -213,10 +213,11 @@ export default function CrosswordGenerator() {
     hasBleed: boolean;
     showGuides: boolean;
     isPremium?: boolean;
+    borderTheme?: import("@/lib/borderThemes").BorderThemeId;
   }) => {
     if (puzzles.length === 0) return;
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides, isPremium } = options;
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides, isPremium, borderTheme } = options;
 
     setTimeout(async () => {
       let finalW = 8.5;
@@ -233,9 +234,10 @@ export default function CrosswordGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
+        import("@/app/utils/borderThemeDrawing"),
       ]);
       const doc = new jsPDF({
         orientation: "portrait",
@@ -415,15 +417,17 @@ export default function CrosswordGenerator() {
         await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
       }
 
-      // Watermark for free tier
-      if (isPremium === false) {
+      // Watermark for free tier, and the decorative border theme -- skips
+      // front/back cover pages.
+      if (isPremium === false || (borderTheme && borderTheme !== "none")) {
         const totalPages = doc.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
           const isFrontCover = incCover && coverState && i === 1;
           const isBackCover = incCover && coverState && i === totalPages;
           if (!isFrontCover && !isBackCover) {
             doc.setPage(i);
-            drawWatermark(doc, pageW, pageH);
+            if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, pageW, pageH);
+            if (isPremium === false) drawWatermark(doc, pageW, pageH);
           }
         }
       }

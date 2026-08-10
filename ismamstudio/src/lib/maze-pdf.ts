@@ -1,6 +1,8 @@
 import { jsPDF } from "jspdf";
 import { MazeGrid, Shape, solveMaze } from "./maze";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
+import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
+import { BorderThemeId } from "./borderThemes";
 
 interface PdfOptions {
   mazes: {
@@ -17,6 +19,7 @@ interface PdfOptions {
   isPremium?: boolean;
   hasBleed?: boolean;
   showGuides?: boolean;
+  borderTheme?: BorderThemeId;
 }
 
 const TRIM_SIZES: Record<string, [number, number]> = {
@@ -252,15 +255,18 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     await drawCoverPagePart(doc, coverState, 'back', widthInches, heightInches);
   }
 
-  // Apply watermark to all interior pages if not premium
-  if (options.isPremium === false) {
+  // Apply watermark (free tier) and the decorative border theme to every
+  // interior page, skipping the front/back cover pages.
+  const { borderTheme } = options;
+  if (options.isPremium === false || (borderTheme && borderTheme !== "none")) {
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       const isFrontCover = includeCover && coverState && i === 1;
       const isBackCover = includeCover && coverState && i === totalPages;
       if (!isFrontCover && !isBackCover) {
         doc.setPage(i);
-        drawWatermark(doc, widthInches, heightInches);
+        if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, widthInches, heightInches);
+        if (options.isPremium === false) drawWatermark(doc, widthInches, heightInches);
       }
     }
   }

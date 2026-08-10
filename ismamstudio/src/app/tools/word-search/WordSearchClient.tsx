@@ -284,8 +284,9 @@ export default function WordSearchStudio() {
         hasBleed?: boolean;
         showGuides?: boolean;
         isPremium?: boolean;
+        borderTheme?: import("@/lib/borderThemes").BorderThemeId;
     }) => {
-        const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, isPremium } = options;
+        const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, isPremium, borderTheme } = options;
         setIsGenerating(true);
         const { cleanedWords, titleText } = getCleanMasterList();
         if (cleanedWords.length < wordsPerPage) { alert(`Add more words!`); setIsGenerating(false); return; }
@@ -306,9 +307,10 @@ export default function WordSearchStudio() {
         finalW += bleed * 2;
         finalH += bleed * 2;
 
-        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }] = await Promise.all([
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([
             import("jspdf"),
             import("../../utils/pdfExportService"),
+            import("../../utils/borderThemeDrawing"),
         ]);
         const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [finalW, finalH] });
         const margin = 0.5; const safeWidth = finalW - (margin * 2); const safeHeight = finalH - (margin * 2);
@@ -426,15 +428,18 @@ export default function WordSearchStudio() {
             await drawCoverPagePart(doc, coverState, 'back', finalW, finalH);
         }
 
-        // Apply watermark to all interior pages if not premium
-        if (isPremium === false) {
+        // Apply watermark (free tier) and the decorative border theme to every
+        // interior page, skipping the front/back cover pages -- those already
+        // have their own Cover Studio design.
+        if (isPremium === false || (borderTheme && borderTheme !== "none")) {
             const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 const isFrontCover = incCover && coverState && i === 1;
                 const isBackCover = incCover && coverState && i === totalPages;
                 if (!isFrontCover && !isBackCover) {
                     doc.setPage(i);
-                    drawWatermark(doc, finalW, finalH);
+                    if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, finalW, finalH);
+                    if (isPremium === false) drawWatermark(doc, finalW, finalH);
                 }
             }
         }

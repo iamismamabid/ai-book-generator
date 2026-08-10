@@ -203,9 +203,10 @@ export default function MazeGeneratorPage() {
     trimSize: "6x9" | "8.5x11" | "5x8";
     hasBleed?: boolean;
     showGuides?: boolean;
+    borderTheme?: import("@/lib/borderThemes").BorderThemeId;
   }) => {
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides } = options;
+    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
     try {
       // Re-verify and re-clamp against the real plan at generation time --
       // isPremium and the puzzle count both come from this fresh check, not
@@ -227,6 +228,7 @@ export default function MazeGeneratorPage() {
           hasBleed,
           showGuides,
           isPremium: freshStatus.isPremium,
+          borderTheme,
         },
         `maze-${shape}-${finalCount}puzzles.pdf`
       );

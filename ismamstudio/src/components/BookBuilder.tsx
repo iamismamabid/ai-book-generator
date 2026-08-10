@@ -17,7 +17,6 @@ import { ColoringBookEditor } from "./ColoringBookEditor";
 import LowContentEditor from "./LowContentEditor";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import BookBuilderTour from "./BookBuilderTour";
-import { exportBookToPDF } from "@/app/utils/pdfExportService";
 import { BORDER_THEMES, BorderThemeId } from "@/lib/borderThemes";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
@@ -504,6 +503,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
   const triggerExport = async () => {
     setIsExporting(true);
     try {
+      const { exportBookToPDF } = await import("@/app/utils/pdfExportService");
       await exportBookToPDF(bookPages, {
         includeCover,
         coverState,

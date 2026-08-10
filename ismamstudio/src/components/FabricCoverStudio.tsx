@@ -16,7 +16,6 @@ import {
   Paintbrush, ClipboardPaste, ImageOff, RefreshCw, FlipHorizontal, FlipVertical, SlidersHorizontal, Pipette,
   Keyboard, X as XIcon
 } from "lucide-react";
-import { jsPDF } from "jspdf";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
 import { initFabricSnapping } from "@/hooks/useFabricSnap";
 import { COVER_TEMPLATES, resolveTemplateElements, CoverTemplate } from "@/lib/coverTemplates";
@@ -4051,6 +4050,7 @@ export default function FabricCoverStudio({
     
     setTimeout(async () => {
       const dataURL = await exportCanvasWithBackground(canvas, 3);
+      const { jsPDF } = await import("jspdf");
 
       const doc = new jsPDF({
         orientation: "landscape",

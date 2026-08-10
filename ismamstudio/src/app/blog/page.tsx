@@ -1,8 +1,12 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, Clock, Calendar, ChevronRight, Sparkles } from "lucide-react";
 import { BLOG_POSTS } from "./posts";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "KDP Blog | Publisher Academy - KDPage",
+  description: "Expert guides, design trends, and SEO strategies to help you launch profitable self-publishing books on Amazon KDP.",
+};
 
 export default function BlogPage() {
   return (

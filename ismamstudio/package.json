@@ -64,7 +64,8 @@
     "postcss": "^8.5.14",
     "puppeteer-core": "^25.5.0",
     "tailwindcss": "^4.2.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "webpack-bundle-analyzer": "^5.3.1"
   },
   "overrides": {
     "lightningcss": "latest"

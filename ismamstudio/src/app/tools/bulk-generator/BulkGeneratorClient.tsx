@@ -8,13 +8,11 @@ import {
   ArrowLeft, Upload, FileSpreadsheet, Plus, Trash2, 
   Play, CheckCircle2, Loader2, Sparkles, Download, RefreshCw, AlertCircle 
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import { generateSudoku, generateSudokuBook } from "@/lib/sudoku";
-import { downloadSudokuPdf } from "@/lib/sudoku-pdf";
-import { generateMaze, solveMaze } from "@/lib/maze";
-import { downloadMazePdf } from "@/lib/maze-pdf";
-import { generateWordSearchBook } from "@/app/utils/puzzleEngine";
-import { downloadWordSearchPdf } from "@/lib/wordSearch-pdf";
+// jsPDF and the puzzle/PDF generator modules are only needed once the user
+// actually runs the batch queue, not on initial page load -- loaded
+// dynamically inside runBatchQueue below instead of shipped in this page's
+// initial JS bundle. (generateSudoku/solveMaze were imported here but never
+// actually called anywhere in this file.)
 
 interface BatchItem {
   id: string;
@@ -179,6 +177,24 @@ export default function BulkGeneratorClient() {
     if (items.length === 0) return;
     setIsProcessing(true);
     logMessage("Starting batch queue execution...");
+
+    const [
+      { jsPDF },
+      { generateSudokuBook },
+      { downloadSudokuPdf },
+      { generateMaze },
+      { downloadMazePdf },
+      { generateWordSearchBook },
+      { downloadWordSearchPdf },
+    ] = await Promise.all([
+      import("jspdf"),
+      import("@/lib/sudoku"),
+      import("@/lib/sudoku-pdf"),
+      import("@/lib/maze"),
+      import("@/lib/maze-pdf"),
+      import("@/app/utils/puzzleEngine"),
+      import("@/lib/wordSearch-pdf"),
+    ]);
 
     const updatedItems = [...items];
 

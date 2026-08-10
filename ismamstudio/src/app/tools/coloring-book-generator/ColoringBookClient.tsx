@@ -20,7 +20,13 @@ import {
   Info,
   Hash,
   ArrowRight,
-  Printer
+  Printer,
+  Paintbrush,
+  Eraser,
+  PaintBucket,
+  Undo2,
+  Redo2,
+  Trash2
 } from "lucide-react";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
@@ -41,6 +47,50 @@ function drawCanvasWatermark(ctx: CanvasRenderingContext2D, w: number, h: number
   ctx.rotate(-Math.PI / 4);
   ctx.fillText("SAMPLE - KDPAGE", 0, 0);
   ctx.restore();
+}
+
+const QUICK_PALETTE = [
+  "#EF4444", "#F97316", "#EAB308", "#84CC16", "#22C55E",
+  "#14B8A6", "#3B82F6", "#6366F1", "#A855F7", "#EC4899",
+  "#78350F", "#000000",
+];
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const clean = hex.replace("#", "");
+  const bigint = parseInt(clean, 16);
+  return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+}
+
+// Small static preview of a preset's pattern, rendered once and never
+// re-rendered on parent state changes (complexity/lineWidth/etc. only affect
+// the live canvas, not these thumbnails) so browsing templates stays fast.
+function PresetThumbnail({ preset }: { preset: PresetItem }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    drawColoringPattern(ctx, canvas.width, canvas.height, {
+      presetId: preset.id,
+      complexity: Math.min(preset.defaultComplexity, 14),
+      lineWidth: 2,
+      isColorByNumber: false,
+      isMidnightMode: false,
+      frameStyle: "minimal",
+      seed: 7,
+    });
+  }, [preset.id]);
+
+  return (
+    <canvas
+      ref={ref}
+      width={130}
+      height={168}
+      className="w-full h-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white"
+    />
+  );
 }
 
 // Trim sizes
@@ -68,6 +118,15 @@ export default function ColoringBookClient() {
   const [exportProgress, setExportProgress] = useState(0);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
 
+  // Interactive "Preview Coloring" canvas state -- a fun/demo layer for
+  // trying out colors in-browser. Purely a preview: it never touches the
+  // blank line-art PNG/PDF export used for the actual KDP interior.
+  const [isColoringMode, setIsColoringMode] = useState(false);
+  const [activeTool, setActiveTool] = useState<"brush" | "eraser" | "fill">("brush");
+  const [brushColor, setBrushColor] = useState<string>(QUICK_PALETTE[0]);
+  const [brushSize, setBrushSize] = useState<number>(18);
+  const [history, setHistory] = useState<{ stack: string[]; index: number }>({ stack: [], index: -1 });
+
   useEffect(() => {
     checkPremiumStatus()
       .then((res: any) => setIsPremium(!!res.isPremium))
@@ -75,6 +134,9 @@ export default function ColoringBookClient() {
   }, []);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const colorCanvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawingRef = useRef(false);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
 
   // Render procedure on Canvas
   const drawPattern = useCallback(() => {
@@ -91,12 +153,208 @@ export default function ColoringBookClient() {
       isMidnightMode,
       frameStyle,
       seed,
+      transparentBg: isColoringMode,
     });
-  }, [activePreset, complexity, frameStyle, isColorByNumber, isMidnightMode, lineWidth, seed]);
+  }, [activePreset, complexity, frameStyle, isColorByNumber, isMidnightMode, lineWidth, seed, isColoringMode]);
 
   useEffect(() => {
     drawPattern();
+    // The line art just changed shape, so any painted colors underneath no
+    // longer line up -- reset the paint layer and its undo/redo history.
+    const colorCanvas = colorCanvasRef.current;
+    if (!colorCanvas) return;
+    const cctx = colorCanvas.getContext("2d");
+    if (cctx) cctx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+    setHistory({ stack: [colorCanvas.toDataURL()], index: 0 });
   }, [drawPattern]);
+
+  const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = colorCanvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * canvas.width,
+      y: ((e.clientY - rect.top) / rect.height) * canvas.height,
+    };
+  };
+
+  const pushHistory = useCallback(() => {
+    const canvas = colorCanvasRef.current;
+    if (!canvas) return;
+    const snapshot = canvas.toDataURL();
+    setHistory((prev) => {
+      const trimmed = prev.stack.slice(0, prev.index + 1);
+      const next = [...trimmed, snapshot].slice(-25);
+      return { stack: next, index: next.length - 1 };
+    });
+  }, []);
+
+  const loadSnapshot = (dataUrl: string) => {
+    const canvas = colorCanvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    const img = new window.Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = dataUrl;
+  };
+
+  const handleUndo = () => {
+    setHistory((prev) => {
+      if (prev.index <= 0) return prev;
+      const newIndex = prev.index - 1;
+      loadSnapshot(prev.stack[newIndex]);
+      return { ...prev, index: newIndex };
+    });
+  };
+
+  const handleRedo = () => {
+    setHistory((prev) => {
+      if (prev.index >= prev.stack.length - 1) return prev;
+      const newIndex = prev.index + 1;
+      loadSnapshot(prev.stack[newIndex]);
+      return { ...prev, index: newIndex };
+    });
+  };
+
+  const handleClearColors = () => {
+    const canvas = colorCanvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pushHistory();
+  };
+
+  // Flood-fills the clicked region of the color layer, using the line-art
+  // layer's ink as the wall mask so fills stop at the drawn outlines.
+  const floodFill = (startX: number, startY: number) => {
+    const lineCanvas = canvasRef.current;
+    const colorCanvas = colorCanvasRef.current;
+    if (!lineCanvas || !colorCanvas) return;
+    const w = colorCanvas.width;
+    const h = colorCanvas.height;
+    const sx = Math.floor(startX);
+    const sy = Math.floor(startY);
+    if (sx < 0 || sy < 0 || sx >= w || sy >= h) return;
+
+    const lineCtx = lineCanvas.getContext("2d");
+    const colorCtx = colorCanvas.getContext("2d");
+    if (!lineCtx || !colorCtx) return;
+
+    const lineData = lineCtx.getImageData(0, 0, w, h).data;
+    const isWall = (idx: number) => lineData[idx + 3] > 40;
+
+    const startIdx = (sy * w + sx) * 4;
+    if (isWall(startIdx)) return; // clicked directly on a drawn line
+
+    const colorImage = colorCtx.getImageData(0, 0, w, h);
+    const data = colorImage.data;
+    const fillColor = hexToRgb(brushColor);
+    const targetR = data[startIdx];
+    const targetG = data[startIdx + 1];
+    const targetB = data[startIdx + 2];
+    const targetA = data[startIdx + 3];
+    if (targetR === fillColor.r && targetG === fillColor.g && targetB === fillColor.b && targetA === 255) return;
+    const matchesTarget = (idx: number) =>
+      data[idx] === targetR && data[idx + 1] === targetG && data[idx + 2] === targetB && data[idx + 3] === targetA;
+
+    const visited = new Uint8Array(w * h);
+    const stack: number[] = [sy * w + sx];
+    visited[sy * w + sx] = 1;
+
+    while (stack.length) {
+      const p = stack.pop()!;
+      const idx4 = p * 4;
+      if (isWall(idx4) || !matchesTarget(idx4)) continue;
+      data[idx4] = fillColor.r;
+      data[idx4 + 1] = fillColor.g;
+      data[idx4 + 2] = fillColor.b;
+      data[idx4 + 3] = 255;
+
+      const px = p % w;
+      const py = (p / w) | 0;
+      if (px > 0 && !visited[p - 1]) { visited[p - 1] = 1; stack.push(p - 1); }
+      if (px < w - 1 && !visited[p + 1]) { visited[p + 1] = 1; stack.push(p + 1); }
+      if (py > 0 && !visited[p - w]) { visited[p - w] = 1; stack.push(p - w); }
+      if (py < h - 1 && !visited[p + w]) { visited[p + w] = 1; stack.push(p + w); }
+    }
+
+    colorCtx.putImageData(colorImage, 0, 0);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isColoringMode) return;
+    const canvas = colorCanvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    canvas.setPointerCapture(e.pointerId);
+    const pt = getCanvasPoint(e);
+
+    if (activeTool === "fill") {
+      floodFill(pt.x, pt.y);
+      pushHistory();
+      return;
+    }
+
+    isDrawingRef.current = true;
+    lastPointRef.current = pt;
+    ctx.globalCompositeOperation = activeTool === "eraser" ? "destination-out" : "source-over";
+    ctx.fillStyle = brushColor;
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, brushSize / 2, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isColoringMode || !isDrawingRef.current) return;
+    const canvas = colorCanvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    const pt = getCanvasPoint(e);
+    const last = lastPointRef.current ?? pt;
+    ctx.globalCompositeOperation = activeTool === "eraser" ? "destination-out" : "source-over";
+    ctx.strokeStyle = brushColor;
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(pt.x, pt.y);
+    ctx.stroke();
+    lastPointRef.current = pt;
+  };
+
+  const handlePointerUp = () => {
+    if (!isColoringMode || !isDrawingRef.current) return;
+    isDrawingRef.current = false;
+    lastPointRef.current = null;
+    pushHistory();
+  };
+
+  const handleDownloadColoredPng = () => {
+    const lineCanvas = canvasRef.current;
+    const colorCanvas = colorCanvasRef.current;
+    if (!lineCanvas || !colorCanvas) return;
+
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = trimSize.pxW;
+    exportCanvas.height = trimSize.pxH;
+    const ctx = exportCanvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
+    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    ctx.drawImage(colorCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
+    ctx.drawImage(lineCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
+    if (!isPremium) drawCanvasWatermark(ctx, exportCanvas.width, exportCanvas.height);
+
+    const link = document.createElement("a");
+    link.download = `KDPage_${activePreset.id}_colored_preview.png`;
+    link.href = exportCanvas.toDataURL("image/png");
+    link.click();
+  };
 
   // Download Single 300 DPI PNG Page
   const handleDownloadPng = () => {
@@ -292,7 +550,7 @@ export default function ColoringBookClient() {
                 <Sparkles className="w-4 h-4 text-amber-500" /> Select Design Template
               </label>
 
-              <div className="grid grid-cols-1 gap-2 max-h-[320px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[420px] overflow-y-auto pr-1">
                 {filteredPresets.map((preset) => (
                   <button
                     key={preset.id}
@@ -300,19 +558,14 @@ export default function ColoringBookClient() {
                       setActivePreset(preset);
                       setComplexity(preset.defaultComplexity);
                     }}
-                    className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                    className={`p-2 rounded-xl border text-left transition-all ${
                       activePreset.id === preset.id
-                        ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-950 dark:text-indigo-200 shadow-sm"
+                        ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 ring-2 ring-indigo-500/30 shadow-sm"
                         : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
                     }`}
                   >
-                    <div>
-                      <div className="text-xs font-black">{preset.name}</div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">{preset.description}</div>
-                    </div>
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0 ml-2">
-                      {preset.category.split(" ")[0]}
-                    </span>
+                    <PresetThumbnail preset={preset} />
+                    <div className="text-[10.5px] font-black mt-1.5 leading-tight line-clamp-2">{preset.name}</div>
                   </button>
                 ))}
               </div>
@@ -495,22 +748,144 @@ export default function ColoringBookClient() {
           </div>
 
           {/* 🖼️ Right Canvas Live Preview Area */}
-          <div className="lg:col-span-7 bg-slate-200 dark:bg-slate-950 p-6 sm:p-10 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center justify-center relative min-h-[650px]">
-            
-            <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 text-xs font-bold shadow-sm">
-              <Eye className="w-3.5 h-3.5 text-indigo-500" />
-              <span>300 DPI Live Vector Canvas</span>
+          <div className="lg:col-span-7 bg-slate-200 dark:bg-slate-950 p-6 sm:p-10 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[650px]">
+
+            <div className="w-full max-w-[540px] flex items-center justify-between gap-2 mb-4">
+              <button
+                onClick={() => setIsColoringMode((v) => !v)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border transition cursor-pointer ${
+                  isColoringMode
+                    ? "bg-indigo-600 border-indigo-600 text-white"
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-300"
+                }`}
+              >
+                <Paintbrush className="w-3.5 h-3.5" />
+                {isColoringMode ? "Exit Coloring Preview" : "Try Coloring This Page"}
+              </button>
+              <div className="hidden sm:flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 text-xs font-bold shadow-sm">
+                <Eye className="w-3.5 h-3.5 text-indigo-500" />
+                <span>300 DPI Live Vector Canvas</span>
+              </div>
             </div>
+
+            {isColoringMode && (
+              <div className="w-full max-w-[540px] mb-4 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-lg flex flex-wrap items-center gap-2.5">
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+                  <button
+                    onClick={() => setActiveTool("brush")}
+                    className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "brush" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                    title="Brush"
+                  >
+                    <Paintbrush className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setActiveTool("eraser")}
+                    className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "eraser" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                    title="Eraser"
+                  >
+                    <Eraser className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setActiveTool("fill")}
+                    className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "fill" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                    title="Fill Bucket"
+                  >
+                    <PaintBucket className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  {QUICK_PALETTE.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setBrushColor(c)}
+                      style={{ background: c }}
+                      className={`w-5 h-5 rounded-full border-2 transition cursor-pointer ${brushColor === c ? "border-indigo-600 scale-110" : "border-white dark:border-slate-700"}`}
+                      title={c}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    value={brushColor}
+                    onChange={(e) => setBrushColor(e.target.value)}
+                    className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0"
+                    title="Custom color"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-slate-400">Size</span>
+                  <input
+                    type="range"
+                    min="4"
+                    max="48"
+                    value={brushSize}
+                    onChange={(e) => setBrushSize(Number(e.target.value))}
+                    className="w-16 accent-indigo-600 cursor-pointer"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={handleUndo}
+                    disabled={history.index <= 0}
+                    className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    title="Undo"
+                  >
+                    <Undo2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleRedo}
+                    disabled={history.index >= history.stack.length - 1}
+                    className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    title="Redo"
+                  >
+                    <Redo2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleClearColors}
+                    className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 cursor-pointer"
+                    title="Clear colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleDownloadColoredPng}
+                  className="ml-auto inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition active:scale-95 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download Colored PNG
+                </button>
+              </div>
+            )}
 
             {/* Canvas Container */}
             <div className="bg-white shadow-2xl rounded-sm border border-slate-300 overflow-hidden relative aspect-[8.5/11] w-full max-w-[540px]">
               <canvas
+                ref={colorCanvasRef}
+                width={850}
+                height={1100}
+                className="absolute inset-0 w-full h-full object-contain touch-none"
+                style={{ cursor: isColoringMode ? (activeTool === "fill" ? "crosshair" : "pointer") : "default" }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerLeave={handlePointerUp}
+              />
+              <canvas
                 ref={canvasRef}
                 width={850}
                 height={1100}
-                className="w-full h-full object-contain"
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none"
               />
             </div>
+
+            {isColoringMode && (
+              <p className="mt-3 text-center text-[11px] text-slate-500 dark:text-slate-400 max-w-[540px]">
+                🎨 This is a fun in-browser preview -- it doesn&apos;t change the blank line-art PDF/PNG your book actually exports. Changing any setting on the left resets your coloring.
+              </p>
+            )}
 
             <div className="mt-4 text-center">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400">

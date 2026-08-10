@@ -138,6 +138,11 @@ export interface ColoringPatternOptions {
   isMidnightMode: boolean;
   frameStyle: "ornamental" | "circle" | "minimal" | "none";
   seed: number;
+  // When true, skips the opaque page-color fill so only the line strokes are
+  // drawn on a transparent background. Used by the interactive coloring
+  // canvas to layer this output over a separate user-paintable layer; every
+  // existing caller omits this and keeps the normal opaque page.
+  transparentBg?: boolean;
 }
 
 // ── Single Object Clip-Art ─────────────────────────────────────────────────
@@ -1829,13 +1834,17 @@ function drawObjectLabel(ctx: CanvasRenderingContext2D, text: string, cx: number
  * implementation instead of three copies that could drift out of sync.
  */
 export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number, height: number, opts: ColoringPatternOptions) {
-  const { presetId, complexity, lineWidth, isColorByNumber, isMidnightMode, frameStyle, seed } = opts;
+  const { presetId, complexity, lineWidth, isColorByNumber, isMidnightMode, frameStyle, seed, transparentBg } = opts;
   const cx = width / 2;
   const cy = height / 2;
 
   // Background
-  ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
-  ctx.fillRect(0, 0, width, height);
+  if (transparentBg) {
+    ctx.clearRect(0, 0, width, height);
+  } else {
+    ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
+    ctx.fillRect(0, 0, width, height);
+  }
 
   // Line colors
   const strokeColor = isMidnightMode ? "#FFFFFF" : "#000000";

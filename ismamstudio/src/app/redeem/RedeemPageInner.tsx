@@ -364,7 +364,7 @@ const planTitles: Record<string, string> = {
 
 const getUpgradeInstruction = (rawPlan: string) => {
   if (rawPlan === "starter") {
-    return "To upgrade your account to Tier 2 (Pro), please purchase another AppSumo code and redeem it below. Tier 2 unlocks unlimited brand profiles, hard Sudoku difficulty, and advanced maze shapes.";
+    return "To upgrade your account to Tier 2 (Pro), please purchase another AppSumo code and redeem it below. Tier 2 unlocks up to 10 brand profiles, hard Sudoku difficulty, and advanced maze shapes.";
   }
   if (rawPlan === "pro") {
     return "To upgrade your account to Tier 3 (Agency), please purchase another AppSumo code and redeem it below. Tier 3 unlocks multi-user team seats and agency-level limits.";

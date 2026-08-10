@@ -21,7 +21,7 @@ const REVIEWS: ReviewItem[] = [
     comment: "I would like to create KDP tools with this website because it provides me all in one service.",
     author: "Tofajjal Hossain Emon",
     date: "Aug 3, 2026",
-    useCase: "Verified Trustpilot Reviewer",
+    useCase: "KDPage Customer",
   },
   {
     id: "rev-2",
@@ -30,7 +30,7 @@ const REVIEWS: ReviewItem[] = [
     comment: "In the field of KDP puzzle, it is one of the best tools.",
     author: "Tarequl Islam Mahin",
     date: "Aug 2, 2026",
-    useCase: "Verified Trustpilot Reviewer",
+    useCase: "KDPage Customer",
   },
   {
     id: "rev-3",
@@ -39,7 +39,7 @@ const REVIEWS: ReviewItem[] = [
     comment: "It is really a very impressive website. Well done and keep it up.",
     author: "Imad Surjo",
     date: "Aug 2, 2026",
-    useCase: "Verified Trustpilot Reviewer",
+    useCase: "KDPage Customer",
   },
   {
     id: "rev-4",
@@ -48,7 +48,7 @@ const REVIEWS: ReviewItem[] = [
     comment: "Useful platform for creating activity books, puzzle interiors, and print-ready covers efficiently.",
     author: "Sedi Moulay",
     date: "Aug 1, 2026",
-    useCase: "Verified Trustpilot Reviewer",
+    useCase: "KDPage Customer",
   },
 ];
 

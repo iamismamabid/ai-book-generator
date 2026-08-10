@@ -9,6 +9,7 @@ export const metadata = {
 export default function CryptogramPage() {
   return (
     <div className="bg-[#F8FAFC]">
+      <h1 className="sr-only">Cryptogram Generator for KDP Publishing</h1>
       <CryptogramGenerator />
     </div>
   );

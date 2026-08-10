@@ -1,5 +1,5 @@
 import { PDFDocument } from "pdf-lib";
-import { getGutterMargin } from "./pdfFormatter";
+import { getGutterMargin } from "./gutterMargin";
 
 export interface ImageResolutionCheck {
   label: string;

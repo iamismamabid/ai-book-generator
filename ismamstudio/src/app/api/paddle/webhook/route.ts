@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { getPostHogClient } from "@/lib/posthog-server";
+import crypto from "crypto";
 
 // Helper to clean environment variables
 const cleanEnv = (val: string | undefined) => {
@@ -8,9 +9,53 @@ const cleanEnv = (val: string | undefined) => {
   return val.replace(/['"]/g, "").trim();
 };
 
+// Paddle Billing signs webhooks as `Paddle-Signature: ts=<unix>;h1=<hex hmac>`,
+// computed over `${ts}:${rawBody}` with the notification destination's secret
+// key (Paddle dashboard -> Developer Tools -> Notifications). Without this
+// check, anyone who learns/guesses a Clerk userId can POST a forged
+// subscription.created payload here and grant themselves premium for free --
+// there is no other gate on this endpoint. Verification only activates once
+// PADDLE_WEBHOOK_SECRET is set so it can ship without breaking currently
+// working (unverified) webhook processing.
+function verifyPaddleSignature(rawBody: string, signatureHeader: string | null, secret: string): boolean {
+  if (!signatureHeader) return false;
+  const parts: Record<string, string> = {};
+  for (const seg of signatureHeader.split(";")) {
+    const [key, value] = seg.split("=");
+    if (key && value) parts[key.trim()] = value.trim();
+  }
+  const { ts, h1 } = parts;
+  if (!ts || !h1) return false;
+
+  const expected = crypto.createHmac("sha256", secret).update(`${ts}:${rawBody}`).digest("hex");
+  const expectedBuf = Buffer.from(expected, "hex");
+  const actualBuf = Buffer.from(h1, "hex");
+  if (expectedBuf.length !== actualBuf.length) return false;
+  return crypto.timingSafeEqual(expectedBuf, actualBuf);
+}
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const rawBody = await request.text();
+    const webhookSecret = cleanEnv(process.env.PADDLE_WEBHOOK_SECRET);
+
+    if (webhookSecret) {
+      const signatureHeader = request.headers.get("paddle-signature");
+      if (!verifyPaddleSignature(rawBody, signatureHeader, webhookSecret)) {
+        console.error("Paddle Webhook: signature verification failed, rejecting request");
+        return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 401 });
+      }
+    } else {
+      // No secret configured yet -- log loudly so this doesn't stay silent
+      // in production, but don't break currently-working billing by
+      // rejecting every request until it's set.
+      console.error(
+        "SECURITY WARNING: PADDLE_WEBHOOK_SECRET is not set. Paddle webhook signatures are NOT being verified, " +
+        "meaning anyone can forge a premium-grant request. Set PADDLE_WEBHOOK_SECRET from the Paddle dashboard immediately."
+      );
+    }
+
+    const body = JSON.parse(rawBody);
     console.log("Paddle Webhook received payload type:", body.event_type);
 
     const eventType = body.event_type;

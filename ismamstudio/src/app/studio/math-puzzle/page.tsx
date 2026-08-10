@@ -9,6 +9,7 @@ export const metadata = {
 export default function MathPuzzlePage() {
   return (
     <div className="bg-[#F8FAFC]">
+      <h1 className="sr-only">Math Puzzle Generator for KDP Publishing</h1>
       <MathPuzzleGenerator />
     </div>
   );

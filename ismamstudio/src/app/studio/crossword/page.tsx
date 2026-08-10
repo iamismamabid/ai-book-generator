@@ -9,6 +9,7 @@ export const metadata = {
 export default function CrosswordPage() {
   return (
     <div className="bg-[#F8FAFC]">
+      <h1 className="sr-only">Crossword Generator for KDP Publishing</h1>
       <CrosswordGenerator />
     </div>
   );

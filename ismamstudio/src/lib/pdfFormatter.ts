@@ -1,5 +1,8 @@
 import { jsPDF } from "jspdf";
 import { splitManuscriptIntoChapters } from "./epubExport";
+import { getGutterMargin } from "./gutterMargin";
+
+export { getGutterMargin };
 
 export interface PdfFormatterOptions {
   title: string;
@@ -18,14 +21,6 @@ const TRIM_SIZES: Record<string, [number, number]> = {
   "8.5x11": [8.5, 11.0],
   "5x8": [5.0, 8.0],
 };
-
-export function getGutterMargin(pageCount: number): number {
-  if (pageCount <= 150) return 0.375;
-  if (pageCount <= 300) return 0.500;
-  if (pageCount <= 500) return 0.625;
-  if (pageCount <= 700) return 0.750;
-  return 0.875;
-}
 
 export async function generateInteriorPdf(options: PdfFormatterOptions): Promise<{ blob: Blob; pageCount: number }> {
   const chapters = splitManuscriptIntoChapters(options.rawText);

@@ -9,6 +9,7 @@ export const metadata = {
 export default function WordScramblePage() {
   return (
     <div className="bg-[#F8FAFC]">
+      <h1 className="sr-only">Word Scramble Generator for KDP Publishing</h1>
       <WordScrambleGenerator />
     </div>
   );

@@ -158,6 +158,15 @@ export default function AboutPage() {
                     LinkedIn
                   </a>
                   <a
+                    href="https://x.com/ismam_abid"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-slate-200 transition-all text-xs font-bold"
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L2.25 2.25h6.193l4.256 5.648zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    @ismam_abid
+                  </a>
+                  <a
                     href="https://www.kdpage.com"
                     target="_blank"
                     rel="noopener noreferrer"

@@ -512,6 +512,13 @@ const DESIGNER_PALETTES: DesignerPalette[] = [
   { id: "blush-romance", name: "Blush Romance", category: "Pastel", bgColor: "#ffccd5", gradientStart: "#ffccd5", gradientEnd: "#ffe5ec", accentColor: "#c9184a", textColor: "#590d22" },
   { id: "crimson-noir", name: "Crimson Noir", category: "Dark", bgColor: "#240000", gradientStart: "#240000", gradientEnd: "#660000", accentColor: "#ff3333", textColor: "#ffffff" },
   { id: "sage-minimalist", name: "Sage Minimalist", category: "Minimal", bgColor: "#d8e2dc", gradientStart: "#d8e2dc", gradientEnd: "#ece4db", accentColor: "#6b705c", textColor: "#3d3d3d" },
+  { id: "cosmic-nebula", name: "Cosmic Nebula", category: "Vibrant", bgColor: "#2a0845", gradientStart: "#2a0845", gradientEnd: "#6441a5", accentColor: "#ff007f", textColor: "#ffffff" },
+  { id: "golden-hour", name: "Golden Hour", category: "Warm", bgColor: "#ffb703", gradientStart: "#ffb703", gradientEnd: "#fb8500", accentColor: "#023e8a", textColor: "#ffffff" },
+  { id: "nordic-frost", name: "Nordic Frost", category: "Clean", bgColor: "#0284c7", gradientStart: "#0284c7", gradientEnd: "#0369a1", accentColor: "#f0f9ff", textColor: "#ffffff" },
+  { id: "vintage-leather", name: "Vintage Leather", category: "Classic", bgColor: "#3d2314", gradientStart: "#4a2c17", gradientEnd: "#231209", accentColor: "#d4af37", textColor: "#fef3c7" },
+  { id: "cyberpunk-neon", name: "Cyberpunk Neon", category: "Vibrant", bgColor: "#0f051d", gradientStart: "#0f051d", gradientEnd: "#290a59", accentColor: "#00f5d4", textColor: "#ffffff" },
+  { id: "terracotta-earth", name: "Terracotta Earth", category: "Warm", bgColor: "#b45309", gradientStart: "#b45309", gradientEnd: "#78350f", accentColor: "#fef3c7", textColor: "#ffffff" },
+  { id: "rosewood-velvet", name: "Rosewood Velvet", category: "Elegant", bgColor: "#4c0519", gradientStart: "#4c0519", gradientEnd: "#881337", accentColor: "#fbcfe8", textColor: "#ffffff" },
 ];
 
 const TRIM_SIZES = [

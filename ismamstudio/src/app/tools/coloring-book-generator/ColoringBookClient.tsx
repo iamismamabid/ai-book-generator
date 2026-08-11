@@ -287,7 +287,7 @@ export default function ColoringBookClient() {
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
 
   // Interactive "Preview Coloring" canvas state
-  const [isColoringMode, setIsColoringMode] = useState(false);
+  const [isColoringMode, setIsColoringMode] = useState(true);
   const [activeTool, setActiveTool] = useState<"select" | "brush" | "eraser" | "fill" | "eyedropper" | "text" | "shape" | "line" | "freehandLine">("brush");
   const [brushColor, setBrushColor] = useState<string>(EXTENDED_PALETTE[0]);
   const [brushSize, setBrushSize] = useState<number>(18);

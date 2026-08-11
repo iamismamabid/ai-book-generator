@@ -257,11 +257,50 @@ function PresetThumbnail({ preset }: { preset: PresetItem }) {
   );
 }
 
-// Trim sizes
-const TRIM_SIZES = [
-  { id: "8.5x11", label: '8.5" × 11" (Standard)', w: 8.5, h: 11, pxW: 2550, pxH: 3300 },
-  { id: "6x9", label: '6" × 9" (Trade Paperback)', w: 6, h: 9, pxW: 1800, pxH: 2700 },
-  { id: "8x10", label: '8" × 10" (Squareish)', w: 8, h: 10, pxW: 2400, pxH: 3000 },
+// KDP-standard trim sizes (No Bleed + Bleed variants @ 300 DPI)
+// No Bleed = exact trim size in inches × 300
+// Bleed    = trim + 0.125" width / + 0.25" height × 300  (KDP bleed spec)
+const TRIM_SIZES: {
+  id: string;
+  label: string;
+  w: number;
+  h: number;
+  noBleed: { pxW: number; pxH: number };
+  bleed:   { pxW: number; pxH: number };
+  bestFor: string;
+}[] = [
+  {
+    id: "8.5x11",
+    label: '8.5" × 11" (Standard Portrait)',
+    w: 8.5, h: 11,
+    noBleed: { pxW: 2550, pxH: 3300 },
+    bleed:   { pxW: 2588, pxH: 3375 },
+    bestFor: "Adult & children coloring books — industry standard",
+  },
+  {
+    id: "8.5x8.5",
+    label: '8.5" × 8.5" (Square)',
+    w: 8.5, h: 8.5,
+    noBleed: { pxW: 2550, pxH: 2550 },
+    bleed:   { pxW: 2588, pxH: 2625 },
+    bestFor: "Square mandalas, patterns & young kids' books",
+  },
+  {
+    id: "8x10",
+    label: '8" × 10" (Portrait)',
+    w: 8, h: 10,
+    noBleed: { pxW: 2400, pxH: 3000 },
+    bleed:   { pxW: 2438, pxH: 3075 },
+    bestFor: "Slightly narrower portrait coloring books",
+  },
+  {
+    id: "6x9",
+    label: '6" × 9" (Pocket / Travel)',
+    w: 6, h: 9,
+    noBleed: { pxW: 1800, pxH: 2700 },
+    bleed:   { pxW: 1838, pxH: 2775 },
+    bestFor: "Travel or pocket-sized coloring books",
+  },
 ];
 
 export default function ColoringBookClient() {
@@ -269,6 +308,7 @@ export default function ColoringBookClient() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [activePreset, setActivePreset] = useState<PresetItem>(PRESETS[0]);
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
+  const [useBleed, setUseBleed] = useState(false);
   const [lineWidth, setLineWidth] = useState<number>(3);
   const [complexity, setComplexity] = useState<number>(12);
   const [isColorByNumber, setIsColorByNumber] = useState<boolean>(true);
@@ -831,9 +871,10 @@ export default function ColoringBookClient() {
     const colorCanvas = colorCanvasRef.current;
     if (!lineCanvas || !colorCanvas) return;
 
+    const dims = useBleed ? trimSize.bleed : trimSize.noBleed;
     const exportCanvas = document.createElement("canvas");
-    exportCanvas.width = trimSize.pxW;
-    exportCanvas.height = trimSize.pxH;
+    exportCanvas.width = dims.pxW;
+    exportCanvas.height = dims.pxH;
     const ctx = exportCanvas.getContext("2d");
     if (!ctx) return;
 
@@ -844,7 +885,7 @@ export default function ColoringBookClient() {
     if (!isPremium) drawCanvasWatermark(ctx, exportCanvas.width, exportCanvas.height);
 
     const link = document.createElement("a");
-    link.download = `KDPage_${activePreset.id}_colored_preview.png`;
+    link.download = `KDPage_${activePreset.id}_${trimSize.id}_${useBleed ? "bleed" : "nobleed"}_colored.png`;
     link.href = exportCanvas.toDataURL("image/png");
     link.click();
   };
@@ -854,17 +895,18 @@ export default function ColoringBookClient() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const dims = useBleed ? trimSize.bleed : trimSize.noBleed;
     const exportCanvas = document.createElement("canvas");
-    exportCanvas.width = trimSize.pxW;
-    exportCanvas.height = trimSize.pxH;
+    exportCanvas.width = dims.pxW;
+    exportCanvas.height = dims.pxH;
     const ctx = exportCanvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.drawImage(canvas, 0, 0, trimSize.pxW, trimSize.pxH);
-    if (!isPremium) drawCanvasWatermark(ctx, trimSize.pxW, trimSize.pxH);
+    ctx.drawImage(canvas, 0, 0, dims.pxW, dims.pxH);
+    if (!isPremium) drawCanvasWatermark(ctx, dims.pxW, dims.pxH);
 
     const link = document.createElement("a");
-    link.download = `KDPage_${activePreset.id}_300DPI.png`;
+    link.download = `KDPage_${activePreset.id}_${trimSize.id}_${useBleed ? "bleed" : "nobleed"}_300DPI.png`;
     link.href = exportCanvas.toDataURL("image/png");
     link.click();
   };
@@ -887,13 +929,17 @@ export default function ColoringBookClient() {
 
       const totalP = Math.max(1, Math.min(100, bookPagesCount));
 
+      const dims = useBleed ? trimSize.bleed : trimSize.noBleed;
       const pageCanvas = document.createElement("canvas");
-      pageCanvas.width = trimSize.pxW;
-      pageCanvas.height = trimSize.pxH;
+      pageCanvas.width = dims.pxW;
+      pageCanvas.height = dims.pxH;
       const pageCtx = pageCanvas.getContext("2d");
 
+      const pageW = useBleed ? trimSize.w + 0.125 : trimSize.w;
+      const pageH = useBleed ? trimSize.h + 0.25  : trimSize.h;
+
       for (let p = 0; p < totalP; p++) {
-        if (p > 0) doc.addPage([trimSize.w, trimSize.h]);
+        if (p > 0) doc.addPage([pageW, pageH]);
 
         if (pageCtx) {
           if (customLineArt) {
@@ -911,7 +957,7 @@ export default function ColoringBookClient() {
             });
           }
           const imgData = pageCanvas.toDataURL("image/png", 1.0);
-          doc.addImage(imgData, "PNG", 0, 0, trimSize.w, trimSize.h);
+          doc.addImage(imgData, "PNG", 0, 0, pageW, pageH);
         }
 
         // Page Number
@@ -925,7 +971,7 @@ export default function ColoringBookClient() {
         setExportProgress(Math.floor(((p + 1) / totalP) * 100));
       }
 
-      doc.save(`KDPage_Coloring_Book_${trimSize.id}_${totalP}Pages.pdf`);
+      doc.save(`KDPage_Coloring_Book_${trimSize.id}_${useBleed ? "bleed" : "nobleed"}_${totalP}Pages.pdf`);
     } catch (err) {
       console.error("PDF Export error:", err);
       alert("Failed to export PDF. Please try again.");
@@ -1192,25 +1238,48 @@ export default function ColoringBookClient() {
                 </div>
               </div>
 
-              {/* Trim Size */}
-              <div>
-                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">
+              {/* Trim Size + Bleed Toggle */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block">
                   KDP Book Trim Size
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <select
+                  value={trimSize.id}
+                  onChange={(e) => {
+                    const found = TRIM_SIZES.find((t) => t.id === e.target.value);
+                    if (found) setTrimSize(found);
+                  }}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold"
+                >
                   {TRIM_SIZES.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => setTrimSize(t)}
-                      className={`py-2 rounded-xl text-xs font-bold border transition ${
-                        trimSize.id === t.id
-                          ? "bg-indigo-600 text-white border-indigo-600"
-                          : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
-                      }`}
-                    >
-                      {t.id}
-                    </button>
+                    <option key={t.id} value={t.id}>{t.label}</option>
                   ))}
+                </select>
+
+                {/* Bleed toggle */}
+                <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2">
+                  <div>
+                    <div className="text-xs font-black text-slate-800 dark:text-slate-200">Full Bleed Export</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                      {useBleed
+                        ? `${trimSize.bleed.pxW} × ${trimSize.bleed.pxH} px (bleed)`
+                        : `${trimSize.noBleed.pxW} × ${trimSize.noBleed.pxH} px (safe)`}
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={useBleed}
+                    onChange={(e) => setUseBleed(e.target.checked)}
+                    className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                </div>
+
+                {/* KDP margin hint */}
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed px-0.5">
+                  {useBleed
+                    ? <>✅ Bleed: design extends to page edge. KDP trims 0.125&quot; / 0.25&quot; during print.</>
+                    : <>📐 No Bleed: keep line art ≥ 0.375&quot; (3/8 in) from edges to avoid spine cut-off.</>}
+                  {" "}<span className="font-semibold text-indigo-500">{trimSize.bestFor}</span>
                 </div>
               </div>
 

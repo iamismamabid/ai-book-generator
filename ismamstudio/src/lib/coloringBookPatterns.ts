@@ -20,6 +20,7 @@ export interface PresetItem {
 }
 
 export const PRESETS: PresetItem[] = [
+  { id: "blank_canvas", name: "➕ Blank Canvas (Draw From Scratch)", category: "Single Object Clip-Art", description: "Clean white 300 DPI page for custom drawing, shapes, lines & coloring from scratch", defaultComplexity: 1 },
   // Botanical
   { id: "citrus_slices", name: "Citrus Fruit Wheels & Slices", category: "Botanical & Floral", description: "Lemon, lime, orange and grapefruit wheels arranged in a graphic mosaic", defaultComplexity: 12 },
   { id: "tropical_palms", name: "Tropical Palm & Monster Leaves", category: "Botanical & Floral", description: "Overlapping monstera, palm, and fern leaves with fine vein line art", defaultComplexity: 10 },
@@ -1884,6 +1885,11 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
     ctx.stroke();
   } else if (frameStyle === "minimal") {
     ctx.strokeRect(margin, margin, innerW, innerH);
+  }
+
+  if (presetId === "blank_canvas") {
+    ctx.clearRect(0, 0, width, height);
+    return;
   }
 
   // Single Object Clip-Art presets bypass the abstract pattern generator

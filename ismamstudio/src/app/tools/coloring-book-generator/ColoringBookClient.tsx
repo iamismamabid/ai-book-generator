@@ -50,7 +50,10 @@ import {
   Sun,
   Droplet,
   MousePointer2,
-  Keyboard
+  Keyboard,
+  Minus,
+  Pencil,
+  FilePlus
 } from "lucide-react";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
@@ -285,7 +288,7 @@ export default function ColoringBookClient() {
 
   // Interactive "Preview Coloring" canvas state
   const [isColoringMode, setIsColoringMode] = useState(false);
-  const [activeTool, setActiveTool] = useState<"select" | "brush" | "eraser" | "fill" | "eyedropper" | "text" | "shape">("brush");
+  const [activeTool, setActiveTool] = useState<"select" | "brush" | "eraser" | "fill" | "eyedropper" | "text" | "shape" | "line" | "freehandLine">("brush");
   const [brushColor, setBrushColor] = useState<string>(EXTENDED_PALETTE[0]);
   const [brushSize, setBrushSize] = useState<number>(18);
   const [history, setHistory] = useState<{ stack: string[]; index: number }>({ stack: [], index: -1 });
@@ -374,7 +377,31 @@ export default function ColoringBookClient() {
   const colorCanvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const lineStartRef = useRef<{ x: number; y: number } | null>(null);
   const snapshotLoadTokenRef = useRef(0);
+
+  // Blank Page Creator Action
+  const handleCreateBlankPage = () => {
+    setActivePreset(PRESETS[0]); // blank_canvas
+    setCustomLineArt(null);
+    setCustomImageName(null);
+    const lineCanvas = canvasRef.current;
+    const colorCanvas = colorCanvasRef.current;
+    if (lineCanvas) {
+      const lCtx = lineCanvas.getContext("2d");
+      if (lCtx) {
+        lCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+        lCtx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
+        lCtx.fillRect(0, 0, lineCanvas.width, lineCanvas.height);
+      }
+    }
+    if (colorCanvas) {
+      const cCtx = colorCanvas.getContext("2d");
+      cCtx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+    }
+    setIsColoringMode(true);
+    showToast("Created Blank Clean 300 DPI Canvas! Start drawing from scratch 🎨");
+  };
 
   // Render procedure on Canvas
   const drawPattern = useCallback(() => {
@@ -700,6 +727,18 @@ export default function ColoringBookClient() {
       return;
     }
 
+    if (activeTool === "line") {
+      isDrawingRef.current = true;
+      lineStartRef.current = pt;
+      return;
+    }
+
+    if (activeTool === "freehandLine") {
+      isDrawingRef.current = true;
+      lastPointRef.current = pt;
+      return;
+    }
+
     if (activeTool === "fill") {
       floodFill(pt.x, pt.y);
       pushHistory();
@@ -717,10 +756,35 @@ export default function ColoringBookClient() {
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isColoringMode || !isDrawingRef.current) return;
+    const pt = getCanvasPoint(e);
+
+    if (activeTool === "freehandLine") {
+      const lineCanvas = canvasRef.current;
+      const lCtx = lineCanvas?.getContext("2d");
+      if (lCtx) {
+        const last = lastPointRef.current ?? pt;
+        lCtx.save();
+        lCtx.strokeStyle = isMidnightMode ? "#FFFFFF" : "#0F172A";
+        lCtx.lineWidth = Math.max(2, lineWidth);
+        lCtx.lineCap = "round";
+        lCtx.lineJoin = "round";
+        lCtx.beginPath();
+        lCtx.moveTo(last.x, last.y);
+        lCtx.lineTo(pt.x, pt.y);
+        lCtx.stroke();
+        lCtx.restore();
+        lastPointRef.current = pt;
+      }
+      return;
+    }
+
+    if (activeTool === "line") {
+      return;
+    }
+
     const canvas = colorCanvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
-    const pt = getCanvasPoint(e);
     const last = lastPointRef.current ?? pt;
     ctx.globalCompositeOperation = activeTool === "eraser" ? "destination-out" : "source-over";
     ctx.strokeStyle = brushColor;
@@ -734,8 +798,29 @@ export default function ColoringBookClient() {
     lastPointRef.current = pt;
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e?: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isColoringMode || !isDrawingRef.current) return;
+
+    if (activeTool === "line" && lineStartRef.current && e) {
+      const pt = getCanvasPoint(e);
+      const lineCanvas = canvasRef.current;
+      const lCtx = lineCanvas?.getContext("2d");
+      if (lCtx && lineCanvas) {
+        lCtx.save();
+        lCtx.strokeStyle = isMidnightMode ? "#FFFFFF" : "#0F172A";
+        lCtx.lineWidth = Math.max(2, lineWidth);
+        lCtx.lineCap = "round";
+        lCtx.lineJoin = "round";
+        lCtx.beginPath();
+        lCtx.moveTo(lineStartRef.current.x, lineStartRef.current.y);
+        lCtx.lineTo(pt.x, pt.y);
+        lCtx.stroke();
+        lCtx.restore();
+        showToast("Drawn straight vector line segment!");
+      }
+      lineStartRef.current = null;
+    }
+
     isDrawingRef.current = false;
     lastPointRef.current = null;
     pushHistory();
@@ -959,6 +1044,14 @@ export default function ColoringBookClient() {
                     Auto Sobel filter converts any photo into clean 300 DPI coloring line art!
                   </span>
                 </label>
+
+                {/* ➕ Create Blank Canvas Button */}
+                <button
+                  onClick={handleCreateBlankPage}
+                  className="w-full py-2.5 px-4 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-black rounded-xl text-xs border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center gap-2 transition cursor-pointer"
+                >
+                  <FilePlus className="w-4 h-4 text-indigo-500" /> Create Blank Page (Draw From Scratch)
+                </button>
               </div>
 
               {/* Category Filter */}
@@ -1290,9 +1383,23 @@ export default function ColoringBookClient() {
                     <button
                       onClick={() => setActiveTool("shape")}
                       className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "shape" ? "bg-white dark:bg-slate-700 shadow-sm text-amber-500" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                      title="Shape Stamp Tool (Circle, Square, Star, Heart, Flower)"
+                      title="Shape Stamp Tool (11 Pro Shapes)"
                     >
                       <Shapes className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("line")}
+                      className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "line" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                      title="Straight Vector Line Tool (Click & Drag)"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("freehandLine")}
+                      className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "freehandLine" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+                      title="Freehand Vector Path / Cursor Line Tool"
+                    >
+                      <Pencil className="w-4 h-4" />
                     </button>
                     <button
                       onClick={handleFillAll}

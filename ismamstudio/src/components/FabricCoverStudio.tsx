@@ -48,12 +48,13 @@ const PATH_SHAPE_OPTIONS: { value: PathShape; label: string }[] = [
 ];
 
 const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
-  { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo"] },
-  { category: "Sans Serif", fonts: ["Inter", "Outfit", "Montserrat", "Poppins", "Raleway", "Nunito", "Work Sans", "Rubik", "DM Sans", "Archivo", "Karla", "Mulish", "Manrope", "Josefin Sans"] },
-  { category: "Serif", fonts: ["Playfair Display", "Merriweather", "Lora", "Cormorant Garamond", "Crimson Text", "PT Serif", "Libre Baskerville", "EB Garamond", "Cinzel", "Bitter", "Noto Serif", "Vollkorn", "Domine", "Spectral"] },
-  { category: "Display & Bold", fonts: ["Bebas Neue", "Oswald", "Anton", "Passion One", "Alfa Slab One", "Bungee", "Fjalla One", "Righteous", "Staatliches", "Abril Fatface", "Bangers", "Titan One", "Luckiest Guy", "Big Shoulders Display"] },
-  { category: "Handwriting & Script", fonts: ["Pacifico", "Sacramento", "Great Vibes", "Dancing Script", "Caveat", "Satisfy", "Kalam", "Shadows Into Light", "Amatic SC", "Permanent Marker", "Indie Flower", "Homemade Apple"] },
-  { category: "Monospace", fonts: ["Courier Prime", "Space Mono", "JetBrains Mono", "IBM Plex Mono"] },
+  { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo", "Verdana", "Garamond", "Palatino"] },
+  { category: "Sans Serif", fonts: ["Inter", "Outfit", "Montserrat", "Poppins", "Raleway", "Nunito", "Work Sans", "Rubik", "DM Sans", "Archivo", "Karla", "Mulish", "Manrope", "Josefin Sans", "Quicksand", "Lato", "Open Sans", "Roboto", "Ubuntu", "Barlow", "Exo 2", "Urbanist", "Fira Sans"] },
+  { category: "Serif", fonts: ["Playfair Display", "Merriweather", "Lora", "Cormorant Garamond", "Crimson Text", "PT Serif", "Libre Baskerville", "EB Garamond", "Cinzel", "Bitter", "Noto Serif", "Vollkorn", "Domine", "Spectral", "DM Serif Display", "Prata", "Bodoni Moda", "Arvo", "Cardo", "Zilla Slab", "Alegreya"] },
+  { category: "Display & Bold", fonts: ["Bebas Neue", "Oswald", "Anton", "Passion One", "Alfa Slab One", "Bungee", "Fjalla One", "Righteous", "Staatliches", "Abril Fatface", "Bangers", "Titan One", "Luckiest Guy", "Big Shoulders Display", "Black Ops One", "Lobster", "Orbitron", "Russo One", "Press Start 2P", "Boogaloo", "Special Elite"] },
+  { category: "Handwriting & Script", fonts: ["Pacifico", "Sacramento", "Great Vibes", "Dancing Script", "Caveat", "Satisfy", "Kalam", "Shadows Into Light", "Amatic SC", "Permanent Marker", "Indie Flower", "Homemade Apple", "Alex Brush", "Parisienne", "Allura", "Kaushan Script", "Cookie", "Courgette", "Yellowtail", "Marck Script", "Reenie Beanie"] },
+  { category: "Vintage & Decorative", fonts: ["Cinzel Decorative", "UnifrakturMaguntia", "Monoton", "Berkshire Swash", "Playfair Display SC", "MedievalSharp", "Pirata One", "Rye", "Almendra SC", "Fredericka the Great"] },
+  { category: "Monospace", fonts: ["Courier Prime", "Space Mono", "JetBrains Mono", "IBM Plex Mono", "Fira Code", "Inconsolata", "Source Code Pro", "VT323"] },
 ];
 
 const FONT_FAMILIES = FONT_CATEGORIES.flatMap(c => c.fonts);

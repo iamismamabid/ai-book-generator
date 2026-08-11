@@ -989,35 +989,26 @@ export default function ColoringBookClient() {
       {/* Main Studio Area */}
       <main className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8">
         
-        {/* 🛡️ Alert Banner */}
-        <div className="mb-6 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-wider">
-                  Tons of Templates &amp; Custom Image Line-Art Generator
-                </h2>
-                <span className="bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full">
-                  Verified Safe
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 font-medium">
-                Mandalas, Stained Glass, Landscapes, Citrus Slices, Architecture, Cozy Still Life, Flags &amp; Concept Cars — 67+ templates or convert your own image!
-              </p>
-            </div>
+        {/* 🛡️ Compact Alert Banner */}
+        <div className="mb-4 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-2.5 px-4 flex items-center justify-between gap-3 text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span className="font-bold text-emerald-950 dark:text-emerald-300">
+              67+ Presets &amp; Custom Photo → Line Art Converter
+            </span>
+            <span className="hidden md:inline text-slate-500 dark:text-slate-400">
+              — Mandalas, Stained Glass, Landscapes, Citrus, Flags &amp; Concept Cars
+            </span>
           </div>
-          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">
-            Thousands of unique vector combinations
-          </div>
+          <span className="bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">
+            300 DPI Print-Ready
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* ⚙️ Left Control Panel */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* ⚙️ Left Compact Control Panel (Cols: 4) */}
+          <div className="lg:col-span-4 space-y-4">
             
             {/* Custom Upload & Template Selection */}
             <div data-tour="select-template" className="space-y-6">
@@ -1286,10 +1277,10 @@ export default function ColoringBookClient() {
 
           </div>
 
-          {/* 🖼️ Right Canvas Live Preview Area */}
-          <div data-tour="interactive-coloring" className="lg:col-span-7 bg-slate-200 dark:bg-slate-950 p-6 sm:p-10 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[650px]">
+          {/* 🖼️ Right Expanded Canvas Live Workspace Area (Cols: 8) */}
+          <div data-tour="interactive-coloring" className="lg:col-span-8 bg-slate-200 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[720px]">
 
-            <div className="w-full max-w-[540px] flex items-center justify-between gap-2 mb-4">
+            <div className="w-full max-w-[760px] flex items-center justify-between gap-2 mb-3">
               <button
                 onClick={() => setIsColoringMode((v) => !v)}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border transition cursor-pointer ${
@@ -1333,7 +1324,7 @@ export default function ColoringBookClient() {
 
             {/* Interactive Drawing Toolbar */}
             {isColoringMode && (
-              <div className="w-full max-w-[540px] mb-4 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-lg space-y-2.5">
+              <div className="w-full max-w-[760px] mb-3 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-lg space-y-2.5">
                 
                 {/* Main Tool Selectors */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
@@ -1684,7 +1675,7 @@ export default function ColoringBookClient() {
 
             {/* Canvas Container with Zoom Transform */}
             <div
-              className="bg-white shadow-2xl rounded-sm border border-slate-300 overflow-hidden relative aspect-[8.5/11] w-full max-w-[540px] transition-transform duration-200"
+              className="bg-white shadow-2xl rounded-sm border border-slate-300 overflow-hidden relative aspect-[8.5/11] w-full max-w-[760px] transition-transform duration-200"
               style={{ transform: `scale(${zoomLevel})`, transformOrigin: "top center" }}
             >
               <canvas
@@ -1717,7 +1708,7 @@ export default function ColoringBookClient() {
             </div>
 
             {isColoringMode && (
-              <p className="mt-3 text-center text-[11px] text-slate-500 dark:text-slate-400 max-w-[540px]">
+              <p className="mt-3 text-center text-[11px] text-slate-500 dark:text-slate-400 max-w-[760px]">
                 🎨 In-browser interactive preview canvas -- exports clean line-art PDF/PNG for KDP printing.
               </p>
             )}

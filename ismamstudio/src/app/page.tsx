@@ -18,7 +18,9 @@ import {
   ScanText,
   BookOpen,
   LayoutTemplate,
-  Star
+  Star,
+  Paintbrush,
+  Shuffle
 } from "lucide-react";
 
 import HomeArcadeWalkthrough from "./components/HomeArcadeWalkthrough";
@@ -186,12 +188,16 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
-            { title: "Sudoku Studio", desc: "Easy to Hard, 100% unique grids with single-solution guarantee.", href: "/sudoku", icon: Grid3x3, badge: "300 DPI Vector" },
-            { title: "Labyrinth & Maze Engine", desc: "Square, Heart, and Circle shape-masked mazes with solution keys.", href: "/maze", icon: Compass, badge: "Custom Shape Mask" },
-            { title: "Word Search Studio", desc: "Custom word lists, directional controls, and solution answer keys.", href: "/tools/word-search", icon: Sparkles, badge: "CSV Import" },
-            { title: "Crossword Studio", desc: "Professional clue layout, auto-intersecting letter engine.", href: "/studio/crossword", icon: LayoutTemplate, badge: "Auto-Generate" },
-            { title: "Cryptogram Studio", desc: "Cipher letter substitution puzzle books with decryption key sheets.", href: "/studio/cryptogram", icon: Hash, badge: "Cipher Engine" },
-            { title: "Cover Studio", desc: "Wrap-around covers calculated to exact page count and spine thickness.", href: "/studio", icon: Palette, badge: "KDP Trim Math" },
+            { title: "Coloring Book Studio", desc: "Coloring & color-by-number pages -- mandalas, stained glass, flags, cars, and blank canvas.", href: "/tools/coloring-book-generator", icon: Paintbrush, badge: "67+ Presets & Blank Canvas" },
+            { title: "Labyrinth & Maze Engine", desc: "Square, Heart, and Circle shape-masked mazes with single-solution paths and KDP-safe margins.", href: "/maze", icon: Compass, badge: "Custom Shape Mask" },
+            { title: "Sudoku Studio", desc: "Bulk Sudoku grids, Easy to Hard, each verified for exactly one unique solution.", href: "/sudoku", icon: Grid3x3, badge: "300 DPI Vector" },
+            { title: "Word Search Studio", desc: "Import a word list or CSV, build the grid, export the interior sheet with clue layouts.", href: "/tools/word-search", icon: Sparkles, badge: "CSV Import" },
+            { title: "Crossword Studio", desc: "Custom crosswords, 10x10 to 20x20, up to 1,000+ pages, with auto-intersecting clues.", href: "/studio/crossword", icon: LayoutTemplate, badge: "Auto-Generate" },
+            { title: "Cryptogram Studio", desc: "Substitution-cipher worksheets from your own quotes, up to 1,000+ pages with solution keys.", href: "/studio/cryptogram", icon: Hash, badge: "Cipher Engine" },
+            { title: "Math Puzzle Builder", desc: "Arithmetic and logic-grid sheets for kids, seniors, and KDP activity workbooks.", href: "/studio/math-puzzle", icon: Calculator, badge: "Arithmetic Grid" },
+            { title: "Word Scramble Studio", desc: "Scramble your word list into activity worksheets, ready for instant export.", href: "/studio/word-scramble", icon: Shuffle, badge: "Vocabulary Builder" },
+            { title: "Kakuro Generator", desc: "Number-sum logic grids, 4x4 to 9x17, Easy to Expert with solution answer keys.", href: "/studio/kakuro", icon: Grid3x3, badge: "Number Sum Logic" },
+            { title: "All-In-One Studio", desc: "Wrap-around full-bleed covers, interior manuscript assembly, and complete KDP book builder.", href: "/studio", icon: BookOpen, badge: "Full KDP Publisher" },
           ].map((tool) => (
             <div key={tool.title} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between group">
               <div className="space-y-3">

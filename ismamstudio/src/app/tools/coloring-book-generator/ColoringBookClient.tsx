@@ -43,6 +43,12 @@ import {
   Star,
   Heart,
   Flower2,
+  Gem,
+  Hexagon,
+  Moon,
+  Cloud,
+  Sun,
+  Droplet,
   MousePointer2,
   Keyboard
 } from "lucide-react";
@@ -174,6 +180,47 @@ function drawShapePath(ctx: CanvasRenderingContext2D, shape: string, cx: number,
     }
     ctx.moveTo(cx + r * 0.25, cy);
     ctx.arc(cx, cy, r * 0.25, 0, Math.PI * 2);
+  } else if (shape === "diamond") {
+    ctx.moveTo(cx, cy - r);
+    ctx.lineTo(cx + r * 0.8, cy);
+    ctx.lineTo(cx, cy + r);
+    ctx.lineTo(cx - r * 0.8, cy);
+    ctx.closePath();
+  } else if (shape === "hexagon") {
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3 - Math.PI / 6;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+  } else if (shape === "moon") {
+    ctx.arc(cx, cy, r, 0.5 * Math.PI, 1.5 * Math.PI, true);
+    ctx.arcTo(cx + r * 0.5, cy, cx, cy + r, r * 0.8);
+    ctx.closePath();
+  } else if (shape === "cloud") {
+    ctx.arc(cx - r * 0.4, cy + r * 0.1, r * 0.35, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.arc(cx - r * 0.1, cy - r * 0.3, r * 0.45, Math.PI * 1.0, Math.PI * 1.85);
+    ctx.arc(cx + r * 0.4, cy - r * 0.1, r * 0.35, Math.PI * 1.5, Math.PI * 0.2);
+    ctx.arc(cx + r * 0.2, cy + r * 0.25, r * 0.3, Math.PI * 0.0, Math.PI * 0.6);
+    ctx.closePath();
+  } else if (shape === "sun") {
+    ctx.arc(cx, cy, r * 0.5, 0, Math.PI * 2);
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI) / 4;
+      const x1 = cx + r * 0.65 * Math.cos(angle);
+      const y1 = cy + r * 0.65 * Math.sin(angle);
+      const x2 = cx + r * Math.cos(angle);
+      const y2 = cy + r * Math.sin(angle);
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+    }
+  } else if (shape === "teardrop") {
+    ctx.moveTo(cx, cy - r);
+    ctx.bezierCurveTo(cx + r, cy + r * 0.3, cx + r * 0.7, cy + r, cx, cy + r);
+    ctx.bezierCurveTo(cx - r * 0.7, cy + r, cx - r, cy + r * 0.3, cx, cy - r);
+    ctx.closePath();
   }
 }
 
@@ -248,8 +295,8 @@ export default function ColoringBookClient() {
   const [textSize, setTextSize] = useState<number>(36);
   const [fontFamily, setFontFamily] = useState<"sans-serif" | "serif" | "cursive">("sans-serif");
 
-  // Shape Stamp Tool State
-  const [selectedShape, setSelectedShape] = useState<"circle" | "rectangle" | "star" | "heart" | "flower">("circle");
+  // Shape Stamp Tool State (11 Pro Vector Shapes)
+  const [selectedShape, setSelectedShape] = useState<"circle" | "rectangle" | "star" | "heart" | "flower" | "diamond" | "hexagon" | "moon" | "cloud" | "sun" | "teardrop">("circle");
   const [shapeScale, setShapeScale] = useState<number>(80);
   const [shapeMode, setShapeMode] = useState<"outline" | "filled">("outline");
 
@@ -1375,6 +1422,48 @@ export default function ColoringBookClient() {
                         title="Flower Shape"
                       >
                         <Flower2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("diamond")}
+                        className={`p-1.5 rounded transition ${selectedShape === "diamond" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Diamond / Rhombus Shape"
+                      >
+                        <Gem className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("hexagon")}
+                        className={`p-1.5 rounded transition ${selectedShape === "hexagon" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Hexagon Shape"
+                      >
+                        <Hexagon className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("moon")}
+                        className={`p-1.5 rounded transition ${selectedShape === "moon" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Crescent Moon Shape"
+                      >
+                        <Moon className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("cloud")}
+                        className={`p-1.5 rounded transition ${selectedShape === "cloud" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Cloud Shape"
+                      >
+                        <Cloud className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("sun")}
+                        className={`p-1.5 rounded transition ${selectedShape === "sun" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Sun Burst Shape"
+                      >
+                        <Sun className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedShape("teardrop")}
+                        className={`p-1.5 rounded transition ${selectedShape === "teardrop" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        title="Teardrop / Raindrop Shape"
+                      >
+                        <Droplet className="w-3.5 h-3.5" />
                       </button>
                     </div>
 

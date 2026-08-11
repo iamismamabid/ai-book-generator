@@ -200,20 +200,14 @@ export async function checkPremiumStatus() {
 
     if (redemptionsCount > 0) {
       let plan = "starter";
-      let limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium"], maxBookCount: 20 };
+      let limits = { tier: 1, brands: 3, puzzles: ["easy", "medium"], maxBookCount: 20 };
 
       if (redemptionsCount === 2) {
         plan = "pro";
-        limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
-      } else if (redemptionsCount === 3) {
+        limits = { tier: 2, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
+      } else if (redemptionsCount >= 3) {
         plan = "agency";
-        limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
-      } else if (redemptionsCount === 4) {
-        plan = "tier4";
-        limits = { tier: 4, brands: 50, aiChapters: 250, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
-      } else if (redemptionsCount >= 5) {
-        plan = "tier5";
-        limits = { tier: 5, brands: 999999, aiChapters: 999999, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+        limits = { tier: 3, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
       }
       return { checked: true, isPremium: true, plan, limits, isLifetimeDeal: true };
     }

@@ -78,11 +78,9 @@ const ARTICLES: HelpArticle[] = [
     content: [
       "Redeeming your AppSumo purchase is fast and automatic. You can redeem via the 1-click button on AppSumo or manually on our redemption page.",
       "Code Stacking Tiers:",
-      "• 1 Code ($49) = Starter Creator Plan (Commercial License, Standard Trim Sizes, 25 Line Art Credits/mo)",
-      "• 2 Codes ($79) = Pro Studio Plan (All 8 Puzzle Engines, Shaped Mazes, Custom Sizes, 100 Line Art Credits/mo)",
-      "• 3 Codes ($149) = Publisher Agency Plan (Everything in Pro + 300 Line Art Credits/mo, 3 Team Seats, 25 Brand Profiles, Bulk Batch Studio)",
-      "• 4 Codes ($249) = Agency Plus Plan (Everything in Tier 3 + 5,000 Exports/mo, 50 Brand Profiles, Priority Support)",
-      "• 5 Codes ($399) = Agency Max Plan (Everything in Tier 4 + 10,000 Exports/mo, 100 Brand Profiles, 1-on-1 Account Manager)"
+      "• 1 Code ($49) = License Tier 1: Starter Creator Plan (Commercial License, Standard Trim Sizes, 25 Line Art Credits/mo)",
+      "• 2 Codes ($79) = License Tier 2: Pro Studio Plan (All 8 Puzzle Engines, Shaped Mazes, Custom Sizes, 100 Line Art Credits/mo)",
+      "• 3 Codes ($149) = License Tier 3: Publisher Agency Plan (Everything in Pro + 300 Line Art Credits/mo, 3 Team Seats, 25 Brand Profiles, Bulk Batch Studio - Max Stack)"
     ],
     steps: [
       "Log in to your KDPage account (or create a free account at /sign-up).",

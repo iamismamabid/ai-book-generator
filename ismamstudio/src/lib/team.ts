@@ -11,8 +11,6 @@ export const SEAT_LIMITS: Record<string, number> = {
   starter: 1,
   pro: 1,
   agency: 3,
-  tier4: 3,
-  tier5: 3,
 };
 
 export function seatLimitForPlan(plan: string): number {

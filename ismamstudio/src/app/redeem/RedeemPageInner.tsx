@@ -388,28 +388,20 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
 }
 
 const planTitles: Record<string, string> = {
-  starter: "Lifetime Tier 1: Starter",
-  pro: "Lifetime Tier 2: Pro",
-  agency: "Lifetime Tier 3: Agency",
-  tier4: "Lifetime Tier 4: Pro Plus",
-  tier5: "Lifetime Tier 5: Agency Max",
+  starter: "Lifetime Tier 1 ($49): Starter Creator",
+  pro: "Lifetime Tier 2 ($79): Pro Studio",
+  agency: "Lifetime Tier 3 ($149): Agency Max",
 };
 
 const getUpgradeInstruction = (rawPlan: string) => {
   if (rawPlan === "starter") {
-    return "To upgrade your account to Tier 2 (Pro), please purchase another AppSumo code and redeem it below. Tier 2 unlocks up to 10 brand profiles, hard Sudoku difficulty, and advanced maze shapes.";
+    return "To upgrade your account to Tier 2 ($79), please purchase another AppSumo code and redeem it below. Tier 2 unlocks up to 10 brand profiles, hard Sudoku difficulty, and advanced maze shapes.";
   }
   if (rawPlan === "pro") {
-    return "To upgrade your account to Tier 3 (Agency), please purchase another AppSumo code and redeem it below. Tier 3 unlocks multi-user team seats and agency-level limits.";
+    return "To upgrade your account to Tier 3 ($149), please purchase another AppSumo code and redeem it below. Tier 3 unlocks multi-user team seats (3 seats) and agency-level limits.";
   }
   if (rawPlan === "agency") {
-    return "You have unlocked the maximum recommended stack (Tier 3)! All core features and limits are fully active.";
-  }
-  if (rawPlan === "tier4") {
-    return "To upgrade your account to Tier 5 (Agency Max), please purchase another AppSumo code and redeem it below.";
-  }
-  if (rawPlan === "tier5") {
-    return "You have unlocked the absolute maximum stack (Tier 5)! All limits are fully maximized.";
+    return "You have unlocked the maximum recommended stack (Tier 3 - $149)! All core features and limits are fully active.";
   }
   return "";
 };

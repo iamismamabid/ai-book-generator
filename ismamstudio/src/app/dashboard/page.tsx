@@ -28,11 +28,9 @@ export default async function DashboardPage() {
   // AppSumo lifetime-deal tiers vs regular Paddle SaaS subscription plans share the
   // same "starter"/"pro"/"agency" plan keys, so the display label must branch on isLtd.
   const ltdPlanNames: Record<string, string> = {
-    starter: "Lifetime Tier 1: Starter",
-    pro: "Lifetime Tier 2: Pro",
-    agency: "Lifetime Tier 3: Agency",
-    tier4: "Lifetime Tier 4: Pro Plus",
-    tier5: "Lifetime Tier 5: Agency Max",
+    starter: "Lifetime Tier 1 ($49): Starter Creator",
+    pro: "Lifetime Tier 2 ($79): Pro Studio",
+    agency: "Lifetime Tier 3 ($149): Agency Max",
   };
   const saasPlanNames: Record<string, string> = {
     free: "Free Tier",
@@ -49,18 +47,16 @@ export default async function DashboardPage() {
 
   // Stacking guidance hints
   let upgradeHint = null;
-  if (rawPlan === "starter" || rawPlan === "pro" || rawPlan === "tier4") {
-    upgradeHint = null;
+  if (rawPlan === "starter" || rawPlan === "pro") {
+    upgradeHint = (
+      <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline block mt-0.5">
+        Stack AppSumo Code to Upgrade →
+      </Link>
+    );
   } else if (rawPlan === "agency") {
     upgradeHint = (
       <span className="text-[9px] font-bold text-emerald-600 block mt-0.5">
-        Max Tier Unlocked! ✨
-      </span>
-    );
-  } else if (rawPlan === "tier5") {
-    upgradeHint = (
-      <span className="text-[9px] font-bold text-emerald-600 block mt-0.5">
-        Maximum Limits Active! 🚀
+        Max Tier Unlocked! ✨ (3 Codes Stacked)
       </span>
     );
   } else {

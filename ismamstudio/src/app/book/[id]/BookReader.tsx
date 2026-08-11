@@ -8,7 +8,6 @@ import ExportButton from "@/components/ExportButton";
 import ChapterButton from "./ChapterButton";
 import EditableChapter from "./EditableChapter";
 import { updateBookTitleAndSubtitle } from "../../actions";
-import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 interface Chapter {
   id: string;
@@ -475,17 +474,6 @@ export default function BookReader({ book, pages }: BookReaderProps) {
             <p className="font-sans font-black italic text-sm">The End of {book.title}</p>
           </section>
 
-          {/* 5. Additional Creation Buttons */}
-          {AI_FEATURES_ENABLED && (
-            <div className="print:hidden flex flex-col items-center justify-center w-full gap-6">
-              <ChapterButton
-                bookId={book.id}
-                outline={book.content}
-                title={book.title}
-                currentCount={book.chapters.length}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>

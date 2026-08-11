@@ -443,19 +443,19 @@ export default function CrosswordGenerator() {
       
       {/* Sidebar Controls */}
       <div className="w-80 bg-slate-900 text-slate-100 flex flex-col border-r border-slate-800 z-10">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <button 
-            onClick={() => router.push("/")} 
-            className="flex items-center gap-2 text-slate-400 hover:text-white transition text-xs font-bold uppercase tracking-wider"
-          >
-            <ArrowLeft className="w-4 h-4"/> Back to Home
-          </button>
-          <div className="flex items-center gap-2">
-            <GenericStudioTour tourKey="crossword" />
-            <div className="flex items-center gap-2 text-indigo-400 font-black text-xs uppercase bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
-              <Sliders className="w-3.5 h-3.5"/> Crossword
+        <div className="p-4 border-b border-slate-800 flex flex-col gap-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <button 
+              onClick={() => router.push("/")} 
+              className="inline-flex items-center gap-1.5 text-slate-400 hover:text-white transition text-xs font-bold uppercase tracking-wider whitespace-nowrap shrink-0"
+            >
+              <ArrowLeft className="w-3.5 h-3.5"/> Back to Home
+            </button>
+            <div className="inline-flex items-center gap-1.5 text-indigo-400 font-black text-[10px] uppercase bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20 whitespace-nowrap shrink-0">
+              <Sliders className="w-3 h-3"/> Crossword
             </div>
           </div>
+          <GenericStudioTour tourKey="crossword" className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 hover:scale-[1.01] active:scale-95 transition-all cursor-pointer border border-amber-300/60 shrink-0 whitespace-nowrap" />
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">

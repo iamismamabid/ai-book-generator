@@ -246,9 +246,10 @@ export const PUZZLE_TOURS: Record<PuzzleTourType, { title: string; steps: Step[]
 
 interface GenericStudioTourProps {
   tourKey: PuzzleTourType;
+  className?: string;
 }
 
-export default function GenericStudioTour({ tourKey }: GenericStudioTourProps) {
+export default function GenericStudioTour({ tourKey, className }: GenericStudioTourProps) {
   const { isLoaded, isSignedIn, user } = useUser();
   const [run, setRun] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -313,7 +314,7 @@ export default function GenericStudioTour({ tourKey }: GenericStudioTourProps) {
       />
       <button
         onClick={() => setRun(true)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-amber-300/60 shrink-0"
+        className={className || "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-amber-300/60 shrink-0 whitespace-nowrap"}
         title={`Replay ${tourConfig.title} Walkthrough Tour`}
       >
         <Sparkles className="w-3.5 h-3.5 text-slate-950 fill-slate-950" />

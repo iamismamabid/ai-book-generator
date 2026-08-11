@@ -8,7 +8,6 @@ import {
   BookMarked, PenTool, Hash, RefreshCw, BarChart2, ShieldAlert, Loader2, AlertTriangle
 } from "lucide-react";
 import type { PdfValidationReport } from "@/lib/pdfValidator";
-import { AI_FEATURES_ENABLED } from "@/lib/features";
 
 // jsPDF (pdfFormatter), pdf-lib (pdfValidator) and JSZip (epubExport) together
 // added ~380 KB to the initial /tools bundle even though most visitors never
@@ -374,17 +373,7 @@ export default function FreeToolsHub() {
       keywords: ["bulk", "bulk generator", "batch creator", "csv import", "mass generation"],
       link: "/tools/bulk-generator"
     },
-    {
-      id: "bulk-listing-generator",
-      name: "Bulk KDP Listing Generator",
-      badge: "New",
-      category: "Marketing",
-      description: "Paste a batch of book titles or concepts and get an AI-written Amazon title, subtitle, description, 7 backend keywords, and category suggestions for each — ready to paste into KDP.",
-      features: ["AI title & description writer", "7 backend keyword slots per book", "CSV export for bulk upload"],
-      keywords: ["listing", "listing generator", "kdp listing", "amazon description", "book description generator", "bulk listing", "keywords", "metadata"],
-      link: "/tools/bulk-listing-generator"
-    },
-    // 4. Formatting & Utility Tools
+    // 3. Keyword & Marketing Tools
     {
       id: "epub-formatter",
       name: "Free eBook Formatter (EPUB)",
@@ -648,10 +637,6 @@ export default function FreeToolsHub() {
   ];
 
   const filteredTools = toolsList.filter((t) => {
-    // The bulk listing generator writes copy with a language model, so it's
-    // hidden along with the rest of the AI features.
-    if (!AI_FEATURES_ENABLED && t.id === "bulk-listing-generator") return false;
-
     const q = searchQuery.trim().toLowerCase();
 
     // If typing a search query, ignore active category tab so matching tools aren't hidden

@@ -2,90 +2,12 @@
 
 import { prisma } from "../lib/prisma";
 import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
-import { Groq } from "groq-sdk";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "crypto";
-import { AI_FEATURES_ENABLED } from "@/lib/features";
 import { getTeamOwnerIdForMember, getWorkspaceUserIds, seatLimitForPlan } from "@/lib/team";
 import { checkRateLimit } from "@/lib/rateLimit";
 
-// Free/Starter share the same modest burst allowance since Free gets 0
-// AI actions anyway; paid tiers get a high-but-real ceiling so a runaway
-// script can't blow through a whole month's quota in seconds, without
-// meaningfully constraining a legitimate paying user.
-function burstLimitForPlan(plan: string): number {
-  if (plan === "pro" || plan === "agency" || plan === "tier4" || plan === "tier5") return 30;
-  return 3;
-}
-
-
-// Look! No import line here anymore.
-
-function getGroqClient() {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    throw new Error("GROQ_API_KEY is missing.");
-  }
-  return new Groq({ apiKey });
-}
-
-// ১. নতুন বই তৈরি করার ফাংশন
-export async function createBook(formData: FormData) {
-  if (!AI_FEATURES_ENABLED) throw new Error("This feature is unavailable.");
-  const groq = getGroqClient();
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const premium = await checkPremiumStatus();
-  const usage = await getUserUsage();
-
-  let maxOutlines = 1;
-  if (premium.plan === "starter") maxOutlines = 5;
-  else if (premium.plan === "pro") maxOutlines = 15;
-  else if (premium.plan === "agency") maxOutlines = 50;
-  else if (premium.plan === "tier4") maxOutlines = 100;
-  else if (premium.plan === "tier5") maxOutlines = 999999;
-  else if (premium.plan !== "free") maxOutlines = 15; // default premium fallback
-
-  if (usage.outlinesCount >= maxOutlines) {
-    throw new Error(`Your current plan tier is limited to ${maxOutlines} Outlines per month. Please upgrade your lifetime license.`);
-  }
-
-  const burstLimit = await checkRateLimit(userId, "createBook", burstLimitForPlan(premium.plan), 60 * 60 * 1000);
-  if (!burstLimit.allowed) {
-    throw new Error(`You're generating outlines too quickly. Please wait a bit and try again.`);
-  }
-
-  const prompt = formData.get("prompt") as string;
-
-  const aiPrompt = `Generate a book outline based on this idea: "${prompt}".
-  Provide the output in this exact format:
-  **Book Title:** "Title Name"
-  **Book Blurb:** A short description.
-  **Chapter Outline:**
-  **Chapter 1:** Brief description.
-  **Chapter 2:** Brief description.
-  **Chapter 3:** Brief description.`;
-
-  const completion = await groq.chat.completions.create({
-    messages: [{ role: "user", content: aiPrompt }],
-    model: "llama-3.3-70b-versatile",
-  });
-
-  const response = completion.choices[0]?.message?.content || "No content generated";
-
-  const book = await prisma.book.create({
-    data: {
-      userId: userId,
-      title: response.match(/\*\*Book Title:\*\*\s*"([^"]+)"/)?.[1] || "My New Adventure",
-      content: response,
-    },
-  });
-
-  revalidatePath("/dashboard");
-  return { id: book.id };
-}
 
 // ২. বই ডিলিট করার ফাংশন
 export async function deleteBook(id: string) {
@@ -98,96 +20,6 @@ export async function deleteBook(id: string) {
 
   revalidatePath("/dashboard");
   redirect("/dashboard");
-}
-
-// ৩. নেক্সট চ্যাপ্টার জেনারেট করার ফাংশন
-export async function generateNextChapter(bookId: string, outline: string, title: string) {
-  if (!AI_FEATURES_ENABLED) throw new Error("This feature is unavailable.");
-  const groq = getGroqClient();
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const premium = await checkPremiumStatus();
-  const usage = await getUserUsage();
-
-  if (premium.plan === "free") {
-    throw new Error("Chapter generation is not available on the Free Tier. Please upgrade.");
-  }
-
-  let maxChapters = 0;
-  if (premium.plan === "starter") maxChapters = 10;
-  else if (premium.plan === "pro") maxChapters = 30;
-  else if (premium.plan === "agency") maxChapters = 100;
-  else if (premium.plan === "tier4") maxChapters = 250;
-  else if (premium.plan === "tier5") maxChapters = 999999;
-  else maxChapters = 30; // default premium fallback
-
-  if (usage.chaptersCount >= maxChapters) {
-    throw new Error(`Your current plan tier is limited to ${maxChapters} Chapters per month. Please upgrade your lifetime license.`);
-  }
-
-  const burstLimit = await checkRateLimit(userId, "generateNextChapter", burstLimitForPlan(premium.plan), 60 * 60 * 1000);
-  if (!burstLimit.allowed) {
-    throw new Error(`You're generating chapters too quickly. Please wait a bit and try again.`);
-  }
-
-  const currentChapterCount = await prisma.chapter.count({
-    where: { bookId: bookId }
-  });
-
-  const nextOrder = currentChapterCount + 1;
-
-  // ১.১. মেমোরির জন্য পূর্ববর্তী চ্যাপ্টারের তথ্য রিট্রিভ করা
-  let previousChapterText = "";
-  if (nextOrder > 1) {
-    const prevChapter = await prisma.chapter.findFirst({
-      where: { bookId: bookId, order: nextOrder - 1 }
-    });
-    if (prevChapter) {
-      previousChapterText = prevChapter.content;
-    }
-  }
-
-  let prompt = `You are a professional author writing a book titled "${title}".
-  The book outline and plan is:
-  ${outline}
-  
-  Your task: Write Chapter ${nextOrder} of this book. 
-  Ensure the story flows naturally from previous events.`;
-
-  if (previousChapterText) {
-    prompt += `
-  
-  To maintain narrative consistency and style memory, here is the full text of the preceding chapter (Chapter ${nextOrder - 1}):
-  ---
-  ${previousChapterText}
-  ---
-  
-  Ensure your new Chapter ${nextOrder} continues the exact character arcs, unresolved plot points, and writing style of the preceding chapter. Do not repeat the events of Chapter ${nextOrder - 1}, but start Chapter ${nextOrder} directly following them.`;
-  }
-
-  prompt += `
-  
-  Write only the chapter content in a creative, engaging, and publish-ready style. Do not add introductions, titles, or metadata. Write only the story text itself.`;
-
-  const completion = await groq.chat.completions.create({
-    messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
-  });
-
-  const content = completion.choices[0]?.message?.content || "Generation failed.";
-
-  await prisma.chapter.create({
-    data: {
-      title: `Chapter ${nextOrder}: The Journey Continues`,
-      content: content,
-      bookId: bookId,
-      order: nextOrder,
-    },
-  });
-
-  revalidatePath(`/book/${bookId}`);
-  return { success: true };
 }
 
 // 🎯 ৪. চ্যাপ্টার আপডেট (এডিট) করার ফাংশন 

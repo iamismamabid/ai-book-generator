@@ -139,8 +139,15 @@ export async function POST(request: Request) {
       console.error("Non-fatal AppSumo Webhook process error:", dbErr);
     }
 
+    // Determine response message based on AppSumo event specification
+    let responseMessage = "product activated";
+    if (currentEvent === "deactivate") responseMessage = "license deactivated";
+    else if (currentEvent === "refund") responseMessage = "license refunded";
+    else if (currentEvent === "enhance_tier") responseMessage = "tier enhanced";
+    else if (currentEvent === "reduce_tier") responseMessage = "tier reduced";
+
     return NextResponse.json({
-      message: currentEvent === "deactivate" || currentEvent === "refund" ? "license deactivated" : "product activated",
+      message: responseMessage,
       status: "success",
       success: true
     }, { status: 200, headers: corsHeaders });

@@ -921,13 +921,26 @@ export default function ColoringBookClient() {
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
       ]);
+      const pageW = useBleed ? trimSize.w + 0.125 : trimSize.w;
+      const pageH = useBleed ? trimSize.h + 0.25  : trimSize.h;
       const doc = new jsPDF({
         unit: "in",
-        format: [trimSize.w, trimSize.h],
+        format: [pageW, pageH],
         orientation: "portrait",
+        compress: false, // KDP requires uncompressed PDFs for maximum print fidelity
       });
 
-      const totalP = Math.max(1, Math.min(100, bookPagesCount));
+      // Embed KDP-compliant PDF metadata
+      doc.setProperties({
+        title: `KDPage Coloring Book — ${trimSize.label}`,
+        subject: "300 DPI Print-Ready KDP Interior",
+        author: "KDPage (kdpage.com)",
+        creator: "KDPage Studio v2",
+        keywords: `KDP, coloring book, ${trimSize.id}, ${useBleed ? "bleed" : "no-bleed"}, 300 DPI`,
+      });
+
+      const maxPages = isPremium ? 500 : 30;
+      const totalP = Math.max(1, Math.min(maxPages, bookPagesCount));
 
       const dims = useBleed ? trimSize.bleed : trimSize.noBleed;
       const pageCanvas = document.createElement("canvas");
@@ -935,8 +948,7 @@ export default function ColoringBookClient() {
       pageCanvas.height = dims.pxH;
       const pageCtx = pageCanvas.getContext("2d");
 
-      const pageW = useBleed ? trimSize.w + 0.125 : trimSize.w;
-      const pageH = useBleed ? trimSize.h + 0.25  : trimSize.h;
+      // pageW/pageH already computed above
 
       for (let p = 0; p < totalP; p++) {
         if (p > 0) doc.addPage([pageW, pageH]);
@@ -1312,11 +1324,16 @@ export default function ColoringBookClient() {
 
               <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold">
-                  <span>KDP Interior PDF Pages</span>
+                  <div>
+                    <span>KDP Interior PDF Pages</span>
+                    <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-black ${isPremium ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400" : "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"}`}>
+                      {isPremium ? "Max 500" : "Free: max 30"}
+                    </span>
+                  </div>
                   <input
                     type="number"
                     min="1"
-                    max="100"
+                    max={isPremium ? 500 : 30}
                     value={bookPagesCount}
                     onChange={(e) => setBookPagesCount(Number(e.target.value))}
                     className="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1 text-center font-mono text-xs"
@@ -1744,15 +1761,20 @@ export default function ColoringBookClient() {
 
             {/* Canvas Container with Zoom Transform */}
             <div
-              className="bg-white shadow-2xl rounded-sm border border-slate-300 overflow-hidden relative aspect-[8.5/11] w-full max-w-[760px] transition-transform duration-200"
-              style={{ transform: `scale(${zoomLevel})`, transformOrigin: "top center" }}
+              className="bg-white shadow-2xl rounded-sm border border-slate-300 overflow-hidden relative w-full max-w-[760px] transition-transform duration-200"
+              style={{
+                transform: `scale(${zoomLevel})`,
+                transformOrigin: "top center",
+                aspectRatio: `${(useBleed ? trimSize.bleed.pxW : trimSize.noBleed.pxW) / (useBleed ? trimSize.bleed.pxH : trimSize.noBleed.pxH)}`,
+              }}
             >
               <canvas
                 ref={colorCanvasRef}
-                width={850}
-                height={1100}
-                className="absolute inset-0 w-full h-full object-contain touch-none"
+                width={useBleed ? trimSize.bleed.pxW : trimSize.noBleed.pxW}
+                height={useBleed ? trimSize.bleed.pxH : trimSize.noBleed.pxH}
+                className="absolute inset-0 w-full h-full object-contain"
                 style={{
+                  touchAction: "none",
                   cursor: isColoringMode
                     ? activeTool === "fill"
                       ? "crosshair"
@@ -1770,8 +1792,8 @@ export default function ColoringBookClient() {
               />
               <canvas
                 ref={canvasRef}
-                width={850}
-                height={1100}
+                width={useBleed ? trimSize.bleed.pxW : trimSize.noBleed.pxW}
+                height={useBleed ? trimSize.bleed.pxH : trimSize.noBleed.pxH}
                 className="absolute inset-0 w-full h-full object-contain pointer-events-none"
               />
             </div>

@@ -3,7 +3,7 @@
 import posthog from "posthog-js";
 import Link from "next/link";
 import { useState, useEffect, useTransition } from "react";
-import { ArrowLeft, Gift, AlertCircle, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
+import { ArrowLeft, Gift, AlertCircle, CheckCircle2, Loader2, ArrowRight, Zap, BookOpen, Sparkles } from "lucide-react";
 import { redeemAppSumoCode, checkPremiumStatus } from "../actions";
 import { visibleFeatures } from "@/lib/features";
 import { useAuth } from "@clerk/nextjs";
@@ -160,6 +160,12 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
               new_plan: updatedPlan.plan,
               stacked_count: activeTierCount,
             });
+
+            // 🎉 Confetti celebration on successful redemption
+            try {
+              const confetti = (await import("canvas-confetti")).default;
+              confetti({ particleCount: 180, spread: 80, origin: { y: 0.6 }, colors: ["#6366f1", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444"] });
+            } catch (_) {}
           } catch (planErr) {
             console.error("Failed to refresh plan status:", planErr);
             const fallbackTier = getTierDetails(code, res.count);
@@ -172,10 +178,17 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
           });
           setCode("");
         } else {
-          setStatus({
-            type: "error",
-            message: res.error || "Failed to redeem code. Please try again."
-          });
+          // Friendly, specific error messages
+          const raw = res.error || "";
+          let friendlyMsg = raw;
+          if (raw.toLowerCase().includes("already") || raw.toLowerCase().includes("used")) {
+            friendlyMsg = "This code has already been redeemed. Each AppSumo code can only be used once. If you want to stack a higher tier, purchase a new code from AppSumo.";
+          } else if (raw.toLowerCase().includes("invalid") || raw.toLowerCase().includes("not found")) {
+            friendlyMsg = "Code not recognized. Please double-check your AppSumo confirmation email and try again. Codes look like: AS-XXXX-T1-XXXXX.";
+          } else if (raw.toLowerCase().includes("expired")) {
+            friendlyMsg = "This code has expired. Please contact AppSumo support or reach out to help@kdpage.com.";
+          }
+          setStatus({ type: "error", message: friendlyMsg || "Failed to redeem code. Please try again." });
         }
       } catch (err: any) {
         setStatus({
@@ -204,14 +217,17 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
 
         <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 rounded-[2.5rem] p-8 shadow-2xl">
           {status.type === "success" && redeemedTier ? (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400 border border-emerald-500/20 mb-4 animate-bounce">
-                  <CheckCircle2 className="w-8 h-8" />
+                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400 border border-emerald-500/20 mb-4">
+                  <CheckCircle2 className="w-10 h-10" />
                 </div>
-                <h1 className="text-3xl font-black tracking-tight text-white">Deal Activated!</h1>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-wider mb-3">
+                  <Sparkles className="w-3 h-3" /> Lifetime Deal Active
+                </div>
+                <h1 className="text-3xl font-black tracking-tight text-white">Deal Activated! 🎉</h1>
                 <p className="text-emerald-400 text-sm font-bold mt-1 uppercase tracking-wider">{redeemedTier.name}</p>
-                <p className="text-slate-400 text-xs mt-1">Your license key has been successfully registered to your account.</p>
+                <p className="text-slate-400 text-xs mt-2 leading-relaxed">Your license key has been registered. All premium features are now unlocked on your account.</p>
               </div>
 
               <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" />
@@ -230,6 +246,22 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
 
               <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" />
 
+              {/* Quick Launch Tiles */}
+              <div className="grid grid-cols-2 gap-2">
+                <Link href="/tools/coloring-book-generator" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
+                  <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Coloring Studio
+                </Link>
+                <Link href="/sudoku" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
+                  <Zap className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Sudoku Studio
+                </Link>
+                <Link href="/maze" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
+                  <Zap className="w-3.5 h-3.5 text-purple-400 shrink-0" /> Maze Designer
+                </Link>
+                <Link href="/tools/word-search" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
+                  <Zap className="w-3.5 h-3.5 text-blue-400 shrink-0" /> Word Search
+                </Link>
+              </div>
+
               <div className="flex flex-col gap-3">
                 <Link
                   href="/dashboard"
@@ -238,10 +270,11 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
                   Go to Dashboard <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
-                  href="/studio"
-                  className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-3.5 rounded-xl text-center text-sm transition-all"
+                  href="/redeem"
+                  onClick={() => { setStatus({ type: null, message: "" }); setRedeemedTier(null); }}
+                  className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold py-3 rounded-xl text-center text-xs transition-all"
                 >
-                  Open Creator Studio
+                  + Stack Another AppSumo Code
                 </Link>
               </div>
             </div>

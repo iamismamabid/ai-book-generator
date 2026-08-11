@@ -66,6 +66,14 @@ export default function RootLayout({
       {/* 🎯 html ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
       <html lang="en" className={`scroll-smooth ${inter.variable}`} suppressHydrationWarning>
         <head>
+          {/* DNS Prefetch & Preconnect for zero-latency third-party network handshakes */}
+          <link rel="dns-prefetch" href="https://app.arcade.software" />
+          <link rel="dns-prefetch" href="https://widget.trustpilot.com" />
+          <link rel="dns-prefetch" href="https://images.unsplash.com" />
+          <link rel="dns-prefetch" href="https://us.i.posthog.com" />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
           {/* Runs before first paint so a saved dark-mode preference is applied
               immediately -- ThemeProvider only sets the `dark` class inside a
               useEffect, which fires after hydration and caused a light->dark

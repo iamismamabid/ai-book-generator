@@ -2,8 +2,19 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'standalone',
-  // outputFileTracingRoot: path.resolve(__dirname),
+  // ─── Performance & Compression Tuning ──────────────────────────────────────
+  compress: true,
+  poweredByHeader: false,
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      'react-icons',
+      'lodash',
+      'framer-motion',
+      '@clerk/nextjs',
+      'canvas-confetti'
+    ],
+  },
 
   // ─── Strip console.log in production builds ───────────────────────────────
   compiler: {
@@ -103,6 +114,15 @@ const nextConfig = {
           {
             key: "Permissions-Policy",
             value: "geolocation=(), microphone=(), browsing-topics=()",
+          },
+        ],
+      },
+      {
+        source: "/:path*.(png|jpg|jpeg|gif|webp|avif|ico|svg|woff|woff2|ttf)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import {
   Palette,
   Grid3x3,
@@ -26,14 +25,11 @@ import {
 import HomeArcadeWalkthrough from "./components/HomeArcadeWalkthrough";
 import HomeNewsletterForm from "./components/HomeNewsletterForm";
 import HomeTrustpilotLazy from "./components/HomeTrustpilotLazy";
-
-// Lazy-loaded Client Components for optimal initial page load performance
-const UserReviewsSection = dynamic(() => import("./components/UserReviewsSection"), {
-  ssr: true,
-});
-const PricingSection = dynamic(() => import("../components/PricingSection"), {
-  ssr: true,
-});
+// Direct static imports — both components handle their own internal Suspense
+// boundary, so wrapping them in dynamic() only adds an extra <!--$?--> shell
+// that confuses automated SEO crawlers into seeing an empty homepage.
+import UserReviewsSection from "./components/UserReviewsSection";
+import PricingSection from "../components/PricingSection";
 
 export const metadata: Metadata = {
   title: "KDPage | KDP Book Creator: Puzzle Interiors, Covers & Free Tools",

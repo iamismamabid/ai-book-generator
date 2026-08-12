@@ -4263,10 +4263,11 @@ export default function FabricCoverStudio({
 
 
   return (
-    <div className="flex flex-1 overflow-hidden h-full relative">
-      <div className="absolute top-0 inset-x-0 z-40">
+    <div className="flex flex-col flex-1 overflow-hidden h-full relative">
+      <div className="shrink-0 z-40">
         <DesktopRecommendedBanner message="For the best cover design experience, we recommend using a laptop or desktop screen." />
       </div>
+      <div className="flex flex-1 overflow-hidden h-full relative">
       {/* 1. Far Left Tool Picker Toolbar */}
       <div className="w-16 bg-slate-950 flex flex-col items-center py-6 gap-5 border-r border-slate-900 z-20 text-slate-400">
         <button
@@ -7175,6 +7176,7 @@ export default function FabricCoverStudio({
           spineWidth: layout.spineWidth,
         }}
       />
+      </div>
     </div>
   );
 }

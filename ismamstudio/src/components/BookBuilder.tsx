@@ -546,11 +546,15 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
 
   return (
     <>
-      <div className="flex h-[calc(100vh-140px)] bg-[#F8FAFC] dark:bg-slate-950 overflow-hidden relative rounded-3xl border border-slate-200/50 dark:border-slate-800/50 transition-colors duration-300" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
+      <div className="flex flex-col h-[calc(100vh-140px)] bg-[#F8FAFC] dark:bg-slate-950 overflow-hidden relative rounded-3xl border border-slate-200/50 dark:border-slate-800/50 transition-colors duration-300" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
 
-      <div className="absolute top-0 inset-x-0 z-40 rounded-t-3xl overflow-hidden">
+      {/* Mobile warning banner — sits in the normal flex flow so it pushes
+          the main editor workspace down instead of overlapping the toolbar */}
+      <div className="rounded-t-3xl overflow-hidden shrink-0">
         <DesktopRecommendedBanner message="For the best puzzle building experience, we recommend using a laptop or desktop screen." />
       </div>
+
+      <div className="flex flex-1 overflow-hidden relative">
 
       {/* Mobile Backdrop Overlay */}
       {(leftOpen || rightOpen) && (
@@ -910,6 +914,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
           </div>
         </div>
       </motion.div>
+      </div>
     </div>
 
     {/* Mobile Floating Action Button (FAB) to Add Page */}

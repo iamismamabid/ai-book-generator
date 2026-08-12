@@ -265,12 +265,12 @@ function PricingSectionInner() {
       priceAnnual: 0,
       popular: false,
       features: [
-        "Access to 8+ KDP creation tools",
-        "Watermarked PDF exports (Sample only)",
+        "5-Page Watermark-Free PDF Exports (To test KDP Print Previewer)",
+        "Full manuscript draft exports with light KDPage sample watermark",
+        "Access to 8+ KDP creation tools & engines",
         "Easy Sudoku & basic Word Search tools",
         "Square maze & basic outline tools",
         "1 Creative Outline / mo",
-        "Personal use only (No KDP sales)",
         "Access to free tools & KDP guides",
       ],
       ctaText: "Start Designing Free",
@@ -382,8 +382,8 @@ function PricingSectionInner() {
 
   const faqs = [
     {
-      q: "How does the 7-Day Free Trial work?",
-      a: "When you choose Starter Creator, Pro Studio, or Publisher Agency, you get full unlocked commercial access to all tools for 7 full days without paying anything today. Your card is validated at checkout ($0 charge), and you can cancel anytime within 7 days from your billing dashboard if you decide not to continue.",
+      q: "How does the 7-Day Free Trial & Free Export work?",
+      a: "You can use KDPage for free! Free Tier users can export up to 5 pages completely watermark-free to test and confirm 300 DPI print quality, margins, and bleed directly on the Amazon KDP Print Previewer. Full manuscript exports include a light 'SAMPLE - KDPAGE' watermark until upgrading to Pro or redeeming an AppSumo code.",
     },
     {
       q: "Are the generated interiors ready to upload directly to Amazon KDP?",

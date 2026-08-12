@@ -300,15 +300,15 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 <div className="flex gap-2 items-start">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-black text-slate-900 block">Free Account Sample Warning</span>
+                    <span className="font-black text-slate-900 block">KDPage Free Trial Evaluation</span>
                     <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
-                      Exported KDP interior compile files will include a light diagonal **"SAMPLE - KDPAGE"** watermark on all pages.
+                      Export up to <strong>5 pages 100% watermark-free</strong> to test &amp; confirm print quality directly on Amazon KDP! Full manuscript compile files include a light <strong>&quot;SAMPLE - KDPAGE&quot;</strong> watermark until upgrading.
                     </p>
                   </div>
                 </div>
                 <div className="pt-2 border-t border-amber-200/50 flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
                   <Link href="/pricing" target="_blank" className="text-indigo-600 hover:text-indigo-500">
-                    Upgrade to Remove Watermark →
+                    Upgrade for Unlimited Watermark-Free PDFs →
                   </Link>
                 </div>
               </div>

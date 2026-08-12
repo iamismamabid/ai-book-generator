@@ -345,7 +345,7 @@ export default function WordScrambleGenerator() {
       if (incSol) {
         doc.addPage();
         
-        const ansPageIdx = puzzles.length + 1;
+        let ansPageCounter = puzzles.length + 1;
         
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
@@ -361,50 +361,69 @@ export default function WordScrambleGenerator() {
         doc.setDrawColor(226, 232, 240);
         doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
 
-        // Render 2 or 4 mini-keys per page
+        // Render mini-keys in 2 columns
         const gridCols = 2;
         const colW = contentW / gridCols;
-        
+        let itemsOnPage = 0;
+
         puzzles.forEach((puzzle, pIdx) => {
-          const rowIdx = Math.floor(pIdx / gridCols);
-          const colIdx = pIdx % gridCols;
-          
-          const startX = marginL + colIdx * colW + 0.2;
-          const startY = marginT + 1.0 + rowIdx * 2.8;
-          
-          if (startY + 2.4 > pageH - marginB) {
-            // Add page for remaining answer keys if layout overflows
+          const wordCount = puzzle.original ? puzzle.original.length : 6;
+          const blockHeight = 0.25 + wordCount * 0.16 + 0.3; // Estimated block height
+          const pageRowIdx = Math.floor(itemsOnPage / gridCols);
+          const testStartY = marginT + 0.8 + pageRowIdx * 2.2;
+
+          // Check if adding this row will exceed the printable area
+          if (itemsOnPage > 0 && itemsOnPage % gridCols === 0 && testStartY + blockHeight > pageH - marginB - 0.3) {
+            // Footer page numbering for previous Answer page
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            doc.text(`Page ${ansPageCounter}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+            ansPageCounter++;
+
             doc.addPage();
+            itemsOnPage = 0;
+
             doc.setFont("helvetica", "bold");
             doc.setFontSize(22);
             doc.setTextColor(30, 41, 59);
             doc.text("Answer Key (Cont.)", marginL + contentW / 2, marginT + 0.3, { align: "center" });
+            doc.setLineWidth(0.015);
+            doc.setDrawColor(226, 232, 240);
             doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
             if (finalGuides) {
               drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
             }
           }
-          
+
+          const activeRowIdx = Math.floor(itemsOnPage / gridCols);
+          const activeColIdx = itemsOnPage % gridCols;
+
+          const startX = marginL + activeColIdx * colW + 0.2;
+          const startY = marginT + 0.8 + activeRowIdx * 2.2;
+
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
           doc.setTextColor(79, 70, 229);
           doc.text(`Puzzle #${puzzle.index}`, startX, startY);
-          
+
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
           doc.setTextColor(51, 65, 85);
-          
+
           puzzle.original.forEach((origWord, wIdx) => {
-            const y = startY + 0.25 + wIdx * 0.18;
+            const y = startY + 0.22 + wIdx * 0.16;
             doc.text(`${wIdx + 1}. ${origWord}`, startX, y);
           });
+
+          itemsOnPage++;
         });
-        
-        // Footer page numbering for Answer page
+
+        // Footer page numbering for final Answer page
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
-        doc.text(`Page ${ansPageIdx}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+        doc.text(`Page ${ansPageCounter}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
       }
 
       // 3. Draw Back Cover if integrated

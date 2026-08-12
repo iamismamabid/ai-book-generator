@@ -10,6 +10,8 @@ import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { checkPremiumStatus, getNotebookEntryData } from "../actions";
+import { exportSudokuToSvg, downloadSvgFile } from "@/lib/svgExporter";
+import { loadHeaderFooterPresets, HeaderFooterPreset } from "@/lib/headerFooterPresets";
 
 // Live preview — puzzle grid
 function SudokuPreview({ grid, isSolution = false }: { grid: Grid; isSolution?: boolean }) {
@@ -57,6 +59,33 @@ export default function SudokuClient() {
   const [solutionsPerPage, setSolutionsPerPage] = useState<number>(4);
   const [includeCover, setIncludeCover] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // Advanced Styling & Brand Presets
+  const [borderThickness, setBorderThickness] = useState<number>(2);
+  const [fontFamily, setFontFamily] = useState<"sans-serif" | "serif" | "monospace">("sans-serif");
+  const [headerText, setHeaderText] = useState("SUDOKU CHALLENGE");
+  const [footerText, setFooterText] = useState("KDPage Studio • All Rights Reserved");
+  const [presets, setPresets] = useState<HeaderFooterPreset[]>([]);
+
+  useEffect(() => {
+    setPresets(loadHeaderFooterPresets());
+  }, []);
+
+  const handleDownloadSvgVector = () => {
+    let puzzleGrid = currentPuzzle?.puzzle;
+    if (!puzzleGrid) {
+      const generated = generateSudoku(difficulty);
+      puzzleGrid = generated.puzzle;
+      setCurrentPuzzle(generated);
+    }
+    const svgContent = exportSudokuToSvg(puzzleGrid, {
+      borderThickness,
+      fontFamily,
+      headerText,
+      footerText,
+    });
+    downloadSvgFile(svgContent, `sudoku-${difficulty}-vector.svg`);
+  };
 
   const [premiumStatus, setPremiumStatus] = useState<{
     checked: boolean;
@@ -403,6 +432,85 @@ export default function SudokuClient() {
                 </div>
               </div>
 
+              {/* Advanced Styling & Branding Presets Panel */}
+              <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 space-y-4">
+                <h2 className="text-lg font-bold text-indigo-400">Styling & Brand Presets</h2>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Grid Border Width</label>
+                    <select
+                      value={borderThickness}
+                      onChange={(e) => setBorderThickness(Number(e.target.value))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white"
+                    >
+                      <option value={1}>1px (Thin)</option>
+                      <option value={2}>2px (Standard)</option>
+                      <option value={3}>3px (Medium)</option>
+                      <option value={4}>4px (Thick)</option>
+                      <option value={5}>5px (Bold)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Font Family</label>
+                    <select
+                      value={fontFamily}
+                      onChange={(e) => setFontFamily(e.target.value as any)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white"
+                    >
+                      <option value="sans-serif">Sans-Serif (Clean)</option>
+                      <option value="serif">Serif (Classic Book)</option>
+                      <option value="monospace">Monospace (Technical)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Header Title</label>
+                  <input
+                    type="text"
+                    value={headerText}
+                    onChange={(e) => setHeaderText(e.target.value)}
+                    placeholder="e.g. DAILY SUDOKU PUZZLE"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Footer Copyright Line</label>
+                  <input
+                    type="text"
+                    value={footerText}
+                    onChange={(e) => setFooterText(e.target.value)}
+                    placeholder="e.g. Published by Acme Books • Page 1"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white"
+                  />
+                </div>
+
+                {presets.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Apply Saved Preset</label>
+                    <select
+                      onChange={(e) => {
+                        const found = presets.find((p) => p.id === e.target.value);
+                        if (found) {
+                          setHeaderText(found.headerText);
+                          setFooterText(found.footerText);
+                          setFontFamily(found.fontFamily);
+                        }
+                      }}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-indigo-300"
+                    >
+                      <option value="">-- Choose Brand Preset --</option>
+                      {presets.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={handlePreview}
                 disabled={isGenerating}
@@ -419,6 +527,14 @@ export default function SudokuClient() {
                     : `Download ${bookCount} Puzzle${bookCount !== 1 ? "s" : ""} PDF`
                 }
               />
+
+              {/* Vector SVG Exporter Button */}
+              <button
+                onClick={handleDownloadSvgVector}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-500/20 transition flex items-center justify-center gap-2 text-sm"
+              >
+                <Download className="w-4 h-4" /> Download SVG Vector (For Canva & Illustrator)
+              </button>
 
               <button
                 onClick={handleDownloadSample}

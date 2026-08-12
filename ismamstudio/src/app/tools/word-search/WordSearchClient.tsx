@@ -10,6 +10,7 @@ import ExportInteriorModal from "@/components/ExportInteriorModal";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { useRouter } from "next/navigation";
 import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
+import { exportWordSearchToSvg, downloadSvgFile } from "@/lib/svgExporter";
 
 const WORD_SEARCH_SHAPES: { id: WordSearchShape; label: string }[] = [
     { id: "square", label: "Square" },
@@ -183,7 +184,8 @@ export default function WordSearchStudio() {
             titleText = lines[0];
             lines = lines.slice(1);
         }
-        const cleanedWords = lines.map(w => w.replace(/[^a-zA-Z]/g, ''));
+        // Preserves Latin accented characters (Spanish ñ/á, French é/è/ç, German ä/ö/ü/ß)
+        const cleanedWords = lines.map(w => w.replace(/[^a-zA-Z\u00C0-\u024F]/g, ''));
         return { cleanedWords, titleText };
     };
 
@@ -714,6 +716,19 @@ export default function WordSearchStudio() {
                             <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 shrink-0">
                                 <button onClick={handleGeneratePreview} className="w-full flex items-center justify-center gap-2 bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all border border-slate-200"><Eye className="w-4 h-4" /> Live Preview</button>
                                 <button onClick={() => setIsExportModalOpen(true)} disabled={isGenerating} className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md transition-all active:scale-95"><Download className="w-4 h-4" /> Download KDP PDF</button>
+                                <button
+                                    onClick={() => {
+                                        if (!previewGrid) handleGeneratePreview();
+                                        const wordList = cleanWordsList.map(w => w.text || w.originalWord || w.word || "");
+                                        if (previewGrid) {
+                                            const svg = exportWordSearchToSvg(previewGrid, wordList, { borderThickness: lineWidth, fontFamily: lettersFont, headerText: "WORD SEARCH" });
+                                            downloadSvgFile(svg, "word-search-vector.svg");
+                                        }
+                                    }}
+                                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:from-indigo-600 hover:to-purple-700 shadow-sm transition-all"
+                                >
+                                    <Download className="w-3.5 h-3.5" /> Download SVG Vector (For Canva & Illustrator)
+                                </button>
                                 <SaveToNotebookButton
                                     title={`Word Search Collection (${totalPuzzles} Puzzles)`}
                                     content={`Word Search interior with ${wordsPerPage} words per puzzle, ${puzzlesPerPage} puzzles per page, trim size ${trimSize.w}x${trimSize.h}`}

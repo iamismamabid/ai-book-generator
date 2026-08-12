@@ -354,6 +354,16 @@ export default function FreeToolsHub() {
       link: "/tools/keyword-research"
     },
     {
+      id: "license-generator",
+      name: "Free KDP Commercial License Certificate Generator",
+      badge: "Essential",
+      category: "Formatting",
+      description: "Generate an official, printable Commercial Use License Certificate to submit to Amazon KDP for copyright verification.",
+      features: ["Instant PDF & Print Export", "Official KDPage Rights Verification", "Amazon KDP Audit Compliant"],
+      keywords: ["license", "commercial license", "copyright proof", "kdp copyright", "license certificate", "commercial rights"],
+      link: "/tools/license-generator"
+    },
+    {
       id: "royalty-estimator",
       name: "KDP Royalty & Market Viability Estimator",
       badge: "New",

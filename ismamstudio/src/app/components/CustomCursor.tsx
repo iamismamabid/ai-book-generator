@@ -6,6 +6,24 @@ export default function CustomCursor() {
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [enabled, setEnabled] = useState(false);
+  const [standardCursor, setStandardCursor] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setStandardCursor(localStorage.getItem("kdpageStandardCursor") === "true");
+
+    const handleToggle = (e: Event) => {
+      const customEvt = e as CustomEvent<{ standard: boolean }>;
+      if (customEvt.detail !== undefined) {
+        setStandardCursor(customEvt.detail.standard);
+      } else {
+        setStandardCursor(localStorage.getItem("kdpageStandardCursor") === "true");
+      }
+    };
+
+    window.addEventListener("kdpageCursorToggle", handleToggle);
+    return () => window.removeEventListener("kdpageCursorToggle", handleToggle);
+  }, []);
 
   const mouseRef = useRef({ x: 0, y: 0 });
   const ringRef = useRef({ x: 0, y: 0 });
@@ -83,7 +101,7 @@ export default function CustomCursor() {
     };
   }, []);
 
-  if (!enabled) return null;
+  if (!enabled || standardCursor) return null;
 
   return (
     <>

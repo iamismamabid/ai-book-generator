@@ -6,18 +6,25 @@ export default function CustomCursor() {
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [enabled, setEnabled] = useState(false);
+  // Default is the standard OS cursor -- more accessible (respects the
+  // user's own OS cursor size/contrast settings) and lighter-weight for
+  // KDP creators on older hardware. KDPage's stylish cursor is opt-in via
+  // the footer toggle. A prior explicit choice (localStorage already set,
+  // from before this default flipped) is always respected either way.
   const [standardCursor, setStandardCursor] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setStandardCursor(localStorage.getItem("kdpageStandardCursor") === "true");
+    const saved = localStorage.getItem("kdpageStandardCursor");
+    setStandardCursor(saved === null ? true : saved === "true");
 
     const handleToggle = (e: Event) => {
       const customEvt = e as CustomEvent<{ standard: boolean }>;
       if (customEvt.detail !== undefined) {
         setStandardCursor(customEvt.detail.standard);
       } else {
-        setStandardCursor(localStorage.getItem("kdpageStandardCursor") === "true");
+        const s = localStorage.getItem("kdpageStandardCursor");
+        setStandardCursor(s === null ? true : s === "true");
       }
     };
 

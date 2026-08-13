@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
+import { Package } from "lucide-react";
 import { checkPremiumStatus, deleteBook } from "../actions";
 import ManageBillingButton from "@/components/ManageBillingButton";
 
@@ -106,7 +107,17 @@ export default async function DashboardPage() {
               Active Plan: <span className="font-black text-slate-800 uppercase tracking-wide">{planName}</span>
             </div>
             {upgradeHint}
-            {isPremium && !isLtd && <ManageBillingButton className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 font-bold text-[10px] uppercase tracking-wider transition-all" />}
+            <div className="flex items-center gap-2 mt-3">
+              {isPremium && !isLtd && <ManageBillingButton className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 font-bold text-[10px] uppercase tracking-wider transition-all" />}
+              {isPremium && (
+                <Link
+                  href="/tools/bulk-generator"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-wider transition-all"
+                >
+                  <Package className="w-3 h-3" /> Bulk Book Batch Studio
+                </Link>
+              )}
+            </div>
           </div>
 
         </div>
@@ -139,6 +150,15 @@ export default async function DashboardPage() {
             </div>
           </div>
           {isPremium && !isLtd && <ManageBillingButton />}
+
+          {isPremium && (
+            <Link
+              href="/tools/bulk-generator"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider shadow-sm transition-all"
+            >
+              <Package className="w-3.5 h-3.5" /> Bulk Book Batch Studio
+            </Link>
+          )}
 
         </div>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sliders, Type, FileText } from "lucide-react";
+import { Sliders, Type, FileText, LayoutTemplate } from "lucide-react";
 
 interface LowContentEditorProps {
   page: any;
@@ -35,6 +35,16 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
   const lineSpacing = page.config.lineSpacing || 24; // in pixels for preview
   const headingFont = page.config.headingFont || "Helvetica";
 
+  const handleChangeTemplate = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newTmpl = e.target.value;
+    const newMeta = TEMPLATE_METADATA[newTmpl] || TEMPLATE_METADATA.lined_journal;
+    updatePage({
+      ...page.config,
+      template: newTmpl,
+      pageTitle: newMeta.label
+    });
+  };
+
   const handleChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
     updatePage({ ...page.config, pageTitle: e.target.value });
   };
@@ -58,6 +68,24 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
           </div>
 
           <div className="h-px bg-slate-100" />
+
+          {/* Template Style Selector */}
+          <div className="space-y-2">
+            <label className="text-xs font-black text-slate-600 uppercase flex items-center gap-1.5">
+              <LayoutTemplate className="w-3.5 h-3.5 text-indigo-500" /> Interior Style
+            </label>
+            <select
+              value={templateType}
+              onChange={handleChangeTemplate}
+              className="w-full text-xs font-bold p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:border-indigo-400 focus:bg-white transition-all text-slate-800 outline-none cursor-pointer"
+            >
+              {Object.entries(TEMPLATE_METADATA).map(([key, tMeta]) => (
+                <option key={key} value={key}>
+                  {tMeta.icon} {tMeta.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Title Editor */}
           <div className="space-y-2">
@@ -111,7 +139,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
         <div className="w-full max-w-[420px] aspect-[1/1.4] bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 flex flex-col justify-between text-slate-900 relative">
           
           {/* Header */}
-          <div className="w-full text-center mb-6">
+          <div className="w-full text-center mb-4">
             <h2 
               className="text-lg font-black text-slate-800 tracking-tight uppercase"
               style={{ fontFamily: headingFont }}
@@ -126,7 +154,8 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
             
             {/* Lined Journal */}
             {templateType === "lined_journal" && (
-              <div className="w-full h-full flex flex-col gap-0.5" style={{ gap: `${lineSpacing}px` }}>
+              <div className="w-full h-full flex flex-col gap-0.5 relative" style={{ gap: `${lineSpacing}px` }}>
+                <div className="absolute top-0 bottom-0 left-6 w-px bg-red-400/60" />
                 {Array.from({ length: Math.floor(250 / lineSpacing) }).map((_, i) => (
                   <div key={i} className="w-full border-b border-slate-200 h-px" />
                 ))}
@@ -136,12 +165,43 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
             {/* Dot Grid */}
             {templateType === "dot_grid" && (
               <div 
-                className="w-full h-full"
+                className="w-full h-full border border-slate-100 rounded-lg"
                 style={{
                   backgroundImage: "radial-gradient(circle, #cbd5e1 1.5px, transparent 1.5px)",
                   backgroundSize: "20px 20px"
                 }}
               />
+            )}
+
+            {/* Graph Paper */}
+            {templateType === "graph" && (
+              <div 
+                className="w-full h-full border border-slate-200 rounded-lg"
+                style={{
+                  backgroundImage: "linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)",
+                  backgroundSize: "16px 16px"
+                }}
+              />
+            )}
+
+            {/* Cornell Notes */}
+            {templateType === "cornell" && (
+              <div className="w-full h-full flex flex-col justify-between gap-2 border border-slate-200 rounded-lg p-3">
+                <div className="flex flex-1 gap-3 border-b border-slate-200 pb-2">
+                  <div className="w-1/3 border-r border-slate-200 pr-2">
+                    <span className="text-[7px] font-black uppercase text-indigo-600">Cues / Keywords</span>
+                  </div>
+                  <div className="w-2/3 pl-1 space-y-2">
+                    <span className="text-[7px] font-black uppercase text-indigo-600">Notes</span>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="border-b border-slate-100 w-full h-px" />
+                    ))}
+                  </div>
+                </div>
+                <div className="h-12 pt-1">
+                  <span className="text-[7px] font-black uppercase text-indigo-600">Summary</span>
+                </div>
+              </div>
             )}
 
             {/* Weekly Planner */}
@@ -192,7 +252,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               </div>
             )}
 
-            {/* Habit Tracker — rows stretch to fill the page like the PDF export */}
+            {/* Habit Tracker */}
             {templateType === "habit_tracker" && (
               <div className="w-full h-full flex flex-col gap-2">
                 <span className="text-[8px] font-black uppercase text-indigo-600 block shrink-0">Monthly Habits</span>
@@ -215,7 +275,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               </div>
             )}
 
-            {/* Password Keeper — blocks stretch to fill the page like the PDF export */}
+            {/* Password Keeper */}
             {templateType === "password_keeper" && (
               <div className="w-full h-full flex flex-col gap-3">
                 {Array.from({ length: 4 }).map((_, block) => (
@@ -228,9 +288,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               </div>
             )}
 
-            {/* Budget Log — rows stretch (flex-1) to actually fill the page
-                instead of a small fixed count, matching the exported PDF
-                (which now scales row count to the real page height too). */}
+            {/* Budget Log */}
             {templateType === "budget_log" && (
               <div className="w-full h-full flex flex-col">
                 <div className="border border-slate-200 rounded-lg overflow-hidden text-[6px] font-black flex-1 flex flex-col">
@@ -298,7 +356,7 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
               </div>
             )}
 
-            {/* Guest Book — blocks stretch to fill the page like the PDF export */}
+            {/* Guest Book */}
             {templateType === "guest_book" && (
               <div className="w-full h-full flex flex-col gap-2.5">
                 {Array.from({ length: 4 }).map((_, idx) => (
@@ -312,6 +370,53 @@ export default function LowContentEditor({ page, updatePage }: LowContentEditorP
                       <span>Message / Thoughts:</span>
                       <div className="flex-1 border-b border-slate-100 h-px" />
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Meal Planner */}
+            {templateType === "meal_planner" && (
+              <div className="w-full h-full space-y-2">
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => (
+                  <div key={i} className="border border-slate-200 rounded-lg p-1.5 flex items-center justify-between">
+                    <span className="text-[7px] font-black uppercase text-indigo-600 w-8">{day}</span>
+                    <div className="flex-1 border-b border-slate-100 h-px ml-2" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Workout Tracker */}
+            {templateType === "workout_log" && (
+              <div className="w-full h-full flex flex-col">
+                <div className="border border-slate-200 rounded-lg overflow-hidden text-[6px] font-black flex-1 flex flex-col">
+                  <div className="grid grid-cols-5 bg-slate-50 border-b border-slate-200 p-1.5 text-slate-400 uppercase shrink-0">
+                    <span className="col-span-2">Exercise</span>
+                    <span>Sets</span>
+                    <span>Reps</span>
+                    <span>Weight</span>
+                  </div>
+                  {Array.from({ length: 7 }).map((_, row) => (
+                    <div key={row} className="grid grid-cols-5 border-b border-slate-100 p-1.5 items-center last:border-b-0 flex-1">
+                      <div className="col-span-2 border-b border-slate-100 h-2 w-4/5" />
+                      <div className="border-b border-slate-100 h-2 w-2/3" />
+                      <div className="border-b border-slate-100 h-2 w-2/3" />
+                      <div className="border-b border-slate-100 h-2 w-2/3" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Reading Log */}
+            {templateType === "reading_log" && (
+              <div className="w-full h-full flex flex-col gap-2">
+                {Array.from({ length: 3 }).map((_, idx) => (
+                  <div key={idx} className="border border-slate-200 rounded-lg p-2 space-y-1.5 text-[6px] font-bold text-slate-400 flex-1 flex flex-col justify-center">
+                    <div className="flex items-center gap-2"><span>Book Title:</span><div className="flex-1 border-b border-slate-100 h-px" /></div>
+                    <div className="flex items-center gap-2"><span>Author:</span><div className="flex-1 border-b border-slate-100 h-px" /></div>
+                    <div className="flex items-center gap-2"><span>Rating: ⭐⭐⭐⭐⭐</span><div className="flex-1 border-b border-slate-100 h-px ml-2" /></div>
                   </div>
                 ))}
               </div>

@@ -6966,6 +6966,255 @@ export default function FabricCoverStudio({
               <Keyboard className="w-4 h-4"/>
             </button>
           </div>
+
+          {/* Canva-Style Floating Contextual Option Bar when any Object is Selected */}
+          {activeObject && (
+            <div className="flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-md py-1.5 px-4 rounded-full border border-indigo-200/90 shadow-xl max-w-full overflow-x-auto animate-in fade-in zoom-in-95 duration-150 select-none z-30">
+              {/* Type Badge */}
+              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                {activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox'
+                  ? 'Text'
+                  : activeObject.type === 'image'
+                  ? 'Image'
+                  : activeObject.type === 'group'
+                  ? 'Group'
+                  : 'Shape'}
+              </span>
+
+              <div className="w-px h-4 bg-slate-200" />
+
+              {/* Image Edit Filter shortcut */}
+              {activeObject.type === 'image' && (
+                <button
+                  onClick={() => {
+                    imageAdjustmentsRef.current?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="px-2.5 py-1 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Edit FX
+                </button>
+              )}
+
+              {/* Color Fill Swatch for shapes/text */}
+              {activeObject.type !== 'image' && (
+                <div className="flex items-center gap-1.5" title="Change Fill Color">
+                  <span className="text-[9px] font-black text-slate-400 uppercase hidden sm:inline">Color</span>
+                  <input
+                    type="color"
+                    value={typeof activeObject.fill === 'string' ? activeObject.fill : '#7C3AED'}
+                    onChange={(e) => updateActiveObjectProperty('fill', e.target.value)}
+                    className="w-6 h-6 rounded-full border border-slate-300 cursor-pointer p-0 bg-transparent shadow-sm hover:scale-110 transition-transform"
+                  />
+                </div>
+              )}
+
+              {/* Border Color Swatch */}
+              <div className="flex items-center gap-1.5" title="Change Border Color">
+                <span className="text-[9px] font-black text-slate-400 uppercase hidden sm:inline">Border</span>
+                <input
+                  type="color"
+                  value={typeof activeObject.stroke === 'string' ? activeObject.stroke : '#000000'}
+                  onChange={(e) => updateActiveObjectProperty('stroke', e.target.value)}
+                  className="w-6 h-6 rounded-full border border-slate-300 cursor-pointer p-0 bg-transparent shadow-sm hover:scale-110 transition-transform"
+                />
+              </div>
+
+              {/* Stroke Width Slider */}
+              <div className="flex items-center gap-1.5 px-2 border-l border-slate-200">
+                <span className="text-[9px] font-black text-slate-400 uppercase">Weight</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="20"
+                  value={objectStrokeWidth}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setObjectStrokeWidth(val);
+                    updateActiveObjectProperty('strokeWidth', val, false);
+                  }}
+                  className="w-16 h-1 accent-indigo-600 cursor-pointer"
+                />
+                <span className="text-[9px] font-bold text-slate-600 font-mono w-3">{objectStrokeWidth}</span>
+              </div>
+
+              {/* Opacity Slider */}
+              <div className="flex items-center gap-1.5 px-2 border-l border-slate-200">
+                <span className="text-[9px] font-black text-slate-400 uppercase">Opacity</span>
+                <input
+                  type="range"
+                  min="0.05"
+                  max="1"
+                  step="0.05"
+                  value={objectOpacity}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setObjectOpacity(val);
+                    updateActiveObjectProperty('opacity', val, false);
+                  }}
+                  className="w-16 h-1 accent-indigo-600 cursor-pointer"
+                />
+                <span className="text-[9px] font-bold text-slate-600 font-mono w-7">{Math.round(objectOpacity * 100)}%</span>
+              </div>
+
+              {/* Text-specific controls */}
+              {(activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox') && (
+                <>
+                  <div className="w-px h-4 bg-slate-200" />
+                  <button
+                    onClick={() => {
+                      const newWeight = (activeObject as any).fontWeight === 'bold' ? 'normal' : 'bold';
+                      setObjectFontWeight(newWeight);
+                      updateActiveObjectProperty('fontWeight', newWeight);
+                    }}
+                    className={`p-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      objectFontWeight === 'bold' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                    title="Bold"
+                  >
+                    <Bold className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newStyle = (activeObject as any).fontStyle === 'italic' ? 'normal' : 'italic';
+                      setObjectFontStyle(newStyle);
+                      updateActiveObjectProperty('fontStyle', newStyle);
+                    }}
+                    className={`p-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      objectFontStyle === 'italic' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                    title="Italic"
+                  >
+                    <Italic className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newUnderline = !(activeObject as any).underline;
+                      setObjectUnderline(newUnderline);
+                      updateActiveObjectProperty('underline', newUnderline);
+                    }}
+                    className={`p-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      objectUnderline ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                    title="Underline"
+                  >
+                    <Underline className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              )}
+
+              <div className="w-px h-4 bg-slate-200" />
+
+              {/* Layer Ordering */}
+              <button
+                onClick={() => {
+                  if (canvas && activeObject) {
+                    canvas.bringForward(activeObject);
+                    canvas.requestRenderAll();
+                  }
+                }}
+                title="Bring Forward"
+                className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+              >
+                <ChevronsUp className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => {
+                  if (canvas && activeObject) {
+                    canvas.sendBackwards(activeObject);
+                    canvas.requestRenderAll();
+                  }
+                }}
+                title="Send Backward"
+                className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+              >
+                <ChevronsDown className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Flip */}
+              <button
+                onClick={() => {
+                  if (canvas && activeObject) {
+                    updateActiveObjectProperty('flipX', !activeObject.flipX);
+                  }
+                }}
+                title="Flip Horizontal"
+                className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+              >
+                <FlipHorizontal className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => {
+                  if (canvas && activeObject) {
+                    updateActiveObjectProperty('flipY', !activeObject.flipY);
+                  }
+                }}
+                title="Flip Vertical"
+                className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+              >
+                <FlipVertical className="w-3.5 h-3.5" />
+              </button>
+
+              <div className="w-px h-4 bg-slate-200" />
+
+              {/* Duplicate */}
+              <button
+                onClick={() => {
+                  if (canvas && activeObject) {
+                    activeObject.clone((cloned: fabric.Object) => {
+                      cloned.set({ left: (cloned.left || 0) + 15, top: (cloned.top || 0) + 15 });
+                      canvas.add(cloned);
+                      canvas.setActiveObject(cloned);
+                      canvas.requestRenderAll();
+                    });
+                  }
+                }}
+                title="Duplicate Object"
+                className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+              >
+                <Copy className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Lock / Unlock */}
+              <button
+                onClick={() => {
+                  if (canvas && activeObject) {
+                    const isLocked = !(activeObject as any).isLocked;
+                    (activeObject as any).isLocked = isLocked;
+                    activeObject.set({
+                      lockMovementX: isLocked,
+                      lockMovementY: isLocked,
+                      lockScalingX: isLocked,
+                      lockScalingY: isLocked,
+                      lockRotation: isLocked
+                    });
+                    setIsObjectLocked(isLocked);
+                    canvas.requestRenderAll();
+                  }
+                }}
+                title={isObjectLocked ? 'Unlock Object' : 'Lock Object Position'}
+                className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                  isObjectLocked ? 'bg-amber-100 text-amber-700' : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
+                }`}
+              >
+                {isObjectLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+              </button>
+
+              {/* Delete */}
+              <button
+                onClick={() => {
+                  if (canvas && activeObject) {
+                    canvas.remove(activeObject);
+                    canvas.discardActiveObject();
+                    canvas.requestRenderAll();
+                  }
+                }}
+                title="Delete Object"
+                className="p-1.5 rounded-full hover:bg-red-50 text-red-500 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Responsive parent container to calculate scale */}

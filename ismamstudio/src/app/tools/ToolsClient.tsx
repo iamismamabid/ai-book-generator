@@ -310,18 +310,7 @@ export default function FreeToolsHub() {
   const totalScore = scorecard.reduce((sum, item) => sum + (item.checked ? item.points : 0), 0);
 
   const toolsList: ToolItem[] = [
-    // 1. Puzzle & Interior Generators
-    {
-      id: "sudoku-generator",
-      name: "Free KDP Sudoku Generator",
-      badge: "Popular",
-      category: "Design",
-      description: "Generate 100% mathematically unique Sudoku puzzle grids (Easy to Hard) with 300 DPI solution pages.",
-      features: ["300 DPI Print-Ready PDF & PNG", "Single-solution guaranteed", "Large print formatting"],
-      keywords: ["sudoku", "sudokus", "sudokos", "number puzzle", "logic grid", "puzzle", "interior"],
-      link: "/sudoku"
-    },
-    // 2. Cover & Spine Tools
+    // 1. Cover & Spine Tools
     {
       id: "spine-calculator",
       name: "Free Spine Width & Cover Calculator",
@@ -372,16 +361,6 @@ export default function FreeToolsHub() {
       features: ["PPC Marketing Simulator", "Category competition index", "Spine width calculator included"],
       keywords: ["royalty", "royalty calculator", "printing cost", "kdp calculator", "profit", "earnings"],
       link: "/tools/royalty-estimator"
-    },
-    {
-      id: "bulk-generator",
-      name: "KDP Bulk Book Batch Studio",
-      badge: "Popular",
-      category: "Formatting",
-      description: "Queue dozens of puzzle book interiors, import configurations via CSV, and compile ready-to-upload files in bulk.",
-      features: ["CSV configuration upload", "Sequenced background builder", "Multi-book download list"],
-      keywords: ["bulk", "bulk generator", "batch creator", "csv import", "mass generation"],
-      link: "/tools/bulk-generator"
     },
     // 3. Keyword & Marketing Tools
     {
@@ -721,7 +700,7 @@ export default function FreeToolsHub() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search 30+ free KDP tools — Sudoku, Spine, Barcode, Keyword, Royalty..."
+                placeholder="Search 30+ free KDP tools — Spine, Barcode, Keyword, Royalty..."
                 className="flex-1 py-4 pr-3 bg-transparent text-stone-900 placeholder-stone-400 font-semibold text-sm focus:outline-none"
               />
 

@@ -533,7 +533,7 @@ export default function CryptogramGenerator() {
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
           {/* Quotes textarea */}
-          <div className="space-y-2">
+          <div data-tour="quote-input" className="space-y-2">
             <div className="flex justify-between items-center flex-wrap gap-1">
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Phrases / Quotes</label>
               <span className="text-[10px] font-bold text-amber-400">
@@ -684,7 +684,7 @@ export default function CryptogramGenerator() {
         </div>
 
         {/* Action Panel */}
-        <div className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
+        <div data-tour="export-section" className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
           <button
             onClick={() => parseAndGeneratePuzzles()}
             disabled={isGenerating}

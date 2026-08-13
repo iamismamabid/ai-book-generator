@@ -312,7 +312,7 @@ export default function SudokuClient() {
             <div className="space-y-5">
 
               {/* Difficulty */}
-              <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900">
+              <div data-tour="difficulty-select" className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900">
                 <h2 className="text-lg font-bold mb-4 text-amber-300">Difficulty</h2>
                 <div className="grid grid-cols-3 gap-3">
                   {(["easy", "medium", "hard"] as Difficulty[]).map((d) => {
@@ -381,7 +381,7 @@ export default function SudokuClient() {
                 </div>
 
                 {/* Solution toggle */}
-                <div className="flex items-center justify-between pt-1">
+                <div data-tour="solution-layout" className="flex items-center justify-between pt-1">
                   <div>
                     <p className="text-sm font-bold text-slate-300">Include solution pages</p>
                     <p className="text-xs text-slate-500">Answer key appended after all puzzles</p>
@@ -519,14 +519,16 @@ export default function SudokuClient() {
                 {isGenerating ? "Generating..." : "Preview Single Puzzle"}
               </button>
 
-              <DownloadButton
-                onClick={() => setIsExportModalOpen(true)}
-                label={
-                  isDownloading
-                    ? "Compiling PDF..."
-                    : `Download ${bookCount} Puzzle${bookCount !== 1 ? "s" : ""} PDF`
-                }
-              />
+              <div data-tour="export-pdf">
+                <DownloadButton
+                  onClick={() => setIsExportModalOpen(true)}
+                  label={
+                    isDownloading
+                      ? "Compiling PDF..."
+                      : `Download ${bookCount} Puzzle${bookCount !== 1 ? "s" : ""} PDF`
+                  }
+                />
+              </div>
 
               {/* Vector SVG Exporter Button */}
               <button

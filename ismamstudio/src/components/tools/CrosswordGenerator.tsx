@@ -460,7 +460,7 @@ export default function CrosswordGenerator() {
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Text Area */}
-          <div className="space-y-2">
+          <div data-tour="clue-input" className="space-y-2">
             <div className="flex justify-between items-center">
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Words &amp; Clues</label>
               <button 
@@ -619,7 +619,7 @@ export default function CrosswordGenerator() {
         </div>
 
         {/* Action Buttons */}
-        <div className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
+        <div data-tour="export-section" className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
           <button
             onClick={parseAndGeneratePuzzles}
             disabled={isGenerating}

@@ -604,7 +604,7 @@ export default function WordSearchStudio() {
                                 </div>
 
                                 {/* 2. Grid Style */}
-                                <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <div data-tour="grid-settings" className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
                                     <h3 className="font-bold text-xs text-indigo-600 uppercase">Puzzle Styling</h3>
                                     <div className="grid grid-cols-2 gap-2">
                                         <div><label className="text-xs font-semibold text-slate-600">Grid Size</label><input type="number" value={gridSize} onChange={(e) => setGridSize(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs" /></div>
@@ -700,7 +700,7 @@ export default function WordSearchStudio() {
                                 </div>
 
                                 {/* 5. Data & Title */}
-                                <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <div data-tour="word-input" className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
                                     <h3 className="font-bold text-xs text-indigo-600 uppercase flex justify-between items-center">Data & Title
                                         <button onClick={() => csvInputRef.current?.click()} className="flex items-center gap-1 text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded"><FileText className="w-3 h-3"/> CSV</button>
                                         <input type="file" accept=".csv,.txt" ref={csvInputRef} onChange={handleCsvUpload} className="hidden" />
@@ -713,7 +713,7 @@ export default function WordSearchStudio() {
                                 </div>
                             </div>
                             
-                            <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 shrink-0">
+                            <div data-tour="export-section" className="mt-4 pt-4 border-t border-slate-100 space-y-2 shrink-0">
                                 <button onClick={handleGeneratePreview} className="w-full flex items-center justify-center gap-2 bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all border border-slate-200"><Eye className="w-4 h-4" /> Live Preview</button>
                                 <button onClick={() => setIsExportModalOpen(true)} disabled={isGenerating} className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md transition-all active:scale-95"><Download className="w-4 h-4" /> Download KDP PDF</button>
                                 <button

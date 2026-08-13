@@ -323,7 +323,7 @@ export default function MazeGeneratorPage() {
           {/* Controls Column */}
           <div className="space-y-6">
             {/* Shape Selector */}
-            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900">
+            <div data-tour="maze-shape" className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900">
               <h3 className="text-lg font-bold mb-4 text-amber-300">1. Select Maze Shape</h3>
               <div className="grid grid-cols-3 gap-3">
                 {(["square", "circle", "heart"] as Shape[]).map((s) => {
@@ -353,7 +353,7 @@ export default function MazeGeneratorPage() {
             </div>
 
             {/* Size & Book Specs */}
-            <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 space-y-4">
+            <div data-tour="maze-complexity" className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 space-y-4">
               <h3 className="text-lg font-bold text-amber-300">2. Configuration settings</h3>
               
               <div>
@@ -475,10 +475,12 @@ export default function MazeGeneratorPage() {
                 {isGenerating ? "Mapping Labyrinths..." : "Generate Preview Grid"}
               </button>
 
-              <DownloadButton
-                onClick={() => setIsExportModalOpen(true)}
-                label={isDownloading ? "Assembling Book..." : "Download High-Res PDF"}
-              />
+              <div data-tour="export-pdf">
+                <DownloadButton
+                  onClick={() => setIsExportModalOpen(true)}
+                  label={isDownloading ? "Assembling Book..." : "Download High-Res PDF"}
+                />
+              </div>
 
               <button
                 onClick={handleDownloadSample}

@@ -208,7 +208,7 @@ export default function KakuroGenerator() {
             </div>
 
             {/* Grid Size Select */}
-            <div className="space-y-2">
+            <div data-tour="grid-size" className="space-y-2">
               <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Grid Size</label>
               <select
                 value={sizeId}

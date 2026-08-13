@@ -51,7 +51,6 @@ const TOOL_ITEMS: { name: string; path: string }[] = [
   { name: "Free Puzzle Book Generator", path: "/studio" },
   { name: "Free KDP Spine & Cover Calculator", path: "/tools/spine-calculator" },
   { name: "KDP Royalty & Market Viability Estimator", path: "/tools/royalty-estimator" },
-  { name: "KDP Bulk Book Batch Studio", path: "/tools/bulk-generator" },
   { name: "Free KDP Keyword Research", path: "/tools/keyword-research" },
   { name: "Free Print Cost Calculator", path: "/tools/print-cost-calculator" },
   { name: "Free KENP Royalty Calculator", path: "/tools/kenp-calculator" },

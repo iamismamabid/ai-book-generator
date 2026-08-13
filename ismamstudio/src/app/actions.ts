@@ -841,4 +841,70 @@ export async function saveLeadEmail(email: string, source: string = "website"): 
   }
 }
 
+// Self-serve "Manage Billing" -- opens Paddle's hosted Customer Portal so a
+// paying user can update payment details or cancel without emailing support.
+// Only applies to regular Paddle subscribers (Starter/Pro/Agency checkout);
+// AppSumo LTD redeemers have no recurring billing to manage, and free users
+// have nothing to cancel. Requires PADDLE_API_KEY (server-side, distinct from
+// the NEXT_PUBLIC_PADDLE_CLIENT_TOKEN used for checkout) -- returns
+// needsSupportFallback: true whenever a real portal link can't be produced
+// (no key configured, no Paddle customer on this account, or the Paddle API
+// call itself fails) so the UI always has something useful to do instead of
+// a dead end.
+export async function getBillingPortalUrl(): Promise<
+  { success: true; url: string } | { success: false; needsSupportFallback: true }
+> {
+  const { userId } = await auth();
+  if (!userId) return { success: false, needsSupportFallback: true };
+
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+  const paddleCustomerId = (user.publicMetadata as any)?.paddleCustomerId as string | undefined;
+
+  if (!paddleCustomerId) {
+    // No Paddle subscription on this account (free tier or AppSumo-only) --
+    // nothing to open a billing portal for.
+    return { success: false, needsSupportFallback: true };
+  }
+
+  const apiKey = process.env.PADDLE_API_KEY;
+  if (!apiKey) {
+    console.error(
+      "getBillingPortalUrl: PADDLE_API_KEY is not set -- falling back to support email. " +
+      "Set it in Vercel (Paddle dashboard -> Developer Tools -> Authentication) to enable real self-serve billing management."
+    );
+    return { success: false, needsSupportFallback: true };
+  }
+
+  const apiBase =
+    process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "sandbox"
+      ? "https://sandbox-api.paddle.com"
+      : "https://api.paddle.com";
+
+  try {
+    const res = await fetch(`${apiBase}/customer-portal-sessions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ customer_id: paddleCustomerId }),
+    });
+
+    if (!res.ok) {
+      console.error("getBillingPortalUrl: Paddle API error", res.status, await res.text().catch(() => ""));
+      return { success: false, needsSupportFallback: true };
+    }
+
+    const json = await res.json();
+    const url = json?.data?.urls?.general?.overview;
+    if (!url) return { success: false, needsSupportFallback: true };
+
+    return { success: true, url };
+  } catch (err) {
+    console.error("getBillingPortalUrl: failed to reach Paddle API", err);
+    return { success: false, needsSupportFallback: true };
+  }
+}
+
 

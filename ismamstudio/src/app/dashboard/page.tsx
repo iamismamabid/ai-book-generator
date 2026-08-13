@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 import { checkPremiumStatus, deleteBook } from "../actions";
+import ManageBillingButton from "@/components/ManageBillingButton";
 
 export const dynamic = "force-dynamic";
 
@@ -105,6 +106,7 @@ export default async function DashboardPage() {
               Active Plan: <span className="font-black text-slate-800 uppercase tracking-wide">{planName}</span>
             </div>
             {upgradeHint}
+            {isPremium && !isLtd && <ManageBillingButton className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 font-bold text-[10px] uppercase tracking-wider transition-all" />}
           </div>
 
         </div>
@@ -136,6 +138,7 @@ export default async function DashboardPage() {
               {upgradeHint}
             </div>
           </div>
+          {isPremium && !isLtd && <ManageBillingButton />}
 
         </div>
       </div>

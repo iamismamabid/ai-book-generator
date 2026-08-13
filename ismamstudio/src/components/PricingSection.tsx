@@ -396,7 +396,7 @@ function PricingSectionInner() {
     },
     {
       q: "Can I cancel, upgrade, or downgrade my subscription at any time?",
-      a: "Yes, you can manage your recurring SaaS subscription easily from your billing panel. You can upgrade, downgrade, or cancel at any time with a single click, and you will retain access to your plan features until the end of your active billing cycle.",
+      a: "Yes, you can manage your recurring SaaS subscription easily from your dashboard's Manage Billing link. You can upgrade, downgrade, or cancel at any time, and you will retain access to your plan features until the end of your active billing cycle.",
     },
     {
       q: "Is there a money-back guarantee?",
@@ -764,10 +764,6 @@ function PricingSectionInner() {
               free: false, starter: "Easy & Medium", pro: "Full Studio", agency: "Full Studio + SVGs",
             },
             {
-              label: "Chapter Limits",
-              free: "1 Outline/mo", starter: "5 Chapters/mo", pro: "30 Chapters/mo", agency: "100 Chapters/mo",
-            },
-            {
               label: "Pen-names / Brands",
               free: "1 Profile", starter: "Up to 3", pro: "Up to 10", agency: "Up to 25",
             },
@@ -780,7 +776,7 @@ function PricingSectionInner() {
               free: "Community", starter: "Email (48h)", pro: "Priority (< 12h)", agency: "Dedicated manager",
             },
           ].map((row, i) => {
-            const isLast = i === 10;
+            const isLast = i === 9;
             const rowBg = i % 2 === 0 ? "bg-slate-900" : "bg-slate-950/60";
 
             const renderCell = (val: boolean | string, tierColor: string) => {

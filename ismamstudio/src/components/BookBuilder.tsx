@@ -503,6 +503,10 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
   const triggerExport = async () => {
     setIsExporting(true);
     try {
+      const { checkPremiumStatus } = await import("@/app/actions");
+      const res = await checkPremiumStatus();
+      const currentIsPremium = !!res?.isPremium;
+
       const { exportBookToPDF } = await import("@/app/utils/pdfExportService");
       await exportBookToPDF(bookPages, {
         includeCover,
@@ -511,6 +515,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         gutterMargin,
         trimSize: selectedTrim,
         borderTheme,
+        isPremium: currentIsPremium,
       });
     } catch (e) {
       console.error("Failed to export PDF", e);

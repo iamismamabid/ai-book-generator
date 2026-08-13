@@ -1307,7 +1307,7 @@ export default function ColoringBookClient() {
 
             {/* Export Actions */}
             <div data-tour="export-actions" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
-              {isPremium === false && (
+              {!isPremium && (
                 <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300 rounded-xl text-[11px] font-semibold leading-relaxed">
                   Free accounts export with a light "SAMPLE - KDPAGE" watermark.{" "}
                   <Link href="/pricing" target="_blank" className="underline font-bold hover:text-amber-900 dark:hover:text-amber-200">

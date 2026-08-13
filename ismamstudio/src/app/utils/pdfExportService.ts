@@ -131,7 +131,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     if (borderTheme && borderTheme !== "none") {
       drawPageBorderTheme(doc, borderTheme, w, h, leftMarginShift);
     }
-    if (options.isPremium === false) {
+    if (!options.isPremium) {
       drawWatermark(doc, w, h);
     }
   });

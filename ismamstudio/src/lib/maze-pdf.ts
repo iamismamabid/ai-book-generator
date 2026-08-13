@@ -258,7 +258,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
   // Apply watermark (free tier) and the decorative border theme to every
   // interior page, skipping the front/back cover pages.
   const { borderTheme } = options;
-  if (options.isPremium === false || (borderTheme && borderTheme !== "none")) {
+  if (!options.isPremium || (borderTheme && borderTheme !== "none")) {
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       const isFrontCover = includeCover && coverState && i === 1;
@@ -266,7 +266,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
       if (!isFrontCover && !isBackCover) {
         doc.setPage(i);
         if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, widthInches, heightInches);
-        if (options.isPremium === false) drawWatermark(doc, widthInches, heightInches);
+        if (!options.isPremium) drawWatermark(doc, widthInches, heightInches);
       }
     }
   }

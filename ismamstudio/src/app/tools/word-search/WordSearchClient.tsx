@@ -434,7 +434,7 @@ export default function WordSearchStudio() {
         // Apply watermark (free tier) and the decorative border theme to every
         // interior page, skipping the front/back cover pages -- those already
         // have their own Cover Studio design.
-        if (isPremium === false || (borderTheme && borderTheme !== "none")) {
+        if (!isPremium || (borderTheme && borderTheme !== "none")) {
             const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 const isFrontCover = incCover && coverState && i === 1;
@@ -442,7 +442,7 @@ export default function WordSearchStudio() {
                 if (!isFrontCover && !isBackCover) {
                     doc.setPage(i);
                     if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, finalW, finalH);
-                    if (isPremium === false) drawWatermark(doc, finalW, finalH);
+                    if (!isPremium) drawWatermark(doc, finalW, finalH);
                 }
             }
         }

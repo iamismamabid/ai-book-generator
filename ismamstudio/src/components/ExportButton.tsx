@@ -252,7 +252,7 @@ export default function ExportButton({
             if (currentLineIndex >= maxLinesPerPage) {
               // Close page and add header/footer
               drawHeaderAndFooter(pageNum, currentChapterTitle);
-              if (isPremium === false) {
+              if (!isPremium) {
                 drawWatermark(doc, pageW, pageH);
               }
 
@@ -310,7 +310,7 @@ export default function ExportButton({
       const subtitleLines = doc.splitTextToSize(subtitle, titleContentW);
       doc.text(subtitleLines, titleMarginL + titleContentW / 2, pageH * 0.46, { align: "center" });
 
-      if (isPremium === false) {
+      if (!isPremium) {
         drawWatermark(doc, pageW, pageH);
       }
 
@@ -330,7 +330,7 @@ export default function ExportButton({
 
       // Close introduction page
       drawHeaderAndFooter(pageNum, "Introduction");
-      if (isPremium === false) {
+      if (!isPremium) {
         drawWatermark(doc, pageW, pageH);
       }
 
@@ -374,7 +374,7 @@ export default function ExportButton({
 
         // Close final page of the chapter
         drawHeaderAndFooter(pageNum, chapter.title);
-        if (isPremium === false) {
+        if (!isPremium) {
           drawWatermark(doc, pageW, pageH);
         }
       });

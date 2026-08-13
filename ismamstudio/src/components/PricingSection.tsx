@@ -331,6 +331,7 @@ function PricingSectionInner() {
         "Shaped Labyrinth Generator (Circle & Heart shapes)",
         "Word Search, Cryptogram & Word Scramble Studio",
         "Math Puzzle & Kakuro Generators",
+        "KDP Bulk Book Batch Studio (CSV Import & Mass Builder)",
         "30 AI Book Chapters / mo",
         "Premium Cover & Interior Canvas Studio",
         "Priority Customer Support (under 12 hours)",

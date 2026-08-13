@@ -186,6 +186,7 @@ export default function BulkGeneratorClient() {
       { downloadMazePdf },
       { generateWordSearchBook },
       { downloadWordSearchPdf },
+      { checkPremiumStatus },
     ] = await Promise.all([
       import("jspdf"),
       import("@/lib/sudoku"),
@@ -194,7 +195,11 @@ export default function BulkGeneratorClient() {
       import("@/lib/maze-pdf"),
       import("@/app/utils/puzzleEngine"),
       import("@/lib/wordSearch-pdf"),
+      import("@/app/actions"),
     ]);
+
+    const pStatus = await checkPremiumStatus();
+    const isPremiumUser = !!pStatus?.isPremium;
 
     const updatedItems = [...items];
 
@@ -240,7 +245,7 @@ export default function BulkGeneratorClient() {
             title: item.title,
             includeSolutions: true,
             solutionsPerPage: 4,
-            isPremium: true
+            isPremium: isPremiumUser
           }, filename);
 
           logMessage(`Compiled actual Sudoku book vector PDF interior: ${filename}`);
@@ -261,7 +266,7 @@ export default function BulkGeneratorClient() {
             title: item.title,
             trimSize: item.trimSize,
             includeSolutions: true,
-            isPremium: true
+            isPremium: isPremiumUser
           }, filename);
 
           logMessage(`Compiled actual Maze book vector PDF interior: ${filename}`);
@@ -275,7 +280,7 @@ export default function BulkGeneratorClient() {
             title: item.title,
             trimSize: item.trimSize,
             includeSolutions: true,
-            isPremium: true
+            isPremium: isPremiumUser
           }, filename);
 
           logMessage(`Compiled actual Word Search book vector PDF interior: ${filename}`);

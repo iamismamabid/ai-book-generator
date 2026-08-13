@@ -1748,12 +1748,40 @@ export default function FabricCoverStudio({
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    // Set Fabric.js Object defaults for Canva-style high visibility selection outline & handles
+    fabric.Object.prototype.transparentCorners = false;
+    fabric.Object.prototype.cornerColor = '#FFFFFF';
+    fabric.Object.prototype.cornerStrokeColor = '#7C3AED'; // Canva vivid purple handle border
+    fabric.Object.prototype.borderColor = '#7C3AED'; // Canva vivid purple selection outline
+    fabric.Object.prototype.borderScaleFactor = 2.5; // Thicker 2.5px selection line
+    fabric.Object.prototype.cornerSize = 10;
+    fabric.Object.prototype.cornerStyle = 'rect';
+    fabric.Object.prototype.padding = 4;
+
     // Create Fabric instance
     const fCanvas = new fabric.Canvas(canvasRef.current, {
       width: layout.canvasWidth,
       height: layout.canvasHeight,
       backgroundColor: 'transparent',
-      preserveObjectStacking: true
+      preserveObjectStacking: true,
+      selectionColor: 'rgba(124, 58, 237, 0.14)',
+      selectionBorderColor: '#7C3AED',
+      selectionLineWidth: 2
+    });
+
+    fCanvas.on('object:added', (e) => {
+      if (e.target) {
+        e.target.set({
+          transparentCorners: false,
+          cornerColor: '#FFFFFF',
+          cornerStrokeColor: '#7C3AED',
+          borderColor: '#7C3AED',
+          borderScaleFactor: 2.5,
+          cornerSize: 10,
+          cornerStyle: 'rect',
+          padding: 4
+        });
+      }
     });
 
     // Override getPointer to account for CSS transform scaling of parent container

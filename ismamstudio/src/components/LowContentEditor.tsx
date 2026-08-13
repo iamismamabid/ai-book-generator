@@ -11,6 +11,8 @@ interface LowContentEditorProps {
 const TEMPLATE_METADATA: Record<string, { label: string; desc: string; icon: string }> = {
   lined_journal: { label: "Lined Journal", desc: "Classic horizontal ruled writing sheets", icon: "📖" },
   dot_grid: { label: "Dot Grid Notebook", desc: "Subtle bullet grid for bullet journaling", icon: "🔲" },
+  graph: { label: "Graph Paper", desc: "Quarter-inch square grid for drawing and math", icon: "📐" },
+  cornell: { label: "Cornell Notes", desc: "Cue column, main notes section & summary area", icon: "📝" },
   weekly_planner: { label: "Weekly Planner", desc: "7-day layout with a notes section", icon: "📅" },
   daily_planner: { label: "Daily Planner", desc: "Detailed schedule, tasks, and hydration logs", icon: "☀️" },
   habit_tracker: { label: "Habit Tracker", desc: "Monthly grid to log up to 10 custom habits", icon: "📈" },
@@ -19,6 +21,9 @@ const TEMPLATE_METADATA: Record<string, { label: string; desc: string; icon: str
   recipe_journal: { label: "Recipe Journal", desc: "Detailed spaces for ingredients and instructions", icon: "🍳" },
   gratitude_journal: { label: "Gratitude Journal", desc: "Mindful prompt sections for positive writing", icon: "✨" },
   guest_book: { label: "Guest Book", desc: "Row templates for visitor signatures and messages", icon: "✍️" },
+  meal_planner: { label: "Meal Planner", desc: "Weekly meal scheduling spread and grocery list", icon: "🥗" },
+  workout_log: { label: "Workout Tracker", desc: "Exercise, sets, reps, weight & cardio log", icon: "🏋️" },
+  reading_log: { label: "Reading Log", desc: "Book title, author, ratings & review notes", icon: "📚" },
 };
 
 export default function LowContentEditor({ page, updatePage }: LowContentEditorProps) {

@@ -3002,6 +3002,105 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
       currentY += blockStep;
     }
   }
+  else if (templateType === 'graph') {
+    const spacing = 0.25;
+    for (let currentX = startX; currentX <= endX; currentX += spacing) {
+      doc.line(currentX, 1.6, currentX, h - 0.8);
+    }
+    for (let currentY = 1.6; currentY <= h - 0.8; currentY += spacing) {
+      doc.line(startX, currentY, endX, currentY);
+    }
+  }
+  else if (templateType === 'cornell') {
+    const cueW = (w - 1.5) * 0.3;
+    const summaryH = 1.4;
+    doc.line(startX + cueW, 1.6, startX + cueW, h - 0.8 - summaryH);
+    doc.line(startX, h - 0.8 - summaryH, endX, h - 0.8 - summaryH);
+    
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(79, 70, 229);
+    doc.text("CUES / KEYWORDS", startX + 0.1, 1.8);
+    doc.text("NOTES", startX + cueW + 0.15, 1.8);
+    doc.text("SUMMARY", startX + 0.1, h - 0.8 - summaryH + 0.25);
+
+    doc.setDrawColor(241, 245, 249);
+    let noteY = 2.1;
+    while (noteY < h - 0.8 - summaryH - 0.2) {
+      doc.line(startX + cueW + 0.15, noteY, endX, noteY);
+      noteY += 0.3;
+    }
+  }
+  else if (templateType === 'meal_planner') {
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const rowH = 0.65;
+    let cY = 1.6;
+    days.forEach(d => {
+      if (cY + rowH <= h - 0.8) {
+        doc.rect(startX, cY, w - 1.5, rowH);
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(79, 70, 229);
+        doc.text(d.toUpperCase(), startX + 0.15, cY + 0.38);
+        doc.line(startX + 1.1, cY, startX + 1.1, cY + rowH);
+        cY += rowH + 0.08;
+      }
+    });
+  }
+  else if (templateType === 'workout_log') {
+    const colW = [2.0, 0.8, 0.8, 0.9, 1.2];
+    const headerH = 0.4;
+    const rowH = 0.38;
+    const startY = 1.6;
+    doc.setFillColor(248, 250, 252);
+    doc.rect(startX, startY, w - 1.5, headerH, "F");
+    doc.rect(startX, startY, w - 1.5, headerH);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text("EXERCISE", startX + 0.1, startY + 0.25);
+    doc.text("SETS", startX + colW[0] + 0.1, startY + 0.25);
+    doc.text("REPS", startX + colW[0] + colW[1] + 0.1, startY + 0.25);
+    doc.text("WEIGHT", startX + colW[0] + colW[1] + colW[2] + 0.1, startY + 0.25);
+    doc.text("NOTES", startX + colW[0] + colW[1] + colW[2] + colW[3] + 0.1, startY + 0.25);
+    
+    let currentX = startX;
+    colW.slice(0, 4).forEach(cw => {
+      currentX += cw;
+      doc.line(currentX, startY, currentX, startY + headerH);
+    });
+
+    const numRows = Math.floor((h - 0.8 - (startY + headerH)) / rowH);
+    for (let r = 0; r < numRows; r++) {
+      const cY = startY + headerH + r * rowH;
+      doc.rect(startX, cY, w - 1.5, rowH);
+      let cx = startX;
+      colW.slice(0, 4).forEach(cw => {
+        cx += cw;
+        doc.line(cx, cY, cx, cY + rowH);
+      });
+    }
+  }
+  else if (templateType === 'reading_log') {
+    let currentY = 1.6;
+    const blockH = 1.3;
+    const blockStep = 1.5;
+    while (currentY + blockH <= h - 0.8) {
+      doc.rect(startX, currentY, w - 1.5, blockH);
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text("BOOK TITLE:", startX + 0.15, currentY + 0.35);
+      doc.text("AUTHOR:", startX + 0.15, currentY + 0.7);
+      doc.text("RATING & THOUGHTS:", startX + 0.15, currentY + 1.05);
+      doc.setDrawColor(241, 245, 249);
+      doc.line(startX + 1.8, currentY + 0.4, startX + w - 1.8, currentY + 0.4);
+      doc.line(startX + 1.8, currentY + 0.75, startX + w - 1.8, currentY + 0.75);
+      doc.line(startX + 1.8, currentY + 1.1, startX + w - 1.8, currentY + 1.1);
+      doc.setDrawColor(203, 213, 225);
+      currentY += blockStep;
+    }
+  }
 
   doc.setTextColor(0);
 };

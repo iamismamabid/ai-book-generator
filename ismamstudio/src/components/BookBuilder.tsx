@@ -91,6 +91,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
 
   // Template Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addModalCategory, setAddModalCategory] = useState<'all' | 'interior' | 'puzzle' | 'structure'>('all');
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
 
 
@@ -949,60 +950,98 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
             <X className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-indigo-600/10 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400"><Plus className="w-5 h-5" /></div>
-            <div>
-              <h3 className="text-lg font-black text-slate-900 dark:text-slate-50 uppercase">Insert Book Page</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Choose a template style to generate</p>
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-600/10 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400"><Plus className="w-5 h-5" /></div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-slate-50 uppercase">Insert Book Page</h3>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Choose a template style to generate</p>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1 custom-scrollbar">
+          {/* Category Filter Tabs */}
+          <div className="flex flex-wrap gap-2 mb-4">
             {[
-              { type: 'title', config: {}, label: 'Title Page', desc: 'Starting title and author credits', icon: '📝', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
-              { type: 'blank', config: {}, label: 'Blank Spacer', desc: 'Adds gutter and spacing padding', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
-              { type: 'crossword', config: {}, label: 'Crossword Puzzle', desc: 'Vocabulary grids with clues', icon: '🧩', color: 'bg-amber-50 border-amber-200 text-amber-600' },
-              { type: 'word_search', config: {}, label: 'Word Search', desc: 'Hidden word grids with banks', icon: '🔍', color: 'bg-pink-50 border-pink-200 text-pink-600' },
-              { type: 'sudoku', config: {}, label: 'Sudoku Grid', desc: 'Easy, medium, and hard math logic', icon: '🔢', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
-              { type: 'maze', config: {}, label: 'Labyrinth Maze', desc: 'Square, circle, and heart shapes', icon: '🌀', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
-              { type: 'word_scramble', config: {}, label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
-              { type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
-              { type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
-              { type: 'kakuro', config: { sizeId: '6x6', difficulty: 'medium' }, label: 'Kakuro Puzzle', desc: 'Crossword-style number sums logic grids', icon: '🔢', color: 'bg-orange-50 border-orange-200 text-orange-600' },
-              { type: 'coloring_book', config: { presetId: 'citrus_slices', complexity: 12, lineWidth: 3, isColorByNumber: true, isMidnightMode: false, frameStyle: 'ornamental', seed: Math.floor(Math.random() * 10000) }, label: 'Coloring Page', desc: 'Color-by-number art, 67+ presets', icon: '🎨', color: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600' },
-
-              // Low-Content journal/planner templates
-              { type: 'low_content', config: { template: 'lined_journal' }, label: 'Lined Journal', desc: 'Horizontal writing lines', icon: '📖', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
-              { type: 'low_content', config: { template: 'dot_grid' }, label: 'Dot Grid Journal', desc: 'Subtle bullet journal grid', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
-              { type: 'low_content', config: { template: 'weekly_planner' }, label: 'Weekly Planner', desc: '7-day list + notes block', icon: '📅', color: 'bg-amber-50 border-amber-200 text-amber-600' },
-              { type: 'low_content', config: { template: 'daily_planner' }, label: 'Daily Planner', desc: 'Task lists + hourly logs', icon: '☀️', color: 'bg-rose-50 border-rose-200 text-rose-600' },
-              { type: 'low_content', config: { template: 'habit_tracker' }, label: 'Habit Tracker', desc: 'Monthly tracking check grid', icon: '📈', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
-              { type: 'low_content', config: { template: 'password_keeper' }, label: 'Password Keeper', desc: 'Clean table for site details', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
-              { type: 'low_content', config: { template: 'budget_log' }, label: 'Budget Log', desc: 'Income & expenses balance list', icon: '💵', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
-              { type: 'low_content', config: { template: 'recipe_journal' }, label: 'Recipe Sheet', desc: 'Prep metrics & steps outline', icon: '🍳', color: 'bg-purple-50 border-purple-200 text-purple-600' },
-              { type: 'low_content', config: { template: 'gratitude_journal' }, label: 'Gratitude Book', desc: 'Mindful writing text prompts', icon: '✨', color: 'bg-yellow-50 border-yellow-200 text-yellow-600' },
-              { type: 'low_content', config: { template: 'guest_book' }, label: 'Guest Book Page', desc: 'Fields for signature & thoughts', icon: '✍️', color: 'bg-pink-50 border-pink-200 text-pink-600' }
-            ].map((tmpl, idx) => (
+              { id: 'all', label: 'All Templates' },
+              { id: 'interior', label: 'Free Interior Templates', isFeatured: true },
+              { id: 'puzzle', label: 'Puzzle & Coloring' },
+              { id: 'structure', label: 'Page Structure' },
+            ].map((tab) => (
               <button
-                key={idx}
-                onClick={() => {
-                  addPage(tmpl.type, tmpl.config);
-                  setIsAddModalOpen(false);
-                }}
-                className="interactive-tile p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-2xl text-left flex flex-col justify-between h-32 group cursor-pointer"
+                key={tab.id}
+                onClick={() => setAddModalCategory(tab.id as any)}
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  addModalCategory === tab.id
+                    ? tab.isFeatured
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm'
+                      : 'bg-indigo-600 text-white shadow-sm'
+                    : tab.isFeatured
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
               >
-                <div className="flex justify-between items-start w-full">
-                  <span className="text-2xl">{tmpl.icon}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${tmpl.color}`}>
-                    Select
-                  </span>
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200 uppercase">{tmpl.label}</h4>
-                  <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-tight mt-0.5">{tmpl.desc}</p>
-                </div>
+                {tab.label}
               </button>
             ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[calc(100vh-320px)] overflow-y-auto pr-1 custom-scrollbar">
+            {[
+              // Structure
+              { category: 'structure', type: 'title', config: {}, label: 'Title Page', desc: 'Starting title and author credits', icon: '📝', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
+              { category: 'structure', type: 'blank', config: {}, label: 'Blank Spacer', desc: 'Adds gutter and spacing padding', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
+              
+              // Free Interior Templates
+              { category: 'interior', type: 'low_content', config: { template: 'lined_journal' }, label: 'Lined Journal', desc: 'Horizontal writing lines', icon: '📖', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'dot_grid' }, label: 'Dot Grid Journal', desc: 'Subtle bullet journal grid', icon: '🔲', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'graph' }, label: 'Graph Paper Grid', desc: 'Quarter-inch grid math & drawing', icon: '📐', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'cornell' }, label: 'Cornell Notes', desc: 'Cue column, main notes & summary', icon: '📝', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'weekly_planner' }, label: 'Weekly Planner', desc: '7-day list + notes block', icon: '📅', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'daily_planner' }, label: 'Daily Planner', desc: 'Task lists + hourly logs', icon: '☀️', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'habit_tracker' }, label: 'Habit Tracker', desc: 'Monthly tracking check grid', icon: '📈', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'password_keeper' }, label: 'Password Keeper', desc: 'Clean table for site details', icon: '🔐', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'budget_log' }, label: 'Budget Log', desc: 'Income & expenses balance list', icon: '💵', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'recipe_journal' }, label: 'Recipe Sheet', desc: 'Prep metrics & steps outline', icon: '🍳', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'gratitude_journal' }, label: 'Gratitude Book', desc: 'Mindful writing text prompts', icon: '✨', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'guest_book' }, label: 'Guest Book Page', desc: 'Fields for signature & thoughts', icon: '✍️', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'meal_planner' }, label: 'Meal Planner', desc: 'Weekly meal schedule spread', icon: '🥗', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'workout_log' }, label: 'Workout Tracker', desc: 'Exercise, sets, reps & weight', icon: '🏋️', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+              { category: 'interior', type: 'low_content', config: { template: 'reading_log' }, label: 'Reading Log', desc: 'Book title, author, ratings & notes', icon: '📚', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+
+              // Puzzles & Coloring
+              { category: 'puzzle', type: 'crossword', config: {}, label: 'Crossword Puzzle', desc: 'Vocabulary grids with clues', icon: '🧩', color: 'bg-amber-50 border-amber-200 text-amber-600' },
+              { category: 'puzzle', type: 'word_search', config: {}, label: 'Word Search', desc: 'Hidden word grids with banks', icon: '🔍', color: 'bg-pink-50 border-pink-200 text-pink-600' },
+              { category: 'puzzle', type: 'sudoku', config: {}, label: 'Sudoku Grid', desc: 'Easy, medium, and hard math logic', icon: '🔢', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
+              { category: 'puzzle', type: 'maze', config: {}, label: 'Labyrinth Maze', desc: 'Square, circle, and heart shapes', icon: '🌀', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
+              { category: 'puzzle', type: 'word_scramble', config: {}, label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
+              { category: 'puzzle', type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
+              { category: 'puzzle', type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
+              { category: 'puzzle', type: 'kakuro', config: { sizeId: '6x6', difficulty: 'medium' }, label: 'Kakuro Puzzle', desc: 'Crossword-style number sums logic grids', icon: '🔢', color: 'bg-orange-50 border-orange-200 text-orange-600' },
+              { category: 'puzzle', type: 'coloring_book', config: { presetId: 'citrus_slices', complexity: 12, lineWidth: 3, isColorByNumber: true, isMidnightMode: false, frameStyle: 'ornamental', seed: Math.floor(Math.random() * 10000) }, label: 'Coloring Page', desc: 'Color-by-number art, 67+ presets', icon: '🎨', color: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600' }
+            ]
+              .filter((tmpl) => addModalCategory === 'all' || tmpl.category === addModalCategory)
+              .map((tmpl, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    addPage(tmpl.type, tmpl.config);
+                    setIsAddModalOpen(false);
+                  }}
+                  className="interactive-tile p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-2xl text-left flex flex-col justify-between h-32 group cursor-pointer"
+                >
+                  <div className="flex justify-between items-start w-full">
+                    <span className="text-2xl">{tmpl.icon}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${tmpl.color}`}>
+                      {tmpl.category === 'interior' ? 'Free Interior' : 'Select'}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200 uppercase">{tmpl.label}</h4>
+                    <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-tight mt-0.5">{tmpl.desc}</p>
+                  </div>
+                </button>
+              ))}
           </div>
         </div>
       </div>,

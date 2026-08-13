@@ -184,6 +184,7 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
+            { title: "All-In-One Studio", desc: "Wrap-around full-bleed covers, interior manuscript assembly, and complete KDP book builder.", href: "/studio", icon: BookOpen, badge: "Full KDP Publisher" },
             { title: "Coloring Book Studio", desc: "Coloring & color-by-number pages -- mandalas, stained glass, flags, cars, and blank canvas.", href: "/tools/coloring-book-generator", icon: Paintbrush, badge: "67+ Presets & Blank Canvas" },
             { title: "Labyrinth & Maze Engine", desc: "Square, Heart, and Circle shape-masked mazes with single-solution paths and KDP-safe margins.", href: "/maze", icon: Compass, badge: "Custom Shape Mask" },
             { title: "Sudoku Studio", desc: "Bulk Sudoku grids, Easy to Hard, each verified for exactly one unique solution.", href: "/sudoku", icon: Grid3x3, badge: "300 DPI Vector" },
@@ -193,7 +194,6 @@ export default function HomePage() {
             { title: "Math Puzzle Builder", desc: "Arithmetic and logic-grid sheets for kids, seniors, and KDP activity workbooks.", href: "/studio/math-puzzle", icon: Calculator, badge: "Arithmetic Grid" },
             { title: "Word Scramble Studio", desc: "Scramble your word list into activity worksheets, ready for instant export.", href: "/studio/word-scramble", icon: Shuffle, badge: "Vocabulary Builder" },
             { title: "Kakuro Generator", desc: "Number-sum logic grids, 4x4 to 9x17, Easy to Expert with solution answer keys.", href: "/studio/kakuro", icon: Grid3x3, badge: "Number Sum Logic" },
-            { title: "All-In-One Studio", desc: "Wrap-around full-bleed covers, interior manuscript assembly, and complete KDP book builder.", href: "/studio", icon: BookOpen, badge: "Full KDP Publisher" },
           ].map((tool) => (
             <div key={tool.title} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between group">
               <div className="space-y-3">

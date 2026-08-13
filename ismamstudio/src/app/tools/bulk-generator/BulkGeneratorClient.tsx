@@ -3,10 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
-import { getNotebookEntryData } from "@/app/actions";
+import { getNotebookEntryData, checkPremiumStatus } from "@/app/actions";
+import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, Upload, FileSpreadsheet, Plus, Trash2, 
-  Play, CheckCircle2, Loader2, Sparkles, Download, RefreshCw, AlertCircle 
+  Play, CheckCircle2, Loader2, Sparkles, Download, RefreshCw, AlertCircle, Lock 
 } from "lucide-react";
 // jsPDF and the puzzle/PDF generator modules are only needed once the user
 // actually runs the batch queue, not on initial page load -- loaded
@@ -27,6 +28,21 @@ interface BatchItem {
 }
 
 export default function BulkGeneratorClient() {
+  const router = useRouter();
+  const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+
+  useEffect(() => {
+    async function loadPremium() {
+      try {
+        const res = await checkPremiumStatus();
+        setPremiumStatus(res as any);
+      } catch {
+        setPremiumStatus({ checked: true, isPremium: false, plan: "free" });
+      }
+    }
+    loadPremium();
+  }, []);
+
   const [items, setItems] = useState<BatchItem[]>([
     { id: "1", title: "Seniors Easy Sudoku Book", type: "Sudoku", difficulty: "Easy", count: 20, trimSize: "8.5x11", status: "Pending" },
     { id: "2", title: "Labyrinth Quest Volume 1", type: "Maze", difficulty: "Medium", count: 15, trimSize: "6x9", status: "Pending" },
@@ -352,6 +368,54 @@ export default function BulkGeneratorClient() {
     setCurrentProcessingId(null);
     logMessage("Batch queue execution completed.");
   };
+
+  if (premiumStatus.checked && (premiumStatus.plan === "free" || premiumStatus.plan === "starter")) {
+    return (
+      <div className="min-h-screen bg-[#0b0f19] text-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+
+        <div className="max-w-md w-full bg-slate-900/60 border border-slate-900 p-8 rounded-[2.5rem] shadow-2xl relative z-10 space-y-6">
+          <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent uppercase tracking-tight">
+              KDP Bulk Book Batch Studio is Locked
+            </h2>
+            <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+              Multi-book batch generation and CSV configuration imports are premium features available on our **Pro Studio** and **Publisher Agency** plans.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-900/40 text-left space-y-2 text-[11px] font-bold text-slate-300">
+            <div className="flex items-center gap-2 text-indigo-400 text-[10px] uppercase tracking-wider mb-1">
+              <Sparkles className="w-3.5 h-3.5" /> Pro Plan Benefits:
+            </div>
+            <p>✓ Batch compile dozens of puzzle book interiors</p>
+            <p>✓ Import manuscript configurations via CSV</p>
+            <p>✓ Watermark-free, 300 DPI vector PDF exports</p>
+            <p>✓ Sequenced background builder & ZIP download list</p>
+          </div>
+
+          <div className="flex flex-col gap-2 pt-2">
+            <Link 
+              href="/pricing"
+              className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs rounded-xl shadow-lg transition-all"
+            >
+              Upgrade to Pro Studio
+            </Link>
+            <button 
+              onClick={() => router.push("/")}
+              className="w-full py-4 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-900 font-black text-xs rounded-xl transition"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden">

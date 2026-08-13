@@ -189,6 +189,7 @@ export default function HomePage() {
             { title: "Labyrinth & Maze Engine", desc: "Square, Heart, and Circle shape-masked mazes with single-solution paths and KDP-safe margins.", href: "/maze", icon: Compass, badge: "Custom Shape Mask" },
             { title: "Sudoku Studio", desc: "Bulk Sudoku grids, Easy to Hard, each verified for exactly one unique solution.", href: "/sudoku", icon: Grid3x3, badge: "300 DPI Vector" },
             { title: "Word Search Studio", desc: "Import a word list or CSV, build the grid, export the interior sheet with clue layouts.", href: "/tools/word-search", icon: Sparkles, badge: "CSV Import" },
+            { title: "KDP Bulk Book Batch Studio", desc: "Queue dozens of puzzle book interiors, import configurations via CSV, and compile ready-to-upload files in bulk.", href: "/tools/bulk-generator", icon: Layers, badge: "Pro Batch Builder" },
             { title: "Crossword Studio", desc: "Custom crosswords, 10x10 to 20x20, up to 1,000+ pages, with auto-intersecting clues.", href: "/studio/crossword", icon: LayoutTemplate, badge: "Auto-Generate" },
             { title: "Cryptogram Studio", desc: "Substitution-cipher worksheets from your own quotes, up to 1,000+ pages with solution keys.", href: "/studio/cryptogram", icon: Hash, badge: "Cipher Engine" },
             { title: "Math Puzzle Builder", desc: "Arithmetic and logic-grid sheets for kids, seniors, and KDP activity workbooks.", href: "/studio/math-puzzle", icon: Calculator, badge: "Arithmetic Grid" },

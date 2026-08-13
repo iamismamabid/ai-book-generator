@@ -475,7 +475,7 @@ export default function WordScrambleGenerator() {
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
           {/* Word list input */}
-          <div className="space-y-2">
+          <div data-tour="scramble-input" className="space-y-2">
             <div className="flex justify-between items-center">
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Word List</label>
               <button 
@@ -613,7 +613,7 @@ export default function WordScrambleGenerator() {
         </div>
 
         {/* Generate / Action buttons */}
-        <div className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
+        <div data-tour="export-section" className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
           <button
             onClick={parseAndGeneratePuzzles}
             disabled={isGenerating}

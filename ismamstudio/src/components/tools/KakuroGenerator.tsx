@@ -188,6 +188,7 @@ export default function KakuroGenerator() {
           <div className="flex items-center gap-3">
             <GenericStudioTour tourKey="kakuro" />
             <button
+              data-tour="export-section"
               onClick={() => setIsExportModalOpen(true)}
               className="px-6 py-3.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white font-black rounded-2xl text-xs transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.97] flex items-center justify-center gap-2 border border-indigo-500/20"
               style={{ boxShadow: "var(--shadow-glow-primary)" }}

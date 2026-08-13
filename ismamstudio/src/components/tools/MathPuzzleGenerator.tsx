@@ -747,7 +747,7 @@ export default function MathPuzzleGenerator() {
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
           {/* Puzzle types selection */}
-          <div className="space-y-2">
+          <div data-tour="math-op" className="space-y-2">
             <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Puzzle Type</label>
             <div className="space-y-2">
               <button
@@ -919,7 +919,7 @@ export default function MathPuzzleGenerator() {
         </div>
 
         {/* Action Panel buttons */}
-        <div className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
+        <div data-tour="export-section" className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
           <button
             onClick={handleGenerate}
             disabled={isGenerating}

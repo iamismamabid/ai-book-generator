@@ -988,10 +988,22 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[calc(100vh-320px)] overflow-y-auto pr-1 custom-scrollbar">
             {[
-              // Structure
+              // Structure First
               { category: 'structure', type: 'title', config: {}, label: 'Title Page', desc: 'Starting title and author credits', icon: '📝', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
-              { category: 'structure', type: 'blank', config: {}, label: 'Blank Spacer', desc: 'Adds gutter and spacing padding', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
               
+              // Puzzles & Coloring Engines First
+              { category: 'puzzle', type: 'crossword', config: {}, label: 'Crossword Puzzle', desc: 'Vocabulary grids with clues', icon: '🧩', color: 'bg-amber-50 border-amber-200 text-amber-600' },
+              { category: 'puzzle', type: 'word_search', config: {}, label: 'Word Search', desc: 'Hidden word grids with banks', icon: '🔍', color: 'bg-pink-50 border-pink-200 text-pink-600' },
+              { category: 'puzzle', type: 'sudoku', config: {}, label: 'Sudoku Grid', desc: 'Easy, medium, and hard math logic', icon: '🔢', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
+              { category: 'puzzle', type: 'maze', config: {}, label: 'Labyrinth Maze', desc: 'Square, circle, and heart shapes', icon: '🌀', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
+              { category: 'puzzle', type: 'word_scramble', config: {}, label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
+              { category: 'puzzle', type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
+              { category: 'puzzle', type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
+              { category: 'puzzle', type: 'kakuro', config: { sizeId: '6x6', difficulty: 'medium' }, label: 'Kakuro Puzzle', desc: 'Crossword-style number sums logic grids', icon: '🔢', color: 'bg-orange-50 border-orange-200 text-orange-600' },
+              { category: 'puzzle', type: 'coloring_book', config: { presetId: 'citrus_slices', complexity: 12, lineWidth: 3, isColorByNumber: true, isMidnightMode: false, frameStyle: 'ornamental', seed: Math.floor(Math.random() * 10000) }, label: 'Coloring Page', desc: 'Color-by-number art, 67+ presets', icon: '🎨', color: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600' },
+              
+              { category: 'structure', type: 'blank', config: {}, label: 'Blank Spacer', desc: 'Adds gutter and spacing padding', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
+
               // Free Interior Templates
               { category: 'interior', type: 'low_content', config: { template: 'lined_journal' }, label: 'Lined Journal', desc: 'Horizontal writing lines', icon: '📖', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
               { category: 'interior', type: 'low_content', config: { template: 'dot_grid' }, label: 'Dot Grid Journal', desc: 'Subtle bullet journal grid', icon: '🔲', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
@@ -1007,18 +1019,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
               { category: 'interior', type: 'low_content', config: { template: 'guest_book' }, label: 'Guest Book Page', desc: 'Fields for signature & thoughts', icon: '✍️', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
               { category: 'interior', type: 'low_content', config: { template: 'meal_planner' }, label: 'Meal Planner', desc: 'Weekly meal schedule spread', icon: '🥗', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
               { category: 'interior', type: 'low_content', config: { template: 'workout_log' }, label: 'Workout Tracker', desc: 'Exercise, sets, reps & weight', icon: '🏋️', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
-              { category: 'interior', type: 'low_content', config: { template: 'reading_log' }, label: 'Reading Log', desc: 'Book title, author, ratings & notes', icon: '📚', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
-
-              // Puzzles & Coloring
-              { category: 'puzzle', type: 'crossword', config: {}, label: 'Crossword Puzzle', desc: 'Vocabulary grids with clues', icon: '🧩', color: 'bg-amber-50 border-amber-200 text-amber-600' },
-              { category: 'puzzle', type: 'word_search', config: {}, label: 'Word Search', desc: 'Hidden word grids with banks', icon: '🔍', color: 'bg-pink-50 border-pink-200 text-pink-600' },
-              { category: 'puzzle', type: 'sudoku', config: {}, label: 'Sudoku Grid', desc: 'Easy, medium, and hard math logic', icon: '🔢', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
-              { category: 'puzzle', type: 'maze', config: {}, label: 'Labyrinth Maze', desc: 'Square, circle, and heart shapes', icon: '🌀', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
-              { category: 'puzzle', type: 'word_scramble', config: {}, label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
-              { category: 'puzzle', type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
-              { category: 'puzzle', type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
-              { category: 'puzzle', type: 'kakuro', config: { sizeId: '6x6', difficulty: 'medium' }, label: 'Kakuro Puzzle', desc: 'Crossword-style number sums logic grids', icon: '🔢', color: 'bg-orange-50 border-orange-200 text-orange-600' },
-              { category: 'puzzle', type: 'coloring_book', config: { presetId: 'citrus_slices', complexity: 12, lineWidth: 3, isColorByNumber: true, isMidnightMode: false, frameStyle: 'ornamental', seed: Math.floor(Math.random() * 10000) }, label: 'Coloring Page', desc: 'Color-by-number art, 67+ presets', icon: '🎨', color: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600' }
+              { category: 'interior', type: 'low_content', config: { template: 'reading_log' }, label: 'Reading Log', desc: 'Book title, author, ratings & notes', icon: '📚', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' }
             ]
               .filter((tmpl) => addModalCategory === 'all' || tmpl.category === addModalCategory)
               .map((tmpl, idx) => (

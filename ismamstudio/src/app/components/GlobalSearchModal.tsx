@@ -133,15 +133,6 @@ const SEARCH_ITEMS: SearchItem[] = [
     link: "/tools/royalty-estimator"
   },
   {
-    id: "bulk-generator",
-    name: "KDP Bulk Book Batch Studio",
-    category: "Formatting & Tools",
-    description: "Queue dozens of puzzle book interiors, import CSV configs, and compile in bulk.",
-    keywords: ["bulk", "bulk generator", "batch creator", "csv import", "mass generation"],
-    link: "/tools/bulk-generator",
-    badge: "Popular"
-  },
-  {
     id: "background-remover",
     name: "Background Remover",
     category: "Formatting & Tools",

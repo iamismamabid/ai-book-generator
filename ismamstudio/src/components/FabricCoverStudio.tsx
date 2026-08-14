@@ -6868,7 +6868,7 @@ export default function FabricCoverStudio({
       {/* 3. FABRIC WORKSPACE */}
       <div className="flex-1 bg-slate-100 flex flex-col items-center justify-start p-3 sm:p-6 md:p-8 relative overflow-auto min-w-0">
         {/* Top Header Controls: Trim Badge & Action Toolbar with clean vertical spacing */}
-        <div className="flex flex-col items-center gap-3.5 mb-5 z-20 shrink-0 select-none max-w-full">
+        <div className="relative flex flex-col items-center gap-3.5 mb-14 z-20 shrink-0 select-none max-w-full">
           {/* Spine details helper */}
           <div className="bg-slate-950/90 px-4 py-2 rounded-full border border-slate-800 text-[10px] sm:text-xs font-black uppercase text-amber-400 tracking-widest shadow-md text-center truncate">
             Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"
@@ -6969,7 +6969,7 @@ export default function FabricCoverStudio({
 
           {/* Canva-Style Floating Contextual Option Bar when any Object is Selected */}
           {activeObject && (
-            <div className="flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-md py-1.5 px-4 rounded-full border border-indigo-200/90 shadow-xl max-w-full overflow-x-auto animate-in fade-in zoom-in-95 duration-150 select-none z-30">
+            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-md py-1.5 px-4 rounded-full border border-indigo-200/90 shadow-xl max-w-[calc(100vw-32px)] overflow-x-auto animate-in fade-in zoom-in-95 duration-150 select-none z-30">
               {/* Type Badge */}
               <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
                 {activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox'

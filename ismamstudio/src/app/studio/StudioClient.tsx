@@ -345,7 +345,7 @@ export default function MasterStudioApp() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="w-full h-full flex flex-col overflow-auto p-3 sm:p-6"
+              className="w-full h-full flex-1 flex flex-col overflow-hidden"
             >
               <BookBuilder
                 coverState={{

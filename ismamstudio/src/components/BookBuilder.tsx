@@ -552,11 +552,11 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
 
   return (
     <>
-      <div className="flex flex-col h-[calc(100vh-140px)] bg-[#F8FAFC] dark:bg-slate-950 overflow-hidden relative rounded-3xl border border-slate-200/50 dark:border-slate-800/50 transition-colors duration-300" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
+      <div className="flex flex-col flex-1 w-full h-full bg-[#F8FAFC] dark:bg-slate-950 overflow-hidden relative transition-colors duration-300">
 
       {/* Mobile warning banner — sits in the normal flex flow so it pushes
           the main editor workspace down instead of overlapping the toolbar */}
-      <div className="rounded-t-3xl overflow-hidden shrink-0">
+      <div className="overflow-hidden shrink-0">
         <DesktopRecommendedBanner message="For the best puzzle building experience, we recommend using a laptop or desktop screen." />
       </div>
 

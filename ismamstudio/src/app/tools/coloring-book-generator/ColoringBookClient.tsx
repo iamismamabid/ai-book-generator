@@ -2100,112 +2100,172 @@ export default function ColoringBookClient() {
 
                 {/* Shape Stamp Tool Options Panel */}
                 {activeTool === "shape" && (
-                  <div className="bg-amber-50/60 dark:bg-amber-950/30 p-2.5 rounded-xl border border-amber-200 dark:border-amber-800/40 flex flex-wrap items-center gap-2.5">
+                  <div className="bg-amber-50/70 dark:bg-amber-950/40 p-2.5 rounded-xl border border-amber-200 dark:border-amber-800/50 flex flex-wrap items-center gap-2.5 animate-in fade-in duration-150">
+                    {/* Shape Selector Buttons */}
                     <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1">
                       <button
                         onClick={() => setSelectedShape("circle")}
-                        className={`p-1.5 rounded transition ${selectedShape === "circle" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "circle" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Circle Shape"
                       >
                         <Circle className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("rectangle")}
-                        className={`p-1.5 rounded transition ${selectedShape === "rectangle" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "rectangle" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Square / Rectangle Shape"
                       >
                         <Square className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("star")}
-                        className={`p-1.5 rounded transition ${selectedShape === "star" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "star" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Star Shape"
                       >
                         <Star className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("heart")}
-                        className={`p-1.5 rounded transition ${selectedShape === "heart" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "heart" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Heart Shape"
                       >
                         <Heart className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("flower")}
-                        className={`p-1.5 rounded transition ${selectedShape === "flower" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "flower" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Flower Shape"
                       >
                         <Flower2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("diamond")}
-                        className={`p-1.5 rounded transition ${selectedShape === "diamond" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "diamond" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Diamond / Rhombus Shape"
                       >
                         <Gem className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("hexagon")}
-                        className={`p-1.5 rounded transition ${selectedShape === "hexagon" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "hexagon" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Hexagon Shape"
                       >
                         <Hexagon className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("moon")}
-                        className={`p-1.5 rounded transition ${selectedShape === "moon" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "moon" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Crescent Moon Shape"
                       >
                         <Moon className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("cloud")}
-                        className={`p-1.5 rounded transition ${selectedShape === "cloud" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "cloud" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Cloud Shape"
                       >
                         <Cloud className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("sun")}
-                        className={`p-1.5 rounded transition ${selectedShape === "sun" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "sun" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Sun Burst Shape"
                       >
                         <Sun className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setSelectedShape("teardrop")}
-                        className={`p-1.5 rounded transition ${selectedShape === "teardrop" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
+                        className={`p-1.5 rounded transition cursor-pointer ${selectedShape === "teardrop" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-500"}`}
                         title="Teardrop / Raindrop Shape"
                       >
                         <Droplet className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
+                    {/* Shape Size Select Option Dropdown & Quick Presets */}
+                    <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1">
+                      <span className="text-[10px] font-black uppercase text-slate-400">Size Select:</span>
+                      <select
+                        value={shapeScale}
+                        onChange={(e) => setShapeScale(Number(e.target.value))}
+                        className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer focus:outline-none"
+                      >
+                        <option value="30">XS - Tiny (30px)</option>
+                        <option value="50">S - Small (50px)</option>
+                        <option value="80">M - Standard (80px)</option>
+                        <option value="120">L - Large (120px)</option>
+                        <option value="160">XL - Extra Large (160px)</option>
+                        <option value="220">Jumbo - Giant (220px)</option>
+                      </select>
+
+                      {/* Quick Pill Buttons */}
+                      <div className="hidden sm:flex items-center gap-1 ml-1 pl-1.5 border-l border-slate-200 dark:border-slate-700">
+                        {[
+                          { label: "XS", val: 30 },
+                          { label: "S", val: 50 },
+                          { label: "M", val: 80 },
+                          { label: "L", val: 120 },
+                          { label: "XL", val: 160 },
+                          { label: "Jumbo", val: 220 },
+                        ].map((sz) => (
+                          <button
+                            key={sz.val}
+                            type="button"
+                            onClick={() => setShapeScale(sz.val)}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer ${
+                              shapeScale === sz.val
+                                ? "bg-amber-500 text-slate-950 font-black shadow-sm"
+                                : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                            }`}
+                          >
+                            {sz.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Fine-Tuning Slider & Number */}
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold text-slate-500">Scale</span>
+                      <button
+                        type="button"
+                        onClick={() => setShapeScale((s) => Math.max(15, s - 10))}
+                        className="w-5 h-5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center justify-center hover:bg-slate-100 cursor-pointer"
+                        title="Shrink (-10px)"
+                      >
+                        -
+                      </button>
                       <input
                         type="range"
-                        min="20"
+                        min="15"
                         max="250"
                         value={shapeScale}
                         onChange={(e) => setShapeScale(Number(e.target.value))}
-                        className="w-20 accent-amber-500 cursor-pointer"
+                        className="w-16 accent-amber-500 cursor-pointer"
                       />
-                      <span className="text-[10px] font-mono font-bold text-amber-600">{shapeScale}px</span>
+                      <button
+                        type="button"
+                        onClick={() => setShapeScale((s) => Math.min(250, s + 10))}
+                        className="w-5 h-5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center justify-center hover:bg-slate-100 cursor-pointer"
+                        title="Enlarge (+10px)"
+                      >
+                        +
+                      </button>
+                      <span className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400">{shapeScale}px</span>
                     </div>
 
+                    {/* Shape Mode */}
                     <div className="flex items-center gap-1 text-[11px] font-bold">
                       <button
                         onClick={() => setShapeMode("outline")}
-                        className={`px-2 py-1 rounded-lg border transition ${shapeMode === "outline" ? "bg-amber-500 text-slate-950 border-amber-500" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600"}`}
+                        className={`px-2 py-1 rounded-lg border transition cursor-pointer ${shapeMode === "outline" ? "bg-amber-500 text-slate-950 border-amber-500 font-bold" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"}`}
                       >
-                        Line-Art (Colorable)
+                        ✏️ Line-Art (Colorable)
                       </button>
                       <button
                         onClick={() => setShapeMode("filled")}
-                        className={`px-2 py-1 rounded-lg border transition ${shapeMode === "filled" ? "bg-amber-500 text-slate-950 border-amber-500" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600"}`}
+                        className={`px-2 py-1 rounded-lg border transition cursor-pointer ${shapeMode === "filled" ? "bg-amber-500 text-slate-950 border-amber-500 font-bold" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"}`}
                       >
-                        Solid Color
+                        🎨 Solid Color
                       </button>
                     </div>
                   </div>

@@ -4508,6 +4508,7 @@ export default function FabricCoverStudio({
               title={`KDP Cover Design (${trimSize.w}x${trimSize.h})`}
               content={`Custom KDP Book Cover for ${pageCount} pages, trim size ${trimSize.w}x${trimSize.h} inches.`}
               category="cover"
+              iconOnly={true}
             />
           </div>
         </div>

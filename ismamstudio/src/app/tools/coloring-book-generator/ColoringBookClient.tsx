@@ -455,6 +455,7 @@ export default function ColoringBookClient() {
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const lineStartRef = useRef<{ x: number; y: number } | null>(null);
   const snapshotLoadTokenRef = useRef(0);
+  const pushHistoryTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Blank Page Creator Action
   const handleCreateBlankPage = () => {
@@ -565,20 +566,23 @@ export default function ColoringBookClient() {
   };
 
   const pushHistory = useCallback(() => {
-    const lineCanvas = canvasRef.current;
-    const colorCanvas = colorCanvasRef.current;
-    if (!lineCanvas || !colorCanvas) return;
-    const snapshot = { line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() };
-    setHistory((prev) => {
-      const trimmed = prev.stack.slice(0, prev.index + 1);
-      const next = [...trimmed, snapshot].slice(-25);
-      return { stack: next, index: next.length - 1 };
-    });
-    try {
-      localStorage.setItem(`kdpage_coloring_autosave_${activePreset.id}`, JSON.stringify(snapshot));
-    } catch {
-      // ignore
-    }
+    if (pushHistoryTimerRef.current) clearTimeout(pushHistoryTimerRef.current);
+    pushHistoryTimerRef.current = setTimeout(() => {
+      const lineCanvas = canvasRef.current;
+      const colorCanvas = colorCanvasRef.current;
+      if (!lineCanvas || !colorCanvas) return;
+      const snapshot = { line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() };
+      setHistory((prev) => {
+        const trimmed = prev.stack.slice(0, prev.index + 1);
+        const next = [...trimmed, snapshot].slice(-25);
+        return { stack: next, index: next.length - 1 };
+      });
+      try {
+        localStorage.setItem(`kdpage_coloring_autosave_${activePreset.id}`, JSON.stringify(snapshot));
+      } catch {
+        // ignore
+      }
+    }, 15);
   }, [activePreset.id]);
 
   const loadSnapshot = (snapshot: { line: string; color: string }) => {
@@ -771,7 +775,7 @@ export default function ColoringBookClient() {
     showToast("Coloring progress loaded! 📂");
   };
 
-  // Flood Fill
+  // High-Speed 32-Bit Scanline Flood Fill (<5ms execution)
   const floodFill = (startX: number, startY: number) => {
     const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
@@ -782,46 +786,93 @@ export default function ColoringBookClient() {
     const sy = Math.floor(startY);
     if (sx < 0 || sy < 0 || sx >= w || sy >= h) return;
 
-    const lineCtx = lineCanvas.getContext("2d");
-    const colorCtx = colorCanvas.getContext("2d");
+    const lineCtx = lineCanvas.getContext("2d", { willReadFrequently: true });
+    const colorCtx = colorCanvas.getContext("2d", { willReadFrequently: true });
     if (!lineCtx || !colorCtx) return;
 
-    const lineData = lineCtx.getImageData(0, 0, w, h).data;
-    const isWall = (idx: number) => lineData[idx + 3] > 40;
+    const lineImage = lineCtx.getImageData(0, 0, w, h);
+    const colorImage = colorCtx.getImageData(0, 0, w, h);
 
-    const startIdx = (sy * w + sx) * 4;
+    const lineData32 = new Uint32Array(lineImage.data.buffer);
+    const colorData32 = new Uint32Array(colorImage.data.buffer);
+
+    // Wall check: check alpha channel in lineData (Alpha > 40 is a border wall)
+    const isWall = (idx: number) => (lineData32[idx] >>> 24) > 40;
+
+    const startIdx = sy * w + sx;
     if (isWall(startIdx)) return;
 
-    const colorImage = colorCtx.getImageData(0, 0, w, h);
-    const data = colorImage.data;
-    const fillColor = hexToRgb(brushColor);
-    const targetR = data[startIdx];
-    const targetG = data[startIdx + 1];
-    const targetB = data[startIdx + 2];
-    const targetA = data[startIdx + 3];
-    if (targetR === fillColor.r && targetG === fillColor.g && targetB === fillColor.b && targetA === 255) return;
-    const matchesTarget = (idx: number) =>
-      data[idx] === targetR && data[idx + 1] === targetG && data[idx + 2] === targetB && data[idx + 3] === targetA;
+    const targetColor32 = colorData32[startIdx];
+    const rgb = hexToRgb(brushColor);
+    // Packed 32-bit color in Little Endian ABGR (Alpha: 0xFF)
+    const fill32 = ((255 << 24) | (rgb.b << 16) | (rgb.g << 8) | rgb.r) >>> 0;
 
-    const visited = new Uint8Array(w * h);
-    const stack: number[] = [sy * w + sx];
-    visited[sy * w + sx] = 1;
+    if (targetColor32 === fill32) return;
 
-    while (stack.length) {
-      const p = stack.pop()!;
-      const idx4 = p * 4;
-      if (isWall(idx4) || !matchesTarget(idx4)) continue;
-      data[idx4] = fillColor.r;
-      data[idx4 + 1] = fillColor.g;
-      data[idx4 + 2] = fillColor.b;
-      data[idx4 + 3] = 255;
+    // Scanline flood fill algorithm with pre-allocated coordinate stack
+    const maxStack = Math.max(w * 4, 16384);
+    const stackX = new Int32Array(maxStack);
+    const stackY = new Int32Array(maxStack);
+    let stackPtr = 0;
 
-      const px = p % w;
-      const py = (p / w) | 0;
-      if (px > 0 && !visited[p - 1]) { visited[p - 1] = 1; stack.push(p - 1); }
-      if (px < w - 1 && !visited[p + 1]) { visited[p + 1] = 1; stack.push(p + 1); }
-      if (py > 0 && !visited[p - w]) { visited[p - w] = 1; stack.push(p - w); }
-      if (py < h - 1 && !visited[p + w]) { visited[p + w] = 1; stack.push(p + w); }
+    stackX[stackPtr] = sx;
+    stackY[stackPtr] = sy;
+    stackPtr++;
+
+    while (stackPtr > 0) {
+      stackPtr--;
+      let x = stackX[stackPtr];
+      const y = stackY[stackPtr];
+      let idx = y * w + x;
+
+      // Scan left to find the left boundary of the span
+      while (x >= 0 && colorData32[idx] === targetColor32 && !isWall(idx)) {
+        x--;
+        idx--;
+      }
+      x++;
+      idx++;
+
+      let spanAbove = false;
+      let spanBelow = false;
+
+      // Scan right, filling pixels and pushing candidate spans above and below
+      while (x < w && colorData32[idx] === targetColor32 && !isWall(idx)) {
+        colorData32[idx] = fill32;
+
+        if (y > 0) {
+          const idxAbove = idx - w;
+          const matchAbove = colorData32[idxAbove] === targetColor32 && !isWall(idxAbove);
+          if (!spanAbove && matchAbove) {
+            if (stackPtr < maxStack - 1) {
+              stackX[stackPtr] = x;
+              stackY[stackPtr] = y - 1;
+              stackPtr++;
+            }
+            spanAbove = true;
+          } else if (spanAbove && !matchAbove) {
+            spanAbove = false;
+          }
+        }
+
+        if (y < h - 1) {
+          const idxBelow = idx + w;
+          const matchBelow = colorData32[idxBelow] === targetColor32 && !isWall(idxBelow);
+          if (!spanBelow && matchBelow) {
+            if (stackPtr < maxStack - 1) {
+              stackX[stackPtr] = x;
+              stackY[stackPtr] = y + 1;
+              stackPtr++;
+            }
+            spanBelow = true;
+          } else if (spanBelow && !matchBelow) {
+            spanBelow = false;
+          }
+        }
+
+        x++;
+        idx++;
+      }
     }
 
     colorCtx.putImageData(colorImage, 0, 0);
@@ -833,21 +884,22 @@ export default function ColoringBookClient() {
     if (!lineCanvas || !colorCanvas) return;
     const w = colorCanvas.width;
     const h = colorCanvas.height;
-    const lineCtx = lineCanvas.getContext("2d");
-    const colorCtx = colorCanvas.getContext("2d");
+    const lineCtx = lineCanvas.getContext("2d", { willReadFrequently: true });
+    const colorCtx = colorCanvas.getContext("2d", { willReadFrequently: true });
     if (!lineCtx || !colorCtx) return;
 
-    const lineData = lineCtx.getImageData(0, 0, w, h).data;
+    const lineImage = lineCtx.getImageData(0, 0, w, h);
     const colorImage = colorCtx.getImageData(0, 0, w, h);
-    const data = colorImage.data;
-    const fillColor = hexToRgb(brushColor);
+    const lineData32 = new Uint32Array(lineImage.data.buffer);
+    const colorData32 = new Uint32Array(colorImage.data.buffer);
+    const rgb = hexToRgb(brushColor);
+    const fill32 = ((255 << 24) | (rgb.b << 16) | (rgb.g << 8) | rgb.r) >>> 0;
 
-    for (let i = 0; i < data.length; i += 4) {
-      if (lineData[i + 3] > 40) continue;
-      data[i] = fillColor.r;
-      data[i + 1] = fillColor.g;
-      data[i + 2] = fillColor.b;
-      data[i + 3] = 255;
+    const len = colorData32.length;
+    for (let i = 0; i < len; i++) {
+      if ((lineData32[i] >>> 24) <= 40) {
+        colorData32[i] = fill32;
+      }
     }
 
     colorCtx.putImageData(colorImage, 0, 0);

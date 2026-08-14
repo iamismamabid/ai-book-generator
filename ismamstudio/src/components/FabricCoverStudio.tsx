@@ -1305,11 +1305,18 @@ export default function FabricCoverStudio({
 
   const updateActiveObjectProperty = (property: string, value: any, saveHistory = true) => {
     if (!canvas || !activeObject) return;
-    activeObject.set({ [property]: value });
-    activeObject.setCoords();
 
-    if (property === 'flipX') setObjectFlipX(!!value);
-    if (property === 'flipY') setObjectFlipY(!!value);
+    if (property === 'flipX' || property === 'flipY') {
+      const center = activeObject.getCenterPoint();
+      activeObject.set({ [property]: value });
+      activeObject.setPositionByOrigin(center, 'center', 'center');
+      activeObject.setCoords();
+      if (property === 'flipX') setObjectFlipX(!!value);
+      if (property === 'flipY') setObjectFlipY(!!value);
+    } else {
+      activeObject.set({ [property]: value });
+      activeObject.setCoords();
+    }
 
     // Spine text has to stay inside the spine folds and trim margins, so any
     // edit that changes its rendered size re-runs the fit instead of letting a
@@ -1579,16 +1586,28 @@ export default function FabricCoverStudio({
 
   const toggleFlipX = () => {
     if (!canvas || !activeObject) return;
-    const newVal = !objectFlipX;
-    setObjectFlipX(newVal);
-    updateActiveObjectProperty("flipX", newVal);
+    const center = activeObject.getCenterPoint();
+    const nextVal = !activeObject.flipX;
+    activeObject.set('flipX', nextVal);
+    activeObject.setPositionByOrigin(center, 'center', 'center');
+    activeObject.setCoords();
+    setObjectFlipX(nextVal);
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+    setActiveObject(Object.assign(Object.create(Object.getPrototypeOf(activeObject)), activeObject));
   };
 
   const toggleFlipY = () => {
     if (!canvas || !activeObject) return;
-    const newVal = !objectFlipY;
-    setObjectFlipY(newVal);
-    updateActiveObjectProperty("flipY", newVal);
+    const center = activeObject.getCenterPoint();
+    const nextVal = !activeObject.flipY;
+    activeObject.set('flipY', nextVal);
+    activeObject.setPositionByOrigin(center, 'center', 'center');
+    activeObject.setCoords();
+    setObjectFlipY(nextVal);
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: activeObject });
+    setActiveObject(Object.assign(Object.create(Object.getPrototypeOf(activeObject)), activeObject));
   };
 
   const handleExactWidth = (val: number) => {
@@ -1920,6 +1939,8 @@ export default function FabricCoverStudio({
         setObjectPosX(Math.round(obj.left || 0));
         setObjectPosY(Math.round(obj.top || 0));
         setObjectAngle(Math.round(obj.angle || 0));
+        setObjectFlipX(!!obj.flipX);
+        setObjectFlipY(!!obj.flipY);
       }
     };
     fCanvas.on("selection:created", syncSelection);
@@ -7158,31 +7179,19 @@ export default function FabricCoverStudio({
 
               {/* Flip */}
               <button
-                onClick={() => {
-                  if (canvas && activeObject) {
-                    const nextFlipX = !activeObject.flipX;
-                    updateActiveObjectProperty('flipX', nextFlipX);
-                    setActiveObject(Object.assign(Object.create(Object.getPrototypeOf(activeObject)), activeObject));
-                  }
-                }}
-                title={activeObject?.flipX ? "Flipped Horizontally (Click to Reset)" : "Flip Horizontal"}
+                onClick={toggleFlipX}
+                title={objectFlipX || activeObject?.flipX ? "Flipped Horizontally (Click to Reset)" : "Flip Horizontal"}
                 className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-                  activeObject?.flipX ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
+                  objectFlipX || activeObject?.flipX ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
                 }`}
               >
                 <FlipHorizontal className="w-3.5 h-3.5" />
               </button>
               <button
-                onClick={() => {
-                  if (canvas && activeObject) {
-                    const nextFlipY = !activeObject.flipY;
-                    updateActiveObjectProperty('flipY', nextFlipY);
-                    setActiveObject(Object.assign(Object.create(Object.getPrototypeOf(activeObject)), activeObject));
-                  }
-                }}
-                title={activeObject?.flipY ? "Flipped Vertically (Click to Reset)" : "Flip Vertical"}
+                onClick={toggleFlipY}
+                title={objectFlipY || activeObject?.flipY ? "Flipped Vertically (Click to Reset)" : "Flip Vertical"}
                 className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-                  activeObject?.flipY ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
+                  objectFlipY || activeObject?.flipY ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
                 }`}
               >
                 <FlipVertical className="w-3.5 h-3.5" />

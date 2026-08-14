@@ -28,6 +28,18 @@ export default function MasterStudioApp() {
   // instead of whatever draft is sitting in localStorage.
   const [notebookInitialPages, setNotebookInitialPages] = useState<any[] | null>(null);
   const [notebookLoadState, setNotebookLoadState] = useState<'idle' | 'loading' | 'done'>('idle');
+  // Mount already reads ?tab= from the URL to restore the active tab, but the
+  // tab buttons themselves never wrote it back -- so switching to Cover
+  // Studio then reloading always landed back on Book Builder. Keeping the URL
+  // in sync fixes that without touching browser history on every click.
+  const handleTabChange = (tab: 'interior' | 'cover') => {
+    setActiveTab(tab);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", tab);
+      window.history.replaceState({}, "", url);
+    }
+  };
   // Cloud sync status for the Cover Studio project — surfaced in the header so
   // users can see their work is actually persisted to their account, not just
   // sitting in this browser's localStorage.
@@ -272,7 +284,7 @@ export default function MasterStudioApp() {
         {/* TAB SWITCHER */}
         <div className="flex bg-slate-200/60 dark:bg-slate-900/60 p-1.5 rounded-full shadow-inner border border-slate-300/30 dark:border-slate-800/30 backdrop-blur-md relative">
           <button
-            onClick={() => setActiveTab('interior')}
+            onClick={() => handleTabChange('interior')}
             className={`relative px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
               activeTab === 'interior' ? 'text-slate-950 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
@@ -288,7 +300,7 @@ export default function MasterStudioApp() {
           </button>
           
           <button
-            onClick={() => setActiveTab('cover')}
+            onClick={() => handleTabChange('cover')}
             className={`relative px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
               activeTab === 'cover' ? 'text-slate-950 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}

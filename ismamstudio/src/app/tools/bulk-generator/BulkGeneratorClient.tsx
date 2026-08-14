@@ -552,48 +552,58 @@ export default function BulkGeneratorClient() {
               <h3 className="text-sm font-black text-white flex items-center gap-2">
                 <Plus className="w-4 h-4 text-yellow-500" /> Add Book Manually
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                <input
-                  type="text"
-                  placeholder="Book Title (e.g. Sudoku Master)"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="md:col-span-2 px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none"
-                  required
-                />
-                <select
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value as any)}
-                  className="px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:outline-none"
-                >
-                  <option value="Sudoku">Sudoku</option>
-                  <option value="Maze">Maze</option>
-                  <option value="Word Search">Word Search</option>
-                  <option value="Cryptogram">Cryptogram</option>
-                  <option value="Kakuro">Kakuro</option>
-                </select>
-                <select
-                  value={newDifficulty}
-                  onChange={(e) => setNewDifficulty(e.target.value as any)}
-                  className="px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:outline-none"
-                >
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
-                </select>
-                <div className="flex gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+                <div className="sm:col-span-2 lg:col-span-4">
+                  <input
+                    type="text"
+                    placeholder="Book Title (e.g. Sudoku Master)"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-yellow-500 transition"
+                    required
+                  />
+                </div>
+                <div className="lg:col-span-2">
+                  <select
+                    value={newType}
+                    onChange={(e) => setNewType(e.target.value as any)}
+                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-yellow-500 transition cursor-pointer"
+                  >
+                    <option value="Sudoku">Sudoku</option>
+                    <option value="Maze">Maze</option>
+                    <option value="Word Search">Word Search</option>
+                    <option value="Cryptogram">Cryptogram</option>
+                    <option value="Kakuro">Kakuro</option>
+                  </select>
+                </div>
+                <div className="lg:col-span-2">
+                  <select
+                    value={newDifficulty}
+                    onChange={(e) => setNewDifficulty(e.target.value as any)}
+                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-yellow-500 transition cursor-pointer"
+                  >
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </div>
+                <div className="lg:col-span-2">
                   <input
                     type="number"
                     placeholder="Puzzles"
+                    min={1}
+                    max={500}
                     value={newCount}
                     onChange={(e) => setNewCount(parseInt(e.target.value) || 30)}
-                    className="w-20 px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none text-center"
+                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-yellow-500 transition text-center"
                     required
                   />
+                </div>
+                <div className="lg:col-span-2">
                   <select
                     value={newTrim}
                     onChange={(e) => setNewTrim(e.target.value as any)}
-                    className="flex-1 px-2 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:outline-none"
+                    className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:outline-none focus:border-yellow-500 transition cursor-pointer"
                   >
                     <option value="8.5x11">8.5"x11"</option>
                     <option value="6x9">6"x9"</option>
@@ -603,7 +613,7 @@ export default function BulkGeneratorClient() {
               </div>
               <button
                 type="submit"
-                className="w-full py-2 bg-slate-950 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 transition text-slate-300 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer"
+                className="w-full py-2.5 bg-slate-950 border border-slate-800 hover:border-yellow-500 hover:text-slate-950 hover:bg-yellow-500 transition text-slate-300 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer"
               >
                 Add to Batch Queue
               </button>

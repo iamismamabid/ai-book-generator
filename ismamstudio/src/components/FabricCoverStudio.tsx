@@ -1008,6 +1008,37 @@ export default function FabricCoverStudio({
   const [autoRelayout, setAutoRelayout] = useState(true);
   const autoRelayoutRef = useRef(autoRelayout);
   useEffect(() => { autoRelayoutRef.current = autoRelayout; }, [autoRelayout]);
+
+  // Custom trim size -- calculateKdpLayout only ever consumes trimSize.w/h
+  // (never the label), so any numeric pair flows through the same layout
+  // math as the 3 presets. Bounds mirror Amazon KDP's documented paperback
+  // trim-size range so a typo can't produce an unprintable cover geometry.
+  const [isCustomTrim, setIsCustomTrim] = useState(
+    () => !TRIM_SIZES.some((s) => s.label === trimSize.label)
+  );
+  const [customTrimW, setCustomTrimW] = useState(trimSize.w);
+  const [customTrimH, setCustomTrimH] = useState(trimSize.h);
+  const CUSTOM_TRIM_BOUNDS = { minW: 4, maxW: 8.5, minH: 6, maxH: 11.69 };
+
+  // The initial isCustomTrim/customTrimW/H above only see whatever trimSize
+  // this component happened to mount with. A cloud/localStorage project load
+  // in the parent finishes async, often after this component has already
+  // mounted with the default preset, so a restored custom size needs its own
+  // sync here instead of relying on that one-time initializer.
+  useEffect(() => {
+    const matchesPreset = TRIM_SIZES.some((s) => s.label === trimSize.label);
+    setIsCustomTrim(!matchesPreset);
+    if (!matchesPreset) {
+      setCustomTrimW(trimSize.w);
+      setCustomTrimH(trimSize.h);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trimSize.label]);
+  const applyCustomTrimSize = (w: number, h: number) => {
+    const clampedW = Math.min(CUSTOM_TRIM_BOUNDS.maxW, Math.max(CUSTOM_TRIM_BOUNDS.minW, w));
+    const clampedH = Math.min(CUSTOM_TRIM_BOUNDS.maxH, Math.max(CUSTOM_TRIM_BOUNDS.minH, h));
+    setTrimSize({ label: `Custom (${clampedW}" x ${clampedH}")`, w: clampedW, h: clampedH });
+  };
   const lastImportLayoutRef = useRef<KdpLayoutResult | null>(null);
 
   useEffect(() => {
@@ -6661,18 +6692,63 @@ export default function FabricCoverStudio({
             <div className="space-y-3">
               <div>
                 <label className="text-xs font-bold text-slate-600 block mb-1">Book Trim Size</label>
-                <select 
-                  value={trimSize.label} 
+                <select
+                  value={isCustomTrim ? "__custom__" : trimSize.label}
                   onChange={(e) => {
+                    if (e.target.value === "__custom__") {
+                      setIsCustomTrim(true);
+                      applyCustomTrimSize(customTrimW, customTrimH);
+                      return;
+                    }
                     const size = TRIM_SIZES.find(s => s.label === e.target.value);
-                    if (size) setTrimSize(size);
+                    if (size) {
+                      setIsCustomTrim(false);
+                      setTrimSize(size);
+                    }
                   }}
                   className="w-full text-xs font-bold p-2.5 bg-white border border-slate-200 rounded-xl"
                 >
                   {TRIM_SIZES.map((sz, i) => (
                     <option key={i} value={sz.label}>{sz.label}</option>
                   ))}
+                  <option value="__custom__">Custom Size…</option>
                 </select>
+
+                {isCustomTrim && (
+                  <div className="mt-2 p-2.5 bg-white border border-slate-200 rounded-xl space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 block mb-0.5">Width (in)</label>
+                        <input
+                          type="number"
+                          step={0.01}
+                          min={CUSTOM_TRIM_BOUNDS.minW}
+                          max={CUSTOM_TRIM_BOUNDS.maxW}
+                          value={customTrimW}
+                          onChange={(e) => setCustomTrimW(Number(e.target.value))}
+                          onBlur={() => applyCustomTrimSize(customTrimW, customTrimH)}
+                          className="w-full text-xs font-bold p-2 bg-slate-50 border border-slate-200 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 block mb-0.5">Height (in)</label>
+                        <input
+                          type="number"
+                          step={0.01}
+                          min={CUSTOM_TRIM_BOUNDS.minH}
+                          max={CUSTOM_TRIM_BOUNDS.maxH}
+                          value={customTrimH}
+                          onChange={(e) => setCustomTrimH(Number(e.target.value))}
+                          onBlur={() => applyCustomTrimSize(customTrimW, customTrimH)}
+                          className="w-full text-xs font-bold p-2 bg-slate-50 border border-slate-200 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[9px] text-slate-400 font-semibold leading-snug">
+                      KDP paperback range: {CUSTOM_TRIM_BOUNDS.minW}"–{CUSTOM_TRIM_BOUNDS.maxW}" wide, {CUSTOM_TRIM_BOUNDS.minH}"–{CUSTOM_TRIM_BOUNDS.maxH}" tall. Values outside this range are clamped.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <label className="flex items-start gap-2.5 cursor-pointer select-none bg-white p-2.5 rounded-xl border border-slate-200">

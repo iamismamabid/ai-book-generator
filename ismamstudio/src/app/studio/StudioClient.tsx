@@ -144,8 +144,16 @@ export default function MasterStudioApp() {
     if (data.coverElements) setCoverElements(data.coverElements);
     if (data.pageCount) setPageCount(data.pageCount);
     if (data.trimSize) {
+      // Restore an exact preset match by reference (keeps the dropdown's own
+      // preset objects canonical), otherwise trust the saved numeric w/h
+      // as-is -- calculateKdpLayout only ever reads trimSize.w/h, never the
+      // label, so a custom size round-trips correctly even though it isn't
+      // one of the 3 fixed presets.
       const match = TRIM_SIZES.find(t => t.label === data.trimSize.label);
       if (match) setTrimSize(match);
+      else if (typeof data.trimSize.w === "number" && typeof data.trimSize.h === "number") {
+        setTrimSize(data.trimSize);
+      }
     }
   };
 
@@ -237,96 +245,107 @@ export default function MasterStudioApp() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 p-2 sm:p-4 md:p-5 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-x-hidden relative">
+    <div className="h-screen w-screen bg-[#F8FAFC] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-hidden select-none">
       
-      {/* 🌌 Background ambient gradient blobs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
-
-      {/* APP HEADER */}
-      <header className="mb-3 sm:mb-4 flex flex-col sm:flex-row justify-between items-center max-w-[1700px] mx-auto w-full gap-3 sm:gap-6 relative z-10">
+      {/* INTEGRATED TOP STUDIO NAVBAR (Edge-to-Edge) */}
+      <header className="h-13 py-2 px-4 bg-slate-950 text-white border-b border-slate-900 flex items-center justify-between z-30 shrink-0 select-none">
+        {/* Left: Brand Logo & Title */}
         <div className="flex items-center gap-3">
-          <Link href="/" title="Back to KDPage Home" className="w-10 h-10 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-indigo-500/20 hover:scale-105 transition-transform">
-            <Sparkles className="w-5 h-5" />
+          <Link href="/" title="Back to KDPage Home" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+            <div className="w-8 h-8 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-indigo-500/20">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-2">
+                KDPage Studio
+              </h1>
+              <p className="text-[9px] text-indigo-400 font-extrabold uppercase tracking-widest leading-none">
+                Wraparound Cover &amp; Interior
+              </p>
+            </div>
           </Link>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-600 dark:from-white dark:via-slate-200 dark:to-indigo-400">
-              KDPage Creator Studio
-            </h1>
-            <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold uppercase tracking-widest">
-              Premium Cover &amp; Interior Creator
-            </p>
-          </div>
+
           {activeTab === 'cover' && (
-            <div className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border shrink-0 whitespace-nowrap ${
+            <div className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border shrink-0 whitespace-nowrap ml-2 ${
               !isSignedIn
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
                 : cloudSyncStatus === 'saving'
-                ? 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-400'
+                ? 'bg-slate-500/10 border-slate-500/30 text-slate-400'
                 : cloudSyncStatus === 'error'
-                ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
-                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
               }`}
             >
               {!isSignedIn ? (
-                <><CloudOff className="w-3 h-3" /> Sign in to save to your account</>
+                <><CloudOff className="w-2.5 h-2.5" /> Guest Mode</>
               ) : cloudSyncStatus === 'saving' ? (
-                <><Loader2 className="w-3 h-3 animate-spin" /> Saving to your account...</>
+                <><Loader2 className="w-2.5 h-2.5 animate-spin" /> Saving...</>
               ) : cloudSyncStatus === 'error' ? (
-                <><CloudOff className="w-3 h-3" /> Save failed — retrying</>
+                <><CloudOff className="w-2.5 h-2.5" /> Save Failed</>
               ) : (
-                <><Cloud className="w-3 h-3" /> Saved to your account</>
+                <><Cloud className="w-2.5 h-2.5" /> Saved to Account</>
               )}
             </div>
           )}
         </div>
 
-        {/* TAB SWITCHER */}
-        <div className="flex bg-slate-200/60 dark:bg-slate-900/60 p-1.5 rounded-full shadow-inner border border-slate-300/30 dark:border-slate-800/30 backdrop-blur-md relative">
+        {/* Center: Mode Switcher */}
+        <div className="flex bg-slate-900 p-1 rounded-full border border-slate-800 backdrop-blur-md">
           <button
             onClick={() => handleTabChange('interior')}
-            className={`relative px-6 py-2 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
-              activeTab === 'interior' ? 'text-slate-950 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            className={`relative px-4 sm:px-5 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-200 flex items-center gap-1.5 z-10 ${
+              activeTab === 'interior' ? 'text-slate-950 font-black' : 'text-slate-400 hover:text-white'
             }`}
           >
             {activeTab === 'interior' && (
               <motion.div
                 layoutId="activeTabPill"
-                className="absolute inset-0 bg-white dark:bg-slate-800 rounded-full shadow-md -z-10"
+                className="absolute inset-0 bg-amber-400 rounded-full shadow-md -z-10"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
-            <Grid3x3 className="w-4 h-4"/> Book Builder
+            <Grid3x3 className="w-3.5 h-3.5"/> Book Builder
           </button>
           
           <button
             onClick={() => handleTabChange('cover')}
-            className={`relative px-6 py-2 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
-              activeTab === 'cover' ? 'text-slate-950 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            className={`relative px-4 sm:px-5 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-200 flex items-center gap-1.5 z-10 ${
+              activeTab === 'cover' ? 'text-white font-black' : 'text-slate-400 hover:text-white'
             }`}
           >
             {activeTab === 'cover' && (
               <motion.div
                 layoutId="activeTabPill"
-                className="absolute inset-0 bg-white dark:bg-slate-800 rounded-full shadow-md -z-10"
+                className="absolute inset-0 bg-indigo-600 rounded-full shadow-md -z-10"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
-            <Palette className="w-4 h-4"/> Cover Studio
+            <Palette className="w-3.5 h-3.5"/> Cover Studio
           </button>
+        </div>
+
+        {/* Right: Quick Home Exit */}
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard"
+            className="text-[10px] font-bold text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-900 transition-colors uppercase tracking-wider"
+          >
+            Dashboard
+          </Link>
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1700px] w-full mx-auto relative z-10 flex flex-col min-h-0">
+      {/* FULL-BLEED WORKSPACE CONTAINER */}
+      <main className="flex-1 w-full h-[calc(100vh-52px)] overflow-hidden relative flex flex-col">
         <AnimatePresence mode="wait">
           {activeTab === 'interior' ? (
             <motion.div
               key="interior"
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
-              className="w-full h-full"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="w-full h-full flex flex-col overflow-auto p-3 sm:p-6"
             >
               <BookBuilder
                 coverState={{
@@ -341,12 +360,11 @@ export default function MasterStudioApp() {
           ) : (
             <motion.div
               key="cover"
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
-              className="flex flex-1 min-h-[calc(100vh-95px)] rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden bg-white dark:bg-slate-900 transition-colors duration-300"
-              style={{ boxShadow: "var(--shadow-soft-lg)" }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="flex-1 w-full h-full overflow-hidden bg-white dark:bg-slate-900 flex"
             >
               {premiumStatus.checked && premiumStatus.plan === "free" ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0b0f19] text-white w-full h-full relative overflow-hidden">

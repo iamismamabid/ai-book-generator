@@ -306,7 +306,9 @@ const TRIM_SIZES: {
 export default function ColoringBookClient() {
   // Config state
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [activePreset, setActivePreset] = useState<PresetItem>(PRESETS[0]);
+  const [activePreset, setActivePreset] = useState<PresetItem>(() => {
+    return PRESETS.find((p) => p.id === "citrus_slices") || PRESETS[1] || PRESETS[0];
+  });
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [useBleed, setUseBleed] = useState(false);
   const [lineWidth, setLineWidth] = useState<number>(3);
@@ -329,6 +331,7 @@ export default function ColoringBookClient() {
   // Interactive "Preview Coloring" canvas state
   const [isColoringMode, setIsColoringMode] = useState(true);
   const [activeTool, setActiveTool] = useState<"select" | "brush" | "eraser" | "fill" | "eyedropper" | "text" | "shape" | "line" | "freehandLine">("brush");
+  const [eraserTarget, setEraserTarget] = useState<"color" | "lines" | "all">("color");
   const [brushColor, setBrushColor] = useState<string>(EXTENDED_PALETTE[0]);
   const [brushSize, setBrushSize] = useState<number>(18);
   // Each history entry snapshots BOTH canvas layers. Undo/redo used to only
@@ -366,7 +369,32 @@ export default function ColoringBookClient() {
     checkPremiumStatus()
       .then((res: any) => setIsPremium(!!res.isPremium))
       .catch(() => setIsPremium(false));
+
+    // Restore previously active preset on page reload
+    try {
+      const savedPresetId = localStorage.getItem("kdpage_coloring_active_preset_id");
+      if (savedPresetId) {
+        const found = PRESETS.find((p) => p.id === savedPresetId);
+        if (found) {
+          setActivePreset(found);
+          if (found.category) setSelectedCategory(found.category);
+        }
+      }
+    } catch {
+      // ignore
+    }
   }, []);
+
+  // Persist active preset id to localStorage
+  useEffect(() => {
+    try {
+      if (activePreset?.id) {
+        localStorage.setItem("kdpage_coloring_active_preset_id", activePreset.id);
+      }
+    } catch {
+      // ignore
+    }
+  }, [activePreset?.id]);
 
   // Global Keyboard Shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+A, Ctrl+S, [, ])
   useEffect(() => {
@@ -438,8 +466,6 @@ export default function ColoringBookClient() {
       const lCtx = lineCanvas.getContext("2d");
       if (lCtx) {
         lCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
-        lCtx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
-        lCtx.fillRect(0, 0, lineCanvas.width, lineCanvas.height);
       }
     }
     if (colorCanvas) {
@@ -447,6 +473,7 @@ export default function ColoringBookClient() {
       cCtx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
     }
     setIsColoringMode(true);
+    setEraserTarget("all");
     showToast("Created Blank Clean 300 DPI Canvas! Start drawing from scratch 🎨");
   };
 
@@ -460,8 +487,10 @@ export default function ColoringBookClient() {
     if (customLineArt) {
       // Paint uploaded custom line art
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (!isColoringMode) {
+        ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
       ctx.putImageData(customLineArt, 0, 0);
     } else {
       drawColoringPattern(ctx, canvas.width, canvas.height, {
@@ -482,10 +511,26 @@ export default function ColoringBookClient() {
     const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
     if (!lineCanvas || !colorCanvas) return;
+
+    // Check if there is an autosave or saved progress for this preset
+    try {
+      const autosave = localStorage.getItem(`kdpage_coloring_autosave_${activePreset.id}`) || localStorage.getItem(`kdpage_coloring_progress_${activePreset.id}`);
+      if (autosave) {
+        const parsed = JSON.parse(autosave);
+        if (parsed && typeof parsed.line === "string" && typeof parsed.color === "string") {
+          loadSnapshot(parsed);
+          setHistory({ stack: [parsed], index: 0 });
+          return;
+        }
+      }
+    } catch {
+      // fallback
+    }
+
     const cctx = colorCanvas.getContext("2d");
     if (cctx) cctx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
     setHistory({ stack: [{ line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() }], index: 0 });
-  }, [drawPattern]);
+  }, [drawPattern, activePreset.id]);
 
   // Custom File Upload Handler
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -528,7 +573,12 @@ export default function ColoringBookClient() {
       const next = [...trimmed, snapshot].slice(-25);
       return { stack: next, index: next.length - 1 };
     });
-  }, []);
+    try {
+      localStorage.setItem(`kdpage_coloring_autosave_${activePreset.id}`, JSON.stringify(snapshot));
+    } catch {
+      // ignore
+    }
+  }, [activePreset.id]);
 
   const loadSnapshot = (snapshot: { line: string; color: string }) => {
     const lineCanvas = canvasRef.current;
@@ -832,7 +882,40 @@ export default function ColoringBookClient() {
 
     isDrawingRef.current = true;
     lastPointRef.current = pt;
-    ctx.globalCompositeOperation = activeTool === "eraser" ? "destination-out" : "source-over";
+
+    if (activeTool === "eraser") {
+      const eraseColor = eraserTarget === "color" || eraserTarget === "all";
+      const eraseLines = eraserTarget === "lines" || eraserTarget === "all";
+
+      if (eraseColor && colorCanvasRef.current) {
+        const cCtx = colorCanvasRef.current.getContext("2d");
+        if (cCtx) {
+          cCtx.save();
+          cCtx.globalCompositeOperation = "destination-out";
+          cCtx.fillStyle = "#000000";
+          cCtx.beginPath();
+          cCtx.arc(pt.x, pt.y, brushSize / 2, 0, Math.PI * 2);
+          cCtx.fill();
+          cCtx.restore();
+        }
+      }
+
+      if (eraseLines && canvasRef.current) {
+        const lCtx = canvasRef.current.getContext("2d");
+        if (lCtx) {
+          lCtx.save();
+          lCtx.globalCompositeOperation = "destination-out";
+          lCtx.fillStyle = "#000000";
+          lCtx.beginPath();
+          lCtx.arc(pt.x, pt.y, brushSize / 2, 0, Math.PI * 2);
+          lCtx.fill();
+          lCtx.restore();
+        }
+      }
+      return;
+    }
+
+    ctx.globalCompositeOperation = "source-over";
     ctx.fillStyle = brushColor;
     ctx.beginPath();
     ctx.arc(pt.x, pt.y, brushSize / 2, 0, Math.PI * 2);
@@ -867,11 +950,54 @@ export default function ColoringBookClient() {
       return;
     }
 
+    if (activeTool === "eraser") {
+      const eraseColor = eraserTarget === "color" || eraserTarget === "all";
+      const eraseLines = eraserTarget === "lines" || eraserTarget === "all";
+      const last = lastPointRef.current ?? pt;
+
+      if (eraseColor && colorCanvasRef.current) {
+        const cCtx = colorCanvasRef.current.getContext("2d");
+        if (cCtx) {
+          cCtx.save();
+          cCtx.globalCompositeOperation = "destination-out";
+          cCtx.strokeStyle = "#000000";
+          cCtx.lineWidth = brushSize;
+          cCtx.lineCap = "round";
+          cCtx.lineJoin = "round";
+          cCtx.beginPath();
+          cCtx.moveTo(last.x, last.y);
+          cCtx.lineTo(pt.x, pt.y);
+          cCtx.stroke();
+          cCtx.restore();
+        }
+      }
+
+      if (eraseLines && canvasRef.current) {
+        const lCtx = canvasRef.current.getContext("2d");
+        if (lCtx) {
+          lCtx.save();
+          lCtx.globalCompositeOperation = "destination-out";
+          lCtx.strokeStyle = "#000000";
+          lCtx.lineWidth = brushSize;
+          lCtx.lineCap = "round";
+          lCtx.lineJoin = "round";
+          lCtx.beginPath();
+          lCtx.moveTo(last.x, last.y);
+          lCtx.lineTo(pt.x, pt.y);
+          lCtx.stroke();
+          lCtx.restore();
+        }
+      }
+
+      lastPointRef.current = pt;
+      return;
+    }
+
     const canvas = colorCanvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     const last = lastPointRef.current ?? pt;
-    ctx.globalCompositeOperation = activeTool === "eraser" ? "destination-out" : "source-over";
+    ctx.globalCompositeOperation = "source-over";
     ctx.strokeStyle = brushColor;
     ctx.lineWidth = brushSize;
     ctx.lineCap = "round";
@@ -904,6 +1030,15 @@ export default function ColoringBookClient() {
         showToast("Drawn straight vector line segment!");
       }
       lineStartRef.current = null;
+    }
+
+    if (colorCanvasRef.current) {
+      const cCtx = colorCanvasRef.current.getContext("2d");
+      if (cCtx) cCtx.globalCompositeOperation = "source-over";
+    }
+    if (canvasRef.current) {
+      const lCtx = canvasRef.current.getContext("2d");
+      if (lCtx) lCtx.globalCompositeOperation = "source-over";
     }
 
     isDrawingRef.current = false;
@@ -1580,6 +1715,64 @@ export default function ColoringBookClient() {
                   </div>
                 )}
 
+                {/* Eraser Tool Options Panel */}
+                {activeTool === "eraser" && (
+                  <div className="bg-rose-50/70 dark:bg-rose-950/40 p-2.5 rounded-xl border border-rose-200 dark:border-rose-800/50 flex flex-wrap items-center justify-between gap-2 animate-in fade-in duration-150">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-black uppercase text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <Eraser className="w-3.5 h-3.5" /> Erase Target:
+                      </span>
+                      <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900">
+                        <button
+                          type="button"
+                          onClick={() => setEraserTarget("color")}
+                          className={`px-2.5 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
+                            eraserTarget === "color"
+                              ? "bg-rose-500 text-white shadow-sm"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          🎨 Color Only
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEraserTarget("lines")}
+                          className={`px-2.5 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
+                            eraserTarget === "lines"
+                              ? "bg-rose-500 text-white shadow-sm"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          ✏️ Drawn Lines
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEraserTarget("all")}
+                          className={`px-2.5 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
+                            eraserTarget === "all"
+                              ? "bg-rose-500 text-white shadow-sm"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          ✨ Everything
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Eraser Size</span>
+                      <input
+                        type="range"
+                        min="6"
+                        max="80"
+                        value={brushSize}
+                        onChange={(e) => setBrushSize(Number(e.target.value))}
+                        className="w-20 accent-rose-500 cursor-pointer"
+                      />
+                      <span className="text-[10px] font-mono font-bold text-rose-600 dark:text-rose-400">{brushSize}px</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Text Tool Options Panel */}
                 {activeTool === "text" && (
                   <div className="bg-indigo-50/60 dark:bg-indigo-950/30 p-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/40 flex flex-wrap items-center gap-2">
@@ -1821,7 +2014,7 @@ export default function ColoringBookClient() {
                 style={{
                   touchAction: "none",
                   cursor: isColoringMode
-                    ? activeTool === "fill"
+                    ? activeTool === "fill" || activeTool === "eraser" || activeTool === "line" || activeTool === "freehandLine"
                       ? "crosshair"
                       : activeTool === "eyedropper"
                       ? "copy"

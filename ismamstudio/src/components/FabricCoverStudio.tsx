@@ -4374,18 +4374,18 @@ export default function FabricCoverStudio({
       </div>
       <div className="flex flex-1 overflow-hidden h-full relative">
       {/* 1. Far Left Tool Picker Toolbar */}
-      <div className="w-16 bg-slate-950 flex flex-col items-center py-6 gap-5 border-r border-slate-900 z-20 text-slate-400">
+      <div className="w-16 bg-slate-950 flex flex-col items-center py-3 gap-2 border-r border-slate-900 z-20 text-slate-400 shrink-0 overflow-y-auto select-none">
         <button
           onClick={() => setIsTemplateGalleryOpen(true)}
           title="Browse Cover Templates"
-          className="p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] hover:bg-slate-900 hover:text-white"
+          className="p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] hover:bg-slate-900 hover:text-white"
         >
           <LayoutTemplate className="w-5 h-5"/>
         </button>
         <button
           onClick={() => setActiveToolTab(prev => prev === 'elements' ? null : 'elements')}
           title="Shapes & Text"
-          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'elements' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
@@ -4394,7 +4394,7 @@ export default function FabricCoverStudio({
         <button
           onClick={() => setActiveToolTab(prev => prev === 'shapes' ? null : 'shapes')}
           title="Shapes"
-          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'shapes' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
@@ -4403,7 +4403,7 @@ export default function FabricCoverStudio({
         <button
           onClick={() => setActiveToolTab(prev => prev === 'graphics' ? null : 'graphics')}
           title="Clipart Library"
-          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'graphics' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
@@ -4412,7 +4412,7 @@ export default function FabricCoverStudio({
         <button
           onClick={() => setActiveToolTab(prev => prev === 'presets' ? null : 'presets')}
           title="Background Presets"
-          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'presets' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
@@ -4421,7 +4421,7 @@ export default function FabricCoverStudio({
         <button
           onClick={() => setActiveToolTab(prev => prev === 'uploads' ? null : 'uploads')}
           title="Upload Custom Graphics"
-          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'uploads' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
@@ -4434,7 +4434,7 @@ export default function FabricCoverStudio({
             toggleDrawingMode(nextTab === 'draw');
           }}
           title="Pencil / Freehand Draw"
-          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'draw' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
@@ -4443,18 +4443,18 @@ export default function FabricCoverStudio({
         <button
           onClick={() => setActiveToolTab(prev => prev === 'settings' ? null : 'settings')}
           title="Cover Specs"
-          className={`p-3 rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] ${
             activeToolTab === 'settings' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
           <Settings className="w-5 h-5"/>
         </button>
 
-        <div className="mt-auto flex flex-col gap-4 border-t border-slate-900 pt-5 w-full px-2">
+        <div className="mt-auto flex flex-col gap-2 border-t border-slate-900 pt-3 pb-2 w-full px-1.5 shrink-0">
           <button
             onClick={() => setShowKdpGuides(!showKdpGuides)}
             title="Toggle KDP Layout Guides"
-            className={`p-3 mx-auto rounded-2xl transition-all duration-200 ease-out active:scale-[0.94] ${
+            className={`p-2.5 mx-auto rounded-xl transition-all duration-200 ease-out active:scale-[0.94] ${
               showKdpGuides ? 'text-pink-400 bg-pink-500/10 border border-pink-500/20' : 'text-slate-500 hover:text-white'
             }`}
           >
@@ -4463,35 +4463,35 @@ export default function FabricCoverStudio({
           <button
             onClick={handleOpenMockupPreview}
             title="Preview 3D Book Mockup"
-            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+            className="p-2.5 mx-auto rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
           >
             <Box className="w-5 h-5"/>
           </button>
           <button
             onClick={handleOpenThumbPreview}
             title="Marketplace Thumbnail Preview — see your cover at real Amazon listing sizes"
-            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+            className="p-2.5 mx-auto rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
           >
             <Store className="w-5 h-5"/>
           </button>
           <button
             onClick={() => setIsSeriesModalOpen(true)}
             title="Series Branding — Batch Export"
-            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+            className="p-2.5 mx-auto rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
           >
             <LayersIcon className="w-5 h-5"/>
           </button>
           <button
             onClick={() => setIsVersionsOpen(true)}
             title="Version History — Save & Restore Checkpoints"
-            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+            className="p-2.5 mx-auto rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
           >
             <History className="w-5 h-5"/>
           </button>
           <button
             onClick={() => setIsShareOpen(true)}
             title="Share for Review — Read-only Client Link"
-            className="p-3 mx-auto rounded-2xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+            className="p-2.5 mx-auto rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
           >
             <Share2 className="w-5 h-5"/>
           </button>
@@ -4499,11 +4499,11 @@ export default function FabricCoverStudio({
             onClick={handleGenerateCover}
             disabled={isGenerating}
             title="Compile & Download PDF Cover"
-            className="p-3 mx-auto rounded-2xl bg-indigo-600 text-white hover:bg-indigo-500 transition-all duration-200 ease-out active:scale-[0.94] shadow-md shadow-indigo-600/25 disabled:opacity-50"
+            className="p-2.5 mx-auto rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 transition-all duration-200 ease-out active:scale-[0.94] shadow-md shadow-indigo-600/25 disabled:opacity-50"
           >
             {isGenerating ? <Loader2 className="w-5 h-5 animate-spin"/> : <Download className="w-5 h-5"/>}
           </button>
-          <div className="pt-2 border-t border-slate-900 w-full flex justify-center">
+          <div className="pt-2 border-t border-slate-900/80 w-full flex justify-center">
             <SaveToNotebookButton
               title={`KDP Cover Design (${trimSize.w}x${trimSize.h})`}
               content={`Custom KDP Book Cover for ${pageCount} pages, trim size ${trimSize.w}x${trimSize.h} inches.`}

@@ -1306,6 +1306,10 @@ export default function FabricCoverStudio({
   const updateActiveObjectProperty = (property: string, value: any, saveHistory = true) => {
     if (!canvas || !activeObject) return;
     activeObject.set({ [property]: value });
+    activeObject.setCoords();
+
+    if (property === 'flipX') setObjectFlipX(!!value);
+    if (property === 'flipY') setObjectFlipY(!!value);
 
     // Spine text has to stay inside the spine folds and trim margins, so any
     // edit that changes its rendered size re-runs the fit instead of letting a
@@ -7134,22 +7138,30 @@ export default function FabricCoverStudio({
               <button
                 onClick={() => {
                   if (canvas && activeObject) {
-                    updateActiveObjectProperty('flipX', !activeObject.flipX);
+                    const nextFlipX = !activeObject.flipX;
+                    updateActiveObjectProperty('flipX', nextFlipX);
+                    setActiveObject(Object.assign(Object.create(Object.getPrototypeOf(activeObject)), activeObject));
                   }
                 }}
-                title="Flip Horizontal"
-                className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+                title={activeObject?.flipX ? "Flipped Horizontally (Click to Reset)" : "Flip Horizontal"}
+                className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                  activeObject?.flipX ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
+                }`}
               >
                 <FlipHorizontal className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => {
                   if (canvas && activeObject) {
-                    updateActiveObjectProperty('flipY', !activeObject.flipY);
+                    const nextFlipY = !activeObject.flipY;
+                    updateActiveObjectProperty('flipY', nextFlipY);
+                    setActiveObject(Object.assign(Object.create(Object.getPrototypeOf(activeObject)), activeObject));
                   }
                 }}
-                title="Flip Vertical"
-                className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer"
+                title={activeObject?.flipY ? "Flipped Vertically (Click to Reset)" : "Flip Vertical"}
+                className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                  activeObject?.flipY ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
+                }`}
               >
                 <FlipVertical className="w-3.5 h-3.5" />
               </button>

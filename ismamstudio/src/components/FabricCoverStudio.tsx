@@ -1899,9 +1899,18 @@ export default function FabricCoverStudio({
     };
     fCanvas.on("object:moving", handleObjectMovingSnap);
     fCanvas.on("mouse:up", clearAlignGuides);
+    fCanvas.on("object:modified", clearAlignGuides);
+    fCanvas.on("object:scaling", clearAlignGuides);
+    fCanvas.on("object:rotating", clearAlignGuides);
+
+    const handleWindowMouseUp = () => clearAlignGuides();
+    if (typeof window !== "undefined") {
+      window.addEventListener("mouseup", handleWindowMouseUp);
+    }
 
     // Selection events
     const syncSelection = (e: any) => {
+      clearAlignGuides();
       const obj = e.selected ? e.selected[0] : null;
       setActiveObject(obj);
       setSelectionCount(fCanvas.getActiveObjects().length);
@@ -1916,6 +1925,7 @@ export default function FabricCoverStudio({
     fCanvas.on("selection:created", syncSelection);
     fCanvas.on("selection:updated", syncSelection);
     fCanvas.on("selection:cleared", () => {
+      clearAlignGuides();
       setActiveObject(null);
       setSelectionCount(0);
       setSpineTextWasShrunk(false);
@@ -1987,6 +1997,9 @@ export default function FabricCoverStudio({
     updateLayers();
 
     return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("mouseup", handleWindowMouseUp);
+      }
       fCanvas.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

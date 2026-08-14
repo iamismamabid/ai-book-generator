@@ -2345,6 +2345,14 @@ export default function FabricCoverStudio({
       // matching Fabric's own object:modified-on-release pattern rather than
       // firing a state update on every intermediate frame of the drag.
       setBackgroundImageOffset(drag.region, finalOffsetX, finalOffsetY);
+
+      // A plain click (no movement between down and up) never fires
+      // mouse:move, which is the only handler in this trio that renders. A
+      // click on empty canvas over a background photo still correctly
+      // deselects the active object internally, but without this the stale
+      // selection handles stay drawn on screen until some unrelated future
+      // render happens to fire.
+      canvas.requestRenderAll();
     });
 
     canvas.renderAll();
@@ -6872,7 +6880,7 @@ export default function FabricCoverStudio({
       {/* 3. FABRIC WORKSPACE */}
       <div className="flex-1 bg-slate-100 flex flex-col items-center justify-start p-3 sm:p-6 md:p-8 relative overflow-auto min-w-0">
         {/* Top Header Controls: Trim Badge & Action Toolbar with clean vertical spacing */}
-        <div className="relative flex flex-col items-center gap-3.5 mb-14 z-20 shrink-0 select-none max-w-full">
+        <div className="flex flex-col items-center gap-2.5 mb-4 z-20 shrink-0 select-none max-w-full">
           {/* Spine details helper */}
           <div className="bg-slate-950/90 px-4 py-2 rounded-full border border-slate-800 text-[10px] sm:text-xs font-black uppercase text-amber-400 tracking-widest shadow-md text-center truncate">
             Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"
@@ -6971,9 +6979,10 @@ export default function FabricCoverStudio({
             </button>
           </div>
 
-          {/* Canva-Style Floating Contextual Option Bar when any Object is Selected */}
-          {activeObject && (
-            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-md py-1.5 px-4 rounded-full border border-indigo-200/90 shadow-xl max-w-[calc(100vw-32px)] overflow-x-auto animate-in fade-in zoom-in-95 duration-150 select-none z-30">
+          {/* Canva-Style Floating Contextual Option Bar (fixed height row to avoid layout shift) */}
+          <div className="h-10 flex items-center justify-center w-full max-w-full">
+            {activeObject ? (
+              <div className="flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-md py-1.5 px-4 rounded-full border border-indigo-200/90 shadow-xl max-w-full overflow-x-auto animate-in fade-in zoom-in-95 duration-150 select-none z-30">
               {/* Type Badge */}
               <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
                 {activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox'
@@ -7226,8 +7235,14 @@ export default function FabricCoverStudio({
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
+          ) : (
+            <div className="flex items-center gap-2 py-1 px-4 rounded-full bg-slate-200/60 border border-slate-300/50 text-slate-500 text-[10px] font-bold tracking-wide select-none">
+              <Sparkles className="w-3 h-3 text-indigo-500" />
+              <span>Click any element on the cover canvas to edit color, stroke, layering & flip</span>
+            </div>
           )}
         </div>
+      </div>
 
         {/* Responsive parent container to calculate scale */}
         <div ref={containerRef} className={`flex-1 w-full h-full min-h-0 overflow-auto flex relative ${userZoom > 1 ? 'items-start justify-start' : 'items-center justify-center'}`}>

@@ -331,7 +331,14 @@ export default function ColoringBookClient() {
   const [activeTool, setActiveTool] = useState<"select" | "brush" | "eraser" | "fill" | "eyedropper" | "text" | "shape" | "line" | "freehandLine">("brush");
   const [brushColor, setBrushColor] = useState<string>(EXTENDED_PALETTE[0]);
   const [brushSize, setBrushSize] = useState<number>(18);
-  const [history, setHistory] = useState<{ stack: string[]; index: number }>({ stack: [], index: -1 });
+  // Each history entry snapshots BOTH canvas layers. Undo/redo used to only
+  // capture colorCanvasRef, which was correct back when that was the only
+  // paintable surface -- but the Straight Line and Freehand Path tools draw
+  // directly onto canvasRef (the line-art layer), so a color-only snapshot
+  // silently ignored anything drawn with either of them: undo couldn't remove
+  // a line stroke, and it stayed on screen unchanged through unrelated
+  // undo/redo steps.
+  const [history, setHistory] = useState<{ stack: { line: string; color: string }[]; index: number }>({ stack: [], index: -1 });
 
   // Text Tool State
   const [textInput, setTextInput] = useState<string>("My Coloring Book");
@@ -472,11 +479,12 @@ export default function ColoringBookClient() {
 
   useEffect(() => {
     drawPattern();
+    const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
-    if (!colorCanvas) return;
+    if (!lineCanvas || !colorCanvas) return;
     const cctx = colorCanvas.getContext("2d");
     if (cctx) cctx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
-    setHistory({ stack: [colorCanvas.toDataURL()], index: 0 });
+    setHistory({ stack: [{ line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() }], index: 0 });
   }, [drawPattern]);
 
   // Custom File Upload Handler
@@ -511,9 +519,10 @@ export default function ColoringBookClient() {
   };
 
   const pushHistory = useCallback(() => {
-    const canvas = colorCanvasRef.current;
-    if (!canvas) return;
-    const snapshot = canvas.toDataURL();
+    const lineCanvas = canvasRef.current;
+    const colorCanvas = colorCanvasRef.current;
+    if (!lineCanvas || !colorCanvas) return;
+    const snapshot = { line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() };
     setHistory((prev) => {
       const trimmed = prev.stack.slice(0, prev.index + 1);
       const next = [...trimmed, snapshot].slice(-25);
@@ -521,18 +530,29 @@ export default function ColoringBookClient() {
     });
   }, []);
 
-  const loadSnapshot = (dataUrl: string) => {
-    const canvas = colorCanvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
+  const loadSnapshot = (snapshot: { line: string; color: string }) => {
+    const lineCanvas = canvasRef.current;
+    const colorCanvas = colorCanvasRef.current;
+    const lineCtx = lineCanvas?.getContext("2d");
+    const colorCtx = colorCanvas?.getContext("2d");
+    if (!lineCanvas || !colorCanvas || !lineCtx || !colorCtx) return;
     const token = ++snapshotLoadTokenRef.current;
-    const img = new window.Image();
-    img.onload = () => {
+
+    const lineImg = new window.Image();
+    lineImg.onload = () => {
       if (snapshotLoadTokenRef.current !== token) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
+      lineCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+      lineCtx.drawImage(lineImg, 0, 0);
     };
-    img.src = dataUrl;
+    lineImg.src = snapshot.line;
+
+    const colorImg = new window.Image();
+    colorImg.onload = () => {
+      if (snapshotLoadTokenRef.current !== token) return;
+      colorCtx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+      colorCtx.drawImage(colorImg, 0, 0);
+    };
+    colorImg.src = snapshot.color;
   };
 
   const handleUndo = () => {
@@ -636,11 +656,14 @@ export default function ColoringBookClient() {
     pushHistory();
   };
 
-  // Save Progress to localStorage
+  // Save Progress to localStorage — same two-layer snapshot as undo/redo, so
+  // line-art drawn with the Line/Freehand Path tools survives a save/reload
+  // instead of only the color layer being remembered.
   const handleSaveProgress = () => {
+    const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
-    if (!colorCanvas) return;
-    const data = colorCanvas.toDataURL();
+    if (!lineCanvas || !colorCanvas) return;
+    const data = JSON.stringify({ line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() });
     localStorage.setItem(`kdpage_coloring_progress_${activePreset.id}`, data);
     showToast("Coloring progress saved locally! 💾");
   };
@@ -652,7 +675,29 @@ export default function ColoringBookClient() {
       alert("No saved progress found for this template.");
       return;
     }
-    loadSnapshot(saved);
+    // Saves made before line-art tracking was added stored a bare color-layer
+    // data URL string rather than JSON -- fall back to loading just that.
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed.line === "string" && typeof parsed.color === "string") {
+        loadSnapshot(parsed);
+      } else {
+        throw new Error("unrecognized saved-progress shape");
+      }
+    } catch {
+      const colorCanvas = colorCanvasRef.current;
+      const colorCtx = colorCanvas?.getContext("2d");
+      if (colorCanvas && colorCtx) {
+        const token = ++snapshotLoadTokenRef.current;
+        const img = new window.Image();
+        img.onload = () => {
+          if (snapshotLoadTokenRef.current !== token) return;
+          colorCtx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+          colorCtx.drawImage(img, 0, 0);
+        };
+        img.src = saved;
+      }
+    }
     showToast("Coloring progress loaded! 📂");
   };
 

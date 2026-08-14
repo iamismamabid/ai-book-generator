@@ -1,7 +1,6 @@
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
-import Header from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
+import LayoutShell from '@/app/components/LayoutShell';
 import CustomCursor from '@/app/components/CustomCursor';
 import GeminiScreenGlow from '@/app/components/GeminiScreenGlow';
 import "./globals.css";
@@ -104,16 +103,11 @@ export default function RootLayout({
           <ThemeProvider>
             <CustomCursor />
             <GeminiScreenGlow />
-            {/* Professional Floating Navbar */}
-            <Header />
-
-            {/* Main Content Area */}
-            <div className="pt-[116px] min-h-[calc(100vh-116px)] flex flex-col justify-between">
-              <main className="flex-grow">
-                {children}
-              </main>
-              <Footer />
-            </div>
+            
+            {/* App Layout Shell */}
+            <LayoutShell>
+              {children}
+            </LayoutShell>
 
             {/* JSON-LD Structured Data */}
             <script

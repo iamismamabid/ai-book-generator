@@ -237,20 +237,20 @@ export default function MasterStudioApp() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pt-28 sm:pt-32 p-2 sm:p-4 md:p-8 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 p-2 sm:p-4 md:p-5 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-x-hidden relative">
       
       {/* 🌌 Background ambient gradient blobs */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       {/* APP HEADER */}
-      <header className="mb-4 sm:mb-8 flex flex-col sm:flex-row justify-between items-center max-w-[1600px] mx-auto w-full gap-4 sm:gap-6 relative z-10">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-500/20">
-            <Sparkles className="w-6 h-6" />
-          </div>
+      <header className="mb-3 sm:mb-4 flex flex-col sm:flex-row justify-between items-center max-w-[1700px] mx-auto w-full gap-3 sm:gap-6 relative z-10">
+        <div className="flex items-center gap-3">
+          <Link href="/" title="Back to KDPage Home" className="w-10 h-10 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-indigo-500/20 hover:scale-105 transition-transform">
+            <Sparkles className="w-5 h-5" />
+          </Link>
           <div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-600 dark:from-white dark:via-slate-200 dark:to-indigo-400">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-600 dark:from-white dark:via-slate-200 dark:to-indigo-400">
               KDPage Creator Studio
             </h1>
             <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold uppercase tracking-widest">
@@ -285,7 +285,7 @@ export default function MasterStudioApp() {
         <div className="flex bg-slate-200/60 dark:bg-slate-900/60 p-1.5 rounded-full shadow-inner border border-slate-300/30 dark:border-slate-800/30 backdrop-blur-md relative">
           <button
             onClick={() => handleTabChange('interior')}
-            className={`relative px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
+            className={`relative px-6 py-2 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
               activeTab === 'interior' ? 'text-slate-950 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -301,7 +301,7 @@ export default function MasterStudioApp() {
           
           <button
             onClick={() => handleTabChange('cover')}
-            className={`relative px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
+            className={`relative px-6 py-2 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-300 flex items-center gap-2 z-10 ${
               activeTab === 'cover' ? 'text-slate-950 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -317,7 +317,7 @@ export default function MasterStudioApp() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1600px] w-full mx-auto relative z-10">
+      <main className="flex-1 max-w-[1700px] w-full mx-auto relative z-10 flex flex-col min-h-0">
         <AnimatePresence mode="wait">
           {activeTab === 'interior' ? (
             <motion.div
@@ -345,7 +345,7 @@ export default function MasterStudioApp() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.25 }}
-              className="flex h-[calc(100vh-140px)] rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden bg-white dark:bg-slate-900 transition-colors duration-300"
+              className="flex flex-1 min-h-[calc(100vh-95px)] rounded-3xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden bg-white dark:bg-slate-900 transition-colors duration-300"
               style={{ boxShadow: "var(--shadow-soft-lg)" }}
             >
               {premiumStatus.checked && premiumStatus.plan === "free" ? (

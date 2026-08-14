@@ -147,6 +147,40 @@ function convertImageToLineArt(img: HTMLImageElement, width: number, height: num
   return outImage;
 }
 
+// Custom-photo line art (customLineArt) lives only as an in-memory ImageData,
+// so autosave/progress-save previously only captured its *rendered pixels*
+// via the canvas snapshot -- not the source data itself. That meant a reload
+// looked correct at first glance, but the moment any pattern-affecting
+// setting changed afterward (complexity, frame style, line width, the
+// scale/position sliders), drawPattern() regenerated from a null
+// customLineArt and silently replaced the photo with the generic preset
+// pattern. These two helpers let that state round-trip through
+// localStorage/JSON alongside the canvas snapshot.
+function imageDataToDataUrl(data: ImageData): string {
+  const canvas = document.createElement("canvas");
+  canvas.width = data.width;
+  canvas.height = data.height;
+  canvas.getContext("2d")?.putImageData(data, 0, 0);
+  return canvas.toDataURL();
+}
+
+function dataUrlToImageData(dataUrl: string): Promise<ImageData> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("no 2d context")); return; }
+      ctx.drawImage(img, 0, 0);
+      resolve(ctx.getImageData(0, 0, img.width, img.height));
+    };
+    img.onerror = () => reject(new Error("failed to load custom line art image"));
+    img.src = dataUrl;
+  });
+}
+
 // Vector Shape Path Generator for Stamp Tool
 function drawShapePath(ctx: CanvasRenderingContext2D, shape: string, cx: number, cy: number, size: number) {
   const r = size / 2;
@@ -460,6 +494,7 @@ export default function ColoringBookClient() {
   const lineStartRef = useRef<{ x: number; y: number } | null>(null);
   const snapshotLoadTokenRef = useRef(0);
   const pushHistoryTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const restoredCustomArtForPresetRef = useRef<string | null>(null);
 
   // Blank Page Creator Action
   const handleCreateBlankPage = () => {
@@ -553,6 +588,38 @@ export default function ColoringBookClient() {
     setHistory({ stack: [{ line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() }], index: 0 });
   }, [drawPattern, activePreset.id]);
 
+  // Restores customLineArt (the uploaded-photo state, not just its rendered
+  // pixels) from the same autosave/progress entry the effect above already
+  // reads. Deliberately a separate effect keyed only on activePreset.id, not
+  // on drawPattern -- drawPattern itself depends on customLineArt, so doing
+  // this restore inside that effect would change drawPattern's identity,
+  // re-trigger that same effect, and loop. The ref guard runs this at most
+  // once per preset per mount.
+  useEffect(() => {
+    if (restoredCustomArtForPresetRef.current === activePreset.id) return;
+    restoredCustomArtForPresetRef.current = activePreset.id;
+    try {
+      const autosave = localStorage.getItem(`kdpage_coloring_autosave_${activePreset.id}`) || localStorage.getItem(`kdpage_coloring_progress_${activePreset.id}`);
+      if (!autosave) return;
+      const parsed = JSON.parse(autosave);
+      if (typeof parsed?.customLineArtDataUrl !== "string") return;
+      dataUrlToImageData(parsed.customLineArtDataUrl)
+        .then((imgData) => {
+          setCustomLineArt(imgData);
+          if (typeof parsed.customImageName === "string") setCustomImageName(parsed.customImageName);
+          if (typeof parsed.lineArtScale === "number") setLineArtScale(parsed.lineArtScale);
+          if (typeof parsed.lineArtOffsetX === "number") setLineArtOffsetX(parsed.lineArtOffsetX);
+          if (typeof parsed.lineArtOffsetY === "number") setLineArtOffsetY(parsed.lineArtOffsetY);
+        })
+        .catch(() => {
+          // Corrupt/unsupported saved image -- keep whatever drawPattern()
+          // already rendered rather than leaving the canvas half-restored.
+        });
+    } catch {
+      // ignore
+    }
+  }, [activePreset.id]);
+
   // Custom File Upload Handler
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -597,12 +664,20 @@ export default function ColoringBookClient() {
         return { stack: next, index: next.length - 1 };
       });
       try {
-        localStorage.setItem(`kdpage_coloring_autosave_${activePreset.id}`, JSON.stringify(snapshot));
+        const autosavePayload: Record<string, unknown> = { ...snapshot };
+        if (customLineArt) {
+          autosavePayload.customLineArtDataUrl = imageDataToDataUrl(customLineArt);
+          autosavePayload.customImageName = customImageName;
+          autosavePayload.lineArtScale = lineArtScale;
+          autosavePayload.lineArtOffsetX = lineArtOffsetX;
+          autosavePayload.lineArtOffsetY = lineArtOffsetY;
+        }
+        localStorage.setItem(`kdpage_coloring_autosave_${activePreset.id}`, JSON.stringify(autosavePayload));
       } catch {
         // ignore
       }
     }, 15);
-  }, [activePreset.id]);
+  }, [activePreset.id, customLineArt, customImageName, lineArtScale, lineArtOffsetX, lineArtOffsetY]);
 
   const loadSnapshot = (snapshot: { line: string; color: string }) => {
     const lineCanvas = canvasRef.current;
@@ -758,8 +833,15 @@ export default function ColoringBookClient() {
     const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
     if (!lineCanvas || !colorCanvas) return;
-    const data = JSON.stringify({ line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() });
-    localStorage.setItem(`kdpage_coloring_progress_${activePreset.id}`, data);
+    const payload: Record<string, unknown> = { line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() };
+    if (customLineArt) {
+      payload.customLineArtDataUrl = imageDataToDataUrl(customLineArt);
+      payload.customImageName = customImageName;
+      payload.lineArtScale = lineArtScale;
+      payload.lineArtOffsetX = lineArtOffsetX;
+      payload.lineArtOffsetY = lineArtOffsetY;
+    }
+    localStorage.setItem(`kdpage_coloring_progress_${activePreset.id}`, JSON.stringify(payload));
     showToast("Coloring progress saved locally! 💾");
   };
 
@@ -776,6 +858,17 @@ export default function ColoringBookClient() {
       const parsed = JSON.parse(saved);
       if (parsed && typeof parsed.line === "string" && typeof parsed.color === "string") {
         loadSnapshot(parsed);
+        if (typeof parsed.customLineArtDataUrl === "string") {
+          dataUrlToImageData(parsed.customLineArtDataUrl)
+            .then((imgData) => {
+              setCustomLineArt(imgData);
+              if (typeof parsed.customImageName === "string") setCustomImageName(parsed.customImageName);
+              if (typeof parsed.lineArtScale === "number") setLineArtScale(parsed.lineArtScale);
+              if (typeof parsed.lineArtOffsetX === "number") setLineArtOffsetX(parsed.lineArtOffsetX);
+              if (typeof parsed.lineArtOffsetY === "number") setLineArtOffsetY(parsed.lineArtOffsetY);
+            })
+            .catch(() => {});
+        }
       } else {
         throw new Error("unrecognized saved-progress shape");
       }

@@ -343,9 +343,10 @@ export default function ColoringBookClient() {
   // undo/redo steps.
   const [history, setHistory] = useState<{ stack: { line: string; color: string }[]; index: number }>({ stack: [], index: -1 });
 
-  // Text Tool State
+  // Text Tool State (Dedicated independent text color & styling)
   const [textInput, setTextInput] = useState<string>("My Coloring Book");
   const [textSize, setTextSize] = useState<number>(36);
+  const [textColor, setTextColor] = useState<string>("#0F172A");
   const [fontFamily, setFontFamily] = useState<"sans-serif" | "serif" | "cursive">("sans-serif");
   const [textStyleMode, setTextStyleMode] = useState<"solidOutline" | "solid" | "outline">("solidOutline");
 
@@ -670,6 +671,8 @@ export default function ColoringBookClient() {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
+    const effectiveTextColor = textColor || (isMidnightMode ? "#FFFFFF" : "#0F172A");
+
     if (textStyleMode === "outline") {
       // Hollow colorable line-art text
       ctx.strokeStyle = isMidnightMode ? "#FFFFFF" : "#0F172A";
@@ -683,11 +686,11 @@ export default function ColoringBookClient() {
       ctx.lineWidth = Math.max(4, Math.round(textSize / 7));
       ctx.lineJoin = "round";
       ctx.strokeText(textInput, x, y);
-      ctx.fillStyle = brushColor;
+      ctx.fillStyle = effectiveTextColor;
       ctx.fillText(textInput, x, y);
     } else {
       // Solid filled text on top layer
-      ctx.fillStyle = brushColor;
+      ctx.fillStyle = effectiveTextColor;
       ctx.fillText(textInput, x, y);
     }
 
@@ -1875,6 +1878,33 @@ export default function ColoringBookClient() {
                         className="w-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1 text-xs font-bold text-center"
                       />
                     </div>
+
+                    {/* Text Color Controls */}
+                    <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1">
+                      <span className="text-[10px] font-black uppercase text-slate-400">Text Color</span>
+                      <div className="flex items-center gap-1">
+                        {["#0F172A", "#FFFFFF", "#E11D48", "#2563EB", "#D97706", "#16A34A", "#7C3AED"].map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setTextColor(c)}
+                            style={{ backgroundColor: c }}
+                            className={`w-4 h-4 rounded-full border transition cursor-pointer hover:scale-110 ${
+                              textColor === c ? "ring-2 ring-indigo-600 scale-110 border-white" : "border-slate-300 dark:border-slate-700"
+                            }`}
+                            title={c === "#0F172A" ? "Default Crisp Black (#0F172A)" : c}
+                          />
+                        ))}
+                        <input
+                          type="color"
+                          value={textColor}
+                          onChange={(e) => setTextColor(e.target.value)}
+                          className="w-4 h-4 rounded cursor-pointer border-0 bg-transparent p-0"
+                          title="Custom Text Hex Color"
+                        />
+                      </div>
+                    </div>
+
                     <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900 text-[11px] font-bold">
                       <button
                         type="button"

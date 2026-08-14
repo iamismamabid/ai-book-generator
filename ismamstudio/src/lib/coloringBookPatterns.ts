@@ -144,6 +144,9 @@ export interface ColoringPatternOptions {
   // canvas to layer this output over a separate user-paintable layer; every
   // existing caller omits this and keeps the normal opaque page.
   transparentBg?: boolean;
+  lineArtScale?: number;
+  lineArtOffsetX?: number;
+  lineArtOffsetY?: number;
 }
 
 // ── Single Object Clip-Art ─────────────────────────────────────────────────
@@ -1835,7 +1838,19 @@ function drawObjectLabel(ctx: CanvasRenderingContext2D, text: string, cx: number
  * implementation instead of three copies that could drift out of sync.
  */
 export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number, height: number, opts: ColoringPatternOptions) {
-  const { presetId, complexity, lineWidth, isColorByNumber, isMidnightMode, frameStyle, seed, transparentBg } = opts;
+  const {
+    presetId,
+    complexity,
+    lineWidth,
+    isColorByNumber,
+    isMidnightMode,
+    frameStyle,
+    seed,
+    transparentBg,
+    lineArtScale = 1.0,
+    lineArtOffsetX = 0,
+    lineArtOffsetY = 0,
+  } = opts;
   const cx = width / 2;
   const cy = height / 2;
 
@@ -1892,6 +1907,14 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
     return;
   }
 
+  // Apply Subject / Line Art Scaling and Positioning Transform
+  ctx.save();
+  if (lineArtScale !== 1.0 || lineArtOffsetX !== 0 || lineArtOffsetY !== 0) {
+    ctx.translate(cx + lineArtOffsetX, cy + lineArtOffsetY);
+    ctx.scale(lineArtScale, lineArtScale);
+    ctx.translate(-cx, -cy);
+  }
+
   // Single Object Clip-Art presets bypass the abstract pattern generator
   // entirely: one bold centered subject + a big outlined title label, no
   // color-by-number numbering (these are traditional single-page coloring
@@ -1904,6 +1927,7 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
     ctx.strokeStyle = strokeColor;
     OBJECT_DRAWERS[presetId](ctx, objCx, objCy, objSize);
     drawObjectLabel(ctx, OBJECT_LABELS[presetId] || presetId, objCx, margin + innerH * 0.82, innerW, strokeColor, lineWidth);
+    ctx.restore();
     return;
   }
 
@@ -2126,6 +2150,9 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
       }
     }
   }
+
+  // Restore the subject scale transform
+  ctx.restore();
 
   // 2. Render Color-by-Number Legend Bar (Top / Bottom)
   if (isColorByNumber) {

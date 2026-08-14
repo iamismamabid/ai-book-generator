@@ -313,6 +313,9 @@ export default function ColoringBookClient() {
   const [useBleed, setUseBleed] = useState(false);
   const [lineWidth, setLineWidth] = useState<number>(3);
   const [complexity, setComplexity] = useState<number>(12);
+  const [lineArtScale, setLineArtScale] = useState<number>(1.0);
+  const [lineArtOffsetX, setLineArtOffsetX] = useState<number>(0);
+  const [lineArtOffsetY, setLineArtOffsetY] = useState<number>(0);
   const [isColorByNumber, setIsColorByNumber] = useState<boolean>(true);
   const [isMidnightMode, setIsMidnightMode] = useState<boolean>(false);
   const [frameStyle, setFrameStyle] = useState<"ornamental" | "circle" | "minimal" | "none">("ornamental");
@@ -488,13 +491,25 @@ export default function ColoringBookClient() {
     if (!ctx) return;
 
     if (customLineArt) {
-      // Paint uploaded custom line art
+      // Paint uploaded custom line art with scaling & positioning
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (!isColoringMode) {
         ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
-      ctx.putImageData(customLineArt, 0, 0);
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = customLineArt.width;
+      tempCanvas.height = customLineArt.height;
+      tempCanvas.getContext("2d")?.putImageData(customLineArt, 0, 0);
+
+      ctx.save();
+      const scale = lineArtScale || 1.0;
+      const dw = canvas.width * scale;
+      const dh = canvas.height * scale;
+      const dx = (canvas.width - dw) / 2 + lineArtOffsetX;
+      const dy = (canvas.height - dh) / 2 + lineArtOffsetY;
+      ctx.drawImage(tempCanvas, dx, dy, dw, dh);
+      ctx.restore();
     } else {
       drawColoringPattern(ctx, canvas.width, canvas.height, {
         presetId: activePreset.id,
@@ -505,9 +520,12 @@ export default function ColoringBookClient() {
         frameStyle,
         seed,
         transparentBg: isColoringMode,
+        lineArtScale,
+        lineArtOffsetX,
+        lineArtOffsetY,
       });
     }
-  }, [activePreset, complexity, frameStyle, isColorByNumber, isMidnightMode, lineWidth, seed, isColoringMode, customLineArt]);
+  }, [activePreset, complexity, frameStyle, isColorByNumber, isMidnightMode, lineWidth, seed, isColoringMode, customLineArt, lineArtScale, lineArtOffsetX, lineArtOffsetY]);
 
   useEffect(() => {
     drawPattern();
@@ -1211,7 +1229,19 @@ export default function ColoringBookClient() {
         if (pageCtx) {
           if (customLineArt) {
             pageCtx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
-            pageCtx.putImageData(customLineArt, 0, 0);
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = customLineArt.width;
+            tempCanvas.height = customLineArt.height;
+            tempCanvas.getContext("2d")?.putImageData(customLineArt, 0, 0);
+
+            pageCtx.save();
+            const scale = lineArtScale || 1.0;
+            const dw = pageCanvas.width * scale;
+            const dh = pageCanvas.height * scale;
+            const dx = (pageCanvas.width - dw) / 2 + lineArtOffsetX;
+            const dy = (pageCanvas.height - dh) / 2 + lineArtOffsetY;
+            pageCtx.drawImage(tempCanvas, dx, dy, dw, dh);
+            pageCtx.restore();
           } else {
             drawColoringPattern(pageCtx, pageCanvas.width, pageCanvas.height, {
               presetId: activePreset.id,
@@ -1221,6 +1251,9 @@ export default function ColoringBookClient() {
               isMidnightMode,
               frameStyle,
               seed: seed + p * 137,
+              lineArtScale,
+              lineArtOffsetX,
+              lineArtOffsetY,
             });
           }
           const imgData = pageCanvas.toDataURL("image/png", 1.0);
@@ -1468,6 +1501,56 @@ export default function ColoringBookClient() {
                   onChange={(e) => setComplexity(Number(e.target.value))}
                   className="w-full accent-indigo-600 cursor-pointer"
                 />
+              </div>
+
+              {/* Line Art Size / Scale */}
+              <div>
+                <div className="flex justify-between text-xs font-bold mb-1.5">
+                  <span className="flex items-center gap-1">
+                    <Maximize2 className="w-3.5 h-3.5 text-indigo-500" /> Line Art Subject Size
+                  </span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-mono font-bold">{Math.round(lineArtScale * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="50"
+                  max="160"
+                  value={Math.round(lineArtScale * 100)}
+                  onChange={(e) => setLineArtScale(Number(e.target.value) / 100)}
+                  className="w-full accent-indigo-600 cursor-pointer"
+                />
+                <div className="flex items-center justify-between gap-1 mt-1.5">
+                  <div className="flex items-center gap-1">
+                    {[
+                      { label: "75%", val: 0.75 },
+                      { label: "100%", val: 1.0 },
+                      { label: "125%", val: 1.25 },
+                      { label: "150%", val: 1.5 },
+                    ].map((s) => (
+                      <button
+                        key={s.val}
+                        type="button"
+                        onClick={() => setLineArtScale(s.val)}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${
+                          lineArtScale === s.val
+                            ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                            : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100"
+                        }`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                  {(lineArtScale !== 1.0 || lineArtOffsetX !== 0 || lineArtOffsetY !== 0) && (
+                    <button
+                      type="button"
+                      onClick={() => { setLineArtScale(1.0); setLineArtOffsetX(0); setLineArtOffsetY(0); }}
+                      className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Frame Style & Page Mode */}
@@ -1786,6 +1869,81 @@ export default function ColoringBookClient() {
                       <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">B</kbd> Brush Tool</div>
                       <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">E</kbd> Eraser Tool</div>
                       <div><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-amber-400 font-mono font-bold">G</kbd> Fill Bucket</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pointer / Line Art Scale & Transform Options Panel */}
+                {activeTool === "select" && (
+                  <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50 flex flex-wrap items-center justify-between gap-2 animate-in fade-in duration-150">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[11px] font-black uppercase text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
+                        <MousePointer2 className="w-3.5 h-3.5 text-emerald-600" /> Line Art Scale / Size:
+                      </span>
+                      <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900 text-[11px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setLineArtScale(0.75)}
+                          className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                            lineArtScale === 0.75 ? "bg-emerald-600 text-white shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          Small (75%)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLineArtScale(1.0)}
+                          className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                            lineArtScale === 1.0 ? "bg-emerald-600 text-white shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          Standard (100%)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLineArtScale(1.25)}
+                          className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                            lineArtScale === 1.25 ? "bg-emerald-600 text-white shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          Large (125%)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLineArtScale(1.5)}
+                          className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                            lineArtScale === 1.5 ? "bg-emerald-600 text-white shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
+                        >
+                          X-Large (150%)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Scale</span>
+                        <input
+                          type="range"
+                          min="50"
+                          max="160"
+                          value={Math.round(lineArtScale * 100)}
+                          onChange={(e) => setLineArtScale(Number(e.target.value) / 100)}
+                          className="w-20 accent-emerald-600 cursor-pointer"
+                        />
+                        <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          {Math.round(lineArtScale * 100)}%
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => { setLineArtScale(1.0); setLineArtOffsetX(0); setLineArtOffsetY(0); }}
+                        className="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-[10px] font-bold rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+                        title="Reset Line Art Scale & Position"
+                      >
+                        ↺ Reset
+                      </button>
                     </div>
                   </div>
                 )}

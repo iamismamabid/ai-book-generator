@@ -347,6 +347,7 @@ export default function ColoringBookClient() {
   const [textInput, setTextInput] = useState<string>("My Coloring Book");
   const [textSize, setTextSize] = useState<number>(36);
   const [fontFamily, setFontFamily] = useState<"sans-serif" | "serif" | "cursive">("sans-serif");
+  const [textStyleMode, setTextStyleMode] = useState<"solidOutline" | "solid" | "outline">("solidOutline");
 
   // Shape Stamp Tool State (11 Pro Vector Shapes)
   const [selectedShape, setSelectedShape] = useState<"circle" | "rectangle" | "star" | "heart" | "flower" | "diamond" | "hexagon" | "moon" | "cloud" | "sun" | "teardrop">("circle");
@@ -653,24 +654,43 @@ export default function ColoringBookClient() {
     }
   };
 
-  // Text Tool Execution
+  // Text Tool Execution (Renders directly on top canvas layer so colors cannot overlap)
   const drawTextAt = (x: number, y: number) => {
     if (!textInput.trim()) return;
-    const colorCanvas = colorCanvasRef.current;
-    const ctx = colorCanvas?.getContext("2d");
-    if (!colorCanvas || !ctx) return;
+    const lineCanvas = canvasRef.current;
+    const ctx = lineCanvas?.getContext("2d");
+    if (!lineCanvas || !ctx) return;
 
     ctx.save();
-    ctx.globalCompositeOperation = "source-over";
     ctx.font = `bold ${textSize}px ${fontFamily}`;
-    ctx.fillStyle = brushColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(textInput, x, y);
+
+    if (textStyleMode === "outline") {
+      // Hollow colorable line-art text
+      ctx.strokeStyle = isMidnightMode ? "#FFFFFF" : "#0F172A";
+      ctx.lineWidth = Math.max(2, Math.round(textSize / 14));
+      ctx.lineJoin = "round";
+      ctx.strokeText(textInput, x, y);
+    } else if (textStyleMode === "solidOutline") {
+      // Crisp filled text with high-contrast protective border so colors underneath never obscure text
+      const outlineColor = isMidnightMode ? "#0F172A" : "#FFFFFF";
+      ctx.strokeStyle = outlineColor;
+      ctx.lineWidth = Math.max(4, Math.round(textSize / 7));
+      ctx.lineJoin = "round";
+      ctx.strokeText(textInput, x, y);
+      ctx.fillStyle = brushColor;
+      ctx.fillText(textInput, x, y);
+    } else {
+      // Solid filled text on top layer
+      ctx.fillStyle = brushColor;
+      ctx.fillText(textInput, x, y);
+    }
+
     ctx.restore();
 
     pushHistory();
-    showToast(`Added text "${textInput}" to page!`);
+    showToast(`Added text "${textInput}" on top of canvas!`);
   };
 
   // Shape Stamp Placement Execution
@@ -1781,7 +1801,7 @@ export default function ColoringBookClient() {
                       value={textInput}
                       onChange={(e) => setTextInput(e.target.value)}
                       placeholder="Type text to place on canvas..."
-                      className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold"
+                      className="flex-1 min-w-[140px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold"
                     />
                     <select
                       value={fontFamily}
@@ -1802,6 +1822,38 @@ export default function ColoringBookClient() {
                         onChange={(e) => setTextSize(Number(e.target.value))}
                         className="w-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1 text-xs font-bold text-center"
                       />
+                    </div>
+                    <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900 text-[11px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setTextStyleMode("solidOutline")}
+                        className={`px-2 py-0.5 rounded-md transition cursor-pointer ${
+                          textStyleMode === "solidOutline" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                        }`}
+                        title="Solid Color with Crisp Outline (Protected against background overlap)"
+                      >
+                        ✨ Pop / Outline
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTextStyleMode("solid")}
+                        className={`px-2 py-0.5 rounded-md transition cursor-pointer ${
+                          textStyleMode === "solid" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                        }`}
+                        title="Solid Fill Text"
+                      >
+                        🎨 Solid Fill
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTextStyleMode("outline")}
+                        className={`px-2 py-0.5 rounded-md transition cursor-pointer ${
+                          textStyleMode === "outline" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                        }`}
+                        title="Hollow Line-Art Letters (Colorable)"
+                      >
+                        ✏️ Hollow Outline
+                      </button>
                     </div>
                   </div>
                 )}

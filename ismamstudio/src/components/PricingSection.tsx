@@ -279,6 +279,7 @@ function PricingSectionInner() {
       icon: <HelpCircle className="w-6 h-6 text-sky-500" />,
       accentIconBg: "bg-sky-500/10 border-sky-500/20",
       accentBadge: "text-sky-600 bg-sky-500/10 border-sky-500/20",
+      badge: "Free Plan",
       ctaLink: "/sign-up",
       planKey: "free"
     },
@@ -310,6 +311,7 @@ function PricingSectionInner() {
       icon: <Star className="w-6 h-6 text-indigo-500" />,
       accentIconBg: "bg-indigo-500/10 border-indigo-500/20",
       accentBadge: "text-indigo-600 bg-indigo-500/10 border-indigo-500/20",
+      badge: "Solo Creator",
       ctaLink: "/sign-up?plan=starter",
       planKey: "starter"
     },
@@ -343,6 +345,7 @@ function PricingSectionInner() {
       icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
       accentIconBg: "bg-amber-500/10 border-amber-500/20",
       accentBadge: "text-amber-700 bg-amber-500/10 border-amber-500/20",
+      badge: "Growing Studio",
       ctaLink: "/sign-up?plan=pro",
       planKey: "pro"
     },
@@ -375,6 +378,7 @@ function PricingSectionInner() {
       icon: <Award className="w-6 h-6 text-emerald-500" />,
       accentIconBg: "bg-emerald-500/10 border-emerald-500/20",
       accentBadge: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20",
+      badge: "Teams & Agencies",
       ctaLink: "/sign-up?plan=agency",
       planKey: "agency"
     },
@@ -457,7 +461,7 @@ function PricingSectionInner() {
               {plan.icon}
             </div>
             <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${plan.accentBadge}`}>
-              {isLtd ? "Lifetime Deal" : "KDP Tier"}
+              {isLtd ? "Lifetime Deal" : plan.badge}
             </span>
           </div>
 

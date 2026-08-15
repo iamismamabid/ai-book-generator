@@ -297,6 +297,7 @@ function PricingSectionInner() {
         "Watermark-free vector PDF exports",
         "Up to 3 brand & pen-name profiles",
         "Standard trim sizes (6\"x9\", 8.5\"x11\")",
+        "Cover & Interior Canvas Studio",
         "Easy & Medium Sudoku & Word Search",
         "Square mazes, Kakuros & Cryptograms",
         "25 Vector Line Art Credits / mo",
@@ -748,6 +749,10 @@ function PricingSectionInner() {
               free: "Basic (8.5×11)", starter: "Standard sizes", pro: "All sizes + Custom", agency: "All + Custom + SVGs",
             },
             {
+              label: "Cover & Interior Canvas Studio",
+              free: false, starter: true, pro: true, agency: true,
+            },
+            {
               label: "Sudoku Puzzle Difficulty",
               free: "Easy Only", starter: "Easy & Medium", pro: "All (Easy, Med, Hard)", agency: "All + Custom",
             },
@@ -775,8 +780,8 @@ function PricingSectionInner() {
               label: "Customer Support",
               free: "Community", starter: "Email (48h)", pro: "Priority (< 12h)", agency: "Dedicated manager",
             },
-          ].map((row, i) => {
-            const isLast = i === 9;
+          ].map((row, i, arr) => {
+            const isLast = i === arr.length - 1;
             const rowBg = i % 2 === 0 ? "bg-slate-900" : "bg-slate-950/60";
 
             const renderCell = (val: boolean | string, tierColor: string) => {
@@ -873,7 +878,7 @@ export default function PricingSection() {
 function PricingSkeleton() {
   const staticPlans = [
     { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 Chapter Outline / mo", "Access to free tools & KDP guides"] },
-    { name: "Starter Creator", price: "$11.99", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
+    { name: "Starter Creator", price: "$11.99", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Cover & Interior Canvas Studio", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
     { name: "Pro Studio", price: "$21", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Up to 10 Brand & pen-name profiles", "Full Sudoku Engine (Easy, Med, Hard)", "Shaped Labyrinth Generator (Circle, Heart)", "Word Search, Cryptogram & Scramble Studio", "30 AI Book Chapters & 15 Outlines / mo", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
     { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "KDP Niche Hunter & Keyword Spy", "Bulk batch generation & CSV import", "Dedicated customer support manager"] },
   ];

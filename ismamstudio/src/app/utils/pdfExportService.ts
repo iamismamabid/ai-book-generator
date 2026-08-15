@@ -2034,7 +2034,7 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
         if (isSolution) {
           doc.setFont("Helvetica", "bold");
           doc.setFontSize(11);
-          doc.setTextColor(79, 70, 229);
+          doc.setTextColor(15, 23, 42);
           doc.text(originalChar, curX + charBoxW / 2, curY + charBoxH - 0.08, { align: "center" });
         }
 
@@ -2061,7 +2061,7 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
     const keyStartY = pageHeight - marginB - 1.2;
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(9);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(15, 23, 42);
     doc.text("SUBSTITUTION KEY:", marginL + 0.2, keyStartY);
 
     doc.setFont("Courier", "bold");
@@ -2555,16 +2555,15 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
   const safeH = pageHeight - topReserved - margin;
   const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
 
-  // Scale type size to how much room each solution actually gets: a lone
-  // cryptogram on a full-page zone should read like a poster, not be stuck
-  // at the same small size used when 4 share a page. cipherMax/cipherMin
-  // bound the font-fit step below (the alphabet key is always the same 61
-  // fixed characters, so its size is solved for rather than guessed).
+  // Scale type size to a premium, balanced book typography hierarchy.
+  // Instead of an oversized poster font (26pt), we use clean, highly legible
+  // publishing sizes (13pt for single solution, 10.5pt for 2-pack, 8.5pt for 4-pack)
+  // rendered in crisp black (15, 23, 42) for KDP print quality.
   const sizeTier = group.length <= 1
-    ? { title: 18, sentence: 26, lineStep: 0.46, cipherGap: 0.5, cipherMax: 14, cipherMin: 7 }
+    ? { title: 15, sentence: 13, lineStep: 0.28, cipherGap: 0.35, cipherMax: 10, cipherMin: 7 }
     : group.length === 2
-    ? { title: 14, sentence: 16, lineStep: 0.32, cipherGap: 0.36, cipherMax: 11, cipherMin: 6 }
-    : { title: 10, sentence: 9, lineStep: 0.22, cipherGap: 0.25, cipherMax: 8, cipherMin: 5 };
+    ? { title: 13, sentence: 10.5, lineStep: 0.24, cipherGap: 0.28, cipherMax: 9, cipherMin: 6 }
+    : { title: 10, sentence: 8.5, lineStep: 0.19, cipherGap: 0.20, cipherMax: 7.5, cipherMin: 5 };
 
   group.forEach((entry, i) => {
     const zone = zones[i];
@@ -2572,23 +2571,16 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     const data = entry.cryptogramData;
     const innerW = zone.w - 0.3;
 
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.title); doc.setTextColor(0);
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.title); doc.setTextColor(15, 23, 42);
     const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
-    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.3, { align: "center" });
-    const titleSpace = 0.32 + (sizeTier.title - 10) * 0.02;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.25, { align: "center" });
+    const titleSpace = 0.30 + (sizeTier.title - 10) * 0.015;
 
-    // Decoded sentence: splitTextToSize does the safe, tested wrapping (the
-    // same call the standalone Cryptogram Studio answer key uses) instead of
-    // a hand-rolled word-wrap loop.
+    // Decoded sentence: splitTextToSize does the safe, tested wrapping
     doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.sentence);
     const sentenceLines: string[] = doc.splitTextToSize(data.original || "", innerW);
 
-    // Cipher key as two aligned monospace rows ("Original: A B C ..." /
-    // "Cipher:   X Y Z ...") -- same layout as the standalone Cryptogram
-    // Studio answer key, and it sidesteps the per-token wrap entirely since
-    // both rows are always the same fixed 61-character length. Solve for the
-    // largest font size (within this tier's bounds) that actually fits the
-    // zone width rather than guessing a size and hoping it's small enough.
+    // Cipher key as two aligned monospace rows ("Original: A B C ..." / "Cipher:   X Y Z ...")
     const alphaStr = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z";
     const origLine = `Original: ${alphaStr}`;
     const cipherLine = `Cipher:   ${alphaStr.split(" ").map((l: string) => data.cipherMap?.[l] || "_").join(" ")}`;
@@ -2603,7 +2595,7 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     const availableHeight = zone.h - titleSpace;
     const contentStartY = zone.y + titleSpace + Math.max(0, (availableHeight - contentHeight) / 2);
 
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.sentence); doc.setTextColor(79, 70, 229);
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.sentence); doc.setTextColor(15, 23, 42);
     let sy = contentStartY + sizeTier.lineStep;
     sentenceLines.forEach((line: string) => {
       doc.text(line, zone.x + 0.15, sy);
@@ -2611,10 +2603,10 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     });
 
     if (data.cipherMap) {
-      doc.setFont("Courier", "bold"); doc.setFontSize(cipherFont); doc.setTextColor(51, 65, 85);
+      doc.setFont("Courier", "bold"); doc.setFontSize(cipherFont); doc.setTextColor(30, 41, 59);
       const keyY = sy - sizeTier.lineStep + sizeTier.cipherGap + cipherLineHeight;
       doc.text(origLine, zone.x + 0.15, keyY);
-      doc.setTextColor(100, 116, 139);
+      doc.setTextColor(71, 85, 105);
       doc.text(cipherLine, zone.x + 0.15, keyY + cipherLineHeight);
     }
   });

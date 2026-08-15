@@ -425,7 +425,7 @@ export default function CryptogramGenerator() {
         // A. Print Cipher Key alphabet mapping
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(79, 70, 229);
+        doc.setTextColor(15, 23, 42);
         doc.text("SUBSTITUTION KEY:", marginL, marginT + 1.0);
 
         doc.setFont("courier", "bold");
@@ -448,7 +448,7 @@ export default function CryptogramGenerator() {
         // B. Print Decrypted Solutions List
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(79, 70, 229);
+        doc.setTextColor(15, 23, 42);
         doc.text("DECRYPTED PUZZLES:", marginL, marginT + 1.95);
 
         let ansY = marginT + 2.25;

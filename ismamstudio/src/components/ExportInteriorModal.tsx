@@ -28,7 +28,7 @@ export interface TrimSizeOption<T extends string> {
 const DEFAULT_TRIM_OPTIONS: TrimSizeOption<"6x9" | "8.5x11" | "5x8">[] = [
   { value: "8.5x11", label: '8.5″ × 11″ (Large Print / Puzzle Book)', tier: "free" },
   { value: "6x9", label: '6″ × 9″ (Novel / Workbook)', tier: "starter" },
-  { value: "5x8", label: '5″ × 8″ (Pocket Book)', tier: "pro" },
+  { value: "5x8", label: '5″ × 8″ (Pocket Book)', tier: "starter" },
 ];
 
 const TIER_RANK = { free: 0, starter: 1, pro: 2 } as const;

@@ -296,11 +296,12 @@ function PricingSectionInner() {
         "7-Day Free Trial (Cancel Anytime)",
         "Full Commercial Rights (Keep 100% royalties)",
         "Watermark-free vector PDF exports",
-        "Up to 3 brand & pen-name profiles",
-        "Standard trim sizes (6\"x9\", 8.5\"x11\")",
+        "Full Access to All Studios & Generators (Within Limits)",
+        "Word Search, Sudoku, Mazes & Crosswords (Up to 20/book)",
         "Cover & Interior Canvas Studio",
-        "Easy & Medium Sudoku & Word Search",
-        "Square mazes, Kakuros & Cryptograms",
+        "KDP Bulk Book Batch Studio (Up to 5 books / batch)",
+        "All Standard Trim Sizes (6x9, 8.5x11, 5x8, etc.)",
+        "Up to 3 brand & pen-name profiles",
         "25 Vector Line Art Credits / mo",
         "Generate up to 5 Chapters / mo",
         "Email support (24-48h response)",
@@ -750,7 +751,7 @@ function PricingSectionInner() {
             },
             {
               label: "Trim Size Adjustments",
-              free: "Basic (8.5×11)", starter: "Standard sizes", pro: "All sizes + Custom", agency: "All + Custom + SVGs",
+              free: "Basic (8.5×11)", starter: "All Standard Sizes", pro: "All sizes + Custom", agency: "All + Custom + SVGs",
             },
             {
               label: "Cover & Interior Canvas Studio",
@@ -758,19 +759,23 @@ function PricingSectionInner() {
             },
             {
               label: "Sudoku Puzzle Difficulty",
-              free: "Easy Only", starter: "Easy & Medium", pro: "All (Easy, Med, Hard)", agency: "All + Custom",
+              free: "Easy Only", starter: "All (Up to 20/book)", pro: "All (Up to 50/book)", agency: "All (Up to 500/book)",
             },
             {
               label: "Maze Layout Shapes",
-              free: "Square Only", starter: "Square Only", pro: "Square, Circle, Heart", agency: "All + Custom masking",
+              free: "Square Only", starter: "Square, Circle, Heart (Up to 20)", pro: "All Shapes (Up to 50)", agency: "All + Custom masking (500)",
             },
             {
               label: "Word Search / Cryptogram / Scramble",
-              free: "Basic only", starter: "Std. grids", pro: "Full Studio", agency: "Full Studio",
+              free: false, starter: "Full Studio (Up to 20)", pro: "Full Studio (Up to 50)", agency: "Full Studio (Up to 500)",
             },
             {
               label: "Math Puzzles & Kakuro",
-              free: false, starter: "Easy & Medium", pro: "Full Studio", agency: "Full Studio + SVGs",
+              free: false, starter: "Full Studio (Up to 25)", pro: "Full Studio (Up to 50)", agency: "Full Studio + SVGs",
+            },
+            {
+              label: "Bulk Book Batch Studio",
+              free: false, starter: "Up to 5 books / batch", pro: "Up to 15 books / batch", agency: "Up to 50 books / batch",
             },
             {
               label: "Pen-names / Brands",

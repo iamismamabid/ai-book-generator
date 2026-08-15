@@ -201,7 +201,7 @@ export async function checkPremiumStatus() {
 
     if (redemptionsCount > 0) {
       let plan = "starter";
-      let limits = { tier: 1, brands: 3, puzzles: ["easy", "medium"], maxBookCount: 20 };
+      let limits = { tier: 1, brands: 3, puzzles: ["easy", "medium", "hard"], maxBookCount: 20 };
 
       if (redemptionsCount === 2) {
         plan = "pro";
@@ -229,7 +229,7 @@ export async function checkPremiumStatus() {
         let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
 
         if (userPlan === "starter") {
-          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium"], maxBookCount: 20 };
+          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 20 };
         } else if (userPlan === "agency") {
           limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
         }

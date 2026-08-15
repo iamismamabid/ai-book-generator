@@ -90,6 +90,11 @@ export default function BulkGeneratorClient() {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
+    if (items.length >= maxBatch) {
+      alert(`Batch limit reached (${maxBatch} books per batch on ${premiumStatus.plan === "starter" ? "Starter" : "your"} plan). Upgrade to Pro for 15+ batch processing.`);
+      return;
+    }
+
     const newItem: BatchItem = {
       id: Math.random().toString(36).substring(2, 9),
       title: newTitle.trim(),
@@ -123,6 +128,10 @@ export default function BulkGeneratorClient() {
     const startIdx = lines[0].toLowerCase().includes("title") ? 1 : 0;
 
     for (let i = startIdx; i < lines.length; i++) {
+      if (items.length + parsedItems.length >= maxBatch) {
+        logMessage(`Batch cap reached (${maxBatch} max items). Additional rows skipped.`);
+        break;
+      }
       const line = lines[i].trim();
       if (!line) continue;
 
@@ -159,7 +168,7 @@ export default function BulkGeneratorClient() {
 
     if (parsedItems.length > 0) {
       setItems([...items, ...parsedItems]);
-      logMessage(`Imported ${parsedItems.length} books from CSV`);
+      logMessage(`Imported ${parsedItems.length} books from CSV (Max: ${maxBatch})`);
       setCsvText("");
     } else {
       alert("Invalid CSV format! Please verify headings or columns.");
@@ -369,7 +378,9 @@ export default function BulkGeneratorClient() {
     logMessage("Batch queue execution completed.");
   };
 
-  if (premiumStatus.checked && (premiumStatus.plan === "free" || premiumStatus.plan === "starter")) {
+  const maxBatch = premiumStatus.plan === "starter" ? 5 : premiumStatus.plan === "pro" ? 15 : 50;
+
+  if (premiumStatus.checked && (!premiumStatus.isPremium || premiumStatus.plan === "free")) {
     return (
       <div className="min-h-screen bg-[#0b0f19] text-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
         <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
@@ -384,18 +395,18 @@ export default function BulkGeneratorClient() {
               KDP Bulk Book Batch Studio is Locked
             </h2>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-              Multi-book batch generation and CSV configuration imports are premium features available on our **Pro Studio** and **Publisher Agency** plans.
+              Multi-book batch generation and CSV configuration imports are available starting on our **Starter Creator** plan (up to 5 books / batch) and **Pro Studio** (up to 15 books / batch).
             </p>
           </div>
 
           <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-900/40 text-left space-y-2 text-[11px] font-bold text-slate-300">
             <div className="flex items-center gap-2 text-indigo-400 text-[10px] uppercase tracking-wider mb-1">
-              <Sparkles className="w-3.5 h-3.5" /> Pro Plan Benefits:
+              <Sparkles className="w-3.5 h-3.5" /> Plan Benefits:
             </div>
-            <p>✓ Batch compile dozens of puzzle book interiors</p>
+            <p>✓ Starter: Batch compile up to 5 puzzle book interiors</p>
+            <p>✓ Pro: High-capacity 15+ book batch queues</p>
             <p>✓ Import manuscript configurations via CSV</p>
             <p>✓ Watermark-free, 300 DPI vector PDF exports</p>
-            <p>✓ Sequenced background builder & ZIP download list</p>
           </div>
 
           <div className="flex flex-col gap-2 pt-2">
@@ -403,7 +414,7 @@ export default function BulkGeneratorClient() {
               href="/pricing"
               className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs rounded-xl shadow-lg transition-all"
             >
-              Upgrade to Pro Studio
+              Upgrade to Starter or Pro
             </Link>
             <button 
               onClick={() => router.push("/")}

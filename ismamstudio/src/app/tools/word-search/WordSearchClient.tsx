@@ -501,7 +501,7 @@ export default function WordSearchStudio() {
         );
     }
 
-    if (premiumStatus.checked && (premiumStatus.plan === "free" || premiumStatus.plan === "starter")) {
+    if (premiumStatus.checked && (!premiumStatus.isPremium || premiumStatus.plan === "free")) {
         return (
             <div className="min-h-screen bg-[#0b0f19] text-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
                 {/* Glow element */}
@@ -517,18 +517,18 @@ export default function WordSearchStudio() {
                             Word Search Studio is Locked
                         </h2>
                         <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-                            Full Word Search board compiling and custom CSV list imports are premium features available on our **Pro Studio** and **Publisher Agency** plans.
+                            Full Word Search board compiling and custom CSV list imports are available starting on our **Starter Creator** plan (up to 20 puzzles) and **Pro Studio** (up to 50 puzzles).
                         </p>
                     </div>
 
                     <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-900/40 text-left space-y-2 text-[11px] font-bold text-slate-300">
                         <div className="flex items-center gap-2 text-indigo-400 text-[10px] uppercase tracking-wider mb-1">
-                            <Sparkles className="w-3.5 h-3.5" /> Pro Plan Benefits:
+                            <Sparkles className="w-3.5 h-3.5" /> Plan Benefits:
                         </div>
-                        <p>✓ High-capacity Word Search collections</p>
+                        <p>✓ Starter: Up to 20 custom Word Search puzzles / book</p>
+                        <p>✓ Pro: High-capacity 50+ puzzle collections</p>
                         <p>✓ Watermark-free, print-ready PDF compile</p>
                         <p>✓ Bulk CSV upload to instantly build boards</p>
-                        <p>✓ Access to Cover Studio & Interior Canvas Builder</p>
                     </div>
 
                     <div className="flex flex-col gap-2 pt-2">
@@ -536,7 +536,7 @@ export default function WordSearchStudio() {
                             href="/pricing"
                             className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs rounded-xl shadow-lg transition-all"
                         >
-                            Upgrade to Pro Studio
+                            Upgrade to Starter or Pro
                         </Link>
                         <button 
                             onClick={() => router.push("/")}
@@ -549,6 +549,8 @@ export default function WordSearchStudio() {
             </div>
         );
     }
+
+    const maxWordSearchPuzzles = premiumStatus.plan === "starter" ? 20 : premiumStatus.plan === "pro" ? 50 : 500;
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0b0f19] p-4 md:p-8 font-sans text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
@@ -596,7 +598,22 @@ export default function WordSearchStudio() {
                                     <h3 className="font-bold text-xs text-indigo-600 uppercase">Layout & Pages</h3>
                                     <div><label className="text-xs font-semibold text-slate-600">Trim Size</label><select value={`${trimSize.w}x${trimSize.h}`} onChange={(e) => setTrimSize(TRIM_SIZES.find(t => `${t.w}x${t.h}` === e.target.value) || TRIM_SIZES[0])} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs">{TRIM_SIZES.map(t => <option key={t.label} value={`${t.w}x${t.h}`}>{t.label}</option>)}</select></div>
                                     <div className="grid grid-cols-2 gap-2">
-                                        <div><label className="text-xs font-semibold text-slate-600">Total Puzzles</label><input type="number" value={totalPuzzles} onChange={(e) => setTotalPuzzles(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs" /></div>
+                                        <div>
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-xs font-semibold text-slate-600">Total Puzzles</label>
+                                                <span className="text-[9px] font-bold text-indigo-500">
+                                                    (Max {maxWordSearchPuzzles})
+                                                </span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max={maxWordSearchPuzzles}
+                                                value={totalPuzzles}
+                                                onChange={(e) => setTotalPuzzles(Math.min(maxWordSearchPuzzles, Math.max(1, Number(e.target.value))))}
+                                                className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"
+                                            />
+                                        </div>
                                         <div><label className="text-xs font-semibold text-slate-600">Words/Puzzle</label><input type="number" value={wordsPerPage} onChange={(e) => setWordsPerPage(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs" /></div>
                                         <div><label className="text-xs font-semibold text-slate-600">Puzzles/Page</label><select value={puzzlesPerPage} onChange={(e) => setPuzzlesPerPage(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"><option value={1}>1</option><option value={2}>2</option><option value={4}>4</option></select></div>
                                         <div><label className="text-xs font-semibold text-slate-600">Puzzle Align</label><select value={puzzleAlign} onChange={(e) => setPuzzleAlign(e.target.value as any)} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>

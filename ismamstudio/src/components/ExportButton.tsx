@@ -39,9 +39,9 @@ const TRIM_SIZE_OPTIONS: TrimSizeOption<ManuscriptTrimSize>[] = [
   { value: "8.5x11", label: '8.5″ × 11″ (Large Print)', tier: "free" },
   { value: "6x9", label: '6″ × 9″ (Standard Novel)', tier: "starter" },
   { value: "5.5x8.5", label: '5.5″ × 8.5″ (Compact Novel)', tier: "starter" },
-  { value: "5x8", label: '5″ × 8″ (Pocket Book)', tier: "pro" },
-  { value: "8.25x6", label: '8.25″ × 6″ (Landscape)', tier: "pro" },
-  { value: "8.5x8.5", label: '8.5″ × 8.5″ (Square)', tier: "pro" },
+  { value: "5x8", label: '5″ × 8″ (Pocket Book)', tier: "starter" },
+  { value: "8.25x6", label: '8.25″ × 6″ (Landscape)', tier: "starter" },
+  { value: "8.5x8.5", label: '8.5″ × 8.5″ (Square)', tier: "starter" },
 ];
 
 // KDP's required inside (gutter) margin grows with total interior page count.

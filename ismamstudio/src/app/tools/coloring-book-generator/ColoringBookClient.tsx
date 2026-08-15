@@ -369,7 +369,7 @@ export default function ColoringBookClient() {
   // Interactive "Preview Coloring" canvas state
   const [isColoringMode, setIsColoringMode] = useState(true);
   const [activeTool, setActiveTool] = useState<"select" | "brush" | "eraser" | "fill" | "eyedropper" | "text" | "shape" | "line" | "freehandLine">("brush");
-  const [eraserTarget, setEraserTarget] = useState<"color" | "lines" | "all">("color");
+  const [eraserTarget, setEraserTarget] = useState<"color" | "lines" | "all">("all");
   const [brushColor, setBrushColor] = useState<string>(EXTENDED_PALETTE[0]);
   const [brushSize, setBrushSize] = useState<number>(18);
   // Each history entry snapshots BOTH canvas layers. Undo/redo used to only

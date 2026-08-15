@@ -17,38 +17,74 @@ const REVIEWS: ReviewItem[] = [
   {
     id: "rev-1",
     rating: 5,
+    title: "As a KDP website i think it can bring a lot of opportunities",
+    comment: "As a KDP website i think it can bring a lot of opportunities. So many awesome tools in a all in one studio.",
+    author: "Meher Nayeem",
+    date: "Aug 12, 2026",
+    useCase: "Verified Trustpilot Review",
+  },
+  {
+    id: "rev-2",
+    rating: 5,
+    title: "Smooth and satisfying",
+    comment: "The whole experience feel really well and smooth enough. Also the page itself is very responsive and user friendly. Definitely a must-try!",
+    author: "Ajmain Rahman Ifti",
+    date: "Aug 11, 2026",
+    useCase: "Verified Trustpilot Review",
+  },
+  {
+    id: "rev-3",
+    rating: 5,
+    title: "Hmm it is good initiative kdp tool",
+    comment: "Hmm it is good initiative kdp tool. Constantly improving and adding value for KDP creators.",
+    author: "Saqib",
+    date: "Aug 11, 2026",
+    useCase: "Verified Trustpilot Review",
+  },
+  {
+    id: "rev-4",
+    rating: 4,
+    title: "Pretty good website for amazon KDP creators",
+    comment: "Pretty good website for amazon KDP creators.",
+    author: "Taspia",
+    date: "Aug 5, 2026",
+    useCase: "Verified Trustpilot Review",
+  },
+  {
+    id: "rev-5",
+    rating: 5,
     title: "All in one KDP creation service",
     comment: "I would like to create KDP tools with this website because it provides me all in one service.",
     author: "Tofajjal Hossain Emon",
     date: "Aug 3, 2026",
-    useCase: "KDPage Customer",
+    useCase: "Verified Trustpilot Review",
   },
   {
-    id: "rev-2",
+    id: "rev-6",
     rating: 5,
     title: "One of the best tools for KDP puzzles",
     comment: "In the field of KDP puzzle, it is one of the best tools.",
     author: "Tarequl Islam Mahin",
     date: "Aug 2, 2026",
-    useCase: "KDPage Customer",
+    useCase: "Verified Trustpilot Review",
   },
   {
-    id: "rev-3",
+    id: "rev-7",
     rating: 5,
     title: "Very impressive website",
     comment: "It is really a very impressive website. Well done and keep it up.",
     author: "Imad Surjo",
     date: "Aug 2, 2026",
-    useCase: "KDPage Customer",
+    useCase: "Verified Trustpilot Review",
   },
   {
-    id: "rev-4",
+    id: "rev-8",
     rating: 5,
     title: "Good website for KDP automation",
     comment: "Useful platform for creating activity books, puzzle interiors, and print-ready covers efficiently.",
     author: "Sedi Moulay",
     date: "Aug 1, 2026",
-    useCase: "KDPage Customer",
+    useCase: "Verified Trustpilot Review",
   },
 ];
 
@@ -117,11 +153,14 @@ export default function UserReviewsSection() {
 
               {/* Reviewer Meta */}
               {rev.author && (
-                <div className="pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-500 font-semibold">
-                  <span>{rev.author}</span>
+                <div className="pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-500 font-semibold gap-2">
+                  <div className="flex flex-col">
+                    <span className="text-slate-900 font-bold">{rev.author}</span>
+                    {rev.date && <span className="text-[10px] text-slate-400 font-medium">{rev.date}</span>}
+                  </div>
                   {rev.useCase && (
-                    <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
-                      {rev.useCase}
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md shrink-0">
+                      ★ {rev.useCase}
                     </span>
                   )}
                 </div>

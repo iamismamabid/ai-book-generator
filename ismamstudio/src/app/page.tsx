@@ -86,7 +86,7 @@ export default function HomePage() {
                 <span className="text-slate-500 font-black uppercase tracking-wider text-[10px]">Quick Jump:</span>
                 <Link href="/pricing" className="hover:text-indigo-600 hover:underline transition-colors">Pricing Plans</Link>
                 <span>•</span>
-                <a href="#tools" className="hover:text-indigo-600 hover:underline transition-colors">Puzzle Engines</a>
+                <a href="#features" className="hover:text-indigo-600 hover:underline transition-colors">Features &amp; Engines</a>
                 <span>•</span>
                 <a href="#reviews" className="hover:text-indigo-600 hover:underline transition-colors">User Reviews</a>
                 <span>•</span>
@@ -168,7 +168,7 @@ export default function HomePage() {
       </section>
 
       {/* Core Studio Showcase Grid */}
-      <section id="tools" className="relative z-10 max-w-7xl mx-auto px-6 py-24">
+      <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
         <div className="text-center mb-16 space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-black uppercase tracking-wider">
             <Compass className="w-4 h-4 text-indigo-600" />
@@ -222,7 +222,7 @@ export default function HomePage() {
       </section>
 
       {/* Free Tools Spotlight Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-200">
+      <section id="tools" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-200 scroll-mt-20">
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-black uppercase tracking-wider mb-3">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> 30+ Tools — No Signup Required

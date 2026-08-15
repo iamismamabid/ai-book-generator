@@ -11,6 +11,8 @@ export interface ReviewItem {
   date?: string;
   author?: string;
   useCase?: string;
+  avatar?: string; // Image path (e.g. "/reviews/ajmain.jpg") or external URL
+  avatarBg?: string; // Fallback background color class for initial avatars
 }
 
 const REVIEWS: ReviewItem[] = [
@@ -22,6 +24,7 @@ const REVIEWS: ReviewItem[] = [
     author: "Meher Nayeem",
     date: "Aug 12, 2026",
     useCase: "Verified Trustpilot Review",
+    avatarBg: "bg-purple-600",
   },
   {
     id: "rev-2",
@@ -31,6 +34,7 @@ const REVIEWS: ReviewItem[] = [
     author: "Ajmain Rahman Ifti",
     date: "Aug 11, 2026",
     useCase: "Verified Trustpilot Review",
+    avatarBg: "bg-slate-700",
   },
   {
     id: "rev-3",
@@ -40,6 +44,7 @@ const REVIEWS: ReviewItem[] = [
     author: "Saqib",
     date: "Aug 11, 2026",
     useCase: "Verified Trustpilot Review",
+    avatarBg: "bg-pink-500",
   },
   {
     id: "rev-4",
@@ -49,6 +54,7 @@ const REVIEWS: ReviewItem[] = [
     author: "Taspia",
     date: "Aug 5, 2026",
     useCase: "Verified Trustpilot Review",
+    avatarBg: "bg-emerald-600",
   },
   {
     id: "rev-5",
@@ -58,6 +64,7 @@ const REVIEWS: ReviewItem[] = [
     author: "Tofajjal Hossain Emon",
     date: "Aug 3, 2026",
     useCase: "Verified Trustpilot Review",
+    avatarBg: "bg-blue-600",
   },
   {
     id: "rev-6",
@@ -67,6 +74,7 @@ const REVIEWS: ReviewItem[] = [
     author: "Tarequl Islam Mahin",
     date: "Aug 2, 2026",
     useCase: "Verified Trustpilot Review",
+    avatarBg: "bg-indigo-600",
   },
   {
     id: "rev-7",
@@ -76,6 +84,7 @@ const REVIEWS: ReviewItem[] = [
     author: "Imad Surjo",
     date: "Aug 2, 2026",
     useCase: "Verified Trustpilot Review",
+    avatarBg: "bg-amber-600",
   },
   {
     id: "rev-8",
@@ -85,8 +94,17 @@ const REVIEWS: ReviewItem[] = [
     author: "Sedi Moulay",
     date: "Aug 1, 2026",
     useCase: "Verified Trustpilot Review",
+    avatarBg: "bg-teal-600",
   },
 ];
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
 
 export default function UserReviewsSection() {
   return (
@@ -154,9 +172,26 @@ export default function UserReviewsSection() {
               {/* Reviewer Meta */}
               {rev.author && (
                 <div className="pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-500 font-semibold gap-2">
-                  <div className="flex flex-col">
-                    <span className="text-slate-900 font-bold">{rev.author}</span>
-                    {rev.date && <span className="text-[10px] text-slate-400 font-medium">{rev.date}</span>}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {rev.avatar ? (
+                      <img
+                        src={rev.avatar}
+                        alt={rev.author}
+                        className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0"
+                      />
+                    ) : (
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black uppercase shrink-0 shadow-xs ${
+                          rev.avatarBg || "bg-indigo-600"
+                        }`}
+                      >
+                        {getInitials(rev.author)}
+                      </div>
+                    )}
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-slate-900 font-bold truncate">{rev.author}</span>
+                      {rev.date && <span className="text-[10px] text-slate-400 font-medium">{rev.date}</span>}
+                    </div>
                   </div>
                   {rev.useCase && (
                     <span className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md shrink-0">

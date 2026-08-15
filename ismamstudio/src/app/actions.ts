@@ -494,6 +494,50 @@ export async function loadCoverProject() {
   }
 }
 
+// One row per (user, preset) -- a signed-in user has independent Coloring
+// Book progress per template, unlike the single CoverProject per user above.
+// Mirrors the same "localStorage as instant cache, cloud as durable copy"
+// split: this replaces nothing client-side, it just gives signed-in users a
+// copy that survives a cleared cache or a different device/browser.
+export async function saveColoringProject(presetId: string, data: unknown) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "unauthorized" };
+  }
+  if (!presetId) {
+    return { success: false, error: "missing presetId" };
+  }
+
+  try {
+    await prisma.coloringProject.upsert({
+      where: { userId_presetId: { userId, presetId } },
+      update: { data: data as any },
+      create: { userId, presetId, data: data as any },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving coloring project:", error);
+    return { success: false, error: "Failed to save coloring project" };
+  }
+}
+
+export async function loadColoringProject(presetId: string) {
+  const { userId } = await auth();
+  if (!userId || !presetId) {
+    return { success: false, data: null };
+  }
+
+  try {
+    const project = await prisma.coloringProject.findUnique({
+      where: { userId_presetId: { userId, presetId } },
+    });
+    return { success: true, data: project?.data ?? null, updatedAt: project?.updatedAt ?? null };
+  } catch (error) {
+    console.error("Error loading coloring project:", error);
+    return { success: false, data: null };
+  }
+}
+
 // ---- Cover review links (read-only sharing) ----
 
 const MAX_PREVIEW_BYTES = 4_000_000; // ~4MB of base64; well past a 1x JPEG preview

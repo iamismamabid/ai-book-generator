@@ -54,13 +54,16 @@ import {
   Keyboard,
   Minus,
   Pencil,
-  FilePlus
+  FilePlus,
+  CloudOff,
+  Loader2
 } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { PRESETS, PresetItem, drawColoringPattern } from "@/lib/coloringBookPatterns";
-import { checkPremiumStatus } from "@/app/actions";
+import { checkPremiumStatus, saveColoringProject, loadColoringProject } from "@/app/actions";
 
 // Matches drawWatermark's look in pdfExportService.ts (used by every other
 // tool's PDF export) so free-tier output is consistently branded across the
@@ -339,6 +342,7 @@ const TRIM_SIZES: {
 ];
 
 export default function ColoringBookClient() {
+  const { isSignedIn } = useAuth();
   // Config state
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [activePreset, setActivePreset] = useState<PresetItem>(() => {
@@ -365,6 +369,11 @@ export default function ColoringBookClient() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
+
+  // Cloud sync (per-preset progress) -- localStorage stays the instant local
+  // cache, this is the durable copy for signed-in users, mirroring how Cover
+  // Studio splits kdp-cover-draft (local) from saveCoverProject (cloud).
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   // Interactive "Preview Coloring" canvas state
   const [isColoringMode, setIsColoringMode] = useState(true);
@@ -496,6 +505,8 @@ export default function ColoringBookClient() {
   const snapshotLoadTokenRef = useRef(0);
   const pushHistoryTimerRef = useRef<NodeJS.Timeout | null>(null);
   const restoredCustomArtForPresetRef = useRef<string | null>(null);
+  const cloudLoadedForPresetRef = useRef<string | null>(null);
+  const cloudSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Blank Page Creator Action
   const handleCreateBlankPage = () => {
@@ -621,6 +632,39 @@ export default function ColoringBookClient() {
     }
   }, [activePreset.id]);
 
+  // Cloud load for signed-in users -- runs after the localStorage-based
+  // restore effects above, so a cloud copy (the durable one, survives a
+  // cleared cache or a different device) wins over whatever was in this
+  // browser's localStorage. Guarded per-preset like the effect above, but
+  // deliberately doesn't mark the ref done while signed out, so it retries
+  // once the user actually signs in rather than getting stuck skipped.
+  useEffect(() => {
+    if (!isSignedIn) return;
+    if (cloudLoadedForPresetRef.current === activePreset.id) return;
+    cloudLoadedForPresetRef.current = activePreset.id;
+
+    (async () => {
+      try {
+        const res = await loadColoringProject(activePreset.id);
+        if (!res.success || !res.data) return;
+        const parsed = res.data as any;
+        if (typeof parsed.line !== "string" || typeof parsed.color !== "string") return;
+        loadSnapshot(parsed);
+        setHistory({ stack: [parsed], index: 0 });
+        if (typeof parsed.customLineArtDataUrl === "string") {
+          const imgData = await dataUrlToImageData(parsed.customLineArtDataUrl);
+          setCustomLineArt(imgData);
+          if (typeof parsed.customImageName === "string") setCustomImageName(parsed.customImageName);
+          if (typeof parsed.lineArtScale === "number") setLineArtScale(parsed.lineArtScale);
+          if (typeof parsed.lineArtOffsetX === "number") setLineArtOffsetX(parsed.lineArtOffsetX);
+          if (typeof parsed.lineArtOffsetY === "number") setLineArtOffsetY(parsed.lineArtOffsetY);
+        }
+      } catch (err) {
+        console.error("Failed to load cloud coloring project:", err);
+      }
+    })();
+  }, [isSignedIn, activePreset.id]);
+
   // Custom File Upload Handler
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -674,11 +718,30 @@ export default function ColoringBookClient() {
           autosavePayload.lineArtOffsetY = lineArtOffsetY;
         }
         localStorage.setItem(`kdpage_coloring_autosave_${activePreset.id}`, JSON.stringify(autosavePayload));
+
+        // Debounced separately (and longer) than the localStorage write above
+        // -- that one stays fast so undo/redo and reload-recovery don't lag,
+        // this one waits for a pause so a flurry of strokes doesn't fire a
+        // network request per stroke.
+        if (isSignedIn) {
+          if (cloudSaveTimerRef.current) clearTimeout(cloudSaveTimerRef.current);
+          setCloudSyncStatus("saving");
+          const presetIdForSave = activePreset.id;
+          cloudSaveTimerRef.current = setTimeout(async () => {
+            try {
+              const res = await saveColoringProject(presetIdForSave, autosavePayload);
+              setCloudSyncStatus(res.success ? "saved" : "error");
+            } catch (err) {
+              console.error("Failed to save coloring project to cloud:", err);
+              setCloudSyncStatus("error");
+            }
+          }, 1500);
+        }
       } catch {
         // ignore
       }
     }, 15);
-  }, [activePreset.id, customLineArt, customImageName, lineArtScale, lineArtOffsetX, lineArtOffsetY]);
+  }, [activePreset.id, customLineArt, customImageName, lineArtScale, lineArtOffsetX, lineArtOffsetY, isSignedIn]);
 
   const loadSnapshot = (snapshot: { line: string; color: string }) => {
     const lineCanvas = canvasRef.current;
@@ -867,7 +930,15 @@ export default function ColoringBookClient() {
       payload.lineArtOffsetY = lineArtOffsetY;
     }
     localStorage.setItem(`kdpage_coloring_progress_${activePreset.id}`, JSON.stringify(payload));
-    showToast("Coloring progress saved locally! 💾");
+    if (isSignedIn) {
+      setCloudSyncStatus("saving");
+      saveColoringProject(activePreset.id, payload)
+        .then((res) => setCloudSyncStatus(res.success ? "saved" : "error"))
+        .catch(() => setCloudSyncStatus("error"));
+      showToast("Coloring progress saved locally & to your account! 💾");
+    } else {
+      showToast("Coloring progress saved locally! 💾");
+    }
   };
 
   // Load Progress from localStorage
@@ -1944,6 +2015,24 @@ export default function ColoringBookClient() {
                   </div>
 
                   <div className="flex items-center gap-1">
+                    {isSignedIn && cloudSyncStatus !== "idle" && (
+                      <span
+                        title={
+                          cloudSyncStatus === "saving" ? "Saving to your account..."
+                          : cloudSyncStatus === "error" ? "Cloud save failed -- your work is still safe in this browser"
+                          : cloudSyncStatus === "saved" ? "Saved to your account"
+                          : "Cloud sync"
+                        }
+                        className={`hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide ${
+                          cloudSyncStatus === "error" ? "text-rose-500" : cloudSyncStatus === "saving" ? "text-slate-400" : "text-emerald-500"
+                        }`}
+                      >
+                        {cloudSyncStatus === "saving" ? <Loader2 className="w-3 h-3 animate-spin" />
+                          : cloudSyncStatus === "error" ? <CloudOff className="w-3 h-3" />
+                          : <Cloud className="w-3 h-3" />}
+                        {cloudSyncStatus === "saving" ? "Saving" : cloudSyncStatus === "error" ? "Save Failed" : "Saved"}
+                      </span>
+                    )}
                     <button
                       onClick={() => setShowShortcutsModal(!showShortcutsModal)}
                       className={`p-2 rounded-lg transition cursor-pointer flex items-center gap-1 text-xs font-bold ${showShortcutsModal ? "bg-indigo-500 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"}`}

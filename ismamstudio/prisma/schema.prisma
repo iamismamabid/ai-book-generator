@@ -74,6 +74,24 @@ model CoverProject {
   @@map("cover_projects")
 }
 
+// Coloring Book Studio's cloud-synced progress, one row per (user, preset) --
+// unlike CoverProject (one project per user), a user has independent
+// progress per preset, mirroring the existing kdpage_coloring_autosave_
+// localStorage keys this replicates to the cloud. localStorage stays as the
+// instant local cache; this is the durable copy that survives a cleared
+// cache or a different device/browser.
+model ColoringProject {
+  id        String   @id @default(uuid())
+  userId    String
+  presetId  String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, presetId])
+  @@map("coloring_projects")
+}
+
 // A read-only review link for a cover design, shared with a client or
 // co-author who may not have an account. Stores a flattened preview image
 // rather than the editable design so the link can't be used to lift the

@@ -34,6 +34,7 @@ const REVIEWS: ReviewItem[] = [
     author: "Ajmain Rahman Ifti",
     date: "Aug 11, 2026",
     useCase: "Verified Trustpilot Review",
+    avatar: "/reviews/ajmain.png",
     avatarBg: "bg-slate-700",
   },
   {
@@ -64,6 +65,7 @@ const REVIEWS: ReviewItem[] = [
     author: "Tofajjal Hossain Emon",
     date: "Aug 3, 2026",
     useCase: "Verified Trustpilot Review",
+    avatar: "/reviews/tofajjal.png",
     avatarBg: "bg-blue-600",
   },
   {

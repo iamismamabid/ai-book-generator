@@ -48,7 +48,7 @@ export default function WordSearchStudio() {
     
     // 🚨 INTERIOR SETTINGS STATES 🚨
     const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
-    const [totalPuzzles, setTotalPuzzles] = useState(10); 
+    const [totalPuzzles, setTotalPuzzles] = useState(5); 
     const [gridSize, setGridSize] = useState(12);
     const [wordsPerPage, setWordsPerPage] = useState(15); 
     
@@ -279,6 +279,12 @@ export default function WordSearchStudio() {
         setPreviewGrid(grid); setCleanWordsList(cleanWords.map(cw => ({...cw, title: titleText}))); setAnswerMask(mask); setPreviewActive(active); setPreviewHiddenMessageCells(placedMessage?.cells || null); setShowAnswers(false);
     };
 
+    // Generate initial live preview immediately on mount
+    useEffect(() => {
+        handleGeneratePreview();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const handleGenerateInterior = async (options: {
         includeCover: boolean;
         coverState: any;
@@ -487,70 +493,11 @@ export default function WordSearchStudio() {
         setIsGenerating(false);
     };
 
-    // Before the premium check resolves, show a loading state rather than
-    // falling through to the full editor -- the actual export/watermark
-    // decision is already safe either way (handleGenerateInterior takes
-    // isPremium from ExportInteriorModal's own fresh check, not this local
-    // state), but a free user could otherwise see the unlocked editor UI
-    // flash briefly before the lock screen replaces it.
-    if (!premiumStatus.checked) {
-        return (
-            <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-            </div>
-        );
-    }
-
-    if (premiumStatus.checked && (!premiumStatus.isPremium || premiumStatus.plan === "free")) {
-        return (
-            <div className="min-h-screen bg-[#0b0f19] text-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-                {/* Glow element */}
-                <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-
-                <div className="max-w-md w-full bg-slate-900/60 border border-slate-900 p-8 rounded-[2.5rem] shadow-2xl relative z-10 space-y-6">
-                    <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto">
-                        <Lock className="w-8 h-8" />
-                    </div>
-
-                    <div className="space-y-2">
-                        <h2 className="text-2xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent uppercase tracking-tight">
-                            Word Search Studio is Locked
-                        </h2>
-                        <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-                            Full Word Search board compiling and custom CSV list imports are available starting on our **Starter Creator** plan (up to 20 puzzles) and **Pro Studio** (up to 50 puzzles).
-                        </p>
-                    </div>
-
-                    <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-900/40 text-left space-y-2 text-[11px] font-bold text-slate-300">
-                        <div className="flex items-center gap-2 text-indigo-400 text-[10px] uppercase tracking-wider mb-1">
-                            <Sparkles className="w-3.5 h-3.5" /> Plan Benefits:
-                        </div>
-                        <p>✓ Starter: Up to 20 custom Word Search puzzles / book</p>
-                        <p>✓ Pro: High-capacity 50+ puzzle collections</p>
-                        <p>✓ Watermark-free, print-ready PDF compile</p>
-                        <p>✓ Bulk CSV upload to instantly build boards</p>
-                    </div>
-
-                    <div className="flex flex-col gap-2 pt-2">
-                        <Link 
-                            href="/pricing"
-                            className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs rounded-xl shadow-lg transition-all"
-                        >
-                            Upgrade to Starter or Pro
-                        </Link>
-                        <button 
-                            onClick={() => router.push("/")}
-                            className="w-full py-4 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-900 font-black text-xs rounded-xl transition"
-                        >
-                            Back to Home
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const maxWordSearchPuzzles = premiumStatus.plan === "starter" ? 20 : premiumStatus.plan === "pro" ? 50 : 500;
+    const maxWordSearchPuzzles =
+        premiumStatus.plan === "free" ? 5 :
+        premiumStatus.plan === "starter" ? 20 :
+        premiumStatus.plan === "pro" ? 50 :
+        500;
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0b0f19] p-4 md:p-8 font-sans text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">

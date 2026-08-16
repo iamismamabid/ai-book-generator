@@ -9,6 +9,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from 'next/script';
 import type { Metadata } from 'next';
+import TawkToChat from '@/components/TawkToChat';
 
 // 🎨 গুগল ফন্ট লোড করা হচ্ছে
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap', adjustFontFallback: false });
@@ -66,6 +67,7 @@ export default function RootLayout({
       <html lang="en" className={`scroll-smooth ${inter.variable}`} suppressHydrationWarning>
         <head>
           {/* DNS Prefetch & Preconnect for zero-latency third-party network handshakes */}
+          <link rel="dns-prefetch" href="https://embed.tawk.to" />
           <link rel="dns-prefetch" href="https://app.arcade.software" />
           <link rel="dns-prefetch" href="https://widget.trustpilot.com" />
           <link rel="dns-prefetch" href="https://images.unsplash.com" />
@@ -245,6 +247,7 @@ export default function RootLayout({
 
           <SpeedInsights />
           <Analytics />
+          <TawkToChat />
           </ThemeProvider>
         </body>
       </html>

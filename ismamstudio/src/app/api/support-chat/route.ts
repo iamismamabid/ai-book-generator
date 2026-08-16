@@ -10,7 +10,7 @@ Your job is to assist Amazon KDP publishers, low-content creators, activity book
    KDPage is an all-in-one professional browser-based toolkit for creating puzzle books, activity books, low-content interiors, and print-ready KDP book covers without needing Photoshop, InDesign, or Illustrator.
 
 2. **Core Tools & Studios:**
-   - **Cover Studio (/studio or /cover):** Custom wrap-around KDP paperback and hardcover designer with live spine calculator, barcodes, layers, and 300 DPI export.
+   - **Cover Studio (/studio):** Custom wrap-around KDP paperback and hardcover designer with live spine calculator, barcodes, layers, and 300 DPI export.
    - **Sudoku Generator (/sudoku):** 9x9 grids (Easy, Medium, Hard) with verified unique single-solution mathematical algorithms and solution pages.
    - **Shape-Masked Maze Studio (/maze):** Generates mazes inside custom shapes (Circles, Hearts, Stars, Squares, Triangles) with solution keys.
    - **Word Search Studio (/tools/word-search):** Custom word lists, diagonal/reverse placements, auto-solution grids.
@@ -48,71 +48,102 @@ export async function POST(req: Request) {
       );
     }
 
-    const apiKey =
-      process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "Gemini API key is not configured" },
-        { status: 500 }
-      );
-    }
+    // ⚡ Priority 1: Groq LPU (Ultra-Fast 500 tokens/sec with Llama 3.3 70B)
+    if (groqKey) {
+      try {
+        const groqMessages = [
+          { role: "system", content: SYSTEM_INSTRUCTION },
+          ...messages.map((m: { role: string; content: string }) => ({
+            role: m.role === "assistant" ? "assistant" : "user",
+            content: m.content,
+          })),
+        ];
 
-    // Format messages for Google Gemini generateContent API
-    const contents = [
-      {
-        role: "user",
-        parts: [{ text: `System Instruction:\n${SYSTEM_INSTRUCTION}` }],
-      },
-      {
-        role: "model",
-        parts: [
+        const groqRes = await fetch(
+          "https://api.groq.com/openai/v1/chat/completions",
           {
-            text: "Understood! I am KDPage AI Assistant, ready to help users with Amazon KDP publishing, KDPage tools, and AppSumo redemption.",
-          },
-        ],
-      },
-      ...messages.map((m: { role: string; content: string }) => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
-      })),
-    ];
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${groqKey}`,
+            },
+            body: JSON.stringify({
+              model: "llama-3.3-70b-versatile",
+              messages: groqMessages,
+              temperature: 0.4,
+              max_tokens: 600,
+            }),
+          }
+        );
 
-    // Call Gemini 1.5 Flash (free tier & ultra fast)
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-    const res = await fetch(geminiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 800,
-        },
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Gemini API error:", errText);
-      return NextResponse.json(
-        {
-          error:
-            "AI Assistant is momentarily unavailable. Please try again or talk to our live support.",
-        },
-        { status: 502 }
-      );
+        if (groqRes.ok) {
+          const groqData = await groqRes.json();
+          const reply = groqData.choices?.[0]?.message?.content;
+          if (reply) {
+            return NextResponse.json({ reply, provider: "groq-llama-3.3-70b" });
+          }
+        } else {
+          console.warn("Groq API failed, falling back to secondary provider:", await groqRes.text());
+        }
+      } catch (groqErr) {
+        console.error("Groq invocation error, trying fallback:", groqErr);
+      }
     }
 
-    const data = await res.json();
-    const reply =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "I am here to help! Please ask any question regarding KDPage tools, KDP publishing, or AppSumo deals.";
+    // 🐢 Priority 2: Gemini Fallback
+    if (geminiKey) {
+      const contents = [
+        {
+          role: "user",
+          parts: [{ text: `System Instruction:\n${SYSTEM_INSTRUCTION}` }],
+        },
+        {
+          role: "model",
+          parts: [
+            {
+              text: "Understood! I am KDPage AI Assistant, ready to help users with Amazon KDP publishing, KDPage tools, and AppSumo redemption.",
+            },
+          ],
+        },
+        ...messages.map((m: { role: string; content: string }) => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: m.content }],
+        })),
+      ];
 
-    return NextResponse.json({ reply });
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+
+      const geminiRes = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents,
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 600,
+          },
+        }),
+      });
+
+      if (geminiRes.ok) {
+        const geminiData = await geminiRes.json();
+        const reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (reply) {
+          return NextResponse.json({ reply, provider: "gemini-1.5-flash" });
+        }
+      }
+    }
+
+    return NextResponse.json(
+      {
+        error:
+          "AI Assistant is momentarily unavailable. Please talk to our live support team via the chat widget below!",
+      },
+      { status: 502 }
+    );
   } catch (err: any) {
     console.error("Support chat handler error:", err);
     return NextResponse.json(

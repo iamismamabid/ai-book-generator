@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const SYSTEM_INSTRUCTION = `You are "KDPage AI Assistant", the official, friendly, and expert customer support assistant for KDPage (https://kdpage.com).
+const SYSTEM_INSTRUCTION = `You are "KDPage Virtual Assistant", the official, friendly, and expert customer support assistant for KDPage (https://kdpage.com).
 Your job is to assist Amazon KDP publishers, low-content creators, activity book authors, and AppSumo buyers.
 
 ## Key Knowledge & Facts:

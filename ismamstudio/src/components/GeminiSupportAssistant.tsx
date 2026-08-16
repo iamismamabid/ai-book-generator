@@ -72,8 +72,7 @@ export default function GeminiSupportAssistant() {
           { role: "assistant", content: data.reply },
         ]);
       } else {
-        setMessages((prev) => [
-          ...prev,
+        setMessages([
           {
             role: "assistant",
             content:
@@ -110,7 +109,7 @@ export default function GeminiSupportAssistant() {
       {
         role: "assistant",
         content:
-          "👋 Hi! I'm the **KDPage AI Assistant**. Ask me anything about KDP publishing, book cover dimensions, puzzle generation, or AppSumo lifetime deals!",
+          "👋 Hi! I'm the **KDPage Virtual Assistant**. Ask me anything about KDP publishing, book cover dimensions, puzzle generation, or AppSumo lifetime deals!",
       },
     ]);
   };
@@ -121,14 +120,14 @@ export default function GeminiSupportAssistant() {
       <div className="fixed bottom-24 right-5 z-40">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="group flex items-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-600 text-white px-3.5 py-2.5 rounded-full shadow-[0_8px_24px_rgba(79,70,229,0.35)] border border-indigo-400/30 transition-all duration-300 transform hover:scale-105 active:scale-95"
-          aria-label="Open AI Assistant"
+          className="group flex items-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-600 text-white px-4 py-2.5 rounded-full shadow-[0_8px_24px_rgba(79,70,229,0.35)] border border-indigo-400/30 transition-all duration-300 transform hover:scale-105 active:scale-95"
+          aria-label="Open Virtual Assistant"
         >
           <div className="relative">
             <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
           </div>
           <span className="text-xs font-black tracking-wide uppercase font-sans">
-            AI Help
+            Virtual Assistant
           </span>
           <span className="hidden group-hover:inline-block text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full font-bold">
             24/7
@@ -147,11 +146,11 @@ export default function GeminiSupportAssistant() {
               </div>
               <div>
                 <h3 className="text-sm font-black tracking-tight leading-tight flex items-center gap-1.5">
-                  KDPage AI Assistant
+                  KDPage Virtual Assistant
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                 </h3>
                 <p className="text-[10px] text-indigo-100 font-medium">
-                  Instant 24/7 KDP & AppSumo Support
+                  Instant 24/7 KDP & AppSumo Assistance
                 </p>
               </div>
             </div>

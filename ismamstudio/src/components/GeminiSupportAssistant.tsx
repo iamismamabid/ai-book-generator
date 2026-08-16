@@ -96,8 +96,13 @@ export default function GeminiSupportAssistant() {
   };
 
   const handleOpenTawk = () => {
-    if (typeof window !== "undefined" && (window as any).Tawk_API?.maximize) {
-      (window as any).Tawk_API.maximize();
+    if (typeof window !== "undefined" && (window as any).Tawk_API) {
+      if (typeof (window as any).Tawk_API.showWidget === "function") {
+        (window as any).Tawk_API.showWidget();
+      }
+      if (typeof (window as any).Tawk_API.maximize === "function") {
+        (window as any).Tawk_API.maximize();
+      }
       setIsOpen(false);
     } else {
       window.location.href = "mailto:help@kdpage.com";
@@ -116,11 +121,11 @@ export default function GeminiSupportAssistant() {
 
   return (
     <>
-      {/* Floating Trigger Button (Positioned above Tawk.to widget on bottom right) */}
-      <div className="fixed bottom-24 right-5 z-40">
+      {/* Single Unified Floating Trigger Button at bottom-right */}
+      <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="group flex items-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-600 text-white px-4 py-2.5 rounded-full shadow-[0_8px_24px_rgba(79,70,229,0.35)] border border-indigo-400/30 transition-all duration-300 transform hover:scale-105 active:scale-95"
+          className="group flex items-center gap-2.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-purple-600 text-white px-4 py-3 rounded-full shadow-[0_8px_30px_rgba(79,70,229,0.4)] border border-indigo-400/30 transition-all duration-300 transform hover:scale-105 active:scale-95"
           aria-label="Open Virtual Assistant"
         >
           <div className="relative">
@@ -137,7 +142,7 @@ export default function GeminiSupportAssistant() {
 
       {/* Chat Dialog Popover */}
       {isOpen && (
-        <div className="fixed bottom-24 right-5 w-[92vw] sm:w-[400px] h-[520px] max-h-[80vh] bg-white dark:bg-slate-900 rounded-3xl shadow-[0_20px_60px_rgba(15,23,42,0.3)] border border-slate-200 dark:border-slate-800 z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
+        <div className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 w-[92vw] sm:w-[400px] h-[520px] max-h-[80vh] bg-white dark:bg-slate-900 rounded-3xl shadow-[0_20px_60px_rgba(15,23,42,0.3)] border border-slate-200 dark:border-slate-800 z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 p-4 text-white flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-2.5">

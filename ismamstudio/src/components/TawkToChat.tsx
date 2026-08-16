@@ -28,6 +28,25 @@ export default function TawkToChat() {
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_LoadStart = new Date();
 
+    // Auto-hide the default standalone Tawk.to bubble so it integrates into Virtual Assistant
+    window.Tawk_API.onLoad = function () {
+      if (typeof window.Tawk_API.hideWidget === "function") {
+        window.Tawk_API.hideWidget();
+      }
+    };
+
+    window.Tawk_API.onChatMinimized = function () {
+      if (typeof window.Tawk_API.hideWidget === "function") {
+        window.Tawk_API.hideWidget();
+      }
+    };
+
+    window.Tawk_API.onChatHidden = function () {
+      if (typeof window.Tawk_API.hideWidget === "function") {
+        window.Tawk_API.hideWidget();
+      }
+    };
+
     // Prevent duplicate script injection
     const scriptId = "tawk-to-script";
     if (document.getElementById(scriptId)) return;
@@ -65,12 +84,6 @@ export default function TawkToChat() {
         window.Tawk_API.setAttributes(attributes, (error: any) => {
           if (error) console.error("Tawk.to setAttributes error:", error);
         });
-      } else {
-        window.Tawk_API.onLoad = function () {
-          window.Tawk_API.setAttributes(attributes, (error: any) => {
-            if (error) console.error("Tawk.to setAttributes error:", error);
-          });
-        };
       }
     }
   }, [isLoaded, user]);

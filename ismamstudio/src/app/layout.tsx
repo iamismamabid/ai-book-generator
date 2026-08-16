@@ -10,6 +10,7 @@ import { Analytics } from "@vercel/analytics/next";
 import Script from 'next/script';
 import type { Metadata } from 'next';
 import TawkToChat from '@/components/TawkToChat';
+import GeminiSupportAssistant from '@/components/GeminiSupportAssistant';
 
 // 🎨 গুগল ফন্ট লোড করা হচ্ছে
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap', adjustFontFallback: false });
@@ -247,6 +248,7 @@ export default function RootLayout({
 
           <SpeedInsights />
           <Analytics />
+          <GeminiSupportAssistant />
           <TawkToChat />
           </ThemeProvider>
         </body>

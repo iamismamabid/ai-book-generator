@@ -1,0 +1,33 @@
+# KDPage — All-in-One Amazon KDP Book Creation Toolkit
+
+> KDPage (https://www.kdpage.com) is an algorithmic cloud software suite engineered for Amazon KDP self-publishers, Etsy printable shop owners, educators, and indie authors. It generates mathematically unique puzzle books, shape-masked labyrinths, activity pages, and wrap-around paperback/hardcover covers with 300 DPI vector PDF print-ready exports.
+
+## Core Capabilities & Creation Studios
+
+- **Sudoku Studio** (https://www.kdpage.com/sudoku): Generates 9x9 Sudoku puzzles (Easy, Medium, Hard) using a backtracking solver algorithm that guarantees a single unique mathematical solution per grid with full answer keys.
+- **Shape-Masked Maze Studio** (https://www.kdpage.com/maze): Creates labyrinths within non-rectangular geometric bounding masks (Hearts, Circles, Stars, Triangles, Squares) with complete solution paths.
+- **Wrap-Around Cover Studio** (https://www.kdpage.com/studio): Full wrap-around paperback and hardcover canvas editor with dynamic spine thickness calculation (`pageCount * 0.002252"` for white paper), custom bleed margins, barcode/ISBN placement, and Unsplash background integration.
+- **Word Search Studio** (https://www.kdpage.com/tools/word-search): Algorithmic 8-directional word placement engine supporting custom word lists, CSV batch imports, and automated answer keys.
+- **Crossword & Cryptogram Studio** (https://www.kdpage.com/studio/crossword): Intersecting word crossword builder with automated clue pairing.
+- **Coloring & Line Art Studio** (https://www.kdpage.com/tools/coloring-book-generator): Converts photos to clean 300 DPI vector line art for children's and adult coloring books.
+
+## Free Publisher Utility Tools (No Signup Required)
+
+- **KDP Spine Calculator** (https://www.kdpage.com/tools/spine-calculator): Precise spine width calculation for white and cream paperbacks/hardcovers.
+- **ISBN Barcode Generator** (https://www.kdpage.com/tools/isbn-generator): Creates print-ready EAN-13 barcodes with optional EAN-5 price supplements.
+- **KDP Bleed & Margin Validator** (https://www.kdpage.com/tools/kdp-file-validator): Validates trim sizes (6x9, 8.5x11) and 0.125" bleed margins.
+- **Copyright Page Generator** (https://www.kdpage.com/tools/copyright-page-generator): Standard legal disclaimers and copyright notices for self-published books.
+- **Royalty & Printing Cost Calculator** (https://www.kdpage.com/tools/royalty-estimator): Computes Amazon KDP printing costs and net royalties across US, UK, and EU marketplaces.
+
+## Amazon KDP Policy Compliance & Duplicate Content Prevention
+
+- **100% Unique Outputs**: Unlike static Canva or PLR templates that risk Amazon account termination for duplicate content, KDPage synthesizes every puzzle grid on-demand via mathematical randomization. No two exported books are ever identical.
+- **Commercial Rights**: All paid plans and AppSumo lifetime licenses grant 100% royalty-free commercial rights. Authors keep 100% of their earnings.
+
+## Pricing & Lifetime Deals
+
+- **Free Tier** ($0): Export 5 watermark-free pages to test directly in Amazon KDP Print Previewer.
+- **Starter Creator**: $11.99/mo or $99/yr (Billed annually — 2 Months Free).
+- **Pro Studio**: $21.00/mo or $179/yr (Billed annually — 2 Months Free).
+- **Publisher Agency**: $39.00/mo or $329/yr (Billed annually — 2 Months Free).
+- **AppSumo Lifetime Deal**: $49 one-time payment for lifetime access (https://www.kdpage.com/redeem).

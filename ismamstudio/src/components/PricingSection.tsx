@@ -288,9 +288,10 @@ function PricingSectionInner() {
       description: "Perfect for hobbyists & beginner publishers starting their KDP journey.",
       priceMonthly: 11.99,
       priceMonthlyOriginal: 14.99,
-      priceAnnual: 10.75,
+      priceAnnual: 8.25,
       priceAnnualOriginal: 11.99,
-      priceAnnualTotal: 129,
+      priceAnnualTotal: 99,
+      annualSavings: "$45/yr (2 Months Free)",
       popular: false,
       features: [
         "7-Day Free Trial (Cancel Anytime)",
@@ -321,9 +322,10 @@ function PricingSectionInner() {
       description: "Everything you need to compile, format, and sell low/medium content books.",
       priceMonthly: 21,
       priceMonthlyOriginal: 26,
-      priceAnnual: 18.33,
+      priceAnnual: 14.92,
       priceAnnualOriginal: 21,
-      priceAnnualTotal: 220,
+      priceAnnualTotal: 179,
+      annualSavings: "$73/yr (2 Months Free)",
       popular: true,
       features: [
         "7-Day Free Trial (Cancel Anytime)",
@@ -355,9 +357,10 @@ function PricingSectionInner() {
       description: "Scale your publishing business with multiple brands and team collaboration.",
       priceMonthly: 39,
       priceMonthlyOriginal: 49,
-      priceAnnual: 34,
+      priceAnnual: 27.42,
       priceAnnualOriginal: 39,
-      priceAnnualTotal: 408,
+      priceAnnualTotal: 329,
+      annualSavings: "$139/yr (2 Months Free)",
       popular: false,
       features: [
         "7-Day Free Trial (Cancel Anytime)",
@@ -474,7 +477,7 @@ function PricingSectionInner() {
           </p>
 
           {/* Price Display */}
-          <div className="mb-8 flex items-baseline gap-2 flex-wrap">
+          <div className="mb-4 flex items-baseline gap-2 flex-wrap">
             {originalPrice && (
               <span className="text-2xl font-black line-through self-end pb-1.5 opacity-55 text-slate-500 dark:text-slate-500">
                 ${originalPrice}
@@ -495,6 +498,21 @@ function PricingSectionInner() {
               {billingText}
             </span>
           </div>
+
+          {/* Annual Savings & 2-Month Free Callout */}
+          {!isLtd && plan.priceMonthly > 0 && (
+            <div className="mb-6">
+              {billingCycle === 'annual' ? (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                  <span>🎁 2 Months Free • ${plan.priceAnnualTotal}/yr billed annually</span>
+                </div>
+              ) : (
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                  <span>💡 Switch to Annual to get <strong className="text-emerald-500 dark:text-emerald-400">2 Months Free</strong> (${plan.priceAnnualTotal}/yr)</span>
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Divider */}
           <div className={`h-px mb-8 ${plan.popular
@@ -607,8 +625,8 @@ function PricingSectionInner() {
               }`}
           >
             <span>Annual</span>
-            <span className="bg-gradient-to-r from-rose-500 to-amber-500 text-white font-black text-[8px] uppercase px-1.5 py-0.5 rounded-full shadow-md animate-pulse">
-              Save 20%
+            <span className="bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-md animate-pulse">
+              🎁 2 Months Free
             </span>
           </button>
         </div>

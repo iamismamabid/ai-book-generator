@@ -86,64 +86,77 @@ export async function POST(req: Request) {
             return NextResponse.json({ reply, provider: "groq-llama-3.3-70b" });
           }
         } else {
-          console.warn("Groq API failed, falling back to secondary provider:", await groqRes.text());
+          console.warn("Groq API failed, falling back to Gemini:", await groqRes.text());
         }
       } catch (groqErr) {
         console.error("Groq invocation error, trying fallback:", groqErr);
       }
     }
 
-    // 🐢 Priority 2: Gemini Fallback
+    // 🐢 Priority 2: Gemini 1.5 Flash Fallback
     if (geminiKey) {
-      const contents = [
-        {
-          role: "user",
-          parts: [{ text: `System Instruction:\n${SYSTEM_INSTRUCTION}` }],
-        },
-        {
-          role: "model",
-          parts: [
-            {
-              text: "Understood! I am KDPage AI Assistant, ready to help users with Amazon KDP publishing, KDPage tools, and AppSumo redemption.",
-            },
-          ],
-        },
-        ...messages.map((m: { role: string; content: string }) => ({
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }],
-        })),
-      ];
-
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
-
-      const geminiRes = await fetch(geminiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents,
-          generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 600,
+      try {
+        const contents = [
+          {
+            role: "user",
+            parts: [{ text: `System Instruction:\n${SYSTEM_INSTRUCTION}` }],
           },
-        }),
-      });
+          {
+            role: "model",
+            parts: [
+              {
+                text: "Understood! I am KDPage Virtual Assistant, ready to help users with Amazon KDP publishing, KDPage tools, and AppSumo redemption.",
+              },
+            ],
+          },
+          ...messages.map((m: { role: string; content: string }) => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }],
+          })),
+        ];
 
-      if (geminiRes.ok) {
-        const geminiData = await geminiRes.json();
-        const reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (reply) {
-          return NextResponse.json({ reply, provider: "gemini-1.5-flash" });
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+
+        const geminiRes = await fetch(geminiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents,
+            generationConfig: {
+              temperature: 0.4,
+              maxOutputTokens: 600,
+            },
+          }),
+        });
+
+        if (geminiRes.ok) {
+          const geminiData = await geminiRes.json();
+          const reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (reply) {
+            return NextResponse.json({ reply, provider: "gemini-1.5-flash" });
+          }
         }
+      } catch (geminiErr) {
+        console.error("Gemini invocation error, trying local knowledge fallback:", geminiErr);
       }
     }
 
-    return NextResponse.json(
-      {
-        error:
-          "AI Assistant is momentarily unavailable. Please talk to our live support team via the chat widget below!",
-      },
-      { status: 502 }
-    );
+    // 🛡️ Priority 3: Built-in Direct Knowledge Matcher Fallback
+    const lastUserMsg = messages[messages.length - 1]?.content?.toLowerCase() || "";
+
+    let fallbackReply = "👋 Welcome to **KDPage**! We provide algorithmic puzzle engines (Sudoku, Shape Mazes, Word Search) and full wrap-around cover creation tools for Amazon KDP.\n\n• Explore all 30+ utilities at [Free Tools](/tools)\n• Design covers at [Cover Studio](/studio)\n• Generate mazes at [Maze Studio](/maze)\n• Redeem codes at [Redeem Page](/redeem)\n\nFor real-time human assistance, click **'Talk to Live Human'** below!";
+
+    if (lastUserMsg.includes("appsumo") || lastUserMsg.includes("redeem") || lastUserMsg.includes("code")) {
+      fallbackReply = "🔑 **How to Redeem Your AppSumo Code:**\n1. Sign in to your KDPage account.\n2. Navigate to the **[Redeem Page](/redeem)**.\n3. Enter your AppSumo license code and click **Activate Access**.\n\n• **Tier 1 (1 Code / $49):** 3 Brands, 20 books\n• **Tier 2 (2 Codes / $79):** 10 Brands, 50 books, hard Sudoku & shape mazes\n• **Tier 3 (3 Codes / $149):** 25 Brands, 500 books, 3-seat agency access\n\nYou can stack up to 5 codes at any time!";
+    } else if (lastUserMsg.includes("price") || lastUserMsg.includes("plan") || lastUserMsg.includes("cost")) {
+      fallbackReply = "💳 **KDPage Plans & Pricing:**\n• **Free Tier ($0):** Export up to 5 pages watermark-free to test in KDP Print Previewer\n• **Starter ($11.99/mo or $99/yr):** 2 Months Free with annual billing\n• **Pro Studio ($21/mo or $179/yr):** 2 Months Free with annual billing (Most Popular)\n• **Publisher Agency ($39/mo or $329/yr):** 3-seat team access & bulk CSV batching\n\nCheck the full comparison at **[Pricing Plans](/pricing)**!";
+    } else if (lastUserMsg.includes("spine") || lastUserMsg.includes("bleed") || lastUserMsg.includes("margin") || lastUserMsg.includes("size")) {
+      fallbackReply = "📐 **Amazon KDP Print Formulas & Dimensions:**\n• **Spine Thickness Formula:** `Page Count × 0.002252\"` (White paper) or `Page Count × 0.0025\"` (Cream paper).\n• **Bleed Requirement:** Add `0.125\"` (3.2 mm) to top, bottom, and outer trim edges if illustrations touch the page edge.\n• **DPI:** All KDPage PDF interior exports are guaranteed 300 DPI vector-sharp print-ready files.\n\nCalculate instantly with our free **[Spine Calculator](/tools/spine-calculator)**!";
+    } else if (lastUserMsg.includes("duplicate") || lastUserMsg.includes("ban") || lastUserMsg.includes("safe")) {
+      fallbackReply = "🛡️ **100% Unique & Amazon KDP Compliant:**\nKDPage does not distribute static template files. Every Sudoku grid, shape-masked labyrinth, and word search puzzle is mathematically synthesized on-demand using backtracking algorithms and randomized seed coordinates. No two generated books are ever identical, guaranteeing 100% original, Amazon-compliant publishing!";
+    }
+
+    return NextResponse.json({ reply: fallbackReply, provider: "kdpage-knowledge-engine" });
   } catch (err: any) {
     console.error("Support chat handler error:", err);
     return NextResponse.json(

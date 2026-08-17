@@ -11,6 +11,7 @@ import Script from 'next/script';
 import type { Metadata } from 'next';
 import TawkToChat from '@/components/TawkToChat';
 import GeminiSupportAssistant from '@/components/GeminiSupportAssistant';
+import JsonLdSchema from '@/components/JsonLdSchema';
 
 // 🎨 গুগল ফন্ট লোড করা হচ্ছে
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap', adjustFontFallback: false });
@@ -87,6 +88,8 @@ export default function RootLayout({
               __html: `(function(){try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');}}catch(e){}})();`,
             }}
           />
+          {/* Structured Data / JSON-LD for Google Gemini & Search Engines */}
+          <JsonLdSchema />
         </head>
         {/* 🎯 body ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
         <body

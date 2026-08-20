@@ -63,32 +63,36 @@ export default async function Header() {
           </div>
 
           {/* Action Buttons & Auth (Server-Side Rendered via auth()) */}
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-h-[36px] sm:min-h-[40px]">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 h-10">
             {/* Global Search Modal */}
-            <GlobalSearchModal />
+            <div className="shrink-0">
+              <GlobalSearchModal />
+            </div>
 
             {/* Auth Buttons: Sent directly in initial server HTML (0ms delay) */}
-            <div className="min-w-[130px] sm:min-w-[165px] flex items-center justify-end">
+            <div className={`flex items-center justify-end shrink-0 h-10 ${userId ? "min-w-[44px] sm:min-w-[270px] md:min-w-[340px]" : "min-w-[130px] sm:min-w-[165px]"}`}>
               {userId ? (
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <Link href="/notebook" className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1">
+                  <Link href="/notebook" className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1 shrink-0">
                     <BookOpen className="w-4 h-4 text-indigo-400" />
                     <span>My Notebook</span>
                   </Link>
-                  <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap">
+                  <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0">
                     <Sparkles className="w-4 h-4" /> Creator Studio
                   </Link>
 
-                  <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-800 flex items-center">
-                    <UserButton afterSignOutUrl="/">
-                      <UserButton.MenuItems>
-                        <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
-                      </UserButton.MenuItems>
-                    </UserButton>
+                  <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-800 flex items-center shrink-0 w-9 h-9 sm:w-10 sm:h-10 justify-center">
+                    <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/80 flex items-center justify-center overflow-hidden shrink-0">
+                      <UserButton afterSignOutUrl="/">
+                        <UserButton.MenuItems>
+                          <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
+                        </UserButton.MenuItems>
+                      </UserButton>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <SignInButton mode="modal" initialValues={{ emailAddress: "" }}>
                     <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2 cursor-pointer whitespace-nowrap">
                       Sign In

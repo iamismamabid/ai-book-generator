@@ -214,7 +214,7 @@ export default function RootLayout({
             </Script>
 
             {/* PartneroJS Tracking Script */}
-            <Script id="partnero-js" strategy="afterInteractive">
+            <Script id="partnero-js" strategy="lazyOnload">
             {`
               (function(p,t,n,e,r,o){ p['__partnerObject']=r;function f(){
               var c={ a:arguments,q:[]};var r=this.push(c);return "number"!=typeof r?r:f.bind(c.q);}
@@ -247,7 +247,7 @@ export default function RootLayout({
           </Script>
 
           {/* Trustpilot JavaScript Integration Script (Method 1) */}
-          <Script id="trustpilot-invitation-js" src="https://invitejs.trustpilot.com/tp.min.js" strategy="afterInteractive" />
+          <Script id="trustpilot-invitation-js" src="https://invitejs.trustpilot.com/tp.min.js" strategy="lazyOnload" />
           <Script id="trustpilot-widget-js" src="https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" strategy="lazyOnload" />
 
           <SpeedInsights />

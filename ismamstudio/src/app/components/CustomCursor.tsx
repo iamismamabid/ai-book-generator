@@ -58,20 +58,18 @@ export default function CustomCursor() {
     document.addEventListener("mouseleave", onMouseLeave);
     document.addEventListener("mouseenter", onMouseEnter);
 
-    const addHoverListeners = () => {
-      const interactives = document.querySelectorAll(
-        "a, button, [role='button'], input[type='submit'], select, input[type='button'], input[type='text'], input[type='number'], textarea, .interactive-hover"
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const isInteractive = Boolean(
+        target.closest(
+          "a, button, [role='button'], input, select, textarea, .interactive-hover"
+        )
       );
-      
-      interactives.forEach((el) => {
-        el.addEventListener("mouseenter", () => setIsHovered(true));
-        el.addEventListener("mouseleave", () => setIsHovered(false));
-      });
+      setIsHovered(isInteractive);
     };
 
-    addHoverListeners();
-    const observer = new MutationObserver(addHoverListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener("mouseover", handleMouseOver, { passive: true });
 
     const updatePosition = () => {
       const targetX = mouseRef.current.x;
@@ -103,8 +101,8 @@ export default function CustomCursor() {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseleave", onMouseLeave);
       document.removeEventListener("mouseenter", onMouseEnter);
+      document.removeEventListener("mouseover", handleMouseOver);
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      observer.disconnect();
     };
   }, []);
 

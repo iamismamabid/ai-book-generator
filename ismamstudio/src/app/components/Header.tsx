@@ -1,14 +1,13 @@
-"use client";
-
-import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, ClerkLoaded, ClerkLoading } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
+import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import GlobalSearchModal from '@/app/components/GlobalSearchModal';
-import { Menu, X, Sparkles, BookOpen, Wrench, CreditCard, LayoutGrid, Layers, Users } from 'lucide-react';
+import MobileNavMenu from '@/app/components/MobileNavMenu';
+import { Sparkles, BookOpen, Users } from 'lucide-react';
 
-export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+export default async function Header() {
+  const { userId } = await auth();
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 flex flex-col transition-all duration-300" suppressHydrationWarning>
@@ -63,126 +62,52 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Action Buttons & Auth */}
+          {/* Action Buttons & Auth (Server-Side Rendered via auth()) */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-h-[36px] sm:min-h-[40px]">
             {/* Global Search Modal */}
             <GlobalSearchModal />
 
-            {/* Auth Container with Zero-Layout-Shift Placeholder */}
+            {/* Auth Buttons: Sent directly in initial server HTML (0ms delay) */}
             <div className="min-w-[130px] sm:min-w-[165px] flex items-center justify-end">
-              <ClerkLoading>
-                <div className="flex items-center gap-2">
-                  <div className="w-12 sm:w-14 h-7 sm:h-8 rounded-full bg-slate-800/70 animate-pulse" />
-                  <div className="w-16 sm:w-20 h-7 sm:h-8.5 rounded-full bg-indigo-600/30 animate-pulse" />
+              {userId ? (
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Link href="/notebook" className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1">
+                    <BookOpen className="w-4 h-4 text-indigo-400" />
+                    <span>My Notebook</span>
+                  </Link>
+                  <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap">
+                    <Sparkles className="w-4 h-4" /> Creator Studio
+                  </Link>
+
+                  <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-800 flex items-center">
+                    <UserButton afterSignOutUrl="/">
+                      <UserButton.MenuItems>
+                        <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
+                      </UserButton.MenuItems>
+                    </UserButton>
+                  </div>
                 </div>
-              </ClerkLoading>
-
-              <ClerkLoaded>
-                <SignedIn>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <Link href="/notebook" className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1">
-                      <BookOpen className="w-4 h-4 text-indigo-400" />
-                      <span>My Notebook</span>
-                    </Link>
-                    <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap">
-                      <Sparkles className="w-4 h-4" /> Creator Studio
-                    </Link>
-
-                    <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-800 flex items-center">
-                      <UserButton afterSignOutUrl="/">
-                        <UserButton.MenuItems>
-                          <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
-                        </UserButton.MenuItems>
-                      </UserButton>
-                    </div>
-                  </div>
-                </SignedIn>
-
-                <SignedOut>
-                  <div className="flex items-center gap-2">
-                    <SignInButton mode="modal" initialValues={{ emailAddress: "" }}>
-                      <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2 cursor-pointer whitespace-nowrap">
-                        Sign In
-                      </button>
-                    </SignInButton>
-                    <SignUpButton mode="modal" initialValues={{ emailAddress: "" }}>
-                      <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all active:scale-95 cursor-pointer whitespace-nowrap">
-                        Sign Up
-                      </button>
-                    </SignUpButton>
-                  </div>
-                </SignedOut>
-              </ClerkLoaded>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <SignInButton mode="modal" initialValues={{ emailAddress: "" }}>
+                    <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2 cursor-pointer whitespace-nowrap">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal" initialValues={{ emailAddress: "" }}>
+                    <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all active:scale-95 cursor-pointer whitespace-nowrap">
+                      Sign Up
+                    </button>
+                  </SignUpButton>
+                </div>
+              )}
             </div>
 
-            {/* Mobile Hamburger Toggle Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-slate-200 hover:bg-slate-900 transition-colors"
-              aria-label="Toggle Navigation Menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            {/* Mobile Hamburger Toggle & Drawer */}
+            <MobileNavMenu userId={userId} />
           </div>
 
         </div>
-
-        {/* 📱 Mobile Navigation Menu Drawer */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-b border-slate-200 dark:border-slate-800 px-6 py-6 space-y-4 shadow-2xl animate-in slide-in-from-top-4 duration-200">
-            <SignedIn>
-              <Link
-                href="/studio"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
-              >
-                <Sparkles className="w-4 h-4" /> Open Creator Studio
-              </Link>
-
-              <Link
-                href="/notebook"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-sm rounded-2xl flex items-center gap-3 border border-slate-200 dark:border-slate-800"
-              >
-                <BookOpen className="w-4 h-4 text-indigo-500" /> My Notebook (Saved Data)
-              </Link>
-            </SignedIn>
-
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-900">
-              <Link
-                href="/tools"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"
-              >
-                <Wrench className="w-4 h-4 text-amber-500" /> Free Tools
-              </Link>
-
-              <Link
-                href="/#features"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"
-              >
-                <LayoutGrid className="w-4 h-4 text-indigo-500" /> Features
-              </Link>
-
-              <Link
-                href="/#pricing"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"
-              >
-                <CreditCard className="w-4 h-4 text-emerald-500" /> Pricing
-              </Link>
-
-              <Link
-                href="/blog"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"
-              >
-                <BookOpen className="w-4 h-4 text-purple-500" /> Blog &amp; Guides
-              </Link>
-            </div>
-          </div>
-        )}
       </nav>
     </header>
   );

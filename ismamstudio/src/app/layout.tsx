@@ -3,6 +3,7 @@ import { ThemeProvider } from '@/app/components/ThemeProvider';
 import LayoutShell from '@/app/components/LayoutShell';
 import CustomCursor from '@/app/components/CustomCursor';
 import GeminiScreenGlow from '@/app/components/GeminiScreenGlow';
+import Header from '@/app/components/Header';
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -111,8 +112,8 @@ export default function RootLayout({
             <CustomCursor />
             <GeminiScreenGlow />
             
-            {/* App Layout Shell */}
-            <LayoutShell>
+            {/* App Layout Shell with Server-Side Rendered Header */}
+            <LayoutShell header={<Header />}>
               {children}
             </LayoutShell>
 

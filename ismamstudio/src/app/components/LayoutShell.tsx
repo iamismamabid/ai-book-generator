@@ -1,11 +1,16 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Header from "./Header";
 import Footer from "./Footer";
 import { ReactNode } from "react";
 
-export default function LayoutShell({ children }: { children: ReactNode }) {
+export default function LayoutShell({
+  children,
+  header,
+}: {
+  children: ReactNode;
+  header: ReactNode;
+}) {
   const pathname = usePathname();
   const isStudio = pathname === "/studio";
 
@@ -21,7 +26,7 @@ export default function LayoutShell({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <Header />
+      {header}
       <div className="pt-[116px] min-h-[calc(100vh-116px)] flex flex-col justify-between">
         <main className="flex-grow">
           {children}

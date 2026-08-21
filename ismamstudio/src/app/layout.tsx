@@ -13,6 +13,7 @@ import type { Metadata } from 'next';
 import TawkToChat from '@/components/TawkToChat';
 import GeminiSupportAssistant from '@/components/GeminiSupportAssistant';
 import JsonLdSchema from '@/components/JsonLdSchema';
+import InstantNavPrefetcher from '@/app/components/InstantNavPrefetcher';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
@@ -91,6 +92,47 @@ export default function RootLayout({
               __html: `(function(){try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');}}catch(e){}})();`,
             }}
           />
+          {/* ⚡ Speculation Rules API for 0ms Instant Page Swapping (Prerender in modern browsers) */}
+          <script
+            type="speculationrules"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                prerender: [
+                  {
+                    source: "list",
+                    urls: [
+                      "/",
+                      "/studio",
+                      "/pricing",
+                      "/tools",
+                      "/about",
+                      "/compare",
+                      "/sudoku",
+                      "/maze",
+                      "/tools/spine-calculator",
+                      "/tools/keyword-research",
+                      "/tools/isbn-generator",
+                      "/tools/coloring-book-generator",
+                      "/tools/interior-templates"
+                    ],
+                    eagerness: "moderate"
+                  },
+                  {
+                    source: "document",
+                    where: {
+                      and: [
+                        { href_matches: "/*" },
+                        { not: { href_matches: "/api/*" } },
+                        { not: { href_matches: "/sign-in/*" } },
+                        { not: { href_matches: "/sign-up/*" } }
+                      ]
+                    },
+                    eagerness: "moderate"
+                  }
+                ]
+              })
+            }}
+          />
           {/* Structured Data / JSON-LD for Google Gemini & Search Engines */}
           <JsonLdSchema />
         </head>
@@ -110,6 +152,7 @@ export default function RootLayout({
           </noscript>
 
           <ThemeProvider>
+            <InstantNavPrefetcher />
             <CustomCursor />
             <GeminiScreenGlow />
             
@@ -178,8 +221,8 @@ export default function RootLayout({
                 })
               }}
             />
-            {/* Google Tag Manager */}
-            <Script id="google-tag-manager" strategy="afterInteractive">
+            {/* Google Tag Manager (Loaded lazily to guarantee 0ms route navigation responsiveness) */}
+            <Script id="google-tag-manager" strategy="lazyOnload">
               {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
               new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
               j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -190,9 +233,9 @@ export default function RootLayout({
             {/* Google Analytics & Google Ads (gtag.js) */}
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || "G-B08V9NL031"}`}
-              strategy="afterInteractive"
+              strategy="lazyOnload"
             />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script id="google-analytics" strategy="lazyOnload">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}

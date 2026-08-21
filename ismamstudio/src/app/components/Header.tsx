@@ -42,10 +42,10 @@ export default async function Header() {
 
           {/* Central Standard Navigation Links (Desktop) */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8 mx-auto">
-            <Link href="/" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
+            <Link href="/" prefetch={true} className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Home
             </Link>
-            <Link href="/about" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
+            <Link href="/about" prefetch={true} className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               About
             </Link>
             <Link href="/#features" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
@@ -54,10 +54,10 @@ export default async function Header() {
             <Link href="/#pricing" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Pricing
             </Link>
-            <Link href="/blog" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
+            <Link href="/blog" prefetch={true} className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Blog
             </Link>
-            <Link href="/tools" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
+            <Link href="/tools" prefetch={true} className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Free Tools
             </Link>
           </div>
@@ -73,11 +73,11 @@ export default async function Header() {
             <div className={`flex items-center justify-end shrink-0 h-10 ${userId ? "min-w-[44px] sm:min-w-[270px] md:min-w-[340px]" : "min-w-[130px] sm:min-w-[165px]"}`}>
               {userId ? (
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <Link href="/notebook" className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1 shrink-0">
+                  <Link href="/notebook" prefetch={true} className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1 shrink-0">
                     <BookOpen className="w-4 h-4 text-indigo-400" />
                     <span>My Notebook</span>
                   </Link>
-                  <Link href="/studio" className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0">
+                  <Link href="/studio" prefetch={true} className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0">
                     <Sparkles className="w-4 h-4" /> Creator Studio
                   </Link>
 

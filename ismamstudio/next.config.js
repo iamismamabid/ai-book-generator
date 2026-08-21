@@ -82,12 +82,12 @@ const nextConfig = {
   async headers() {
     const cspHeader = `
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.paddle.com https://public.profitwell.com https://*.clerk.accounts.dev https://clerk.kdpage.com https://*.clerk.com https://challenges.cloudflare.com https://us-assets.i.posthog.com https://us.i.posthog.com https://va.vercel-scripts.com https://*.arcade.software https://www.googletagmanager.com https://*.google-analytics.com https://*.googleadservices.com https://*.doubleclick.net https://*.trustpilot.com https://*.partnero.com https://embed.tawk.to https://*.tawk.to https://cdn.jsdelivr.net;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.paddle.com https://public.profitwell.com https://*.clerk.accounts.dev https://clerk.kdpage.com https://*.clerk.com https://challenges.cloudflare.com https://us-assets.i.posthog.com https://us.i.posthog.com https://va.vercel-scripts.com https://www.googletagmanager.com https://*.google-analytics.com https://*.googleadservices.com https://*.doubleclick.net https://*.trustpilot.com https://*.partnero.com https://embed.tawk.to https://*.tawk.to https://cdn.jsdelivr.net;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.paddle.com https://*.tawk.to;
-      img-src 'self' data: blob: https://images.unsplash.com https://*.amazonaws.com https://grainy-gradients.vercel.app https://*.clerk.com https://img.clerk.com https://*.arcade.software https://www.googletagmanager.com https://*.google.com https://*.google.com.bd https://*.doubleclick.net https://*.trustpilot.com https://*.trustpilot.net https://*.partnero.com https://*.tawk.to https://tawk.link;
+      img-src 'self' data: blob: https://images.unsplash.com https://*.amazonaws.com https://grainy-gradients.vercel.app https://*.clerk.com https://img.clerk.com https://www.googletagmanager.com https://*.google.com https://*.google.com.bd https://*.doubleclick.net https://*.trustpilot.com https://*.trustpilot.net https://*.partnero.com https://*.tawk.to https://tawk.link;
       font-src 'self' data: https://fonts.gstatic.com https://*.tawk.to;
-      connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.kdpage.com https://challenges.cloudflare.com https://us.i.posthog.com https://us-assets.i.posthog.com https://v2.paddle.com https://buy.paddle.com https://*.paddle.com https://*.amazonaws.com https://vitals.vercel-insights.com wss://*.clerk.accounts.dev https://*.arcade.software https://www.googletagmanager.com https://*.google-analytics.com https://*.google.com https://*.doubleclick.net https://*.trustpilot.com https://*.partnero.com https://*.tawk.to wss://*.tawk.to;
-      frame-src 'self' https://buy.paddle.com https://*.paddle.com https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com https://app.arcade.software https://*.arcade.software https://www.googletagmanager.com https://*.trustpilot.com https://www.youtube.com https://www.youtube-nocookie.com https://*.tawk.to;
+      connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.kdpage.com https://challenges.cloudflare.com https://us.i.posthog.com https://us-assets.i.posthog.com https://v2.paddle.com https://buy.paddle.com https://*.paddle.com https://*.amazonaws.com https://vitals.vercel-insights.com wss://*.clerk.accounts.dev https://www.googletagmanager.com https://*.google-analytics.com https://*.google.com https://*.doubleclick.net https://*.trustpilot.com https://*.partnero.com https://*.tawk.to wss://*.tawk.to;
+      frame-src 'self' https://buy.paddle.com https://*.paddle.com https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com https://www.googletagmanager.com https://*.trustpilot.com https://www.youtube.com https://www.youtube-nocookie.com https://*.tawk.to;
       worker-src 'self' blob:;
       object-src 'none';
       base-uri 'self';
@@ -130,62 +130,29 @@ const nextConfig = {
   },
 
   // ─── SEO: consolidate duplicate hub page into the canonical /tools ──────
-  // /tools/free rendered the same ToolsClient as /tools with its own
-  // self-referencing canonical, creating duplicate content. 301 to the
-  // version that's actually linked from nav + sitemap so link equity
-  // consolidates onto one URL instead of splitting across two.
   async redirects() {
     return [
-      // Legacy duplicate page & guide redirects
-      {
-        source: "/kdp-formatting-guide",
-        destination: "/kdp-checklist",
-        permanent: true,
-      },
-      {
-        source: "/tools/free",
-        destination: "/tools",
-        permanent: true,
-      },
-
-      // ─── Keyword-rich URL aliases → canonical tool URLs ──────────────────
-      // These let Google discover keyword-dense slugs while keeping one
-      // canonical URL. Link equity flows back to the canonical via 301.
-
-      // Spine Calculator
+      { source: "/kdp-formatting-guide", destination: "/kdp-checklist", permanent: true },
+      { source: "/tools/free", destination: "/tools", permanent: true },
       { source: "/tools/kdp-spine-calculator", destination: "/tools/spine-calculator", permanent: true },
       { source: "/tools/kdp-spine-width-calculator", destination: "/tools/spine-calculator", permanent: true },
       { source: "/tools/free-kdp-spine-calculator", destination: "/tools/spine-calculator", permanent: true },
       { source: "/tools/book-spine-calculator", destination: "/tools/spine-calculator", permanent: true },
-
-      // ISBN / Barcode Generator
       { source: "/tools/kdp-isbn-barcode-generator", destination: "/tools/isbn-generator", permanent: true },
       { source: "/tools/free-isbn-barcode-generator", destination: "/tools/isbn-generator", permanent: true },
       { source: "/tools/book-barcode-generator", destination: "/tools/isbn-generator", permanent: true },
-
-      // Keyword Research
       { source: "/tools/kdp-keyword-research", destination: "/tools/keyword-research", permanent: true },
       { source: "/tools/free-kdp-keyword-research", destination: "/tools/keyword-research", permanent: true },
       { source: "/tools/amazon-kdp-keywords", destination: "/tools/keyword-research", permanent: true },
-
-      // Royalty Estimator
       { source: "/tools/kdp-royalty-calculator", destination: "/tools/royalty-estimator", permanent: true },
       { source: "/tools/free-kdp-royalty-calculator", destination: "/tools/royalty-estimator", permanent: true },
       { source: "/tools/amazon-royalty-calculator", destination: "/tools/royalty-estimator", permanent: true },
-
-      // Print Cost Calculator
       { source: "/tools/kdp-print-cost-calculator", destination: "/tools/print-cost-calculator", permanent: true },
       { source: "/tools/amazon-kdp-printing-cost", destination: "/tools/print-cost-calculator", permanent: true },
-
-      // PDF Validator
       { source: "/tools/kdp-pdf-validator", destination: "/tools/kdp-file-validator", permanent: true },
       { source: "/tools/free-kdp-pdf-checker", destination: "/tools/kdp-file-validator", permanent: true },
-
-      // Sudoku Generator (non-/tools path)
       { source: "/tools/kdp-sudoku-generator", destination: "/sudoku", permanent: true },
       { source: "/tools/free-sudoku-generator", destination: "/sudoku", permanent: true },
-
-      // Maze Generator
       { source: "/tools/kdp-maze-generator", destination: "/maze", permanent: true },
       { source: "/tools/free-maze-generator", destination: "/maze", permanent: true },
     ];
@@ -201,4 +168,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-

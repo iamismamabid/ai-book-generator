@@ -22,7 +22,7 @@ import {
   Shuffle
 } from "lucide-react";
 
-import HomeArcadeWalkthrough from "./components/HomeArcadeWalkthrough";
+import HomeStudioShowcase from "./components/HomeStudioShowcase";
 import HomeNewsletterForm from "./components/HomeNewsletterForm";
 import HomeTrustpilotLazy from "./components/HomeTrustpilotLazy";
 // Direct static imports — both components handle their own internal Suspense
@@ -110,10 +110,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Column: Micro-Client Arcade Walkthrough Component */}
+            {/* Right Column: Interactive Vector Studio Showcase */}
             <div className="lg:col-span-6 relative">
               <div className="absolute inset-0 bg-indigo-100/40 rounded-[3rem] blur-3xl" />
-              <HomeArcadeWalkthrough />
+              <HomeStudioShowcase />
             </div>
 
           </div>

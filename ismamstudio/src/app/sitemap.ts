@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next'
 import { BLOG_POSTS } from './blog/posts'
 
+export const dynamic = 'force-static';
+
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = 'https://www.kdpage.com';
 

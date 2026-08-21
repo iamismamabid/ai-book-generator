@@ -1,0 +1,6 @@
+- [ ] Configure Hybrid Live Wrapper
+    - [ ] Update `capacitor.config.ts` with `server.url` and `allowNavigation`
+    - [ ] Revert `next.config.js` changes (remove static export)
+- [ ] Sync and Deploy
+    - [ ] Run `npx cap sync android`
+    - [ ] Verify app stays inside the native frame

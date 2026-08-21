@@ -72,7 +72,9 @@ export default function RootLayout({
         <head>
           {/* DNS Prefetch & Preconnect for zero-latency third-party network handshakes */}
           <link rel="dns-prefetch" href="https://embed.tawk.to" />
-          <link rel="dns-prefetch" href="https://app.arcade.software" />
+          <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
+          <link rel="dns-prefetch" href="https://www.youtube.com" />
+          <link rel="preconnect" href="https://www.youtube-nocookie.com" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://widget.trustpilot.com" />
           <link rel="dns-prefetch" href="https://images.unsplash.com" />
           <link rel="dns-prefetch" href="https://us.i.posthog.com" />

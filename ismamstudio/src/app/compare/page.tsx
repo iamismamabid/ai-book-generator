@@ -126,8 +126,38 @@ export default function ComparePage() {
                 KDPage vs. Other KDP Tools
               </h2>
               <p className="text-slate-400 text-sm font-semibold mt-1">
-                See how KDPage stacks up against legacy publishing software like Book Bolt, Canva, and Tangent Templates.
+                See how KDPage stacks up against legacy publishing software. Read our in-depth head-to-head reviews:
               </p>
+
+              {/* Dedicated Comparison Hub Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
+                <Link
+                  href="/compare/book-bolt"
+                  className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 transition-all flex flex-col justify-between group"
+                >
+                  <span className="text-xs font-black text-indigo-400 uppercase tracking-wider">Alternative Guide</span>
+                  <span className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors mt-1">KDPage vs Book Bolt →</span>
+                  <span className="text-[11px] text-slate-400 mt-2 font-medium">Algorithmic uniqueness, spine calc &amp; pricing</span>
+                </Link>
+
+                <Link
+                  href="/compare/canva"
+                  className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/50 transition-all flex flex-col justify-between group"
+                >
+                  <span className="text-xs font-black text-cyan-400 uppercase tracking-wider">Publishing Review</span>
+                  <span className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors mt-1">Canva vs KDPage →</span>
+                  <span className="text-[11px] text-slate-400 mt-2 font-medium">Why Canva fails for KDP spine &amp; bleed specs</span>
+                </Link>
+
+                <Link
+                  href="/compare/tangent-templates"
+                  className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-amber-500/50 transition-all flex flex-col justify-between group"
+                >
+                  <span className="text-xs font-black text-amber-400 uppercase tracking-wider">Modern Upgrade</span>
+                  <span className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors mt-1">Tangent Templates vs KDPage →</span>
+                  <span className="text-[11px] text-slate-400 mt-2 font-medium">Interactive studios vs static templates</span>
+                </Link>
+              </div>
             </div>
 
             <div className="overflow-x-auto">

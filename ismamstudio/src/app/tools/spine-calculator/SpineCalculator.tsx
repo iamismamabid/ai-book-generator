@@ -679,7 +679,7 @@ export default function SpineCalculator() {
           {/* Freshness badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            KDP Specifications — Updated July 2025
+            KDP Specifications — Updated 2026
           </div>
 
           {/* Formula block */}
@@ -810,7 +810,7 @@ export default function SpineCalculator() {
 
           {/* Common trim sizes */}
           <div className="bg-slate-900/30 border border-slate-800/60 rounded-2xl p-6 md:p-8 space-y-4">
-            <h2 className="text-xl font-black text-white">Amazon KDP Standard Trim Sizes — 2025</h2>
+            <h2 className="text-xl font-black text-white">Amazon KDP Standard Trim Sizes — 2026</h2>
             <p className="text-slate-400">These are the most popular KDP paperback trim sizes used by self-publishers:</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               {[

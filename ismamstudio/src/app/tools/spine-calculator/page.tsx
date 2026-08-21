@@ -2,9 +2,9 @@ import SpineCalculator from "./SpineCalculator";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Free KDP Spine Width Calculator (2025) — Paperback & Hardcover Cover Size | KDPage",
+  title: "Free Amazon KDP Spine Width & Cover Size Calculator (2026) | KDPage",
   description:
-    "Calculate your Amazon KDP book spine width, full cover size & bleed dimensions instantly. Uses official KDP formulas: 0.002252\" white, 0.0025\" cream, 0.002347\" color paper. Free — no signup.",
+    "Calculate your exact Amazon KDP book spine width, wrap-around cover dimensions, and 0.125\" bleed margins instantly. Official KDP formulas for White, Cream, and Color paper (Paperback & Hardcover). 100% free tool.",
   alternates: {
     canonical: "https://www.kdpage.com/tools/spine-calculator",
   },
@@ -18,24 +18,29 @@ export const metadata: Metadata = {
     "paperback spine calculator",
     "hardcover spine calculator",
     "kdp bleed calculator",
-    "free kdp tools 2025",
+    "free kdp tools 2026",
     "book cover template dimensions",
     "self publishing spine calculator",
     "kdp specifications calculator",
     "amazon kdp paperback cover size",
+    "kdp wrap around cover generator",
+    "amazon kdp spine thickness formula"
   ],
   openGraph: {
-    title: "Free KDP Spine Width Calculator (2025) | KDPage",
+    title: "Free Amazon KDP Spine Width & Cover Size Calculator (2026) | KDPage",
     description:
-      "Instantly calculate spine width & full cover dimensions for Amazon KDP paperback and hardcover books. Uses official KDP paper thickness formulas.",
+      "Instantly calculate spine width & full wrap-around cover dimensions for Amazon KDP paperback and hardcover books. Uses official Amazon KDP formulas.",
     url: "https://www.kdpage.com/tools/spine-calculator",
+    siteName: "KDPage",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Free KDP Spine Calculator" }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free KDP Spine Width Calculator (2025)",
+    title: "Free Amazon KDP Spine Width Calculator (2026)",
     description:
       "Calculate exact KDP spine width using official Amazon formulas. White: 0.002252\"/page, Cream: 0.0025\"/page, Color: 0.002347\"/page.",
+    images: ["/og-image.png"],
   },
 };
 

@@ -47,22 +47,32 @@ export default function TawkToChat() {
       }
     };
 
-    // Prevent duplicate script injection
-    const scriptId = "tawk-to-script";
-    if (document.getElementById(scriptId)) return;
+    const loadScript = () => {
+      // Prevent duplicate script injection
+      const scriptId = "tawk-to-script";
+      if (document.getElementById(scriptId)) return;
 
-    const s1 = document.createElement("script");
-    s1.id = scriptId;
-    s1.async = true;
-    s1.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
-    s1.charset = "UTF-8";
-    s1.setAttribute("crossorigin", "*");
+      const s1 = document.createElement("script");
+      s1.id = scriptId;
+      s1.async = true;
+      s1.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
 
-    const s0 = document.getElementsByTagName("script")[0];
-    if (s0 && s0.parentNode) {
-      s0.parentNode.insertBefore(s1, s0);
+      const s0 = document.getElementsByTagName("script")[0];
+      if (s0 && s0.parentNode) {
+        s0.parentNode.insertBefore(s1, s0);
+      } else {
+        document.head.appendChild(s1);
+      }
+    };
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const handle = (window as any).requestIdleCallback(loadScript, { timeout: 3500 });
+      return () => (window as any).cancelIdleCallback(handle);
     } else {
-      document.head.appendChild(s1);
+      const timer = setTimeout(loadScript, 2000);
+      return () => clearTimeout(timer);
     }
   }, [propertyId, widgetId]);
 

@@ -109,6 +109,7 @@
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+  will-change: transform;
 }
 
 .animate-pulse-glow {
@@ -144,6 +145,7 @@
   display: flex;
   width: max-content;
   animation: marquee 30s linear infinite;
+  will-change: transform;
 }
 
 .animate-marquee:hover {

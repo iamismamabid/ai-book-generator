@@ -14,8 +14,7 @@ import TawkToChat from '@/components/TawkToChat';
 import GeminiSupportAssistant from '@/components/GeminiSupportAssistant';
 import JsonLdSchema from '@/components/JsonLdSchema';
 
-// 🎨 গুগল ফন্ট লোড করা হচ্ছে
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap', adjustFontFallback: false });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
 export const metadata: Metadata = {
   title: "KDPage | All-in-One KDP Book Creation Toolkit",

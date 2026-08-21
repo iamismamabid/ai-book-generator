@@ -179,6 +179,9 @@ export default function UserReviewsSection() {
                       <img
                         src={rev.avatar}
                         alt={rev.author}
+                        width={32}
+                        height={32}
+                        loading="lazy"
                         className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0"
                       />
                     ) : (

@@ -54,9 +54,9 @@ export default function CustomCursor() {
     const onMouseLeave = () => setIsVisible(false);
     const onMouseEnter = () => setIsVisible(true);
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseleave", onMouseLeave);
-    document.addEventListener("mouseenter", onMouseEnter);
+    document.addEventListener("mousemove", onMouseMove, { passive: true });
+    document.addEventListener("mouseleave", onMouseLeave, { passive: true });
+    document.addEventListener("mouseenter", onMouseEnter, { passive: true });
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;

@@ -17,10 +17,10 @@ export default function TrustpilotWidget() {
   }, []);
 
   return (
-    <div className="w-full flex justify-center my-4">
+    <div className="w-full flex justify-center my-4 min-h-[52px]">
       <div
         ref={ref}
-        className="trustpilot-widget"
+        className="trustpilot-widget min-h-[52px]"
         data-locale="en-US"
         data-template-id="5419b6a8b0d04a076446a9ad"
         data-businessunit-id="6a6b9f255899f3a104131ad8"

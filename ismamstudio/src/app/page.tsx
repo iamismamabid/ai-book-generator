@@ -22,7 +22,6 @@ import {
   Shuffle
 } from "lucide-react";
 
-import HomeStudioShowcase from "./components/HomeStudioShowcase";
 import HomeNewsletterForm from "./components/HomeNewsletterForm";
 import HomeTrustpilotLazy from "./components/HomeTrustpilotLazy";
 // Direct static imports — both components handle their own internal Suspense
@@ -49,74 +48,88 @@ export default function HomePage() {
       <div className="absolute top-1/3 right-0 w-[700px] h-[700px] bg-purple-100/30 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none" />
       <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-amber-100/30 rounded-full blur-3xl translate-y-1/3 pointer-events-none" />
 
-      {/* ── HERO SECTION ── */}
-      <section className="relative pt-8 pb-16 md:pt-14 md:pb-24 px-6 overflow-hidden z-10">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-
-            {/* Left Column: Headline and CTAs */}
-            <div className="lg:col-span-6 text-left space-y-8">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-indigo-700 text-xs font-black uppercase tracking-[0.2em] shadow-sm">
-                  <Sparkles className="w-4 h-4 text-indigo-600" />
-                  The Ultimate Publishing Suite for KDP Self-Publishers
-                </div>
-              </div>
-
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]">
-                Create 10 Unique <span className="bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent">KDP Puzzle Books</span> in 5 Minutes
-              </h1>
-
-              <p className="text-slate-700 text-lg md:text-xl font-medium leading-relaxed max-w-2xl">
-                The ultimate all-in-one publishing suite. Generate mathematically unique puzzles, custom shape-masked mazes, and print-ready covers designed for instant Amazon KDP upload.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href="/studio"
-                  className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-lg hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-orange-500/25 transition-all duration-300 ease-in-out hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
-                  aria-label="Start creating KDP books now in Studio"
-                >
-                  Start Creating Now
-                  <ArrowRight className="w-5 h-5 text-white" />
-                </Link>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-200/80 text-xs font-bold text-slate-600">
-                <span className="text-slate-500 font-black uppercase tracking-wider text-[10px]">Quick Jump:</span>
-                <Link href="/pricing" className="hover:text-indigo-600 hover:underline transition-colors">Pricing Plans</Link>
-                <span>•</span>
-                <a href="#features" className="hover:text-indigo-600 hover:underline transition-colors">Features &amp; Engines</a>
-                <span>•</span>
-                <a href="#reviews" className="hover:text-indigo-600 hover:underline transition-colors">User Reviews</a>
-                <span>•</span>
-                <Link href="/about" className="hover:text-indigo-600 hover:underline transition-colors">About Us</Link>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 mr-1">Best For:</span>
-                <span className="text-xs font-bold uppercase tracking-wider text-indigo-800 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
-                  KDP Self-Publishers
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-purple-800 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
-                  Activity &amp; Puzzle Authors
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
-                  Low-Content Creators
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-                  Etsy Sellers &amp; Agencies
-                </span>
-              </div>
-            </div>
-
-            {/* Right Column: Interactive Vector Studio Showcase */}
-            <div className="lg:col-span-6 relative">
-              <div className="absolute inset-0 bg-indigo-100/40 rounded-[3rem] blur-3xl" />
-              <HomeStudioShowcase />
-            </div>
-
+      {/* ── HERO SECTION (Centered, Ultra-Fast, 0 Hydration Lag) ── */}
+      <section className="relative pt-10 pb-16 md:pt-16 md:pb-24 px-6 overflow-hidden z-10 text-center">
+        <div className="max-w-5xl mx-auto relative z-10">
+          
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-indigo-700 text-xs font-black uppercase tracking-[0.2em] shadow-sm mb-6">
+            <Sparkles className="w-4 h-4 text-indigo-600" />
+            The Ultimate Publishing Suite for KDP Self-Publishers
           </div>
+
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-slate-900 tracking-tight leading-[1.1] max-w-4xl mx-auto">
+            Create 10 Unique <span className="bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent">KDP Puzzle Books</span> in 5 Minutes
+          </h1>
+
+          <p className="text-slate-700 text-lg sm:text-xl font-medium leading-relaxed max-w-3xl mx-auto mt-6">
+            The ultimate all-in-one publishing suite. Generate mathematically unique puzzles, custom shape-masked mazes, and print-ready covers designed for instant Amazon KDP upload.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+            <Link
+              href="/studio"
+              className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-lg hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-orange-500/25 transition-all duration-300 ease-in-out hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
+              aria-label="Start creating KDP books now in Studio"
+            >
+              Start Creating Now (Free)
+              <ArrowRight className="w-5 h-5 text-white" />
+            </Link>
+            <Link
+              href="/tools"
+              className="w-full sm:w-auto px-7 py-4.5 rounded-2xl bg-white border-2 border-slate-200 text-slate-800 font-bold text-base hover:bg-slate-50 hover:border-indigo-300 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm"
+            >
+              Explore 30+ Free Tools
+            </Link>
+          </div>
+
+          {/* Value Proof Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-8 border-t border-slate-200/80 max-w-4xl mx-auto mt-10">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              100% Amazon KDP Print Compliant
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              300 DPI Vector PDF Export
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              Zero Duplicate Ban Risk
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              Auto Spine &amp; Bleed Calculations
+            </span>
+          </div>
+
+          {/* Quick Jump and Best For */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-6 text-xs font-bold text-slate-600">
+            <span className="text-slate-500 font-black uppercase tracking-wider text-[10px]">Quick Jump:</span>
+            <Link href="/pricing" className="hover:text-indigo-600 hover:underline transition-colors">Pricing Plans</Link>
+            <span>•</span>
+            <a href="#features" className="hover:text-indigo-600 hover:underline transition-colors">Features &amp; Engines</a>
+            <span>•</span>
+            <a href="#reviews" className="hover:text-indigo-600 hover:underline transition-colors">User Reviews</a>
+            <span>•</span>
+            <Link href="/about" className="hover:text-indigo-600 hover:underline transition-colors">About Us</Link>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 mr-1">Best For:</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-800 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
+              KDP Self-Publishers
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-purple-800 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
+              Activity &amp; Puzzle Authors
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
+              Low-Content Creators
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+              Etsy Sellers &amp; Agencies
+            </span>
+          </div>
+
         </div>
       </section>
 

@@ -1607,38 +1607,52 @@ export default function ColoringBookClient() {
             </div>
             
             {/* Custom Upload & Template Selection */}
-            <div data-tour="select-template" className="space-y-6">
-              {/* Custom Upload Section */}
-              <div className="bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800/60 rounded-2xl p-5 shadow-sm space-y-3">
+            <div data-tour="select-template" className="space-y-4">
+              {/* Compact Custom Upload & Blank Canvas Toolbar */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider flex items-center gap-1.5">
-                    <Upload className="w-4 h-4" /> Custom Image → Line Art Converter
-                  </label>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                    <Upload className="w-3 h-3 text-indigo-500" /> Custom Line Art &amp; Canvas
+                  </span>
                   {customImageName && (
-                    <button onClick={clearCustomUpload} className="text-[10px] text-red-500 hover:underline font-bold">
+                    <button 
+                      onClick={clearCustomUpload} 
+                      className="text-[9px] text-rose-500 hover:underline font-bold cursor-pointer"
+                    >
                       Reset to Presets
                     </button>
                   )}
                 </div>
 
-                <label className="block w-full cursor-pointer bg-indigo-50/50 dark:bg-indigo-950/20 border-2 border-dashed border-indigo-300 dark:border-indigo-700/60 hover:border-indigo-500 rounded-xl p-4 text-center transition">
-                  <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                  <Upload className="w-6 h-6 text-indigo-500 mx-auto mb-1" />
-                  <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 block">
-                    {customImageName ? `Loaded: ${customImageName}` : "Click to upload PNG/JPG photo"}
-                  </span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5">
-                    Auto Sobel filter converts any photo into clean 300 DPI coloring line art!
-                  </span>
-                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Upload Photo Button */}
+                  <label className="cursor-pointer bg-indigo-50/60 dark:bg-indigo-950/30 border border-dashed border-indigo-300 dark:border-indigo-700/60 hover:border-indigo-500 rounded-xl p-2 text-center transition flex flex-col items-center justify-center gap-1 group">
+                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                    <div className="flex items-center gap-1.5 text-indigo-900 dark:text-indigo-300">
+                      <Upload className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
+                      <span className="text-[11px] font-bold truncate max-w-[120px]">
+                        {customImageName ? customImageName : "Photo to Line Art"}
+                      </span>
+                    </div>
+                    <span className="text-[8px] text-slate-500 dark:text-slate-400 leading-none">
+                      Sobel 300 DPI Filter
+                    </span>
+                  </label>
 
-                {/* ➕ Create Blank Canvas Button */}
-                <button
-                  onClick={handleCreateBlankPage}
-                  className="w-full py-2.5 px-4 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-black rounded-xl text-xs border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center gap-2 transition cursor-pointer"
-                >
-                  <FilePlus className="w-4 h-4 text-indigo-500" /> Create Blank Page (Draw From Scratch)
-                </button>
+                  {/* Blank Canvas Button */}
+                  <button
+                    onClick={handleCreateBlankPage}
+                    className="bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-center transition flex flex-col items-center justify-center gap-1 text-slate-700 dark:text-slate-200 cursor-pointer group active:scale-95"
+                  >
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <FilePlus className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+                      <span className="text-[11px] font-bold">Blank Canvas</span>
+                    </div>
+                    <span className="text-[8px] text-slate-500 dark:text-slate-400 leading-none">
+                      Draw From Scratch
+                    </span>
+                  </button>
+                </div>
               </div>
 
               {/* Category Filter */}

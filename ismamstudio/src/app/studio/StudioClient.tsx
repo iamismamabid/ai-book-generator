@@ -334,10 +334,14 @@ export default function MasterStudioApp() {
         </div>
       </header>
 
-      {/* FULL-BLEED WORKSPACE CONTAINER (Fluid zero-jump flex viewport) */}
-      <main className="flex-1 w-full min-h-0 overflow-hidden relative flex flex-col">
+      {/* FULL-BLEED WORKSPACE CONTAINER (Stacked parallel layout without display:none) */}
+      <main className="flex-1 w-full min-h-0 overflow-hidden relative">
         {/* Interior Tab Content (BookBuilder) */}
-        <div className={`w-full h-full flex-1 flex-col overflow-hidden ${activeTab === 'interior' ? 'flex' : 'hidden'}`}>
+        <div
+          className={`absolute inset-0 w-full h-full flex flex-col overflow-hidden transition-opacity duration-150 ${
+            activeTab === 'interior' ? 'opacity-100 z-10 pointer-events-auto visible' : 'opacity-0 z-0 pointer-events-none invisible'
+          }`}
+        >
           <BookBuilder
             coverState={{
               coverElements,
@@ -350,7 +354,11 @@ export default function MasterStudioApp() {
         </div>
 
         {/* Cover Studio Tab Content (FabricCoverStudio) */}
-        <div className={`w-full h-full flex-1 overflow-hidden bg-white dark:bg-slate-900 ${activeTab === 'cover' ? 'flex' : 'hidden'}`}>
+        <div
+          className={`absolute inset-0 w-full h-full flex flex-col overflow-hidden bg-white dark:bg-slate-900 transition-opacity duration-150 ${
+            activeTab === 'cover' ? 'opacity-100 z-10 pointer-events-auto visible' : 'opacity-0 z-0 pointer-events-none invisible'
+          }`}
+        >
           {premiumStatus.checked && premiumStatus.plan === "free" ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0b0f19] text-white w-full h-full relative overflow-hidden">
               <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
@@ -379,6 +387,7 @@ export default function MasterStudioApp() {
             </div>
           ) : (
             <FabricCoverStudio
+              isActive={activeTab === 'cover'}
               trimSize={trimSize}
               setTrimSize={setTrimSize}
               pageCount={pageCount}

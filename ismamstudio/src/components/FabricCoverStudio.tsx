@@ -564,6 +564,7 @@ export interface CoverBackgroundState {
 }
 
 interface FabricCoverStudioProps {
+  isActive?: boolean;
   trimSize: { label: string; w: number; h: number };
   setTrimSize: (size: any) => void;
   pageCount: number;
@@ -691,6 +692,7 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
 };
 
 export default function FabricCoverStudio({
+  isActive = true,
   trimSize,
   setTrimSize,
   pageCount,
@@ -724,6 +726,11 @@ export default function FabricCoverStudio({
   useEffect(() => {
     coverBackgroundRef.current = coverBackground;
   }, [coverBackground]);
+
+  const isActiveRef = useRef(isActive);
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
 
   // Dynamically load Google Fonts for the cover studio — every font in
   // GOOGLE_FONT_FAMILIES (everything but the browser-native "System" group)
@@ -1692,6 +1699,7 @@ export default function FabricCoverStudio({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isActiveRef.current) return;
       if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
         return;
       }

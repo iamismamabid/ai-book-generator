@@ -6860,7 +6860,7 @@ export default function FabricCoverStudio({
               studioType="cover"
               onApplyFrontCover={(url) => setFrontCoverImage(url)}
               onApplyFullCover={(url) => setFullCoverImage(url)}
-              onAddToCanvas={(url) => addImage(url)}
+              onAddToCanvas={(url) => addClipart(url)}
             />
           </div>
         )}
@@ -7785,7 +7785,7 @@ export default function FabricCoverStudio({
         studioType="cover"
         onApplyFrontCover={(url) => setFrontCoverImage(url)}
         onApplyFullCover={(url) => setFullCoverImage(url)}
-        onAddToCanvas={(url) => addImage(url)}
+        onAddToCanvas={(url) => addClipart(url)}
       />
       </div>
     </div>

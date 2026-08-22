@@ -580,29 +580,7 @@ export default function ColoringBookClient() {
 
   useEffect(() => {
     drawPattern();
-    const lineCanvas = canvasRef.current;
-    const colorCanvas = colorCanvasRef.current;
-    if (!lineCanvas || !colorCanvas) return;
-
-    // Check if there is an autosave or saved progress for this preset
-    try {
-      const autosave = localStorage.getItem(`kdpage_coloring_autosave_${activePreset.id}`) || localStorage.getItem(`kdpage_coloring_progress_${activePreset.id}`);
-      if (autosave) {
-        const parsed = JSON.parse(autosave);
-        if (parsed && typeof parsed.line === "string" && typeof parsed.color === "string") {
-          loadSnapshot(parsed);
-          setHistory({ stack: [parsed], index: 0 });
-          return;
-        }
-      }
-    } catch {
-      // fallback
-    }
-
-    const cctx = colorCanvas.getContext("2d");
-    if (cctx) cctx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
-    setHistory({ stack: [{ line: lineCanvas.toDataURL(), color: colorCanvas.toDataURL() }], index: 0 });
-  }, [drawPattern, activePreset.id]);
+  }, [drawPattern]);
 
   // Restores customLineArt (the uploaded-photo state, not just its rendered
   // pixels) from the same autosave/progress entry the effect above already
@@ -618,6 +596,10 @@ export default function ColoringBookClient() {
       const autosave = localStorage.getItem(`kdpage_coloring_autosave_${activePreset.id}`) || localStorage.getItem(`kdpage_coloring_progress_${activePreset.id}`);
       if (!autosave) return;
       const parsed = JSON.parse(autosave);
+      if (parsed && typeof parsed.line === "string" && typeof parsed.color === "string") {
+        loadSnapshot(parsed);
+        setHistory({ stack: [parsed], index: 0 });
+      }
       if (typeof parsed?.customLineArtDataUrl !== "string") return;
       dataUrlToImageData(parsed.customLineArtDataUrl)
         .then((imgData) => {
@@ -677,16 +659,36 @@ export default function ColoringBookClient() {
     const img = new window.Image();
     img.onload = () => {
       const lineArtData = convertImageToLineArt(img, 850, 1100);
+      const colorCanvas = colorCanvasRef.current;
+      if (colorCanvas) {
+        const cctx = colorCanvas.getContext("2d");
+        cctx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+      }
+      setLineArtScale(1.0);
+      setLineArtOffsetX(0);
+      setLineArtOffsetY(0);
       setCustomLineArt(lineArtData);
       setCustomImageName(file.name);
+      try {
+        localStorage.removeItem(`kdpage_coloring_autosave_${activePreset.id}`);
+        localStorage.removeItem(`kdpage_coloring_progress_${activePreset.id}`);
+      } catch {}
       showToast(`Uploaded ${file.name} as custom line art!`);
     };
     img.src = URL.createObjectURL(file);
   };
 
   const clearCustomUpload = () => {
+    const colorCanvas = colorCanvasRef.current;
+    if (colorCanvas) {
+      const cctx = colorCanvas.getContext("2d");
+      cctx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+    }
     setCustomLineArt(null);
     setCustomImageName(null);
+    setLineArtScale(1.0);
+    setLineArtOffsetX(0);
+    setLineArtOffsetY(0);
     showToast("Reverted to preset template.");
   };
 
@@ -695,10 +697,38 @@ export default function ColoringBookClient() {
     img.crossOrigin = "anonymous";
     img.onload = () => {
       const lineArtData = convertImageToLineArt(img, 850, 1100);
+      
+      // 1. Clear old color canvas fills and brush strokes
+      const colorCanvas = colorCanvasRef.current;
+      if (colorCanvas) {
+        const cctx = colorCanvas.getContext("2d");
+        cctx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+      }
+      
+      // 2. Clear line art canvas
+      const lineCanvas = canvasRef.current;
+      if (lineCanvas) {
+        const lctx = lineCanvas.getContext("2d");
+        lctx?.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+      }
+
+      // 3. Reset zoom/offsets
+      setLineArtScale(1.0);
+      setLineArtOffsetX(0);
+      setLineArtOffsetY(0);
+
+      // 4. Update custom line art
       setCustomLineArt(lineArtData);
       const shortName = promptText ? (promptText.length > 25 ? promptText.slice(0, 25) + "..." : promptText) : "AI Generated";
       setCustomImageName(`AI: ${shortName}`);
-      showToast("Loaded AI Generated Line Art onto 300 DPI canvas!");
+
+      // 5. Remove old autosave for this preset so it doesn't try to restore old strokes
+      try {
+        localStorage.removeItem(`kdpage_coloring_autosave_${activePreset.id}`);
+        localStorage.removeItem(`kdpage_coloring_progress_${activePreset.id}`);
+      } catch {}
+
+      showToast("Loaded new AI Generated Line Art onto 300 DPI canvas!");
     };
     img.src = imageUrl;
   };

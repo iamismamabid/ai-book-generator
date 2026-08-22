@@ -863,11 +863,11 @@ export default function FabricCoverStudio({
     return null;
   };
 
-  // Ref to hold saveState function to call it when coverBackground updates
   const saveStateRef = useRef<() => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [scaleRatio, setScaleRatio] = useState(1);
+  const [isScaleReady, setIsScaleReady] = useState(false);
+  const [scaleRatio, setScaleRatio] = useState<number>(0.45);
   // Multiplies on top of scaleRatio (the auto fit-to-container ratio) so
   // users can zoom in for precision work (e.g. spine text) without changing
   // the underlying full-resolution canvas dimensions.
@@ -1783,6 +1783,7 @@ export default function FabricCoverStudio({
         // Apply a padding margin of 0.95 so it fits with some breathing room
         const ratio = Math.min(ratioX, ratioY) * 0.95;
         setScaleRatio(ratio);
+        setIsScaleReady(true);
       }
     };
 
@@ -7350,7 +7351,7 @@ export default function FabricCoverStudio({
             style={{
               transform: `scale(${scaleRatio * userZoom})`,
               transformOrigin: userZoom > 1 ? 'top left' : 'center center',
-              transition: 'transform 0.1s ease',
+              transition: isScaleReady ? 'transform 0.15s ease-out' : 'none',
               boxShadow: "var(--shadow-soft-lg)"
             }}
             className="relative bg-white rounded-sm ring-1 ring-slate-300 overflow-hidden cursor-default flex-shrink-0"

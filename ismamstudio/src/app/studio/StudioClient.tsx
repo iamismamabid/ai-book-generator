@@ -246,8 +246,8 @@ export default function MasterStudioApp() {
   return (
     <div className="h-screen w-screen bg-[#F8FAFC] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-hidden select-none">
       
-      {/* INTEGRATED TOP STUDIO NAVBAR (Edge-to-Edge) */}
-      <header className="h-13 py-2 px-4 bg-slate-950 text-white border-b border-slate-900 flex items-center justify-between z-30 shrink-0 select-none">
+      {/* INTEGRATED TOP STUDIO NAVBAR (Edge-to-Edge with fixed locked height) */}
+      <header className="h-[52px] min-h-[52px] max-h-[52px] px-4 bg-slate-950 text-white border-b border-slate-900 flex items-center justify-between z-30 shrink-0 select-none">
         {/* Left: Brand Logo & Title */}
         <div className="flex items-center gap-3">
           <Link href="/" title="Back to KDPage Home" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
@@ -334,8 +334,8 @@ export default function MasterStudioApp() {
         </div>
       </header>
 
-      {/* FULL-BLEED WORKSPACE CONTAINER (Fixed height, zero jump / zero layout shift) */}
-      <main className="flex-1 w-full h-[calc(100vh-52px)] min-h-[500px] overflow-hidden relative flex flex-col">
+      {/* FULL-BLEED WORKSPACE CONTAINER (Fluid zero-jump flex viewport) */}
+      <main className="flex-1 w-full min-h-0 overflow-hidden relative flex flex-col">
         {activeTab === 'interior' ? (
           <div className="w-full h-full flex-1 flex flex-col overflow-hidden">
             <BookBuilder

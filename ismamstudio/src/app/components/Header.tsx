@@ -40,9 +40,17 @@ export default async function Header() {
             </div>
             <div className="flex flex-col">
               <span className="text-xl sm:text-2xl font-black tracking-tight flex items-center leading-none transition-transform group-hover:scale-[1.02]">
-                <span className="text-[#DC2626]">KD</span>
-                <span className="text-white">P</span>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400">age</span>
+                <span className="text-[#EA4335]">KD</span>
+                <span 
+                  className="font-black bg-clip-text text-transparent"
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #4285F4 0%, #9B72CF 28%, #EA4335 55%, #FBBC04 78%, #34A853 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}
+                >
+                  Page
+                </span>
               </span>
               <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mt-1">
                 All-In-One

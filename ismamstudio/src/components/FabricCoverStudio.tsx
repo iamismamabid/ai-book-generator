@@ -1777,13 +1777,16 @@ export default function FabricCoverStudio({
       if (!containerRef.current) return;
       const parentWidth = containerRef.current.clientWidth;
       const parentHeight = containerRef.current.clientHeight;
-      if (parentWidth && parentHeight) {
+      if (parentWidth > 20 && parentHeight > 20) {
         const ratioX = parentWidth / layout.canvasWidth;
         const ratioY = parentHeight / layout.canvasHeight;
         // Apply a padding margin of 0.95 so it fits with some breathing room
         const ratio = Math.min(ratioX, ratioY) * 0.95;
         setScaleRatio(ratio);
         setIsScaleReady(true);
+        if (canvas) {
+          canvas.calcOffset();
+        }
       }
     };
 
@@ -7345,19 +7348,31 @@ export default function FabricCoverStudio({
       </div>
 
         {/* Responsive parent container to calculate scale */}
-        <div ref={containerRef} className={`flex-1 w-full h-full min-h-0 overflow-auto flex relative ${userZoom > 1 ? 'items-start justify-start' : 'items-center justify-center'}`}>
-          {/* Scaled canvas container */}
+        <div ref={containerRef} className={`flex-1 w-full h-full min-h-0 overflow-auto flex relative ${userZoom > 1 ? 'items-start justify-start p-4' : 'items-center justify-center p-2 sm:p-4'}`}>
+          {/* Exact-size wrapper so flexbox centers the scaled bounding box precisely */}
           <div
             style={{
-              transform: `scale(${scaleRatio * userZoom})`,
-              transformOrigin: userZoom > 1 ? 'top left' : 'center center',
-              transition: isScaleReady ? 'transform 0.15s ease-out' : 'none',
-              boxShadow: "var(--shadow-soft-lg)"
+              width: Math.max(10, Math.round(layout.canvasWidth * scaleRatio * userZoom)),
+              height: Math.max(10, Math.round(layout.canvasHeight * scaleRatio * userZoom)),
+              transition: isScaleReady ? 'width 0.15s ease-out, height 0.15s ease-out' : 'none',
             }}
-            className="relative bg-white rounded-sm ring-1 ring-slate-300 overflow-hidden cursor-default flex-shrink-0"
-            onContextMenu={handleCanvasContextMenu}
+            className="relative flex-shrink-0"
           >
-            <canvas ref={canvasRef} />
+            {/* Scaled canvas container */}
+            <div
+              style={{
+                width: layout.canvasWidth,
+                height: layout.canvasHeight,
+                transform: `scale(${scaleRatio * userZoom})`,
+                transformOrigin: 'top left',
+                transition: isScaleReady ? 'transform 0.15s ease-out' : 'none',
+                boxShadow: "var(--shadow-soft-lg)"
+              }}
+              className="absolute top-0 left-0 bg-white rounded-sm ring-1 ring-slate-300 overflow-hidden cursor-default"
+              onContextMenu={handleCanvasContextMenu}
+            >
+              <canvas ref={canvasRef} />
+            </div>
           </div>
         </div>
 

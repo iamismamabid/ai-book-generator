@@ -336,66 +336,66 @@ export default function MasterStudioApp() {
 
       {/* FULL-BLEED WORKSPACE CONTAINER (Fluid zero-jump flex viewport) */}
       <main className="flex-1 w-full min-h-0 overflow-hidden relative flex flex-col">
-        {activeTab === 'interior' ? (
-          <div className="w-full h-full flex-1 flex flex-col overflow-hidden">
-            <BookBuilder
-              coverState={{
-                coverElements,
-                spineWidth,
-                trimSize,
-                ...coverBackground
-              }}
-              initialPages={notebookInitialPages ?? undefined}
-            />
-          </div>
-        ) : (
-          <div className="flex-1 w-full h-full overflow-hidden bg-white dark:bg-slate-900 flex">
-            {premiumStatus.checked && premiumStatus.plan === "free" ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0b0f19] text-white w-full h-full relative overflow-hidden">
-                <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-                <div className="max-w-md w-full bg-slate-900/60 border border-slate-800 p-8 rounded-[2.5rem] relative z-10 space-y-6" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
-                  <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto">
-                    <Lock className="w-8 h-8" />
-                  </div>
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent uppercase tracking-tight">
-                      Cover Studio is Locked
-                    </h2>
-                    <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-                      Designing high-converting book covers (front, spine, and back cover canvas) is available starting on our **Starter Creator** plan.
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2 pt-2">
-                    <Link
-                      href="/pricing"
-                      className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs rounded-2xl transition-all duration-200 ease-out active:scale-[0.98]"
-                      style={{ boxShadow: "var(--shadow-glow-primary)" }}
-                    >
-                      Upgrade to Starter Creator
-                    </Link>
-                  </div>
+        {/* Interior Tab Content (BookBuilder) */}
+        <div className={`w-full h-full flex-1 flex-col overflow-hidden ${activeTab === 'interior' ? 'flex' : 'hidden'}`}>
+          <BookBuilder
+            coverState={{
+              coverElements,
+              spineWidth,
+              trimSize,
+              ...coverBackground
+            }}
+            initialPages={notebookInitialPages ?? undefined}
+          />
+        </div>
+
+        {/* Cover Studio Tab Content (FabricCoverStudio) */}
+        <div className={`w-full h-full flex-1 overflow-hidden bg-white dark:bg-slate-900 ${activeTab === 'cover' ? 'flex' : 'hidden'}`}>
+          {premiumStatus.checked && premiumStatus.plan === "free" ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0b0f19] text-white w-full h-full relative overflow-hidden">
+              <div className="absolute top-0 left-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+              <div className="max-w-md w-full bg-slate-900/60 border border-slate-800 p-8 rounded-[2.5rem] relative z-10 space-y-6" style={{ boxShadow: "var(--shadow-soft-lg)" }}>
+                <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto">
+                  <Lock className="w-8 h-8" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-black bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent uppercase tracking-tight">
+                    Cover Studio is Locked
+                  </h2>
+                  <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+                    Designing high-converting book covers (front, spine, and back cover canvas) is available starting on our **Starter Creator** plan.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 pt-2">
+                  <Link
+                    href="/pricing"
+                    className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs rounded-2xl transition-all duration-200 ease-out active:scale-[0.98]"
+                    style={{ boxShadow: "var(--shadow-glow-primary)" }}
+                  >
+                    Upgrade to Starter Creator
+                  </Link>
                 </div>
               </div>
-            ) : (
-              <FabricCoverStudio
-                trimSize={trimSize}
-                setTrimSize={setTrimSize}
-                pageCount={pageCount}
-                setPageCount={setPageCount}
-                coverBackground={coverBackground}
-                setCoverBackground={setCoverBackground}
-                showKdpGuides={showKdpGuides}
-                setShowKdpGuides={setShowKdpGuides}
-                snapToGrid={snapToGrid}
-                setSnapToGrid={setSnapToGrid}
-                initialElements={coverElements}
-                onSaveWorkspace={(elements) => {
-                  setCoverElements(elements);
-                }}
-              />
-            )}
-          </div>
-        )}
+            </div>
+          ) : (
+            <FabricCoverStudio
+              trimSize={trimSize}
+              setTrimSize={setTrimSize}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
+              coverBackground={coverBackground}
+              setCoverBackground={setCoverBackground}
+              showKdpGuides={showKdpGuides}
+              setShowKdpGuides={setShowKdpGuides}
+              snapToGrid={snapToGrid}
+              setSnapToGrid={setSnapToGrid}
+              initialElements={coverElements}
+              onSaveWorkspace={(elements) => {
+                setCoverElements(elements);
+              }}
+            />
+          )}
+        </div>
       </main>
     </div>
   );

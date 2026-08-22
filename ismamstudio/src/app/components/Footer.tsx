@@ -14,9 +14,9 @@ export default function Footer() {
           {/* Brand Info */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-3 group select-none">
-              <div className="relative w-12 h-12 rounded-2xl overflow-hidden shadow-md shadow-indigo-500/20 bg-white p-1 group-hover:scale-105 transition-transform flex items-center justify-center border border-slate-700/60">
+              <div className="relative w-12 h-12 rounded-2xl overflow-hidden shadow-md shadow-amber-500/10 bg-white/95 p-1 group-hover:scale-105 transition-transform flex items-center justify-center border border-slate-700/60">
                 <Image
-                  src="/logo_transparent.png"
+                  src="/logo_icon.png"
                   alt="KDPage Logo"
                   fill
                   sizes="48px"
@@ -24,11 +24,13 @@ export default function Footer() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-black tracking-tight text-white flex items-center leading-none group-hover:text-indigo-300 transition-colors">
-                  <span className="text-red-500">KD</span>Page
+                <span className="text-xl font-black tracking-tight flex items-center leading-none transition-transform group-hover:scale-[1.02]">
+                  <span className="text-[#DC2626]">KD</span>
+                  <span className="text-white">P</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400">age</span>
                 </span>
                 <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mt-1">
-                  KDP Studio
+                  All-In-One
                 </span>
               </div>
             </Link>

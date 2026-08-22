@@ -4378,7 +4378,6 @@ export default function FabricCoverStudio({
     }
   };
 
-
   return (
     <div className="flex flex-col flex-1 overflow-hidden h-full relative">
       <div className="shrink-0 z-40">
@@ -7089,6 +7088,23 @@ export default function FabricCoverStudio({
             >
               {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
               <span className="text-[10px] font-black uppercase tracking-wider">{isGenerating ? "Compiling..." : "Download PDF"}</span>
+            </button>
+
+            <button
+              onClick={() => setIsShareOpen(true)}
+              title="Share Read-Only Review Link"
+              className="p-2 pl-2.5 pr-3 rounded-full bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5 cursor-pointer"
+            >
+              <Share2 className="w-4 h-4 text-indigo-500" />
+              <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">Share Review</span>
+            </button>
+
+            <button
+              onClick={() => setIsVersionsOpen(true)}
+              title="Version History & Checkpoints"
+              className="p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-all duration-150 active:scale-[0.94] cursor-pointer"
+            >
+              <History className="w-4 h-4"/>
             </button>
 
             <div className="w-px h-5 bg-slate-200 mx-1" />

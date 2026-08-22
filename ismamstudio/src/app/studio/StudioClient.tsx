@@ -334,12 +334,14 @@ export default function MasterStudioApp() {
         </div>
       </header>
 
-      {/* FULL-BLEED WORKSPACE CONTAINER (Fixed height, zero dynamic reflow / flicker) */}
-      <main className="flex-1 w-full h-[calc(100vh-52px)] min-h-[500px] overflow-hidden relative flex flex-col">
+      {/* FULL-BLEED WORKSPACE CONTAINER (Fixed viewport, pre-warmed background canvas) */}
+      <main className="flex-1 w-full h-[calc(100vh-52px)] min-h-[500px] overflow-hidden relative">
         {/* Interior Book Builder Tab */}
         <div
-          className={`w-full h-full flex-1 flex-col overflow-hidden ${
-            activeTab === 'interior' ? 'flex' : 'hidden'
+          className={`absolute inset-0 w-full h-full flex flex-col overflow-hidden transition-opacity duration-150 ${
+            activeTab === 'interior'
+              ? 'opacity-100 pointer-events-auto z-10'
+              : 'opacity-0 pointer-events-none z-0'
           }`}
         >
           <BookBuilder
@@ -353,10 +355,12 @@ export default function MasterStudioApp() {
           />
         </div>
 
-        {/* Cover Studio Tab (Persistently mounted to eliminate canvas re-initialization and layout drop) */}
+        {/* Cover Studio Tab (Always rendered with true dimensions in background so canvas pre-calculates immediately) */}
         <div
-          className={`flex-1 w-full h-full overflow-hidden bg-white dark:bg-slate-900 ${
-            activeTab === 'cover' ? 'flex' : 'hidden'
+          className={`absolute inset-0 w-full h-full overflow-hidden bg-white dark:bg-slate-900 flex transition-opacity duration-150 ${
+            activeTab === 'cover'
+              ? 'opacity-100 pointer-events-auto z-10'
+              : 'opacity-0 pointer-events-none z-0'
           }`}
         >
           {premiumStatus.checked && premiumStatus.plan === "free" ? (

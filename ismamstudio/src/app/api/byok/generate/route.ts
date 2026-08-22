@@ -135,19 +135,13 @@ export async function POST(req: Request) {
           }),
         });
 
-        const valData = await valRes.json();
-
-        if (!valRes.ok) {
-          let errorMsg = valData?.error?.message || `Google Gemini API key error (${valRes.status})`;
-          if (errorMsg.includes("blocked") || errorMsg.includes("restricted")) {
-            errorMsg = "Your Google API Key is restricted. In Google Cloud Console > Credentials, edit this API Key, select 'Don't restrict key' (or add 'Generative Language API'), and set Application restrictions to 'None'.";
-          }
-          return NextResponse.json({ success: false, error: errorMsg }, { status: valRes.status });
+        let optimizedPrompt = enhancedPrompt;
+        if (valRes.ok) {
+          const valData = await valRes.json();
+          optimizedPrompt = valData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || enhancedPrompt;
         }
 
-        const optimizedPrompt = valData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || enhancedPrompt;
-
-        // Generate high-resolution image using the Gemini-optimized prompt
+        // Generate high-resolution image using the optimized prompt
         const width = studioType === "cover" ? 768 : 1024;
         const height = studioType === "cover" ? 1024 : 1024;
         const seed = Math.floor(Math.random() * 1000000);

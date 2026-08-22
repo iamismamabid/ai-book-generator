@@ -12,6 +12,7 @@ import Script from 'next/script';
 import type { Metadata } from 'next';
 import TawkToChat from '@/components/TawkToChat';
 import GeminiSupportAssistant from '@/components/GeminiSupportAssistant';
+import CookieConsentBanner from '@/components/CookieConsentBanner';
 import JsonLdSchema from '@/components/JsonLdSchema';
 import InstantNavPrefetcher from '@/app/components/InstantNavPrefetcher';
 
@@ -299,6 +300,7 @@ export default function RootLayout({
           <Analytics />
           <GeminiSupportAssistant />
           <TawkToChat />
+          <CookieConsentBanner />
           </ThemeProvider>
         </body>
       </html>

@@ -2333,21 +2333,22 @@ function drawObjectLabel(ctx: CanvasRenderingContext2D, text: string, cx: number
  * implementation instead of three copies that could drift out of sync.
  */
 export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number, height: number, opts: ColoringPatternOptions) {
-  const {
-    presetId,
-    complexity,
-    lineWidth,
-    isColorByNumber,
-    isMidnightMode,
-    frameStyle,
-    seed,
-    transparentBg,
-    lineArtScale = 1.0,
-    lineArtOffsetX = 0,
-    lineArtOffsetY = 0,
-  } = opts;
-  const cx = width / 2;
-  const cy = height / 2;
+  try {
+    const {
+      presetId,
+      complexity,
+      lineWidth,
+      isColorByNumber,
+      isMidnightMode,
+      frameStyle,
+      seed,
+      transparentBg,
+      lineArtScale = 1.0,
+      lineArtOffsetX = 0,
+      lineArtOffsetY = 0,
+    } = opts;
+    const cx = width / 2;
+    const cy = height / 2;
 
   // Background
   if (transparentBg) {
@@ -2630,5 +2631,8 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
       ctx.textAlign = "left";
       ctx.fillText(`${item.num}`, lx + 22, legY);
     });
+  }
+  } catch (err) {
+    console.error("Error rendering coloring pattern:", err);
   }
 }

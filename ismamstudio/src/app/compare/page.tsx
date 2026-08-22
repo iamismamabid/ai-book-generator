@@ -224,7 +224,7 @@ export default function ComparePage() {
               href="/studio"
               className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black rounded-xl text-center shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-1.5 hover:opacity-90"
             >
-              Start Free Trial <Zap className="w-4 h-4" />
+              Get Started <Zap className="w-4 h-4" />
             </Link>
           </div>
 

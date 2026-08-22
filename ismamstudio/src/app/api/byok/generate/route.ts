@@ -138,7 +138,10 @@ export async function POST(req: Request) {
         const valData = await valRes.json();
 
         if (!valRes.ok) {
-          const errorMsg = valData?.error?.message || `Google Gemini API key error (${valRes.status}): ${valRes.statusText}`;
+          let errorMsg = valData?.error?.message || `Google Gemini API key error (${valRes.status})`;
+          if (errorMsg.includes("blocked") || errorMsg.includes("restricted")) {
+            errorMsg = "Your Google API Key is restricted. In Google Cloud Console > Credentials, edit this API Key, select 'Don't restrict key' (or add 'Generative Language API'), and set Application restrictions to 'None'.";
+          }
           return NextResponse.json({ success: false, error: errorMsg }, { status: valRes.status });
         }
 

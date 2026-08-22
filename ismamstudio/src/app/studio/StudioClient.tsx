@@ -235,8 +235,7 @@ export default function MasterStudioApp() {
     trimSize
   ]);
 
-  if (!isMounted || notebookLoadState === "loading") {
-
+  if (notebookLoadState === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center text-indigo-500 bg-slate-950">
         <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />

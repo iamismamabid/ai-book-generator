@@ -4598,14 +4598,14 @@ export default function FabricCoverStudio({
         </button>
         <button
           onClick={() => setActiveToolTab(prev => prev === 'ai-byok' ? null : 'ai-byok')}
-          title="AI BYOK Generator (Launching Soon)"
+          title="AI Magic Studio (BYOK)"
           className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] relative ${
             activeToolTab === 'ai-byok' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 text-amber-400 hover:text-amber-300'
           }`}
         >
           <Sparkles className="w-5 h-5"/>
-          <span className="absolute -top-1 -right-1 px-1 py-0.2 text-[7px] font-black rounded-full bg-amber-500 text-slate-950 shadow-sm border border-slate-950 animate-pulse">
-            SOON
+          <span className="absolute -top-1 -right-1 px-1 py-0.2 text-[7px] font-black rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-sm border border-slate-950 animate-pulse">
+            MAGIC
           </span>
         </button>
         <button

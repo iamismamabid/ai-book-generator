@@ -267,6 +267,7 @@ function PricingSectionInner() {
       features: [
         "5-Page Watermark-Free PDF Exports (To test KDP Print Previewer)",
         "Full manuscript draft exports with light KDPage sample watermark",
+        "BYOK AI Magic Studio (Connect OpenAI/Gemini/Stability for Unlimited Generations)",
         "Access to 8+ KDP creation tools & engines",
         "Easy Sudoku & basic Word Search tools",
         "Square maze & basic outline tools",
@@ -297,6 +298,7 @@ function PricingSectionInner() {
         "7-Day Trial for $1 (Cancel Anytime)",
         "Full Commercial Rights (Keep 100% royalties)",
         "Watermark-free vector PDF exports",
+        "Full BYOK AI Magic Studio (Unlimited 8K Covers & 300 DPI Vector Line Art with 0% Markup)",
         "Full Access to All Studios & Generators (Within Limits)",
         "Word Search, Sudoku, Mazes & Crosswords (Up to 20/book)",
         "Cover & Interior Canvas Studio",
@@ -331,6 +333,7 @@ function PricingSectionInner() {
         "7-Day Trial for $1 (Cancel Anytime)",
         "Watermark-free PDF exports (All sizes + Custom)",
         "100% Commercial-use rights (Keep all royalties)",
+        "Full BYOK AI Magic Studio (DALL-E 3, Gemini & Stability with 1-Click Canvas Insertion)",
         "100 Vector Line Art Credits / mo",
         "Up to 10 Brand & Pen-name profiles",
         "Full Sudoku Engine (Easy, Med, Hard difficulties)",
@@ -365,6 +368,7 @@ function PricingSectionInner() {
       features: [
         "7-Day Trial for $1 (Cancel Anytime)",
         "Everything in Pro Studio plan",
+        "Enterprise BYOK AI Magic Studio (Unlimited AI Generations for All Team Seats)",
         "300 Vector Line Art Credits / mo",
         "Up to 3 team member account seats",
         "Up to 25 Brand & Pen-name profiles",
@@ -391,6 +395,10 @@ function PricingSectionInner() {
 
 
   const faqs = [
+    {
+      q: "How does the BYOK (Bring Your Own Key) AI Magic System work?",
+      a: "Our BYOK system allows you to connect your own OpenAI (DALL-E 3), Google Gemini, or Stability AI API keys directly inside KDPage Cover Studio and Coloring Book Studio. This unlocks unlimited 8K AI book cover illustrations and 300 DPI vector line art generation at direct raw provider cost (~$0.02 to $0.04 per image) with zero monthly platform caps or middleman markups. Your keys are encrypted locally in your browser and never touch or store on our servers.",
+    },
     {
       q: "How does the 7-Day Trial & Export Limits work?",
       a: "During the 7-Day Trial period, you have full access to explore the complete studio, design covers, and export up to 2 complete books to test and confirm 300 DPI print quality, margins, and bleed on the Amazon KDP Print Previewer. Full unlimited bulk book exports activate automatically upon your first billing cycle or with a Lifetime Deal.",
@@ -632,6 +640,35 @@ function PricingSectionInner() {
         </div>
       </div>
 
+      {/* 🔮 BYOK AI Magic Spotlight Banner */}
+      <div className="max-w-5xl mx-auto mb-12 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-amber-500/30 shadow-2xl relative overflow-hidden text-slate-100">
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="space-y-2 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> Included in All Plans • Zero Platform Markups
+            </div>
+            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+              Infinite AI Magic With <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-300 bg-clip-text text-transparent">Bring Your Own Key (BYOK)</span>
+            </h3>
+            <p className="text-slate-300 text-xs md:text-sm max-w-2xl leading-relaxed">
+              Generate unlimited 8K photorealistic book covers, cinematic backdrops, and 300 DPI vector line art at direct provider cost (~$0.02–$0.04/image) using your OpenAI (DALL-E 3), Google Gemini, or Stability AI API keys with zero monthly platform limits.
+            </p>
+          </div>
+          <div className="flex flex-wrap md:flex-col gap-2 shrink-0">
+            <span className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400" /> OpenAI DALL-E 3
+            </span>
+            <span className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-400 shadow-sm shadow-blue-400" /> Google Gemini
+            </span>
+            <span className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-purple-400 shadow-sm shadow-purple-400" /> Stability AI SDXL
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Monthly Grid */}
       <div 
         style={{ display: billingCycle === 'monthly' ? 'grid' : 'none' }}
@@ -762,6 +799,10 @@ function PricingSectionInner() {
             {
               label: "Commercial Rights",
               free: false, starter: true, pro: true, agency: true,
+            },
+            {
+              label: "BYOK AI Magic (OpenAI / Gemini / Stability)",
+              free: "Unlimited (BYOK)", starter: "Unlimited (BYOK)", pro: "Unlimited (BYOK)", agency: "Unlimited (BYOK)",
             },
             {
               label: "Watermark-Free Exports",

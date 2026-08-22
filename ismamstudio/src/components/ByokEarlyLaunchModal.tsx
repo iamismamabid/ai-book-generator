@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { 
   X, Sparkles, Key, Zap, ShieldCheck, Check, Bell, 
   Cpu, ArrowRight, BookOpen, Paintbrush, Layers, CheckCircle2,
-  ExternalLink, Settings2
+  ExternalLink, Settings2, Wand2
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import ByokStudioPanel from "./ByokStudioPanel";
@@ -112,10 +112,10 @@ export default function ByokEarlyLaunchModal({
         {/* Top News Badge */}
         <div className="flex items-center gap-2 mb-3">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border border-amber-500/40 text-amber-300 shadow-sm shadow-amber-500/10">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> BYOK AI System
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> AI Magic Studio • Bring Your Own Key
           </span>
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-800/60 px-2.5 py-1 rounded-full border border-slate-700/60">
-            {isCover ? "Cover Studio" : "Coloring Book Studio"} Exclusive
+            {isCover ? "Cover Studio" : "Coloring Book Studio"} Power Feature
           </span>
         </div>
 
@@ -125,21 +125,21 @@ export default function ByokEarlyLaunchModal({
             onClick={() => setActiveTab("generate")}
             className={`py-1.5 px-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === "generate"
-                ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
+                ? "bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-amber-500/20 font-black"
                 : "bg-slate-800 text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" /> AI Generator &amp; Key Setup
+            <Wand2 className="w-3.5 h-3.5" /> AI Magic Generator &amp; Key Setup
           </button>
           <button
             onClick={() => setActiveTab("overview")}
             className={`py-1.5 px-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === "overview"
-                ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
+                ? "bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-amber-500/20 font-black"
                 : "bg-slate-800 text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Settings2 className="w-3.5 h-3.5" /> Launch News &amp; Specs
+            <Settings2 className="w-3.5 h-3.5" /> How BYOK Works &amp; Specs
           </button>
         </div>
 
@@ -169,14 +169,14 @@ export default function ByokEarlyLaunchModal({
           <div>
             {/* Title */}
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white mb-2 leading-tight">
-              Bring Your Own Key <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-300 bg-clip-text text-transparent">(BYOK)</span> System
+              Infinite AI Creation Magic With <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-300 bg-clip-text text-transparent">Your Own Key (BYOK)</span>
             </h2>
 
             {/* Subtitle */}
             <p className="text-sm text-slate-300 leading-relaxed mb-6">
               {isCover
-                ? "Generate unlimited high-resolution book covers, character artwork, fantasy landscapes, and photorealistic book backdrops at raw API cost with zero monthly credit limits using your own API keys."
-                : "Generate unlimited custom coloring pages, 300 DPI vector line art, intricate mandalas, and color-by-number illustrations directly from text prompts using your own API keys at zero platform markup."}
+                ? "Transform simple thoughts into breathtaking 8K photorealistic book covers, fantasy landscapes, and cinematic character artwork directly on your canvas at direct raw provider cost (~$0.02 - $0.04/image) with zero monthly limits."
+                : "Turn text prompts into high-definition 300 DPI vector line art, intricate mandalas, and print-ready coloring books with zero per-image platform limits or credit markups."}
             </p>
 
             {/* Value Props Grid */}
@@ -238,39 +238,28 @@ export default function ByokEarlyLaunchModal({
               </div>
             </div>
 
-            {/* Early Access Action Bar */}
+            {/* Action Bar */}
             <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black flex-shrink-0 shadow-lg shadow-amber-500/20">
-                  <Bell className="w-5 h-5" />
+                  <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-white uppercase tracking-wider">
-                    {isSubscribed ? "Priority Launch Access Active" : "Get Early Access Launch Updates"}
+                    Ready to Generate Magic?
                   </h4>
                   <p className="text-[11px] text-slate-300">
-                    {isSubscribed
-                      ? "You'll receive all upcoming BYOK feature additions and engine updates first."
-                      : "Click below to secure priority access when new BYOK engines roll out."}
+                    Switch to the Generator tab to paste your API key and start creating artwork in seconds.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                {isSubscribed ? (
-                  <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold w-full sm:w-auto justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Priority Access Active</span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleNotifyMe()}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/25 transition-all active:scale-95 cursor-pointer"
-                  >
-                    <Bell className="w-3.5 h-3.5" /> Notify Me On Updates
-                  </button>
-                )}
-              </div>
+              <button
+                onClick={() => setActiveTab("generate")}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/25 transition-all active:scale-95 cursor-pointer"
+              >
+                <Wand2 className="w-3.5 h-3.5" /> Start Generating
+              </button>
             </div>
           </div>
         )}

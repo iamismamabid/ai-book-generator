@@ -645,6 +645,7 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       base.align = obj.textAlign;
       base.width = (obj.width || 240) * (obj.scaleX || 1);
       base.fontWeight = obj.fontWeight;
+      base.styles = obj.styles;
       // Spine text is positioned from its center, so x/y above mean something
       // different than for the default top-left origin — persist the origin or
       // the text jumps on reload.
@@ -1120,6 +1121,9 @@ export default function FabricCoverStudio({
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
 
+  // Active text character selection tracker for individual text styling
+  const activeTextSelectionRef = useRef<{ obj: fabric.IText | fabric.Textbox; start: number; end: number } | null>(null);
+
   // Active object editing states
   const [objectColor, setObjectColor] = useState("#FFFFFF");
   const [objectStrokeColor, setObjectStrokeColor] = useState("#FFFFFF");
@@ -1312,18 +1316,52 @@ export default function FabricCoverStudio({
     }
 
     if (activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox') {
-      const textObj = activeObject as fabric.IText;
+      const textObj = activeObject as fabric.IText | fabric.Textbox;
       setObjectText(textObj.text || "");
-      setObjectFontSize(textObj.fontSize || 32);
-      setObjectFontFamily(textObj.fontFamily || "Arial");
       setObjectCharSpacing(textObj.charSpacing || 0);
       setObjectLineHeight(textObj.lineHeight || 1.16);
-
-      // Sync text style states
-      setObjectFontWeight(String(textObj.fontWeight || "normal"));
-      setObjectFontStyle(textObj.fontStyle || "normal");
-      setObjectUnderline(!!textObj.underline);
       setObjectTextAlign(textObj.textAlign || "left");
+
+      let start = 0;
+      let end = 0;
+      let hasSel = false;
+      if (typeof textObj.selectionStart === 'number' && typeof textObj.selectionEnd === 'number' && textObj.selectionStart !== textObj.selectionEnd) {
+        hasSel = true;
+        start = Math.min(textObj.selectionStart, textObj.selectionEnd);
+        end = Math.max(textObj.selectionStart, textObj.selectionEnd);
+      } else if (
+        activeTextSelectionRef.current &&
+        activeTextSelectionRef.current.obj === textObj &&
+        activeTextSelectionRef.current.start !== activeTextSelectionRef.current.end
+      ) {
+        hasSel = true;
+        start = Math.min(activeTextSelectionRef.current.start, activeTextSelectionRef.current.end);
+        end = Math.max(activeTextSelectionRef.current.start, activeTextSelectionRef.current.end);
+      }
+
+      if (hasSel && textObj.getSelectionStyles) {
+        const styles = textObj.getSelectionStyles(start, end) || [];
+        const firstStyle = (styles && styles[0]) || {};
+        const curFill = firstStyle.fill || textObj.fill || "#FFFFFF";
+        const curWeight = String(firstStyle.fontWeight || textObj.fontWeight || "normal");
+        const curStyle = String(firstStyle.fontStyle || textObj.fontStyle || "normal");
+        const curUnderline = firstStyle.underline !== undefined ? !!firstStyle.underline : !!textObj.underline;
+        const curFontSize = firstStyle.fontSize || textObj.fontSize || 32;
+        const curFontFamily = firstStyle.fontFamily || textObj.fontFamily || "Arial";
+
+        setObjectColor(typeof curFill === 'string' ? curFill : "#FFFFFF");
+        setObjectFontSize(curFontSize);
+        setObjectFontFamily(curFontFamily);
+        setObjectFontWeight(curWeight);
+        setObjectFontStyle(curStyle);
+        setObjectUnderline(curUnderline);
+      } else {
+        setObjectFontSize(textObj.fontSize || 32);
+        setObjectFontFamily(textObj.fontFamily || "Arial");
+        setObjectFontWeight(String(textObj.fontWeight || "normal"));
+        setObjectFontStyle(textObj.fontStyle || "normal");
+        setObjectUnderline(!!textObj.underline);
+      }
     }
 
     if ((activeObject as any).isCurvedText) {
@@ -1344,16 +1382,65 @@ export default function FabricCoverStudio({
   const updateActiveObjectProperty = (property: string, value: any, saveHistory = true) => {
     if (!canvas || !activeObject) return;
 
-    if (property === 'flipX' || property === 'flipY') {
-      const center = activeObject.getCenterPoint();
-      activeObject.set({ [property]: value });
-      activeObject.setPositionByOrigin(center, 'center', 'center');
-      activeObject.setCoords();
-      if (property === 'flipX') setObjectFlipX(!!value);
-      if (property === 'flipY') setObjectFlipY(!!value);
+    const isTextObj = activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox';
+    const textObj = isTextObj ? (activeObject as fabric.IText | fabric.Textbox) : null;
+
+    let hasSelection = false;
+    let selStart = 0;
+    let selEnd = 0;
+
+    if (textObj) {
+      if (typeof textObj.selectionStart === 'number' && typeof textObj.selectionEnd === 'number' && textObj.selectionStart !== textObj.selectionEnd) {
+        hasSelection = true;
+        selStart = Math.min(textObj.selectionStart, textObj.selectionEnd);
+        selEnd = Math.max(textObj.selectionStart, textObj.selectionEnd);
+      } else if (
+        activeTextSelectionRef.current &&
+        activeTextSelectionRef.current.obj === textObj &&
+        activeTextSelectionRef.current.start !== activeTextSelectionRef.current.end
+      ) {
+        hasSelection = true;
+        selStart = Math.min(activeTextSelectionRef.current.start, activeTextSelectionRef.current.end);
+        selEnd = Math.max(activeTextSelectionRef.current.start, activeTextSelectionRef.current.end);
+      }
+    }
+
+    const perCharProperties = ['fill', 'fontWeight', 'fontStyle', 'underline', 'fontSize', 'fontFamily', 'stroke', 'strokeWidth', 'deltaY'];
+
+    if (hasSelection && textObj && perCharProperties.includes(property)) {
+      textObj.setSelectionStyles({ [property]: value }, selStart, selEnd);
+      textObj.selectionStart = selStart;
+      textObj.selectionEnd = selEnd;
+      if (activeTextSelectionRef.current && activeTextSelectionRef.current.obj === textObj) {
+        activeTextSelectionRef.current.start = selStart;
+        activeTextSelectionRef.current.end = selEnd;
+      }
+      textObj.initDimensions?.();
     } else {
-      activeObject.set({ [property]: value });
-      activeObject.setCoords();
+      if (property === 'flipX' || property === 'flipY') {
+        const center = activeObject.getCenterPoint();
+        activeObject.set({ [property]: value });
+        activeObject.setPositionByOrigin(center, 'center', 'center');
+        activeObject.setCoords();
+        if (property === 'flipX') setObjectFlipX(!!value);
+        if (property === 'flipY') setObjectFlipY(!!value);
+      } else {
+        if (textObj && property === 'fill') {
+          // If changing fill on the entire text object, clear individual char fill overrides so the whole text gets the new color
+          const styles = (textObj as any).styles;
+          if (styles) {
+            for (const line in styles) {
+              for (const char in styles[line]) {
+                if (styles[line][char] && styles[line][char].fill !== undefined) {
+                  delete styles[line][char].fill;
+                }
+              }
+            }
+          }
+        }
+        activeObject.set({ [property]: value });
+        activeObject.setCoords();
+      }
     }
 
     // Spine text has to stay inside the spine folds and trim margins, so any
@@ -1991,8 +2078,60 @@ export default function FabricCoverStudio({
     fCanvas.on("selection:cleared", () => {
       clearAlignGuides();
       setActiveObject(null);
+      activeTextSelectionRef.current = null;
       setSelectionCount(0);
       setSpineTextWasShrunk(false);
+    });
+
+    const handleTextSelectionChange = (e: any) => {
+      const target = (e.target || fCanvas.getActiveObject()) as fabric.IText | fabric.Textbox;
+      if (!target || !(target.type === 'i-text' || target.type === 'text' || target.type === 'textbox')) return;
+
+      if (typeof target.selectionStart === 'number' && typeof target.selectionEnd === 'number' && target.selectionStart !== target.selectionEnd) {
+        const start = Math.min(target.selectionStart, target.selectionEnd);
+        const end = Math.max(target.selectionStart, target.selectionEnd);
+        activeTextSelectionRef.current = { obj: target, start, end };
+
+        const styles = target.getSelectionStyles ? target.getSelectionStyles(start, end) : [];
+        const firstStyle = (styles && styles[0]) || {};
+
+        const curFill = firstStyle.fill || target.fill || "#FFFFFF";
+        const curWeight = String(firstStyle.fontWeight || target.fontWeight || "normal");
+        const curStyle = String(firstStyle.fontStyle || target.fontStyle || "normal");
+        const curUnderline = firstStyle.underline !== undefined ? !!firstStyle.underline : !!target.underline;
+        const curFontSize = firstStyle.fontSize || target.fontSize || 32;
+        const curFontFamily = firstStyle.fontFamily || target.fontFamily || "Arial";
+
+        setObjectColor(typeof curFill === 'string' ? curFill : "#FFFFFF");
+        setObjectFontWeight(curWeight);
+        setObjectFontStyle(curStyle);
+        setObjectUnderline(curUnderline);
+        setObjectFontSize(curFontSize);
+        setObjectFontFamily(curFontFamily);
+      } else {
+        activeTextSelectionRef.current = null;
+        setObjectColor(typeof target.fill === 'string' ? target.fill : "#FFFFFF");
+        setObjectFontWeight(String(target.fontWeight || "normal"));
+        setObjectFontStyle(String(target.fontStyle || "normal"));
+        setObjectUnderline(!!target.underline);
+        setObjectFontSize(target.fontSize || 32);
+        setObjectFontFamily(target.fontFamily || "Arial");
+      }
+    };
+
+    fCanvas.on("text:selection:changed", handleTextSelectionChange);
+    fCanvas.on("text:editing:entered", handleTextSelectionChange);
+    fCanvas.on("text:editing:exited", () => {
+      const act = fCanvas.getActiveObject() as fabric.IText | fabric.Textbox;
+      if (act && act.selectionStart === act.selectionEnd) {
+        activeTextSelectionRef.current = null;
+      }
+    });
+    fCanvas.on("text:changed", (e: any) => {
+      handleTextSelectionChange(e);
+      if (e.target) {
+        setObjectText((e.target as any).text || "");
+      }
     });
 
     // Save history on changes
@@ -2457,6 +2596,7 @@ export default function FabricCoverStudio({
           fontStyle: el.fontStyle || 'normal',
           fontWeight: el.fontWeight || 'normal',
           textAlign: el.align || 'center',
+          styles: el.styles || {},
           originX: el.originX || 'left',
           originY: el.originY || 'top',
           scaleX: el.scaleX || 1,
@@ -7153,8 +7293,11 @@ export default function FabricCoverStudio({
                   <span className="text-[9px] font-black text-slate-400 uppercase hidden sm:inline">Color</span>
                   <input
                     type="color"
-                    value={typeof activeObject.fill === 'string' ? activeObject.fill : '#7C3AED'}
-                    onChange={(e) => updateActiveObjectProperty('fill', e.target.value)}
+                    value={objectColor && objectColor.startsWith('#') ? objectColor : (typeof activeObject.fill === 'string' && activeObject.fill.startsWith('#') ? activeObject.fill : '#7C3AED')}
+                    onChange={(e) => {
+                      setObjectColor(e.target.value);
+                      updateActiveObjectProperty('fill', e.target.value);
+                    }}
                     className="w-6 h-6 rounded-full border border-slate-300 cursor-pointer p-0 bg-transparent shadow-sm hover:scale-110 transition-transform"
                   />
                 </div>
@@ -7213,11 +7356,7 @@ export default function FabricCoverStudio({
                 <>
                   <div className="w-px h-4 bg-slate-200" />
                   <button
-                    onClick={() => {
-                      const newWeight = (activeObject as any).fontWeight === 'bold' ? 'normal' : 'bold';
-                      setObjectFontWeight(newWeight);
-                      updateActiveObjectProperty('fontWeight', newWeight);
-                    }}
+                    onClick={toggleBold}
                     className={`p-1.5 rounded-lg text-xs font-bold transition-colors ${
                       objectFontWeight === 'bold' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
                     }`}
@@ -7226,11 +7365,7 @@ export default function FabricCoverStudio({
                     <Bold className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={() => {
-                      const newStyle = (activeObject as any).fontStyle === 'italic' ? 'normal' : 'italic';
-                      setObjectFontStyle(newStyle);
-                      updateActiveObjectProperty('fontStyle', newStyle);
-                    }}
+                    onClick={toggleItalic}
                     className={`p-1.5 rounded-lg text-xs font-bold transition-colors ${
                       objectFontStyle === 'italic' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
                     }`}
@@ -7239,11 +7374,7 @@ export default function FabricCoverStudio({
                     <Italic className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={() => {
-                      const newUnderline = !(activeObject as any).underline;
-                      setObjectUnderline(newUnderline);
-                      updateActiveObjectProperty('underline', newUnderline);
-                    }}
+                    onClick={toggleUnderline}
                     className={`p-1.5 rounded-lg text-xs font-bold transition-colors ${
                       objectUnderline ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
                     }`}

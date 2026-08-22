@@ -28,6 +28,44 @@ export default function TawkToChat() {
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_LoadStart = new Date();
 
+    // 1. Disable Tawk.to tab title flashing notifications and sound
+    window.Tawk_API.disableNotificationSound = true;
+    window.Tawk_API.onUnreadCountChanged = function () {
+      // Suppress automated title alteration
+    };
+
+    // 2. Protect document.title from unwanted notification loops
+    try {
+      const docProto = Document.prototype;
+      const titleDescriptor =
+        Object.getOwnPropertyDescriptor(docProto, "title") ||
+        Object.getOwnPropertyDescriptor(HTMLDocument.prototype, "title");
+      if (titleDescriptor && titleDescriptor.set && titleDescriptor.get) {
+        const originalSet = titleDescriptor.set;
+        const originalGet = titleDescriptor.get;
+        Object.defineProperty(document, "title", {
+          get() {
+            return originalGet.call(document);
+          },
+          set(val: string) {
+            // Block title changes containing notification badges like "(1) new message", "🔔", etc.
+            if (
+              typeof val === "string" &&
+              (val.includes("new message") ||
+                val.includes("🔔") ||
+                /^\(\d+\)/.test(val.trim()))
+            ) {
+              return;
+            }
+            originalSet.call(document, val);
+          },
+          configurable: true,
+        });
+      }
+    } catch {
+      // Ignore in environments where title cannot be redefined
+    }
+
     // Auto-hide the default standalone Tawk.to bubble so it integrates into Virtual Assistant
     window.Tawk_API.onLoad = function () {
       if (typeof window.Tawk_API.hideWidget === "function") {
@@ -68,7 +106,9 @@ export default function TawkToChat() {
     };
 
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const handle = (window as any).requestIdleCallback(loadScript, { timeout: 3500 });
+      const handle = (window as any).requestIdleCallback(loadScript, {
+        timeout: 3500,
+      });
       return () => (window as any).cancelIdleCallback(handle);
     } else {
       const timer = setTimeout(loadScript, 2000);

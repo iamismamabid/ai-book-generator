@@ -7002,7 +7002,7 @@ export default function FabricCoverStudio({
       {/* 3. FABRIC WORKSPACE */}
       <div className="flex-1 bg-slate-100 flex flex-col items-center justify-start p-3 sm:p-6 md:p-8 relative overflow-auto min-w-0">
         {/* Top Header Controls: Trim Badge & Action Toolbar with clean vertical spacing */}
-        <div className="flex flex-col items-center gap-2.5 mb-4 z-20 shrink-0 select-none max-w-full">
+        <div className="flex flex-col items-center gap-2.5 mb-4 z-20 shrink-0 select-none max-w-full min-h-[86px]">
           {/* Spine details helper */}
           <div className="bg-slate-950/90 px-4 py-2 rounded-full border border-slate-800 text-[10px] sm:text-xs font-black uppercase text-amber-400 tracking-widest shadow-md text-center truncate">
             Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"

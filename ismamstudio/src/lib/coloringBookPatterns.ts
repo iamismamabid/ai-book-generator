@@ -22,7 +22,6 @@ export interface PresetItem {
 export const PRESETS: PresetItem[] = [
   { id: "blank_canvas", name: "➕ Blank Canvas (Draw From Scratch)", category: "Single Object Clip-Art", description: "Clean white 300 DPI page for custom drawing, shapes, lines & coloring from scratch", defaultComplexity: 1 },
   // Botanical
-  { id: "citrus_slices", name: "Citrus Fruit Wheels & Slices", category: "Botanical & Floral", description: "Lemon, lime, orange and grapefruit wheels arranged in a graphic mosaic", defaultComplexity: 12 },
   { id: "tropical_palms", name: "Tropical Palm & Monster Leaves", category: "Botanical & Floral", description: "Overlapping monstera, palm, and fern leaves with fine vein line art", defaultComplexity: 10 },
   { id: "rose_lattice", name: "Rose Garden & Vine Lattice", category: "Botanical & Floral", description: "Interlocking rose blossoms, buds, and leafy lattice vines", defaultComplexity: 14 },
   { id: "succulents", name: "Succulent Terrarium", category: "Botanical & Floral", description: "Echeveria, aloe, and cacti arranged in geometric glass terrariums", defaultComplexity: 12 },
@@ -796,8 +795,7 @@ function drawMuscleCoupeIcon(ctx: CanvasRenderingContext2D, cx: number, cy: numb
 }
 
 // ── Food, Drinks & Kitchen pattern icons ────────────────────────────────
-// Small stroke-only icons tiled in a grid by drawFoodIconGrid() below,
-// following the same grid-of-repeated-motifs approach as citrus_slices.
+// Food & Drink pattern icons (drawn repeatedly in a grid via drawFoodIconGrid).
 
 function drawCoffeeCupIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
   ctx.beginPath();
@@ -1069,127 +1067,6 @@ function drawCrescentMoon(ctx: CanvasRenderingContext2D, cx: number, cy: number,
 }
 
 // ── Botanical & Floral Full-Page Patterns ─────────────────────────────────
-
-function drawCitrusMosaicPattern(
-  ctx: CanvasRenderingContext2D,
-  margin: number,
-  innerW: number,
-  innerH: number,
-  density: number,
-  strokeColor: string,
-  width: number,
-  isColorByNumber: boolean,
-  random: () => number
-) {
-  const count = Math.max(4, Math.min(16, density || 12));
-  let numIdx = 1;
-  const cols = Math.ceil(Math.sqrt(count));
-  const rows = Math.ceil(count / cols);
-  const stepX = innerW / cols;
-  const stepY = innerH / rows;
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const jx = (random() - 0.5) * stepX * 0.2;
-      const jy = (random() - 0.5) * stepY * 0.2;
-      const cx = margin + c * stepX + stepX / 2 + jx;
-      const cy = margin + r * stepY + stepY / 2 + jy;
-      const rad = Math.max(12, Math.min(stepX, stepY) * 0.44);
-      const isWedge = (r + c) % 3 === 2;
-
-      if (isWedge) {
-        const startA = (r * 1.7 + c * 2.3) % (Math.PI * 2);
-        const arcLen = Math.PI * 0.75;
-        const endA = startA + arcLen;
-
-        // Outer rind
-        ctx.beginPath();
-        ctx.arc(cx, cy, rad, startA, endA);
-        ctx.lineTo(cx, cy);
-        ctx.closePath();
-        ctx.stroke();
-
-        // Inner pith border
-        ctx.beginPath();
-        ctx.arc(cx, cy, rad * 0.86, startA + 0.05, endA - 0.05);
-        ctx.lineTo(cx + Math.cos(endA - 0.05) * rad * 0.15, cy + Math.sin(endA - 0.05) * rad * 0.15);
-        ctx.lineTo(cx + Math.cos(startA + 0.05) * rad * 0.15, cy + Math.sin(startA + 0.05) * rad * 0.15);
-        ctx.closePath();
-        ctx.stroke();
-
-        // Wedge segments
-        const segCount = 4;
-        for (let s = 0; s < segCount; s++) {
-          const sa1 = startA + (arcLen / segCount) * s + 0.04;
-          const sa2 = startA + (arcLen / segCount) * (s + 1) - 0.04;
-          ctx.beginPath();
-          ctx.moveTo(cx + Math.cos(sa1) * rad * 0.2, cy + Math.sin(sa1) * rad * 0.2);
-          ctx.arc(cx, cy, rad * 0.8, sa1, sa2);
-          ctx.lineTo(cx + Math.cos(sa2) * rad * 0.2, cy + Math.sin(sa2) * rad * 0.2);
-          ctx.closePath();
-          ctx.stroke();
-        }
-      } else {
-        // Whole wheel outer rind & pith
-        ctx.beginPath();
-        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, rad * 0.86, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, Math.max(3, rad * 0.16), 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Pulp segments
-        const segCount = (r + c) % 2 === 0 ? 8 : 10;
-        for (let s = 0; s < segCount; s++) {
-          const a1 = (s * Math.PI * 2) / segCount + 0.06;
-          const a2 = ((s + 1) * Math.PI * 2) / segCount - 0.06;
-          const midA = (a1 + a2) / 2;
-
-          ctx.beginPath();
-          ctx.moveTo(cx + Math.cos(a1) * rad * 0.22, cy + Math.sin(a1) * rad * 0.22);
-          ctx.arc(cx, cy, rad * 0.8, a1, a2);
-          ctx.lineTo(cx + Math.cos(a2) * rad * 0.22, cy + Math.sin(a2) * rad * 0.22);
-          ctx.closePath();
-          ctx.stroke();
-
-          // Central seed/vesicle teardrop
-          const px = cx + Math.cos(midA) * rad * 0.52;
-          const py = cy + Math.sin(midA) * rad * 0.52;
-          ctx.beginPath();
-          ctx.arc(px, py, Math.max(1.5, rad * 0.07), 0, Math.PI * 2);
-          ctx.stroke();
-
-          if (isColorByNumber && s % 2 === 0) {
-            ctx.fillStyle = strokeColor;
-            ctx.font = `bold ${Math.max(8, Math.floor(width * 0.013))}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(`${(numIdx % 9) + 1}`, px, py);
-            numIdx++;
-          }
-        }
-
-        // Leaf pair accent on citrus wheel
-        const leafAngle = (r * 1.5 + c * 2.1) % (Math.PI * 2);
-        const lx = cx + Math.cos(leafAngle) * rad * 1.08;
-        const ly = cy + Math.sin(leafAngle) * rad * 1.08;
-        const lr = Math.max(5, rad * 0.35);
-        ctx.beginPath();
-        ctx.arc(lx, ly, lr, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(lx - lr, ly);
-        ctx.lineTo(lx + lr, ly);
-        ctx.stroke();
-      }
-    }
-  }
-}
 
 function drawTropicalPalmsPattern(
   ctx: CanvasRenderingContext2D,
@@ -2456,9 +2333,7 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
   const pid = presetId;
   const density = complexity;
 
-  if (pid === "citrus_slices") {
-    drawCitrusMosaicPattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber, random);
-  } else if (pid === "tropical_palms") {
+  if (pid === "tropical_palms") {
     drawTropicalPalmsPattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
   } else if (pid === "rose_lattice") {
     drawRoseLatticePattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber);

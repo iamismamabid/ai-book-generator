@@ -1000,7 +1000,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
               { category: 'puzzle', type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },
               { category: 'puzzle', type: 'math_puzzle', config: {}, label: 'Math Arithmetic', desc: 'Sums, factors, and grid fill games', icon: '➕', color: 'bg-rose-50 border-rose-200 text-rose-600' },
               { category: 'puzzle', type: 'kakuro', config: { sizeId: '6x6', difficulty: 'medium' }, label: 'Kakuro Puzzle', desc: 'Crossword-style number sums logic grids', icon: '🔢', color: 'bg-orange-50 border-orange-200 text-orange-600' },
-              { category: 'puzzle', type: 'coloring_book', config: { presetId: 'citrus_slices', complexity: 12, lineWidth: 3, isColorByNumber: true, isMidnightMode: false, frameStyle: 'ornamental', seed: Math.floor(Math.random() * 10000) }, label: 'Coloring Page', desc: 'Color-by-number art, 67+ presets', icon: '🎨', color: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600' },
+              { category: 'puzzle', type: 'coloring_book', config: { presetId: 'tropical_palms', complexity: 10, lineWidth: 3, isColorByNumber: true, isMidnightMode: false, frameStyle: 'ornamental', seed: Math.floor(Math.random() * 10000) }, label: 'Coloring Page', desc: 'Color-by-number art, 67+ presets', icon: '🎨', color: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600' },
               
               { category: 'structure', type: 'blank', config: {}, label: 'Blank Spacer', desc: 'Adds gutter and spacing padding', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },
 

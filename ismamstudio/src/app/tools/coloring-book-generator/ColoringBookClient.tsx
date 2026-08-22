@@ -346,7 +346,7 @@ export default function ColoringBookClient() {
   // Config state
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [activePreset, setActivePreset] = useState<PresetItem>(() => {
-    return PRESETS.find((p) => p.id === "citrus_slices") || PRESETS[1] || PRESETS[0];
+    return PRESETS.find((p) => p.id === "tropical_palms") || PRESETS[1] || PRESETS[0];
   });
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [useBleed, setUseBleed] = useState(false);

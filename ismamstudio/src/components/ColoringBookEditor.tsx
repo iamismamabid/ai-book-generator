@@ -21,7 +21,7 @@ const CATEGORIES = [
 
 export function ColoringBookEditor({ page, updatePage }: any) {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [presetId, setPresetId] = useState<string>(page.config.presetId || "citrus_slices");
+  const [presetId, setPresetId] = useState<string>(page.config.presetId || "tropical_palms");
   const [complexity, setComplexity] = useState<number>(page.config.complexity ?? 12);
   const [lineWidth, setLineWidth] = useState<number>(page.config.lineWidth ?? 3);
   const [isColorByNumber, setIsColorByNumber] = useState<boolean>(page.config.isColorByNumber ?? true);

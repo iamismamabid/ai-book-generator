@@ -39,18 +39,15 @@ export default async function Header() {
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl sm:text-2xl font-black tracking-tight flex items-center leading-none transition-transform group-hover:scale-[1.02]">
-                <span className="text-[#EA4335]">KD</span>
-                <span 
-                  className="font-black bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage: 'linear-gradient(90deg, #4285F4 0%, #9B72CF 28%, #EA4335 55%, #FBBC04 78%, #34A853 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}
-                >
-                  Page
-                </span>
+              <span 
+                className="text-xl sm:text-2xl font-black tracking-tight leading-none transition-transform group-hover:scale-[1.02] bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: 'linear-gradient(90deg, #4285F4 0%, #9B72CF 25%, #EA4335 50%, #FBBC04 75%, #34A853 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+              >
+                KDPage
               </span>
               <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mt-1">
                 All-In-One

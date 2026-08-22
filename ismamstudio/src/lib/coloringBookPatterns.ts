@@ -23,6 +23,7 @@ export const PRESETS: PresetItem[] = [
   { id: "blank_canvas", name: "➕ Blank Canvas (Draw From Scratch)", category: "Single Object Clip-Art", description: "Clean white 300 DPI page for custom drawing, shapes, lines & coloring from scratch", defaultComplexity: 1 },
   // Botanical
   { id: "tropical_palms", name: "Tropical Palm & Monster Leaves", category: "Botanical & Floral", description: "Overlapping monstera, palm, and fern leaves with fine vein line art", defaultComplexity: 10 },
+  { id: "citrus_slices", name: "Citrus Fruit Wheels & Slices", category: "Botanical & Floral", description: "Fresh lemon, lime, and orange wheels with pulp wedges, rind slices and mint leaves", defaultComplexity: 12 },
   { id: "rose_lattice", name: "Rose Garden & Vine Lattice", category: "Botanical & Floral", description: "Interlocking rose blossoms, buds, and leafy lattice vines", defaultComplexity: 14 },
   { id: "succulents", name: "Succulent Terrarium", category: "Botanical & Floral", description: "Echeveria, aloe, and cacti arranged in geometric glass terrariums", defaultComplexity: 12 },
   { id: "lotus_pond", name: "Floating Lotus Pond", category: "Botanical & Floral", description: "Water lilies, lotus flowers, and lily pads on quiet water ripples", defaultComplexity: 11 },
@@ -1616,6 +1617,259 @@ function drawLotusPondPattern(
   });
 }
 
+// ── Citrus Fruit Wheels & Slices pattern ─────────────────────────────────
+
+function drawCitrusWheel(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+  rot: number,
+  segments: number,
+  strokeColor: string,
+  width: number,
+  isColorByNumber: boolean,
+  numIdxRef: { val: number }
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rot);
+
+  // 1. Outer Rind Circle
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 2. Inner Pith Circle
+  const pithR = r * 0.88;
+  ctx.beginPath();
+  ctx.arc(0, 0, pithR, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 3. Center Core
+  const coreR = r * 0.14;
+  ctx.beginPath();
+  ctx.arc(0, 0, coreR, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 4. Triangular Pulp Segments
+  const segAngle = (Math.PI * 2) / segments;
+  const gap = 0.08;
+
+  for (let s = 0; s < segments; s++) {
+    const a1 = s * segAngle + gap;
+    const a2 = (s + 1) * segAngle - gap;
+    const midA = (a1 + a2) / 2;
+
+    const rInner = coreR + r * 0.04;
+    const rOuter = pithR - r * 0.04;
+
+    ctx.beginPath();
+    ctx.arc(0, 0, rInner, a1, a2);
+    ctx.lineTo(Math.cos(a2) * rOuter, Math.sin(a2) * rOuter);
+    ctx.arc(0, 0, rOuter, a2, a1, true);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Pulp vesicle detail
+    const vesR = (rInner + rOuter) * 0.5;
+    ctx.beginPath();
+    ctx.arc(Math.cos(midA) * vesR, Math.sin(midA) * vesR, Math.max(1.5, r * 0.035), 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Optional seed in alternate segments
+    if (s % 2 === 0) {
+      const seedDist = rInner + (rOuter - rInner) * 0.28;
+      const sx = Math.cos(midA) * seedDist;
+      const sy = Math.sin(midA) * seedDist;
+      ctx.beginPath();
+      ctx.ellipse(sx, sy, Math.max(1.5, r * 0.04), Math.max(2.5, r * 0.07), midA, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    if (isColorByNumber) {
+      const numDist = (rInner + rOuter) * 0.65;
+      const nx = Math.cos(midA) * numDist;
+      const ny = Math.sin(midA) * numDist;
+      ctx.fillStyle = strokeColor;
+      ctx.font = `bold ${Math.max(9, Math.floor(width * 0.013))}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${(numIdxRef.val % 9) + 1}`, nx, ny);
+      numIdxRef.val++;
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawCitrusWedge(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+  rot: number,
+  segments: number,
+  strokeColor: string,
+  width: number,
+  isColorByNumber: boolean,
+  numIdxRef: { val: number }
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rot);
+
+  // Half-circle wedge outer
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Inner pith
+  const pithR = r * 0.88;
+  ctx.beginPath();
+  ctx.arc(0, 0, pithR, 0.06, Math.PI - 0.06);
+  ctx.lineTo(-pithR, 0);
+  ctx.lineTo(pithR, 0);
+  ctx.closePath();
+  ctx.stroke();
+
+  const halfSegments = Math.max(3, Math.floor(segments / 2));
+  const segAngle = Math.PI / halfSegments;
+  const gap = 0.08;
+
+  for (let s = 0; s < halfSegments; s++) {
+    const a1 = s * segAngle + gap;
+    const a2 = (s + 1) * segAngle - gap;
+    const midA = (a1 + a2) / 2;
+
+    const rInner = r * 0.16;
+    const rOuter = pithR - r * 0.04;
+
+    ctx.beginPath();
+    ctx.arc(0, 0, rInner, a1, a2);
+    ctx.lineTo(Math.cos(a2) * rOuter, Math.sin(a2) * rOuter);
+    ctx.arc(0, 0, rOuter, a2, a1, true);
+    ctx.closePath();
+    ctx.stroke();
+
+    if (isColorByNumber) {
+      const numDist = (rInner + rOuter) * 0.55;
+      const nx = Math.cos(midA) * numDist;
+      const ny = Math.sin(midA) * numDist;
+      ctx.fillStyle = strokeColor;
+      ctx.font = `bold ${Math.max(9, Math.floor(width * 0.013))}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${(numIdxRef.val % 9) + 1}`, nx, ny);
+      numIdxRef.val++;
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawCitrusLeaf(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  len: number,
+  rot: number
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rot);
+
+  const w = len * 0.42;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(w, -len * 0.5, 0, -len);
+  ctx.quadraticCurveTo(-w, -len * 0.5, 0, 0);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Central vein
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -len * 0.95);
+  ctx.stroke();
+
+  // Side veins
+  for (let i = 1; i <= 3; i++) {
+    const vy = -len * (i / 4.2);
+    const vw = w * (1 - i / 5) * 0.7;
+    ctx.beginPath();
+    ctx.moveTo(0, vy);
+    ctx.lineTo(vw, vy - len * 0.08);
+    ctx.moveTo(0, vy);
+    ctx.lineTo(-vw, vy - len * 0.08);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawCitrusPattern(
+  ctx: CanvasRenderingContext2D,
+  margin: number,
+  innerW: number,
+  innerH: number,
+  density: number,
+  strokeColor: string,
+  width: number,
+  isColorByNumber: boolean,
+  cx: number,
+  cy: number
+) {
+  const numIdxRef = { val: 1 };
+
+  // 1. Center Large Wheel
+  const mainR = Math.min(innerW, innerH) * 0.22;
+  drawCitrusWheel(ctx, cx, cy, mainR, 0.2, 9, strokeColor, width, isColorByNumber, numIdxRef);
+
+  // 2. Medium Wheels Around Center
+  const wheels = [
+    { x: cx - innerW * 0.28, y: cy - innerH * 0.26, r: mainR * 0.75, rot: -0.4, seg: 8 },
+    { x: cx + innerW * 0.29, y: cy - innerH * 0.24, r: mainR * 0.8, rot: 0.7, seg: 8 },
+    { x: cx - innerW * 0.26, y: cy + innerH * 0.28, r: mainR * 0.82, rot: 1.1, seg: 9 },
+    { x: cx + innerW * 0.27, y: cy + innerH * 0.27, r: mainR * 0.78, rot: -0.8, seg: 8 },
+  ];
+
+  wheels.forEach((w) => {
+    drawCitrusWheel(ctx, w.x, w.y, w.r, w.rot, w.seg, strokeColor, width, isColorByNumber, numIdxRef);
+  });
+
+  // 3. Half-slice Citrus Wedges in Corners & Gaps
+  const wedges = [
+    { x: margin + innerW * 0.12, y: margin + innerH * 0.12, r: mainR * 0.65, rot: 0.8, seg: 8 },
+    { x: margin + innerW * 0.88, y: margin + innerH * 0.12, r: mainR * 0.68, rot: -0.7, seg: 8 },
+    { x: margin + innerW * 0.12, y: margin + innerH * 0.88, r: mainR * 0.7, rot: -2.3, seg: 8 },
+    { x: margin + innerW * 0.88, y: margin + innerH * 0.88, r: mainR * 0.66, rot: 2.2, seg: 8 },
+    { x: cx, y: margin + innerH * 0.1, r: mainR * 0.55, rot: Math.PI, seg: 6 },
+    { x: cx, y: margin + innerH * 0.9, r: mainR * 0.55, rot: 0, seg: 6 },
+  ];
+
+  wedges.forEach((w) => {
+    drawCitrusWedge(ctx, w.x, w.y, w.r, w.rot, w.seg, strokeColor, width, isColorByNumber, numIdxRef);
+  });
+
+  // 4. Botanical Citrus / Mint Leaves Filling Negative Space
+  const leaves = [
+    { x: cx - innerW * 0.12, y: cy - innerH * 0.18, len: mainR * 0.55, rot: -0.9 },
+    { x: cx + innerW * 0.14, y: cy - innerH * 0.16, len: mainR * 0.52, rot: 0.8 },
+    { x: cx - innerW * 0.15, y: cy + innerH * 0.15, len: mainR * 0.58, rot: -2.2 },
+    { x: cx + innerW * 0.13, y: cy + innerH * 0.18, len: mainR * 0.54, rot: 2.3 },
+    { x: margin + innerW * 0.28, y: margin + innerH * 0.08, len: mainR * 0.48, rot: 0.3 },
+    { x: margin + innerW * 0.72, y: margin + innerH * 0.08, len: mainR * 0.48, rot: -0.3 },
+    { x: margin + innerW * 0.28, y: margin + innerH * 0.92, len: mainR * 0.48, rot: 2.8 },
+    { x: margin + innerW * 0.72, y: margin + innerH * 0.92, len: mainR * 0.48, rot: -2.8 },
+  ];
+
+  leaves.forEach((lf) => {
+    drawCitrusLeaf(ctx, lf.x, lf.y, lf.len, lf.rot);
+  });
+}
+
 // ── Cozy Objects & Still Life pattern icons ──────────────────────────────
 
 function drawCrystalClusterIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
@@ -2335,6 +2589,8 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
 
   if (pid === "tropical_palms") {
     drawTropicalPalmsPattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "citrus_slices") {
+    drawCitrusPattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber, cx, cy);
   } else if (pid === "rose_lattice") {
     drawRoseLatticePattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
   } else if (pid === "succulents") {

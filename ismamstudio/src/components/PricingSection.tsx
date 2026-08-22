@@ -392,8 +392,8 @@ function PricingSectionInner() {
 
   const faqs = [
     {
-      q: "How does the 7-Day Free Trial & Free Export work?",
-      a: "You can use KDPage for free! Free Tier users can export up to 5 pages completely watermark-free to test and confirm 300 DPI print quality, margins, and bleed directly on the Amazon KDP Print Previewer. Full manuscript exports include a light 'SAMPLE - KDPAGE' watermark until upgrading to Pro or redeeming an AppSumo code.",
+      q: "How does the 7-Day Trial & Export Limits work?",
+      a: "During the 7-Day Trial period, you have full access to explore the complete studio, design covers, and export up to 2 complete books to test and confirm 300 DPI print quality, margins, and bleed on the Amazon KDP Print Previewer. Full unlimited bulk book exports activate automatically upon your first billing cycle or with a Lifetime Deal.",
     },
     {
       q: "Are the generated interiors ready to upload directly to Amazon KDP?",

@@ -242,6 +242,15 @@ export async function checkPremiumStatus() {
           daysRemaining = Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
         }
 
+        // ট্রায়াল অপব্যবহার রোধে ট্রায়াল চলাকালীন সর্বোচ্চ ২টি টেস্ট বই এক্সপোর্ট সীমা কার্যকর করা
+        if (isTrial) {
+          limits = {
+            ...limits,
+            maxBookCount: 2,
+            isTrialLimit: true,
+          };
+        }
+
         return {
           checked: true,
           isPremium: true,

@@ -335,12 +335,15 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 <div className="flex gap-2 items-start">
                   <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-black text-slate-900 block">Premium Export Mode Activated</span>
+                    <span className="font-black text-slate-900 block">
+                      {premiumStatus.isTrial ? "7-Day Trial Mode Active" : "Premium Lifetime / Active Plan"}
+                    </span>
                     <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
-                      {premiumStatus.isTrial && premiumStatus.daysRemaining !== undefined ? (
-                        <>You have <span className="font-black text-emerald-600">{premiumStatus.daysRemaining} days remaining</span> in your free trial. </>
-                      ) : null}
-                      High-res 300 DPI watermark-free vector PDF exports are fully unlocked!
+                      {premiumStatus.isTrial ? (
+                        <>You have <span className="font-black text-emerald-600">{premiumStatus.daysRemaining ?? 7} days remaining</span> in your trial. Trial accounts can export up to 2 complete books to verify 300 DPI KDP compatibility. Unlimited exports activate upon first billing.</>
+                      ) : (
+                        <>High-res 300 DPI watermark-free vector PDF exports are fully unlocked!</>
+                      )}
                     </p>
                   </div>
                 </div>

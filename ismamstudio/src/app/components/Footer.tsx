@@ -13,15 +13,23 @@ export default function Footer() {
 
           {/* Brand Info */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="relative w-36 h-12 group-hover:scale-105 transition-transform">
+            <Link href="/" className="flex items-center gap-3 group select-none">
+              <div className="relative w-12 h-12 rounded-2xl overflow-hidden shadow-md shadow-indigo-500/20 bg-white p-1 group-hover:scale-105 transition-transform flex items-center justify-center border border-slate-700/60">
                 <Image
-                  src="/logo.png"
+                  src="/logo_transparent.png"
                   alt="KDPage Logo"
                   fill
-                  sizes="144px"
-                  className="object-contain"
+                  sizes="48px"
+                  className="object-contain p-0.5"
                 />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-black tracking-tight text-white flex items-center leading-none group-hover:text-indigo-300 transition-colors">
+                  <span className="text-red-500">KD</span>Page
+                </span>
+                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mt-1">
+                  KDP Studio
+                </span>
               </div>
             </Link>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">

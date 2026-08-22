@@ -27,16 +27,24 @@ export default async function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between" suppressHydrationWarning>
 
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="relative w-28 sm:w-36 h-10 sm:h-12 group-hover:scale-105 transition-transform">
+          <Link href="/" className="flex items-center gap-3 group shrink-0 select-none">
+            <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shadow-lg shadow-indigo-500/20 bg-white p-1 group-hover:scale-105 transition-transform flex items-center justify-center border border-slate-700/60">
               <Image
-                src="/logo.png"
+                src="/logo_transparent.png"
                 alt="KDPage Logo"
                 fill
-                sizes="(max-width: 640px) 112px, 144px"
-                className="object-contain"
+                sizes="(max-width: 640px) 44px, 56px"
+                className="object-contain p-0.5"
                 priority
               />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center leading-none group-hover:text-indigo-300 transition-colors">
+                <span className="text-red-500">KD</span>Page
+              </span>
+              <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mt-1">
+                KDP Studio
+              </span>
             </div>
           </Link>
 

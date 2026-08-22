@@ -1060,7 +1060,15 @@ function drawCrescentMoon(ctx: CanvasRenderingContext2D, cx: number, cy: number,
   ctx.arc(cx + r * 0.55, cy, r * 0.78, Math.PI * 1.5, Math.PI * 0.5, true);
   ctx.closePath();
   ctx.stroke();
-}// ── Botanical & Floral Full-Page Patterns ─────────────────────────────────
+}function drawSparkleStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const rad = Math.max(2, r);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - rad); ctx.lineTo(cx, cy + rad);
+  ctx.moveTo(cx - rad, cy); ctx.lineTo(cx + rad, cy);
+  ctx.stroke();
+}
+
+// ── Botanical & Floral Full-Page Patterns ─────────────────────────────────
 
 function drawCitrusMosaicPattern(
   ctx: CanvasRenderingContext2D,
@@ -1073,7 +1081,7 @@ function drawCitrusMosaicPattern(
   isColorByNumber: boolean,
   random: () => number
 ) {
-  const count = Math.max(6, Math.min(16, density));
+  const count = Math.max(4, Math.min(16, density || 12));
   let numIdx = 1;
   const cols = Math.ceil(Math.sqrt(count));
   const rows = Math.ceil(count / cols);
@@ -1082,24 +1090,26 @@ function drawCitrusMosaicPattern(
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const jx = (random() - 0.5) * stepX * 0.22;
-      const jy = (random() - 0.5) * stepY * 0.22;
+      const jx = (random() - 0.5) * stepX * 0.2;
+      const jy = (random() - 0.5) * stepY * 0.2;
       const cx = margin + c * stepX + stepX / 2 + jx;
       const cy = margin + r * stepY + stepY / 2 + jy;
-      const rad = Math.min(stepX, stepY) * 0.44;
+      const rad = Math.max(12, Math.min(stepX, stepY) * 0.44);
       const isWedge = (r + c) % 3 === 2;
 
       if (isWedge) {
-        const startA = random() * Math.PI * 2;
+        const startA = (r * 1.7 + c * 2.3) % (Math.PI * 2);
         const arcLen = Math.PI * 0.75;
         const endA = startA + arcLen;
 
+        // Outer rind
         ctx.beginPath();
         ctx.arc(cx, cy, rad, startA, endA);
         ctx.lineTo(cx, cy);
         ctx.closePath();
         ctx.stroke();
 
+        // Inner pith border
         ctx.beginPath();
         ctx.arc(cx, cy, rad * 0.86, startA + 0.05, endA - 0.05);
         ctx.lineTo(cx + Math.cos(endA - 0.05) * rad * 0.15, cy + Math.sin(endA - 0.05) * rad * 0.15);
@@ -1107,6 +1117,7 @@ function drawCitrusMosaicPattern(
         ctx.closePath();
         ctx.stroke();
 
+        // Wedge segments
         const segCount = 4;
         for (let s = 0; s < segCount; s++) {
           const sa1 = startA + (arcLen / segCount) * s + 0.04;
@@ -1119,6 +1130,7 @@ function drawCitrusMosaicPattern(
           ctx.stroke();
         }
       } else {
+        // Whole wheel outer rind & pith
         ctx.beginPath();
         ctx.arc(cx, cy, rad, 0, Math.PI * 2);
         ctx.stroke();
@@ -1128,9 +1140,10 @@ function drawCitrusMosaicPattern(
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.arc(cx, cy, rad * 0.16, 0, Math.PI * 2);
+        ctx.arc(cx, cy, Math.max(3, rad * 0.16), 0, Math.PI * 2);
         ctx.stroke();
 
+        // Pulp segments
         const segCount = (r + c) % 2 === 0 ? 8 : 10;
         for (let s = 0; s < segCount; s++) {
           const a1 = (s * Math.PI * 2) / segCount + 0.06;
@@ -1144,15 +1157,16 @@ function drawCitrusMosaicPattern(
           ctx.closePath();
           ctx.stroke();
 
+          // Central seed/vesicle teardrop
           const px = cx + Math.cos(midA) * rad * 0.52;
           const py = cy + Math.sin(midA) * rad * 0.52;
           ctx.beginPath();
-          ctx.ellipse(px, py, rad * 0.1, rad * 0.04, midA, 0, Math.PI * 2);
+          ctx.arc(px, py, Math.max(1.5, rad * 0.07), 0, Math.PI * 2);
           ctx.stroke();
 
           if (isColorByNumber && s % 2 === 0) {
             ctx.fillStyle = strokeColor;
-            ctx.font = `bold ${Math.max(9, Math.floor(width * 0.013))}px sans-serif`;
+            ctx.font = `bold ${Math.max(8, Math.floor(width * 0.013))}px sans-serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(`${(numIdx % 9) + 1}`, px, py);
@@ -1160,16 +1174,17 @@ function drawCitrusMosaicPattern(
           }
         }
 
+        // Leaf pair accent on citrus wheel
         const leafAngle = (r * 1.5 + c * 2.1) % (Math.PI * 2);
         const lx = cx + Math.cos(leafAngle) * rad * 1.08;
         const ly = cy + Math.sin(leafAngle) * rad * 1.08;
-        const lr = rad * 0.35;
+        const lr = Math.max(5, rad * 0.35);
         ctx.beginPath();
-        ctx.ellipse(lx, ly, lr, lr * 0.5, leafAngle + Math.PI / 4, 0, Math.PI * 2);
+        ctx.arc(lx, ly, lr, 0, Math.PI * 2);
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(lx - Math.cos(leafAngle + Math.PI / 4) * lr, ly - Math.sin(leafAngle + Math.PI / 4) * lr);
-        ctx.lineTo(lx + Math.cos(leafAngle + Math.PI / 4) * lr, ly + Math.sin(leafAngle + Math.PI / 4) * lr);
+        ctx.moveTo(lx - lr, ly);
+        ctx.lineTo(lx + lr, ly);
         ctx.stroke();
       }
     }
@@ -1272,8 +1287,10 @@ function drawTropicalPalmsPattern(
     slits.forEach(({ side, dy, w, h, a }) => {
       const sx = side * r * 0.35;
       const sy = dy * r;
+      const rx = Math.max(2, w * r);
+      const ry = Math.max(3, h * r);
       ctx.beginPath();
-      ctx.ellipse(sx, sy, w * r, h * r, a, 0, Math.PI * 2);
+      ctx.ellipse(sx, sy, rx, ry, a, 0, Math.PI * 2);
       ctx.stroke();
 
       ctx.beginPath();
@@ -1468,26 +1485,27 @@ function drawSucculentTerrariumPattern(
   ctx.moveTo(cx, margin);
   ctx.lineTo(cx, topY);
   ctx.stroke();
-  for (let y = margin; y < topY; y += 16) {
+  const chainStep = Math.max(8, (topY - margin) / 8);
+  for (let y = margin; y < topY; y += chainStep) {
     ctx.beginPath();
-    ctx.ellipse(cx, y + 8, 4, 8, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, y + chainStep / 2, Math.max(2, width * 0.005), Math.max(3, chainStep * 0.4), 0, 0, Math.PI * 2);
     ctx.stroke();
   }
 
   for (let layer = 0; layer < 3; layer++) {
-    const pebbleY = botY - layer * 20;
+    const pebbleY = botY - (layer + 1) * (th * 0.08);
     const pebbleCount = 8 - layer * 2;
     const pStep = (tw * 1.1) / pebbleCount;
     for (let p = 0; p < pebbleCount; p++) {
       const px = cx - (tw * 0.55) + p * pStep + pStep / 2;
       ctx.beginPath();
-      ctx.ellipse(px, pebbleY, pStep * 0.45, 9, 0, 0, Math.PI * 2);
+      ctx.ellipse(px, pebbleY, Math.max(3, pStep * 0.45), Math.max(2, th * 0.035), 0, 0, Math.PI * 2);
       ctx.stroke();
     }
   }
 
   const sx = cx;
-  const sy = midY + 15;
+  const sy = midY + th * 0.06;
   const sRad = tw * 0.42;
 
   const rings = [
@@ -1528,36 +1546,36 @@ function drawSucculentTerrariumPattern(
   });
 
   const lCactusX = cx - tw * 0.48;
-  const lCactusY = midY - 20;
+  const lCactusY = midY - th * 0.08;
   ctx.beginPath();
-  ctx.ellipse(lCactusX, lCactusY, 18, 38, 0, 0, Math.PI * 2);
+  ctx.ellipse(lCactusX, lCactusY, Math.max(3, tw * 0.14), Math.max(6, th * 0.16), 0, 0, Math.PI * 2);
   ctx.stroke();
   for (let rib = -1; rib <= 1; rib++) {
     ctx.beginPath();
-    ctx.moveTo(lCactusX + rib * 10, lCactusY - 35);
-    ctx.lineTo(lCactusX + rib * 10, lCactusY + 35);
+    ctx.moveTo(lCactusX + rib * (tw * 0.06), lCactusY - th * 0.15);
+    ctx.lineTo(lCactusX + rib * (tw * 0.06), lCactusY + th * 0.15);
     ctx.stroke();
   }
 
   const rCactusX = cx + tw * 0.48;
-  const rCactusY = midY - 10;
+  const rCactusY = midY - th * 0.04;
   ctx.beginPath();
-  ctx.ellipse(rCactusX, rCactusY, 22, 28, 0.2, 0, Math.PI * 2);
+  ctx.ellipse(rCactusX, rCactusY, Math.max(3, tw * 0.16), Math.max(4, th * 0.12), 0.2, 0, Math.PI * 2);
   ctx.stroke();
   ctx.beginPath();
-  ctx.ellipse(rCactusX + 10, rCactusY - 30, 14, 18, -0.3, 0, Math.PI * 2);
+  ctx.ellipse(rCactusX + tw * 0.07, rCactusY - th * 0.12, Math.max(2, tw * 0.1), Math.max(3, th * 0.08), -0.3, 0, Math.PI * 2);
   ctx.stroke();
   ctx.beginPath();
-  ctx.arc(rCactusX + 10, rCactusY - 48, 6, 0, Math.PI * 2);
+  ctx.arc(rCactusX + tw * 0.07, rCactusY - th * 0.19, Math.max(2, tw * 0.04), 0, Math.PI * 2);
   ctx.stroke();
 
   [-tw * 0.7, tw * 0.7].forEach((sideX) => {
-    let beadY = midY + 20;
+    let beadY = midY + th * 0.08;
     for (let b = 0; b < 7; b++) {
       ctx.beginPath();
-      ctx.arc(cx + sideX + Math.sin(b * 0.8) * 8, beadY, 5 + (b % 2) * 2, 0, Math.PI * 2);
+      ctx.arc(cx + sideX + Math.sin(b * 0.8) * (tw * 0.05), beadY, Math.max(2, tw * 0.035 + (b % 2) * (tw * 0.01)), 0, Math.PI * 2);
       ctx.stroke();
-      beadY += 14;
+      beadY += th * 0.06;
     }
   });
 }

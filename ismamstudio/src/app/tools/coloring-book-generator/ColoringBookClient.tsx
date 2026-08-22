@@ -64,6 +64,8 @@ import CoverStudioCTA from "@/components/CoverStudioCTA";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { PRESETS, PresetItem, drawColoringPattern } from "@/lib/coloringBookPatterns";
 import { checkPremiumStatus, saveColoringProject, loadColoringProject } from "@/app/actions";
+import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
+import ByokNewsBanner from "@/components/ByokNewsBanner";
 
 // Matches drawWatermark's look in pdfExportService.ts (used by every other
 // tool's PDF export) so free-tier output is consistently branded across the
@@ -343,6 +345,7 @@ const TRIM_SIZES: {
 
 export default function ColoringBookClient() {
   const { isSignedIn } = useAuth();
+  const [isByokModalOpen, setIsByokModalOpen] = useState(false);
   // Config state
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [activePreset, setActivePreset] = useState<PresetItem>(() => {
@@ -1510,6 +1513,7 @@ export default function ColoringBookClient() {
           </div>
 
           <div className="flex items-center gap-2">
+            <ByokNewsBanner studioType="coloring" onOpenModal={() => setIsByokModalOpen(true)} variant="badge-chip" />
             <GenericStudioTour tourKey="coloringBook" />
             <Link
               href="/tools"
@@ -1524,6 +1528,11 @@ export default function ColoringBookClient() {
       {/* Main Studio Area */}
       <main className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8">
         
+        {/* 🚀 BYOK Early Launch News Banner */}
+        <div className="mb-3 rounded-xl overflow-hidden shadow-sm">
+          <ByokNewsBanner studioType="coloring" onOpenModal={() => setIsByokModalOpen(true)} variant="top-ribbon" />
+        </div>
+
         {/* 🛡️ Compact Alert Banner */}
         <div className="mb-4 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-2.5 px-4 flex items-center justify-between gap-3 text-xs font-semibold">
           <div className="flex items-center gap-2">
@@ -1544,6 +1553,9 @@ export default function ColoringBookClient() {
           
           {/* ⚙️ Left Compact Control Panel (Cols: 4) */}
           <div className="lg:col-span-4 space-y-4">
+
+            {/* 🔑 BYOK AI Line Art Early Launch Card */}
+            <ByokNewsBanner studioType="coloring" onOpenModal={() => setIsByokModalOpen(true)} variant="sidebar-card" />
             
             {/* Custom Upload & Template Selection */}
             <div data-tour="select-template" className="space-y-6">
@@ -2664,6 +2676,13 @@ export default function ColoringBookClient() {
         </div>
 
       </main>
+
+      {/* 🚀 BYOK Early Launch News Modal */}
+      <ByokEarlyLaunchModal
+        isOpen={isByokModalOpen}
+        onClose={() => setIsByokModalOpen(false)}
+        studioType="coloring"
+      />
     </div>
   );
 }

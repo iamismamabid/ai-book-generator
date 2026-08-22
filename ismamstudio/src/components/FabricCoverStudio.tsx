@@ -34,6 +34,8 @@ import { CoverVersion } from "@/lib/coverVersions";
 import { BrandKit, loadBrandKit, addBrandColor, removeBrandColor, addBrandFont, removeBrandFont } from "@/lib/brandKit";
 import { relayoutLegacyElements, layoutsDiffer } from "@/lib/coverRelayout";
 import ShareReviewModal from "@/components/ShareReviewModal";
+import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
+import ByokNewsBanner from "@/components/ByokNewsBanner";
 
 // Text-on-a-path shapes. "arc" is the original circular layout; the rest are
 // sampled parametric curves (see samplePathPoints).
@@ -917,7 +919,8 @@ export default function FabricCoverStudio({
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const replaceImageInputRef = useRef<HTMLInputElement>(null);
   const imageAdjustmentsRef = useRef<HTMLDivElement>(null);
-  const [activeToolTab, setActiveToolTab] = useState<'elements' | 'shapes' | 'graphics' | 'presets' | 'uploads' | 'draw' | 'settings' | null>('elements');
+  const [activeToolTab, setActiveToolTab] = useState<'elements' | 'shapes' | 'graphics' | 'presets' | 'uploads' | 'draw' | 'settings' | 'ai-byok' | null>('elements');
+  const [isByokModalOpen, setIsByokModalOpen] = useState(false);
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState("#000000");
   const [drawingWidth, setDrawingWidth] = useState(4);
@@ -4522,6 +4525,7 @@ export default function FabricCoverStudio({
     <div className="flex flex-col flex-1 overflow-hidden h-full relative">
       <div className="shrink-0 z-40">
         <DesktopRecommendedBanner message="For the best cover design experience, we recommend using a laptop or desktop screen." />
+        <ByokNewsBanner studioType="cover" onOpenModal={() => setIsByokModalOpen(true)} variant="top-ribbon" />
       </div>
       <div className="flex flex-1 overflow-hidden h-full relative">
       {/* 1. Far Left Tool Picker Toolbar */}
@@ -4590,6 +4594,18 @@ export default function FabricCoverStudio({
           }`}
         >
           <Pencil className="w-5 h-5"/>
+        </button>
+        <button
+          onClick={() => setActiveToolTab(prev => prev === 'ai-byok' ? null : 'ai-byok')}
+          title="AI BYOK Generator (Launching Soon)"
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] relative ${
+            activeToolTab === 'ai-byok' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 text-amber-400 hover:text-amber-300'
+          }`}
+        >
+          <Sparkles className="w-5 h-5"/>
+          <span className="absolute -top-1 -right-1 px-1 py-0.2 text-[7px] font-black rounded-full bg-amber-500 text-slate-950 shadow-sm border border-slate-950 animate-pulse">
+            SOON
+          </span>
         </button>
         <button
           onClick={() => setActiveToolTab(prev => prev === 'settings' ? null : 'settings')}
@@ -6837,6 +6853,61 @@ export default function FabricCoverStudio({
           </div>
         )}
 
+        {activeToolTab === 'ai-byok' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">AI BYOK Generator</h3>
+              <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600">
+                Launching Soon
+              </span>
+            </div>
+
+            <ByokNewsBanner 
+              studioType="cover" 
+              onOpenModal={() => setIsByokModalOpen(true)} 
+              variant="sidebar-card" 
+            />
+
+            <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">AI Prompt Engine Preview</span>
+                <span className="text-[8px] font-bold text-indigo-600 uppercase bg-indigo-50 px-1.5 py-0.5 rounded">DALL-E 3 & Gemini</span>
+              </div>
+              
+              <div>
+                <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text-to-Cover Prompt</label>
+                <textarea
+                  readOnly
+                  value="A high-contrast cinematic fantasy book cover backdrop, enchanted ancient forest with bioluminescent mushrooms and mystical moonbeams, photorealistic, 8k resolution..."
+                  className="w-full text-xs font-medium p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-600 resize-none"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-400 uppercase block">Selected Engine Model</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <div className="p-2 rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-700 flex items-center justify-between">
+                    <span>OpenAI DALL-E 3</span>
+                    <span className="text-[8px] font-mono text-emerald-600 font-bold">$0.04</span>
+                  </div>
+                  <div className="p-2 rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-700 flex items-center justify-between">
+                    <span>Gemini Imagen 3</span>
+                    <span className="text-[8px] font-mono text-blue-600 font-bold">$0.03</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsByokModalOpen(true)}
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 transition-all cursor-pointer active:scale-95"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Join Early Access List
+              </button>
+            </div>
+          </div>
+        )}
+
         {activeToolTab === 'settings' && (
           <div className="space-y-5">
             <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Layout Canvas Specs</h3>
@@ -7749,6 +7820,12 @@ export default function FabricCoverStudio({
           pageCount,
           spineWidth: layout.spineWidth,
         }}
+      />
+
+      <ByokEarlyLaunchModal
+        isOpen={isByokModalOpen}
+        onClose={() => setIsByokModalOpen(false)}
+        studioType="cover"
       />
       </div>
     </div>

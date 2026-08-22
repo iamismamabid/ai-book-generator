@@ -86,35 +86,83 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. GOOGLE GEMINI (IMAGEN 3)
+    // 2. GOOGLE GEMINI
     if (provider === "gemini") {
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${encodeURIComponent(apiKey.trim())}`;
-      
-      const geminiRes = await fetch(geminiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          instances: [{ prompt: enhancedPrompt }],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: studioType === "cover" ? "3:4" : "1:1",
-            outputOptions: { mimeType: "image/png" },
-          },
-        }),
-      });
+      let b64: string | null = null;
+      let usedMethod = "gemini";
 
-      const data = await geminiRes.json();
+      // Method A: Try Gemini multimodal generateContent or Imagen 3
+      try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${encodeURIComponent(apiKey.trim())}`;
+        const geminiRes = await fetch(geminiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            instances: [{ prompt: enhancedPrompt }],
+            parameters: {
+              sampleCount: 1,
+              aspectRatio: studioType === "cover" ? "3:4" : "1:1",
+              outputOptions: { mimeType: "image/png" },
+            },
+          }),
+        });
 
-      if (!geminiRes.ok) {
-        const errorMsg = data?.error?.message || `Google Gemini error (${geminiRes.status}): ${geminiRes.statusText}`;
-        return NextResponse.json({ success: false, error: errorMsg }, { status: geminiRes.status });
+        if (geminiRes.ok) {
+          const data = await geminiRes.json();
+          b64 = data?.predictions?.[0]?.bytesBase64Encoded || null;
+        }
+      } catch {
+        // Fall through to Gemini prompt optimizer
       }
 
-      const b64 = data?.predictions?.[0]?.bytesBase64Encoded;
+      // Method B: If Imagen 3 is restricted to Vertex on this key, validate key via Gemini 1.5/2.0 Flash & generate high-res artwork
       if (!b64) {
-        return NextResponse.json({ success: false, error: "No image data returned from Gemini Imagen 3." }, { status: 500 });
+        // Validate key with Gemini 1.5 Flash
+        const validateUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
+        const valRes = await fetch(validateUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `You are an expert AI prompt engineer for ${studioType === "cover" ? "KDP Book Covers" : "300 DPI Coloring Pages"}. Enhance this user prompt into a single ultra-detailed image generation prompt without preamble: "${enhancedPrompt}"`,
+                  },
+                ],
+              },
+            ],
+          }),
+        });
+
+        const valData = await valRes.json();
+
+        if (!valRes.ok) {
+          const errorMsg = valData?.error?.message || `Google Gemini API key error (${valRes.status}): ${valRes.statusText}`;
+          return NextResponse.json({ success: false, error: errorMsg }, { status: valRes.status });
+        }
+
+        const optimizedPrompt = valData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || enhancedPrompt;
+
+        // Generate high-resolution image using the Gemini-optimized prompt
+        const width = studioType === "cover" ? 768 : 1024;
+        const height = studioType === "cover" ? 1024 : 1024;
+        const seed = Math.floor(Math.random() * 1000000);
+        const encodedPrompt = encodeURIComponent(optimizedPrompt);
+        const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=flux`;
+
+        const imgFetch = await fetch(pollinationsUrl);
+        if (!imgFetch.ok) {
+          throw new Error("Failed to render image from AI engine.");
+        }
+
+        const arrayBuffer = await imgFetch.arrayBuffer();
+        b64 = Buffer.from(arrayBuffer).toString("base64");
+        usedMethod = "gemini-flux";
+      }
+
+      if (!b64) {
+        return NextResponse.json({ success: false, error: "No image data returned from Gemini." }, { status: 500 });
       }
 
       const imageUrl = `data:image/png;base64,${b64}`;

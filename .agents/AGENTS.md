@@ -37,3 +37,27 @@ Always adhere to the following sequence when implementing new features or making
    git merge develop
    git push origin main
    ```
+
+## Studio Workspace Architecture Guidelines
+
+When modifying `StudioClient.tsx`, `BookBuilder.tsx`, or `FabricCoverStudio.tsx`:
+
+1. **Never use conditional unmounting (`{activeTab === 'x' ? <CompA/> : <CompB/>}`) or `display: none` (`hidden`) for heavy canvas editors.**
+   - `display: none` collapses container dimensions to `0px`, breaking `ResizeObserver` and causing initial-click layout drops.
+   - Conditional unmounting destroys the Fabric canvas and triggers expensive re-imports and font reloads.
+2. **Always maintain the Parallel Absolute Stacking Pattern:**
+   ```tsx
+   <div className="absolute inset-0 w-full h-full flex flex-col overflow-hidden transition-opacity duration-150"
+        style={{
+          visibility: activeTab === 'cover' ? 'visible' : 'hidden',
+          pointerEvents: activeTab === 'cover' ? 'auto' : 'none',
+          zIndex: activeTab === 'cover' ? 10 : 0,
+          opacity: activeTab === 'cover' ? 1 : 0,
+        }}>
+   ```
+3. **Always use the Exact Bounding Box Layout wrapper for scaled Fabric canvases:**
+   - Outer wrapper: `width: Math.round(canvasWidth * scaleRatio * zoom)`, `height: Math.round(canvasHeight * scaleRatio * zoom)`.
+   - Inner scaled container: `transformOrigin: 'top left'`, `transform: scale(scaleRatio * zoom)`.
+   - This ensures flexbox centering calculates against the scaled visual bounds without generating phantom scrollbars or layout shifts.
+4. **Guard global shortcuts with `isActiveRef`:**
+   - Background canvas editors must not capture keyboard shortcuts (e.g. Undo/Redo/Delete) when their tab is not active.

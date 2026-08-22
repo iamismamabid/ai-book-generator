@@ -1060,169 +1060,664 @@ function drawCrescentMoon(ctx: CanvasRenderingContext2D, cx: number, cy: number,
   ctx.arc(cx + r * 0.55, cy, r * 0.78, Math.PI * 1.5, Math.PI * 0.5, true);
   ctx.closePath();
   ctx.stroke();
+}// ── Botanical & Floral Full-Page Patterns ─────────────────────────────────
+
+function drawCitrusMosaicPattern(
+  ctx: CanvasRenderingContext2D,
+  margin: number,
+  innerW: number,
+  innerH: number,
+  density: number,
+  strokeColor: string,
+  width: number,
+  isColorByNumber: boolean,
+  random: () => number
+) {
+  const count = Math.max(6, Math.min(16, density));
+  let numIdx = 1;
+  const cols = Math.ceil(Math.sqrt(count));
+  const rows = Math.ceil(count / cols);
+  const stepX = innerW / cols;
+  const stepY = innerH / rows;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const jx = (random() - 0.5) * stepX * 0.22;
+      const jy = (random() - 0.5) * stepY * 0.22;
+      const cx = margin + c * stepX + stepX / 2 + jx;
+      const cy = margin + r * stepY + stepY / 2 + jy;
+      const rad = Math.min(stepX, stepY) * 0.44;
+      const isWedge = (r + c) % 3 === 2;
+
+      if (isWedge) {
+        const startA = random() * Math.PI * 2;
+        const arcLen = Math.PI * 0.75;
+        const endA = startA + arcLen;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, startA, endA);
+        ctx.lineTo(cx, cy);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad * 0.86, startA + 0.05, endA - 0.05);
+        ctx.lineTo(cx + Math.cos(endA - 0.05) * rad * 0.15, cy + Math.sin(endA - 0.05) * rad * 0.15);
+        ctx.lineTo(cx + Math.cos(startA + 0.05) * rad * 0.15, cy + Math.sin(startA + 0.05) * rad * 0.15);
+        ctx.closePath();
+        ctx.stroke();
+
+        const segCount = 4;
+        for (let s = 0; s < segCount; s++) {
+          const sa1 = startA + (arcLen / segCount) * s + 0.04;
+          const sa2 = startA + (arcLen / segCount) * (s + 1) - 0.04;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(sa1) * rad * 0.2, cy + Math.sin(sa1) * rad * 0.2);
+          ctx.arc(cx, cy, rad * 0.8, sa1, sa2);
+          ctx.lineTo(cx + Math.cos(sa2) * rad * 0.2, cy + Math.sin(sa2) * rad * 0.2);
+          ctx.closePath();
+          ctx.stroke();
+        }
+      } else {
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad * 0.86, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad * 0.16, 0, Math.PI * 2);
+        ctx.stroke();
+
+        const segCount = (r + c) % 2 === 0 ? 8 : 10;
+        for (let s = 0; s < segCount; s++) {
+          const a1 = (s * Math.PI * 2) / segCount + 0.06;
+          const a2 = ((s + 1) * Math.PI * 2) / segCount - 0.06;
+          const midA = (a1 + a2) / 2;
+
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(a1) * rad * 0.22, cy + Math.sin(a1) * rad * 0.22);
+          ctx.arc(cx, cy, rad * 0.8, a1, a2);
+          ctx.lineTo(cx + Math.cos(a2) * rad * 0.22, cy + Math.sin(a2) * rad * 0.22);
+          ctx.closePath();
+          ctx.stroke();
+
+          const px = cx + Math.cos(midA) * rad * 0.52;
+          const py = cy + Math.sin(midA) * rad * 0.52;
+          ctx.beginPath();
+          ctx.ellipse(px, py, rad * 0.1, rad * 0.04, midA, 0, Math.PI * 2);
+          ctx.stroke();
+
+          if (isColorByNumber && s % 2 === 0) {
+            ctx.fillStyle = strokeColor;
+            ctx.font = `bold ${Math.max(9, Math.floor(width * 0.013))}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(`${(numIdx % 9) + 1}`, px, py);
+            numIdx++;
+          }
+        }
+
+        const leafAngle = (r * 1.5 + c * 2.1) % (Math.PI * 2);
+        const lx = cx + Math.cos(leafAngle) * rad * 1.08;
+        const ly = cy + Math.sin(leafAngle) * rad * 1.08;
+        const lr = rad * 0.35;
+        ctx.beginPath();
+        ctx.ellipse(lx, ly, lr, lr * 0.5, leafAngle + Math.PI / 4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(lx - Math.cos(leafAngle + Math.PI / 4) * lr, ly - Math.sin(leafAngle + Math.PI / 4) * lr);
+        ctx.lineTo(lx + Math.cos(leafAngle + Math.PI / 4) * lr, ly + Math.sin(leafAngle + Math.PI / 4) * lr);
+        ctx.stroke();
+      }
+    }
+  }
 }
 
-function drawSparkleStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
-  ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
-  ctx.stroke();
-}
+function drawTropicalPalmsPattern(
+  ctx: CanvasRenderingContext2D,
+  margin: number,
+  innerW: number,
+  innerH: number,
+  density: number,
+  strokeColor: string,
+  width: number,
+  isColorByNumber: boolean
+) {
+  let numIdx = 1;
+  const cx = margin + innerW / 2;
+  const cy = margin + innerH / 2;
 
-// ── Botanical & Floral pattern icons ─────────────────────────────────────
+  const palmCorners = [
+    { x: margin, y: margin, angle: Math.PI / 4, r: innerW * 0.44 },
+    { x: margin + innerW, y: margin, angle: (3 * Math.PI) / 4, r: innerW * 0.44 },
+    { x: margin, y: margin + innerH, angle: -Math.PI / 4, r: innerW * 0.44 },
+    { x: margin + innerW, y: margin + innerH, angle: (-3 * Math.PI) / 4, r: innerW * 0.44 },
+  ];
 
-function drawMonsteraLeafIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - r * 0.75);
-  ctx.bezierCurveTo(cx + r * 0.7, cy - r * 0.6, cx + r * 0.55, cy + r * 0.5, cx, cy + r * 0.8);
-  ctx.bezierCurveTo(cx - r * 0.55, cy + r * 0.5, cx - r * 0.7, cy - r * 0.6, cx, cy - r * 0.75);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - r * 0.65); ctx.lineTo(cx, cy + r * 0.7);
-  [0.35, 0, -0.35].forEach((t) => {
-    const vy = cy + t * r;
-    ctx.moveTo(cx, vy); ctx.lineTo(cx + r * 0.4, vy - r * 0.15);
-    ctx.moveTo(cx, vy); ctx.lineTo(cx - r * 0.4, vy - r * 0.15);
+  palmCorners.forEach(({ x, y, angle, r }) => {
+    const endX = x + Math.cos(angle) * r;
+    const endY = y + Math.sin(angle) * r;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(x + Math.cos(angle) * r * 0.5, y + Math.sin(angle) * r * 0.3, endX, endY);
+    ctx.stroke();
+
+    const leaflets = 10;
+    for (let i = 2; i <= leaflets; i++) {
+      const t = i / leaflets;
+      const lx = x + (endX - x) * t;
+      const ly = y + (endY - y) * t;
+      const leafLen = r * 0.3 * (1 - t * 0.35);
+      [-1, 1].forEach((side) => {
+        const leafA = angle + side * 0.65;
+        const tipX = lx + Math.cos(leafA) * leafLen;
+        const tipY = ly + Math.sin(leafA) * leafLen;
+        const nx = -Math.sin(leafA) * leafLen * 0.18;
+        const ny = Math.cos(leafA) * leafLen * 0.18;
+
+        ctx.beginPath();
+        ctx.moveTo(lx, ly);
+        ctx.quadraticCurveTo(lx + (tipX - lx) * 0.5 + nx, ly + (tipY - ly) * 0.5 + ny, tipX, tipY);
+        ctx.quadraticCurveTo(lx + (tipX - lx) * 0.5 - nx, ly + (tipY - ly) * 0.5 - ny, lx, ly);
+        ctx.closePath();
+        ctx.stroke();
+
+        if (isColorByNumber && i % 3 === 0 && side === 1) {
+          ctx.fillStyle = strokeColor;
+          ctx.font = `bold ${Math.max(9, Math.floor(width * 0.012))}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(`${(numIdx % 9) + 1}`, lx + (tipX - lx) * 0.5, ly + (tipY - ly) * 0.5);
+          numIdx++;
+        }
+      });
+    }
   });
-  ctx.stroke();
-  ([[-0.22, -0.1], [0.24, 0.15], [-0.18, 0.4]] as const).forEach(([dx, dy]) => {
+
+  const monsteraPositions = [
+    { x: cx - innerW * 0.18, y: cy - innerH * 0.12, r: innerW * 0.24, rot: -0.2 },
+    { x: cx + innerW * 0.18, y: cy + innerH * 0.12, r: innerW * 0.24, rot: 0.3 },
+    { x: cx, y: cy, r: innerW * 0.22, rot: -0.1 },
+  ];
+
+  monsteraPositions.forEach(({ x, y, r, rot }) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+
     ctx.beginPath();
-    ctx.ellipse(cx + dx * r, cy + dy * r, r * 0.09, r * 0.14, 0.3, 0, Math.PI * 2);
+    ctx.moveTo(0, -r * 0.85);
+    ctx.bezierCurveTo(r * 0.8, -r * 0.7, r * 0.7, r * 0.6, 0, r * 0.95);
+    ctx.bezierCurveTo(-r * 0.7, r * 0.6, -r * 0.8, -r * 0.7, 0, -r * 0.85);
+    ctx.closePath();
     ctx.stroke();
-  });
-}
 
-function drawPalmFrondIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(cx, cy + r * 0.85); ctx.lineTo(cx, cy - r * 0.85);
-  ctx.stroke();
-  for (let i = 1; i <= 5; i++) {
-    const t = i / 5.5;
-    const y = cy + r * 0.85 - t * r * 1.6;
-    const len = r * 0.65 * (1 - t * 0.3);
     ctx.beginPath();
-    ctx.moveTo(cx, y);
-    ctx.quadraticCurveTo(cx + len * 0.7, y - len * 0.25, cx + len, y - len * 0.55);
+    ctx.moveTo(0, -r * 0.75);
+    ctx.lineTo(0, r * 0.85);
     ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx, y);
-    ctx.quadraticCurveTo(cx - len * 0.7, y - len * 0.25, cx - len, y - len * 0.55);
-    ctx.stroke();
-  }
-}
 
-function drawFernFrondIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(cx, cy + r * 0.85); ctx.lineTo(cx, cy - r * 0.85);
-  ctx.stroke();
-  for (let i = 1; i <= 8; i++) {
-    const t = i / 8.5;
-    const y = cy + r * 0.8 - t * r * 1.55;
-    const len = r * 0.32 * (1 - t * 0.5);
-    ctx.beginPath();
-    ctx.moveTo(cx, y); ctx.lineTo(cx + len, y - len * 0.5);
-    ctx.moveTo(cx, y); ctx.lineTo(cx - len, y - len * 0.5);
-    ctx.stroke();
-  }
-}
+    const slits = [
+      { side: -1, dy: -0.4, w: 0.11, h: 0.25, a: -0.4 },
+      { side: -1, dy: -0.1, w: 0.13, h: 0.3, a: -0.3 },
+      { side: -1, dy: 0.25, w: 0.11, h: 0.22, a: -0.2 },
+      { side: 1, dy: -0.4, w: 0.11, h: 0.25, a: 0.4 },
+      { side: 1, dy: -0.1, w: 0.13, h: 0.3, a: 0.3 },
+      { side: 1, dy: 0.25, w: 0.11, h: 0.22, a: 0.2 },
+    ];
 
-function drawRoseIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  ctx.beginPath();
-  let a = 0, rr = r * 0.06;
-  ctx.moveTo(cx + rr, cy);
-  while (a < Math.PI * 5.5) {
-    a += 0.2;
-    rr = r * 0.06 + (r * 0.8) * (a / (Math.PI * 5.5));
-    ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
-  }
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.95, 0, Math.PI * 2);
-  ctx.stroke();
-}
-
-function drawVineLeafIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - r * 0.6);
-  ctx.quadraticCurveTo(cx + r * 0.55, cy - r * 0.25, cx, cy + r * 0.6);
-  ctx.quadraticCurveTo(cx - r * 0.55, cy - r * 0.25, cx, cy - r * 0.6);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx, cy + r * 0.55);
-  ctx.bezierCurveTo(cx + r * 0.4, cy + r * 0.7, cx + r * 0.15, cy + r * 1.0, cx + r * 0.5, cy + r * 1.05);
-  ctx.stroke();
-}
-
-function drawSucculentRosetteIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  ([0.85, 0.55] as const).forEach((scale, ring) => {
-    const petals = ring === 0 ? 8 : 6;
-    for (let i = 0; i < petals; i++) {
-      const a = (i / petals) * Math.PI * 2 + ring * 0.3;
-      const px = cx + Math.cos(a) * r * scale * 0.15;
-      const py = cy + Math.sin(a) * r * scale * 0.15;
-      const tx = cx + Math.cos(a) * r * scale;
-      const ty = cy + Math.sin(a) * r * scale;
+    slits.forEach(({ side, dy, w, h, a }) => {
+      const sx = side * r * 0.35;
+      const sy = dy * r;
       ctx.beginPath();
-      ctx.moveTo(px - Math.sin(a) * r * 0.13, py + Math.cos(a) * r * 0.13);
-      ctx.quadraticCurveTo(tx, ty, px + Math.sin(a) * r * 0.13, py - Math.cos(a) * r * 0.13);
+      ctx.ellipse(sx, sy, w * r, h * r, a, 0, Math.PI * 2);
       ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(0, sy);
+      ctx.lineTo(side * r * 0.65, sy + dy * r * 0.3);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+  });
+}
+
+function drawRoseLatticePattern(
+  ctx: CanvasRenderingContext2D,
+  margin: number,
+  innerW: number,
+  innerH: number,
+  density: number,
+  strokeColor: string,
+  width: number,
+  isColorByNumber: boolean
+) {
+  let numIdx = 1;
+
+  const latticeSpacing = innerW / 8;
+  ctx.save();
+  ctx.lineWidth = Math.max(1, width * 0.002);
+  for (let x = margin - innerH; x <= margin + innerW + innerH; x += latticeSpacing) {
+    ctx.beginPath();
+    ctx.moveTo(x, margin);
+    ctx.lineTo(x + innerH, margin + innerH);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x, margin + innerH);
+    ctx.lineTo(x + innerH, margin);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  const roseSpots = [
+    { x: margin + innerW * 0.22, y: margin + innerH * 0.22, r: innerW * 0.13 },
+    { x: margin + innerW * 0.78, y: margin + innerH * 0.25, r: innerW * 0.14 },
+    { x: margin + innerW * 0.5, y: margin + innerH * 0.5, r: innerW * 0.16 },
+    { x: margin + innerW * 0.2, y: margin + innerH * 0.78, r: innerW * 0.14 },
+    { x: margin + innerW * 0.78, y: margin + innerH * 0.78, r: innerW * 0.13 },
+    { x: margin + innerW * 0.35, y: margin + innerH * 0.38, r: innerW * 0.08 },
+    { x: margin + innerW * 0.65, y: margin + innerH * 0.65, r: innerW * 0.08 },
+  ];
+
+  ctx.beginPath();
+  ctx.moveTo(margin + innerW * 0.1, margin + innerH * 0.1);
+  ctx.bezierCurveTo(margin + innerW * 0.4, margin + innerH * 0.2, margin + innerW * 0.3, margin + innerH * 0.6, margin + innerW * 0.8, margin + innerH * 0.9);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(margin + innerW * 0.9, margin + innerH * 0.1);
+  ctx.bezierCurveTo(margin + innerW * 0.6, margin + innerH * 0.4, margin + innerW * 0.7, margin + innerH * 0.8, margin + innerW * 0.2, margin + innerH * 0.9);
+  ctx.stroke();
+
+  roseSpots.forEach(({ x, y, r }) => {
+    const leafAngles = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3];
+    leafAngles.forEach((la) => {
+      const lx = x + Math.cos(la) * (r * 1.25);
+      const ly = y + Math.sin(la) * (r * 1.25);
+      const lr = r * 0.45;
+      ctx.beginPath();
+      ctx.ellipse(lx, ly, lr, lr * 0.5, la, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(la) * r * 0.8, y + Math.sin(la) * r * 0.8);
+      ctx.lineTo(x + Math.cos(la) * (r * 1.6), y + Math.sin(la) * (r * 1.6));
+      ctx.stroke();
+    });
+
+    const layers = [
+      { petals: 7, scale: 0.95 },
+      { petals: 6, scale: 0.72 },
+      { petals: 5, scale: 0.5 },
+      { petals: 4, scale: 0.3 },
+    ];
+
+    layers.forEach(({ petals, scale }, layerIdx) => {
+      const pr = r * scale;
+      for (let p = 0; p < petals; p++) {
+        const a1 = (p * Math.PI * 2) / petals + layerIdx * 0.4;
+        const a2 = ((p + 1) * Math.PI * 2) / petals + layerIdx * 0.4;
+        const midA = (a1 + a2) / 2;
+
+        const p1x = x + Math.cos(a1) * (pr * 0.6);
+        const p1y = y + Math.sin(a1) * (pr * 0.6);
+        const p2x = x + Math.cos(a2) * (pr * 0.6);
+        const p2y = y + Math.sin(a2) * (pr * 0.6);
+        const tipX = x + Math.cos(midA) * pr;
+        const tipY = y + Math.sin(midA) * pr;
+
+        ctx.beginPath();
+        ctx.moveTo(p1x, p1y);
+        ctx.quadraticCurveTo(tipX + Math.sin(midA) * (pr * 0.2), tipY - Math.cos(midA) * (pr * 0.2), tipX, tipY);
+        ctx.quadraticCurveTo(tipX - Math.sin(midA) * (pr * 0.2), tipY + Math.cos(midA) * (pr * 0.2), p2x, p2y);
+        ctx.closePath();
+        ctx.stroke();
+
+        if (isColorByNumber && layerIdx === 0 && p % 2 === 0) {
+          ctx.fillStyle = strokeColor;
+          ctx.font = `bold ${Math.max(9, Math.floor(width * 0.012))}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(`${(numIdx % 9) + 1}`, tipX * 0.9 + x * 0.1, tipY * 0.9 + y * 0.1);
+          numIdx++;
+        }
+      }
+    });
+
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.15, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawSucculentTerrariumPattern(
+  ctx: CanvasRenderingContext2D,
+  margin: number,
+  innerW: number,
+  innerH: number,
+  density: number,
+  strokeColor: string,
+  width: number,
+  isColorByNumber: boolean,
+  cx: number,
+  cy: number
+) {
+  let numIdx = 1;
+
+  const tw = innerW * 0.44;
+  const th = innerH * 0.42;
+  const topY = cy - th;
+  const midY = cy + th * 0.1;
+  const botY = cy + th * 0.95;
+
+  const points = {
+    top: [cx, topY],
+    topL: [cx - tw * 0.6, cy - th * 0.4],
+    topR: [cx + tw * 0.6, cy - th * 0.4],
+    midL: [cx - tw, midY],
+    midML: [cx - tw * 0.35, midY + th * 0.1],
+    midMR: [cx + tw * 0.35, midY + th * 0.1],
+    midR: [cx + tw, midY],
+    botL: [cx - tw * 0.6, botY],
+    botM: [cx, botY + th * 0.08],
+    botR: [cx + tw * 0.6, botY],
+  };
+
+  ctx.beginPath();
+  ctx.moveTo(points.top[0], points.top[1]);
+  ctx.lineTo(points.topR[0], points.topR[1]);
+  ctx.lineTo(points.midR[0], points.midR[1]);
+  ctx.lineTo(points.botR[0], points.botR[1]);
+  ctx.lineTo(points.botM[0], points.botM[1]);
+  ctx.lineTo(points.botL[0], points.botL[1]);
+  ctx.lineTo(points.midL[0], points.midL[1]);
+  ctx.lineTo(points.topL[0], points.topL[1]);
+  ctx.closePath();
+  ctx.stroke();
+
+  const facetLines = [
+    [points.top, points.topL],
+    [points.top, points.topR],
+    [points.top, points.midML],
+    [points.top, points.midMR],
+    [points.topL, points.midL],
+    [points.topL, points.midML],
+    [points.topR, points.midR],
+    [points.topR, points.midMR],
+    [points.midL, points.botL],
+    [points.midML, points.botL],
+    [points.midML, points.botM],
+    [points.midMR, points.botM],
+    [points.midMR, points.botR],
+    [points.midR, points.botR],
+    [points.midML, points.midMR],
+  ];
+
+  facetLines.forEach(([p1, p2]) => {
+    ctx.beginPath();
+    ctx.moveTo(p1[0], p1[1]);
+    ctx.lineTo(p2[0], p2[1]);
+    ctx.stroke();
+  });
+
+  ctx.beginPath();
+  ctx.moveTo(cx, margin);
+  ctx.lineTo(cx, topY);
+  ctx.stroke();
+  for (let y = margin; y < topY; y += 16) {
+    ctx.beginPath();
+    ctx.ellipse(cx, y + 8, 4, 8, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  for (let layer = 0; layer < 3; layer++) {
+    const pebbleY = botY - layer * 20;
+    const pebbleCount = 8 - layer * 2;
+    const pStep = (tw * 1.1) / pebbleCount;
+    for (let p = 0; p < pebbleCount; p++) {
+      const px = cx - (tw * 0.55) + p * pStep + pStep / 2;
+      ctx.beginPath();
+      ctx.ellipse(px, pebbleY, pStep * 0.45, 9, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  const sx = cx;
+  const sy = midY + 15;
+  const sRad = tw * 0.42;
+
+  const rings = [
+    { petals: 8, r: sRad },
+    { petals: 7, r: sRad * 0.72 },
+    { petals: 6, r: sRad * 0.46 },
+    { petals: 4, r: sRad * 0.24 },
+  ];
+
+  rings.forEach(({ petals, r: ringR }, ringIdx) => {
+    for (let p = 0; p < petals; p++) {
+      const a = (p * Math.PI * 2) / petals + ringIdx * 0.35;
+      const tipX = sx + Math.cos(a) * ringR;
+      const tipY = sy + Math.sin(a) * ringR;
+      const w = ringR * 0.3;
+      const nx = -Math.sin(a) * w;
+      const ny = Math.cos(a) * w;
+      const baseR = ringR * 0.3;
+      const bx = sx + Math.cos(a) * baseR;
+      const by = sy + Math.sin(a) * baseR;
+
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.quadraticCurveTo(bx + (tipX - bx) * 0.5 + nx, by + (tipY - by) * 0.5 + ny, tipX, tipY);
+      ctx.quadraticCurveTo(bx + (tipX - bx) * 0.5 - nx, by + (tipY - by) * 0.5 - ny, bx, by);
+      ctx.closePath();
+      ctx.stroke();
+
+      if (isColorByNumber && ringIdx === 0 && p % 2 === 0) {
+        ctx.fillStyle = strokeColor;
+        ctx.font = `bold ${Math.max(9, Math.floor(width * 0.012))}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`${(numIdx % 9) + 1}`, tipX * 0.8 + sx * 0.2, tipY * 0.8 + sy * 0.2);
+        numIdx++;
+      }
+    }
+  });
+
+  const lCactusX = cx - tw * 0.48;
+  const lCactusY = midY - 20;
+  ctx.beginPath();
+  ctx.ellipse(lCactusX, lCactusY, 18, 38, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  for (let rib = -1; rib <= 1; rib++) {
+    ctx.beginPath();
+    ctx.moveTo(lCactusX + rib * 10, lCactusY - 35);
+    ctx.lineTo(lCactusX + rib * 10, lCactusY + 35);
+    ctx.stroke();
+  }
+
+  const rCactusX = cx + tw * 0.48;
+  const rCactusY = midY - 10;
+  ctx.beginPath();
+  ctx.ellipse(rCactusX, rCactusY, 22, 28, 0.2, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(rCactusX + 10, rCactusY - 30, 14, 18, -0.3, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(rCactusX + 10, rCactusY - 48, 6, 0, Math.PI * 2);
+  ctx.stroke();
+
+  [-tw * 0.7, tw * 0.7].forEach((sideX) => {
+    let beadY = midY + 20;
+    for (let b = 0; b < 7; b++) {
+      ctx.beginPath();
+      ctx.arc(cx + sideX + Math.sin(b * 0.8) * 8, beadY, 5 + (b % 2) * 2, 0, Math.PI * 2);
+      ctx.stroke();
+      beadY += 14;
     }
   });
 }
 
-function drawCactusPotIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  const potTop = cy + r * 0.35;
-  ctx.beginPath();
-  ctx.moveTo(cx - r * 0.4, potTop); ctx.lineTo(cx - r * 0.3, cy + r * 0.85);
-  ctx.lineTo(cx + r * 0.3, cy + r * 0.85); ctx.lineTo(cx + r * 0.4, potTop);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx - r * 0.45, potTop); ctx.lineTo(cx + r * 0.45, potTop);
-  ctx.stroke();
-  const bw = r * 0.24, topY = cy - r * 0.75;
-  ctx.beginPath();
-  ctx.moveTo(cx - bw, potTop);
-  ctx.lineTo(cx - bw, topY + bw);
-  ctx.quadraticCurveTo(cx - bw, topY, cx, topY);
-  ctx.quadraticCurveTo(cx + bw, topY, cx + bw, topY + bw);
-  ctx.lineTo(cx + bw, potTop);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx, topY + bw * 0.3); ctx.lineTo(cx, potTop);
-  ctx.stroke();
-  ([-1, 1] as const).forEach((side) => {
-    ctx.beginPath();
-    ctx.ellipse(cx + side * (bw + r * 0.18), cy - r * 0.15, r * 0.16, r * 0.28, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  });
-}
+function drawLotusPondPattern(
+  ctx: CanvasRenderingContext2D,
+  margin: number,
+  innerW: number,
+  innerH: number,
+  density: number,
+  strokeColor: string,
+  width: number,
+  isColorByNumber: boolean,
+  cx: number,
+  cy: number
+) {
+  let numIdx = 1;
 
-function drawLotusFlowerIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  const baseX = cx, baseY = cy + r * 0.7;
-  [-0.75, -0.38, 0, 0.38, 0.75].forEach((off) => {
-    const angle = -Math.PI / 2 + off * 0.9;
-    const len = r * (1.05 - Math.abs(off) * 0.35);
-    const tipX = baseX + Math.cos(angle) * len, tipY = baseY + Math.sin(angle) * len;
-    const nx = -Math.sin(angle), ny = Math.cos(angle);
-    const w = r * 0.22;
+  const waveCount = 7;
+  for (let w = 0; w < waveCount; w++) {
+    const wy = margin + (innerH / (waveCount + 1)) * (w + 1);
     ctx.beginPath();
-    ctx.moveTo(baseX, baseY);
-    ctx.quadraticCurveTo(baseX + Math.cos(angle) * len * 0.5 + nx * w, baseY + Math.sin(angle) * len * 0.5 + ny * w, tipX, tipY);
-    ctx.quadraticCurveTo(baseX + Math.cos(angle) * len * 0.5 - nx * w, baseY + Math.sin(angle) * len * 0.5 - ny * w, baseX, baseY);
+    ctx.moveTo(margin, wy);
+    ctx.bezierCurveTo(
+      margin + innerW * 0.25, wy + Math.sin(w * 1.5) * 18,
+      margin + innerW * 0.75, wy - Math.sin(w * 1.5) * 18,
+      margin + innerW, wy
+    );
     ctx.stroke();
-  });
-}
+  }
 
-function drawLilyPadIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.75, 0.35, Math.PI * 2 - 0.35);
-  ctx.lineTo(cx, cy);
-  ctx.closePath();
-  ctx.stroke();
-  ([0.3, 0.5] as const).forEach((rr) => {
+  const koiFish = [
+    { x: cx - innerW * 0.25, y: cy + innerH * 0.18, rot: -0.4, scale: innerW * 0.16 },
+    { x: cx + innerW * 0.28, y: cy - innerH * 0.18, rot: 2.8, scale: innerW * 0.15 },
+  ];
+
+  koiFish.forEach(({ x, y, rot, scale }) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+
     ctx.beginPath();
-    ctx.arc(cx, cy + r * 1.0, r * rr, Math.PI * 1.15, Math.PI * 1.85);
+    ctx.moveTo(0, -scale * 0.6);
+    ctx.bezierCurveTo(scale * 0.35, -scale * 0.3, scale * 0.35, scale * 0.4, 0, scale * 0.7);
+    ctx.bezierCurveTo(-scale * 0.35, scale * 0.4, -scale * 0.35, -scale * 0.3, 0, -scale * 0.6);
+    ctx.closePath();
     ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, scale * 0.65);
+    ctx.bezierCurveTo(scale * 0.35, scale * 1.1, scale * 0.1, scale * 1.25, 0, scale * 1.1);
+    ctx.bezierCurveTo(-scale * 0.1, scale * 1.25, -scale * 0.35, scale * 1.1, 0, scale * 0.65);
+    ctx.closePath();
+    ctx.stroke();
+
+    [-1, 1].forEach((side) => {
+      ctx.beginPath();
+      ctx.moveTo(side * scale * 0.2, -scale * 0.1);
+      ctx.quadraticCurveTo(side * scale * 0.55, 0, side * scale * 0.45, scale * 0.25);
+      ctx.quadraticCurveTo(side * scale * 0.25, scale * 0.15, side * scale * 0.2, scale * 0.05);
+      ctx.closePath();
+      ctx.stroke();
+    });
+
+    ctx.beginPath();
+    ctx.arc(0, -scale * 0.1, scale * 0.12, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.restore();
+  });
+
+  const lilyPads = [
+    { x: margin + innerW * 0.18, y: margin + innerH * 0.25, r: innerW * 0.14, rot: 0.6 },
+    { x: margin + innerW * 0.82, y: margin + innerH * 0.32, r: innerW * 0.15, rot: -1.2 },
+    { x: margin + innerW * 0.22, y: margin + innerH * 0.75, r: innerW * 0.16, rot: 2.1 },
+    { x: margin + innerW * 0.78, y: margin + innerH * 0.78, r: innerW * 0.14, rot: 0.3 },
+  ];
+
+  lilyPads.forEach(({ x, y, r, rot }) => {
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.22, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0.35, Math.PI * 2 - 0.35);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    ctx.stroke();
+
+    for (let i = 1; i <= 6; i++) {
+      const va = 0.5 + (i / 7) * (Math.PI * 2 - 1.0);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(va) * r * 0.88, Math.sin(va) * r * 0.88);
+      ctx.stroke();
+    }
+    ctx.restore();
+  });
+
+  const lotusBlooms = [
+    { x: cx, y: cy, r: innerW * 0.18 },
+    { x: cx + innerW * 0.24, y: cy + innerH * 0.28, r: innerW * 0.12 },
+    { x: cx - innerW * 0.24, y: cy - innerH * 0.28, r: innerW * 0.12 },
+  ];
+
+  lotusBlooms.forEach(({ x, y, r }) => {
+    ctx.beginPath();
+    ctx.ellipse(x, y + r * 0.45, r * 1.1, r * 0.32, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const petalTiers = [
+      { count: 7, scale: 1.0, yOffset: 0 },
+      { count: 6, scale: 0.78, yOffset: -r * 0.1 },
+      { count: 5, scale: 0.55, yOffset: -r * 0.2 },
+    ];
+
+    petalTiers.forEach(({ count, scale, yOffset }, tierIdx) => {
+      const pr = r * scale;
+      for (let p = 0; p < count; p++) {
+        const span = Math.PI * 0.85;
+        const angle = -Math.PI / 2 + (p - (count - 1) / 2) * (span / count);
+        const tipX = x + Math.cos(angle) * pr;
+        const tipY = y + yOffset + Math.sin(angle) * pr;
+        const w = pr * 0.28;
+        const nx = -Math.sin(angle) * w;
+        const ny = Math.cos(angle) * w;
+        const bx = x + (p - (count - 1) / 2) * (pr * 0.08);
+        const by = y + yOffset + pr * 0.3;
+
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.quadraticCurveTo(bx + (tipX - bx) * 0.5 + nx, by + (tipY - by) * 0.5 + ny, tipX, tipY);
+        ctx.quadraticCurveTo(bx + (tipX - bx) * 0.5 - nx, by + (tipY - by) * 0.5 - ny, bx, by);
+        ctx.closePath();
+        ctx.stroke();
+
+        if (isColorByNumber && tierIdx === 0 && p % 2 === 0) {
+          ctx.fillStyle = strokeColor;
+          ctx.font = `bold ${Math.max(9, Math.floor(width * 0.013))}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(`${(numIdx % 9) + 1}`, tipX * 0.7 + bx * 0.3, tipY * 0.7 + by * 0.3);
+          numIdx++;
+        }
+      }
+    });
+
+    ctx.beginPath();
+    ctx.arc(x, y - r * 0.08, r * 0.14, 0, Math.PI * 2);
+    ctx.stroke();
+    for (let dot = 0; dot < 5; dot++) {
+      const da = (dot * Math.PI * 2) / 5;
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(da) * r * 0.07, y - r * 0.08 + Math.sin(da) * r * 0.07, r * 0.02, 0, Math.PI * 2);
+      ctx.stroke();
+    }
   });
 }
 
@@ -1943,53 +2438,15 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
   const density = complexity;
 
   if (pid === "citrus_slices") {
-    // Draw grid of citrus wheels / slices
-    const cols = Math.ceil(Math.sqrt(density));
-    const rows = cols;
-    const stepX = innerW / cols;
-    const stepY = innerH / rows;
-
-    let numIdx = 1;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const x = margin + c * stepX + stepX / 2;
-        const y = margin + r * stepY + stepY / 2;
-        const rad = Math.min(stepX, stepY) * 0.42;
-
-        // Outer rind
-        ctx.beginPath();
-        ctx.arc(x, y, rad, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(x, y, rad * 0.85, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Citrus segments
-        const segments = 8;
-        for (let i = 0; i < segments; i++) {
-          const a1 = (i * Math.PI * 2) / segments + 0.05;
-          const a2 = ((i + 1) * Math.PI * 2) / segments - 0.05;
-          ctx.beginPath();
-          ctx.moveTo(x + Math.cos(a1) * (rad * 0.2), y + Math.sin(a1) * (rad * 0.2));
-          ctx.arc(x, y, rad * 0.8, a1, a2);
-          ctx.closePath();
-          ctx.stroke();
-
-          // Number tag for color-by-number
-          if (isColorByNumber && (r + c) % 2 === 0) {
-            const midA = (a1 + a2) / 2;
-            const nx = x + Math.cos(midA) * (rad * 0.5);
-            const ny = y + Math.sin(midA) * (rad * 0.5);
-            ctx.fillStyle = strokeColor;
-            ctx.font = `bold ${Math.max(10, Math.floor(width * 0.015))}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(`${(numIdx % 9) + 1}`, nx, ny);
-            numIdx++;
-          }
-        }
-      }
-    }
+    drawCitrusMosaicPattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber, random);
+  } else if (pid === "tropical_palms") {
+    drawTropicalPalmsPattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "rose_lattice") {
+    drawRoseLatticePattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
+  } else if (pid === "succulents") {
+    drawSucculentTerrariumPattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber, cx, cy);
+  } else if (pid === "lotus_pond") {
+    drawLotusPondPattern(ctx, margin, innerW, innerH, density, strokeColor, width, isColorByNumber, cx, cy);
   } else if (pid === "coffee_cups") {
     drawFoodIconGrid(ctx, [drawCoffeeCupIcon, drawCoffeeBeanIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
   } else if (pid === "pastry_display") {
@@ -2002,14 +2459,6 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
     );
   } else if (pid === "boba_smoothies") {
     drawFoodIconGrid(ctx, [drawMasonJarIcon, drawFruitWedgeIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
-  } else if (pid === "tropical_palms") {
-    drawFoodIconGrid(ctx, [drawMonsteraLeafIcon, drawPalmFrondIcon, drawFernFrondIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
-  } else if (pid === "rose_lattice") {
-    drawFoodIconGrid(ctx, [drawRoseIcon, drawVineLeafIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
-  } else if (pid === "succulents") {
-    drawFoodIconGrid(ctx, [drawSucculentRosetteIcon, drawCactusPotIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
-  } else if (pid === "lotus_pond") {
-    drawFoodIconGrid(ctx, [drawLotusFlowerIcon, drawLilyPadIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
   } else if (pid === "crystal_geode") {
     drawFoodIconGrid(ctx, [drawCrystalClusterIcon], margin, innerW, innerH, density, strokeColor, width, isColorByNumber);
   } else if (pid === "vintage_clocks") {

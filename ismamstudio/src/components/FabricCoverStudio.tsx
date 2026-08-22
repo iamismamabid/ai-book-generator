@@ -36,6 +36,7 @@ import { relayoutLegacyElements, layoutsDiffer } from "@/lib/coverRelayout";
 import ShareReviewModal from "@/components/ShareReviewModal";
 import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
 import ByokNewsBanner from "@/components/ByokNewsBanner";
+import ByokStudioPanel from "@/components/ByokStudioPanel";
 
 // Text-on-a-path shapes. "arc" is the original circular layout; the rest are
 // sampled parametric curves (see samplePathPoints).
@@ -6855,56 +6856,12 @@ export default function FabricCoverStudio({
 
         {activeToolTab === 'ai-byok' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">AI BYOK Generator</h3>
-              <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600">
-                Launching Soon
-              </span>
-            </div>
-
-            <ByokNewsBanner 
-              studioType="cover" 
-              onOpenModal={() => setIsByokModalOpen(true)} 
-              variant="sidebar-card" 
+            <ByokStudioPanel
+              studioType="cover"
+              onApplyFrontCover={(url) => setFrontCoverImage(url)}
+              onApplyFullCover={(url) => setFullCoverImage(url)}
+              onAddToCanvas={(url) => addImage(url)}
             />
-
-            <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">AI Prompt Engine Preview</span>
-                <span className="text-[8px] font-bold text-indigo-600 uppercase bg-indigo-50 px-1.5 py-0.5 rounded">DALL-E 3 & Gemini</span>
-              </div>
-              
-              <div>
-                <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text-to-Cover Prompt</label>
-                <textarea
-                  readOnly
-                  value="A high-contrast cinematic fantasy book cover backdrop, enchanted ancient forest with bioluminescent mushrooms and mystical moonbeams, photorealistic, 8k resolution..."
-                  className="w-full text-xs font-medium p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-600 resize-none"
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase block">Selected Engine Model</label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <div className="p-2 rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-700 flex items-center justify-between">
-                    <span>OpenAI DALL-E 3</span>
-                    <span className="text-[8px] font-mono text-emerald-600 font-bold">$0.04</span>
-                  </div>
-                  <div className="p-2 rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-700 flex items-center justify-between">
-                    <span>Gemini Imagen 3</span>
-                    <span className="text-[8px] font-mono text-blue-600 font-bold">$0.03</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setIsByokModalOpen(true)}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 transition-all cursor-pointer active:scale-95"
-              >
-                <Sparkles className="w-3.5 h-3.5" /> Join Early Access List
-              </button>
-            </div>
           </div>
         )}
 
@@ -7826,6 +7783,9 @@ export default function FabricCoverStudio({
         isOpen={isByokModalOpen}
         onClose={() => setIsByokModalOpen(false)}
         studioType="cover"
+        onApplyFrontCover={(url) => setFrontCoverImage(url)}
+        onApplyFullCover={(url) => setFullCoverImage(url)}
+        onAddToCanvas={(url) => addImage(url)}
       />
       </div>
     </div>

@@ -66,6 +66,7 @@ import { PRESETS, PresetItem, drawColoringPattern } from "@/lib/coloringBookPatt
 import { checkPremiumStatus, saveColoringProject, loadColoringProject } from "@/app/actions";
 import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
 import ByokNewsBanner from "@/components/ByokNewsBanner";
+import ByokStudioPanel from "@/components/ByokStudioPanel";
 
 // Matches drawWatermark's look in pdfExportService.ts (used by every other
 // tool's PDF export) so free-tier output is consistently branded across the
@@ -687,6 +688,19 @@ export default function ColoringBookClient() {
     setCustomLineArt(null);
     setCustomImageName(null);
     showToast("Reverted to preset template.");
+  };
+
+  const handleApplyAiColoringPage = (imageUrl: string, promptText: string) => {
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const lineArtData = convertImageToLineArt(img, 850, 1100);
+      setCustomLineArt(lineArtData);
+      const shortName = promptText ? (promptText.length > 25 ? promptText.slice(0, 25) + "..." : promptText) : "AI Generated";
+      setCustomImageName(`AI: ${shortName}`);
+      showToast("Loaded AI Generated Line Art onto 300 DPI canvas!");
+    };
+    img.src = imageUrl;
   };
 
   const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -1554,8 +1568,13 @@ export default function ColoringBookClient() {
           {/* ⚙️ Left Compact Control Panel (Cols: 4) */}
           <div className="lg:col-span-4 space-y-4">
 
-            {/* 🔑 BYOK AI Line Art Early Launch Card */}
-            <ByokNewsBanner studioType="coloring" onOpenModal={() => setIsByokModalOpen(true)} variant="sidebar-card" />
+            {/* 🔑 BYOK AI Line Art Generator */}
+            <div className="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-sm space-y-3">
+              <ByokStudioPanel
+                studioType="coloring"
+                onApplyColoringPage={handleApplyAiColoringPage}
+              />
+            </div>
             
             {/* Custom Upload & Template Selection */}
             <div data-tour="select-template" className="space-y-6">
@@ -2682,6 +2701,7 @@ export default function ColoringBookClient() {
         isOpen={isByokModalOpen}
         onClose={() => setIsByokModalOpen(false)}
         studioType="coloring"
+        onApplyColoringPage={handleApplyAiColoringPage}
       />
     </div>
   );

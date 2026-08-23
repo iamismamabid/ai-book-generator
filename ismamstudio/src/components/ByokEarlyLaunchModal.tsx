@@ -15,6 +15,7 @@ interface ByokEarlyLaunchModalProps {
   onClose: () => void;
   studioType: "cover" | "coloring";
   onApplyFrontCover?: (imageUrl: string) => void;
+  onApplyBackCover?: (imageUrl: string) => void;
   onApplyFullCover?: (imageUrl: string) => void;
   onAddToCanvas?: (imageUrl: string) => void;
   onApplyColoringPage?: (imageUrl: string, promptText: string) => void;
@@ -56,6 +57,7 @@ export default function ByokEarlyLaunchModal({
   onClose, 
   studioType,
   onApplyFrontCover,
+  onApplyBackCover,
   onApplyFullCover,
   onAddToCanvas,
   onApplyColoringPage
@@ -149,6 +151,10 @@ export default function ByokEarlyLaunchModal({
               studioType={studioType}
               onApplyFrontCover={(url) => {
                 onApplyFrontCover?.(url);
+                onClose();
+              }}
+              onApplyBackCover={(url) => {
+                onApplyBackCover?.(url);
                 onClose();
               }}
               onApplyFullCover={(url) => {

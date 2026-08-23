@@ -6859,6 +6859,7 @@ export default function FabricCoverStudio({
             <ByokStudioPanel
               studioType="cover"
               onApplyFrontCover={(url) => setFrontCoverImage(url)}
+              onApplyBackCover={(url) => setBackCoverImage(url)}
               onApplyFullCover={(url) => setFullCoverImage(url)}
               onAddToCanvas={(url) => addClipart(url)}
             />
@@ -7784,6 +7785,7 @@ export default function FabricCoverStudio({
         onClose={() => setIsByokModalOpen(false)}
         studioType="cover"
         onApplyFrontCover={(url) => setFrontCoverImage(url)}
+        onApplyBackCover={(url) => setBackCoverImage(url)}
         onApplyFullCover={(url) => setFullCoverImage(url)}
         onAddToCanvas={(url) => addClipart(url)}
       />

@@ -18,6 +18,7 @@ import {
 interface ByokStudioPanelProps {
   studioType: "cover" | "coloring";
   onApplyFrontCover?: (imageUrl: string) => void;
+  onApplyBackCover?: (imageUrl: string) => void;
   onApplyFullCover?: (imageUrl: string) => void;
   onAddToCanvas?: (imageUrl: string) => void;
   onApplyColoringPage?: (imageUrl: string, promptText: string) => void;
@@ -62,6 +63,7 @@ const COLORING_STYLES = [
 export default function ByokStudioPanel({
   studioType,
   onApplyFrontCover,
+  onApplyBackCover,
   onApplyFullCover,
   onAddToCanvas,
   onApplyColoringPage,
@@ -451,6 +453,19 @@ export default function ByokStudioPanel({
                     className="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95 transition-all"
                   >
                     <LayoutTemplate className="w-4 h-4" /> Set as Front Cover Background
+                  </button>
+                )}
+                {onApplyBackCover && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onApplyBackCover(generatedResult.imageUrl);
+                      setActionFeedback("Applied as Back Cover!");
+                      setTimeout(() => setActionFeedback(null), 3000);
+                    }}
+                    className="w-full py-2.5 px-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95 transition-all"
+                  >
+                    <LayoutTemplate className="w-4 h-4" /> Set as Back Cover Background
                   </button>
                 )}
                 {onApplyFullCover && (

@@ -14,9 +14,9 @@ export default async function Header() {
       {/* 📣 Announcement Bar */}
       <Link 
         href="/tools/spine-calculator" 
-        className="w-full bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 text-slate-950 text-center py-2 px-4 text-xs font-black tracking-wider hover:opacity-95 transition-opacity flex items-center justify-center gap-2 group z-50 shadow-md"
+        className="w-full bg-gradient-to-r from-violet-500 via-purple-400 to-violet-500 text-white text-center py-2 px-4 text-xs font-black tracking-wider hover:opacity-95 transition-opacity flex items-center justify-center gap-2 group z-50 shadow-md"
       >
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/10 text-slate-950 text-[9px] font-black uppercase tracking-widest animate-pulse">
+        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/20 text-white text-[9px] font-black uppercase tracking-widest animate-pulse">
           Free Tool
         </span>
         <span className="truncate">New: Amazon KDP Spine & Cover Calculator is 100% free!</span>
@@ -28,7 +28,7 @@ export default async function Header() {
 
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group shrink-0 select-none">
-            <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shadow-lg shadow-amber-500/10 bg-white/95 p-1 group-hover:scale-105 transition-transform flex items-center justify-center border border-slate-700/60">
+            <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shadow-lg shadow-violet-500/10 bg-white/95 p-1 group-hover:scale-105 transition-transform flex items-center justify-center border border-slate-700/60">
               <Image
                 src="/logo_icon.png"
                 alt="KDPage Logo"

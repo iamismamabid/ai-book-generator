@@ -46,7 +46,7 @@ export default function HomePage() {
       {/* Ambient background glow accents */}
       <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-indigo-100/40 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
       <div className="absolute top-1/3 right-0 w-[700px] h-[700px] bg-purple-100/30 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-amber-100/30 rounded-full blur-3xl translate-y-1/3 pointer-events-none" />
+      <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-violet-100/30 rounded-full blur-3xl translate-y-1/3 pointer-events-none" />
 
       {/* ── HERO SECTION (Centered, Ultra-Fast, 0 Hydration Lag) ── */}
       <section className="relative pt-10 pb-16 md:pt-16 md:pb-24 px-6 overflow-hidden z-10 text-center">
@@ -68,7 +68,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
             <Link
               href="/studio"
-              className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-lg hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-orange-500/25 transition-all duration-300 ease-in-out hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-black text-lg hover:from-violet-700 hover:to-purple-700 shadow-lg shadow-violet-500/20 hover:shadow-xl hover:shadow-violet-500/25 transition-all duration-300 ease-in-out hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
               aria-label="Start creating KDP books now in Studio"
             >
               Start Creating Now (Free)
@@ -85,19 +85,19 @@ export default function HomePage() {
           {/* Value Proof Badges */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-8 border-t border-slate-200/80 max-w-4xl mx-auto mt-10">
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <CheckCircle2 className="w-4 h-4 text-violet-500" />
               100% Amazon KDP Print Compliant
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <CheckCircle2 className="w-4 h-4 text-violet-500" />
               300 DPI Vector PDF Export
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <CheckCircle2 className="w-4 h-4 text-violet-500" />
               Zero Duplicate Ban Risk
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <CheckCircle2 className="w-4 h-4 text-violet-500" />
               Auto Spine &amp; Bleed Calculations
             </span>
           </div>
@@ -122,10 +122,10 @@ export default function HomePage() {
             <span className="text-xs font-bold uppercase tracking-wider text-purple-800 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
               Activity &amp; Puzzle Authors
             </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
+            <span className="text-xs font-bold uppercase tracking-wider text-violet-800 bg-violet-50 border border-violet-200 px-3 py-1 rounded-full">
               Low-Content Creators
             </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+            <span className="text-xs font-bold uppercase tracking-wider text-violet-800 bg-violet-50 border border-violet-200 px-3 py-1 rounded-full">
               Etsy Sellers &amp; Agencies
             </span>
           </div>
@@ -188,7 +188,7 @@ export default function HomePage() {
             100% Commercial Use Rights
           </div>
           <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">
-            Engineered for <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-amber-600 bg-clip-text text-transparent">KDP Bestsellers</span>
+            Engineered for <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">KDP Bestsellers</span>
           </h2>
           <p className="text-slate-600 text-base md:text-lg max-w-2xl mx-auto font-medium">
             Generate unlimited vector interiors and full-bleed covers ready for Amazon KDP upload.
@@ -237,8 +237,8 @@ export default function HomePage() {
       {/* Free Tools Spotlight Section */}
       <section id="tools" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-slate-200 scroll-mt-20">
         <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-black uppercase tracking-wider mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> 30+ Tools — No Signup Required
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 border border-violet-200 text-violet-800 text-xs font-black uppercase tracking-wider mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-violet-600" /> 30+ Tools — No Signup Required
           </div>
           <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-4">
             Free KDP Tools Every Publisher Needs
@@ -303,10 +303,10 @@ export default function HomePage() {
             href="https://www.trustpilot.com/review/kdpage.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-black uppercase tracking-widest shadow-sm transition-all hover:scale-105"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-50 hover:bg-violet-100 border border-violet-200 text-violet-900 text-xs font-black uppercase tracking-widest shadow-sm transition-all hover:scale-105"
             aria-label="Check live reviews on Trustpilot"
           >
-            <Star className="w-4 h-4 fill-emerald-500 text-emerald-500" />
+            <Star className="w-4 h-4 fill-violet-500 text-violet-500" />
             Check Our Live Reviews on Trustpilot
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
@@ -333,7 +333,7 @@ export default function HomePage() {
             </div>
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Bleed &amp; Safety</span>
-              <span className="text-[9px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Spec-Compliant</span>
+              <span className="text-[9px] font-black text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200">Spec-Compliant</span>
             </div>
           </div>
 
@@ -357,17 +357,17 @@ export default function HomePage() {
           {/* Guarantee 3 */}
           <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 text-amber-700 flex items-center justify-center text-xl font-black">
+              <div className="w-12 h-12 rounded-2xl bg-violet-50 border border-violet-100 text-violet-700 flex items-center justify-center text-xl font-black">
                 🎨
               </div>
               <h3 className="text-lg font-black text-slate-900 tracking-tight">Fabric.js Cover Math</h3>
               <p className="text-slate-600 text-sm font-semibold leading-relaxed">
-                Calculates exact spine thickness <code className="text-xs font-bold bg-amber-50 text-amber-800 px-1 py-0.5 rounded">pageCount * 0.002252"</code> for crisp, professional wrap-around covers.
+                Calculates exact spine thickness <code className="text-xs font-bold bg-violet-50 text-violet-800 px-1 py-0.5 rounded">pageCount * 0.002252"</code> for crisp, professional wrap-around covers.
               </p>
             </div>
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Cover Studio</span>
-              <span className="text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Zero Trim Shift</span>
+              <span className="text-[9px] font-black text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200">Zero Trim Shift</span>
             </div>
           </div>
         </div>
@@ -385,7 +385,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-indigo-50/40 pointer-events-none" />
 
           <div className="max-w-xl space-y-4 relative z-10 text-center md:text-left">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-xs font-black uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 border border-violet-200 text-violet-700 text-xs font-black uppercase tracking-wider">
               🎁 Free KDP Checklist
             </span>
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">

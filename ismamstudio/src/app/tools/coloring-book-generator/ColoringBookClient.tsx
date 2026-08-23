@@ -93,6 +93,21 @@ const EXTENDED_PALETTE = [
   "#9D174D", "#FFFFFF", "#E2E8F0", "#94A3B8", "#475569", "#000000",
 ];
 
+const CATEGORY_PILLS: { label: string; value: string }[] = [
+  { label: "All", value: "All" },
+  { label: "Botanical", value: "Botanical & Floral" },
+  { label: "Mandalas", value: "Mandalas & Sacred Geometry" },
+  { label: "Stained Glass", value: "Stained Glass & Architecture" },
+  { label: "Landscapes", value: "Landscapes & Celestial" },
+  { label: "Food & Kitchen", value: "Food, Drinks & Kitchen" },
+  { label: "Cozy Objects", value: "Cozy Objects & Still Life" },
+  { label: "Abstract", value: "Abstract & Art Deco" },
+  { label: "Clip-Art", value: "Single Object Clip-Art" },
+  { label: "European Flags", value: "European Flags" },
+  { label: "North America Flags", value: "North American Flags" },
+  { label: "Concept Cars", value: "Concept Cars" },
+];
+
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const clean = hex.replace("#", "");
   const bigint = parseInt(clean, 16);
@@ -594,7 +609,16 @@ export default function ColoringBookClient() {
     restoredCustomArtForPresetRef.current = activePreset.id;
     try {
       const autosave = localStorage.getItem(`kdpage_coloring_autosave_${activePreset.id}`) || localStorage.getItem(`kdpage_coloring_progress_${activePreset.id}`);
-      if (!autosave) return;
+      if (!autosave) {
+        // Clear color layer when switching to a preset without existing autosave
+        const colorCanvas = colorCanvasRef.current;
+        if (colorCanvas) {
+          const cCtx = colorCanvas.getContext("2d");
+          cCtx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+        }
+        setHistory({ stack: [], index: -1 });
+        return;
+      }
       const parsed = JSON.parse(autosave);
       if (parsed && typeof parsed.line === "string" && typeof parsed.color === "string") {
         loadSnapshot(parsed);
@@ -1677,24 +1701,21 @@ export default function ColoringBookClient() {
                   </select>
                 </div>
 
-                {/* Compact Horizontal Quick-Pills for Top Categories */}
-                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
-                  {["All", "Botanical", "Mandalas", "Stained Glass", "Landscapes", "Food & Kitchen"].map((cat) => {
-                    const fullCat = cat === "Botanical" ? "Botanical & Floral" : cat === "Mandalas" ? "Mandalas & Sacred Geometry" : cat === "Food & Kitchen" ? "Food, Drinks & Kitchen" : cat;
-                    return (
-                      <button
-                        key={cat}
-                        onClick={() => setSelectedCategory(fullCat)}
-                        className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold shrink-0 transition-all cursor-pointer ${
-                          selectedCategory === fullCat
-                            ? "bg-indigo-600 text-white shadow-xs"
-                            : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
+                {/* Compact Horizontal Quick-Pills for Categories */}
+                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
+                  {CATEGORY_PILLS.map((pill) => (
+                    <button
+                      key={pill.value}
+                      onClick={() => setSelectedCategory(pill.value)}
+                      className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold shrink-0 transition-all cursor-pointer ${
+                        selectedCategory === pill.value
+                          ? "bg-indigo-600 text-white shadow-xs"
+                          : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      {pill.label}
+                    </button>
+                  ))}
                 </div>
 
                 {/* Compact 3-Column Preset Thumbnails Grid */}
@@ -1705,6 +1726,14 @@ export default function ColoringBookClient() {
                       onClick={() => {
                         setCustomLineArt(null);
                         setCustomImageName(null);
+                        setLineArtScale(1.0);
+                        setLineArtOffsetX(0);
+                        setLineArtOffsetY(0);
+                        const colorCanvas = colorCanvasRef.current;
+                        if (colorCanvas) {
+                          const cCtx = colorCanvas.getContext("2d");
+                          cCtx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+                        }
                         setActivePreset(preset);
                         setComplexity(preset.defaultComplexity);
                       }}

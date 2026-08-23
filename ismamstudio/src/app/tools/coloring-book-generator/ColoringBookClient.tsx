@@ -620,23 +620,10 @@ export default function ColoringBookClient() {
         return;
       }
       const parsed = JSON.parse(autosave);
-      if (parsed && typeof parsed.line === "string" && typeof parsed.color === "string") {
-        loadSnapshot(parsed);
+      if (parsed && typeof parsed.color === "string") {
+        loadSnapshot(parsed, activePreset.id === "blank_canvas");
         setHistory({ stack: [parsed], index: 0 });
       }
-      if (typeof parsed?.customLineArtDataUrl !== "string") return;
-      dataUrlToImageData(parsed.customLineArtDataUrl)
-        .then((imgData) => {
-          setCustomLineArt(imgData);
-          if (typeof parsed.customImageName === "string") setCustomImageName(parsed.customImageName);
-          if (typeof parsed.lineArtScale === "number") setLineArtScale(parsed.lineArtScale);
-          if (typeof parsed.lineArtOffsetX === "number") setLineArtOffsetX(parsed.lineArtOffsetX);
-          if (typeof parsed.lineArtOffsetY === "number") setLineArtOffsetY(parsed.lineArtOffsetY);
-        })
-        .catch(() => {
-          // Corrupt/unsupported saved image -- keep whatever drawPattern()
-          // already rendered rather than leaving the canvas half-restored.
-        });
     } catch {
       // ignore
     }
@@ -658,17 +645,9 @@ export default function ColoringBookClient() {
         const res = await loadColoringProject(activePreset.id);
         if (!res.success || !res.data) return;
         const parsed = res.data as any;
-        if (typeof parsed.line !== "string" || typeof parsed.color !== "string") return;
-        loadSnapshot(parsed);
+        if (typeof parsed.color !== "string") return;
+        loadSnapshot(parsed, activePreset.id === "blank_canvas");
         setHistory({ stack: [parsed], index: 0 });
-        if (typeof parsed.customLineArtDataUrl === "string") {
-          const imgData = await dataUrlToImageData(parsed.customLineArtDataUrl);
-          setCustomLineArt(imgData);
-          if (typeof parsed.customImageName === "string") setCustomImageName(parsed.customImageName);
-          if (typeof parsed.lineArtScale === "number") setLineArtScale(parsed.lineArtScale);
-          if (typeof parsed.lineArtOffsetX === "number") setLineArtOffsetX(parsed.lineArtOffsetX);
-          if (typeof parsed.lineArtOffsetY === "number") setLineArtOffsetY(parsed.lineArtOffsetY);
-        }
       } catch (err) {
         console.error("Failed to load cloud coloring project:", err);
       }
@@ -814,7 +793,7 @@ export default function ColoringBookClient() {
     }, 15);
   }, [activePreset.id, customLineArt, customImageName, lineArtScale, lineArtOffsetX, lineArtOffsetY, isSignedIn]);
 
-  const loadSnapshot = (snapshot: { line: string; color: string }) => {
+  const loadSnapshot = (snapshot: { line?: string; color?: string }, loadLine = false) => {
     const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
     const lineCtx = lineCanvas?.getContext("2d");
@@ -822,28 +801,33 @@ export default function ColoringBookClient() {
     if (!lineCanvas || !colorCanvas || !lineCtx || !colorCtx) return;
     const token = ++snapshotLoadTokenRef.current;
 
-    const lineImg = new window.Image();
-    lineImg.onload = () => {
-      if (snapshotLoadTokenRef.current !== token) return;
-      lineCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
-      lineCtx.drawImage(lineImg, 0, 0);
-    };
-    lineImg.src = snapshot.line;
+    if (loadLine && snapshot.line) {
+      const lineImg = new window.Image();
+      lineImg.onload = () => {
+        if (snapshotLoadTokenRef.current !== token) return;
+        lineCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+        lineCtx.drawImage(lineImg, 0, 0);
+      };
+      lineImg.src = snapshot.line;
+    }
 
-    const colorImg = new window.Image();
-    colorImg.onload = () => {
-      if (snapshotLoadTokenRef.current !== token) return;
-      colorCtx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
-      colorCtx.drawImage(colorImg, 0, 0);
-    };
-    colorImg.src = snapshot.color;
+    if (snapshot.color) {
+      const colorImg = new window.Image();
+      colorImg.onload = () => {
+        if (snapshotLoadTokenRef.current !== token) return;
+        colorCtx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+        colorCtx.drawImage(colorImg, 0, 0);
+      };
+      colorImg.src = snapshot.color;
+    }
   };
 
   const handleUndo = () => {
     setHistory((prev) => {
       if (prev.index <= 0) return prev;
       const newIndex = prev.index - 1;
-      loadSnapshot(prev.stack[newIndex]);
+      const target = prev.stack[newIndex];
+      loadSnapshot(target, activePreset.id === "blank_canvas" || !!customLineArt);
       return { ...prev, index: newIndex };
     });
   };
@@ -852,7 +836,8 @@ export default function ColoringBookClient() {
     setHistory((prev) => {
       if (prev.index >= prev.stack.length - 1) return prev;
       const newIndex = prev.index + 1;
-      loadSnapshot(prev.stack[newIndex]);
+      const target = prev.stack[newIndex];
+      loadSnapshot(target, activePreset.id === "blank_canvas" || !!customLineArt);
       return { ...prev, index: newIndex };
     });
   };

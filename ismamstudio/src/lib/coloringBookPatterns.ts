@@ -2781,6 +2781,8 @@ export function drawColoringPattern(ctx: CanvasRenderingContext2D, width: number
       ctx.fillText(`${item.num}`, lx + 22, legY);
     });
   }
+
+  ctx.restore();
   } catch (err) {
     console.error("Error rendering coloring pattern:", err);
   }

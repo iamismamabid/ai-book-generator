@@ -27,7 +27,7 @@ export default function Footer() {
                 <span 
                   className="text-xl font-black tracking-tight leading-none transition-transform group-hover:scale-[1.02] bg-clip-text text-transparent"
                   style={{
-                    backgroundImage: 'linear-gradient(90deg, #4285F4 0%, #9B72CF 25%, #EA4335 50%, #FF006E 75%, #DB2777 100%)',
+                    backgroundImage: 'linear-gradient(90deg, #00E5FF 0%, #3B82F6 25%, #A855F7 50%, #FF007A 75%, #FF3366 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent'
                   }}

@@ -228,15 +228,25 @@ export async function checkPremiumStatus() {
     // ২. Clerk publicMetadata চেক করা (সাবস্ক্রিপশনের জন্য)
     const user = await currentUser();
     if (user) {
-      const publicMetadata = user.publicMetadata as any;
-      if (
+      const email = user.primaryEmailAddress?.emailAddress?.toLowerCase() || "";
+      const publicMetadata = (user.publicMetadata || {}) as any;
+
+      // Auto-grant Pro Studio for owner/purchaser accounts who tested or purchased
+      const isOwnerAccount =
+        email === "ismamabid3504@gmail.com" ||
+        email === "ismamabid.islet@gmail.com" ||
+        email.includes("ismamabid");
+
+      const isSubscribed =
         publicMetadata.isPremium === true ||
         publicMetadata.plan === "starter" ||
         publicMetadata.plan === "pro" ||
         publicMetadata.plan === "agency" ||
         publicMetadata.subscriptionStatus === "active" ||
-        publicMetadata.subscriptionStatus === "trialing"
-      ) {
+        publicMetadata.subscriptionStatus === "trialing" ||
+        isOwnerAccount;
+
+      if (isSubscribed) {
         const userPlan = publicMetadata.plan || "pro";
         let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
 
@@ -246,7 +256,23 @@ export async function checkPremiumStatus() {
           limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
         }
 
-        // ৭ দিনের ট্রায়াল আসল Paddle "trialing" সাবস্ক্রিপশনের ক্ষেত্রে সক্রিয়
+        // Auto-persist metadata to Clerk in the background if it wasn't saved yet
+        if (!publicMetadata.isPremium && isOwnerAccount) {
+          try {
+            const clerk = await clerkClient();
+            await clerk.users.updateUserMetadata(user.id, {
+              publicMetadata: {
+                ...publicMetadata,
+                isPremium: true,
+                plan: userPlan,
+                subscriptionStatus: "active",
+              },
+            });
+          } catch (e) {
+            console.error("Auto-persist owner Pro status error:", e);
+          }
+        }
+
         const isTrial = publicMetadata.subscriptionStatus === "trialing";
         let daysRemaining;
         if (isTrial && publicMetadata.trialEndsAt) {

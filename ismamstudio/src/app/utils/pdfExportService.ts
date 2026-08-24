@@ -74,7 +74,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     if (page.type === 'crossword' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawCrosswordSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'crossword' && page.config.gridData) {
-      drawCrossword(doc, page, leftMarginShift, w);
+      drawCrossword(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_search' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawWordSearchSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_search' && page.config.gridData) {
@@ -256,7 +256,7 @@ const drawColoringBookPage = (doc: any, page: any, xShift: number, pageWidth: nu
 };
 
 // Helper: Draw Crossword Grid & Clues
-const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number) => {
+const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
   const data = page.config.gridData;
   const isSolution = page.config.isSolution || false;
   const gridSize = 15;
@@ -314,28 +314,40 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number) =
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(11);
     const clueY = startY + (gridSize * cellSize) + 0.4;
-    
+    // Safe bottom — keep 0.5" footer clearance
+    const maxClueY = (pageHeight || 11) - 0.5;
+    // Dynamic two-column split: half the available content width, min 2"
+    const contentRight = pageWidth - 0.5 + xShift;
+    const halfW = Math.max(2.0, (contentRight - startX) / 2);
+    const downColX = startX + halfW;
+
     // Across Clues
     doc.text("ACROSS", startX + 0.2, clueY);
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(8.5);
     let acrossOffset = 0.2;
-    data.placedWords.filter((w: any) => w.dir === 'H').forEach((w: any) => {
-      doc.text(`${w.num}. ${w.clue}`, startX + 0.2, clueY + acrossOffset);
+    const acrossWords = data.placedWords.filter((w: any) => w.dir === 'H');
+    for (const w of acrossWords) {
+      const y = clueY + acrossOffset;
+      if (y > maxClueY) { doc.text("...", startX + 0.2, y); break; }
+      doc.text(`${w.num}. ${w.clue}`, startX + 0.2, y);
       acrossOffset += 0.17;
-    });
+    }
 
     // Down Clues
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(11);
-    doc.text("DOWN", startX + 2.5, clueY);
+    doc.text("DOWN", downColX + 0.2, clueY);
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(8.5);
     let downOffset = 0.2;
-    data.placedWords.filter((w: any) => w.dir === 'V').forEach((w: any) => {
-      doc.text(`${w.num}. ${w.clue}`, startX + 2.5, clueY + downOffset);
+    const downWords = data.placedWords.filter((w: any) => w.dir === 'V');
+    for (const w of downWords) {
+      const y = clueY + downOffset;
+      if (y > maxClueY) { doc.text("...", downColX + 0.2, y); break; }
+      doc.text(`${w.num}. ${w.clue}`, downColX + 0.2, y);
       downOffset += 0.17;
-    });
+    }
   }
 };
 

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Logistic Regression Exam Solution</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap');
+
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+
+        body {
+            font-family: 'Hind Siliguri', 'Segoe UI', Tahoma, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-top: 6px solid #4f46e5;
+        }
+
+        h1 {
+            color: #1e1b4b;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px dashed #cbd5e1;
+            padding-bottom: 12px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e0e7ff;
+            color: #3730a3;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .question-card {
+            background-color: #f1f5f9;
+            border-left: 5px solid #0ea5e9;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .question-title {
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 700;
+            color: #0369a1;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14.5px;
+            color: #334155;
+        }
+
+        .step-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid #6366f1;
+            border-radius: 8px;
+            padding: 18px 22px;
+            margin-bottom: 20px;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4338ca;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #e0e7ff;
+            color: #312e81;
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .formula-box {
+            background: #fdf4ff;
+            border: 1px solid #f0abfc;
+            color: #701a75;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .calc-row {
+            background: #fafafa;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #10b981;
+        }
+
+        .pred-no {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .pred-yes {
+            color: #16a34a;
+            font-weight: 700;
+        }
+
+        .highlight-result {
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #065f46;
+            margin-top: 10px;
+        }
+
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                border-top: none;
+                padding: 0;
+            }
+
+            .step-card {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>লজিস্টিক রিগ্রেশন প্যারামিটার আপডেট — এক্সাম সলিউশন</h1>
+
+        <!-- Question Section -->
+        <div class="question-card">
+            <span class="badge">Question (English)</span>
+            <div class="question-text">
+                <strong>Consider the following dataset consisting of customer attributes and a purchase
+                    decision:</strong>
+                <table style="margin-top: 8px;">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Gender</th>
+                            <th>Income Category</th>
+                            <th>Children</th>
+                            <th>Purchase (Y)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>C1</td>
+                            <td>Male</td>
+                            <td>Low</td>
+                            <td>0</td>
+                            <td>No</td>
+                        </tr>
+                        <tr>
+                            <td>C2</td>
+                            <td>Female</td>
+                            <td>High</td>
+                            <td>2</td>
+                            <td>Yes</td>
+                        </tr>
+                        <tr>
+                            <td>C3</td>
+                            <td>Female</td>
+                            <td>Medium</td>
+                            <td>1</td>
+                            <td>Yes</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><strong>Preprocessing:</strong> Encode categorical features (One-Hot Encoding for Gender, Label
+                    Encoding for Income Category where Low=0, Medium=1, High=2, and Target No=0, Yes=1). Explain why
+                    Min-Max normalization is required if numerical features have different scales.</p>
+                <p><strong>Prediction:</strong> Given the initial weights &beta;<sub>0</sub> = -0.5,
+                    &beta;<sub>Male</sub> = 0.2, &beta;<sub>Female</sub> = -0.1, &beta;<sub>Income</sub> = 0.4, compute
+                    the hypothesis h(x) = 1 / (1 + e<sup>-z</sup>) for the 3 samples. Using a decision threshold of 0.5,
+                    predict their class labels.</p>
+                <p><strong>Parameter Update:</strong> Perform one step of Mini-Batch Gradient Descent with learning rate
+                    &alpha; = 0.1 to update the bias term &beta;<sub>0</sub>.</p>
+            </div>
+        </div>
+
+        <!-- Step 1: Bangla -->
+        <div class="step-card">
+            <div class="step-title">ধাপ ১: প্রি-প্রসেসিং এবং ফিচার এনকোডিং (Preprocessing & Encoding)</div>
+
+            <p><strong>নরমালাইজেশনের প্রয়োজনীয়তা (Min-Max Scaling):</strong><br>
+                যখন বিভিন্ন ফিচারের স্কেল বা পরিমাপের একক আলাদা হয়, তখন বড় মানের ফিচারগুলো গ্রেডিয়েন্ট আপডেট এবং
+                ক্যালকুলেশনকে একতরফাভাবে প্রভাবিত করে। <strong>Min-Max Scaling</strong> ডেটাকে [0, 1] রেঞ্জে নিয়ে আসে,
+                যার ফলে প্রতিটি ফিচার মডেলে সমপরিমাণ গুরুত্ব পায়।</p>
+
+            <div style="font-weight: 600; margin-top: 10px;">এনকোডেড ডেটাসেট:</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sample</th>
+                        <th>x<sub>Male</sub></th>
+                        <th>x<sub>Female</sub></th>
+                        <th>x<sub>Income</sub></th>
+                        <th>Target (y)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>C1</td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>C2</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td>C3</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>1</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Step 2: Bangla -->
+        <div class="step-card">
+            <div class="step-title">ধাপ ২: লিনিয়ার কম্বিনেশন এবং প্রেডিকশন (Hypothesis & Prediction)</div>
+
+            <div class="formula-box">
+                লিনিয়ার সমীকরণ: z = &beta;<sub>0</sub> + &beta;<sub>Male</sub>x<sub>Male</sub> +
+                &beta;<sub>Female</sub>x<sub>Female</sub> + &beta;<sub>Income</sub>x<sub>Income</sub><br>
+                সিগময়েড ফাংশন: h(x) = 1 / (1 + e<sup>-z</sup>)
+            </div>
+
+            <div class="calc-row">
+                <strong>নমুনা C1 এর জন্য:</strong><br>
+                z<sub>1</sub> = -0.5 + (0.2)(1) + (-0.1)(0) + (0.4)(0) = <strong>-0.3</strong><br>
+                h(x<sub>1</sub>) = 1 / (1 + e<sup>0.3</sup>) = 1 / (1 + 1.3499) &asymp; <strong>0.426</strong><br>
+                যেহেতু 0.426 &lt; 0.5 &rArr; প্রেডিক্টেড ক্লাস: <span class="pred-no">0 (No)</span>
+            </div>
+
+            <div class="calc-row">
+                <strong>নমুনা C2 এর জন্য:</strong><br>
+                z<sub>2</sub> = -0.5 + (0.2)(0) + (-0.1)(1) + (0.4)(2) = -0.5 - 0.1 + 0.8 = <strong>0.2</strong><br>
+                h(x<sub>2</sub>) = 1 / (1 + e<sup>-0.2</sup>) = 1 / (1 + 0.8187) &asymp; <strong>0.550</strong><br>
+                যেহেতু 0.550 &ge; 0.5 &rArr; প্রেডিক্টেড ক্লাস: <span class="pred-yes">1 (Yes)</span>
+            </div>
+
+            <div class="calc-row">
+                <strong>নমুনা C3 এর জন্য:</strong><br>
+                z<sub>3</sub> = -0.5 + (0.2)(0) + (-0.1)(1) + (0.4)(1) = -0.5 - 0.1 + 0.4 = <strong>-0.2</strong><br>
+                h(x<sub>3</sub>) = 1 / (1 + e<sup>0.2</sup>) = 1 / (1 + 1.2214) &asymp; <strong>0.450</strong><br>
+                যেহেতু 0.450 &lt; 0.5 &rArr; প্রেডিক্টেড ক্লাস: <span class="pred-no">0 (No)</span>
+            </div>
+        </div>
+
+        <!-- Step 3: Bangla -->
+        <div class="step-card">
+            <div class="step-title">ধাপ ৩: বাযাস (&beta;<sub>0</sub>) প্যারামিটার আপডেট (Gradient Descent)</div>
+
+            <div class="formula-box">
+                গড় ত্রুটি (Average Error): &Delta;&beta;<sub>0</sub> = (1/m) &sum; (y<sup>(i)</sup> -
+                h(x<sup>(i)</sup>))<br>
+                আপডেট সূত্র: &beta;<sub>0</sub><sup>(new)</sup> = &beta;<sub>0</sub><sup>(old)</sup> + &alpha; &times;
+                &Delta;&beta;<sub>0</sub>
+            </div>
+
+            <p><strong>সাব-স্টেপ ১: গড় ত্রুটি হিসাব (&Delta;&beta;<sub>0</sub>)</strong> [এখানে m = 3]:</p>
+            <div class="calc-row">
+                &Delta;&beta;<sub>0</sub> = (1/3) &times; [ (0 - 0.426) + (1 - 0.550) + (1 - 0.450) ]<br>
+                &Delta;&beta;<sub>0</sub> = (1/3) &times; [ -0.426 + 0.450 + 0.550 ]<br>
+                &Delta;&beta;<sub>0</sub> = 0.574 / 3 &asymp; <strong>0.1913</strong>
+            </div>
+
+            <p><strong>সাব-স্টেপ ২: বাযাস (&beta;<sub>0</sub>) আপডেট করা:</strong> [যেখানে &alpha; = 0.1]</p>
+            <div class="calc-row">
+                &beta;<sub>0</sub><sup>(new)</sup> = -0.5 + (0.1 &times; 0.1913)<br>
+                &beta;<sub>0</sub><sup>(new)</sup> = -0.5 + 0.01913 = <strong>-0.4809</strong>
+            </div>
+
+            <div class="highlight-result">
+                চূড়ান্ত ফলাফল: নতুন বাযাস মান &beta;<sub>0</sub><sup>(new)</sup> = -0.4809
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

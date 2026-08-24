@@ -123,7 +123,11 @@ export function MazeEditor({ page, updatePage }: any) {
               {(["square", "circle", "heart"] as Shape[]).map((sh) => (
                 <button
                   key={sh}
-                  onClick={() => setShape(sh)}
+                  onClick={() => {
+                    setShape(sh);
+                    // Persist immediately so a page-switch doesn't lose the change
+                    updatePage({ shape: sh, gridSize, showSolution, gridData: mazeData || undefined });
+                  }}
                   className={`py-2 rounded-lg font-bold text-xs capitalize transition ${
                     shape === sh
                       ? "bg-indigo-600 text-white shadow-sm"
@@ -144,7 +148,12 @@ export function MazeEditor({ page, updatePage }: any) {
               max="30"
               step="2"
               value={gridSize}
-              onChange={(e) => setGridSize(Number(e.target.value))}
+              onChange={(e) => {
+                const size = Number(e.target.value);
+                setGridSize(size);
+                // Persist immediately so a page-switch doesn't lose the change
+                updatePage({ shape, gridSize: size, showSolution, gridData: mazeData || undefined });
+              }}
               className="w-full accent-indigo-600"
             />
           </div>

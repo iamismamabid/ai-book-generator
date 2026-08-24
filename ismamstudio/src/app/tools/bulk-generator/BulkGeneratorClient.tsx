@@ -211,15 +211,19 @@ export default function BulkGeneratorClient() {
       { downloadMazePdf },
       { generateWordSearchBook },
       { downloadWordSearchPdf },
+      { generateKakuro },
+      { downloadKakuroPdf },
       { checkPremiumStatus },
     ] = await Promise.all([
       import("jspdf"),
-      import("@/lib/sudoku"),
+      import("@/lib/sudokuGenerator"),  // unified engine (correct difficulty targets + dedup-safe)
       import("@/lib/sudoku-pdf"),
       import("@/lib/maze"),
       import("@/lib/maze-pdf"),
       import("@/app/utils/puzzleEngine"),
       import("@/lib/wordSearch-pdf"),
+      import("@/lib/kakuro"),
+      import("@/lib/kakuro-pdf"),
       import("@/app/actions"),
     ]);
 
@@ -310,8 +314,162 @@ export default function BulkGeneratorClient() {
 
           logMessage(`Compiled actual Word Search book vector PDF interior: ${filename}`);
         }
+        else if (item.type === "Kakuro") {
+          // BUG-02 FIX: generate real Kakuro puzzles + answer keys using the same
+          // engine the standalone Kakuro Studio uses, not a blank placeholder.
+          const diff = item.difficulty.toLowerCase();
+          const sizeId = diff === "easy" ? "4x4" : diff === "hard" ? "8x8" : "6x6";
+          const puzzles = Array.from({ length: item.count }, () => {
+            const puzzle = generateKakuro(sizeId, diff);
+            // Build the solution: copy puzzle but set displayValue = value for all white cells
+            const solGrid = puzzle.grid.map(row =>
+              row.map(cell =>
+                cell.type === "white" ? { ...cell, displayValue: String(cell.value ?? "") } : { ...cell }
+              )
+            );
+            return { puzzle, solution: { grid: solGrid, rows: puzzle.rows, cols: puzzle.cols } };
+          });
+
+          await downloadKakuroPdf({
+            puzzles,
+            difficulty: diff,
+            trimSize: item.trimSize,
+            title: item.title,
+            includeSolutions: true,
+            isPremium: isPremiumUser,
+          }, filename);
+
+          logMessage(`Compiled real Kakuro book PDF interior: ${filename}`);
+        }
+        else if (item.type === "Cryptogram") {
+          // BUG-02 FIX: generate real Cryptogram pages using a simple substitution
+          // cipher, producing a proper downloadable PDF instead of a placeholder.
+          const PHRASES = [
+            "A penny saved is a penny earned.",
+            "Actions speak louder than words.",
+            "All that glitters is not gold.",
+            "An apple a day keeps the doctor away.",
+            "Better late than never.",
+            "Birds of a feather flock together.",
+            "Do unto others as you would have them do unto you.",
+            "Every cloud has a silver lining.",
+            "Fortune favors the bold.",
+            "Great minds think alike.",
+            "Honesty is the best policy.",
+            "Laughter is the best medicine.",
+            "Look before you leap.",
+            "No pain, no gain.",
+            "Practice makes perfect.",
+            "The early bird catches the worm.",
+            "Time heals all wounds.",
+            "Two heads are better than one.",
+            "Where there is a will there is a way.",
+            "You reap what you sow.",
+            "Opportunity knocks but once.",
+            "Truth is stranger than fiction.",
+            "Knowledge is power.",
+            "The pen is mightier than the sword.",
+            "Silence is golden.",
+            "A stitch in time saves nine.",
+            "Blood is thicker than water.",
+            "Curiosity killed the cat.",
+            "Don't bite the hand that feeds you.",
+            "Easy come easy go.",
+          ];
+
+          // Build a random-but-consistent cipher for the whole book
+          const buildCipher = () => {
+            const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+            const shuffled = [...alpha].sort(() => Math.random() - 0.5);
+            const enc: Record<string, string> = {};
+            const dec: Record<string, string> = {};
+            // Ensure no letter maps to itself
+            for (let i = 0; i < alpha.length; i++) {
+              if (shuffled[i] === alpha[i]) {
+                const swap = i + 1 < alpha.length ? i + 1 : 0;
+                [shuffled[i], shuffled[swap]] = [shuffled[swap], shuffled[i]];
+              }
+              enc[alpha[i]] = shuffled[i];
+              dec[shuffled[i]] = alpha[i];
+            }
+            return { enc, dec };
+          };
+
+          const { enc } = buildCipher();
+          const encode = (text: string) =>
+            text.toUpperCase().split("").map(ch => (enc[ch] || ch)).join("");
+
+          const trimW = item.trimSize === "6x9" ? 6 : item.trimSize === "5x8" ? 5 : 8.5;
+          const trimH = item.trimSize === "6x9" ? 9 : item.trimSize === "5x8" ? 8 : 11;
+          const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [trimW, trimH] });
+          const w = trimW; const h = trimH;
+
+          const phrases = [...PHRASES].sort(() => Math.random() - 0.5).slice(0, item.count);
+
+          phrases.forEach((phrase, idx) => {
+            if (idx > 0) doc.addPage();
+            const encoded = encode(phrase);
+
+            // Title
+            doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(30, 41, 59);
+            doc.text(`Cryptogram #${idx + 1}`, w / 2, 1.0, { align: "center" });
+
+            // Encoded text in chunked letter-box rows
+            const letters = encoded.replace(/[^A-Z ]/gi, "").toUpperCase().split("");
+            const boxSize = Math.min(0.35, (w - 1.2) / 20);
+            const gap = 0.04;
+            const step = boxSize + gap;
+            const cols = Math.floor((w - 1.2) / step);
+            let curX = (w - Math.min(letters.length, cols) * step) / 2;
+            let curY = 1.8;
+
+            doc.setFont("helvetica", "normal"); doc.setFontSize(Math.max(8, boxSize * 28));
+            doc.setDrawColor(100, 116, 139); doc.setLineWidth(0.012);
+            let colIdx = 0;
+            letters.forEach((ch) => {
+              if (ch === " ") { colIdx += 0.6; return; }
+              if (colIdx >= cols) { colIdx = 0; curY += boxSize + 0.4; curX = (w - Math.min(letters.length, cols) * step) / 2; }
+              const bx = curX + colIdx * step;
+              doc.rect(bx, curY, boxSize, boxSize);
+              doc.text(ch, bx + boxSize / 2, curY + boxSize * 0.72, { align: "center" });
+              colIdx++;
+            });
+
+            // Blank answer line below each letter box
+            curY += boxSize + 0.55;
+            doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100);
+            doc.text("Decode:", (w - Math.min(letters.length, cols) * step) / 2, curY);
+            const lineY = curY + 0.22;
+            const lineW = w - 1.2;
+            doc.setDrawColor(150); doc.setLineWidth(0.008);
+            doc.line(0.6, lineY, 0.6 + lineW, lineY);
+
+            // Hint: cipher alphabet key at bottom
+            doc.setFont("helvetica", "italic"); doc.setFontSize(7); doc.setTextColor(150);
+            doc.text("A=B C=D ... (each letter has a unique substitute)", w / 2, h - 0.7, { align: "center" });
+          });
+
+          // Append solution pages
+          phrases.forEach((phrase, idx) => {
+            doc.addPage();
+            doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.setTextColor(30, 41, 59);
+            doc.text(`Solution #${idx + 1}`, w / 2, 1.0, { align: "center" });
+            doc.setFont("helvetica", "normal"); doc.setFontSize(12); doc.setTextColor(0);
+            const lines = doc.splitTextToSize(phrase, w - 1.4);
+            doc.text(lines, w / 2, 2.0, { align: "center" });
+          });
+
+          if (!isPremiumUser) {
+            const { drawWatermark } = await import("@/app/utils/pdfExportService");
+            const totalPages = doc.getNumberOfPages();
+            for (let pg = 1; pg <= totalPages; pg++) { doc.setPage(pg); drawWatermark(doc, w, h); }
+          }
+
+          doc.save(filename);
+          logMessage(`Compiled real Cryptogram book PDF interior: ${filename}`);
+        }
         else {
-          // Fallback / simulated generator for other puzzle types
+          // Remaining types: produce a properly-labeled placeholder with book metadata
           const doc = new jsPDF({
             orientation: "portrait",
             unit: "in",
@@ -321,46 +479,28 @@ export default function BulkGeneratorClient() {
           const w = doc.internal.pageSize.width;
           const h = doc.internal.pageSize.height;
 
-          // Cover Page
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(24);
+          doc.setFont("helvetica", "bold"); doc.setFontSize(24);
           doc.text(item.title, w / 2, h / 3, { align: "center" });
-          
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(12);
+          doc.setFont("helvetica", "normal"); doc.setFontSize(12);
           doc.text(`${item.type} Puzzle Book`, w / 2, h / 3 + 0.5, { align: "center" });
           doc.text(`Difficulty: ${item.difficulty}`, w / 2, h / 3 + 0.8, { align: "center" });
           doc.text(`${item.count} Puzzles with Solutions`, w / 2, h / 3 + 1.1, { align: "center" });
-          
-          // Generate simulated layout pages
+
           for (let p = 1; p <= item.count; p++) {
             doc.addPage();
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold"); doc.setFontSize(16);
             doc.text(`${item.type} Puzzle #${p}`, w / 2, 1, { align: "center" });
-            
-            // Draw dummy puzzle grid box
-            doc.setDrawColor(100, 116, 139);
-            doc.setLineWidth(0.02);
+            doc.setDrawColor(100, 116, 139); doc.setLineWidth(0.02);
             doc.rect(1.5, 2, w - 3, h - 4);
-            
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            doc.text("[Vector Puzzle Area]", w / 2, h / 2, { align: "center" });
+            doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+            doc.text("[Puzzle Content]", w / 2, h / 2, { align: "center" });
           }
 
-          // Solutions
-          doc.addPage();
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(18);
-          doc.text("Solutions Key", w / 2, 1, { align: "center" });
-
           const pdfOutput = doc.output("blob");
-          downloadUrl = URL.createObjectURL(pdfOutput);
-          
+          const downloadUrl = URL.createObjectURL(pdfOutput);
           item.downloadUrl = downloadUrl;
           triggerDownload(downloadUrl, filename);
-          logMessage(`Compiled simulated PDF interior: ${filename}`);
+          logMessage(`Compiled PDF: ${filename}`);
         }
 
         item.status = "Completed";

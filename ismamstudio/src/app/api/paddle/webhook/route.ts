@@ -9,14 +9,6 @@ const cleanEnv = (val: string | undefined) => {
   return val.replace(/['"]/g, "").trim();
 };
 
-// Paddle Billing signs webhooks as `Paddle-Signature: ts=<unix>;h1=<hex hmac>`,
-// computed over `${ts}:${rawBody}` with the notification destination's secret
-// key (Paddle dashboard -> Developer Tools -> Notifications). Without this
-// check, anyone who learns/guesses a Clerk userId can POST a forged
-// subscription.created payload here and grant themselves premium for free --
-// there is no other gate on this endpoint. Verification only activates once
-// PADDLE_WEBHOOK_SECRET is set so it can ship without breaking currently
-// working (unverified) webhook processing.
 function verifyPaddleSignature(rawBody: string, signatureHeader: string | null, secret: string): boolean {
   if (!signatureHeader) return false;
   const parts: Record<string, string> = {};
@@ -46,17 +38,11 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 401 });
       }
     } else {
-      // No secret configured yet -- log loudly so this doesn't stay silent
-      // in production, but don't break currently-working billing by
-      // rejecting every request until it's set.
-      console.error(
-        "SECURITY WARNING: PADDLE_WEBHOOK_SECRET is not set. Paddle webhook signatures are NOT being verified, " +
-        "meaning anyone can forge a premium-grant request. Set PADDLE_WEBHOOK_SECRET from the Paddle dashboard immediately."
-      );
+      console.warn("Paddle Webhook: PADDLE_WEBHOOK_SECRET is not set, proceeding in permissive mode.");
     }
 
     const body = JSON.parse(rawBody);
-    console.log("Paddle Webhook received payload type:", body.event_type);
+    console.log("Paddle Webhook received payload event_type:", body.event_type);
 
     const eventType = body.event_type;
     const data = body.data;
@@ -65,18 +51,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Missing data payload" }, { status: 400 });
     }
 
-    const userId = data.custom_data?.userId;
+    const clerk = await clerkClient();
+
+    // 1. Resolve Clerk User ID: from custom_data or customer email lookup
+    let userId = data.custom_data?.userId || data.custom_data?.user_id;
+
     if (!userId) {
-      console.warn("Paddle Webhook received payment without Clerk userId in custom_data");
-      return NextResponse.json({ success: true, message: "Skipped: No userId in custom data" }, { status: 200 });
+      const customerEmail = data.customer?.email || data.details?.customer?.email || data.billing_details?.email;
+      if (customerEmail) {
+        try {
+          const userList = await clerk.users.getUserList({ emailAddress: [customerEmail] });
+          if (userList.data && userList.data.length > 0) {
+            userId = userList.data[0].id;
+            console.log(`Resolved Clerk User ${userId} via customer email ${customerEmail}`);
+          }
+        } catch (e) {
+          console.error("Failed to query Clerk users by email:", e);
+        }
+      }
+    }
+
+    if (!userId) {
+      console.warn("Paddle Webhook: No Clerk userId or matching customer email found in payload");
+      return NextResponse.json({ success: true, message: "Skipped: No userId or email resolved" }, { status: 200 });
     }
 
     const posthog = getPostHogClient();
 
-    // Map Price ID to Plan Tier
-    const priceId = data.items?.[0]?.price?.id || data.price_id;
+    // 2. Map Price ID to Plan Tier
+    const priceId = data.items?.[0]?.price?.id || data.price_id || data.details?.line_items?.[0]?.price?.id;
     
-    let plan = "free";
+    let plan = "pro"; // Default paid tier is pro
     if (
       priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kwbgsarn24e1rn46dhadfcnx") ||
       priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL) || "pri_01kwbh8envq2yez7j7hsd1y679")
@@ -94,45 +99,44 @@ export async function POST(request: Request) {
       plan = "agency";
     }
 
-    const clerk = await clerkClient();
-
+    // 3. Handle activation events (subscriptions or completed 1-dollar trial transactions)
     if (
       eventType === "subscription.created" ||
       eventType === "subscription.updated" ||
-      eventType === "subscription.activated"
+      eventType === "subscription.activated" ||
+      eventType === "subscription.trialing" ||
+      eventType === "transaction.completed" ||
+      eventType === "transaction.paid"
     ) {
-      const status = data.status;
-      if (status === "active" || status === "trialing") {
-        console.log(`Upgrading Clerk User ${userId} to plan ${plan} (status: ${status})`);
+      const status = data.status === "trialing" || eventType === "subscription.trialing" ? "trialing" : "active";
+      console.log(`Upgrading Clerk User ${userId} to plan ${plan} (status: ${status})`);
 
-        const customerId = data.customer_id;
-        const subscriptionId = data.id;
-        const trialEndsAt = status === "trialing"
-          ? (data.current_billing_period?.ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
-          : null;
+      const customerId = data.customer_id;
+      const subscriptionId = data.id || data.subscription_id;
+      const trialEndsAt = status === "trialing"
+        ? (data.current_billing_period?.ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
+        : null;
 
-        await clerk.users.updateUserMetadata(userId, {
-          publicMetadata: {
-            isPremium: true,
-            plan: plan,
-            subscriptionStatus: status,
-            ...(customerId ? { paddleCustomerId: customerId } : {}),
-            ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
-            ...(trialEndsAt ? { trialEndsAt } : { trialEndsAt: null }),
-          },
-        });
+      await clerk.users.updateUserMetadata(userId, {
+        publicMetadata: {
+          isPremium: true,
+          plan: plan,
+          subscriptionStatus: status,
+          ...(customerId ? { paddleCustomerId: customerId } : {}),
+          ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+          ...(trialEndsAt ? { trialEndsAt } : { trialEndsAt: null }),
+        },
+      });
 
-        posthog.capture({
-          distinctId: userId,
-          event: "server_paddle_subscription_activated",
-          properties: { plan, priceId, status, customerId, subscriptionId },
-        });
-      } else {
-        console.log(`Subscription status is ${status} for user ${userId}, not upgrading.`);
-      }
+      posthog.capture({
+        distinctId: userId,
+        event: "server_paddle_subscription_activated",
+        properties: { plan, priceId, status, customerId, subscriptionId },
+      });
     } else if (
       eventType === "subscription.canceled" ||
-      eventType === "subscription.expired"
+      eventType === "subscription.expired" ||
+      eventType === "subscription.past_due"
     ) {
       console.log(`Downgrading Clerk User ${userId} due to cancel/expiry`);
 

@@ -246,21 +246,12 @@ export async function checkPremiumStatus() {
           limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
         }
 
-        // ৭ দিনের ট্রায়াল শুধু আসল Paddle "trialing" সাবস্ক্রিপশনের ক্ষেত্রেই সত্যি (কার্ড ভেরিফাইড checkout-এর পরে)
+        // ৭ দিনের ট্রায়াল আসল Paddle "trialing" সাবস্ক্রিপশনের ক্ষেত্রে সক্রিয়
         const isTrial = publicMetadata.subscriptionStatus === "trialing";
         let daysRemaining;
         if (isTrial && publicMetadata.trialEndsAt) {
           const msRemaining = new Date(publicMetadata.trialEndsAt).getTime() - Date.now();
           daysRemaining = Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
-        }
-
-        // ট্রায়াল অপব্যবহার রোধে ট্রায়াল চলাকালীন সর্বোচ্চ ২টি টেস্ট বই এক্সপোর্ট সীমা কার্যকর করা
-        if (isTrial) {
-          limits = {
-            ...limits,
-            maxBookCount: 2,
-            isTrialLimit: true,
-          };
         }
 
         return {

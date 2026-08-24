@@ -441,8 +441,8 @@ function PricingSectionInner() {
       a: "Our BYOK system allows you to connect your own OpenAI (DALL-E 3), Google Gemini, or Stability AI API keys directly inside KDPage Cover Studio and Coloring Book Studio. This unlocks unlimited 8K AI book cover illustrations and 300 DPI vector line art generation at direct raw provider cost (~$0.02 to $0.04 per image) with zero monthly platform caps or middleman markups. Your keys are encrypted locally in your browser and never touch or store on our servers.",
     },
     {
-      q: "How does the 7-Day Trial & Export Limits work?",
-      a: "During the 7-Day Trial period, you have full access to explore the complete studio, design covers, and export up to 2 complete books to test and confirm 300 DPI print quality, margins, and bleed on the Amazon KDP Print Previewer. Full unlimited bulk book exports activate automatically upon your first billing cycle or with a Lifetime Deal.",
+      q: "How does the 7-Day Trial work?",
+      a: "During the 7-Day Trial period, you have full access to explore the complete studio, design covers, generate high-resolution 300 DPI vector interiors, and export complete watermark-free puzzle collections directly to confirm print quality, margins, and bleed on Amazon KDP. You can cancel anytime before the trial ends or buy directly without a trial.",
     },
     {
       q: "Are the generated interiors ready to upload directly to Amazon KDP?",

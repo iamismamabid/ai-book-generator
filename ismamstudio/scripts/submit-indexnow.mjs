@@ -5,7 +5,7 @@
  *   node scripts/submit-indexnow.mjs
  */
 
-const INDEXNOW_KEY = "c22d391c0eb748afae70de23a4d7bf9d";
+const INDEXNOW_KEY = "14b77d8e57924bbeba6525afa140ce85";
 const HOST = "www.kdpage.com";
 const BASE_URL = `https://${HOST}`;
 

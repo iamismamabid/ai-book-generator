@@ -14,10 +14,32 @@ import { exportSudokuToSvg, downloadSvgFile } from "@/lib/svgExporter";
 import { loadHeaderFooterPresets, HeaderFooterPreset } from "@/lib/headerFooterPresets";
 
 // Live preview — puzzle grid
-function SudokuPreview({ grid, isSolution = false }: { grid: Grid; isSolution?: boolean }) {
+function SudokuPreview({
+  grid,
+  isSolution = false,
+  borderThickness = 2,
+  fontFamily = "sans-serif",
+}: {
+  grid: Grid;
+  isSolution?: boolean;
+  borderThickness?: number;
+  fontFamily?: "sans-serif" | "serif" | "monospace";
+}) {
+  const fontClass =
+    fontFamily === "serif"
+      ? "font-serif"
+      : fontFamily === "monospace"
+      ? "font-mono"
+      : "font-sans";
+
   return (
     <div className="w-full max-w-sm mx-auto">
-      <div className="grid grid-cols-9 gap-0 border-[3px] border-slate-700 rounded-sm overflow-hidden">
+      <div
+        className={`grid grid-cols-9 gap-0 rounded-sm overflow-hidden ${fontClass}`}
+        style={{
+          border: `${Math.max(2, borderThickness)}px solid #334155`,
+        }}
+      >
         {grid.flatMap((row, r) =>
           row.map((val, c) => {
             const thickRight = (c + 1) % 3 === 0 && c !== 8;
@@ -27,14 +49,18 @@ function SudokuPreview({ grid, isSolution = false }: { grid: Grid; isSolution?: 
               <div
                 key={`${r}-${c}`}
                 className={`aspect-square flex items-center justify-center text-sm font-bold border border-slate-700/40
-                  ${thickRight ? "border-r-[2.5px] border-r-slate-600" : ""}
-                  ${thickBottom ? "border-b-[2.5px] border-b-slate-600" : ""}
                   ${val !== 0
                     ? isSolution
                       ? "text-indigo-400 bg-slate-800/60"
                       : "text-amber-400 bg-slate-800/80"
                     : "bg-slate-900"}
                 `}
+                style={{
+                  borderRightWidth: thickRight ? `${Math.max(2, borderThickness)}px` : undefined,
+                  borderRightColor: thickRight ? "#475569" : undefined,
+                  borderBottomWidth: thickBottom ? `${Math.max(2, borderThickness)}px` : undefined,
+                  borderBottomColor: thickBottom ? "#475569" : undefined,
+                }}
               >
                 {val !== 0 ? val : ""}
               </div>
@@ -146,6 +172,10 @@ export default function SudokuClient() {
         if (typeof d.includeSolutions === "boolean") setIncludeSolutions(d.includeSolutions);
         if (typeof d.solutionsPerPage === "number") setSolutionsPerPage(d.solutionsPerPage);
         if (typeof d.includeCover === "boolean") setIncludeCover(d.includeCover);
+        if (typeof d.borderThickness === "number") setBorderThickness(d.borderThickness);
+        if (d.fontFamily) setFontFamily(d.fontFamily);
+        if (typeof d.headerText === "string") setHeaderText(d.headerText);
+        if (typeof d.footerText === "string") setFooterText(d.footerText);
       })
       .catch((err) => console.error("Failed to load notebook entry:", err));
   }, []);
@@ -214,7 +244,11 @@ export default function SudokuClient() {
         puzzles,
         difficulty,
         trimSize: finalTrim,
-        title: `Sudoku Puzzle Book`,
+        title: headerText || `Sudoku Puzzle Book`,
+        headerText,
+        footerText,
+        borderThickness,
+        fontFamily,
         includeSolutions: incSol,
         solutionsPerPage,
         includeCover: incCover,
@@ -245,7 +279,11 @@ export default function SudokuClient() {
           puzzles,
           difficulty,
           trimSize: "6x9",
-          title: `Free Sample Sudoku Book`,
+          title: headerText || `Free Sample Sudoku Book`,
+          headerText,
+          footerText,
+          borderThickness,
+          fontFamily,
           includeSolutions: true,
           solutionsPerPage,
           includeCover: false,
@@ -560,7 +598,7 @@ export default function SudokuClient() {
                 title={`Sudoku Collection (${bookCount} Puzzles)`}
                 content={`Sudoku interior with ${bookCount} ${difficulty} puzzles, trim size ${trimSize}${includeSolutions ? `, solutions ${solutionsPerPage} per page` : ", no solutions"}.`}
                 category="sudoku"
-                data={{ difficulty, bookCount, trimSize, includeSolutions, solutionsPerPage, includeCover }}
+                data={{ difficulty, bookCount, trimSize, includeSolutions, solutionsPerPage, includeCover, borderThickness, fontFamily, headerText, footerText }}
                 className="w-full justify-center"
               />
 
@@ -571,7 +609,7 @@ export default function SudokuClient() {
             <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 flex flex-col gap-4">
               <h2 className="text-lg font-bold text-slate-300">Live Preview — Puzzle</h2>
               {currentPuzzle ? (
-                <SudokuPreview grid={currentPuzzle.puzzle} isSolution={false} />
+                <SudokuPreview grid={currentPuzzle.puzzle} isSolution={false} borderThickness={borderThickness} fontFamily={fontFamily} />
               ) : (
                 <div className="aspect-square flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-800 rounded-xl flex-1 min-h-[300px] flex-col gap-3">
                   <Grid3x3 className="w-10 h-10 text-slate-700" />
@@ -632,7 +670,7 @@ export default function SudokuClient() {
             <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 flex flex-col gap-4">
               <h2 className="text-lg font-bold text-indigo-300">Solution Grid</h2>
               {currentPuzzle ? (
-                <SudokuPreview grid={currentPuzzle.solution} isSolution={true} />
+                <SudokuPreview grid={currentPuzzle.solution} isSolution={true} borderThickness={borderThickness} fontFamily={fontFamily} />
               ) : (
                 <div className="aspect-square flex flex-col items-center justify-center text-slate-500 text-sm border-2 border-dashed border-indigo-900/50 rounded-xl flex-1 min-h-[300px] gap-3">
                   <Eye className="w-10 h-10 text-indigo-900" />

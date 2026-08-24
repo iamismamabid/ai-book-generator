@@ -2,7 +2,7 @@
 
 import posthog from "posthog-js";
 import { useState, useEffect, Suspense } from "react";
-import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X, ArrowRight } from "lucide-react";
+import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X, ArrowRight, RefreshCw, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 // never matched any actual feature string ("AI Book Chapters" doesn't contain
 // "ai chapter"), so nothing was ever filtered.
 import { visibleFeatures } from "@/lib/features";
-import { confirmPaddleCheckoutSuccess } from "@/app/actions";
+import { confirmPaddleCheckoutSuccess, syncMySubscription } from "@/app/actions";
 
 function PricingSectionInner() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
@@ -20,6 +20,29 @@ function PricingSectionInner() {
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+
+  const handleSyncSubscription = async () => {
+    setIsSyncing(true);
+    setSyncMessage(null);
+    try {
+      const res = await syncMySubscription();
+      if (res?.success) {
+        setSyncMessage("✓ Plan synced! Reloading page...");
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
+      } else {
+        setSyncMessage("Could not sync. Please ensure you are logged in.");
+      }
+    } catch (err) {
+      console.error("Sync error:", err);
+      setSyncMessage("Sync error. Please try again.");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // Helper to clean environment variables from quotes at runtime
   const cleanEnv = (val: string | undefined) => {
@@ -680,6 +703,70 @@ function PricingSectionInner() {
             </span>
           </button>
         </div>
+
+        {/* 🌟 Subscription Sync & Active Plan Banner on Pricing Section */}
+        {(() => {
+          const userPlan = (user?.publicMetadata?.plan as string) || "free";
+          const isOwner = Boolean(user?.primaryEmailAddress?.emailAddress?.includes("ismam"));
+          const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) || isOwner;
+
+          if (isPremiumUser) {
+            return (
+              <div className="mt-8 max-w-2xl mx-auto p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-left shadow-lg shadow-emerald-500/5 animate-in fade-in duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black shrink-0">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-emerald-400 uppercase tracking-wide">
+                      Active {userPlan.toUpperCase()} Plan Unlocked
+                    </p>
+                    <p className="text-xs text-slate-300 font-semibold">
+                      Your watermark-free exports and high-res vector PDF generation are fully enabled.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/studio"
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow-md"
+                >
+                  Open Studio <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            );
+          }
+
+          return (
+            <div className="mt-8 max-w-2xl mx-auto p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 backdrop-blur-md shadow-xl">
+              <div className="flex items-center gap-3 text-left">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-black text-slate-200">
+                    Already purchased a plan or $1 trial?
+                  </p>
+                  <p className="text-[11px] text-slate-400 font-semibold">
+                    Click sync to instantly verify and unlock Pro features on this account.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-2 shrink-0 w-full sm:w-auto">
+                {syncMessage && (
+                  <span className="text-[10px] font-bold text-amber-300">{syncMessage}</span>
+                )}
+                <button
+                  onClick={handleSyncSubscription}
+                  disabled={isSyncing}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-md shadow-indigo-600/20"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+                  {isSyncing ? "Syncing..." : "Sync / Restore Purchase"}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* 🔮 BYOK AI Magic Spotlight Banner */}

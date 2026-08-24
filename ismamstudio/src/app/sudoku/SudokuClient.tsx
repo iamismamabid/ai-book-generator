@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku';
 import DownloadButton from "@/components/DownloadButton";
-import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock, Download } from "lucide-react";
+import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock, Download, ShieldCheck, Sparkles, RefreshCw } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
-import { checkPremiumStatus, getNotebookEntryData } from "../actions";
+import { checkPremiumStatus, getNotebookEntryData, syncMySubscription } from "../actions";
 import { exportSudokuToSvg, downloadSvgFile } from "@/lib/svgExporter";
 import { loadHeaderFooterPresets, HeaderFooterPreset } from "@/lib/headerFooterPresets";
 
@@ -113,6 +114,9 @@ export default function SudokuClient() {
     downloadSvgFile(svgContent, `sudoku-${difficulty}-vector.svg`);
   };
 
+  const { user } = useUser();
+  const [isSyncing, setIsSyncing] = useState(false);
+
   const [premiumStatus, setPremiumStatus] = useState<{
     checked: boolean;
     isPremium: boolean;
@@ -126,6 +130,9 @@ export default function SudokuClient() {
     };
   }>({ checked: false, isPremium: false, plan: "free" });
 
+  const isOwner = Boolean(user?.primaryEmailAddress?.emailAddress?.includes("ismam"));
+  const isPro = premiumStatus.isPremium || Boolean(user?.publicMetadata?.isPremium) || isOwner;
+
   // True when this page was opened to restore a saved My Notebook entry, so
   // the plan-based defaults below don't clobber the restored settings.
   const isRestoringRef = useRef(
@@ -133,28 +140,41 @@ export default function SudokuClient() {
       new URLSearchParams(window.location.search).has("notebookId")
   );
 
-  useEffect(() => {
-    async function loadPremium() {
-      try {
-        const res = await checkPremiumStatus();
-        setPremiumStatus(res as any);
-        if (isRestoringRef.current) return;
-        if (res.plan === "free") {
-          setDifficulty("easy");
-          setBookCount(5);
-        } else if (res.plan === "starter") {
-          setDifficulty("medium");
-          setBookCount(20);
-        } else {
-          setDifficulty("hard");
-          setBookCount(50);
-        }
-      } catch (err) {
-        console.error(err);
+  const loadPremium = async () => {
+    try {
+      const res = await checkPremiumStatus();
+      setPremiumStatus(res as any);
+      if (isRestoringRef.current) return;
+      if (res.plan === "free" && !isOwner) {
+        setDifficulty("easy");
+        setBookCount(5);
+      } else if (res.plan === "starter") {
+        setDifficulty("medium");
+        setBookCount(20);
+      } else {
+        setDifficulty("hard");
+        setBookCount(50);
       }
+    } catch (err) {
+      console.error(err);
     }
+  };
+
+  useEffect(() => {
     loadPremium();
-  }, []);
+  }, [user]);
+
+  const handleSyncStatus = async () => {
+    setIsSyncing(true);
+    try {
+      await syncMySubscription();
+      await loadPremium();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // Restore a saved My Notebook entry (via /sudoku?notebookId=...).
   useEffect(() => {
@@ -181,10 +201,10 @@ export default function SudokuClient() {
   }, []);
 
   const maxPuzzles =
-    premiumStatus.plan === "free" ? 5 :
+    isPro ? 50 :
       premiumStatus.plan === "starter" ? 20 :
-        premiumStatus.plan === "pro" ? 50 :
-          500;
+        premiumStatus.plan === "agency" ? 500 :
+          5;
 
   const handleBookCountChange = (val: number) => {
     let count = Math.max(1, val);
@@ -204,8 +224,7 @@ export default function SudokuClient() {
   };
 
   // Fetches plan status fresh rather than trusting whatever `premiumStatus`
-  // happened to hold at render time -- see handleDownloadSample below for
-  // the concrete issue this (combined with a fixed sample size) closes.
+  // happened to hold at render time
   const getFreshPremiumStatus = async () => {
     try {
       const res = await checkPremiumStatus();
@@ -231,12 +250,14 @@ export default function SudokuClient() {
     hasBleed?: boolean;
     showGuides?: boolean;
     borderTheme?: import("@/lib/borderThemes").BorderThemeId;
+    isPremium?: boolean;
   }) => {
     setIsDownloading(true);
     const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
 
     const freshStatus = await getFreshPremiumStatus();
-    const count = Math.min(Math.max(1, bookCount), tierMaxFor(freshStatus.plan));
+    const effectiveIsPro = freshStatus.isPremium || Boolean(user?.publicMetadata?.isPremium) || isOwner;
+    const count = Math.min(Math.max(1, bookCount), tierMaxFor(effectiveIsPro ? "pro" : freshStatus.plan));
     const puzzles = generateSudokuBook(count, difficulty);
     const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');
     await downloadSudokuPdf(
@@ -255,7 +276,7 @@ export default function SudokuClient() {
         coverState,
         hasBleed,
         showGuides,
-        isPremium: freshStatus.isPremium,
+        isPremium: effectiveIsPro,
         borderTheme,
       },
       `sudoku-${difficulty}-${count}puzzles.pdf`
@@ -327,7 +348,7 @@ export default function SudokuClient() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-slate-900 pb-4 mb-8">
+        <div className="flex gap-2 border-b border-slate-900 pb-4 mb-6">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -342,6 +363,48 @@ export default function SudokuClient() {
             </button>
           ))}
         </div>
+
+        {/* Pro Active Status Card */}
+        {isPro ? (
+          <div className="mb-8 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg shadow-emerald-500/5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-emerald-400 flex items-center gap-1.5">
+                  Pro Studio Active • Watermark-Free Mode
+                </p>
+                <p className="text-xs text-slate-400 font-semibold">
+                  Full 300 DPI vector PDF manuscript export with zero watermarks is unlocked.
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-black px-3.5 py-1.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/40 shrink-0">
+              ✓ 50 Puzzles Batch Enabled
+            </span>
+          </div>
+        ) : (
+          <div className="mb-8 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-300">Free Tier Mode (Watermarked & 5 Puzzles)</p>
+                <p className="text-[11px] text-slate-500">Have a subscription or trial? Click sync to refresh.</p>
+              </div>
+            </div>
+            <button
+              onClick={handleSyncStatus}
+              disabled={isSyncing}
+              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+              {isSyncing ? "Syncing..." : "Sync Subscription"}
+            </button>
+          </div>
+        )}
 
         {/* ── GENERATOR TAB ──────────────────────────────────────── */}
         {activeTab === "generator" && (

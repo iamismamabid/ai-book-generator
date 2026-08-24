@@ -81,6 +81,14 @@ export default function RootLayout({
       {/* 🎯 html ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
       <html lang="en" className={`scroll-smooth ${inter.variable}`} suppressHydrationWarning>
         <head>
+          {/* Google Tag Manager (Top of <head>) */}
+          <Script id="google-tag-manager" strategy="afterInteractive">
+            {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PK2T4N26');`}
+          </Script>
           {/* DNS Prefetch & Preconnect for zero-latency third-party network handshakes */}
           <link rel="dns-prefetch" href="https://embed.tawk.to" />
           <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
@@ -232,14 +240,6 @@ export default function RootLayout({
                 })
               }}
             />
-            {/* Google Tag Manager (Loaded lazily to guarantee 0ms route navigation responsiveness) */}
-            <Script id="google-tag-manager" strategy="lazyOnload">
-              {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-              })(window,document,'script','dataLayer','GTM-PK2T4N26');`}
-            </Script>
 
             {/* Microsoft Clarity Tracking */}
             <Script id="microsoft-clarity" strategy="afterInteractive">

@@ -114,7 +114,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
 
   const [baseWidthInches, baseHeightInches] = TRIM_SIZES[trimSize] || TRIM_SIZES["8.5x11"];
   const bleed = hasBleed ? 0.125 : 0;
-  const widthInches = baseWidthInches + bleed * 2;
+  const widthInches = baseWidthInches + bleed;
   const heightInches = baseHeightInches + bleed * 2;
 
   // Initialize jsPDF with inches context

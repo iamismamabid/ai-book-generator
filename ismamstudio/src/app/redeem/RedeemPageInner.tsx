@@ -51,7 +51,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
           "Standard trim sizes (6\"x9\", 8.5\"x11\")",
           "Easy & Medium Sudoku puzzle generator",
           "Square-masked maze layouts",
-          "Generate up to 10 Chapters / month",
+          "300 DPI print-ready PDF exports",
           "Standard vector PDF exports",
           "Email support (24-48h response)",
         ],
@@ -72,7 +72,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
         limits: [
           "100 Brand & Pen-Name Profiles",
           "10,000 Puzzle & Interior Exports / month",
-          "1,000 AI Book Chapters / month",
+          "Bulk CSV Batch Studio & Automation",
           "Vector SVG & source file exports",
           "Advanced Custom Shapes & Custom Masking",
           "Full access to KDP Niche Hunter & Keyword Spy",
@@ -85,7 +85,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
         limits: [
           "50 Brand & Pen-Name Profiles",
           "5,000 Puzzle & Interior Exports / month",
-          "250 AI Book Chapters / month",
+          "Bulk CSV Batch Studio & Automation",
           "Vector SVG & source file exports",
           "Advanced Custom Shapes & Custom Masking",
           "Full access to KDP Niche Hunter & Keyword Spy",
@@ -98,7 +98,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
         limits: [
           "25 Brand & Pen-Name Profiles",
           "2,000 Puzzle & Interior Exports / month",
-          "100 AI Book Chapters / month",
+          "Bulk CSV Batch Studio & Automation",
           "Vector SVG & source file exports",
           "Advanced Custom Shapes & Custom Masking",
           "Full access to KDP Niche Hunter & Keyword Spy",
@@ -111,7 +111,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
         limits: [
           "10 Brand & Pen-Name Profiles",
           "500 Puzzle & Interior Exports / month",
-          "30 AI Book Chapters / month",
+          "Full Low & Medium-Content Generator Suite",
           "Sudoku (Easy, Med, Hard) and Circle/Heart Mazes",
           "Word Search boards & CSV imports",
           "Premium Cover & Interior Canvas Studio",
@@ -124,7 +124,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
         limits: [
           "3 Brand & Pen-Name Profiles",
           "100 Puzzle & Interior Exports / month",
-          "10 AI Book Chapters / month",
+          "Full Low-Content Generator Suite",
           "Standard trim sizes (6\"x9\", 8.5\"x11\")",
           "Easy & Medium Sudoku puzzle generator",
           "Square-masked maze layouts",

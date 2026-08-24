@@ -622,6 +622,26 @@ export default function FreeToolsHub() {
       features: ["Keyword frequency count", "Stopword exclusion", "1-word & 2-word phrase analysis"],
       keywords: ["keyword density", "seo text", "word frequency"],
       link: "/tools/keyword-density"
+    },
+    {
+      id: "coloring-book-generator",
+      name: "Free Coloring Book & Mandala Studio",
+      badge: "Popular",
+      category: "Design",
+      description: "Generate 300 DPI vector coloring pages, mandalas, botanical line art, and color-by-number templates.",
+      features: ["300 DPI vector PDF & PNG", "Mandalas & botanical florals", "Color-by-number palettes"],
+      keywords: ["coloring book", "mandala", "color by number", "line art", "coloring pages", "stained glass"],
+      link: "/tools/coloring-book-generator"
+    },
+    {
+      id: "bulk-generator",
+      name: "KDP Bulk Book Batch Studio",
+      badge: "Pro",
+      category: "Formatting",
+      description: "Queue dozens of puzzle book concepts, import configs via CSV, and download ready-to-upload interiors in batch.",
+      features: ["CSV batch importing", "Multi-puzzle queueing", "Bulk ZIP interior export"],
+      keywords: ["bulk", "batch generator", "csv import", "bulk puzzle", "batch interiors"],
+      link: "/tools/bulk-generator"
     }
   ];
 

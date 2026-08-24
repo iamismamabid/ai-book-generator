@@ -113,7 +113,7 @@ export default function TeamClient({ initialToken }: { initialToken: string }) {
         </div>
         <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-3">Sign in to manage your team</h1>
         <Link
-          href={initialToken ? `/sign-in?redirect_url=/team?token=${initialToken}` : "/sign-in"}
+          href={initialToken ? `/sign-in?redirect_url=${encodeURIComponent(`/team?token=${initialToken}`)}` : "/sign-in"}
           className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3.5 rounded-2xl shadow-lg shadow-indigo-600/20 text-sm transition-all"
         >
           Sign In to Your Account

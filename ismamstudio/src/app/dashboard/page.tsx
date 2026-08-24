@@ -18,10 +18,6 @@ export default async function DashboardPage() {
     );
   }
 
-  // 👇 DEBUG LOG ADDED HERE
-  console.log("----------------------------------------");
-  console.log("Database URL Check:", process.env.DATABASE_URL); 
-  console.log("----------------------------------------");
 
   // Fetch Premium / AppSumo status
   const premiumStatus = await checkPremiumStatus();

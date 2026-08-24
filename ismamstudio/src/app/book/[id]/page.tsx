@@ -1,30 +1,35 @@
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { checkPremiumStatus } from "@/app/actions";
+import { getWorkspaceUserIds } from "@/lib/team";
 import BookReader from "./BookReader";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfessionalBookPage({ params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
   const { id } = await params;
-  
+
+  if (!userId) {
+    redirect(`/sign-in?redirect_url=${encodeURIComponent(`/book/${id}`)}`);
+  }
+
+  const workspaceUserIds = await getWorkspaceUserIds(userId);
   let book: any = null;
   try {
-    book = await prisma.book.findUnique({ 
-      where: { id },
+    book = await prisma.book.findFirst({ 
+      where: { id, userId: { in: workspaceUserIds } },
       include: { chapters: { orderBy: { order: "asc" } } }
     });
   } catch (error) {
-    console.error("Database query failed, using fallback...", error);
+    console.error("Database query failed:", error);
   }
 
-  const displayBook = book ?? {
-    id,
-    title: "The Creative Journey",
-    subtitle: "A Creative Journey",
-    content: "This is a placeholder book because the database record was not found. ".repeat(150),
-    chapters: []
-  };
+  if (!book) {
+    redirect("/dashboard");
+  }
 
+  const displayBook = book;
   const words = (displayBook.content ?? "").split(" ");
   const wordsPerPage = 300;
   const pages = [];

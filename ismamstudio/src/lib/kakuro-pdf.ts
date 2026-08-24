@@ -157,7 +157,7 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
   if (trimSize === "5x8") { width = 5; height = 8; }
 
   const bleed = hasBleed ? 0.125 : 0;
-  width += bleed * 2;
+  width += bleed;
   height += bleed * 2;
 
   const doc = new jsPDF({

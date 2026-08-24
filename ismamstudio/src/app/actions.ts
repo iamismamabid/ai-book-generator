@@ -15,8 +15,9 @@ export async function deleteBook(id: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  await prisma.book.delete({
-    where: { id: id },
+  const workspaceUserIds = await getWorkspaceUserIds(userId);
+  await prisma.book.deleteMany({
+    where: { id: id, userId: { in: workspaceUserIds } },
   });
 
   revalidatePath("/dashboard");
@@ -27,6 +28,16 @@ export async function deleteBook(id: string) {
 export async function updateChapter(chapterId: string, newContent: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+
+  const workspaceUserIds = await getWorkspaceUserIds(userId);
+  const chapter = await prisma.chapter.findUnique({
+    where: { id: chapterId },
+    include: { book: true },
+  });
+
+  if (!chapter || !workspaceUserIds.includes(chapter.book.userId)) {
+    throw new Error("Unauthorized or chapter not found");
+  }
 
   await prisma.chapter.update({
     where: { id: chapterId },
@@ -42,8 +53,9 @@ export async function updateBookTitleAndSubtitle(bookId: string, title: string, 
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  await prisma.book.update({
-    where: { id: bookId },
+  const workspaceUserIds = await getWorkspaceUserIds(userId);
+  await prisma.book.updateMany({
+    where: { id: bookId, userId: { in: workspaceUserIds } },
     data: { title, subtitle },
   });
 

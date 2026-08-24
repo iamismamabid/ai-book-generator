@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 // never matched any actual feature string ("AI Book Chapters" doesn't contain
 // "ai chapter"), so nothing was ever filtered.
 import { visibleFeatures } from "@/lib/features";
+import { confirmPaddleCheckoutSuccess } from "@/app/actions";
 
 function PricingSectionInner() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
@@ -96,6 +97,16 @@ function PricingSectionInner() {
                   console.error("Trustpilot Invitation Error:", tpErr);
                 }
               }
+
+              // 🚀 Instantly upgrade Clerk user metadata in real-time so customer gets Pro immediately without waiting for webhook
+              confirmPaddleCheckoutSuccess(event?.data)
+                .then(() => {
+                  window.location.href = "/studio";
+                })
+                .catch((err) => {
+                  console.error("Instant upgrade fallback error:", err);
+                  window.location.href = "/studio";
+                });
             } else if (event?.name === "checkout.error" || event?.name === "checkout.payment.failed") {
               // Paddle.Checkout.open() doesn't throw synchronously for a bad/archived
               // price ID -- the overlay opens and Paddle rejects it internally, which

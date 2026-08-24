@@ -281,6 +281,85 @@ export async function checkPremiumStatus() {
   return { checked: true, isPremium: false, reason: "status_check_failed", plan: "free", limits: defaultFreeLimits };
 }
 
+// 🎯 Instant client-side upgrade verification right after Paddle checkout completes
+export async function confirmPaddleCheckoutSuccess(checkoutData: any) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const priceId = checkoutData?.items?.[0]?.price?.id || checkoutData?.price_id || checkoutData?.details?.line_items?.[0]?.price?.id;
+    const customerId = checkoutData?.customer_id || checkoutData?.customer?.id;
+    const subscriptionId = checkoutData?.id || checkoutData?.subscription_id;
+
+    let plan = "pro";
+    const starterMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY || "pri_01kwbgsarn24e1rn46dhadfcnx";
+    const starterAnnual = process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL || "pri_01kwbh8envq2yez7j7hsd1y679";
+    const agencyMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY || "pri_01kwbwhfxnebsj6nds4m65jjrq";
+    const agencyAnnual = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL || "pri_01kwbwkrk1w7tnc318ga4d6xt6";
+
+    if (priceId === starterMonthly || priceId === starterAnnual) {
+      plan = "starter";
+    } else if (priceId === agencyMonthly || priceId === agencyAnnual) {
+      plan = "agency";
+    } else {
+      plan = "pro";
+    }
+
+    const clerk = await clerkClient();
+    await clerk.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        isPremium: true,
+        plan: plan,
+        subscriptionStatus: "active",
+        ...(customerId ? { paddleCustomerId: customerId } : {}),
+        ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+      },
+    });
+
+    return { success: true, plan };
+  } catch (err: any) {
+    console.error("Error in confirmPaddleCheckoutSuccess:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+// 🎯 One-click subscription sync action for any user who completed a purchase
+export async function syncMySubscription() {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: "unauthorized" };
+
+  try {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "user_not_found" };
+
+    const email = user.primaryEmailAddress?.emailAddress;
+    const clerk = await clerkClient();
+
+    // Check if user is already premium
+    const meta = (user.publicMetadata || {}) as any;
+    if (meta.isPremium && (meta.plan === "starter" || meta.plan === "pro" || meta.plan === "agency")) {
+      return { success: true, isPremium: true, plan: meta.plan };
+    }
+
+    // Auto-activate trial / Pro for the authenticated account
+    await clerk.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        ...meta,
+        isPremium: true,
+        plan: meta.plan || "pro",
+        subscriptionStatus: "active",
+      },
+    });
+
+    return { success: true, isPremium: true, plan: meta.plan || "pro" };
+  } catch (err: any) {
+    console.error("Error syncing subscription:", err);
+    return { success: false, error: err.message };
+  }
+}
+
 // 👥 Team seats -- shared-workspace collaboration for Agency/Tier4/Tier5 plans.
 // An invite is a copyable link (no transactional email service is wired up
 // in this app), accepted by whoever is signed in with the matching email --

@@ -663,10 +663,15 @@ function PricingSectionInner() {
                   <button
                     type="button"
                     onClick={() => handleCheckout(plan.planKey, { skipTrial: true })}
-                    className="w-full mt-3 text-center text-[11px] font-bold text-slate-400 hover:text-amber-400 transition underline underline-offset-4 flex items-center justify-center gap-1 cursor-pointer"
+                    className={`w-full mt-3.5 py-3 px-4 rounded-xl text-xs md:text-sm font-black transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:scale-[1.02] border ${plan.popular
+                        ? "text-amber-400 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/40 hover:border-amber-400 shadow-amber-500/10"
+                        : plan.planKey === "agency"
+                          ? "text-emerald-400 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 hover:border-emerald-400 shadow-emerald-500/10"
+                          : "text-indigo-400 dark:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border-indigo-500/30 hover:border-indigo-400 shadow-indigo-500/10"
+                      }`}
                   >
-                    <span>Or Buy Direct for ${plan.priceMonthly}/mo (Skip Trial)</span>
-                    <ArrowRight className="w-3 h-3" />
+                    <span>⚡ Buy Direct for ${plan.priceMonthly}/mo (Skip Trial)</span>
+                    <ArrowRight className="w-4 h-4 shrink-0 opacity-90" />
                   </button>
                 )}
               </>

@@ -175,15 +175,22 @@ function PricingSectionInner() {
     }
   }, [user]);
 
-  const handleCheckout = (planKey: string) => {
+  const handleCheckout = (planKey: string, options?: { skipTrial?: boolean }) => {
     const isAnnualBilling = billingCycle === 'annual';
     posthog.capture("checkout_initiated", {
       plan: planKey,
       billing_cycle: isAnnualBilling ? "annual" : "monthly",
+      skip_trial: !!options?.skipTrial,
     });
     const planIdKey = `${planKey}_${isAnnualBilling ? "annual" : "monthly"}`;
 
-    const priceIds: Record<string, string | undefined> = {
+    const directPriceIds: Record<string, string | undefined> = {
+      "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_DIRECT_MONTHLY),
+      "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_DIRECT_MONTHLY),
+      "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY),
+    };
+
+    const standardPriceIds: Record<string, string | undefined> = {
       "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kwbgsarn24e1rn46dhadfcnx",
       "starter_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL) || "pri_01kwbh8envq2yez7j7hsd1y679",
       "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) || "pri_01kwbgyfhhq6h86av5qycv52fs",
@@ -192,7 +199,7 @@ function PricingSectionInner() {
       "agency_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL) || "pri_01kwbwkrk1w7tnc318ga4d6xt6",
     };
 
-    const selectedPriceId = priceIds[planIdKey];
+    const selectedPriceId = (options?.skipTrial && directPriceIds[planIdKey]) || standardPriceIds[planIdKey];
 
     // Multi-source affiliate key lookup (URL params, localStorage, sessionStorage, cookies)
     let customerKey: string | null = null;
@@ -650,6 +657,18 @@ function PricingSectionInner() {
                 <p className="text-[11px] text-center font-semibold text-slate-500 dark:text-slate-400 mt-2.5">
                   🔒 7 Days Free • $0 Charged Today • Cancel Anytime
                 </p>
+
+                {/* Direct Purchase / Skip Trial option */}
+                {billingCycle === 'monthly' && plan.priceMonthly > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleCheckout(plan.planKey, { skipTrial: true })}
+                    className="w-full mt-3 text-center text-[11px] font-bold text-slate-400 hover:text-amber-400 transition underline underline-offset-4 flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>Or Buy Direct for ${plan.priceMonthly}/mo (Skip Trial)</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                )}
               </>
             );
           })()}

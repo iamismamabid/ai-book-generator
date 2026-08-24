@@ -77,58 +77,106 @@ export default function sitemap(): MetadataRoute.Sitemap {
         {
             url: `${baseUrl}/sudoku`,
             lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.8,
+            changeFrequency: 'weekly',
+            priority: 0.9,
         },
         {
             url: `${baseUrl}/maze`,
             lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.8,
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/studio/crossword`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
         },
         {
             url: `${baseUrl}/studio/cryptogram`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/studio/math-puzzle`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/studio/word-scramble`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/studio/kakuro`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.8,
-        },
-
-        // ── Free Tools ──────────────────────────────────────────
-        {
-            url: `${baseUrl}/tools`,
             lastModified: new Date(),
             changeFrequency: 'weekly',
             priority: 0.8,
         },
         {
+            url: `${baseUrl}/studio/math-puzzle`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/studio/word-scramble`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/studio/kakuro`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
+
+        // ── High-Intent Money & Free Tools ──────────────────────
+        {
+            url: `${baseUrl}/tools`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/tools/royalty-estimator`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
             url: `${baseUrl}/tools/spine-calculator`,
             lastModified: new Date(),
-            changeFrequency: 'monthly',
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/tools/word-search`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/tools/pattern-generator`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/tools/coloring-book-generator`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/tools/interior-templates`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/tools/ebook-royalty-calculator`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/tools/bulk-generator`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
             priority: 0.8,
         },
         {
             url: `${baseUrl}/tools/isbn-generator`,
             lastModified: new Date(),
             changeFrequency: 'monthly',
-            priority: 0.7,
+            priority: 0.8,
         },
         {
             url: `${baseUrl}/tools/keyword-research`,
@@ -137,16 +185,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.8,
         },
         {
-            url: `${baseUrl}/tools/word-search`,
+            url: `${baseUrl}/tools/license-generator`,
             lastModified: new Date(),
             changeFrequency: 'monthly',
             priority: 0.7,
         },
-        // New free tools (calculators, text, image, and PDF utilities)
+        // Additional utility & calculator tools
         ...[
             'print-cost-calculator',
             'kenp-calculator',
-            'ebook-royalty-calculator',
             'ads-roi-calculator',
             'reading-time-calculator',
             'readability-calculator',
@@ -160,17 +207,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
             'image-resizer',
             'background-remover',
             'photo-to-line-art',
-            'pattern-generator',
             'stock-images',
             'pdf-compressor',
             'kdp-file-validator',
             'ocr-scanner',
-            'interior-templates',
         ].map((slug) => ({
             url: `${baseUrl}/tools/${slug}`,
             lastModified: new Date(),
-            changeFrequency: 'monthly' as const,
-            priority: 0.7,
+            changeFrequency: 'weekly' as const,
+            priority: 0.8,
         })),
 
         // ── Utility & Marketing ─────────────────────────────────

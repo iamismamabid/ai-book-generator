@@ -547,47 +547,78 @@ function PricingSectionInner() {
 
         {/* Action Button */}
         <div className="mt-8">
-          {isLtd ? (
-            <Link
-              href={ctaHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                  : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                }`}
-            >
-              {plan.ctaText}
-              <Zap className="w-4 h-4 shrink-0 opacity-80" />
-            </Link>
-          ) : plan.planKey === "free" ? (
-            <Link
-              href={ctaHref}
-              className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                  : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                }`}
-            >
-              {plan.ctaText}
-              <Zap className="w-4 h-4 shrink-0 opacity-80" />
-            </Link>
-          ) : (
-            <>
-              <button
-                onClick={() => handleCheckout(plan.planKey)}
-                className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                    ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                    : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                  }`}
-              >
-                {plan.ctaText}
-                <Zap className="w-4 h-4 shrink-0 opacity-80" />
-              </button>
-              <p className="text-[11px] text-center font-semibold text-slate-500 dark:text-slate-400 mt-2.5">
-                🔒 7 Days Free • $0 Charged Today • Cancel Anytime
-              </p>
-            </>
-          )}
+          {(() => {
+            const currentUserPlan = (user?.publicMetadata?.plan as string) || "free";
+            const isPremiumUser = Boolean(user?.publicMetadata?.isPremium);
+            const isCurrentPlan = isPremiumUser && currentUserPlan === plan.planKey;
+
+            if (isCurrentPlan) {
+              return (
+                <div className="space-y-2">
+                  <div className="w-full py-3.5 rounded-2xl font-black text-sm bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-2 shadow-md">
+                    <Check className="w-4 h-4 text-emerald-500" />
+                    Current Active Plan
+                  </div>
+                  <Link
+                    href="/studio"
+                    className="w-full py-2.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center gap-1.5 transition shadow-sm"
+                  >
+                    Open Creator Studio <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              );
+            }
+
+            if (isLtd) {
+              return (
+                <Link
+                  href={ctaHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                      : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                    }`}
+                >
+                  {plan.ctaText}
+                  <Zap className="w-4 h-4 shrink-0 opacity-80" />
+                </Link>
+              );
+            }
+
+            if (plan.planKey === "free") {
+              return (
+                <Link
+                  href={ctaHref}
+                  className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                      : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                    }`}
+                >
+                  {plan.ctaText}
+                  <Zap className="w-4 h-4 shrink-0 opacity-80" />
+                </Link>
+              );
+            }
+
+            return (
+              <>
+                <button
+                  onClick={() => handleCheckout(plan.planKey)}
+                  className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                      : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
+                    }`}
+                >
+                  {plan.ctaText}
+                  <Zap className="w-4 h-4 shrink-0 opacity-80" />
+                </button>
+                <p className="text-[11px] text-center font-semibold text-slate-500 dark:text-slate-400 mt-2.5">
+                  🔒 7 Days Free • $0 Charged Today • Cancel Anytime
+                </p>
+              </>
+            );
+          })()}
         </div>
       </div>
     );

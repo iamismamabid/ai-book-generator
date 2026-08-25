@@ -17,10 +17,11 @@ interface RedeemPageInnerProps {
 export default function RedeemPageInner({ initialCode = "", initialPartner = "" }: RedeemPageInnerProps) {
   const { isLoaded, userId } = useAuth();
   const searchParams = useSearchParams();
-  const [mounted, setMounted] = useState(false);
+  const windowPartner = typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("partner") || new URLSearchParams(window.location.search).get("source") || new URLSearchParams(window.location.search).get("ref") || "") : "";
+  const windowCode = typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("code") || new URLSearchParams(window.location.search).get("redemption_code") || new URLSearchParams(window.location.search).get("key") || new URLSearchParams(window.location.search).get("license_key") || "") : "";
 
-  const urlPartner = searchParams?.get("partner") || searchParams?.get("source") || searchParams?.get("ref") || "";
-  const urlCode = searchParams?.get("code") || searchParams?.get("redemption_code") || searchParams?.get("key") || searchParams?.get("license_key") || "";
+  const urlPartner = searchParams?.get("partner") || searchParams?.get("source") || searchParams?.get("ref") || windowPartner || "";
+  const urlCode = searchParams?.get("code") || searchParams?.get("redemption_code") || searchParams?.get("key") || searchParams?.get("license_key") || windowCode || "";
 
   const [code, setCode] = useState(initialCode || urlCode);
   const [status, setStatus] = useState<{ type: "success" | "error" | null; message: string }>({
@@ -31,7 +32,7 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
   const [isPending, startTransition] = useTransition();
   const [activePlan, setActivePlan] = useState<{ isPremium: boolean; plan: string; limits?: any } | null>(null);
 
-  const cleanPartner = (urlPartner || initialPartner || "").toLowerCase();
+  const cleanPartner = (urlPartner || initialPartner || windowPartner || "").toLowerCase();
   const cleanCodeUpper = (code || "").toUpperCase();
   const isGumroad = cleanPartner.includes("gumroad") || cleanCodeUpper.includes("GUMROAD") || cleanCodeUpper.includes("GR-");
   const isDealify = cleanPartner.includes("dealify") || cleanCodeUpper.includes("DEALIFY") || cleanCodeUpper.includes("DL-");

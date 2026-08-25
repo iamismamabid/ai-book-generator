@@ -765,8 +765,7 @@ function PricingSectionInner() {
         {/* 🌟 Subscription Sync & Active Plan Banner on Pricing Section */}
         {(() => {
           const userPlan = (user?.publicMetadata?.plan as string) || "free";
-          const isOwner = Boolean(user?.primaryEmailAddress?.emailAddress?.includes("ismam"));
-          const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) || isOwner;
+          const isPremiumUser = Boolean(user?.publicMetadata?.isPremium);
 
           if (isPremiumUser) {
             return (

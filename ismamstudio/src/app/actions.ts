@@ -228,14 +228,7 @@ export async function checkPremiumStatus() {
     // ২. Clerk publicMetadata চেক করা (সাবস্ক্রিপশনের জন্য)
     const user = await currentUser();
     if (user) {
-      const email = user.primaryEmailAddress?.emailAddress?.toLowerCase() || "";
       const publicMetadata = (user.publicMetadata || {}) as any;
-
-      // Auto-grant Pro Studio for owner/purchaser accounts who tested or purchased
-      const isOwnerAccount =
-        email === "ismamabid3504@gmail.com" ||
-        email === "ismamabid.islet@gmail.com" ||
-        email.includes("ismamabid");
 
       const isSubscribed =
         publicMetadata.isPremium === true ||
@@ -243,8 +236,7 @@ export async function checkPremiumStatus() {
         publicMetadata.plan === "pro" ||
         publicMetadata.plan === "agency" ||
         publicMetadata.subscriptionStatus === "active" ||
-        publicMetadata.subscriptionStatus === "trialing" ||
-        isOwnerAccount;
+        publicMetadata.subscriptionStatus === "trialing";
 
       if (isSubscribed) {
         const userPlan = publicMetadata.plan || "pro";
@@ -254,23 +246,6 @@ export async function checkPremiumStatus() {
           limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 20 };
         } else if (userPlan === "agency") {
           limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
-        }
-
-        // Auto-persist metadata to Clerk in the background if it wasn't saved yet
-        if (!publicMetadata.isPremium && isOwnerAccount) {
-          try {
-            const clerk = await clerkClient();
-            await clerk.users.updateUserMetadata(user.id, {
-              publicMetadata: {
-                ...publicMetadata,
-                isPremium: true,
-                plan: userPlan,
-                subscriptionStatus: "active",
-              },
-            });
-          } catch (e) {
-            console.error("Auto-persist owner Pro status error:", e);
-          }
         }
 
         const isTrial = publicMetadata.subscriptionStatus === "trialing";
@@ -360,26 +335,32 @@ export async function syncMySubscription() {
     const user = await currentUser();
     if (!user) return { success: false, error: "user_not_found" };
 
-    const email = user.primaryEmailAddress?.emailAddress;
-    const clerk = await clerkClient();
-
-    // Check if user is already premium
     const meta = (user.publicMetadata || {}) as any;
     if (meta.isPremium && (meta.plan === "starter" || meta.plan === "pro" || meta.plan === "agency")) {
       return { success: true, isPremium: true, plan: meta.plan };
     }
 
-    // Auto-activate trial / Pro for the authenticated account
-    await clerk.users.updateUserMetadata(userId, {
-      publicMetadata: {
-        ...meta,
-        isPremium: true,
-        plan: meta.plan || "pro",
-        subscriptionStatus: "active",
-      },
+    // Check database redemptions
+    const redemption = await prisma.redemption.findFirst({
+      where: { userId },
+      orderBy: { redeemedAt: "desc" },
     });
 
-    return { success: true, isPremium: true, plan: meta.plan || "pro" };
+    if (redemption) {
+      const clerk = await clerkClient();
+      const plan = redemption.tier >= 3 ? "agency" : redemption.tier >= 2 ? "pro" : "starter";
+      await clerk.users.updateUserMetadata(userId, {
+        publicMetadata: {
+          ...meta,
+          isPremium: true,
+          plan,
+          subscriptionStatus: "active",
+        },
+      });
+      return { success: true, isPremium: true, plan };
+    }
+
+    return { success: false, error: "No active subscription found. Please complete checkout to unlock Pro." };
   } catch (err: any) {
     console.error("Error syncing subscription:", err);
     return { success: false, error: err.message };

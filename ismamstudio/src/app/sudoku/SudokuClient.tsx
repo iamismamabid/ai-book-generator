@@ -130,8 +130,7 @@ export default function SudokuClient() {
     };
   }>({ checked: false, isPremium: false, plan: "free" });
 
-  const isOwner = Boolean(user?.primaryEmailAddress?.emailAddress?.includes("ismam"));
-  const isPro = premiumStatus.isPremium || Boolean(user?.publicMetadata?.isPremium) || isOwner;
+  const isPro = Boolean(premiumStatus.isPremium || user?.publicMetadata?.isPremium);
 
   // True when this page was opened to restore a saved My Notebook entry, so
   // the plan-based defaults below don't clobber the restored settings.
@@ -145,7 +144,7 @@ export default function SudokuClient() {
       const res = await checkPremiumStatus();
       setPremiumStatus(res as any);
       if (isRestoringRef.current) return;
-      if (res.plan === "free" && !isOwner) {
+      if (res.plan === "free") {
         setDifficulty("easy");
         setBookCount(5);
       } else if (res.plan === "starter") {

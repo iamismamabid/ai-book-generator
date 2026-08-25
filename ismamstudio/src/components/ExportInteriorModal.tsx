@@ -294,21 +294,30 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
               </div>
             )}
 
-            {/* Free Plan Warning Banner */}
+            {/* Free Plan / Pro Download Paywall Banner */}
             {!premiumStatus.isPremium && premiumStatus.reason !== "status_check_failed" && (
-              <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
-                <div className="flex gap-2 items-start">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="p-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl border border-indigo-500/30 shadow-lg shadow-indigo-950/30 space-y-3 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center shrink-0 text-indigo-400 mt-0.5">
+                    <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+                  </div>
                   <div>
-                    <span className="font-black text-slate-900 block">KDPage Free Trial Evaluation</span>
-                    <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
-                      Export up to <strong>5 pages 100% watermark-free</strong> to test &amp; confirm print quality directly on Amazon KDP! Full manuscript compile files include a light <strong>&quot;SAMPLE - KDPAGE&quot;</strong> watermark until upgrading.
+                    <span className="font-black text-white text-xs block uppercase tracking-wide">
+                      Your 300 DPI KDP Book is Ready!
+                    </span>
+                    <p className="text-slate-300 text-[11px] font-medium leading-relaxed mt-1">
+                      Full studio creation is 100% free. Unlock instant print-ready 300 DPI vector PDF download to publish on Amazon KDP today.
                     </p>
                   </div>
                 </div>
-                <div className="pt-2 border-t border-amber-200/50 flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
-                  <Link href="/pricing" target="_blank" className="text-indigo-600 hover:text-indigo-500">
-                    Upgrade for Unlimited Watermark-Free PDFs →
+                
+                <div className="pt-2 border-t border-indigo-500/20 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
+                  <Link
+                    href="/pricing"
+                    target="_blank"
+                    className="flex-1 text-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-[11px] font-black uppercase tracking-wider shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
+                  >
+                    ⚡ Unlock Instant Download ($11.99/mo) →
                   </Link>
                 </div>
               </div>
@@ -522,39 +531,39 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 />
               </div>
 
-              {/* AppSumo Redemption Section inside modal */}
+              {/* License / LTD Redemption Section inside modal */}
               {!premiumStatus.isPremium && (
-                <form onSubmit={handleRedeemCode} className="p-4 bg-indigo-50/50 border border-indigo-200/60 rounded-2xl space-y-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-950 uppercase tracking-wide">
+                <form onSubmit={handleRedeemCode} className="p-4 bg-indigo-50/70 border border-indigo-200/80 rounded-2xl space-y-2.5">
+                  <div className="flex items-center gap-1.5 text-[11px] font-black text-indigo-950 uppercase tracking-wide">
                     <Ticket className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Redeem AppSumo Code</span>
+                    <span>Redeem Lifetime License / Code</span>
                   </div>
-                  <p className="text-[9px] text-slate-500 font-bold leading-normal">
-                    Purchased an AppSumo LTD code? Paste your redemption license key below to unlock all high-res features instantly.
+                  <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">
+                    Purchased via Gumroad, AppSumo, or Dealify? Enter your license key below to unlock instant 300 DPI downloads!
                   </p>
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="e.g. active-XXXXX"
+                      placeholder="e.g. GUMROAD-XXXX, AS-XXXX, or License Key"
                       value={appsumoCode}
                       onChange={(e) => setAppsumoCode(e.target.value)}
-                      className="flex-grow bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-indigo-600"
+                      className="flex-grow bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-600 placeholder-slate-400 font-mono"
                     />
                     <button
                       type="submit"
                       disabled={isRedeeming}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs px-4 py-2 rounded-xl transition disabled:opacity-50"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs px-4 py-2 rounded-xl transition disabled:opacity-50 cursor-pointer shrink-0"
                     >
-                      {isRedeeming ? "..." : "Redeem"}
+                      {isRedeeming ? "..." : "Unlock"}
                     </button>
                   </div>
                   {redemptionError && (
-                    <div className="text-[9px] font-semibold text-rose-600 bg-rose-50 border border-rose-100 p-2 rounded-lg leading-normal">
+                    <div className="text-[10px] font-semibold text-rose-600 bg-rose-50 border border-rose-100 p-2 rounded-lg leading-normal">
                       {redemptionError}
                     </div>
                   )}
                   {redemptionSuccess && (
-                    <div className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 p-2 rounded-lg leading-normal">
+                    <div className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 p-2 rounded-lg leading-normal">
                       {redemptionSuccess}
                     </div>
                   )}
@@ -564,23 +573,34 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
 
             {/* Action Button */}
             <div className="mt-5">
-              <button
-                onClick={handleActionExport}
-                disabled={isExporting || (includeCover && !hasSavedCover)}
-                className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-3.5 rounded-2xl text-xs font-black hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/20 transition cursor-pointer"
-              >
-                {isExporting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Compiling Interior...
-                  </>
-                ) : (
-                  <>
-                    <FileDown className="w-4 h-4" />
-                    {premiumStatus.isPremium ? "Export Interior PDF" : "Download Watermarked PDF"}
-                  </>
-                )}
-              </button>
+              {premiumStatus.isPremium ? (
+                <button
+                  onClick={handleActionExport}
+                  disabled={isExporting || (includeCover && !hasSavedCover)}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white py-4 rounded-2xl text-xs font-black shadow-lg shadow-indigo-600/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Compiling 300 DPI Vector PDF...
+                    </>
+                  ) : (
+                    <>
+                      <FileDown className="w-4 h-4" />
+                      Export 300 DPI Print-Ready PDF
+                    </>
+                  )}
+                </button>
+              ) : (
+                <Link
+                  href="/pricing"
+                  target="_blank"
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-4 rounded-2xl text-xs font-black shadow-lg shadow-orange-500/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 text-center uppercase tracking-wider"
+                >
+                  <Lock className="w-4 h-4" />
+                  Unlock Pro to Download 300 DPI PDF →
+                </Link>
+              )}
             </div>
           </div>
         </div>

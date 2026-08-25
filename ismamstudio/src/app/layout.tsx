@@ -280,41 +280,8 @@ export default function RootLayout({
               `}
             </Script>
 
-            {/* PartneroJS Tracking Script */}
-            <Script id="partnero-js" strategy="lazyOnload">
-            {`
-              (function(p,t,n,e,r,o){ p['__partnerObject']=r;function f(){
-              var c={ a:arguments,q:[]};var r=this.push(c);return "number"!=typeof r?r:f.bind(c.q);}
-              f.q=f.q||[];p[r]=p[r]||f.bind(f.q);p[r].q=p[r].q||f.q;o=t.createElement(n);
-              var _=t.getElementsByTagName(n)[0];o.async=1;o.src=e+'?v'+(~~(new Date().getTime()/1e6));
-              _.parentNode.insertBefore(o,_);})(window, document, 'script', 'https://app.partnero.com/js/universal.js', 'po');
-              po('settings', 'assets_host', 'https://assets.partnero.com');
-              po('program', 'CNPKWOED', 'load');
-
-              // Backup Referral Writer across Cookies, localStorage, and sessionStorage
-              (function() {
-                try {
-                  const urlParams = new URLSearchParams(window.location.search);
-                  const aff = urlParams.get('aff') || urlParams.get('via') || urlParams.get('ref') || urlParams.get('partner') || urlParams.get('am_id');
-                  if (aff) {
-                    const date = new Date();
-                    date.setTime(date.getTime() + (90 * 24 * 60 * 60 * 1000));
-                    document.cookie = "partnero_partner=" + encodeURIComponent(aff) + "; expires=" + date.toUTCString() + "; path=/; SameSite=Lax";
-                    try {
-                      localStorage.setItem('partnero_partner', aff);
-                      localStorage.setItem('aff_ref', aff);
-                      sessionStorage.setItem('partnero_partner', aff);
-                    } catch(e) {}
-                  }
-                } catch(e) {
-                  console.error("Partnero tracking fallback error:", e);
-                }
-              })();
-            `}
-          </Script>
-
-          {/* Trustpilot JavaScript Integration Script (Method 1) */}
-          <Script id="trustpilot-invitation-js" src="https://invitejs.trustpilot.com/tp.min.js" strategy="lazyOnload" />
+            {/* Trustpilot JavaScript Integration Script (Method 1) */}
+            <Script id="trustpilot-invitation-js" src="https://invitejs.trustpilot.com/tp.min.js" strategy="lazyOnload" />
           <Script id="trustpilot-widget-js" src="https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" strategy="lazyOnload" />
 
           <SpeedInsights />

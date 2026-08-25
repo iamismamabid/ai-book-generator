@@ -2,7 +2,6 @@
 
 import posthog from "posthog-js";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useState, useEffect, useTransition } from "react";
 import { ArrowLeft, Gift, AlertCircle, CheckCircle2, Loader2, ArrowRight, Zap, BookOpen, Sparkles } from "lucide-react";
 import { redeemAppSumoCode, checkPremiumStatus } from "../actions";
@@ -16,14 +15,9 @@ interface RedeemPageInnerProps {
 
 export default function RedeemPageInner({ initialCode = "", initialPartner = "" }: RedeemPageInnerProps) {
   const { isLoaded, userId } = useAuth();
-  const searchParams = useSearchParams();
-  const windowPartner = typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("partner") || new URLSearchParams(window.location.search).get("source") || new URLSearchParams(window.location.search).get("ref") || "") : "";
-  const windowCode = typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("code") || new URLSearchParams(window.location.search).get("redemption_code") || new URLSearchParams(window.location.search).get("key") || new URLSearchParams(window.location.search).get("license_key") || "") : "";
-
-  const urlPartner = searchParams?.get("partner") || searchParams?.get("source") || searchParams?.get("ref") || windowPartner || "";
-  const urlCode = searchParams?.get("code") || searchParams?.get("redemption_code") || searchParams?.get("key") || searchParams?.get("license_key") || windowCode || "";
-
-  const [code, setCode] = useState(initialCode || urlCode);
+  const [mounted, setMounted] = useState(false);
+  const [code, setCode] = useState(initialCode);
+  const [partner, setPartner] = useState(initialPartner);
   const [status, setStatus] = useState<{ type: "success" | "error" | null; message: string }>({
     type: null,
     message: ""
@@ -32,7 +26,18 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
   const [isPending, startTransition] = useTransition();
   const [activePlan, setActivePlan] = useState<{ isPremium: boolean; plan: string; limits?: any } | null>(null);
 
-  const cleanPartner = (urlPartner || initialPartner || windowPartner || "").toLowerCase();
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const urlPartner = sp.get("partner") || sp.get("source") || sp.get("ref");
+      const urlCode = sp.get("code") || sp.get("redemption_code") || sp.get("key") || sp.get("license_key");
+      if (urlPartner && !initialPartner) setPartner(urlPartner);
+      if (urlCode && !initialCode) setCode(urlCode);
+    }
+  }, [initialPartner, initialCode]);
+
+  const cleanPartner = (partner || initialPartner || "").toLowerCase();
   const cleanCodeUpper = (code || "").toUpperCase();
   const isGumroad = cleanPartner.includes("gumroad") || cleanCodeUpper.includes("GUMROAD") || cleanCodeUpper.includes("GR-");
   const isDealify = cleanPartner.includes("dealify") || cleanCodeUpper.includes("DEALIFY") || cleanCodeUpper.includes("DL-");
@@ -60,10 +65,6 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
       : isAppSumo
         ? "e.g. AS-ISMA-T2-C9DSG-8O3LJ"
         : "e.g. AS-XXXX, GUMROAD-XXXX, or Promo Code";
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (userId) {

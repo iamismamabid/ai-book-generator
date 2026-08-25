@@ -82,8 +82,28 @@ export default function HomePage() {
             </Link>
           </div>
 
+          {/* Smol Launch Featured Badge */}
+          <div className="mt-7 flex justify-center">
+            <a
+              href="https://smollaunch.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center hover:opacity-90 hover:scale-105 transition-all duration-200"
+              title="KDPage — Featured on Smol Launch"
+            >
+              <img
+                src="https://smollaunch.com/badges/featured.svg"
+                alt="KDPage — Featured on Smol Launch"
+                loading="lazy"
+                width={200}
+                height={48}
+                className="h-10 w-auto drop-shadow-xs"
+              />
+            </a>
+          </div>
+
           {/* Value Proof Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-8 border-t border-slate-200/80 max-w-4xl mx-auto mt-10">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-6 border-t border-slate-200/80 max-w-4xl mx-auto mt-6">
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               100% Amazon KDP Print Compliant

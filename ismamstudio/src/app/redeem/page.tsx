@@ -6,9 +6,10 @@ export const metadata: Metadata = {
   description: "Activate your lifetime access to KDPage by entering your AppSumo redemption code.",
 };
 
-export default async function RedeemPage(props: { searchParams?: Promise<{ code?: string; redemption_code?: string; key?: string; license_key?: string }> }) {
+export default async function RedeemPage(props: { searchParams?: Promise<{ code?: string; redemption_code?: string; key?: string; license_key?: string; partner?: string; source?: string; ref?: string }> }) {
   const searchParams = await props.searchParams;
   const initialCode = searchParams?.code || searchParams?.redemption_code || searchParams?.key || searchParams?.license_key || "";
+  const partner = searchParams?.partner || searchParams?.source || searchParams?.ref || "";
 
-  return <RedeemPageInner initialCode={initialCode} />;
+  return <RedeemPageInner initialCode={initialCode} initialPartner={partner} />;
 }

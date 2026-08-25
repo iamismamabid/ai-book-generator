@@ -10,9 +10,10 @@ import { useAuth } from "@clerk/nextjs";
 
 interface RedeemPageInnerProps {
   initialCode?: string;
+  initialPartner?: string;
 }
 
-export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerProps) {
+export default function RedeemPageInner({ initialCode = "", initialPartner = "" }: RedeemPageInnerProps) {
   const { isLoaded, userId } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [code, setCode] = useState(initialCode);
@@ -23,6 +24,28 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
   const [redeemedTier, setRedeemedTier] = useState<{ name: string; limits: string[] } | null>(null);
   const [isPending, startTransition] = useTransition();
   const [activePlan, setActivePlan] = useState<{ isPremium: boolean; plan: string; limits?: any } | null>(null);
+
+  const cleanPartner = (initialPartner || "").toLowerCase();
+  const cleanCodeUpper = (code || "").toUpperCase();
+  const isDealify = cleanPartner.includes("dealify") || cleanCodeUpper.includes("DEALIFY") || cleanCodeUpper.includes("DL-");
+  const isAppSumo = cleanPartner.includes("appsumo") || cleanCodeUpper.includes("AS-");
+
+  const partnerName = isDealify ? "Dealify" : isAppSumo ? "AppSumo" : "Partner";
+  const partnerTitle = isDealify 
+    ? "Redeem Dealify License" 
+    : isAppSumo 
+      ? "Redeem AppSumo Code" 
+      : "Redeem Lifetime Deal Code";
+  const partnerSubtitle = isDealify
+    ? "Activate your Dealify lifetime access on KDPage"
+    : isAppSumo
+      ? "Activate your AppSumo lifetime access on KDPage"
+      : "Activate your AppSumo, Dealify, or Partner lifetime access";
+  const placeholderExample = isDealify
+    ? "e.g. DEALIFY-T1-XXXX or License Key"
+    : isAppSumo
+      ? "e.g. AS-ISMA-T2-C9DSG-8O3LJ"
+      : "e.g. AS-XXXX, DEALIFY-XXXX, or Promo Code";
 
   useEffect(() => {
     setMounted(true);
@@ -174,7 +197,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
 
           setStatus({
             type: "success",
-            message: "AppSumo Lifetime Deal activated successfully!"
+            message: `${partnerName} Lifetime Deal activated successfully!`
           });
           setCode("");
         } else {
@@ -182,11 +205,11 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
           const raw = res.error || "";
           let friendlyMsg = raw;
           if (raw.toLowerCase().includes("already") || raw.toLowerCase().includes("used")) {
-            friendlyMsg = "This code has already been redeemed. Each AppSumo code can only be used once. If you want to stack a higher tier, purchase a new code from AppSumo.";
+            friendlyMsg = `This code has already been redeemed. Each ${partnerName} code can only be used once. If you want to stack a higher tier, purchase another code.`;
           } else if (raw.toLowerCase().includes("invalid") || raw.toLowerCase().includes("not found")) {
-            friendlyMsg = "Code not recognized. Please double-check your AppSumo confirmation email and try again. Codes look like: AS-XXXX-T1-XXXXX.";
+            friendlyMsg = `Code not recognized. Please double-check your ${partnerName} confirmation receipt and try again.`;
           } else if (raw.toLowerCase().includes("expired")) {
-            friendlyMsg = "This code has expired. Please contact AppSumo support or reach out to help@kdpage.com.";
+            friendlyMsg = `This code has expired. Please contact support at help@kdpage.com.`;
           }
           setStatus({ type: "error", message: friendlyMsg || "Failed to redeem code. Please try again." });
         }
@@ -274,7 +297,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
                   onClick={() => { setStatus({ type: null, message: "" }); setRedeemedTier(null); }}
                   className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold py-3 rounded-xl text-center text-xs transition-all"
                 >
-                  + Stack Another AppSumo Code
+                  + Stack Another License Code
                 </Link>
               </div>
             </div>
@@ -284,8 +307,8 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
                 <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 border border-indigo-500/20 mb-4">
                   <Gift className="w-7 h-7" />
                 </div>
-                <h1 className="text-3xl font-black tracking-tight text-white">Redeem AppSumo Code</h1>
-                <p className="text-slate-400 text-sm mt-2">Activate your lifetime access to KDPage</p>
+                <h1 className="text-3xl font-black tracking-tight text-white">{partnerTitle}</h1>
+                <p className="text-slate-400 text-sm mt-2">{partnerSubtitle}</p>
               </div>
 
               <div className="h-px bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mb-6" />
@@ -296,7 +319,7 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
                     <h3 className="font-black text-white text-sm">Required Steps First:</h3>
                     <ul className="space-y-2 list-decimal list-inside text-slate-400 font-semibold">
                       <li>Create a free account or sign in to your existing account first.</li>
-                      <li>Enter your AppSumo lifetime code on this page after signing in.</li>
+                      <li>Enter your {partnerName} lifetime code on this page after signing in.</li>
                       <li>Your lifetime deal access will activate immediately.</li>
                     </ul>
                   </div>
@@ -350,12 +373,12 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
 
                     <div className="space-y-2">
                       <label htmlFor="code" className="text-xs font-black uppercase text-slate-400 tracking-wider block">
-                        AppSumo Purchase Code
+                        {partnerName} License Code
                       </label>
                       <input
                         id="code"
                         type="text"
-                        placeholder="e.g. AS-ISMA-T2-C9DSG-8O3LJ"
+                        placeholder={placeholderExample}
                         value={code}
                         onChange={(e) => setCode(e.target.value)}
                         disabled={isPending}
@@ -366,14 +389,14 @@ export default function RedeemPageInner({ initialCode = "" }: RedeemPageInnerPro
                     <button
                       type="submit"
                       disabled={isPending}
-                      className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/15 transition-all text-sm uppercase tracking-wider"
+                      className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/15 transition-all text-sm uppercase tracking-wider cursor-pointer"
                     >
                       {isPending ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" /> Activating Deal...
                         </>
                       ) : (
-                        "Activate Lifetime Deal"
+                        `Activate ${partnerName} Deal`
                       )}
                     </button>
                   </form>

@@ -103,20 +103,84 @@ export async function redeemAppSumoCode(code: string) {
       return { success: false, error: "Invalid code length." };
     }
 
-    // ১. চেক করা কোডটি ভ্যালিড কোডের তালিকায় আছে কিনা
-    const validCode = await prisma.appSumoValidCode.findUnique({
+    // ১. চেক করা কোডটি অলরেডি ডাটাবেসে রিডিম করা হয়েছে কিনা
+    const alreadyRedeemed = await prisma.appSumoRedemption.findUnique({
+      where: { code: cleanCode }
+    });
+    if (alreadyRedeemed) {
+      return { success: false, error: "This license code has already been redeemed." };
+    }
+
+    // ২. চেক করা কোডটি ভ্যালিড কোডের তালিকায় আছে কিনা
+    let validCode = await prisma.appSumoValidCode.findUnique({
       where: { code: cleanCode }
     });
 
+    if (validCode && validCode.isRedeemed) {
+      return { success: false, error: "This license code has already been redeemed." };
+    }
+
+    // ৩. যদি ডাটাবেসে না থাকে, তবে Gumroad License API-র মাধ্যমে লাইভ ভেরিফাই করা
     if (!validCode) {
-      return { success: false, error: "This is not a valid AppSumo code. Please verify your code." };
+      const isGumroadCandidate = cleanCode.includes("-") || cleanCode.startsWith("GR") || cleanCode.startsWith("GUMROAD") || cleanCode.length >= 8;
+      if (isGumroadCandidate) {
+        try {
+          const gumroadRes = await fetch("https://api.gumroad.com/v2/licenses/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              product_id: "odapzw",
+              license_key: code.trim(),
+              increment_uses_count: "true"
+            }),
+            cache: "no-store"
+          });
+          const gumroadData = await gumroadRes.json().catch(() => ({}));
+
+          if (gumroadData?.success && gumroadData?.purchase) {
+            validCode = await prisma.appSumoValidCode.upsert({
+              where: { code: cleanCode },
+              update: { isRedeemed: false },
+              create: {
+                code: cleanCode,
+                isRedeemed: false
+              }
+            });
+          } else {
+            // Permlink "kdpage" দিয়ে ফলব্যাক ট্রাই করা
+            const permalinkRes = await fetch("https://api.gumroad.com/v2/licenses/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                product_permalink: "kdpage",
+                license_key: code.trim(),
+                increment_uses_count: "true"
+              }),
+              cache: "no-store"
+            });
+            const permalinkData = await permalinkRes.json().catch(() => ({}));
+            if (permalinkData?.success && permalinkData?.purchase) {
+              validCode = await prisma.appSumoValidCode.upsert({
+                where: { code: cleanCode },
+                update: { isRedeemed: false },
+                create: {
+                  code: cleanCode,
+                  isRedeemed: false
+                }
+              });
+            }
+          }
+        } catch (gumroadErr) {
+          console.error("Gumroad API verification error:", gumroadErr);
+        }
+      }
     }
 
-    if (validCode.isRedeemed) {
-      return { success: false, error: "This AppSumo code has already been redeemed." };
+    if (!validCode) {
+      return { success: false, error: "This is not a valid license code. Please verify the code from your purchase receipt." };
     }
 
-    // ২. এই ব্যবহারকারী ইতিমধ্যে কয়টি কোড রিডিম করেছেন তা চেক করা
+    // ৪. এই ব্যবহারকারী ইতিমধ্যে কয়টি কোড রিডিম করেছেন তা চেক করা
     const existingRedemptions = await prisma.appSumoRedemption.count({
       where: { clerkId: userId }
     });
@@ -124,7 +188,7 @@ export async function redeemAppSumoCode(code: string) {
       return { success: false, error: "You have already stacked the maximum of 5 codes for this account." };
     }
 
-    // ৩. ট্রানজেকশন এর মাধ্যমে রিডেম্পশন সেভ করা এবং ভ্যালিড কোডটি 'Redeemed' হিসেবে মার্ক করা
+    // ৫. ট্রানজেকশন এর মাধ্যমে রিডেম্পশন সেভ করা এবং ভ্যালিড কোডটি 'Redeemed' হিসেবে মার্ক করা
     await prisma.$transaction([
       prisma.appSumoRedemption.create({
         data: {
@@ -142,7 +206,7 @@ export async function redeemAppSumoCode(code: string) {
       })
     ]);
 
-    // ৪. রিডেম্পশন শেষে মোট স্ট্যাকড কোডের সংখ্যা বের করা
+    // ৬. রিডেম্পশন শেষে মোট স্ট্যাকড কোডের সংখ্যা বের করা
     const newRedemptionsCount = await prisma.appSumoRedemption.count({
       where: { clerkId: userId }
     });

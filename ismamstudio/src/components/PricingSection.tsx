@@ -336,7 +336,7 @@ function PricingSectionInner() {
       annualSavings: "$45/yr (2 Months Free)",
       popular: false,
       features: [
-        "7-Day Trial for $1 (Cancel Anytime)",
+        "Instant 300 DPI Vector PDF Downloads",
         "Full Commercial Rights (Keep 100% royalties)",
         "Watermark-free vector PDF exports",
         "Full BYOK AI Magic Studio (Unlimited 8K Covers & 300 DPI Vector Line Art with 0% Markup)",
@@ -350,7 +350,7 @@ function PricingSectionInner() {
         "Generate up to 5 Chapters / mo",
         "Email support (24-48h response)",
       ],
-      ctaText: "Start 7-Day Trial for $1",
+      ctaText: "Get Starter Plan →",
       colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-700",
       borderClass: "border-slate-200 dark:border-slate-800/80",
       icon: <Star className="w-6 h-6 text-indigo-500" />,
@@ -371,7 +371,7 @@ function PricingSectionInner() {
       annualSavings: "$73/yr (2 Months Free)",
       popular: true,
       features: [
-        "7-Day Trial for $1 (Cancel Anytime)",
+        "Instant 300 DPI Vector PDF Downloads",
         "Watermark-free PDF exports (All sizes + Custom)",
         "100% Commercial-use rights (Keep all royalties)",
         "Full BYOK AI Magic Studio (DALL-E 3, Gemini & Stability with 1-Click Canvas Insertion)",
@@ -386,7 +386,7 @@ function PricingSectionInner() {
         "Premium Cover & Interior Canvas Studio",
         "Priority Customer Support (under 12 hours)",
       ],
-      ctaText: "Start 7-Day Trial for $1",
+      ctaText: "Get Pro Studio →",
       colorClass: "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-[0_20px_50px_rgba(245,158,11,0.15),_0_0_30px_rgba(56,189,248,0.1)]",
       borderClass: "border-amber-500 dark:border-amber-400 border-2",
       icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
@@ -407,7 +407,7 @@ function PricingSectionInner() {
       annualSavings: "$139/yr (2 Months Free)",
       popular: false,
       features: [
-        "7-Day Trial for $1 (Cancel Anytime)",
+        "Instant 300 DPI Vector PDF Downloads",
         "Everything in Pro Studio plan",
         "Enterprise BYOK AI Magic Studio (Unlimited AI Generations for All Team Seats)",
         "300 Vector Line Art Credits / mo",
@@ -421,7 +421,7 @@ function PricingSectionInner() {
         "Bulk batch generation & CSV import",
         "Dedicated customer support manager",
       ],
-      ctaText: "Start 7-Day Trial for $1",
+      ctaText: "Get Agency Plan →",
       colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-700",
       borderClass: "border-slate-200 dark:border-slate-800/80",
       icon: <Award className="w-6 h-6 text-emerald-500" />,
@@ -801,7 +801,7 @@ function PricingSectionInner() {
                 </div>
                 <div>
                   <p className="text-xs font-black text-slate-200">
-                    Already purchased a plan or $1 trial?
+                    Already purchased a plan or lifetime deal?
                   </p>
                   <p className="text-[11px] text-slate-400 font-semibold">
                     Click sync to instantly verify and unlock Pro features on this account.

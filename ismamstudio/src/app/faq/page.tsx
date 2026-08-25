@@ -65,7 +65,7 @@ export default function FAQPage() {
         "name": "What subscription plans are available and how can I cancel?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "KDPage offers flexible Monthly, Annual, and Lifetime Deal plans (Starter Creator, Pro Studio, and Publisher Agency) with a 7-day trial for $1. You can upgrade, downgrade, or cancel your subscription at any time directly from your account dashboard's Manage Billing link."
+          "text": "KDPage offers flexible Monthly, Annual, and Lifetime Deal plans (Starter Creator, Pro Studio, and Publisher Agency) with instant 300 DPI vector PDF downloads. You can upgrade, downgrade, or cancel your subscription at any time directly from your account dashboard's Manage Billing link."
         }
       }
     ]

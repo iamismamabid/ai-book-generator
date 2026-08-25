@@ -2,6 +2,7 @@
 
 import posthog from "posthog-js";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState, useEffect, useTransition } from "react";
 import { ArrowLeft, Gift, AlertCircle, CheckCircle2, Loader2, ArrowRight, Zap, BookOpen, Sparkles } from "lucide-react";
 import { redeemAppSumoCode, checkPremiumStatus } from "../actions";
@@ -15,8 +16,13 @@ interface RedeemPageInnerProps {
 
 export default function RedeemPageInner({ initialCode = "", initialPartner = "" }: RedeemPageInnerProps) {
   const { isLoaded, userId } = useAuth();
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
-  const [code, setCode] = useState(initialCode);
+
+  const urlPartner = searchParams?.get("partner") || searchParams?.get("source") || searchParams?.get("ref") || "";
+  const urlCode = searchParams?.get("code") || searchParams?.get("redemption_code") || searchParams?.get("key") || searchParams?.get("license_key") || "";
+
+  const [code, setCode] = useState(initialCode || urlCode);
   const [status, setStatus] = useState<{ type: "success" | "error" | null; message: string }>({
     type: null,
     message: ""
@@ -25,7 +31,7 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
   const [isPending, startTransition] = useTransition();
   const [activePlan, setActivePlan] = useState<{ isPremium: boolean; plan: string; limits?: any } | null>(null);
 
-  const cleanPartner = (initialPartner || "").toLowerCase();
+  const cleanPartner = (urlPartner || initialPartner || "").toLowerCase();
   const cleanCodeUpper = (code || "").toUpperCase();
   const isDealify = cleanPartner.includes("dealify") || cleanCodeUpper.includes("DEALIFY") || cleanCodeUpper.includes("DL-");
   const isAppSumo = cleanPartner.includes("appsumo") || cleanCodeUpper.includes("AS-");
@@ -355,9 +361,9 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
                       <div className="text-sm font-black text-white">
                         {planTitles[activePlan.plan] || activePlan.plan}
                       </div>
-                      {getUpgradeInstruction(activePlan.plan) && (
+                      {getUpgradeInstruction(activePlan.plan, partnerName) && (
                         <p className="text-[11px] font-medium text-slate-400 leading-relaxed mt-1">
-                          {getUpgradeInstruction(activePlan.plan)}
+                          {getUpgradeInstruction(activePlan.plan, partnerName)}
                         </p>
                       )}
                     </div>
@@ -416,12 +422,12 @@ const planTitles: Record<string, string> = {
   agency: "Lifetime Tier 3 ($149): Agency Max",
 };
 
-const getUpgradeInstruction = (rawPlan: string) => {
+const getUpgradeInstruction = (rawPlan: string, partnerName: string = "license") => {
   if (rawPlan === "starter") {
-    return "To upgrade your account to Tier 2 ($79), please purchase another AppSumo code and redeem it below. Tier 2 unlocks up to 10 brand profiles, hard Sudoku difficulty, and advanced maze shapes.";
+    return `To upgrade your account to Tier 2 ($79), please purchase another ${partnerName} code and redeem it below. Tier 2 unlocks up to 10 brand profiles, hard Sudoku difficulty, and advanced maze shapes.`;
   }
   if (rawPlan === "pro") {
-    return "To upgrade your account to Tier 3 ($149), please purchase another AppSumo code and redeem it below. Tier 3 unlocks multi-user team seats (3 seats) and agency-level limits.";
+    return `To upgrade your account to Tier 3 ($149), please purchase another ${partnerName} code and redeem it below. Tier 3 unlocks multi-user team seats (3 seats) and agency-level limits.`;
   }
   if (rawPlan === "agency") {
     return "You have unlocked the maximum recommended stack (Tier 3 - $149)! All core features and limits are fully active.";

@@ -642,6 +642,40 @@ function PricingSectionInner() {
               );
             }
 
+            if (billingCycle === 'annual') {
+              return (
+                <>
+                  <button
+                    onClick={() => handleCheckout(plan.planKey, { skipTrial: true })}
+                    className={`w-full py-4.5 rounded-2xl font-black text-sm md:text-base transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
+                        ? "bg-gradient-to-r from-amber-400 via-rose-400 to-indigo-500 text-slate-950 hover:opacity-95 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
+                        : "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                      }`}
+                  >
+                    <span>⚡ Get {plan.name} Annual</span>
+                    <Zap className="w-4 h-4 shrink-0 fill-current" />
+                  </button>
+                  <p className="text-[11px] text-center font-bold text-emerald-400 mt-2.5 flex items-center justify-center gap-1">
+                    <span>🎁 2 Months Free • ${plan.priceAnnualTotal}/yr billed annually</span>
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCheckout(plan.planKey, { skipTrial: true })}
+                    className={`w-full mt-3.5 py-3 px-4 rounded-xl text-xs md:text-sm font-black transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:scale-[1.02] border ${plan.popular
+                        ? "text-amber-400 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/40 hover:border-amber-400 shadow-amber-500/10"
+                        : plan.planKey === "agency"
+                          ? "text-emerald-400 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 hover:border-emerald-400 shadow-emerald-500/10"
+                          : "text-indigo-400 dark:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border-indigo-500/30 hover:border-indigo-400 shadow-indigo-500/10"
+                      }`}
+                  >
+                    <span>⚡ Buy Direct Annual for ${plan.priceAnnualTotal}/yr (2 Mo. Free)</span>
+                    <ArrowRight className="w-4 h-4 shrink-0 opacity-90" />
+                  </button>
+                </>
+              );
+            }
+
             return (
               <>
                 <button
@@ -658,8 +692,8 @@ function PricingSectionInner() {
                   🔒 7 Days Free • $0 Charged Today • Cancel Anytime
                 </p>
 
-                {/* Direct Purchase / Skip Trial option */}
-                {billingCycle === 'monthly' && plan.priceMonthly > 0 && (
+                {/* Direct Purchase / Skip Trial option for Monthly */}
+                {plan.priceMonthly > 0 && (
                   <button
                     type="button"
                     onClick={() => handleCheckout(plan.planKey, { skipTrial: true })}

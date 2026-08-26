@@ -37,6 +37,8 @@ import ShareReviewModal from "@/components/ShareReviewModal";
 import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
 import ByokNewsBanner from "@/components/ByokNewsBanner";
 import ByokStudioPanel from "@/components/ByokStudioPanel";
+import CoverExportPaywallModal from "@/components/CoverExportPaywallModal";
+import { checkPremiumStatus } from "@/app/actions";
 
 // Text-on-a-path shapes. "arc" is the original circular layout; the rest are
 // sampled parametric curves (see samplePathPoints).
@@ -1013,6 +1015,9 @@ export default function FabricCoverStudio({
 
   // Read-only review links for clients / co-authors
   const [isShareOpen, setIsShareOpen] = useState(false);
+
+  // Pro Export Paywall Modal state
+  const [isExportPaywallOpen, setIsExportPaywallOpen] = useState(false);
 
   // Smart resize — remap the design when the cover geometry changes. Mirrored
   // into a ref because the canvas-init effect that consumes it deliberately
@@ -4313,6 +4318,17 @@ export default function FabricCoverStudio({
 
   const handleGenerateCover = async () => {
     if (!canvas) return;
+
+    try {
+      const status = await checkPremiumStatus();
+      if (!status.isPremium) {
+        setIsExportPaywallOpen(true);
+        return;
+      }
+    } catch (e) {
+      console.error("Premium check error:", e);
+    }
+
     setIsGenerating(true);
     canvas.discardActiveObject();
     canvas.requestRenderAll();
@@ -4435,6 +4451,17 @@ export default function FabricCoverStudio({
   // canvas is never disturbed mid-batch.
   const handleGenerateSeries = async (titles: string[]) => {
     if (!canvas) return;
+
+    try {
+      const status = await checkPremiumStatus();
+      if (!status.isPremium) {
+        setIsExportPaywallOpen(true);
+        return;
+      }
+    } catch (e) {
+      console.error("Premium check error:", e);
+    }
+
     const targetObj = findSeriesTargetObject();
     if (!targetObj) throw new Error("No text object found to swap per title.");
 
@@ -7788,6 +7815,19 @@ export default function FabricCoverStudio({
         onApplyBackCover={(url) => setBackCoverImage(url)}
         onApplyFullCover={(url) => setFullCoverImage(url)}
         onAddToCanvas={(url) => addClipart(url)}
+      />
+
+      <CoverExportPaywallModal
+        isOpen={isExportPaywallOpen}
+        onClose={() => setIsExportPaywallOpen(false)}
+        onUnlockedAndExport={handleGenerateCover}
+        coverSpecs={{
+          trimWidth: trimSize.w,
+          trimHeight: trimSize.h,
+          pageCount,
+          fullWidthInches: layout.coverWidthInches,
+          fullHeightInches: layout.coverHeightInches,
+        }}
       />
       </div>
     </div>

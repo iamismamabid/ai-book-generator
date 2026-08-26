@@ -42,6 +42,24 @@ export default function Footer() {
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
               Your all-in-one KDP publishing toolkit. Create puzzles, write story chapters, and compile custom book designs in minutes.
             </p>
+            <div className="pt-2">
+              <a
+                href="https://smollaunch.com/products/kdpage?utm_source=badge&utm_medium=referral&utm_campaign=launching_soon&utm_content=kdpage"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block hover:opacity-85 transition-opacity"
+                title="KDPage — Launching soon on Smol Launch"
+              >
+                <img
+                  src="https://smollaunch.com/badges/launching.svg"
+                  alt="KDPage — Launching soon on Smol Launch"
+                  loading="lazy"
+                  width={200}
+                  height={48}
+                  className="h-9 w-auto"
+                />
+              </a>
+            </div>
           </div>
 
           {/* Navigation Links */}

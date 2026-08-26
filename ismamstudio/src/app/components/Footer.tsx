@@ -44,15 +44,15 @@ export default function Footer() {
             </p>
             <div className="pt-2">
               <a
-                href="https://smollaunch.com/products/kdpage?utm_source=badge&utm_medium=referral&utm_campaign=launching_soon&utm_content=kdpage"
+                href="https://smollaunch.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block hover:opacity-85 transition-opacity"
-                title="KDPage — Launching soon on Smol Launch"
+                title="KDPage — Launching on Smol Launch"
               >
                 <img
                   src="/smollaunch-launching.png"
-                  alt="KDPage — Launching soon on Smol Launch"
+                  alt="KDPage — Launching on Smol Launch"
                   loading="lazy"
                   width={200}
                   height={48}

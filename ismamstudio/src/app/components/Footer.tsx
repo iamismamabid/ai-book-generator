@@ -51,12 +51,12 @@ export default function Footer() {
                 title="KDPage — Launching soon on Smol Launch"
               >
                 <img
-                  src="https://smollaunch.com/badges/launching.svg"
+                  src="/smollaunch-launching.png"
                   alt="KDPage — Launching soon on Smol Launch"
                   loading="lazy"
                   width={200}
                   height={48}
-                  className="h-9 w-auto"
+                  className="h-9 w-auto rounded-lg shadow-sm"
                 />
               </a>
             </div>

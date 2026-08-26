@@ -40,31 +40,38 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
   const cleanPartner = (partner || initialPartner || "").toLowerCase();
   const cleanCodeUpper = (code || "").toUpperCase();
   const isGumroad = cleanPartner.includes("gumroad") || cleanCodeUpper.includes("GUMROAD") || cleanCodeUpper.includes("GR-");
+  const isDealFuel = cleanPartner.includes("dealfuel") || cleanCodeUpper.includes("DEALFUEL") || cleanCodeUpper.includes("DF-");
   const isDealify = cleanPartner.includes("dealify") || cleanCodeUpper.includes("DEALIFY") || cleanCodeUpper.includes("DL-");
   const isAppSumo = cleanPartner.includes("appsumo") || cleanCodeUpper.includes("AS-");
 
-  const partnerName = isGumroad ? "Gumroad" : isDealify ? "Dealify" : isAppSumo ? "AppSumo" : "Partner";
+  const partnerName = isGumroad ? "Gumroad" : isDealFuel ? "DealFuel" : isDealify ? "Dealify" : isAppSumo ? "AppSumo" : "Partner";
   const partnerTitle = isGumroad
     ? "Redeem Gumroad License"
-    : isDealify 
-      ? "Redeem Dealify License" 
-      : isAppSumo 
-        ? "Redeem AppSumo Code" 
-        : "Redeem Lifetime Deal Code";
+    : isDealFuel
+      ? "Redeem DealFuel License"
+      : isDealify 
+        ? "Redeem Dealify License" 
+        : isAppSumo 
+          ? "Redeem AppSumo Code" 
+          : "Redeem Lifetime Deal Code";
   const partnerSubtitle = isGumroad
     ? "Activate your Gumroad lifetime license on KDPage"
-    : isDealify
-      ? "Activate your Dealify lifetime access on KDPage"
-      : isAppSumo
-        ? "Activate your AppSumo lifetime access on KDPage"
-        : "Activate your AppSumo, Dealify, Gumroad, or Partner lifetime access";
+    : isDealFuel
+      ? "Activate your DealFuel lifetime access on KDPage"
+      : isDealify
+        ? "Activate your Dealify lifetime access on KDPage"
+        : isAppSumo
+          ? "Activate your AppSumo lifetime access on KDPage"
+          : "Activate your AppSumo, DealFuel, Dealify, Gumroad, or Partner lifetime access";
   const placeholderExample = isGumroad
     ? "e.g. GUMROAD-T1-XXXX or your License Key"
-    : isDealify
-      ? "e.g. DEALIFY-T1-XXXX or License Key"
-      : isAppSumo
-        ? "e.g. AS-ISMA-T2-C9DSG-8O3LJ"
-        : "e.g. AS-XXXX, GUMROAD-XXXX, or Promo Code";
+    : isDealFuel
+      ? "e.g. DEALFUEL-XXXX-XXXX or License Key"
+      : isDealify
+        ? "e.g. DEALIFY-T1-XXXX or License Key"
+        : isAppSumo
+          ? "e.g. AS-ISMA-T2-C9DSG-8O3LJ"
+          : "e.g. DEALFUEL-XXXX, AS-XXXX, or Promo Code";
 
   useEffect(() => {
     if (userId) {

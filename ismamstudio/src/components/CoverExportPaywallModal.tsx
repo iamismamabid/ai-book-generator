@@ -130,7 +130,7 @@ export default function CoverExportPaywallModal({
         <form onSubmit={handleRedeem} className="p-4 bg-slate-950/60 border border-indigo-500/20 rounded-2xl space-y-2.5">
           <div className="flex items-center gap-2 text-xs font-black text-indigo-300 uppercase tracking-wide">
             <Ticket className="w-4 h-4 text-indigo-400" />
-            <span>Already have a Gumroad, AppSumo, or Dealify code?</span>
+            <span>Already have a lifetime deal code?</span>
           </div>
           <p className="text-[10px] text-slate-400 font-medium">
             Paste your license key below to unlock lifetime 300 DPI exports instantly:
@@ -138,7 +138,7 @@ export default function CoverExportPaywallModal({
           <div className="flex gap-2">
             <input
               type="text"
-              placeholder="e.g. GUMROAD-XXXX or AS-XXXX"
+              placeholder="e.g. DEALFUEL-XXXX-XXXX or License Key"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="flex-grow bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"

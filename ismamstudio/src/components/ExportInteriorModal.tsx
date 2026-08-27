@@ -539,12 +539,12 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                     <span>Redeem Lifetime License / Code</span>
                   </div>
                   <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">
-                    Purchased via Gumroad, AppSumo, or Dealify? Enter your license key below to unlock instant 300 DPI downloads!
+                    Have a lifetime deal or license code? Enter your code below to unlock instant 300 DPI downloads!
                   </p>
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="e.g. GUMROAD-XXXX, AS-XXXX, or License Key"
+                      placeholder="e.g. DEALFUEL-XXXX-XXXX or License Key"
                       value={appsumoCode}
                       onChange={(e) => setAppsumoCode(e.target.value)}
                       className="flex-grow bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-600 placeholder-slate-400 font-mono"

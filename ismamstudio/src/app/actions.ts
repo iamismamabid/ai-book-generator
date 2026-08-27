@@ -276,15 +276,12 @@ export async function checkPremiumStatus() {
     });
 
     if (redemptionsCount > 0) {
-      let plan = "starter";
-      let limits = { tier: 1, brands: 3, puzzles: ["easy", "medium", "hard"], maxBookCount: 20 };
+      let plan = "pro";
+      let limits = { tier: 1, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
 
-      if (redemptionsCount === 2) {
-        plan = "pro";
-        limits = { tier: 2, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
-      } else if (redemptionsCount >= 3) {
+      if (redemptionsCount >= 2) {
         plan = "agency";
-        limits = { tier: 3, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+        limits = { tier: 2, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
       }
       return { checked: true, isPremium: true, plan, limits, isLifetimeDeal: true };
     }

@@ -65,15 +65,15 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block hover:opacity-85 transition-opacity"
-                title="KDPage Reviews on SourceForge"
+                title="Write a Review for KDPage on SourceForge"
               >
                 <img
-                  src="https://sourceforge.net/cdn/syndication/badge_img/4131820/light-default?&variant_id=sf"
-                  alt="KDPage Reviews on SourceForge"
+                  src="/sourceforge-badge.png"
+                  alt="SourceForge - Write a Review for KDPage"
                   loading="lazy"
-                  width={125}
-                  height={36}
-                  className="h-9 w-auto rounded-lg shadow-sm"
+                  width={110}
+                  height={125}
+                  className="h-11 w-auto object-contain drop-shadow-sm"
                 />
               </a>
             </div>

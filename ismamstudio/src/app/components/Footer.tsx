@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import Script from "next/script";
 import { Mail, Shield, BookOpen } from "lucide-react";
 import GlowSettingToggle from "@/app/components/GlowSettingToggle";
 import CursorSettingToggle from "@/app/components/CursorSettingToggle";
@@ -42,7 +43,7 @@ export default function Footer() {
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
               Your all-in-one KDP publishing toolkit. Create puzzles, write story chapters, and compile custom book designs in minutes.
             </p>
-            <div className="pt-2">
+            <div className="pt-2 flex flex-wrap items-center gap-3">
               <a
                 href="https://smollaunch.com"
                 target="_blank"
@@ -59,6 +60,27 @@ export default function Footer() {
                   className="h-9 w-auto rounded-lg shadow-sm"
                 />
               </a>
+              {/* SourceForge Badge */}
+              <div
+                className="sf-root inline-block align-middle"
+                data-id="4131820"
+                data-badge="light-default"
+                data-variant-id="sf"
+                style={{ width: "125px" }}
+              >
+                <a
+                  href="https://sourceforge.net/software/product/KDPage/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-slate-400 hover:text-indigo-400 transition-colors"
+                >
+                  KDPage Reviews
+                </a>
+              </div>
+              <Script
+                src="https://b.sf-syn.com/badge_js?sf_id=4131820&variant_id=sf"
+                strategy="lazyOnload"
+              />
             </div>
           </div>
 

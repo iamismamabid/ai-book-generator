@@ -200,9 +200,9 @@ export default function SudokuClient() {
   }, []);
 
   const maxPuzzles =
-    isPro ? 50 :
-      premiumStatus.plan === "starter" ? 20 :
-        premiumStatus.plan === "agency" ? 500 :
+    premiumStatus.plan === "agency" ? 1000 :
+      isPro || premiumStatus.plan === "pro" ? 1000 :
+        premiumStatus.plan === "starter" ? 100 :
           5;
 
   const handleBookCountChange = (val: number) => {
@@ -236,10 +236,10 @@ export default function SudokuClient() {
   };
 
   const tierMaxFor = (plan: string) =>
-    plan === "free" ? 5 :
-      plan === "starter" ? 20 :
-        plan === "pro" ? 50 :
-          500;
+    plan === "agency" ? 1000 :
+      plan === "pro" ? 1000 :
+        plan === "starter" ? 100 :
+          5;
 
   const handleDownloadPdf = async (options: {
     includeCover: boolean;
@@ -255,7 +255,7 @@ export default function SudokuClient() {
     const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
 
     const freshStatus = await getFreshPremiumStatus();
-    const effectiveIsPro = freshStatus.isPremium || Boolean(user?.publicMetadata?.isPremium) || isOwner;
+    const effectiveIsPro = freshStatus.isPremium || Boolean(user?.publicMetadata?.isPremium);
     const count = Math.min(Math.max(1, bookCount), tierMaxFor(effectiveIsPro ? "pro" : freshStatus.plan));
     const puzzles = generateSudokuBook(count, difficulty);
     const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');
@@ -380,7 +380,7 @@ export default function SudokuClient() {
               </div>
             </div>
             <span className="text-xs font-black px-3.5 py-1.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/40 shrink-0">
-              ✓ 50 Puzzles Batch Enabled
+              ✓ Up to 1,000 Puzzles Batch Enabled
             </span>
           </div>
         ) : (
@@ -454,7 +454,7 @@ export default function SudokuClient() {
                   <label className="block text-sm text-slate-400 mb-2">
                     Number of puzzles
                     <span className="ml-2 text-xs text-slate-500">
-                      {premiumStatus.plan === "free" ? "(Free limit: 5)" : premiumStatus.plan === "starter" ? "(Starter limit: 20)" : premiumStatus.plan === "pro" ? "(Pro limit: 50)" : "(Agency limit: 500)"}
+                      {premiumStatus.plan === "free" ? "(Free limit: 5)" : premiumStatus.plan === "starter" ? "(Starter limit: 100)" : premiumStatus.plan === "pro" ? "(Pro limit: 1,000)" : "(Agency limit: 1,000)"}
                     </span>
                   </label>
                   <input

@@ -277,11 +277,11 @@ export async function checkPremiumStatus() {
 
     if (redemptionsCount > 0) {
       let plan = "pro";
-      let limits = { tier: 1, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
+      let limits = { tier: 1, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
 
       if (redemptionsCount >= 2) {
         plan = "agency";
-        limits = { tier: 2, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+        limits = { tier: 2, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
       }
       return { checked: true, isPremium: true, plan, limits, isLifetimeDeal: true };
     }
@@ -301,12 +301,12 @@ export async function checkPremiumStatus() {
 
       if (isPaidSubscribed) {
         const userPlan = publicMetadata.plan || "pro";
-        let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
+        let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
 
         if (userPlan === "starter") {
-          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 20 };
+          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 100 };
         } else if (userPlan === "agency") {
-          limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+          limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
         }
 
         return {
@@ -321,12 +321,12 @@ export async function checkPremiumStatus() {
       // Allow full studio exploration & creation, but keep isPremium = false so 300 DPI exports prompt for paid upgrade
       if (publicMetadata.subscriptionStatus === "trialing") {
         const userPlan = publicMetadata.plan || "pro";
-        let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
+        let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
 
         if (userPlan === "starter") {
-          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 20 };
+          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 100 };
         } else if (userPlan === "agency") {
-          limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+          limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
         }
 
         let daysRemaining = 7;

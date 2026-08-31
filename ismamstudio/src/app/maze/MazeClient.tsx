@@ -149,9 +149,8 @@ export default function MazeGeneratorPage() {
   // isPremium: true, download a full-size, watermark-free book for free.
   const maxMazes =
     premiumStatus.plan === "free" ? 5 :
-      premiumStatus.plan === "starter" ? 20 :
-        premiumStatus.plan === "pro" ? 50 :
-          500;
+      premiumStatus.plan === "starter" ? 100 :
+        1000;
 
   const handleBookCountChange = (val: number) => {
     let count = Math.max(1, val);
@@ -193,9 +192,8 @@ export default function MazeGeneratorPage() {
 
   const tierMaxFor = (plan: string) =>
     plan === "free" ? 5 :
-      plan === "starter" ? 20 :
-        plan === "pro" ? 50 :
-          500;
+      plan === "starter" ? 100 :
+        1000;
 
   const handleDownloadPdf = async (options: {
     includeCover: boolean;

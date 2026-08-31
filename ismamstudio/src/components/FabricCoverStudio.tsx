@@ -7042,11 +7042,21 @@ export default function FabricCoverStudio({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-600 block mb-1">Interior Pages Count ({pageCount})</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-slate-600">Interior Pages Count</label>
+                  <input 
+                    type="number" 
+                    min="24" 
+                    max="1000" 
+                    value={pageCount} 
+                    onChange={(e) => setPageCount(Math.max(24, Math.min(1000, Number(e.target.value) || 24)))}
+                    className="w-16 px-2 py-1 text-xs font-bold text-center border border-slate-300 rounded-lg bg-white focus:border-indigo-500 focus:outline-none"
+                  />
+                </div>
                 <input 
                   type="range" 
                   min="24" 
-                  max="600" 
+                  max="1000" 
                   value={pageCount} 
                   onChange={(e) => setPageCount(Number(e.target.value))}
                   className="w-full accent-amber-500 cursor-ew-resize bg-slate-200 rounded"

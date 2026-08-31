@@ -7250,10 +7250,18 @@ export default function FabricCoverStudio({
       <div className="flex-1 bg-slate-100 flex flex-col items-center justify-start p-3 sm:p-6 md:p-8 relative overflow-auto min-w-0">
         {/* Top Header Controls: Trim Badge & Action Toolbar with clean vertical spacing */}
         <div className="flex flex-col items-center gap-2.5 mb-4 z-20 shrink-0 select-none max-w-full min-h-[86px]">
-          {/* Spine details helper */}
-          <div className="bg-slate-950/90 px-4 py-2 rounded-full border border-slate-800 text-[10px] sm:text-xs font-black uppercase text-amber-400 tracking-widest shadow-md text-center truncate">
-            Trim Size: {trimSize.w}" x {trimSize.h}" | Spine Width: {layout.spineWidth.toFixed(3)}"
-          </div>
+          {/* Spine details helper with direct click to open Settings */}
+          <button
+            onClick={() => setActiveToolTab('settings')}
+            title="Click to edit Page Count, Trim Size or Paper Type"
+            className="bg-slate-950/90 hover:bg-slate-900 px-4 py-2 rounded-full border border-slate-800 hover:border-amber-500/50 text-[10px] sm:text-xs font-black uppercase text-amber-400 tracking-widest shadow-md text-center truncate transition-all cursor-pointer flex items-center gap-2"
+          >
+            <span>Trim Size: {trimSize.w}" x {trimSize.h}"</span>
+            <span className="text-slate-600">•</span>
+            <span className="text-white bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">📄 {pageCount} Pages</span>
+            <span className="text-slate-600">•</span>
+            <span>Spine: {layout.spineWidth.toFixed(3)}"</span>
+          </button>
 
           {/* Global Canvas Control Bar */}
           <div className="flex items-center gap-2 sm:gap-3 bg-white py-2 px-4 rounded-full border border-slate-200/80 shadow-md max-w-full overflow-x-auto">

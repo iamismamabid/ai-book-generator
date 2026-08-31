@@ -6,6 +6,9 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   experimental: {
+    serverActions: {
+      bodySizeLimit: '25mb',
+    },
     optimizePackageImports: [
       'lucide-react',
       'react-icons',

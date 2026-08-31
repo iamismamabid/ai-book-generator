@@ -22,6 +22,7 @@ import { BORDER_THEMES, BorderThemeId } from "@/lib/borderThemes";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
 import DesktopRecommendedBanner from "@/components/DesktopRecommendedBanner";
+import { saveBookDraftToIndexedDB, loadBookDraftFromIndexedDB } from "@/lib/indexedDbStorage";
 import { createPortal } from "react-dom";
 import {
   DndContext,
@@ -168,25 +169,49 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
 
   useEffect(() => {
     // Restoring a saved My Notebook entry (via /studio?notebookId=...) takes
-    // priority over whatever draft happens to be sitting in localStorage.
+    // priority over whatever draft happens to be sitting in local storage.
     if (initialPages && initialPages.length > 0) {
       setBookPages(initialPages);
       return;
     }
-    const saved = localStorage.getItem("kdp-book-draft");
-    if (saved) {
+
+    (async () => {
       try {
-        setBookPages(JSON.parse(saved));
+        const idbPages = await loadBookDraftFromIndexedDB();
+        if (idbPages && idbPages.length > 0) {
+          setBookPages(idbPages);
+          return;
+        }
       } catch (e) {
-        console.error("Error parsing saved draft", e);
+        console.warn("IndexedDB book load error:", e);
       }
-    }
+
+      const saved = localStorage.getItem("kdp-book-draft");
+      if (saved) {
+        try {
+          setBookPages(JSON.parse(saved));
+        } catch (e) {
+          console.error("Error parsing saved draft", e);
+        }
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (bookPages.length > 0) {
-      localStorage.setItem("kdp-book-draft", JSON.stringify(bookPages));
+      // 1. Durable unlimited-quota save to IndexedDB
+      saveBookDraftToIndexedDB(bookPages);
+
+      // 2. Safe localStorage cache (won't crash if quota exceeded)
+      try {
+        const str = JSON.stringify(bookPages);
+        if (str.length < 2_000_000) {
+          localStorage.setItem("kdp-book-draft", str);
+        }
+      } catch (err) {
+        console.warn("Couldn't cache book draft in localStorage:", err);
+      }
     }
   }, [bookPages]);
 

@@ -3058,6 +3058,39 @@ export default function FabricCoverStudio({
     canvas.requestRenderAll();
   };
 
+  const addAuthorText = () => {
+    if (!canvas) return;
+    const author = new fabric.IText("By Islam Abid", {
+      left: layout.frontCoverCenterPx - 60,
+      top: layout.canvasHeight * 0.85,
+      fontFamily: "Arial",
+      fontSize: 20,
+      fontWeight: "bold",
+      fill: "#FFFFFF",
+      textAlign: "center"
+    });
+    canvas.add(author);
+    canvas.setActiveObject(author);
+    canvas.requestRenderAll();
+  };
+
+  const addBackCoverDescription = () => {
+    if (!canvas) return;
+    const desc = new fabric.Textbox("SHARPEN YOUR MIND & UNWIND\n\n• 100 Graded Sudoku Puzzles\n• Easy to Hard Progression\n• Full Solutions Included\n• Large Print 8.5\" x 11\" Format", {
+      left: layout.backCoverCenterPx - 130,
+      top: layout.canvasHeight * 0.2,
+      width: 260,
+      fontFamily: "Arial",
+      fontSize: 16,
+      lineHeight: 1.3,
+      fill: "#FFFFFF",
+      textAlign: "left"
+    });
+    canvas.add(desc);
+    canvas.setActiveObject(desc);
+    canvas.requestRenderAll();
+  };
+
   // Spine text is a normal IText tagged with a "spine" id, which is what
   // unlocks the spine alignment controls and the auto-fit behaviour. It's
   // created pre-rotated and centered on the spine, then immediately fitted.
@@ -5882,7 +5915,15 @@ export default function FabricCoverStudio({
                 <div className="grid grid-cols-1 gap-2">
                   <button onClick={addHeading} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
                     <span className="text-sm font-black text-indigo-500 w-4 text-center">H</span>
-                    <span>Add Heading (Large)</span>
+                    <span>Add Heading (Main Title)</span>
+                  </button>
+                  <button onClick={addAuthorText} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
+                    <span className="text-xs font-black text-purple-500 w-4 text-center">✍️</span>
+                    <span>Add Author / Brand Name</span>
+                  </button>
+                  <button onClick={addBackCoverDescription} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
+                    <span className="text-xs font-black text-emerald-500 w-4 text-center">📄</span>
+                    <span>Add Back Cover Description</span>
                   </button>
                   <button onClick={addText} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
                     <Type className="w-4 h-4 text-indigo-500"/>

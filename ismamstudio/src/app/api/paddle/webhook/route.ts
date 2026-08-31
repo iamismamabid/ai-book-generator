@@ -117,9 +117,10 @@ export async function POST(request: Request) {
         ? (data.current_billing_period?.ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
         : null;
 
+      const isPaid = status === "active" || eventType === "transaction.paid" || eventType === "transaction.completed";
       await clerk.users.updateUserMetadata(userId, {
         publicMetadata: {
-          isPremium: true,
+          isPremium: isPaid,
           plan: plan,
           subscriptionStatus: status,
           ...(customerId ? { paddleCustomerId: customerId } : {}),

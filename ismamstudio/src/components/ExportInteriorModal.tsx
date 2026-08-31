@@ -294,8 +294,44 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
               </div>
             )}
 
-            {/* Free Plan / Pro Download Paywall Banner */}
-            {!premiumStatus.isPremium && premiumStatus.reason !== "status_check_failed" && (
+            {/* 7-Day Trial Mode Paywall Banner */}
+            {!premiumStatus.isPremium && premiumStatus.isTrial && (
+              <div className="p-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl border border-amber-500/40 shadow-lg shadow-amber-950/30 space-y-3 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0 text-amber-400 mt-0.5">
+                    <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-amber-400 text-xs uppercase tracking-wide">
+                        7-Day Free Trial Active
+                      </span>
+                      {premiumStatus.daysRemaining !== undefined && (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px] font-extrabold">
+                          {premiumStatus.daysRemaining} Days Left
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-300 text-[11px] font-medium leading-relaxed mt-1">
+                      You have full access to test all studio features. To export and download watermark-free 300 DPI print-ready vector PDFs, please activate your paid plan.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="pt-2 border-t border-amber-500/20 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
+                  <Link
+                    href="/pricing"
+                    target="_blank"
+                    className="flex-1 text-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-[11px] font-black uppercase tracking-wider shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
+                  >
+                    ⚡ Activate Paid Plan to Download →
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Free Plan (Non-Trial) Paywall Banner */}
+            {!premiumStatus.isPremium && !premiumStatus.isTrial && premiumStatus.reason !== "status_check_failed" && (
               <div className="p-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl border border-indigo-500/30 shadow-lg shadow-indigo-950/30 space-y-3 mb-4">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center shrink-0 text-indigo-400 mt-0.5">
@@ -345,20 +381,16 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-black text-slate-900 block">
-                      {premiumStatus.isTrial ? "7-Day Trial Mode Active" : "Premium Lifetime / Active Plan"}
+                      Premium Plan Active
                     </span>
                     <p className="text-slate-600 text-[10px] leading-relaxed mt-0.5">
-                      {premiumStatus.isTrial ? (
-                        <>You have <span className="font-black text-emerald-600">{premiumStatus.daysRemaining ?? 7} days remaining</span> in your trial. Trial accounts can export up to 2 complete books to verify 300 DPI KDP compatibility. Unlimited exports activate upon first billing.</>
-                      ) : (
-                        <>High-res 300 DPI watermark-free vector PDF exports are fully unlocked!</>
-                      )}
+                      High-res 300 DPI watermark-free vector PDF exports are fully unlocked!
                     </p>
                   </div>
                 </div>
                 <div className="pt-2 border-t border-emerald-200/50 flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
                   <Link href="/pricing" target="_blank" className="text-indigo-600 hover:text-indigo-600">
-                    View Pricing Plans & LTDs →
+                    Manage Plans &amp; Billing →
                   </Link>
                 </div>
               </div>
@@ -598,7 +630,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-4 rounded-2xl text-xs font-black shadow-lg shadow-orange-500/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 text-center uppercase tracking-wider"
                 >
                   <Lock className="w-4 h-4" />
-                  Unlock Pro to Download 300 DPI PDF →
+                  {premiumStatus.isTrial ? "Activate Paid Plan to Download 300 DPI PDF →" : "Unlock Pro to Download 300 DPI PDF →"}
                 </Link>
               )}
             </div>

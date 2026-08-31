@@ -391,7 +391,7 @@ export default function SudokuClient() {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-300">Free Tier Mode (Watermarked & 5 Puzzles)</p>
-                <p className="text-[11px] text-slate-500">Have a subscription or trial? Click sync to refresh.</p>
+                <p className="text-[11px] text-slate-500">Have a subscription or license code? Click sync to refresh.</p>
               </div>
             </div>
             <button

@@ -199,7 +199,7 @@ function PricingSectionInner() {
       "agency_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL) || "pri_01kwbwkrk1w7tnc318ga4d6xt6",
     };
 
-    const selectedPriceId = (options?.skipTrial && directPriceIds[planIdKey]) || standardPriceIds[planIdKey];
+    const selectedPriceId = (options?.skipTrial && directPriceIds[planIdKey]) || standardPriceIds[planIdKey] || directPriceIds[planIdKey];
 
     // Multi-source affiliate key lookup (URL params, localStorage, sessionStorage, cookies)
     let customerKey: string | null = null;
@@ -441,8 +441,8 @@ function PricingSectionInner() {
       a: "Our BYOK system allows you to connect your own OpenAI (DALL-E 3), Google Gemini, or Stability AI API keys directly inside KDPage Cover Studio and Coloring Book Studio. This unlocks unlimited 8K AI book cover illustrations and 300 DPI vector line art generation at direct raw provider cost (~$0.02 to $0.04 per image) with zero monthly platform caps or middleman markups. Your keys are encrypted locally in your browser and never touch or store on our servers.",
     },
     {
-      q: "How does the 7-Day Trial work?",
-      a: "During the 7-Day Trial period, you have full access to explore the complete studio, design covers, generate high-resolution 300 DPI vector interiors, and export complete watermark-free puzzle collections directly to confirm print quality, margins, and bleed on Amazon KDP. You can cancel anytime before the trial ends or buy directly without a trial.",
+      q: "How does the 7-Day Free Trial work?",
+      a: "The 7-Day Free Trial gives you complete access to explore all studio generators, customize book parameters, and design covers with $0 charged today. To prevent downloading abuse, high-resolution 300 DPI vector PDF downloads unlock upon your first billing or whenever you choose to activate your paid plan early.",
     },
     {
       q: "Are the generated interiors ready to upload directly to Amazon KDP?",
@@ -658,20 +658,6 @@ function PricingSectionInner() {
                   <p className="text-[11px] text-center font-bold text-emerald-400 mt-2.5 flex items-center justify-center gap-1">
                     <span>🎁 2 Months Free • ${plan.priceAnnualTotal}/yr billed annually</span>
                   </p>
-
-                  <button
-                    type="button"
-                    onClick={() => handleCheckout(plan.planKey, { skipTrial: true })}
-                    className={`w-full mt-3.5 py-3 px-4 rounded-xl text-xs md:text-sm font-black transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:scale-[1.02] border ${plan.popular
-                        ? "text-amber-400 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/40 hover:border-amber-400 shadow-amber-500/10"
-                        : plan.planKey === "agency"
-                          ? "text-emerald-400 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 hover:border-emerald-400 shadow-emerald-500/10"
-                          : "text-indigo-400 dark:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border-indigo-500/30 hover:border-indigo-400 shadow-indigo-500/10"
-                      }`}
-                  >
-                    <span>⚡ Buy Direct Annual for ${plan.priceAnnualTotal}/yr (2 Mo. Free)</span>
-                    <ArrowRight className="w-4 h-4 shrink-0 opacity-90" />
-                  </button>
                 </>
               );
             }
@@ -680,16 +666,16 @@ function PricingSectionInner() {
               <>
                 <button
                   onClick={() => handleCheckout(plan.planKey)}
-                  className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
+                  className={`w-full py-4.5 rounded-2xl font-black text-sm md:text-base transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
+                      ? "bg-gradient-to-r from-amber-400 via-rose-400 to-indigo-500 text-slate-950 hover:opacity-95 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
                       : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                     }`}
                 >
-                  {plan.ctaText}
+                  <span>Start 7-Day Free Trial</span>
                   <Zap className="w-4 h-4 shrink-0 opacity-80" />
                 </button>
-                <p className="text-[11px] text-center font-semibold text-slate-500 dark:text-slate-400 mt-2.5">
-                  🔒 7 Days Free • $0 Charged Today • Cancel Anytime
+                <p className="text-[11px] text-center font-semibold text-slate-400 mt-2.5">
+                  🔒 7 Days Free • $0 Charged Today • Full Studio Access
                 </p>
 
                 {/* Direct Purchase / Skip Trial option for Monthly */}
@@ -704,7 +690,7 @@ function PricingSectionInner() {
                           : "text-indigo-400 dark:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border-indigo-500/30 hover:border-indigo-400 shadow-indigo-500/10"
                       }`}
                   >
-                    <span>⚡ Buy Direct for ${plan.priceMonthly}/mo (Skip Trial)</span>
+                    <span>⚡ Buy Direct for ${plan.priceMonthly}/mo (Unlock Instant Downloads)</span>
                     <ArrowRight className="w-4 h-4 shrink-0 opacity-90" />
                   </button>
                 )}

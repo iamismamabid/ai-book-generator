@@ -291,15 +291,15 @@ export async function checkPremiumStatus() {
     if (user) {
       const publicMetadata = (user.publicMetadata || {}) as any;
 
-      const isSubscribed =
+      // Strictly grant premium only to active paid subscriptions (never unpaid trials)
+      const isPaidSubscribed =
         publicMetadata.isPremium === true ||
-        publicMetadata.plan === "starter" ||
-        publicMetadata.plan === "pro" ||
-        publicMetadata.plan === "agency" ||
-        publicMetadata.subscriptionStatus === "active" ||
-        publicMetadata.subscriptionStatus === "trialing";
+        ((publicMetadata.plan === "starter" ||
+          publicMetadata.plan === "pro" ||
+          publicMetadata.plan === "agency") &&
+          publicMetadata.subscriptionStatus === "active");
 
-      if (isSubscribed) {
+      if (isPaidSubscribed) {
         const userPlan = publicMetadata.plan || "pro";
         let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
 
@@ -309,19 +309,40 @@ export async function checkPremiumStatus() {
           limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
         }
 
-        const isTrial = publicMetadata.subscriptionStatus === "trialing";
-        let daysRemaining;
-        if (isTrial && publicMetadata.trialEndsAt) {
+        return {
+          checked: true,
+          isPremium: true,
+          plan: userPlan,
+          limits,
+        };
+      }
+
+      // If user is currently in a 7-day trial state:
+      // Allow full studio exploration & creation, but keep isPremium = false so 300 DPI exports prompt for paid upgrade
+      if (publicMetadata.subscriptionStatus === "trialing") {
+        const userPlan = publicMetadata.plan || "pro";
+        let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 50 };
+
+        if (userPlan === "starter") {
+          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 20 };
+        } else if (userPlan === "agency") {
+          limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 500 };
+        }
+
+        let daysRemaining = 7;
+        if (publicMetadata.trialEndsAt) {
           const msRemaining = new Date(publicMetadata.trialEndsAt).getTime() - Date.now();
           daysRemaining = Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
         }
 
         return {
           checked: true,
-          isPremium: true,
+          isPremium: false, // 🔒 Block 300 DPI downloads during trial until paid
+          isTrial: true,
           plan: userPlan,
+          daysRemaining,
           limits,
-          ...(isTrial ? { isTrial: true, daysRemaining } : {}),
+          reason: "trial_unpaid",
         };
       }
     }

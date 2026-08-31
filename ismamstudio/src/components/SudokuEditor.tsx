@@ -10,14 +10,24 @@ export function SudokuEditor({ page, updatePage }: any) {
 
   const isSolution = page.config.isSolution || false;
 
-  const handleGenerate = () => {
-    const result = generateSudoku(difficulty);
+  const handleGenerate = (diff: Difficulty = difficulty) => {
+    const result = generateSudoku(diff);
     setPuzzleData(result);
-    updatePage({ difficulty, gridData: result, isSolution });
+    updatePage({ difficulty: diff, gridData: result, isSolution });
+  };
+
+  const handleDifficultyChange = (d: Difficulty) => {
+    setDifficulty(d);
+    handleGenerate(d);
   };
 
   const handleToggleMode = (solMode: boolean) => {
-    updatePage({ difficulty, gridData: puzzleData, isSolution: solMode });
+    let data = puzzleData;
+    if (!data) {
+      data = generateSudoku(difficulty);
+      setPuzzleData(data);
+    }
+    updatePage({ difficulty, gridData: data, isSolution: solMode });
   };
 
   useEffect(() => {
@@ -69,9 +79,7 @@ export function SudokuEditor({ page, updatePage }: any) {
               {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
                 <button
                   key={d}
-                  onClick={() => {
-                    setDifficulty(d);
-                  }}
+                  onClick={() => handleDifficultyChange(d)}
                   className={`py-2 rounded-lg font-bold text-xs capitalize transition ${
                     difficulty === d
                       ? "bg-indigo-600 text-white shadow-sm"
@@ -86,7 +94,7 @@ export function SudokuEditor({ page, updatePage }: any) {
         </div>
 
         <button 
-          onClick={handleGenerate} 
+          onClick={() => handleGenerate()} 
           className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
         >
           <RefreshCw className="w-4 h-4"/> Generate Sudoku

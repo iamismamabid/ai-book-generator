@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
 import { SudokuEditor } from "./SudokuEditor";
+import { generateSudoku } from "../lib/sudokuGenerator";
 import { MazeEditor } from "./MazeEditor";
 import { WordScrambleEditor } from "./WordScrambleEditor";
 import { CryptogramEditor } from "./CryptogramEditor";
@@ -415,7 +416,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
   const autoGenerateAllSolutions = () => {
     const newSolPages: any[] = [];
     const puzzleTypes = ['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle', 'kakuro'];
-    const puzzlePages = bookPages.filter((page) => puzzleTypes.includes(page.type) && !page.config.isSolution);
+    const puzzlePages = bookPages.filter((page) => puzzleTypes.includes(page.type) && !page.config?.isSolution);
 
     const configMap: Record<string, { perPage: 1 | 2 | 4; dataKey: string; extraKeys?: string[] }> = {
       crossword: { perPage: crosswordSolutionsPerPage, dataKey: 'gridData' },
@@ -428,16 +429,31 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
       math_puzzle: { perPage: mathPuzzleSolutionsPerPage, dataKey: 'puzzleData', extraKeys: ['puzzleType'] },
     };
 
-    const makeSinglePage = (p: any, pageNum: number) => ({
-      id: Date.now() + Math.random(),
-      type: p.type,
-      config: {
-        ...JSON.parse(JSON.stringify(p.config)),
-        isSolution: true,
-        showSolution: true,
-        pageNumber: pageNum,
+    const ensurePageData = (p: any) => {
+      if (!p.config) p.config = {};
+      if (p.type === 'sudoku' && !p.config.gridData) {
+        const diff = p.config.difficulty || 'medium';
+        p.config.difficulty = diff;
+        p.config.gridData = generateSudoku(diff);
       }
-    });
+      const dataKey = configMap[p.type]?.dataKey || 'gridData';
+      const raw = p.config[dataKey];
+      return raw !== undefined && raw !== null ? JSON.parse(JSON.stringify(raw)) : null;
+    };
+
+    const makeSinglePage = (p: any, pageNum: number) => {
+      ensurePageData(p);
+      return {
+        id: Date.now() + Math.random(),
+        type: p.type,
+        config: {
+          ...JSON.parse(JSON.stringify(p.config || {})),
+          isSolution: true,
+          showSolution: true,
+          pageNumber: pageNum,
+        }
+      };
+    };
 
     const makeGroupPage = (type: string, dataKey: string, extraKeys: string[], batch: { p: any; pageNum: number }[]) => ({
       id: Date.now() + Math.random(),
@@ -446,12 +462,13 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         isSolution: true,
         isMultiSolution: true,
         solutionGroup: batch.map(({ p, pageNum }) => {
+          const val = ensurePageData(p);
           const entry: any = {
             puzzleIndex: pageNum,
             pageNumber: pageNum,
-            [dataKey]: JSON.parse(JSON.stringify(p.config[dataKey]))
+            [dataKey]: val
           };
-          extraKeys.forEach(k => { if (p.config[k] !== undefined) entry[k] = p.config[k]; });
+          extraKeys.forEach(k => { if (p.config?.[k] !== undefined) entry[k] = p.config[k]; });
           return entry;
         }),
       }
@@ -994,7 +1011,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
               // Puzzles & Coloring Engines First
               { category: 'puzzle', type: 'crossword', config: {}, label: 'Crossword Puzzle', desc: 'Vocabulary grids with clues', icon: '🧩', color: 'bg-amber-50 border-amber-200 text-amber-600' },
               { category: 'puzzle', type: 'word_search', config: {}, label: 'Word Search', desc: 'Hidden word grids with banks', icon: '🔍', color: 'bg-pink-50 border-pink-200 text-pink-600' },
-              { category: 'puzzle', type: 'sudoku', config: {}, label: 'Sudoku Grid', desc: 'Easy, medium, and hard math logic', icon: '🔢', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
+              { category: 'puzzle', type: 'sudoku', config: { difficulty: 'medium', gridData: generateSudoku('medium') }, label: 'Sudoku Grid', desc: 'Easy, medium, and hard math logic', icon: '🔢', color: 'bg-cyan-50 border-cyan-200 text-cyan-600' },
               { category: 'puzzle', type: 'maze', config: {}, label: 'Labyrinth Maze', desc: 'Square, circle, and heart shapes', icon: '🌀', color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
               { category: 'puzzle', type: 'word_scramble', config: {}, label: 'Word Scramble', desc: 'Shuffled letter challenges', icon: '🔤', color: 'bg-purple-50 border-purple-200 text-purple-600' },
               { category: 'puzzle', type: 'cryptogram', config: {}, label: 'Cryptogram Quote', desc: 'Decrypted quote line puzzles', icon: '🔐', color: 'bg-teal-50 border-teal-200 text-teal-600' },

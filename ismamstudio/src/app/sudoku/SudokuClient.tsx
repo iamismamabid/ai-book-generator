@@ -179,25 +179,50 @@ export default function SudokuClient() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const notebookId = new URLSearchParams(window.location.search).get("notebookId");
-    if (!notebookId) return;
-
-    getNotebookEntryData(notebookId)
-      .then((res) => {
-        if (!res.success || !res.data) return;
-        const d: any = res.data;
-        if (d.difficulty) setDifficulty(d.difficulty);
-        if (typeof d.bookCount === "number") setBookCount(d.bookCount);
-        if (d.trimSize) setTrimSize(d.trimSize);
-        if (typeof d.includeSolutions === "boolean") setIncludeSolutions(d.includeSolutions);
-        if (typeof d.solutionsPerPage === "number") setSolutionsPerPage(d.solutionsPerPage);
-        if (typeof d.includeCover === "boolean") setIncludeCover(d.includeCover);
-        if (typeof d.borderThickness === "number") setBorderThickness(d.borderThickness);
-        if (d.fontFamily) setFontFamily(d.fontFamily);
-        if (typeof d.headerText === "string") setHeaderText(d.headerText);
-        if (typeof d.footerText === "string") setFooterText(d.footerText);
-      })
-      .catch((err) => console.error("Failed to load notebook entry:", err));
+    if (notebookId) {
+      getNotebookEntryData(notebookId)
+        .then((res) => {
+          if (!res.success || !res.data) return;
+          const d: any = res.data;
+          if (d.difficulty) {
+            setDifficulty(d.difficulty);
+            try {
+              setCurrentPuzzle(generateSudoku(d.difficulty));
+            } catch (e) {
+              console.error(e);
+            }
+          }
+          if (typeof d.bookCount === "number") setBookCount(d.bookCount);
+          if (d.trimSize) setTrimSize(d.trimSize);
+          if (typeof d.includeSolutions === "boolean") setIncludeSolutions(d.includeSolutions);
+          if (typeof d.solutionsPerPage === "number") setSolutionsPerPage(d.solutionsPerPage);
+          if (typeof d.includeCover === "boolean") setIncludeCover(d.includeCover);
+          if (typeof d.borderThickness === "number") setBorderThickness(d.borderThickness);
+          if (d.fontFamily) setFontFamily(d.fontFamily);
+          if (typeof d.headerText === "string") setHeaderText(d.headerText);
+          if (typeof d.footerText === "string") setFooterText(d.footerText);
+        })
+        .catch((err) => console.error("Failed to load notebook entry:", err));
+    } else {
+      // Auto-generate default preview puzzle & solution on initial page load
+      try {
+        const initial = generateSudoku(difficulty);
+        setCurrentPuzzle(initial);
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }, []);
+
+  const handleDifficultyChange = (d: Difficulty) => {
+    setDifficulty(d);
+    try {
+      const puz = generateSudoku(d);
+      setCurrentPuzzle(puz);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const maxPuzzles =
     premiumStatus.plan === "agency" ? 1000 :
@@ -425,7 +450,7 @@ export default function SudokuClient() {
                       <button
                         key={d}
                         disabled={isLocked && premiumStatus.checked}
-                        onClick={() => !isLocked && setDifficulty(d)}
+                        onClick={() => !isLocked && handleDifficultyChange(d)}
                         className={`relative py-3 rounded-lg font-semibold capitalize transition flex items-center justify-center gap-1.5 ${difficulty === d
                             ? "bg-amber-500 text-slate-950"
                             : isLocked

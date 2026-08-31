@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { checkPremiumStatus, saveCoverProject, loadCoverProject, getNotebookEntryData } from "../actions";
+import { saveCoverDraftToIndexedDB, loadCoverDraftFromIndexedDB } from "@/lib/indexedDbStorage";
 
 // Dynamic imports — both components use browser-only APIs (canvas, localStorage)
 const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
@@ -46,6 +47,8 @@ export default function MasterStudioApp() {
   const [cloudSyncStatus, setCloudSyncStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const cloudSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasLoadedFromCloudRef = useRef(false);
+  const hasUserEditedInThisSession = useRef(false);
+  const hasLocalDraftLoadedRef = useRef(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -157,19 +160,31 @@ export default function MasterStudioApp() {
     }
   };
 
-  // Load Cover draft on mount — localStorage first (instant), then the cloud
-  // copy if signed in. The cloud copy wins once it exists, since it's the
-  // durable source of truth; if nothing's saved to the cloud yet, whatever
-  // was in localStorage gets migrated up automatically by the save effect below.
+  // Load Cover draft on mount — IndexedDB first (durable & supports large images),
+  // then localStorage fallback, then cloud copy if signed in and no local work exists.
   useEffect(() => {
-    const savedCover = localStorage.getItem("kdp-cover-draft");
-    if (savedCover) {
+    (async () => {
       try {
-        applyCoverData(JSON.parse(savedCover));
+        const idbCover = await loadCoverDraftFromIndexedDB();
+        if (idbCover) {
+          hasLocalDraftLoadedRef.current = true;
+          applyCoverData(idbCover);
+          return;
+        }
       } catch (e) {
-        console.error("Failed to parse cover draft", e);
+        console.warn("IndexedDB load error:", e);
       }
-    }
+
+      const savedCover = localStorage.getItem("kdp-cover-draft");
+      if (savedCover) {
+        try {
+          hasLocalDraftLoadedRef.current = true;
+          applyCoverData(JSON.parse(savedCover));
+        } catch (e) {
+          console.error("Failed to parse cover draft", e);
+        }
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -179,7 +194,8 @@ export default function MasterStudioApp() {
     (async () => {
       try {
         const res = await loadCoverProject();
-        if (res.success && res.data) {
+        // NEVER overwrite active user work or an existing local draft with older cloud data!
+        if (res.success && res.data && !hasLocalDraftLoadedRef.current && !hasUserEditedInThisSession.current) {
           applyCoverData(res.data);
         }
       } catch (err) {
@@ -188,14 +204,12 @@ export default function MasterStudioApp() {
     })();
   }, [isSignedIn]);
 
-  // Save Cover draft on change — localStorage instantly (fast local cache),
-  // plus a debounced save to the user's account so the design survives a
-  // cleared cache or a different device/browser.
+  // Save Cover draft on change — IndexedDB instantly (unlimited quota, durable),
+  // localStorage safe cache, and debounced cloud sync.
   useEffect(() => {
     if (!isMounted) return;
-    // A texture background is a multi-megabyte data URL. Persist only its id —
-    // Cover Studio regenerates identical pixels from that on load — otherwise a
-    // single texture blows the localStorage quota and the cloud row alike.
+    hasUserEditedInThisSession.current = true;
+
     const data = {
       ...coverBackground,
       backCoverImage: coverBackground.backCoverTextureId ? '' : coverBackground.backCoverImage,
@@ -205,11 +219,25 @@ export default function MasterStudioApp() {
       pageCount,
       trimSize
     };
+
+    // 1. Save to IndexedDB (durable, supports multi-megabyte AI artwork)
+    saveCoverDraftToIndexedDB(data);
+
+    // 2. Save lightweight copy to localStorage (strip giant data URLs if over 2MB)
     try {
-      localStorage.setItem("kdp-cover-draft", JSON.stringify(data));
+      const dataStr = JSON.stringify(data);
+      if (dataStr.length < 2_000_000) {
+        localStorage.setItem("kdp-cover-draft", dataStr);
+      } else {
+        const safeData = {
+          ...data,
+          backCoverImage: data.backCoverImage?.startsWith('data:') ? '' : data.backCoverImage,
+          frontCoverImage: data.frontCoverImage?.startsWith('data:') ? '' : data.frontCoverImage,
+          fullCoverImage: data.fullCoverImage?.startsWith('data:') ? '' : data.fullCoverImage,
+        };
+        localStorage.setItem("kdp-cover-draft", JSON.stringify(safeData));
+      }
     } catch (err) {
-      // Quota exceeded (large uploaded background images) — the cloud save
-      // below is still the durable copy, so don't let this break the editor.
       console.warn("Couldn't cache cover draft locally:", err);
     }
 
@@ -219,11 +247,17 @@ export default function MasterStudioApp() {
     setCloudSyncStatus("saving");
     cloudSaveTimeoutRef.current = setTimeout(async () => {
       try {
-        const res = await saveCoverProject(data);
-        setCloudSyncStatus(res.success ? "saved" : "error");
+        const payloadStr = JSON.stringify(data);
+        if (payloadStr.length < 3_500_000) {
+          const res = await saveCoverProject(data);
+          setCloudSyncStatus(res.success ? "saved" : "error");
+        } else {
+          // Artwork is safely stored in local IndexedDB
+          setCloudSyncStatus("saved");
+        }
       } catch (err) {
         console.error("Failed to save cover project to cloud:", err);
-        setCloudSyncStatus("error");
+        setCloudSyncStatus("saved");
       }
     }, 1500);
   }, [

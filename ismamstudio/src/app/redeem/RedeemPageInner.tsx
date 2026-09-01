@@ -428,19 +428,19 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
 
 const planTitles: Record<string, string> = {
   starter: "Lifetime Tier 1 ($49): Starter Creator",
-  pro: "Lifetime Tier 2 ($79): Pro Studio",
-  agency: "Lifetime Tier 3 ($149): Agency Max",
+  pro: "Lifetime Tier 2 ($199): Pro Studio",
+  agency: "Lifetime Tier 3 ($399): Agency Max",
 };
 
 const getUpgradeInstruction = (rawPlan: string, partnerName: string = "license") => {
   if (rawPlan === "starter") {
-    return `To upgrade your account to Tier 2 ($79), please purchase another ${partnerName} code and redeem it below. Tier 2 unlocks up to 10 brand profiles, hard Sudoku difficulty, and advanced maze shapes.`;
+    return `To upgrade your account to Tier 2 ($199), please purchase another ${partnerName} code and redeem it below. Tier 2 unlocks up to 10 brand profiles, hard Sudoku difficulty, and advanced maze shapes.`;
   }
   if (rawPlan === "pro") {
-    return `To upgrade your account to Tier 3 ($149), please purchase another ${partnerName} code and redeem it below. Tier 3 unlocks multi-user team seats (3 seats) and agency-level limits.`;
+    return `To upgrade your account to Tier 3 ($399), please purchase another ${partnerName} code and redeem it below. Tier 3 unlocks multi-user team seats (3 seats) and agency-level limits.`;
   }
   if (rawPlan === "agency") {
-    return "You have unlocked the maximum recommended stack (Tier 3 - $149)! All core features and limits are fully active.";
+    return "You have unlocked the maximum recommended stack (Tier 3 - $399)! All core features and limits are fully active.";
   }
   return "";
 };

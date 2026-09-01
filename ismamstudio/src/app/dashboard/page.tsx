@@ -26,9 +26,9 @@ export default async function DashboardPage() {
   // AppSumo lifetime-deal tiers vs regular Paddle SaaS subscription plans share the
   // same "starter"/"pro"/"agency" plan keys, so the display label must branch on isLtd.
   const ltdPlanNames: Record<string, string> = {
-    starter: "Lifetime Tier 1 ($49): Starter Creator",
-    pro: "Lifetime Tier 2 ($199): Pro Studio",
-    agency: "Lifetime Tier 3 ($399): Agency Max",
+    starter: "Lifetime Tier 1 ($199): Pro Studio",
+    pro: "Lifetime Tier 1 ($199): Pro Studio",
+    agency: "Lifetime Tier 2 ($399): Agency Max",
   };
   const saasPlanNames: Record<string, string> = {
     free: "Free Tier",

@@ -105,6 +105,35 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
       tierNumber = Math.max(tierNumber, 2);
     }
 
+    if (isDealFuel || cleanCode.includes("DEALFUEL")) {
+      if (tierNumber >= 2) {
+        return {
+          name: "Tier 2: Agency Lifetime Access",
+          limits: [
+            "25 Brand & Pen-Name Profiles",
+            "2,000 Puzzle & Interior Exports / month",
+            "Bulk CSV Batch Studio & Automation",
+            "Vector SVG & source file exports",
+            "Advanced Custom Shapes & Custom Masking",
+            "Full access to KDP Niche Hunter & Keyword Spy",
+            "Dedicated support manager",
+          ],
+        };
+      }
+      return {
+        name: "Tier 1: Pro Studio Lifetime Access",
+        limits: [
+          "10 Brand & Pen-Name Profiles",
+          "1,000 Puzzle & Interior Exports / month",
+          "Full Low & Medium-Content Generator Suite",
+          "Sudoku (Easy, Med, Hard) and Circle/Heart Mazes",
+          "Word Search boards & CSV imports",
+          "Premium Cover & Interior Canvas Studio",
+          "Priority support (< 12 hours)",
+        ],
+      };
+    }
+
     if (tierNumber >= 5) {
       return {
         name: "Tier 5: Agency Max Lifetime Access",
@@ -146,29 +175,28 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
       };
     } else if (tierNumber === 2) {
       return {
-        name: "Tier 2: Professional Lifetime Access",
+        name: "Tier 2: Pro Studio Lifetime Access",
         limits: [
           "10 Brand & Pen-Name Profiles",
-          "500 Puzzle & Interior Exports / month",
+          "1,000 Puzzle & Interior Exports / month",
           "Full Low & Medium-Content Generator Suite",
           "Sudoku (Easy, Med, Hard) and Circle/Heart Mazes",
           "Word Search boards & CSV imports",
           "Premium Cover & Interior Canvas Studio",
-          "Priority support (under 12 hours)",
+          "Priority support (< 12 hours)",
         ],
       };
     } else {
       return {
-        name: "Tier 1: Starter Lifetime Access",
+        name: "Tier 1: Pro Studio Lifetime Access",
         limits: [
-          "3 Brand & Pen-Name Profiles",
-          "100 Puzzle & Interior Exports / month",
-          "Full Low-Content Generator Suite",
-          "Standard trim sizes (6\"x9\", 8.5\"x11\")",
-          "Easy & Medium Sudoku puzzle generator",
-          "Square-masked maze layouts",
-          "Standard vector PDF exports",
-          "Email support (24-48h response)",
+          "10 Brand & Pen-Name Profiles",
+          "1,000 Puzzle & Interior Exports / month",
+          "Full Low & Medium-Content Generator Suite",
+          "Sudoku (Easy, Med, Hard) and Circle/Heart Mazes",
+          "Word Search boards & CSV imports",
+          "Premium Cover & Interior Canvas Studio",
+          "Priority support (< 12 hours)",
         ],
       };
     }
@@ -427,20 +455,17 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
 }
 
 const planTitles: Record<string, string> = {
-  starter: "Lifetime Tier 1 ($49): Starter Creator",
-  pro: "Lifetime Tier 2 ($199): Pro Studio",
-  agency: "Lifetime Tier 3 ($399): Agency Max",
+  starter: "Lifetime Tier 1 ($199): Pro Studio",
+  pro: "Lifetime Tier 1 ($199): Pro Studio",
+  agency: "Lifetime Tier 2 ($399): Agency Max",
 };
 
 const getUpgradeInstruction = (rawPlan: string, partnerName: string = "license") => {
-  if (rawPlan === "starter") {
-    return `To upgrade your account to Tier 2 ($199), please purchase another ${partnerName} code and redeem it below. Tier 2 unlocks up to 10 brand profiles, hard Sudoku difficulty, and advanced maze shapes.`;
-  }
-  if (rawPlan === "pro") {
-    return `To upgrade your account to Tier 3 ($399), please purchase another ${partnerName} code and redeem it below. Tier 3 unlocks multi-user team seats (3 seats) and agency-level limits.`;
+  if (rawPlan === "starter" || rawPlan === "pro") {
+    return `To upgrade your account to Tier 2 ($399), please purchase another ${partnerName} code and redeem it below. Tier 2 unlocks multi-user team seats (3 seats), 25 brand profiles, and agency-level limits.`;
   }
   if (rawPlan === "agency") {
-    return "You have unlocked the maximum recommended stack (Tier 3 - $399)! All core features and limits are fully active.";
+    return "You have unlocked the maximum recommended stack (Tier 2 - $399)! All core features and limits are fully active.";
   }
   return "";
 };

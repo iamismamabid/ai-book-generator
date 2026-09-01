@@ -97,109 +97,49 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
       };
     }
 
-    // Determine tier based on explicit code string or stacked redemption count
+    // 🎯 Lifetime Tier Strategy:
+    // 1 Code = Tier 1: Pro Studio Lifetime Access ($199 retail / $69 deal)
+    // 2+ Codes = Tier 2: Agency Publisher Lifetime Access ($399 retail / $98 deal)
     let tierNumber = stackedCount || 1;
-    if (cleanCode.includes("-T3-") || cleanCode.includes("TIER3") || cleanCode.includes("-TIER-3-") || cleanCode.includes("-T3")) {
-      tierNumber = Math.max(tierNumber, 3);
-    } else if (cleanCode.includes("-T2-") || cleanCode.includes("TIER2") || cleanCode.includes("-TIER-2-") || cleanCode.includes("-T2")) {
+    if (cleanCode.includes("-T3-") || cleanCode.includes("TIER3") || cleanCode.includes("-TIER-3-") || cleanCode.includes("-T3") ||
+        cleanCode.includes("-T2-") || cleanCode.includes("TIER2") || cleanCode.includes("-TIER-2-") || cleanCode.includes("-T2")) {
       tierNumber = Math.max(tierNumber, 2);
     }
 
-    if (isDealFuel || cleanCode.includes("DEALFUEL")) {
-      if (tierNumber >= 2) {
-        return {
-          name: "Tier 2: Agency Lifetime Access",
-          limits: [
-            "25 Brand & Pen-Name Profiles",
-            "2,000 Puzzle & Interior Exports / month",
-            "Bulk CSV Batch Studio & Automation",
-            "Vector SVG & source file exports",
-            "Advanced Custom Shapes & Custom Masking",
-            "Full access to KDP Niche Hunter & Keyword Spy",
-            "Dedicated support manager",
-          ],
-        };
-      }
+    if (tierNumber >= 2) {
       return {
-        name: "Tier 1: Pro Studio Lifetime Access",
+        name: "Tier 2: Agency Lifetime Access",
         limits: [
-          "10 Brand & Pen-Name Profiles",
-          "1,000 Puzzle & Interior Exports / month",
-          "Full Low & Medium-Content Generator Suite",
-          "Sudoku (Easy, Med, Hard) and Circle/Heart Mazes",
-          "Word Search boards & CSV imports",
-          "Premium Cover & Interior Canvas Studio",
-          "Priority support (< 12 hours)",
+          "Everything in Pro Studio Lifetime",
+          "Up to 3 Team Member Workspace Seats",
+          "Up to 25 Brand & Pen-Name Profiles",
+          "300 Vector Line Art Credits / mo",
+          "Vector SVG & source file exports",
+          "Advanced Custom Shapes & Custom Masking",
+          "Full access to KDP Niche Hunter & Keyword Spy",
+          "KDP Bulk Book Batch Studio (50 Books / Batch)",
+          "Dedicated 1-on-1 Customer Support Manager",
         ],
       };
     }
 
-    if (tierNumber >= 5) {
-      return {
-        name: "Tier 5: Agency Max Lifetime Access",
-        limits: [
-          "100 Brand & Pen-Name Profiles",
-          "10,000 Puzzle & Interior Exports / month",
-          "Bulk CSV Batch Studio & Automation",
-          "Vector SVG & source file exports",
-          "Advanced Custom Shapes & Custom Masking",
-          "Full access to KDP Niche Hunter & Keyword Spy",
-          "Dedicated 1-on-1 account manager",
-        ],
-      };
-    } else if (tierNumber === 4) {
-      return {
-        name: "Tier 4: Agency Plus Lifetime Access",
-        limits: [
-          "50 Brand & Pen-Name Profiles",
-          "5,000 Puzzle & Interior Exports / month",
-          "Bulk CSV Batch Studio & Automation",
-          "Vector SVG & source file exports",
-          "Advanced Custom Shapes & Custom Masking",
-          "Full access to KDP Niche Hunter & Keyword Spy",
-          "Priority customer support",
-        ],
-      };
-    } else if (tierNumber === 3) {
-      return {
-        name: "Tier 3: Agency Lifetime Access",
-        limits: [
-          "25 Brand & Pen-Name Profiles",
-          "2,000 Puzzle & Interior Exports / month",
-          "Bulk CSV Batch Studio & Automation",
-          "Vector SVG & source file exports",
-          "Advanced Custom Shapes & Custom Masking",
-          "Full access to KDP Niche Hunter & Keyword Spy",
-          "Dedicated support manager",
-        ],
-      };
-    } else if (tierNumber === 2) {
-      return {
-        name: "Tier 2: Pro Studio Lifetime Access",
-        limits: [
-          "10 Brand & Pen-Name Profiles",
-          "1,000 Puzzle & Interior Exports / month",
-          "Full Low & Medium-Content Generator Suite",
-          "Sudoku (Easy, Med, Hard) and Circle/Heart Mazes",
-          "Word Search boards & CSV imports",
-          "Premium Cover & Interior Canvas Studio",
-          "Priority support (< 12 hours)",
-        ],
-      };
-    } else {
-      return {
-        name: "Tier 1: Pro Studio Lifetime Access",
-        limits: [
-          "10 Brand & Pen-Name Profiles",
-          "1,000 Puzzle & Interior Exports / month",
-          "Full Low & Medium-Content Generator Suite",
-          "Sudoku (Easy, Med, Hard) and Circle/Heart Mazes",
-          "Word Search boards & CSV imports",
-          "Premium Cover & Interior Canvas Studio",
-          "Priority support (< 12 hours)",
-        ],
-      };
-    }
+    return {
+      name: "Tier 1: Pro Studio Lifetime Access",
+      limits: [
+        "Instant 300 DPI Vector PDF Downloads",
+        "Watermark-free PDF exports (All sizes + Custom)",
+        "100% Commercial-use rights (Keep all royalties)",
+        "100 Vector Line Art Credits / mo",
+        "Up to 10 Brand & Pen-name profiles",
+        "Full Sudoku Engine (Easy, Med, Hard difficulties)",
+        "Shaped Labyrinth Generator (Circle & Heart shapes)",
+        "Word Search, Cryptogram & Word Scramble Studio",
+        "Math Puzzle & Kakuro Generators",
+        "KDP Bulk Book Batch Studio (CSV Import & Mass Builder)",
+        "Premium Cover & Interior Canvas Studio",
+        "Priority Customer Support (under 12 hours)",
+      ],
+    };
   };
 
   const handleRedeem = async (e: React.FormEvent) => {

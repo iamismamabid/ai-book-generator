@@ -33,29 +33,34 @@ function drawWordSearchPage(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(20, 20, 30);
-  const label = isSolution ? `${title} #${puzzleNumber} — Answer Key` : `${title} #${puzzleNumber}`;
-  doc.text(label, width / 2, 0.65, { align: "center" });
 
   const margin = 0.35;
   const safeW = width - (margin * 2);
   const safeH = height - (margin * 2);
 
-  const titleSpace = 0.3;
-  const wordListSpace = isSolution ? 0.3 : 1.4;
-  // Caps cell size so a small grid (few letters) doesn't stretch to fill
-  // the whole page the way a dense one legitimately does -- keeps letters
-  // at a standard, professionally-proportioned size regardless of grid
-  // dimensions.
+  const titleBlockH = 0.45;
+  const wordColumns = 3;
+  const wordRowStep = 0.24;
+  const numWordRows = isSolution ? 0 : Math.ceil((data.words?.length || 12) / wordColumns);
+  const wordListSpace = isSolution ? 0 : 0.35 + (numWordRows * wordRowStep);
+
   const STANDARD_CELL_IN = 0.45;
-  const gridPx = Math.min(safeW, safeH - titleSpace - wordListSpace, data.grid.length * STANDARD_CELL_IN);
+  const gridPx = Math.min(safeW, safeH - titleBlockH - wordListSpace, data.grid.length * STANDARD_CELL_IN);
+
+  const totalContentH = titleBlockH + gridPx + wordListSpace;
+  const verticalOffset = Math.max(0, (safeH - totalContentH) / 2);
+  const contentTop = margin + verticalOffset;
+
+  const label = isSolution ? `${title} #${puzzleNumber} — Answer Key` : `${title} #${puzzleNumber}`;
+  doc.text(label, width / 2, contentTop + 0.22, { align: "center" });
 
   const startX = (width - gridPx) / 2;
-  const startY = margin + titleSpace + 0.15;
+  const startY = contentTop + titleBlockH;
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridPx }, isSolution, style);
 
   if (!isSolution) {
-    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridPx + 0.25, w: gridPx }, {
+    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridPx + 0.35, w: gridPx }, {
       showHeading: true,
       style: { wordColumns: 3, wordFontSize: 9.5, ...style },
     });

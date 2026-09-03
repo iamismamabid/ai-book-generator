@@ -619,23 +619,29 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  const titleSpace = 0.3;
-  const wordListSpace = isSolution ? 0.3 : 1.4;
+  const titleBlockH = 0.45;
+  const wordColumns = 3;
+  const wordRowStep = 0.24;
+  const numWordRows = isSolution ? 0 : Math.ceil((data.words?.length || 12) / wordColumns);
+  const wordListSpace = isSolution ? 0 : 0.35 + (numWordRows * wordRowStep);
+
   // Balanced KDP layout: grid stays well short of full page width, leaving
-  // proper breathing room instead of running edge-to-edge. The solution
-  // grid is capped smaller still -- it's an answer key, not a second
-  // full-size puzzle to solve.
+  // proper breathing room instead of running edge-to-edge.
   const gridDrawSize = isSolution
-    ? Math.min(safeW * 0.82, safeH - titleSpace - wordListSpace, 4.5)
-    : Math.min(safeW * 0.82, safeH - titleSpace - wordListSpace);
+    ? Math.min(safeW * 0.82, safeH - titleBlockH, 4.5)
+    : Math.min(safeW * 0.82, safeH - titleBlockH - wordListSpace);
+
+  const totalContentH = titleBlockH + gridDrawSize + wordListSpace;
+  const verticalOffset = Math.max(0, (safeH - totalContentH) / 2);
+  const contentTop = margin + verticalOffset;
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
-  const startY = margin + titleSpace + 0.1;
+  const startY = contentTop + titleBlockH;
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
 
   if (!isSolution) {
-    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridDrawSize + 0.3, w: gridDrawSize }, {
+    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridDrawSize + 0.35, w: gridDrawSize }, {
       isSolution,
       showHeading: true,
       style: { wordColumns: 3, wordFontSize: 11, wordRowStep: 0.24 }

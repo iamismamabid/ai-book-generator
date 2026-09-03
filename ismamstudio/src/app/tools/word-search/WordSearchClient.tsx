@@ -352,18 +352,34 @@ export default function WordSearchStudio() {
                 const zone = puzZones[z];
                 const { grid, words: pageWords, mask, active } = bookPuzzles[puzIndex];
 
-                const titleSpace = 0.4; const wordListSpace = puzzlesPerPage === 4 ? 0.8 : 1.5;
-                const gridDrawSize = Math.min(zone.w, zone.h - titleSpace - wordListSpace, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
+                const wordRowStep = 0.22;
+                const wordColumns = puzzlesPerPage === 4 ? 2 : 3;
+                const numWordRows = Math.ceil(pageWords.length / wordColumns);
+                const titleBlockH = 0.45;
+                const gridToWordGap = 0.35;
+                const wordListH = numWordRows * wordRowStep;
+                const totalListSpace = gridToWordGap + wordListH;
+
+                // Dynamically fit grid within available vertical zone space
+                const maxAvailableGridH = zone.h - titleBlockH - totalListSpace;
+                const gridDrawSize = Math.min(zone.w, maxAvailableGridH, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
+
+                // Calculate total height of the combined puzzle block (Title + Grid + Word list)
+                const totalBlockHeight = titleBlockH + gridDrawSize + totalListSpace;
+
+                // Vertically center the entire puzzle block in the zone
+                const verticalOffset = Math.max(0, (zone.h - totalBlockHeight) / 2);
+                const contentTop = zone.y + verticalOffset;
 
                 let startX = zone.x;
                 if (puzzleAlign === 'center') startX = zone.x + (zone.w - gridDrawSize)/2;
                 if (puzzleAlign === 'right') startX = zone.x + zone.w - gridDrawSize;
-                const startY = zone.y + titleSpace;
+                const startY = contentTop + titleBlockH;
 
-                // Draw title
+                // Draw title (vertically balanced above the grid)
                 doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
                 const titleStr = useFirstLineAsTitle && titleText ? `${titleText} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
-                doc.text(titleStr, zone.x + zone.w/2, zone.y + 0.25, { align: "center" });
+                doc.text(titleStr, zone.x + zone.w/2, contentTop + 0.22, { align: "center" });
 
                 // Draw grid + word bank via the shared word search PDF primitives
                 // (also used by pdfExportService.ts and the bulk generator)
@@ -379,15 +395,9 @@ export default function WordSearchStudio() {
                     letterBold: true,
                 });
 
-                const wordRowStep = 0.22;
-                const wordColumns = puzzlesPerPage === 4 ? 2 : 3;
                 // Match the word list's x/width to the grid's actual drawn
-                // bounds (startX/gridDrawSize), not the full zone -- when
-                // puzzleAlign is 'center' the grid is narrower than the zone
-                // and centered within it, so using zone.x/zone.w here made
-                // the word list start to the left of the grid instead of
-                // lining up under it, regardless of the chosen text align.
-                drawWordSearchWordList(doc, pageWords, { x: startX, y: startY + gridDrawSize + 0.3 - wordRowStep, w: gridDrawSize }, {
+                // bounds (startX/gridDrawSize), not the full zone
+                drawWordSearchWordList(doc, pageWords, { x: startX, y: startY + gridDrawSize + gridToWordGap - wordRowStep, w: gridDrawSize }, {
                     style: { wordFont, wordFontSize: wordTextSize, wordTextColor, wordTextAlign, wordColumns, wordRowStep },
                 });
             }
@@ -406,16 +416,24 @@ export default function WordSearchStudio() {
                     const zone = solZones[z];
                     const { grid, words: pageWords, mask, active, hiddenMessage: solHiddenMessage } = bookPuzzles[solIndex];
 
-                    const titleSpace = 0.4;
-                    const gridDrawSize = Math.min(zone.w, zone.h - titleSpace, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
+                    const titleBlockH = 0.40;
+                    const maxAvailableGridH = zone.h - titleBlockH;
+                    const gridDrawSize = Math.min(zone.w, maxAvailableGridH, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
+
+                    // Calculate total height of answer key block (Title + Grid)
+                    const totalSolBlockH = titleBlockH + gridDrawSize;
+
+                    // Vertically center answer key in the zone
+                    const solVerticalOffset = Math.max(0, (zone.h - totalSolBlockH) / 2);
+                    const solContentTop = zone.y + solVerticalOffset;
 
                     let startX = zone.x;
                     if (solutionAlign === 'center') startX = zone.x + (zone.w - gridDrawSize)/2;
                     if (solutionAlign === 'right') startX = zone.x + zone.w - gridDrawSize;
-                    const startY = zone.y + titleSpace;
+                    const startY = solContentTop + titleBlockH;
 
                     doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
-                    doc.text(`Answer #${solIndex + 1}`, zone.x + zone.w/2, zone.y + 0.2, { align: "center" });
+                    doc.text(`Answer #${solIndex + 1}`, zone.x + zone.w/2, solContentTop + 0.22, { align: "center" });
 
                     // Highlighted answer grid via the shared word search PDF primitive
                     // (also used by pdfExportService.ts and the bulk generator)

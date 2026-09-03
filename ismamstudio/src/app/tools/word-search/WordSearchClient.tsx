@@ -352,17 +352,25 @@ export default function WordSearchStudio() {
                 const zone = puzZones[z];
                 const { grid, words: pageWords, mask, active } = bookPuzzles[puzIndex];
 
-                const wordRowStep = 0.22;
+                const isSinglePuzzle = puzzlesPerPage === 1;
+                // For single-page layouts (standard KDP large-print books), give generous large-print spacing and sizing
+                const wordRowStep = isSinglePuzzle ? 0.28 : 0.22;
                 const wordColumns = puzzlesPerPage === 4 ? 2 : 3;
                 const numWordRows = Math.ceil(pageWords.length / wordColumns);
-                const titleBlockH = 0.45;
-                const gridToWordGap = 0.35;
+                const titleBlockH = isSinglePuzzle ? 0.55 : 0.45;
+                const gridToWordGap = isSinglePuzzle ? 0.40 : 0.35;
                 const wordListH = numWordRows * wordRowStep;
                 const totalListSpace = gridToWordGap + wordListH;
 
                 // Dynamically fit grid within available vertical zone space
                 const maxAvailableGridH = zone.h - titleBlockH - totalListSpace;
-                const gridDrawSize = Math.min(zone.w, maxAvailableGridH, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
+
+                // In large-print 1-puzzle-per-page mode, allow the grid to expand comfortably
+                // to fill the page (up to 90% of zone width or available height) like Amazon Large Print books.
+                // For multi-per-page (2 or 4), retain the compact cell cap.
+                const gridDrawSize = isSinglePuzzle
+                    ? Math.min(zone.w * 0.90, maxAvailableGridH, 7.0)
+                    : Math.min(zone.w, maxAvailableGridH, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
 
                 // Calculate total height of the combined puzzle block (Title + Grid + Word list)
                 const totalBlockHeight = titleBlockH + gridDrawSize + totalListSpace;
@@ -377,9 +385,11 @@ export default function WordSearchStudio() {
                 const startY = contentTop + titleBlockH;
 
                 // Draw title (vertically balanced above the grid)
-                doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
+                doc.setFont(lettersFont, "bold"); 
+                doc.setFontSize(isSinglePuzzle ? 18 : 16); 
+                doc.setTextColor('#000000');
                 const titleStr = useFirstLineAsTitle && titleText ? `${titleText} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
-                doc.text(titleStr, zone.x + zone.w/2, contentTop + 0.22, { align: "center" });
+                doc.text(titleStr, zone.x + zone.w/2, contentTop + (isSinglePuzzle ? 0.28 : 0.22), { align: "center" });
 
                 // Draw grid + word bank via the shared word search PDF primitives
                 // (also used by pdfExportService.ts and the bulk generator)
@@ -395,10 +405,10 @@ export default function WordSearchStudio() {
                     letterBold: true,
                 });
 
-                // Match the word list's x/width to the grid's actual drawn
-                // bounds (startX/gridDrawSize), not the full zone
+                // Match the word list's x/width to the grid's actual drawn bounds
+                const effectiveWordFontSize = isSinglePuzzle ? Math.max(wordTextSize, 12) : wordTextSize;
                 drawWordSearchWordList(doc, pageWords, { x: startX, y: startY + gridDrawSize + gridToWordGap - wordRowStep, w: gridDrawSize }, {
-                    style: { wordFont, wordFontSize: wordTextSize, wordTextColor, wordTextAlign, wordColumns, wordRowStep },
+                    style: { wordFont, wordFontSize: effectiveWordFontSize, wordTextColor, wordTextAlign, wordColumns, wordRowStep },
                 });
             }
         }
@@ -416,9 +426,12 @@ export default function WordSearchStudio() {
                     const zone = solZones[z];
                     const { grid, words: pageWords, mask, active, hiddenMessage: solHiddenMessage } = bookPuzzles[solIndex];
 
-                    const titleBlockH = 0.40;
+                    const isSingleSol = solutionsPerPage === 1;
+                    const titleBlockH = isSingleSol ? 0.50 : 0.40;
                     const maxAvailableGridH = zone.h - titleBlockH;
-                    const gridDrawSize = Math.min(zone.w, maxAvailableGridH, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
+                    const gridDrawSize = isSingleSol
+                        ? Math.min(zone.w * 0.90, maxAvailableGridH, 7.0)
+                        : Math.min(zone.w, maxAvailableGridH, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
 
                     // Calculate total height of answer key block (Title + Grid)
                     const totalSolBlockH = titleBlockH + gridDrawSize;
@@ -432,8 +445,10 @@ export default function WordSearchStudio() {
                     if (solutionAlign === 'right') startX = zone.x + zone.w - gridDrawSize;
                     const startY = solContentTop + titleBlockH;
 
-                    doc.setFont(lettersFont, "bold"); doc.setFontSize(16); doc.setTextColor('#000000');
-                    doc.text(`Answer #${solIndex + 1}`, zone.x + zone.w/2, solContentTop + 0.22, { align: "center" });
+                    doc.setFont(lettersFont, "bold"); 
+                    doc.setFontSize(isSingleSol ? 18 : 16); 
+                    doc.setTextColor('#000000');
+                    doc.text(`Answer #${solIndex + 1}`, zone.x + zone.w/2, solContentTop + (isSingleSol ? 0.28 : 0.22), { align: "center" });
 
                     // Highlighted answer grid via the shared word search PDF primitive
                     // (also used by pdfExportService.ts and the bulk generator)

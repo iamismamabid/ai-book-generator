@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { processBulkToPages } from '@/app/utils/bulkProcessor';
 
 export async function POST(request: Request) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Please sign in to use bulk puzzle processing.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { bulkText, wordsPerPuzzle = 15, gridSize = 12, textCase = 'uppercase' } = body;
 

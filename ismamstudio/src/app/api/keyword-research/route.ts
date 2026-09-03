@@ -12,7 +12,32 @@ export interface CompetingBook {
   thumbnail: string | null;
 }
 
+// In-memory sliding window rate limiter (20 searches per minute per IP)
+const ipHits = new Map<string, { count: number; resetAt: number }>();
+
+function checkIpRateLimit(ip: string, maxRequests = 20, windowMs = 60_000): boolean {
+  const now = Date.now();
+  const record = ipHits.get(ip);
+  if (!record || now > record.resetAt) {
+    ipHits.set(ip, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  if (record.count >= maxRequests) {
+    return false;
+  }
+  record.count += 1;
+  return true;
+}
+
 export async function GET(request: Request) {
+  const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous";
+  if (!checkIpRateLimit(ip)) {
+    return NextResponse.json(
+      { error: "Too many search requests. Please wait a moment before searching again." },
+      { status: 429 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q");
 

@@ -37,8 +37,33 @@ Your job is to assist Amazon KDP publishers, low-content creators, activity book
    - Format answers using neat markdown bullet points and clickable relative links (e.g. [Redeem Page](/redeem), [Cover Studio](/studio), [Spine Calculator](/tools/spine-calculator)).
    - If a question is about billing, account refunds, or complex issues, recommend contacting the human team via the live chat icon or emailing help@kdpage.com.`;
 
+// In-memory sliding window rate limiter for support chat (15 requests per minute per IP)
+const ipHits = new Map<string, { count: number; resetAt: number }>();
+
+function checkIpRateLimit(ip: string, maxRequests = 15, windowMs = 60_000): boolean {
+  const now = Date.now();
+  const record = ipHits.get(ip);
+  if (!record || now > record.resetAt) {
+    ipHits.set(ip, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  if (record.count >= maxRequests) {
+    return false;
+  }
+  record.count += 1;
+  return true;
+}
+
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous";
+    if (!checkIpRateLimit(ip)) {
+      return NextResponse.json(
+        { error: "Too many messages sent. Please wait a moment before trying again." },
+        { status: 429 }
+      );
+    }
+
     const { messages } = await req.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -48,23 +73,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const fallbackGroq = [
-      "gsk_",
-      "efQRLFvAHF3xF7",
-      "dMKaLjWGdyb3FY",
-      "bK45ghXAkNIfw",
-      "SCt0yNEiv4R",
-    ].join("");
-    const fallbackGemini = [
-      "AIzaSyDoWPsEZr",
-      "TH14kQIzcSKCmi--",
-      "T-OTpU55U",
-    ].join("");
+    const groqKey = process.env.GROQ_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
 
-    const groqKey = process.env.GROQ_API_KEY || fallbackGroq;
-    const geminiKey = process.env.GEMINI_API_KEY || fallbackGemini;
-
-    // ⚡ Priority 1: Groq LPU (Ultra-Fast 500 tokens/sec with Llama 3.3 70B)
+    // ⚡ Priority 1: Groq LPU (Ultra-Fast with Llama 3.3 70B if key configured)
     if (groqKey) {
       try {
         const groqMessages = [

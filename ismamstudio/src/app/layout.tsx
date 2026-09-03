@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     google: "BxkWaFUAZ5Hu_euEr87tYkNVlw7iKrDKKl6ktdk2ihs",
     other: {
       "p:domain_verify": "a8a1ae0bc29b03f4045275105afd56c7",
-      "gridinsoft-key": "ksnjvoh2w75uvxbr99q1jlyb5g0ixmksgla5p1xub4cenw4zapjfm3hvmfd2my7n",
+      "gridinsoft-key": "etdv7o32iiuixb8r60esuwglse8tzyg3k0fkb6y1ah85fbygbsqm8hf1w8fp23tj",
     },
   },
 };

@@ -40,6 +40,72 @@ import ByokStudioPanel from "@/components/ByokStudioPanel";
 import CoverExportPaywallModal from "@/components/CoverExportPaywallModal";
 import { checkPremiumStatus } from "@/app/actions";
 
+// Patch Fabric.Text prototype to support modern rounded text backgrounds with custom radius, padding & opacity
+function ensureFabricRoundedTextBg() {
+  if (typeof window === "undefined" || typeof fabric === "undefined" || !fabric.Text) return;
+  const textProto = fabric.Text.prototype as any;
+  if (textProto.__hasCustomRoundedBg) return;
+  textProto.__hasCustomRoundedBg = true;
+  const origRenderTextLinesBackground = textProto._renderTextLinesBackground;
+
+  textProto._renderTextLinesBackground = function (ctx: CanvasRenderingContext2D) {
+    if (this.textBackgroundColor) {
+      const pad = typeof this.textBgPadding === "number" ? this.textBgPadding : 12;
+      const rad = typeof this.textBgRadius === "number" ? this.textBgRadius : 16;
+      const opac = typeof this.textBgOpacity === "number" ? this.textBgOpacity : 1;
+
+      const padX = pad;
+      const padY = Math.round(pad * 0.75);
+      const w = this.width + padX * 2;
+      const h = this.height + padY * 2;
+      const x = -this.width / 2 - padX;
+      const y = -this.height / 2 - padY;
+      const r = Math.max(0, Math.min(rad, w / 2, h / 2));
+
+      ctx.save();
+      ctx.fillStyle = this.textBackgroundColor;
+      if (opac < 1) {
+        ctx.globalAlpha = (ctx.globalAlpha || 1) * opac;
+      }
+
+      ctx.beginPath();
+      if (typeof (ctx as any).roundRect === "function") {
+        (ctx as any).roundRect(x, y, w, h, r);
+      } else {
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+      ctx.fill();
+      ctx.restore();
+      return;
+    }
+
+    if (origRenderTextLinesBackground) {
+      origRenderTextLinesBackground.call(this, ctx);
+    }
+  };
+
+  if (textProto.stateProperties && !textProto.stateProperties.includes("textBgRadius")) {
+    textProto.stateProperties.push("textBgRadius", "textBgPadding", "textBgOpacity");
+  }
+  if (textProto.cacheProperties && !textProto.cacheProperties.includes("textBgRadius")) {
+    textProto.cacheProperties.push("textBgRadius", "textBgPadding", "textBgOpacity");
+  }
+}
+
+// Auto-invoke in browser environment
+if (typeof window !== "undefined") {
+  ensureFabricRoundedTextBg();
+}
+
 // Text-on-a-path shapes. "arc" is the original circular layout; the rest are
 // sampled parametric curves (see samplePathPoints).
 type PathShape = 'arc' | 'wave' | 'bump' | 'valley' | 'slant';
@@ -1182,6 +1248,13 @@ export default function FabricCoverStudio({
   const [objectShadowOffsetX, setObjectShadowOffsetX] = useState(5);
   const [objectShadowOffsetY, setObjectShadowOffsetY] = useState(5);
 
+  // Text Rounded Background States
+  const [activeTextEffectPreset, setActiveTextEffectPreset] = useState<'none' | 'shadow' | 'lift' | 'hollow' | 'neon' | 'background'>('none');
+  const [objectTextBgColor, setObjectTextBgColor] = useState<string>("");
+  const [objectTextBgRadius, setObjectTextBgRadius] = useState<number>(16);
+  const [objectTextBgPadding, setObjectTextBgPadding] = useState<number>(12);
+  const [objectTextBgOpacity, setObjectTextBgOpacity] = useState<number>(100);
+
   // Blend mode (Photoshop-style layer compositing)
   const [objectBlendMode, setObjectBlendMode] = useState<string>("source-over");
 
@@ -1371,6 +1444,27 @@ export default function FabricCoverStudio({
         setObjectFontStyle(textObj.fontStyle || "normal");
         setObjectUnderline(!!textObj.underline);
       }
+
+      const objAny = textObj as any;
+      const bg = objAny.textBackgroundColor || '';
+      setObjectTextBgColor(bg);
+      setObjectTextBgRadius(typeof objAny.textBgRadius === 'number' ? objAny.textBgRadius : 16);
+      setObjectTextBgPadding(typeof objAny.textBgPadding === 'number' ? objAny.textBgPadding : 12);
+      setObjectTextBgOpacity(typeof objAny.textBgOpacity === 'number' ? Math.round(objAny.textBgOpacity * 100) : 100);
+
+      if (bg) {
+        setActiveTextEffectPreset('background');
+      } else if (objAny.shadow) {
+        const blur = objAny.shadow.blur;
+        const offY = objAny.shadow.offsetY;
+        if (blur === 18 && offY === 0) setActiveTextEffectPreset('neon');
+        else if (blur === 22 && offY === 8) setActiveTextEffectPreset('lift');
+        else setActiveTextEffectPreset('shadow');
+      } else if (objAny.fill === 'transparent' && (objAny.strokeWidth || 0) > 0) {
+        setActiveTextEffectPreset('hollow');
+      } else {
+        setActiveTextEffectPreset('none');
+      }
     }
 
     if ((activeObject as any).isCurvedText) {
@@ -1520,35 +1614,67 @@ export default function FabricCoverStudio({
       : '#000000';
     // Every preset starts from a clean slate so switching between them (e.g.
     // Background -> Neon) doesn't leave a stray highlight box or outline behind.
-    (activeObject as any).set({ shadow: undefined, stroke: undefined, strokeWidth: 0, textBackgroundColor: '' });
+    (activeObject as any).set({
+      shadow: undefined,
+      stroke: undefined,
+      strokeWidth: 0,
+      textBackgroundColor: '',
+      textBgRadius: undefined,
+      textBgPadding: undefined,
+      textBgOpacity: undefined,
+      padding: 4,
+      dirty: true,
+    });
     setObjectHasShadow(false);
 
     if (preset === 'hollow') {
-      activeObject.set({ fill: 'transparent', stroke: currentFill, strokeWidth: 2 });
+      activeObject.set({ fill: 'transparent', stroke: currentFill, strokeWidth: 2, dirty: true });
       setObjectColor('transparent');
       setObjectStrokeColor(currentFill);
       setObjectStrokeWidth(2);
+      setActiveTextEffectPreset('hollow');
+      setObjectTextBgColor('');
     } else if (preset === 'background') {
-      // Highlight box behind the text, per line (fabric.Text's native
-      // textBackgroundColor) -- picks a contrasting color off the fill's
-      // rough lightness so it stays readable without a manual color control.
+      // Rounded highlight box behind the text with custom radius and padding
       const r = parseInt(currentFill.slice(1, 3), 16) || 0;
       const g = parseInt(currentFill.slice(3, 5), 16) || 0;
       const b = parseInt(currentFill.slice(5, 7), 16) || 0;
       const isLightFill = (r * 299 + g * 587 + b * 114) / 1000 > 150;
-      (activeObject as any).set({ textBackgroundColor: isLightFill ? '#000000' : '#FFFFFF' });
-    } else if (preset !== 'none') {
+      const defaultBg = isLightFill ? '#000000' : '#FFFFFF';
+      const defaultRad = 16;
+      const defaultPad = 12;
+      const defaultOpac = 1;
+
+      (activeObject as any).set({
+        textBackgroundColor: defaultBg,
+        textBgRadius: defaultRad,
+        textBgPadding: defaultPad,
+        textBgOpacity: defaultOpac,
+        padding: Math.max(4, defaultPad),
+        dirty: true,
+      });
+      setObjectTextBgColor(defaultBg);
+      setObjectTextBgRadius(defaultRad);
+      setObjectTextBgPadding(defaultPad);
+      setObjectTextBgOpacity(100);
+      setActiveTextEffectPreset('background');
+    } else if (preset === 'none') {
+      setActiveTextEffectPreset('none');
+      setObjectTextBgColor('');
+    } else {
       const config = preset === 'shadow'
         ? { color: 'rgba(0,0,0,0.45)', blur: 6, offsetX: 3, offsetY: 3 }
         : preset === 'lift'
         ? { color: 'rgba(0,0,0,0.35)', blur: 22, offsetX: 0, offsetY: 8 }
         : { color: currentFill, blur: 18, offsetX: 0, offsetY: 0 }; // neon
-      activeObject.set({ shadow: new fabric.Shadow(config) });
+      activeObject.set({ shadow: new fabric.Shadow(config), dirty: true });
       setObjectHasShadow(true);
       setObjectShadowColor(config.color);
       setObjectShadowBlur(config.blur);
       setObjectShadowOffsetX(config.offsetX);
       setObjectShadowOffsetY(config.offsetY);
+      setActiveTextEffectPreset(preset);
+      setObjectTextBgColor('');
     }
     canvas.requestRenderAll();
     canvas.fire("object:modified", { target: activeObject });
@@ -1910,6 +2036,9 @@ export default function FabricCoverStudio({
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    // Ensure custom rounded text background renderer is active
+    ensureFabricRoundedTextBg();
+
     // Set Fabric.js Object defaults for Canva-style high visibility selection outline & handles
     fabric.Object.prototype.transparentCorners = false;
     fabric.Object.prototype.cornerColor = '#FFFFFF';
@@ -1965,7 +2094,7 @@ export default function FabricCoverStudio({
 
     // Initial history step
     const initialJson = JSON.stringify({
-      canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData']),
+      canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity']),
       background: coverBackgroundRef.current
     });
     historyRef.current = [initialJson];
@@ -2147,7 +2276,7 @@ export default function FabricCoverStudio({
     const saveState = () => {
       if (isUpdatingHistory.current) return;
       const stateObj = {
-        canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData']),
+        canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity']),
         background: coverBackgroundRef.current
       };
       const json = JSON.stringify(stateObj);
@@ -2952,7 +3081,7 @@ export default function FabricCoverStudio({
     pageCount,
     trimSize,
     background: coverBackgroundRef.current,
-    canvasJson: canvas ? canvas.toJSON(['isCurvedText', 'curvedTextData']) : null,
+    canvasJson: canvas ? canvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity']) : null,
   });
 
   // Review links carry a flattened preview rather than the editable design.
@@ -4503,7 +4632,7 @@ export default function FabricCoverStudio({
     (targetObj as any).seriesTitleMarker = true;
     canvas.discardActiveObject();
     canvas.requestRenderAll();
-    const snapshot = canvas.toJSON(['isCurvedText', 'curvedTextData', 'seriesTitleMarker']);
+    const snapshot = canvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity', 'seriesTitleMarker']);
     delete (targetObj as any).seriesTitleMarker;
     canvas.requestRenderAll();
 
@@ -4984,16 +5113,158 @@ export default function FabricCoverStudio({
                       { key: 'hollow', label: 'Hollow' },
                       { key: 'neon', label: 'Neon' },
                       { key: 'background', label: 'Background' },
-                    ] as const).map((fx) => (
-                      <button
-                        key={fx.key}
-                        onClick={() => applyTextEffectPreset(fx.key)}
-                        className="py-1.5 rounded-lg border border-slate-200 bg-white hover:border-indigo-400 hover:bg-slate-50 text-slate-700 text-[8px] font-black uppercase transition-colors cursor-pointer"
-                      >
-                        {fx.label}
-                      </button>
-                    ))}
+                    ] as const).map((fx) => {
+                      const isFxActive = (activeTextEffectPreset === fx.key) || (fx.key === 'background' && Boolean((activeObject as any)?.textBackgroundColor));
+                      return (
+                        <button
+                          key={fx.key}
+                          onClick={() => applyTextEffectPreset(fx.key)}
+                          className={`py-1.5 rounded-lg border text-[8px] font-black uppercase transition-colors cursor-pointer ${
+                            isFxActive
+                              ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                              : "border-slate-200 bg-white hover:border-indigo-400 hover:bg-slate-50 text-slate-700"
+                          }`}
+                        >
+                          {fx.label}
+                        </button>
+                      );
+                    })}
                   </div>
+
+                  {/* Custom Rounded Background Controls (shown when Background effect is active) */}
+                  {(activeTextEffectPreset === 'background' || Boolean((activeObject as any)?.textBackgroundColor)) && (
+                    <div className="mt-2.5 p-3 rounded-xl bg-slate-100/90 border border-slate-200/90 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-indigo-600 inline-block" />
+                          Custom Background
+                        </span>
+                        <button
+                          onClick={() => applyTextEffectPreset('none')}
+                          className="text-[8px] font-black text-rose-500 hover:text-rose-700 uppercase cursor-pointer"
+                          title="Remove Background"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      {/* Color Picker & Quick Palette */}
+                      <div>
+                        <div className="flex justify-between items-center text-[9px] font-black text-slate-500 uppercase mb-1">
+                          <span>Color</span>
+                          <span className="text-slate-700 font-mono text-[10px]">{objectTextBgColor || '#000000'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-slate-300 shadow-sm shrink-0 cursor-pointer">
+                            <input
+                              type="color"
+                              value={objectTextBgColor && objectTextBgColor.startsWith('#') ? objectTextBgColor : '#000000'}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setObjectTextBgColor(val);
+                                (activeObject as any).set({ textBackgroundColor: val, dirty: true });
+                                canvas?.requestRenderAll();
+                                canvas?.fire("object:modified", { target: activeObject });
+                              }}
+                              className="absolute -top-2 -left-2 w-12 h-12 cursor-pointer border-0 p-0"
+                            />
+                          </div>
+                          <div className="flex-1 flex gap-1 items-center overflow-x-auto py-0.5">
+                            {['#000000', '#FFFFFF', '#F59E0B', '#EF4444', '#10B981', '#3B82F6', '#6366F1', '#EC4899'].map((hex) => (
+                              <button
+                                key={hex}
+                                onClick={() => {
+                                  setObjectTextBgColor(hex);
+                                  (activeObject as any).set({ textBackgroundColor: hex, dirty: true });
+                                  canvas?.requestRenderAll();
+                                  canvas?.fire("object:modified", { target: activeObject });
+                                }}
+                                style={{ backgroundColor: hex }}
+                                className={`w-5 h-5 rounded-md border shrink-0 transition-transform hover:scale-110 cursor-pointer ${
+                                  objectTextBgColor?.toLowerCase() === hex.toLowerCase() ? 'ring-2 ring-indigo-500 ring-offset-1 border-slate-400' : 'border-slate-300'
+                                }`}
+                                title={hex}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Corner Roundness (Radius) */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-black text-slate-500 uppercase">
+                          <span>Corner Roundness</span>
+                          <span className="text-indigo-600 font-bold font-mono">{objectTextBgRadius}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="60"
+                          step="2"
+                          value={objectTextBgRadius}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setObjectTextBgRadius(val);
+                            (activeObject as any).set({ textBgRadius: val, dirty: true });
+                            canvas?.requestRenderAll();
+                            canvas?.fire("object:modified", { target: activeObject });
+                          }}
+                          className="w-full accent-indigo-600 h-1.5 cursor-pointer bg-slate-200 rounded-lg"
+                        />
+                        <div className="flex justify-between text-[7.5px] font-bold text-slate-400 uppercase">
+                          <span>Sharp (0px)</span>
+                          <span>Rounded</span>
+                          <span>Pill (60px)</span>
+                        </div>
+                      </div>
+
+                      {/* Padding / Spread */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-black text-slate-500 uppercase">
+                          <span>Padding / Spread</span>
+                          <span className="text-indigo-600 font-bold font-mono">{objectTextBgPadding}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="50"
+                          step="2"
+                          value={objectTextBgPadding}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setObjectTextBgPadding(val);
+                            (activeObject as any).set({ textBgPadding: val, padding: Math.max(4, val), dirty: true });
+                            canvas?.requestRenderAll();
+                            canvas?.fire("object:modified", { target: activeObject });
+                          }}
+                          className="w-full accent-indigo-600 h-1.5 cursor-pointer bg-slate-200 rounded-lg"
+                        />
+                      </div>
+
+                      {/* Opacity Slider */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-black text-slate-500 uppercase">
+                          <span>Opacity</span>
+                          <span className="text-indigo-600 font-bold font-mono">{objectTextBgOpacity}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="10"
+                          max="100"
+                          step="5"
+                          value={objectTextBgOpacity}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setObjectTextBgOpacity(val);
+                            (activeObject as any).set({ textBgOpacity: val / 100, dirty: true });
+                            canvas?.requestRenderAll();
+                            canvas?.fire("object:modified", { target: activeObject });
+                          }}
+                          className="w-full accent-indigo-600 h-1.5 cursor-pointer bg-slate-200 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Spacing & Height */}
@@ -7428,6 +7699,25 @@ export default function FabricCoverStudio({
                   className="w-6 h-6 rounded-full border border-slate-300 cursor-pointer p-0 bg-transparent shadow-sm hover:scale-110 transition-transform"
                 />
               </div>
+
+              {/* Text Background Color Swatch (if text has background) */}
+              {(activeObject.type === 'i-text' || activeObject.type === 'text' || activeObject.type === 'textbox') && Boolean((activeObject as any).textBackgroundColor) && (
+                <div className="flex items-center gap-1.5" title="Change Text Box Background Color">
+                  <span className="text-[9px] font-black text-slate-400 uppercase hidden sm:inline">BG</span>
+                  <input
+                    type="color"
+                    value={typeof (activeObject as any).textBackgroundColor === 'string' && (activeObject as any).textBackgroundColor.startsWith('#') ? (activeObject as any).textBackgroundColor : '#000000'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setObjectTextBgColor(val);
+                      (activeObject as any).set({ textBackgroundColor: val, dirty: true });
+                      canvas?.requestRenderAll();
+                      canvas?.fire("object:modified", { target: activeObject });
+                    }}
+                    className="w-6 h-6 rounded-full border border-slate-300 cursor-pointer p-0 bg-transparent shadow-sm hover:scale-110 transition-transform"
+                  />
+                </div>
+              )}
 
               {/* Stroke Width Slider */}
               <div className="flex items-center gap-1.5 px-2 border-l border-slate-200">

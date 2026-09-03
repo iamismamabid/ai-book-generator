@@ -31,7 +31,7 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
   { id: "ocean", category: "Nature & Animals", name: "Ocean Life",
     words: ["DOLPHIN", "OCTOPUS", "STARFISH", "CORAL", "SHARK", "WHALE", "JELLYFISH", "SEAHORSE", "LOBSTER", "STINGRAY", "SEAWEED", "TIDEPOOL", "URCHIN"] },
   { id: "farm", category: "Nature & Animals", name: "Farm Animals",
-    words: ["COW", "PIG", "CHICKEN", "HORSE", "SHEEP", "GOAT", "DUCK", "ROOSTER", "TRACTOR", "BARN", "PASTURE", "HAYSTACK", "TURKEY"] },
+    words: ["COW", "DONKEY", "CHICKEN", "HORSE", "SHEEP", "GOAT", "DUCK", "ROOSTER", "TRACTOR", "BARN", "PASTURE", "HAYSTACK", "TURKEY"] },
   { id: "birds", category: "Nature & Animals", name: "Birdwatching",
     words: ["SPARROW", "EAGLE", "ROBIN", "CARDINAL", "HUMMINGBIRD", "OWL", "FALCON", "WOODPECKER", "SWALLOW", "PELICAN", "FEATHER", "NEST", "BIRDSONG"] },
   { id: "garden", category: "Nature & Animals", name: "Garden & Flowers",
@@ -45,7 +45,7 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
   { id: "coffee", category: "Food & Drink", name: "Coffee & Tea",
     words: ["ESPRESSO", "LATTE", "CAPPUCCINO", "MOCHA", "BARISTA", "ROAST", "CHAMOMILE", "TEAPOT", "CARAMEL", "FRAPPE", "AROMA", "STEAM"] },
   { id: "italian", category: "Food & Drink", name: "Italian Cuisine",
-    words: ["PASTA", "PIZZA", "RISOTTO", "LASAGNA", "GELATO", "PARMESAN", "TIRAMISU", "RAVIOLI", "BRUSCHETTA", "ESPRESSO", "PROSCIUTTO", "BASIL"] },
+    words: ["PASTA", "PIZZA", "RISOTTO", "LASAGNA", "GELATO", "PARMESAN", "TIRAMISU", "RAVIOLI", "BRUSCHETTA", "ESPRESSO", "MOZZARELLA", "BASIL"] },
 
   // --- Travel & Geography ---
   { id: "countries", category: "Travel & Geography", name: "World Countries",

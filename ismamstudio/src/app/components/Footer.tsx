@@ -76,6 +76,24 @@ export default function Footer() {
                   className="h-11 w-auto object-contain drop-shadow-sm"
                 />
               </a>
+              {/* SaaSHub Approved Badge */}
+              <a
+                href="https://www.saashub.com/kdpage?utm_source=badge&utm_campaign=badge&utm_content=kdpage&badge_variant=color&badge_kind=approved"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block hover:opacity-85 transition-opacity"
+                title="KDPage on SaaSHub"
+              >
+                <img
+                  src="https://cdn-b.saashub.com/img/badges/approved-color.png?v=1"
+                  alt="KDPage badge"
+                  loading="lazy"
+                  width={150}
+                  height={50}
+                  className="h-9 w-auto object-contain drop-shadow-sm"
+                  style={{ maxWidth: "150px" }}
+                />
+              </a>
             </div>
           </div>
 

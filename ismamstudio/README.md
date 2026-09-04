@@ -2,6 +2,12 @@
 
 ![KDPage Platform](https://www.kdpage.com/logo_transparent.png)
 
+<p align="center">
+  <a href="https://www.saashub.com/kdpage?utm_source=badge&utm_campaign=badge&utm_content=kdpage&badge_variant=color&badge_kind=approved" target="_blank">
+    <img src="https://cdn-b.saashub.com/img/badges/approved-color.png?v=1" alt="KDPage badge" style="max-width: 150px;" />
+  </a>
+</p>
+
 > **The ultimate all-in-one web-based publishing toolkit for Amazon KDP self-publishers.**  
 > Create 300 DPI print-ready puzzle interiors, non-living coloring books, color-by-number templates, and full wraparound covers in seconds — 100% compliant with KDP and IngramSpark print standards.
 

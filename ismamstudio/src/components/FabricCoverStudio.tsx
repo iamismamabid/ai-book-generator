@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { fabric } from "fabric";
 import { 
@@ -4304,7 +4304,7 @@ export default function FabricCoverStudio({
           const scaledW = origW * scale;
           const scaledH = origH * scale;
 
-          img.set({
+          (img as any).set({
             id: `pasted-image-${Date.now()}`,
             left: layout.frontCoverCenterPx - scaledW / 2,
             top: layout.canvasHeight / 2 - scaledH / 2,

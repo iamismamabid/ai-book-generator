@@ -12,6 +12,7 @@ import { saveCoverDraftToIndexedDB, loadCoverDraftFromIndexedDB } from "@/lib/in
 // Dynamic imports — both components use browser-only APIs (canvas, localStorage)
 const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
 const BookBuilder = dynamic(() => import("@/components/BookBuilder"), { ssr: false });
+import CoverStudioErrorBoundary from "@/components/CoverStudioErrorBoundary";
 
 const TRIM_SIZES = [
   { label: '6" x 9" (Novel)', w: 6, h: 9 },
@@ -436,23 +437,29 @@ export default function MasterStudioApp() {
               <Loader2 className="w-8 h-8 animate-spin" />
             </div>
           ) : (
-            <FabricCoverStudio
-              isActive={activeTab === 'cover'}
-              trimSize={trimSize}
-              setTrimSize={setTrimSize}
-              pageCount={pageCount}
-              setPageCount={setPageCount}
-              coverBackground={coverBackground}
-              setCoverBackground={setCoverBackground}
-              showKdpGuides={showKdpGuides}
-              setShowKdpGuides={setShowKdpGuides}
-              snapToGrid={snapToGrid}
-              setSnapToGrid={setSnapToGrid}
-              initialElements={coverElements}
-              onSaveWorkspace={(elements) => {
-                setCoverElements(elements);
-              }}
-            />
+            <CoverStudioErrorBoundary>
+              <FabricCoverStudio
+                isActive={activeTab === 'cover'}
+                trimSize={trimSize}
+                setTrimSize={setTrimSize}
+                pageCount={pageCount}
+                setPageCount={(val) => {
+                  const numeric = typeof val === 'function' ? val(pageCount) : val;
+                  const safe = Math.max(24, Math.min(1000, Number(numeric) || 100));
+                  setPageCount(safe);
+                }}
+                coverBackground={coverBackground}
+                setCoverBackground={setCoverBackground}
+                showKdpGuides={showKdpGuides}
+                setShowKdpGuides={setShowKdpGuides}
+                snapToGrid={snapToGrid}
+                setSnapToGrid={setSnapToGrid}
+                initialElements={coverElements}
+                onSaveWorkspace={(elements) => {
+                  setCoverElements(elements);
+                }}
+              />
+            </CoverStudioErrorBoundary>
           )}
         </div>
       </main>

@@ -669,148 +669,177 @@ interface FabricCoverStudioProps {
 }
 
 const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
-  return fCanvas.getObjects().map((obj: any) => {
-    let type = '';
-    if (obj.type === 'i-text' || obj.type === 'text' || obj.type === 'textbox') {
-      type = obj.type === 'textbox' ? 'textbox' : 'text';
-    } else if (obj.type === 'rect') {
-      type = 'rect';
-    } else if (obj.type === 'circle') {
-      type = 'circle';
-    } else if (obj.type === 'line') {
-      type = 'line';
-    } else if (obj.type === 'image') {
-      type = 'clipart';
-    } else if (obj.type === 'triangle') {
-      type = 'triangle';
-    } else if (obj.type === 'polygon' && obj.isHexagon) {
-      type = 'hexagon';
-    } else if (obj.type === 'polygon' && obj.isPentagon) {
-      type = 'pentagon';
-    } else if (obj.type === 'polygon' && obj.isOctagon) {
-      type = 'octagon';
-    } else if (obj.type === 'polygon' && obj.isDiamond) {
-      type = 'diamond';
-    } else if (obj.type === 'polygon' && obj.isTrapezoid) {
-      type = 'trapezoid';
-    } else if (obj.type === 'ellipse') {
-      type = 'ellipse';
-    } else if (obj.type === 'polygon') {
-      type = 'star';
-    } else if (obj.type === 'path' && obj.isHeart) {
-      type = 'heart';
-    } else if (obj.type === 'path') {
-      type = 'path';
-    } else if (obj.type === 'group' && obj.isCurvedText) {
-      type = 'curvedtext';
-    }
+  if (!fCanvas || typeof fCanvas.getObjects !== 'function') return [];
+  try {
+    return fCanvas.getObjects().map((obj: any) => {
+      try {
+        let type = '';
+        if (obj.type === 'i-text' || obj.type === 'text' || obj.type === 'textbox') {
+          type = obj.type === 'textbox' ? 'textbox' : 'text';
+        } else if (obj.type === 'rect') {
+          type = 'rect';
+        } else if (obj.type === 'circle') {
+          type = 'circle';
+        } else if (obj.type === 'line') {
+          type = 'line';
+        } else if (obj.type === 'image') {
+          type = 'clipart';
+        } else if (obj.type === 'triangle') {
+          type = 'triangle';
+        } else if (obj.type === 'polygon' && obj.isHexagon) {
+          type = 'hexagon';
+        } else if (obj.type === 'polygon' && obj.isPentagon) {
+          type = 'pentagon';
+        } else if (obj.type === 'polygon' && obj.isOctagon) {
+          type = 'octagon';
+        } else if (obj.type === 'polygon' && obj.isDiamond) {
+          type = 'diamond';
+        } else if (obj.type === 'polygon' && obj.isTrapezoid) {
+          type = 'trapezoid';
+        } else if (obj.type === 'ellipse') {
+          type = 'ellipse';
+        } else if (obj.type === 'polygon') {
+          type = 'star';
+        } else if (obj.type === 'path' && obj.isHeart) {
+          type = 'heart';
+        } else if (obj.type === 'path') {
+          type = 'path';
+        } else if (obj.type === 'group' && obj.isCurvedText) {
+          type = 'curvedtext';
+        }
 
+        const shadowData = obj.shadow ? {
+          color: obj.shadow.color,
+          blur: obj.shadow.blur,
+          offsetX: obj.shadow.offsetX,
+          offsetY: obj.shadow.offsetY,
+        } : undefined;
 
-    const shadowData = obj.shadow ? {
-      color: obj.shadow.color,
-      blur: obj.shadow.blur,
-      offsetX: obj.shadow.offsetX,
-      offsetY: obj.shadow.offsetY,
-    } : undefined;
+        let fillVal = '#FFFFFF';
+        try {
+          if (typeof obj.fill === 'string') {
+            fillVal = obj.fill;
+          } else if (obj.fill && typeof obj.fill.toObject === 'function') {
+            fillVal = obj.fill.toObject();
+          } else if (obj.fill) {
+            fillVal = obj.fill;
+          }
+        } catch {
+          fillVal = '#FFFFFF';
+        }
 
-    const base: any = {
-      id: obj.id || `${type}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-      type,
-      x: obj.left,
-      y: obj.top,
-      rotation: obj.angle || 0,
-      opacity: obj.opacity ?? 1,
-      fill: typeof obj.fill === 'string' ? obj.fill : (obj.fill?.toObject ? obj.fill.toObject() : obj.fill),
-      stroke: obj.stroke,
-      strokeWidth: obj.strokeWidth,
-      strokeDashArray: obj.strokeDashArray || undefined,
-      shadow: shadowData,
-      globalCompositeOperation: obj.globalCompositeOperation || 'source-over',
-      flipX: !!obj.flipX,
-      flipY: !!obj.flipY,
-      isLocked: !!obj.isLocked
-    };
+        const base: any = {
+          id: obj.id || `${type}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
+          type,
+          x: obj.left,
+          y: obj.top,
+          rotation: obj.angle || 0,
+          opacity: obj.opacity ?? 1,
+          fill: fillVal,
+          stroke: obj.stroke,
+          strokeWidth: obj.strokeWidth,
+          strokeDashArray: obj.strokeDashArray || undefined,
+          shadow: shadowData,
+          globalCompositeOperation: obj.globalCompositeOperation || 'source-over',
+          flipX: !!obj.flipX,
+          flipY: !!obj.flipY,
+          isLocked: !!obj.isLocked
+        };
 
-    // Set the id back on the object so it stays consistent
-    obj.id = base.id;
+        // Set the id back on the object so it stays consistent
+        obj.id = base.id;
 
-    if (type === 'text' || type === 'textbox') {
-      base.text = obj.text;
-      base.fontSize = Math.round((obj.fontSize || 24) * (obj.scaleX || 1));
-      base.scaleX = 1;
-      base.scaleY = 1;
-      base.fontFamily = obj.fontFamily || 'Arial';
-      const rawStyle = String(obj.fontStyle || 'normal').toLowerCase();
-      const rawWeight = String(obj.fontWeight || 'normal').toLowerCase();
-      base.fontStyle = rawStyle === 'italic' || rawStyle === 'oblique' ? rawStyle : 'normal';
-      base.fontWeight = rawStyle === 'bold' || rawWeight === 'bold' ? 'bold' : (obj.fontWeight || 'normal');
-      base.align = obj.textAlign;
-      base.width = (obj.width || 240) * (obj.scaleX || 1);
-      base.underline = !!obj.underline;
-      base.linethrough = !!obj.linethrough;
-      base.charSpacing = obj.charSpacing || 0;
-      base.lineHeight = obj.lineHeight || 1.16;
-      base.styles = obj.styles;
-      base.originX = obj.originX;
-      base.originY = obj.originY;
-      base.paintFirst = obj.paintFirst || 'fill';
-      base.textBackgroundColor = obj.textBackgroundColor || '';
-      base.textBgRadius = typeof obj.textBgRadius === 'number' ? obj.textBgRadius : undefined;
-      base.textBgPadding = typeof obj.textBgPadding === 'number' ? obj.textBgPadding : undefined;
-      base.textBgOpacity = typeof obj.textBgOpacity === 'number' ? obj.textBgOpacity : undefined;
-      base.textBgStroke = obj.textBgStroke || '';
-      base.textBgStrokeWidth = typeof obj.textBgStrokeWidth === 'number' ? obj.textBgStrokeWidth : undefined;
-      if (type === 'textbox') {
-        base.isTextbox = true;
+        if (type === 'text' || type === 'textbox') {
+          base.text = String(obj.text ?? '');
+          base.fontSize = Math.round((obj.fontSize || 24) * (obj.scaleX || 1));
+          base.scaleX = 1;
+          base.scaleY = 1;
+          base.fontFamily = obj.fontFamily || 'Arial';
+          const rawStyle = String(obj.fontStyle || 'normal').toLowerCase();
+          const rawWeight = String(obj.fontWeight || 'normal').toLowerCase();
+          base.fontStyle = rawStyle === 'italic' || rawStyle === 'oblique' ? rawStyle : 'normal';
+          base.fontWeight = rawStyle === 'bold' || rawWeight === 'bold' ? 'bold' : (obj.fontWeight || 'normal');
+          base.align = obj.textAlign;
+          base.width = (obj.width || 240) * (obj.scaleX || 1);
+          base.underline = !!obj.underline;
+          base.linethrough = !!obj.linethrough;
+          base.charSpacing = obj.charSpacing || 0;
+          base.lineHeight = obj.lineHeight || 1.16;
+          base.styles = obj.styles;
+          base.originX = obj.originX;
+          base.originY = obj.originY;
+          base.paintFirst = obj.paintFirst || 'fill';
+          base.textBackgroundColor = obj.textBackgroundColor || '';
+          base.textBgRadius = typeof obj.textBgRadius === 'number' ? obj.textBgRadius : undefined;
+          base.textBgPadding = typeof obj.textBgPadding === 'number' ? obj.textBgPadding : undefined;
+          base.textBgOpacity = typeof obj.textBgOpacity === 'number' ? obj.textBgOpacity : undefined;
+          base.textBgStroke = obj.textBgStroke || '';
+          base.textBgStrokeWidth = typeof obj.textBgStrokeWidth === 'number' ? obj.textBgStrokeWidth : undefined;
+          if (type === 'textbox') {
+            base.isTextbox = true;
+          }
+        } else if (type === 'curvedtext') {
+          base.curvedTextData = obj.curvedTextData;
+        } else if (type === 'rect' || type === 'triangle' || type === 'hexagon' || type === 'star' || type === 'heart' || type === 'pentagon' || type === 'octagon' || type === 'ellipse' || type === 'diamond' || type === 'trapezoid' || type === 'path') {
+          base.width = (obj.width || 100) * (obj.scaleX || 1);
+          base.height = (obj.height || 100) * (obj.scaleY || 1);
+          base.scaleX = 1;
+          base.scaleY = 1;
+          if (type === 'rect') {
+            base.cornerRadius = obj.rx;
+          } else if (type === 'star' || type === 'pentagon' || type === 'octagon' || type === 'diamond' || type === 'trapezoid') {
+            base.points = obj.points;
+          } else if (type === 'path') {
+            base.pathData = obj.svgPathData || '';
+            base.viewBox = obj.viewBox || 24;
+          }
+        } else if (type === 'circle') {
+          base.radius = (obj.radius || 50) * (obj.scaleX || 1);
+          base.scaleX = 1;
+          base.scaleY = 1;
+        } else if (type === 'clipart') {
+          let srcVal = '';
+          try {
+            srcVal = obj.getSrc ? obj.getSrc() : (obj._element?.src || '');
+          } catch {
+            srcVal = '';
+          }
+          base.src = srcVal;
+          base.width = (obj.width || 150) * (obj.scaleX || 1);
+          base.height = (obj.height || 150) * (obj.scaleY || 1);
+          base.scaleX = 1;
+          base.scaleY = 1;
+          const imgFilters = (obj.filters || []) as any[];
+          const findFilter = (t: string) => imgFilters.find((f) => f && f.type === t);
+          base.imageFilters = {
+            brightness: findFilter("Brightness")?.brightness ?? 0,
+            contrast: findFilter("Contrast")?.contrast ?? 0,
+            saturation: findFilter("Saturation")?.saturation ?? 0,
+            hue: Math.round((findFilter("HueRotation")?.rotation ?? 0) * 180),
+            blur: findFilter("Blur")?.blur ?? 0,
+            sharpen: !!findFilter("Convolute"),
+            pixelate: findFilter("Pixelate")?.blocksize ?? 0,
+            noise: findFilter("Noise")?.noise ?? 0,
+            grayscale: !!findFilter("Grayscale"),
+            sepia: !!findFilter("Sepia"),
+            invert: !!findFilter("Invert")
+          };
+        } else if (type === 'line') {
+          base.points = [obj.x1, obj.y1, obj.x2, obj.y2];
+          base.scaleX = 1;
+          base.scaleY = 1;
+        }
+
+        return base;
+      } catch (innerErr) {
+        console.warn("Failed to serialize fabric object:", innerErr);
+        return null;
       }
-    } else if (type === 'curvedtext') {
-      base.curvedTextData = obj.curvedTextData;
-    } else if (type === 'rect' || type === 'triangle' || type === 'hexagon' || type === 'star' || type === 'heart' || type === 'pentagon' || type === 'octagon' || type === 'ellipse' || type === 'diamond' || type === 'trapezoid' || type === 'path') {
-      base.width = (obj.width || 100) * (obj.scaleX || 1);
-      base.height = (obj.height || 100) * (obj.scaleY || 1);
-      base.scaleX = 1;
-      base.scaleY = 1;
-      if (type === 'rect') {
-        base.cornerRadius = obj.rx;
-      } else if (type === 'star' || type === 'pentagon' || type === 'octagon' || type === 'diamond' || type === 'trapezoid') {
-        base.points = obj.points;
-      } else if (type === 'path') {
-        base.pathData = obj.svgPathData || '';
-        base.viewBox = obj.viewBox || 24;
-      }
-    } else if (type === 'circle') {
-      base.radius = (obj.radius || 50) * (obj.scaleX || 1);
-      base.scaleX = 1;
-      base.scaleY = 1;
-    } else if (type === 'clipart') {
-      base.src = obj.getSrc ? obj.getSrc() : obj._element?.src || '';
-      base.width = (obj.width || 150) * (obj.scaleX || 1);
-      base.height = (obj.height || 150) * (obj.scaleY || 1);
-      base.scaleX = 1;
-      base.scaleY = 1;
-      const imgFilters = (obj.filters || []) as any[];
-      const findFilter = (t: string) => imgFilters.find((f) => f && f.type === t);
-      base.imageFilters = {
-        brightness: findFilter("Brightness")?.brightness ?? 0,
-        contrast: findFilter("Contrast")?.contrast ?? 0,
-        saturation: findFilter("Saturation")?.saturation ?? 0,
-        hue: Math.round((findFilter("HueRotation")?.rotation ?? 0) * 180),
-        blur: findFilter("Blur")?.blur ?? 0,
-        sharpen: !!findFilter("Convolute"),
-        pixelate: findFilter("Pixelate")?.blocksize ?? 0,
-        noise: findFilter("Noise")?.noise ?? 0,
-        grayscale: !!findFilter("Grayscale"),
-        sepia: !!findFilter("Sepia"),
-        invert: !!findFilter("Invert")
-      };
-    } else if (type === 'line') {
-      base.points = [obj.x1, obj.y1, obj.x2, obj.y2];
-      base.scaleX = 1;
-      base.scaleY = 1;
-    }
-
-    return base;
-  });
+    }).filter(Boolean);
+  } catch (err) {
+    console.error("Failed to serialize legacy elements:", err);
+    return [];
+  }
 };
 
 export default function FabricCoverStudio({
@@ -2541,16 +2570,24 @@ export default function FabricCoverStudio({
     updateLayers();
 
     return () => {
-      fCanvas.off("object:added", saveState);
-      fCanvas.off("object:modified", saveState);
-      fCanvas.off("object:removed", saveState);
-      if (fCanvas.getObjects().length > 0) {
-        lastLiveElementsRef.current = serializeToLegacyElements(fCanvas);
+      try {
+        fCanvas.off("object:added", saveState);
+        fCanvas.off("object:modified", saveState);
+        fCanvas.off("object:removed", saveState);
+        if (typeof fCanvas.getObjects === 'function' && fCanvas.getObjects().length > 0) {
+          lastLiveElementsRef.current = serializeToLegacyElements(fCanvas);
+        }
+      } catch (err) {
+        console.warn("Error during canvas cleanup serialization:", err);
       }
       if (typeof window !== "undefined") {
         window.removeEventListener("mouseup", handleWindowMouseUp);
       }
-      fCanvas.dispose();
+      try {
+        fCanvas.dispose();
+      } catch (err) {
+        console.warn("Error disposing canvas:", err);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout.canvasWidth, layout.canvasHeight]);
@@ -2993,238 +3030,274 @@ export default function FabricCoverStudio({
     });
 
     elements.forEach(el => {
-      let obj: fabric.Object | null = null;
+      try {
+        if (!el) return;
+        let obj: fabric.Object | null = null;
 
-      if (el.type === 'text' || el.type === 'textbox') {
-        const fillVal = resolveFill(el.fill, '#FFFFFF');
+        if (el.type === 'text' || el.type === 'textbox') {
+          const fillVal = resolveFill(el.fill, '#FFFFFF');
 
-        const rawStyle = String(el.fontStyle || 'normal').toLowerCase();
-        const rawWeight = String(el.fontWeight || 'normal').toLowerCase();
-        const resolvedStyle = rawStyle === 'italic' || rawStyle === 'oblique' ? rawStyle : 'normal';
-        const resolvedWeight = rawStyle === 'bold' || rawWeight === 'bold' ? 'bold' : (el.fontWeight || 'normal');
+          const rawStyle = String(el.fontStyle || 'normal').toLowerCase();
+          const rawWeight = String(el.fontWeight || 'normal').toLowerCase();
+          const resolvedStyle = rawStyle === 'italic' || rawStyle === 'oblique' ? rawStyle : 'normal';
+          const resolvedWeight = rawStyle === 'bold' || rawWeight === 'bold' ? 'bold' : (el.fontWeight || 'normal');
 
-        const textOptions = {
-          ...resolveCommon(el),
-          fontSize: el.fontSize || 24,
-          fill: fillVal,
-          fontFamily: el.fontFamily || 'Arial',
-          fontStyle: resolvedStyle,
-          fontWeight: resolvedWeight,
-          textAlign: el.align || 'center',
-          underline: !!el.underline,
-          linethrough: !!el.linethrough,
-          charSpacing: el.charSpacing || 0,
-          lineHeight: el.lineHeight || 1.16,
-          styles: el.styles || {},
-          originX: el.originX || 'left',
-          originY: el.originY || 'top',
-          paintFirst: el.paintFirst || 'fill',
-          textBackgroundColor: el.textBackgroundColor || '',
-          textBgRadius: typeof el.textBgRadius === 'number' ? el.textBgRadius : undefined,
-          textBgPadding: typeof el.textBgPadding === 'number' ? el.textBgPadding : undefined,
-          textBgOpacity: typeof el.textBgOpacity === 'number' ? el.textBgOpacity : undefined,
-          textBgStroke: el.textBgStroke || '',
-          textBgStrokeWidth: typeof el.textBgStrokeWidth === 'number' ? el.textBgStrokeWidth : undefined,
-          padding: el.textBackgroundColor ? Math.max(6, el.textBgPadding || 14) : 4
-        };
-
-        if (el.isTextbox || el.type === 'textbox') {
-          obj = new fabric.Textbox(el.text, {
-            ...textOptions,
-            width: el.width || 240
-          } as any);
-        } else {
-          obj = new fabric.IText(el.text, textOptions as any);
-        }
-      } else if (el.type === 'rect') {
-        obj = new fabric.Rect({
-          ...resolveCommon(el),
-          width: el.width || 100,
-          height: el.height || 100,
-          fill: resolveFill(el.fill, '#F59E0B'),
-          rx: el.cornerRadius || 0,
-          ry: el.cornerRadius || 0,
-        } as any);
-      } else if (el.type === 'circle') {
-        obj = new fabric.Circle({
-          ...resolveCommon(el),
-          radius: el.radius || 50,
-          fill: resolveFill(el.fill, '#3B82F6'),
-        } as any);
-      } else if (el.type === 'line') {
-        obj = new fabric.Line(el.points || [0, 0, 100, 0], {
-          ...resolveCommon(el),
-          stroke: el.stroke || '#FFFFFF',
-          strokeWidth: el.strokeWidth || 4,
-        } as any);
-      } else if (el.type === 'triangle') {
-        obj = new fabric.Triangle({
-          ...resolveCommon(el),
-          width: el.width || 100,
-          height: el.height || 100,
-          fill: resolveFill(el.fill, '#10B981'),
-        } as any);
-      } else if (el.type === 'hexagon') {
-        const points = [
-          { x: 50, y: 0 },
-          { x: 100, y: 25 },
-          { x: 100, y: 75 },
-          { x: 50, y: 100 },
-          { x: 0, y: 75 },
-          { x: 0, y: 25 }
-        ];
-        obj = new fabric.Polygon(points, {
-          ...resolveCommon(el),
-          fill: resolveFill(el.fill, '#8B5CF6'),
-          scaleX: (el.width || 100) / 100,
-          scaleY: (el.height || 100) / 100,
-        } as any);
-        (obj as any).isHexagon = true;
-      } else if (el.type === 'star') {
-        obj = new fabric.Polygon(el.points || [], {
-          ...resolveCommon(el),
-          fill: resolveFill(el.fill, '#10B981'),
-          scaleX: (el.width || 238) / 238,
-          scaleY: (el.height || 226) / 226,
-        } as any);
-      } else if (el.type === 'heart') {
-        const heartPath = "M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z";
-        obj = new fabric.Path(heartPath, {
-          ...resolveCommon(el),
-          fill: resolveFill(el.fill, '#EF4444'),
-          scaleX: (el.width || 80) / 80,
-          scaleY: (el.height || 80) / 80,
-        } as any);
-        (obj as any).isHeart = true;
-      } else if (el.type === 'path') {
-        const vb = el.viewBox || 24;
-        obj = new fabric.Path(el.pathData, {
-          ...resolveCommon(el),
-          fill: resolveFill(el.fill, 'transparent'),
-          scaleX: (el.width || vb) / vb,
-          scaleY: (el.height || vb) / vb,
-          strokeLineCap: 'round',
-          strokeLineJoin: 'round'
-        } as any);
-        (obj as any).svgPathData = el.pathData;
-        (obj as any).viewBox = vb;
-      } else if (el.type === 'curvedtext' && el.curvedTextData) {
-        obj = buildCurvedTextGroup({
-          ...el.curvedTextData,
-          left: el.x,
-          top: el.y,
-        });
-        (obj as any).id = el.id;
-        obj.set({
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1,
-          flipX: !!el.flipX,
-          flipY: !!el.flipY,
-          globalCompositeOperation: el.globalCompositeOperation || 'source-over',
-          shadow: el.shadow ? new fabric.Shadow(el.shadow) : undefined
-        });
-      } else if (el.type === 'pentagon') {
-        const points = [
-          { x: 50, y: 0 },
-          { x: 100, y: 38 },
-          { x: 81, y: 100 },
-          { x: 19, y: 100 },
-          { x: 0, y: 38 }
-        ];
-        obj = new fabric.Polygon(points, {
-          ...resolveCommon(el),
-          fill: resolveFill(el.fill, 'transparent'),
-          scaleX: (el.width || 100) / 100,
-          scaleY: (el.height || 100) / 100,
-        } as any);
-        (obj as any).isPentagon = true;
-      } else if (el.type === 'octagon') {
-        const points = [
-          { x: 29, y: 0 },
-          { x: 71, y: 0 },
-          { x: 100, y: 29 },
-          { x: 100, y: 71 },
-          { x: 71, y: 100 },
-          { x: 29, y: 100 },
-          { x: 0, y: 71 },
-          { x: 0, y: 29 }
-        ];
-        obj = new fabric.Polygon(points, {
-          ...resolveCommon(el),
-          fill: resolveFill(el.fill, 'transparent'),
-          scaleX: (el.width || 100) / 100,
-          scaleY: (el.height || 100) / 100,
-        } as any);
-        (obj as any).isOctagon = true;
-      } else if (el.type === 'ellipse') {
-        obj = new fabric.Ellipse({
-          ...resolveCommon(el),
-          rx: (el.width || 100) / 2,
-          ry: (el.height || 60) / 2,
-          fill: resolveFill(el.fill, 'transparent'),
-        } as any);
-      } else if (el.type === 'diamond') {
-        const points = [
-          { x: 50, y: 0 },
-          { x: 100, y: 50 },
-          { x: 50, y: 100 },
-          { x: 0, y: 50 }
-        ];
-        obj = new fabric.Polygon(points, {
-          ...resolveCommon(el),
-          fill: resolveFill(el.fill, 'transparent'),
-          scaleX: (el.width || 100) / 100,
-          scaleY: (el.height || 100) / 100,
-        } as any);
-        (obj as any).isDiamond = true;
-      } else if (el.type === 'trapezoid') {
-        const points = [
-          { x: 25, y: 0 },
-          { x: 75, y: 0 },
-          { x: 100, y: 100 },
-          { x: 0, y: 100 }
-        ];
-        obj = new fabric.Polygon(points, {
-          ...resolveCommon(el),
-          fill: resolveFill(el.fill, 'transparent'),
-          scaleX: (el.width || 100) / 100,
-          scaleY: (el.height || 100) / 100,
-        } as any);
-        (obj as any).isTrapezoid = true;
-      } else if (el.type === 'clipart') {
-        const secureSrc = el.src.startsWith('data:')
-          ? el.src
-          : el.src.includes('?')
-            ? `${el.src}&ts=${Date.now()}`
-            : `${el.src}?ts=${Date.now()}`;
-
-        fabric.Image.fromURL(secureSrc, (img) => {
-          img.set({
+          const textOptions = {
             ...resolveCommon(el),
-            width: el.width || 150,
-            height: el.height || 150,
-          } as any);
+            fontSize: el.fontSize || 24,
+            fill: fillVal,
+            fontFamily: el.fontFamily || 'Arial',
+            fontStyle: resolvedStyle,
+            fontWeight: resolvedWeight,
+            textAlign: el.align || 'center',
+            underline: !!el.underline,
+            linethrough: !!el.linethrough,
+            charSpacing: el.charSpacing || 0,
+            lineHeight: el.lineHeight || 1.16,
+            styles: el.styles || {},
+            originX: el.originX || 'left',
+            originY: el.originY || 'top',
+            paintFirst: el.paintFirst || 'fill',
+            textBackgroundColor: el.textBackgroundColor || '',
+            textBgRadius: typeof el.textBgRadius === 'number' ? el.textBgRadius : undefined,
+            textBgPadding: typeof el.textBgPadding === 'number' ? el.textBgPadding : undefined,
+            textBgOpacity: typeof el.textBgOpacity === 'number' ? el.textBgOpacity : undefined,
+            textBgStroke: el.textBgStroke || '',
+            textBgStrokeWidth: typeof el.textBgStrokeWidth === 'number' ? el.textBgStrokeWidth : undefined,
+            padding: el.textBackgroundColor ? Math.max(6, el.textBgPadding || 14) : 4
+          };
 
-          if (el.imageFilters) {
-            const f = el.imageFilters;
-            const filters: any[] = [];
-            if (f.brightness) filters.push(new fabric.Image.filters.Brightness({ brightness: f.brightness }));
-            if (f.contrast) filters.push(new fabric.Image.filters.Contrast({ contrast: f.contrast }));
-            if (f.saturation) filters.push(new fabric.Image.filters.Saturation({ saturation: f.saturation }));
-            if (f.hue) filters.push(new fabric.Image.filters.HueRotation({ rotation: f.hue / 180 }));
-            if (f.grayscale) filters.push(new fabric.Image.filters.Grayscale());
-            if (f.sepia) filters.push(new fabric.Image.filters.Sepia());
-            if (f.invert) filters.push(new fabric.Image.filters.Invert());
-            if (f.sharpen) filters.push(new fabric.Image.filters.Convolute({ matrix: SHARPEN_MATRIX }));
-            if (f.blur > 0) filters.push(new fabric.Image.filters.Blur({ blur: f.blur }));
-            if (f.pixelate > 0) filters.push(new fabric.Image.filters.Pixelate({ blocksize: f.pixelate }));
-            if (f.noise > 0) filters.push(new fabric.Image.filters.Noise({ noise: f.noise }));
-            img.filters = filters;
-            img.applyFilters();
+          const textContent = String(el.text ?? '');
+          if (el.isTextbox || el.type === 'textbox') {
+            obj = new fabric.Textbox(textContent, {
+              ...textOptions,
+              width: el.width || 240
+            } as any);
+          } else {
+            obj = new fabric.IText(textContent, textOptions as any);
           }
+        } else if (el.type === 'rect') {
+          obj = new fabric.Rect({
+            ...resolveCommon(el),
+            width: el.width || 100,
+            height: el.height || 100,
+            fill: resolveFill(el.fill, '#F59E0B'),
+            rx: el.cornerRadius || 0,
+            ry: el.cornerRadius || 0,
+          } as any);
+        } else if (el.type === 'circle') {
+          obj = new fabric.Circle({
+            ...resolveCommon(el),
+            radius: el.radius || 50,
+            fill: resolveFill(el.fill, '#3B82F6'),
+          } as any);
+        } else if (el.type === 'line') {
+          obj = new fabric.Line(el.points || [0, 0, 100, 0], {
+            ...resolveCommon(el),
+            stroke: el.stroke || '#FFFFFF',
+            strokeWidth: el.strokeWidth || 4,
+          } as any);
+        } else if (el.type === 'triangle') {
+          obj = new fabric.Triangle({
+            ...resolveCommon(el),
+            width: el.width || 100,
+            height: el.height || 100,
+            fill: resolveFill(el.fill, '#10B981'),
+          } as any);
+        } else if (el.type === 'hexagon') {
+          const points = [
+            { x: 50, y: 0 },
+            { x: 100, y: 25 },
+            { x: 100, y: 75 },
+            { x: 50, y: 100 },
+            { x: 0, y: 75 },
+            { x: 0, y: 25 }
+          ];
+          obj = new fabric.Polygon(points, {
+            ...resolveCommon(el),
+            fill: resolveFill(el.fill, '#8B5CF6'),
+            scaleX: (el.width || 100) / 100,
+            scaleY: (el.height || 100) / 100,
+          } as any);
+          (obj as any).isHexagon = true;
+        } else if (el.type === 'star') {
+          if (el.points && Array.isArray(el.points) && el.points.length > 0) {
+            obj = new fabric.Polygon(el.points, {
+              ...resolveCommon(el),
+              fill: resolveFill(el.fill, '#10B981'),
+              scaleX: (el.width || 238) / 238,
+              scaleY: (el.height || 226) / 226,
+            } as any);
+          }
+        } else if (el.type === 'heart') {
+          const heartPath = "M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z";
+          obj = new fabric.Path(heartPath, {
+            ...resolveCommon(el),
+            fill: resolveFill(el.fill, '#EF4444'),
+            scaleX: (el.width || 80) / 80,
+            scaleY: (el.height || 80) / 80,
+          } as any);
+          (obj as any).isHeart = true;
+        } else if (el.type === 'path') {
+          if (el.pathData) {
+            const vb = el.viewBox || 24;
+            obj = new fabric.Path(el.pathData, {
+              ...resolveCommon(el),
+              fill: resolveFill(el.fill, 'transparent'),
+              scaleX: (el.width || vb) / vb,
+              scaleY: (el.height || vb) / vb,
+              strokeLineCap: 'round',
+              strokeLineJoin: 'round'
+            } as any);
+            (obj as any).svgPathData = el.pathData;
+            (obj as any).viewBox = vb;
+          }
+        } else if (el.type === 'curvedtext' && el.curvedTextData) {
+          obj = buildCurvedTextGroup({
+            ...el.curvedTextData,
+            left: el.x,
+            top: el.y,
+          });
+          (obj as any).id = el.id;
+          obj.set({
+            angle: el.rotation || 0,
+            opacity: el.opacity ?? 1,
+            flipX: !!el.flipX,
+            flipY: !!el.flipY,
+            globalCompositeOperation: el.globalCompositeOperation || 'source-over',
+            shadow: el.shadow ? new fabric.Shadow(el.shadow) : undefined
+          });
+        } else if (el.type === 'pentagon') {
+          const points = [
+            { x: 50, y: 0 },
+            { x: 100, y: 38 },
+            { x: 81, y: 100 },
+            { x: 19, y: 100 },
+            { x: 0, y: 38 }
+          ];
+          obj = new fabric.Polygon(points, {
+            ...resolveCommon(el),
+            fill: resolveFill(el.fill, 'transparent'),
+            scaleX: (el.width || 100) / 100,
+            scaleY: (el.height || 100) / 100,
+          } as any);
+          (obj as any).isPentagon = true;
+        } else if (el.type === 'octagon') {
+          const points = [
+            { x: 29, y: 0 },
+            { x: 71, y: 0 },
+            { x: 100, y: 29 },
+            { x: 100, y: 71 },
+            { x: 71, y: 100 },
+            { x: 29, y: 100 },
+            { x: 0, y: 71 },
+            { x: 0, y: 29 }
+          ];
+          obj = new fabric.Polygon(points, {
+            ...resolveCommon(el),
+            fill: resolveFill(el.fill, 'transparent'),
+            scaleX: (el.width || 100) / 100,
+            scaleY: (el.height || 100) / 100,
+          } as any);
+          (obj as any).isOctagon = true;
+        } else if (el.type === 'ellipse') {
+          obj = new fabric.Ellipse({
+            ...resolveCommon(el),
+            rx: (el.width || 100) / 2,
+            ry: (el.height || 60) / 2,
+            fill: resolveFill(el.fill, 'transparent'),
+          } as any);
+        } else if (el.type === 'diamond') {
+          const points = [
+            { x: 50, y: 0 },
+            { x: 100, y: 50 },
+            { x: 50, y: 100 },
+            { x: 0, y: 50 }
+          ];
+          obj = new fabric.Polygon(points, {
+            ...resolveCommon(el),
+            fill: resolveFill(el.fill, 'transparent'),
+            scaleX: (el.width || 100) / 100,
+            scaleY: (el.height || 100) / 100,
+          } as any);
+          (obj as any).isDiamond = true;
+        } else if (el.type === 'trapezoid') {
+          const points = [
+            { x: 25, y: 0 },
+            { x: 75, y: 0 },
+            { x: 100, y: 100 },
+            { x: 0, y: 100 }
+          ];
+          obj = new fabric.Polygon(points, {
+            ...resolveCommon(el),
+            fill: resolveFill(el.fill, 'transparent'),
+            scaleX: (el.width || 100) / 100,
+            scaleY: (el.height || 100) / 100,
+          } as any);
+          (obj as any).isTrapezoid = true;
+        } else if (el.type === 'clipart') {
+          if (!el.src || typeof el.src !== 'string') return;
+          const secureSrc = el.src.startsWith('data:')
+            ? el.src
+            : el.src.includes('?')
+              ? `${el.src}&ts=${Date.now()}`
+              : `${el.src}?ts=${Date.now()}`;
 
+          try {
+            fabric.Image.fromURL(secureSrc, (img) => {
+              if (!img || !isCanvasAlive(fCanvas)) return;
+              try {
+                img.set({
+                  ...resolveCommon(el),
+                  width: el.width || 150,
+                  height: el.height || 150,
+                } as any);
+
+                if (el.imageFilters) {
+                  const f = el.imageFilters;
+                  const filters: any[] = [];
+                  if (f.brightness) filters.push(new fabric.Image.filters.Brightness({ brightness: f.brightness }));
+                  if (f.contrast) filters.push(new fabric.Image.filters.Contrast({ contrast: f.contrast }));
+                  if (f.saturation) filters.push(new fabric.Image.filters.Saturation({ saturation: f.saturation }));
+                  if (f.hue) filters.push(new fabric.Image.filters.HueRotation({ rotation: f.hue / 180 }));
+                  if (f.grayscale) filters.push(new fabric.Image.filters.Grayscale());
+                  if (f.sepia) filters.push(new fabric.Image.filters.Sepia());
+                  if (f.invert) filters.push(new fabric.Image.filters.Invert());
+                  if (f.sharpen) filters.push(new fabric.Image.filters.Convolute({ matrix: SHARPEN_MATRIX }));
+                  if (f.blur > 0) filters.push(new fabric.Image.filters.Blur({ blur: f.blur }));
+                  if (f.pixelate > 0) filters.push(new fabric.Image.filters.Pixelate({ blocksize: f.pixelate }));
+                  if (f.noise > 0) filters.push(new fabric.Image.filters.Noise({ noise: f.noise }));
+                  img.filters = filters;
+                  img.applyFilters();
+                }
+
+                if (el.isLocked) {
+                  img.set({
+                    lockMovementX: true,
+                    lockMovementY: true,
+                    lockScalingX: true,
+                    lockScalingY: true,
+                    lockRotation: true,
+                    hasControls: false,
+                    isLocked: true
+                  } as any);
+                }
+
+                fCanvas.add(img);
+                fCanvas.requestRenderAll();
+              } catch (err) {
+                console.warn("Failed configuring fabric Image:", err);
+              }
+            }, { crossOrigin: 'anonymous' });
+          } catch (err) {
+            console.warn("fabric.Image.fromURL failed:", err);
+          }
+          return;
+        }
+
+        if (obj) {
           if (el.isLocked) {
-            img.set({
+            obj.set({
               lockMovementX: true,
               lockMovementY: true,
               lockScalingX: true,
@@ -3234,26 +3307,10 @@ export default function FabricCoverStudio({
               isLocked: true
             } as any);
           }
-
-          fCanvas.add(img);
-          fCanvas.requestRenderAll();
-        }, { crossOrigin: 'anonymous' });
-        return;
-      }
-
-      if (obj) {
-        if (el.isLocked) {
-          obj.set({
-            lockMovementX: true,
-            lockMovementY: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            lockRotation: true,
-            hasControls: false,
-            isLocked: true
-          } as any);
+          fCanvas.add(obj);
         }
-        fCanvas.add(obj);
+      } catch (err) {
+        console.warn("Error importing legacy element:", err);
       }
     });
 

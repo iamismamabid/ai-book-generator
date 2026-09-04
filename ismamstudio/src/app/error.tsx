@@ -29,9 +29,15 @@ export default function Error({
           <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-3">
             Something Went Wrong
           </h1>
-          <p className="text-slate-400 text-sm font-semibold leading-relaxed mb-8">
+          <p className="text-slate-400 text-sm font-semibold leading-relaxed mb-6">
             An unexpected error occurred. You can try again, or head back to a safe page. If this keeps happening, please contact support.
           </p>
+
+          {error?.message && (
+            <p className="text-xs font-mono text-rose-400/80 bg-rose-950/40 p-2.5 rounded-xl border border-rose-800/30 mb-6 overflow-hidden text-ellipsis whitespace-pre-wrap break-all text-left max-h-24 overflow-y-auto">
+              {error.message}
+            </p>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-3">
             <button

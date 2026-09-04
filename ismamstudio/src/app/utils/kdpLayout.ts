@@ -49,7 +49,11 @@ export interface KdpLayoutResult {
 }
 
 export function calculateKdpLayout(specs: KdpSpecs, canvasWidth: number = 800): KdpLayoutResult {
-  const { trimWidth, trimHeight, pageCount, paperType } = specs;
+  const trimWidth = typeof specs?.trimWidth === 'number' && !isNaN(specs.trimWidth) && specs.trimWidth > 0 ? specs.trimWidth : 8.5;
+  const trimHeight = typeof specs?.trimHeight === 'number' && !isNaN(specs.trimHeight) && specs.trimHeight > 0 ? specs.trimHeight : 11;
+  const pageCount = typeof specs?.pageCount === 'number' && !isNaN(specs.pageCount) && specs.pageCount >= 24 ? Math.min(1000, specs.pageCount) : 100;
+  const paperType = specs?.paperType || 'white';
+  const cWidth = typeof canvasWidth === 'number' && !isNaN(canvasWidth) && canvasWidth > 0 ? canvasWidth : 800;
   
   // 1. Spine Width calculation based on KDP guidelines
   // White: 0.002252" per page
@@ -68,7 +72,7 @@ export function calculateKdpLayout(specs: KdpSpecs, canvasWidth: number = 800): 
   const coverHeightInches = trimHeight + (bleed * 2);
   
   // Scaling factors
-  const scale = canvasWidth / coverWidthInches;
+  const scale = cWidth / coverWidthInches;
   const canvasHeight = coverHeightInches * scale;
   
   // Convert key guides to pixels
@@ -78,7 +82,7 @@ export function calculateKdpLayout(specs: KdpSpecs, canvasWidth: number = 800): 
   
   // X positions (from left 0 to canvasWidth)
   const trimLeftPx = bleedPx;
-  const trimRightPx = canvasWidth - bleedPx;
+  const trimRightPx = cWidth - bleedPx;
   
   const spineLeftPx = bleedPx + trimWidth * scale;
   const spineRightPx = spineLeftPx + spineWidthPx;
@@ -112,7 +116,7 @@ export function calculateKdpLayout(specs: KdpSpecs, canvasWidth: number = 800): 
     bleed,
     coverWidthInches,
     coverHeightInches,
-    canvasWidth,
+    canvasWidth: cWidth,
     canvasHeight,
     scale,
     spineWidthPx,

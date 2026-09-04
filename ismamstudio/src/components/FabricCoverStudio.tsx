@@ -43,83 +43,83 @@ import { checkPremiumStatus } from "@/app/actions";
 
 // Patch Fabric.Text prototype to support modern rounded text backgrounds with custom radius, padding & opacity
 function ensureFabricRoundedTextBg() {
-  if (typeof window === "undefined" || typeof fabric === "undefined") return;
+  if (typeof window === "undefined") return;
+  try {
+    if (typeof fabric === "undefined" || !fabric) return;
 
-  const patchProto = (proto: any) => {
-    if (!proto || proto.__hasCustomRoundedBg) return;
-    proto.__hasCustomRoundedBg = true;
-    const origRenderTextLinesBackground = proto._renderTextLinesBackground;
+    const patchProto = (proto: any) => {
+      if (!proto || proto.__hasCustomRoundedBg) return;
+      proto.__hasCustomRoundedBg = true;
+      const origRenderTextLinesBackground = proto._renderTextLinesBackground;
 
-    proto._renderTextLinesBackground = function (ctx: CanvasRenderingContext2D) {
-      if (this.textBackgroundColor) {
-        const pad = typeof this.textBgPadding === "number" ? this.textBgPadding : 12;
-        const rad = typeof this.textBgRadius === "number" ? this.textBgRadius : 16;
-        const opac = typeof this.textBgOpacity === "number" ? this.textBgOpacity : 1;
-        const bgStroke = this.textBgStroke;
-        const bgStrokeW = typeof this.textBgStrokeWidth === "number" ? this.textBgStrokeWidth : 0;
+      proto._renderTextLinesBackground = function (ctx: CanvasRenderingContext2D) {
+        if (this.textBackgroundColor) {
+          const pad = typeof this.textBgPadding === "number" ? this.textBgPadding : 12;
+          const rad = typeof this.textBgRadius === "number" ? this.textBgRadius : 16;
+          const opac = typeof this.textBgOpacity === "number" ? this.textBgOpacity : 1;
+          const bgStroke = this.textBgStroke;
+          const bgStrokeW = typeof this.textBgStrokeWidth === "number" ? this.textBgStrokeWidth : 0;
 
-        const padX = pad;
-        const padY = Math.round(pad * 0.75);
-        const w = this.width + padX * 2;
-        const h = this.height + padY * 2;
-        const x = -this.width / 2 - padX;
-        const y = -this.height / 2 - padY;
-        const r = Math.max(0, Math.min(rad, w / 2, h / 2));
+          const padX = pad;
+          const padY = Math.round(pad * 0.75);
+          const w = (this.width || 0) + padX * 2;
+          const h = (this.height || 0) + padY * 2;
+          const x = -(this.width || 0) / 2 - padX;
+          const y = -(this.height || 0) / 2 - padY;
+          const r = Math.max(0, Math.min(rad, w / 2, h / 2));
 
-        ctx.save();
-        ctx.fillStyle = this.textBackgroundColor;
-        if (opac < 1) {
-          ctx.globalAlpha = (ctx.globalAlpha || 1) * opac;
+          ctx.save();
+          ctx.fillStyle = this.textBackgroundColor;
+          if (opac < 1) {
+            ctx.globalAlpha = (ctx.globalAlpha || 1) * opac;
+          }
+
+          ctx.beginPath();
+          if (typeof (ctx as any).roundRect === "function") {
+            (ctx as any).roundRect(x, y, w, h, r);
+          } else {
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+          }
+          ctx.fill();
+
+          if (bgStroke && bgStrokeW > 0) {
+            ctx.strokeStyle = bgStroke;
+            ctx.lineWidth = bgStrokeW;
+            ctx.stroke();
+          }
+
+          ctx.restore();
+          return;
         }
 
-        ctx.beginPath();
-        if (typeof (ctx as any).roundRect === "function") {
-          (ctx as any).roundRect(x, y, w, h, r);
-        } else {
-          ctx.moveTo(x + r, y);
-          ctx.lineTo(x + w - r, y);
-          ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-          ctx.lineTo(x + w, y + h - r);
-          ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-          ctx.lineTo(x + r, y + h);
-          ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-          ctx.lineTo(x, y + r);
-          ctx.quadraticCurveTo(x, y, x + r, y);
-          ctx.closePath();
+        if (origRenderTextLinesBackground) {
+          origRenderTextLinesBackground.call(this, ctx);
         }
-        ctx.fill();
+      };
 
-        if (bgStroke && bgStrokeW > 0) {
-          ctx.strokeStyle = bgStroke;
-          ctx.lineWidth = bgStrokeW;
-          ctx.stroke();
-        }
-
-        ctx.restore();
-        return;
+      if (proto.stateProperties && !proto.stateProperties.includes("textBgRadius")) {
+        proto.stateProperties.push("textBgRadius", "textBgPadding", "textBgOpacity", "textBgStroke", "textBgStrokeWidth");
       }
-
-      if (origRenderTextLinesBackground) {
-        origRenderTextLinesBackground.call(this, ctx);
+      if (proto.cacheProperties && !proto.cacheProperties.includes("textBgRadius")) {
+        proto.cacheProperties.push("textBgRadius", "textBgPadding", "textBgOpacity", "textBgStroke", "textBgStrokeWidth");
       }
     };
 
-    if (proto.stateProperties && !proto.stateProperties.includes("textBgRadius")) {
-      proto.stateProperties.push("textBgRadius", "textBgPadding", "textBgOpacity", "textBgStroke", "textBgStrokeWidth");
-    }
-    if (proto.cacheProperties && !proto.cacheProperties.includes("textBgRadius")) {
-      proto.cacheProperties.push("textBgRadius", "textBgPadding", "textBgOpacity", "textBgStroke", "textBgStrokeWidth");
-    }
-  };
-
-  if (fabric.Text) patchProto(fabric.Text.prototype);
-  if (fabric.IText) patchProto(fabric.IText.prototype);
-  if (fabric.Textbox) patchProto(fabric.Textbox.prototype);
-}
-
-// Auto-invoke in browser environment
-if (typeof window !== "undefined") {
-  ensureFabricRoundedTextBg();
+    if (fabric.Text?.prototype) patchProto(fabric.Text.prototype);
+    if (fabric.IText?.prototype) patchProto(fabric.IText.prototype);
+    if (fabric.Textbox?.prototype) patchProto(fabric.Textbox.prototype);
+  } catch (err) {
+    console.warn("Failed to patch fabric text background prototype:", err);
+  }
 }
 
 // Text-on-a-path shapes. "arc" is the original circular layout; the rest are
@@ -857,7 +857,21 @@ export default function FabricCoverStudio({
   initialElements,
   onSaveWorkspace
 }: FabricCoverStudioProps) {
-  // Destructure coverBackground properties locally to maintain full compatibility with existing code
+  // Safe defaults for incoming props to prevent any undefined access during hydration or corrupted draft loads
+  const safeCoverBackground = coverBackground || {
+    backCoverColor: '#0F172A',
+    backCoverType: 'solid' as 'solid' | 'gradient',
+    backCoverGradientStart: '#0F172A',
+    backCoverGradientEnd: '#020617',
+    frontCoverColor: '#1E293B',
+    frontCoverType: 'solid' as 'solid' | 'gradient',
+    frontCoverGradientStart: '#1E293B',
+    frontCoverGradientEnd: '#0F172A',
+    backCoverImage: '',
+    frontCoverImage: '',
+    fullCoverImage: ''
+  };
+
   const {
     backCoverColor,
     backCoverType,
@@ -870,12 +884,12 @@ export default function FabricCoverStudio({
     backCoverImage,
     frontCoverImage,
     fullCoverImage
-  } = coverBackground;
+  } = safeCoverBackground;
 
   // Keep a ref to coverBackground to prevent stale closure inside saveState and ensure instant rendering
-  const coverBackgroundRef = useRef(coverBackground);
+  const coverBackgroundRef = useRef(safeCoverBackground);
   useEffect(() => {
-    coverBackgroundRef.current = coverBackground;
+    coverBackgroundRef.current = safeCoverBackground;
   }, [coverBackground]);
 
   const isActiveRef = useRef(isActive);
@@ -883,9 +897,19 @@ export default function FabricCoverStudio({
     isActiveRef.current = isActive;
   }, [isActive]);
 
-  const [sliderPageCount, setSliderPageCount] = useState(pageCount);
+  const safeTrimSize = (trimSize && typeof trimSize.w === 'number' && typeof trimSize.h === 'number')
+    ? trimSize
+    : { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 };
+
+  const safePageCount = (typeof pageCount === 'number' && !isNaN(pageCount) && pageCount >= 24)
+    ? Math.min(1000, pageCount)
+    : 100;
+
+  const [sliderPageCount, setSliderPageCount] = useState(safePageCount);
   useEffect(() => {
-    setSliderPageCount(pageCount);
+    if (typeof pageCount === 'number' && !isNaN(pageCount)) {
+      setSliderPageCount(pageCount);
+    }
   }, [pageCount]);
 
   const hasImportedInitialRef = useRef(false);
@@ -1220,10 +1244,10 @@ export default function FabricCoverStudio({
   // math as the 3 presets. Bounds mirror Amazon KDP's documented paperback
   // trim-size range so a typo can't produce an unprintable cover geometry.
   const [isCustomTrim, setIsCustomTrim] = useState(
-    () => !TRIM_SIZES.some((s) => s.label === trimSize.label)
+    () => !TRIM_SIZES.some((s) => s.label === safeTrimSize.label)
   );
-  const [customTrimW, setCustomTrimW] = useState(trimSize.w);
-  const [customTrimH, setCustomTrimH] = useState(trimSize.h);
+  const [customTrimW, setCustomTrimW] = useState(safeTrimSize.w);
+  const [customTrimH, setCustomTrimH] = useState(safeTrimSize.h);
   const CUSTOM_TRIM_BOUNDS = { minW: 4, maxW: 8.5, minH: 6, maxH: 11.69 };
 
   // The initial isCustomTrim/customTrimW/H above only see whatever trimSize
@@ -1232,14 +1256,14 @@ export default function FabricCoverStudio({
   // mounted with the default preset, so a restored custom size needs its own
   // sync here instead of relying on that one-time initializer.
   useEffect(() => {
-    const matchesPreset = TRIM_SIZES.some((s) => s.label === trimSize.label);
+    const matchesPreset = TRIM_SIZES.some((s) => s.label === safeTrimSize.label);
     setIsCustomTrim(!matchesPreset);
     if (!matchesPreset) {
-      setCustomTrimW(trimSize.w);
-      setCustomTrimH(trimSize.h);
+      setCustomTrimW(safeTrimSize.w);
+      setCustomTrimH(safeTrimSize.h);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trimSize.label]);
+  }, [safeTrimSize.label]);
   const applyCustomTrimSize = (w: number, h: number) => {
     const clampedW = Math.min(CUSTOM_TRIM_BOUNDS.maxW, Math.max(CUSTOM_TRIM_BOUNDS.minW, w));
     const clampedH = Math.min(CUSTOM_TRIM_BOUNDS.maxH, Math.max(CUSTOM_TRIM_BOUNDS.minH, h));
@@ -2212,9 +2236,9 @@ export default function FabricCoverStudio({
 
   // KDP specs calculations
   const layout = calculateKdpLayout({
-    trimWidth: trimSize.w,
-    trimHeight: trimSize.h,
-    pageCount: pageCount,
+    trimWidth: safeTrimSize.w,
+    trimHeight: safeTrimSize.h,
+    pageCount: safePageCount,
     paperType: paperType
   }, 800);
 
@@ -8982,9 +9006,9 @@ export default function FabricCoverStudio({
         onClose={() => setIsMockupOpen(false)}
         frontImageDataUrl={mockupFrontUrl}
         spineImageDataUrl={mockupSpineUrl}
-        frontAspect={trimSize.w / trimSize.h}
+        frontAspect={safeTrimSize.w / safeTrimSize.h}
         spineWidthInches={layout.spineWidth}
-        frontWidthInches={trimSize.w}
+        frontWidthInches={safeTrimSize.w}
         isLoading={isMockupLoading}
       />
 
@@ -8992,7 +9016,7 @@ export default function FabricCoverStudio({
         isOpen={isThumbPreviewOpen}
         onClose={() => setIsThumbPreviewOpen(false)}
         frontImageDataUrl={thumbPreviewUrl}
-        frontAspect={trimSize.w / trimSize.h}
+        frontAspect={safeTrimSize.w / safeTrimSize.h}
         isLoading={isThumbPreviewLoading}
       />
 
@@ -9022,8 +9046,8 @@ export default function FabricCoverStudio({
         onClose={() => setIsShareOpen(false)}
         buildPreview={buildSharePreview}
         meta={{
-          trimLabel: trimSize.label,
-          pageCount,
+          trimLabel: safeTrimSize.label,
+          pageCount: safePageCount,
           spineWidth: layout.spineWidth,
         }}
       />
@@ -9043,9 +9067,9 @@ export default function FabricCoverStudio({
         onClose={() => setIsExportPaywallOpen(false)}
         onUnlockedAndExport={handleGenerateCover}
         coverSpecs={{
-          trimWidth: trimSize.w,
-          trimHeight: trimSize.h,
-          pageCount,
+          trimWidth: safeTrimSize.w,
+          trimHeight: safeTrimSize.h,
+          pageCount: safePageCount,
           fullWidthInches: layout.coverWidthInches,
           fullHeightInches: layout.coverHeightInches,
         }}
@@ -9057,9 +9081,9 @@ export default function FabricCoverStudio({
         canvas={canvas}
         layout={layout}
         specs={{
-          trimWidth: trimSize.w,
-          trimHeight: trimSize.h,
-          pageCount: pageCount,
+          trimWidth: safeTrimSize.w,
+          trimHeight: safeTrimSize.h,
+          pageCount: safePageCount,
           paperType: paperType,
         }}
         onProceedDownload={() => {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import MasterStudioApp from "./StudioClient";
+import CoverStudioErrorBoundary from "@/components/CoverStudioErrorBoundary";
 
 export const metadata: Metadata = {
   title: "KDP Creator Studio | Design Professional Wraparound Book Covers",
@@ -16,5 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <MasterStudioApp />;
+  return (
+    <CoverStudioErrorBoundary>
+      <MasterStudioApp />
+    </CoverStudioErrorBoundary>
+  );
 }
+

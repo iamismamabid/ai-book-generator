@@ -34,6 +34,22 @@ export default class CoverStudioErrorBoundary extends Component<Props, State> {
     }
   };
 
+  handleClearCorruptCacheAndReload = () => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("kdp-cover-draft");
+        if (window.indexedDB) {
+          window.indexedDB.deleteDatabase("KDPageStudioDB");
+        }
+        window.location.reload();
+      }
+    } catch {
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
+    }
+  };
+
   render() {
     if (this.state.hasError) {
       return (
@@ -57,12 +73,18 @@ export default class CoverStudioErrorBoundary extends Component<Props, State> {
               )}
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 flex flex-col gap-2">
               <button
                 onClick={this.handleReset}
                 className="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-xs rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-[0.98]"
               >
                 <RefreshCw className="w-4 h-4" /> Reload Studio Canvas
+              </button>
+              <button
+                onClick={this.handleClearCorruptCacheAndReload}
+                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-all duration-200"
+              >
+                Reset Saved Draft Cache &amp; Reload
               </button>
             </div>
           </div>

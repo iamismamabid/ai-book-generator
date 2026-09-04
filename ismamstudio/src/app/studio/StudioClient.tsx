@@ -123,42 +123,54 @@ export default function MasterStudioApp() {
 
   // Applies a loaded project (from localStorage or the cloud) to state.
   const applyCoverData = (data: any) => {
-    const loadedBg = {
-      backCoverColor: data.backCoverColor ?? '#0F172A',
-      backCoverType: data.backCoverType ?? 'solid',
-      backCoverGradientStart: data.backCoverGradientStart ?? '#0F172A',
-      backCoverGradientEnd: data.backCoverGradientEnd ?? '#020617',
-      frontCoverColor: data.frontCoverColor ?? '#1E293B',
-      frontCoverType: data.frontCoverType ?? 'solid',
-      frontCoverGradientStart: data.frontCoverGradientStart ?? '#1E293B',
-      frontCoverGradientEnd: data.frontCoverGradientEnd ?? '#0F172A',
-      backCoverImage: data.backCoverImage ?? '',
-      frontCoverImage: data.frontCoverImage ?? '',
-      fullCoverImage: data.fullCoverImage ?? '',
-      backCoverTextureId: data.backCoverTextureId ?? '',
-      frontCoverTextureId: data.frontCoverTextureId ?? '',
-      fullCoverTextureId: data.fullCoverTextureId ?? '',
-      backCoverImageOffsetX: data.backCoverImageOffsetX ?? 0,
-      backCoverImageOffsetY: data.backCoverImageOffsetY ?? 0,
-      frontCoverImageOffsetX: data.frontCoverImageOffsetX ?? 0,
-      frontCoverImageOffsetY: data.frontCoverImageOffsetY ?? 0,
-      fullCoverImageOffsetX: data.fullCoverImageOffsetX ?? 0,
-      fullCoverImageOffsetY: data.fullCoverImageOffsetY ?? 0
-    };
-    setCoverBackground(loadedBg);
-    if (data.coverElements) setCoverElements(data.coverElements);
-    if (data.pageCount) setPageCount(data.pageCount);
-    if (data.trimSize) {
-      // Restore an exact preset match by reference (keeps the dropdown's own
-      // preset objects canonical), otherwise trust the saved numeric w/h
-      // as-is -- calculateKdpLayout only ever reads trimSize.w/h, never the
-      // label, so a custom size round-trips correctly even though it isn't
-      // one of the 3 fixed presets.
-      const match = TRIM_SIZES.find(t => t.label === data.trimSize.label);
-      if (match) setTrimSize(match);
-      else if (typeof data.trimSize.w === "number" && typeof data.trimSize.h === "number") {
-        setTrimSize(data.trimSize);
+    if (!data || typeof data !== 'object') return;
+    try {
+      const loadedBg = {
+        backCoverColor: typeof data.backCoverColor === 'string' ? data.backCoverColor : '#0F172A',
+        backCoverType: (data.backCoverType === 'gradient' ? 'gradient' : 'solid') as 'solid' | 'gradient',
+        backCoverGradientStart: typeof data.backCoverGradientStart === 'string' ? data.backCoverGradientStart : '#0F172A',
+        backCoverGradientEnd: typeof data.backCoverGradientEnd === 'string' ? data.backCoverGradientEnd : '#020617',
+        frontCoverColor: typeof data.frontCoverColor === 'string' ? data.frontCoverColor : '#1E293B',
+        frontCoverType: (data.frontCoverType === 'gradient' ? 'gradient' : 'solid') as 'solid' | 'gradient',
+        frontCoverGradientStart: typeof data.frontCoverGradientStart === 'string' ? data.frontCoverGradientStart : '#1E293B',
+        frontCoverGradientEnd: typeof data.frontCoverGradientEnd === 'string' ? data.frontCoverGradientEnd : '#0F172A',
+        backCoverImage: typeof data.backCoverImage === 'string' ? data.backCoverImage : '',
+        frontCoverImage: typeof data.frontCoverImage === 'string' ? data.frontCoverImage : '',
+        fullCoverImage: typeof data.fullCoverImage === 'string' ? data.fullCoverImage : '',
+        backCoverTextureId: typeof data.backCoverTextureId === 'string' ? data.backCoverTextureId : '',
+        frontCoverTextureId: typeof data.frontCoverTextureId === 'string' ? data.frontCoverTextureId : '',
+        fullCoverTextureId: typeof data.fullCoverTextureId === 'string' ? data.fullCoverTextureId : '',
+        backCoverImageOffsetX: typeof data.backCoverImageOffsetX === 'number' ? data.backCoverImageOffsetX : 0,
+        backCoverImageOffsetY: typeof data.backCoverImageOffsetY === 'number' ? data.backCoverImageOffsetY : 0,
+        frontCoverImageOffsetX: typeof data.frontCoverImageOffsetX === 'number' ? data.frontCoverImageOffsetX : 0,
+        frontCoverImageOffsetY: typeof data.frontCoverImageOffsetY === 'number' ? data.frontCoverImageOffsetY : 0,
+        fullCoverImageOffsetX: typeof data.fullCoverImageOffsetX === 'number' ? data.fullCoverImageOffsetX : 0,
+        fullCoverImageOffsetY: typeof data.fullCoverImageOffsetY === 'number' ? data.fullCoverImageOffsetY : 0
+      };
+      setCoverBackground(loadedBg);
+
+      if (Array.isArray(data.coverElements)) {
+        setCoverElements(data.coverElements.filter(Boolean));
       }
+
+      if (typeof data.pageCount === 'number' && !isNaN(data.pageCount) && data.pageCount >= 24) {
+        setPageCount(Math.min(1000, data.pageCount));
+      }
+
+      if (data.trimSize && typeof data.trimSize === 'object') {
+        const match = TRIM_SIZES.find(t => t.label === data.trimSize.label);
+        if (match) {
+          setTrimSize(match);
+        } else if (typeof data.trimSize.w === "number" && typeof data.trimSize.h === "number" && !isNaN(data.trimSize.w) && !isNaN(data.trimSize.h)) {
+          setTrimSize({
+            label: data.trimSize.label || `Custom (${data.trimSize.w}" x ${data.trimSize.h}")`,
+            w: data.trimSize.w,
+            h: data.trimSize.h
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to apply loaded cover data cleanly:", err);
     }
   };
 

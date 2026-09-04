@@ -146,7 +146,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
 };
 
 // helper: Wrap text inside canvas 2D context
-function wrapCanvasText(ctx: any, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+function wrapCanvasText(ctx: any, text: string, x: number, y: number, maxWidth: number, lineHeight: number, strokeWidth = 0, strokeColor = '', paintFirst = 'fill') {
   const paragraphs = text.split('\n');
   let currentY = y;
 
@@ -159,14 +159,26 @@ function wrapCanvasText(ctx: any, text: string, x: number, y: number, maxWidth: 
       const metrics = ctx.measureText(testLine);
       const testWidth = metrics.width;
       if (testWidth > maxWidth && n > 0) {
+        if (strokeWidth > 0 && strokeColor && (paintFirst === 'stroke' || !paintFirst)) {
+          ctx.strokeText(line, x, currentY);
+        }
         ctx.fillText(line, x, currentY);
+        if (strokeWidth > 0 && strokeColor && paintFirst === 'fill') {
+          ctx.strokeText(line, x, currentY);
+        }
         line = words[n] + ' ';
         currentY += lineHeight;
       } else {
         line = testLine;
       }
     }
+    if (strokeWidth > 0 && strokeColor && (paintFirst === 'stroke' || !paintFirst)) {
+      ctx.strokeText(line, x, currentY);
+    }
     ctx.fillText(line, x, currentY);
+    if (strokeWidth > 0 && strokeColor && paintFirst === 'fill') {
+      ctx.strokeText(line, x, currentY);
+    }
     currentY += lineHeight;
   }
 }
@@ -1377,11 +1389,50 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
         const textY = -ch / 2;
 
         const textStr = el.text || '';
-        const lines = textStr.split('\n');
         const lineHeight = fontSizePx * 1.25;
 
-        for (let i = 0; i < lines.length; i++) {
-          ctx.fillText(lines[i], textX, textY + i * lineHeight);
+        // Draw rounded background pill if textBackgroundColor exists
+        if (el.textBackgroundColor) {
+          ctx.save();
+          const pad = (typeof el.textBgPadding === 'number' ? el.textBgPadding : 12) * scaleX;
+          const rad = (typeof el.textBgRadius === 'number' ? el.textBgRadius : 16) * scaleX;
+          const opac = typeof el.textBgOpacity === 'number' ? el.textBgOpacity : 1;
+          ctx.fillStyle = el.textBackgroundColor;
+          if (opac < 1) ctx.globalAlpha = (ctx.globalAlpha || 1) * opac;
+          const bgX = -cw / 2 - pad;
+          const bgY = -ch / 2 - pad * 0.75;
+          const bgW = cw + pad * 2;
+          const bgH = ch + pad * 1.5;
+          const r = Math.max(0, Math.min(rad, bgW / 2, bgH / 2));
+          ctx.beginPath();
+          if (typeof (ctx as any).roundRect === 'function') {
+            (ctx as any).roundRect(bgX, bgY, bgW, bgH, r);
+          } else {
+            ctx.rect(bgX, bgY, bgW, bgH);
+          }
+          ctx.fill();
+          ctx.restore();
+        }
+
+        const strokeW = (typeof el.strokeWidth === 'number' ? el.strokeWidth : 0) * scaleX;
+        if (strokeW > 0 && el.stroke) {
+          ctx.strokeStyle = el.stroke;
+          ctx.lineWidth = strokeW;
+        }
+
+        if (el.type === 'textbox') {
+          wrapCanvasText(ctx, textStr, textX, textY, cw, lineHeight, strokeW, el.stroke, el.paintFirst);
+        } else {
+          const lines = textStr.split('\n');
+          for (let i = 0; i < lines.length; i++) {
+            if (strokeW > 0 && el.stroke && (el.paintFirst === 'stroke' || !el.paintFirst)) {
+              ctx.strokeText(lines[i], textX, textY + i * lineHeight);
+            }
+            ctx.fillText(lines[i], textX, textY + i * lineHeight);
+            if (strokeW > 0 && el.stroke && el.paintFirst === 'fill') {
+              ctx.strokeText(lines[i], textX, textY + i * lineHeight);
+            }
+          }
         }
       } else if (el.type === 'clipart') {
         if (el.src) {
@@ -1785,12 +1836,47 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
         const textStr = el.text || '';
         const lineHeight = fontSizePx * 1.25;
 
+        // Draw rounded background pill if textBackgroundColor exists
+        if (el.textBackgroundColor) {
+          ctx.save();
+          const pad = (typeof el.textBgPadding === 'number' ? el.textBgPadding : 12) * scaleX;
+          const rad = (typeof el.textBgRadius === 'number' ? el.textBgRadius : 16) * scaleX;
+          const opac = typeof el.textBgOpacity === 'number' ? el.textBgOpacity : 1;
+          ctx.fillStyle = el.textBackgroundColor;
+          if (opac < 1) ctx.globalAlpha = (ctx.globalAlpha || 1) * opac;
+          const bgX = -cw / 2 - pad;
+          const bgY = -ch / 2 - pad * 0.75;
+          const bgW = cw + pad * 2;
+          const bgH = ch + pad * 1.5;
+          const r = Math.max(0, Math.min(rad, bgW / 2, bgH / 2));
+          ctx.beginPath();
+          if (typeof (ctx as any).roundRect === 'function') {
+            (ctx as any).roundRect(bgX, bgY, bgW, bgH, r);
+          } else {
+            ctx.rect(bgX, bgY, bgW, bgH);
+          }
+          ctx.fill();
+          ctx.restore();
+        }
+
+        const strokeW = (typeof el.strokeWidth === 'number' ? el.strokeWidth : 0) * scaleX;
+        if (strokeW > 0 && el.stroke) {
+          ctx.strokeStyle = el.stroke;
+          ctx.lineWidth = strokeW;
+        }
+
         if (el.type === 'textbox') {
-          wrapCanvasText(ctx, textStr, textX, textY, cw, lineHeight);
+          wrapCanvasText(ctx, textStr, textX, textY, cw, lineHeight, strokeW, el.stroke, el.paintFirst);
         } else {
           const lines = textStr.split('\n');
           for (let i = 0; i < lines.length; i++) {
+            if (strokeW > 0 && el.stroke && (el.paintFirst === 'stroke' || !el.paintFirst)) {
+              ctx.strokeText(lines[i], textX, textY + i * lineHeight);
+            }
             ctx.fillText(lines[i], textX, textY + i * lineHeight);
+            if (strokeW > 0 && el.stroke && el.paintFirst === 'fill') {
+              ctx.strokeText(lines[i], textX, textY + i * lineHeight);
+            }
           }
         }
       } else if (el.type === 'clipart') {

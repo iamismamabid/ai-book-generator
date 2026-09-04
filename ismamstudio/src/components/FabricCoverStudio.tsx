@@ -43,63 +43,69 @@ import { checkPremiumStatus } from "@/app/actions";
 
 // Patch Fabric.Text prototype to support modern rounded text backgrounds with custom radius, padding & opacity
 function ensureFabricRoundedTextBg() {
-  if (typeof window === "undefined" || typeof fabric === "undefined" || !fabric.Text) return;
-  const textProto = fabric.Text.prototype as any;
-  if (textProto.__hasCustomRoundedBg) return;
-  textProto.__hasCustomRoundedBg = true;
-  const origRenderTextLinesBackground = textProto._renderTextLinesBackground;
+  if (typeof window === "undefined" || typeof fabric === "undefined") return;
 
-  textProto._renderTextLinesBackground = function (ctx: CanvasRenderingContext2D) {
-    if (this.textBackgroundColor) {
-      const pad = typeof this.textBgPadding === "number" ? this.textBgPadding : 12;
-      const rad = typeof this.textBgRadius === "number" ? this.textBgRadius : 16;
-      const opac = typeof this.textBgOpacity === "number" ? this.textBgOpacity : 1;
+  const patchProto = (proto: any) => {
+    if (!proto || proto.__hasCustomRoundedBg) return;
+    proto.__hasCustomRoundedBg = true;
+    const origRenderTextLinesBackground = proto._renderTextLinesBackground;
 
-      const padX = pad;
-      const padY = Math.round(pad * 0.75);
-      const w = this.width + padX * 2;
-      const h = this.height + padY * 2;
-      const x = -this.width / 2 - padX;
-      const y = -this.height / 2 - padY;
-      const r = Math.max(0, Math.min(rad, w / 2, h / 2));
+    proto._renderTextLinesBackground = function (ctx: CanvasRenderingContext2D) {
+      if (this.textBackgroundColor) {
+        const pad = typeof this.textBgPadding === "number" ? this.textBgPadding : 12;
+        const rad = typeof this.textBgRadius === "number" ? this.textBgRadius : 16;
+        const opac = typeof this.textBgOpacity === "number" ? this.textBgOpacity : 1;
 
-      ctx.save();
-      ctx.fillStyle = this.textBackgroundColor;
-      if (opac < 1) {
-        ctx.globalAlpha = (ctx.globalAlpha || 1) * opac;
+        const padX = pad;
+        const padY = Math.round(pad * 0.75);
+        const w = this.width + padX * 2;
+        const h = this.height + padY * 2;
+        const x = -this.width / 2 - padX;
+        const y = -this.height / 2 - padY;
+        const r = Math.max(0, Math.min(rad, w / 2, h / 2));
+
+        ctx.save();
+        ctx.fillStyle = this.textBackgroundColor;
+        if (opac < 1) {
+          ctx.globalAlpha = (ctx.globalAlpha || 1) * opac;
+        }
+
+        ctx.beginPath();
+        if (typeof (ctx as any).roundRect === "function") {
+          (ctx as any).roundRect(x, y, w, h, r);
+        } else {
+          ctx.moveTo(x + r, y);
+          ctx.lineTo(x + w - r, y);
+          ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+          ctx.lineTo(x + w, y + h - r);
+          ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+          ctx.lineTo(x + r, y + h);
+          ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+          ctx.lineTo(x, y + r);
+          ctx.quadraticCurveTo(x, y, x + r, y);
+          ctx.closePath();
+        }
+        ctx.fill();
+        ctx.restore();
+        return;
       }
 
-      ctx.beginPath();
-      if (typeof (ctx as any).roundRect === "function") {
-        (ctx as any).roundRect(x, y, w, h, r);
-      } else {
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
+      if (origRenderTextLinesBackground) {
+        origRenderTextLinesBackground.call(this, ctx);
       }
-      ctx.fill();
-      ctx.restore();
-      return;
+    };
+
+    if (proto.stateProperties && !proto.stateProperties.includes("textBgRadius")) {
+      proto.stateProperties.push("textBgRadius", "textBgPadding", "textBgOpacity");
     }
-
-    if (origRenderTextLinesBackground) {
-      origRenderTextLinesBackground.call(this, ctx);
+    if (proto.cacheProperties && !proto.cacheProperties.includes("textBgRadius")) {
+      proto.cacheProperties.push("textBgRadius", "textBgPadding", "textBgOpacity");
     }
   };
 
-  if (textProto.stateProperties && !textProto.stateProperties.includes("textBgRadius")) {
-    textProto.stateProperties.push("textBgRadius", "textBgPadding", "textBgOpacity");
-  }
-  if (textProto.cacheProperties && !textProto.cacheProperties.includes("textBgRadius")) {
-    textProto.cacheProperties.push("textBgRadius", "textBgPadding", "textBgOpacity");
-  }
+  if (fabric.Text) patchProto(fabric.Text.prototype);
+  if (fabric.IText) patchProto(fabric.IText.prototype);
+  if (fabric.Textbox) patchProto(fabric.Textbox.prototype);
 }
 
 // Auto-invoke in browser environment
@@ -691,6 +697,13 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
     }
 
 
+    const shadowData = obj.shadow ? {
+      color: obj.shadow.color,
+      blur: obj.shadow.blur,
+      offsetX: obj.shadow.offsetX,
+      offsetY: obj.shadow.offsetY,
+    } : undefined;
+
     const base: any = {
       id: obj.id || `${type}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
       type,
@@ -698,9 +711,14 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       y: obj.top,
       rotation: obj.angle || 0,
       opacity: obj.opacity ?? 1,
-      fill: typeof obj.fill === 'string' ? obj.fill : undefined,
+      fill: typeof obj.fill === 'string' ? obj.fill : (obj.fill?.toObject ? obj.fill.toObject() : obj.fill),
       stroke: obj.stroke,
       strokeWidth: obj.strokeWidth,
+      strokeDashArray: obj.strokeDashArray || undefined,
+      shadow: shadowData,
+      globalCompositeOperation: obj.globalCompositeOperation || 'source-over',
+      flipX: !!obj.flipX,
+      flipY: !!obj.flipY,
       isLocked: !!obj.isLocked
     };
 
@@ -717,12 +735,18 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       base.align = obj.textAlign;
       base.width = (obj.width || 240) * (obj.scaleX || 1);
       base.fontWeight = obj.fontWeight;
+      base.underline = !!obj.underline;
+      base.linethrough = !!obj.linethrough;
+      base.charSpacing = obj.charSpacing || 0;
+      base.lineHeight = obj.lineHeight || 1.16;
       base.styles = obj.styles;
-      // Spine text is positioned from its center, so x/y above mean something
-      // different than for the default top-left origin — persist the origin or
-      // the text jumps on reload.
       base.originX = obj.originX;
       base.originY = obj.originY;
+      base.paintFirst = obj.paintFirst || 'fill';
+      base.textBackgroundColor = obj.textBackgroundColor || '';
+      base.textBgRadius = typeof obj.textBgRadius === 'number' ? obj.textBgRadius : undefined;
+      base.textBgPadding = typeof obj.textBgPadding === 'number' ? obj.textBgPadding : undefined;
+      base.textBgOpacity = typeof obj.textBgOpacity === 'number' ? obj.textBgOpacity : undefined;
       if (type === 'textbox') {
         base.isTextbox = true;
       }
@@ -740,9 +764,6 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       } else if (type === 'path') {
         base.pathData = obj.svgPathData || '';
         base.viewBox = obj.viewBox || 24;
-        if (obj.strokeDashArray) {
-          base.strokeDashArray = obj.strokeDashArray;
-        }
       }
     } else if (type === 'circle') {
       base.radius = (obj.radius || 50) * (obj.scaleX || 1);
@@ -754,6 +775,21 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       base.height = (obj.height || 150) * (obj.scaleY || 1);
       base.scaleX = 1;
       base.scaleY = 1;
+      const imgFilters = (obj.filters || []) as any[];
+      const findFilter = (t: string) => imgFilters.find((f) => f && f.type === t);
+      base.imageFilters = {
+        brightness: findFilter("Brightness")?.brightness ?? 0,
+        contrast: findFilter("Contrast")?.contrast ?? 0,
+        saturation: findFilter("Saturation")?.saturation ?? 0,
+        hue: Math.round((findFilter("HueRotation")?.rotation ?? 0) * 180),
+        blur: findFilter("Blur")?.blur ?? 0,
+        sharpen: !!findFilter("Convolute"),
+        pixelate: findFilter("Pixelate")?.blocksize ?? 0,
+        noise: findFilter("Noise")?.noise ?? 0,
+        grayscale: !!findFilter("Grayscale"),
+        sepia: !!findFilter("Sepia"),
+        invert: !!findFilter("Invert")
+      };
     } else if (type === 'line') {
       base.points = [obj.x1, obj.y1, obj.x2, obj.y2];
       base.scaleX = 1;
@@ -2357,7 +2393,7 @@ export default function FabricCoverStudio({
     const saveState = () => {
       if (isUpdatingHistory.current) return;
       const stateObj = {
-        canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity']),
+        canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity', 'paintFirst']),
         background: coverBackgroundRef.current
       };
       const json = JSON.stringify(stateObj);
@@ -2409,6 +2445,8 @@ export default function FabricCoverStudio({
     lastImportLayoutRef.current = layout;
 
     // Initial elements import (translation from Konva element nodes to Fabric objects).
+    // Ensure custom rounded background prototype patch is active before importing objects
+    ensureFabricRoundedTextBg();
     // Adding each object fires object:added -> saveState, which serializes the
     // canvas and persists the remapped coordinates — so no explicit save here.
     // (Calling onSaveWorkspace directly at this point re-renders the parent
@@ -2818,27 +2856,57 @@ export default function FabricCoverStudio({
   const importLegacyElements = (fCanvas: fabric.Canvas, elements: any[], kdp: KdpLayoutResult) => {
     if (!elements || elements.length === 0) return;
 
+    const resolveFill = (fill: any, fallback = 'transparent') => {
+      if (fill && typeof fill === 'object' && fill.type === 'linear') {
+        return new fabric.Gradient(fill);
+      }
+      return (fill !== undefined && fill !== null) ? fill : fallback;
+    };
+
+    const resolveCommon = (el: any) => ({
+      id: el.id,
+      left: el.x,
+      top: el.y,
+      scaleX: el.scaleX || 1,
+      scaleY: el.scaleY || 1,
+      angle: el.rotation || 0,
+      opacity: el.opacity ?? 1,
+      flipX: !!el.flipX,
+      flipY: !!el.flipY,
+      stroke: el.stroke || undefined,
+      strokeWidth: typeof el.strokeWidth === 'number' ? el.strokeWidth : 0,
+      strokeDashArray: el.strokeDashArray || null,
+      globalCompositeOperation: el.globalCompositeOperation || 'source-over',
+      shadow: el.shadow ? new fabric.Shadow(el.shadow) : undefined
+    });
+
     elements.forEach(el => {
       let obj: fabric.Object | null = null;
 
       if (el.type === 'text' || el.type === 'textbox') {
+        const fillVal = resolveFill(el.fill, '#FFFFFF');
+
         const textOptions = {
-          id: el.id,
-          left: el.x,
-          top: el.y,
+          ...resolveCommon(el),
           fontSize: el.fontSize || 24,
-          fill: el.fill || '#FFFFFF',
+          fill: fillVal,
           fontFamily: el.fontFamily || 'Arial',
           fontStyle: el.fontStyle || 'normal',
           fontWeight: el.fontWeight || 'normal',
           textAlign: el.align || 'center',
+          underline: !!el.underline,
+          linethrough: !!el.linethrough,
+          charSpacing: el.charSpacing || 0,
+          lineHeight: el.lineHeight || 1.16,
           styles: el.styles || {},
           originX: el.originX || 'left',
           originY: el.originY || 'top',
-          scaleX: el.scaleX || 1,
-          scaleY: el.scaleY || 1,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
+          paintFirst: el.paintFirst || 'fill',
+          textBackgroundColor: el.textBackgroundColor || '',
+          textBgRadius: typeof el.textBgRadius === 'number' ? el.textBgRadius : undefined,
+          textBgPadding: typeof el.textBgPadding === 'number' ? el.textBgPadding : undefined,
+          textBgOpacity: typeof el.textBgOpacity === 'number' ? el.textBgOpacity : undefined,
+          padding: el.textBackgroundColor ? Math.max(4, el.textBgPadding || 12) : 4
         };
 
         if (el.isTextbox || el.type === 'textbox') {
@@ -2851,61 +2919,31 @@ export default function FabricCoverStudio({
         }
       } else if (el.type === 'rect') {
         obj = new fabric.Rect({
-          id: el.id,
-          left: el.x,
-          top: el.y,
+          ...resolveCommon(el),
           width: el.width || 100,
           height: el.height || 100,
-          fill: el.fill || '#F59E0B',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
+          fill: resolveFill(el.fill, '#F59E0B'),
           rx: el.cornerRadius || 0,
           ry: el.cornerRadius || 0,
-          scaleX: el.scaleX || 1,
-          scaleY: el.scaleY || 1,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
         } as any);
       } else if (el.type === 'circle') {
         obj = new fabric.Circle({
-          id: el.id,
-          left: el.x,
-          top: el.y,
+          ...resolveCommon(el),
           radius: el.radius || 50,
-          fill: el.fill || '#3B82F6',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
-          scaleX: el.scaleX || 1,
-          scaleY: el.scaleY || 1,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
+          fill: resolveFill(el.fill, '#3B82F6'),
         } as any);
       } else if (el.type === 'line') {
         obj = new fabric.Line(el.points || [0, 0, 100, 0], {
-          id: el.id,
-          left: el.x,
-          top: el.y,
+          ...resolveCommon(el),
           stroke: el.stroke || '#FFFFFF',
           strokeWidth: el.strokeWidth || 4,
-          scaleX: el.scaleX || 1,
-          scaleY: el.scaleY || 1,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
         } as any);
       } else if (el.type === 'triangle') {
         obj = new fabric.Triangle({
-          id: el.id,
-          left: el.x,
-          top: el.y,
+          ...resolveCommon(el),
           width: el.width || 100,
           height: el.height || 100,
-          fill: el.fill || '#10B981',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
-          scaleX: el.scaleX || 1,
-          scaleY: el.scaleY || 1,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
+          fill: resolveFill(el.fill, '#10B981'),
         } as any);
       } else if (el.type === 'hexagon') {
         const points = [
@@ -2917,60 +2955,35 @@ export default function FabricCoverStudio({
           { x: 0, y: 25 }
         ];
         obj = new fabric.Polygon(points, {
-          id: el.id,
-          left: el.x,
-          top: el.y,
-          fill: el.fill || '#8B5CF6',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
+          ...resolveCommon(el),
+          fill: resolveFill(el.fill, '#8B5CF6'),
           scaleX: (el.width || 100) / 100,
           scaleY: (el.height || 100) / 100,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
         } as any);
         (obj as any).isHexagon = true;
       } else if (el.type === 'star') {
         obj = new fabric.Polygon(el.points || [], {
-          id: el.id,
-          left: el.x,
-          top: el.y,
-          fill: el.fill || '#10B981',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
+          ...resolveCommon(el),
+          fill: resolveFill(el.fill, '#10B981'),
           scaleX: (el.width || 238) / 238,
           scaleY: (el.height || 226) / 226,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
         } as any);
       } else if (el.type === 'heart') {
         const heartPath = "M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z";
         obj = new fabric.Path(heartPath, {
-          id: el.id,
-          left: el.x,
-          top: el.y,
-          fill: el.fill || '#EF4444',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
+          ...resolveCommon(el),
+          fill: resolveFill(el.fill, '#EF4444'),
           scaleX: (el.width || 80) / 80,
           scaleY: (el.height || 80) / 80,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
         } as any);
         (obj as any).isHeart = true;
       } else if (el.type === 'path') {
         const vb = el.viewBox || 24;
         obj = new fabric.Path(el.pathData, {
-          id: el.id,
-          left: el.x,
-          top: el.y,
-          fill: el.fill || 'transparent',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
+          ...resolveCommon(el),
+          fill: resolveFill(el.fill, 'transparent'),
           scaleX: (el.width || vb) / vb,
           scaleY: (el.height || vb) / vb,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1,
-          strokeDashArray: el.strokeDashArray || null,
           strokeLineCap: 'round',
           strokeLineJoin: 'round'
         } as any);
@@ -2982,7 +2995,15 @@ export default function FabricCoverStudio({
           left: el.x,
           top: el.y,
         });
-        obj.set({ angle: el.rotation || 0, opacity: el.opacity ?? 1 });
+        (obj as any).id = el.id;
+        obj.set({
+          angle: el.rotation || 0,
+          opacity: el.opacity ?? 1,
+          flipX: !!el.flipX,
+          flipY: !!el.flipY,
+          globalCompositeOperation: el.globalCompositeOperation || 'source-over',
+          shadow: el.shadow ? new fabric.Shadow(el.shadow) : undefined
+        });
       } else if (el.type === 'pentagon') {
         const points = [
           { x: 50, y: 0 },
@@ -2992,16 +3013,10 @@ export default function FabricCoverStudio({
           { x: 0, y: 38 }
         ];
         obj = new fabric.Polygon(points, {
-          id: el.id,
-          left: el.x,
-          top: el.y,
-          fill: el.fill || 'transparent',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
+          ...resolveCommon(el),
+          fill: resolveFill(el.fill, 'transparent'),
           scaleX: (el.width || 100) / 100,
           scaleY: (el.height || 100) / 100,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
         } as any);
         (obj as any).isPentagon = true;
       } else if (el.type === 'octagon') {
@@ -3016,32 +3031,18 @@ export default function FabricCoverStudio({
           { x: 0, y: 29 }
         ];
         obj = new fabric.Polygon(points, {
-          id: el.id,
-          left: el.x,
-          top: el.y,
-          fill: el.fill || 'transparent',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
+          ...resolveCommon(el),
+          fill: resolveFill(el.fill, 'transparent'),
           scaleX: (el.width || 100) / 100,
           scaleY: (el.height || 100) / 100,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
         } as any);
         (obj as any).isOctagon = true;
       } else if (el.type === 'ellipse') {
         obj = new fabric.Ellipse({
-          id: el.id,
-          left: el.x,
-          top: el.y,
+          ...resolveCommon(el),
           rx: (el.width || 100) / 2,
           ry: (el.height || 60) / 2,
-          fill: el.fill || 'transparent',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
-          scaleX: el.scaleX || 1,
-          scaleY: el.scaleY || 1,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
+          fill: resolveFill(el.fill, 'transparent'),
         } as any);
       } else if (el.type === 'diamond') {
         const points = [
@@ -3051,16 +3052,10 @@ export default function FabricCoverStudio({
           { x: 0, y: 50 }
         ];
         obj = new fabric.Polygon(points, {
-          id: el.id,
-          left: el.x,
-          top: el.y,
-          fill: el.fill || 'transparent',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
+          ...resolveCommon(el),
+          fill: resolveFill(el.fill, 'transparent'),
           scaleX: (el.width || 100) / 100,
           scaleY: (el.height || 100) / 100,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
         } as any);
         (obj as any).isDiamond = true;
       } else if (el.type === 'trapezoid') {
@@ -3071,16 +3066,10 @@ export default function FabricCoverStudio({
           { x: 0, y: 100 }
         ];
         obj = new fabric.Polygon(points, {
-          id: el.id,
-          left: el.x,
-          top: el.y,
-          fill: el.fill || 'transparent',
-          stroke: el.stroke,
-          strokeWidth: el.strokeWidth || 0,
+          ...resolveCommon(el),
+          fill: resolveFill(el.fill, 'transparent'),
           scaleX: (el.width || 100) / 100,
           scaleY: (el.height || 100) / 100,
-          angle: el.rotation || 0,
-          opacity: el.opacity ?? 1
         } as any);
         (obj as any).isTrapezoid = true;
       } else if (el.type === 'clipart') {
@@ -3092,16 +3081,41 @@ export default function FabricCoverStudio({
 
         fabric.Image.fromURL(secureSrc, (img) => {
           img.set({
-            id: el.id,
-            left: el.x,
-            top: el.y,
+            ...resolveCommon(el),
             width: el.width || 150,
             height: el.height || 150,
-            scaleX: el.scaleX || 1,
-            scaleY: el.scaleY || 1,
-            angle: el.rotation || 0,
-            opacity: el.opacity ?? 1
           } as any);
+
+          if (el.imageFilters) {
+            const f = el.imageFilters;
+            const filters: any[] = [];
+            if (f.brightness) filters.push(new fabric.Image.filters.Brightness({ brightness: f.brightness }));
+            if (f.contrast) filters.push(new fabric.Image.filters.Contrast({ contrast: f.contrast }));
+            if (f.saturation) filters.push(new fabric.Image.filters.Saturation({ saturation: f.saturation }));
+            if (f.hue) filters.push(new fabric.Image.filters.HueRotation({ rotation: f.hue / 180 }));
+            if (f.grayscale) filters.push(new fabric.Image.filters.Grayscale());
+            if (f.sepia) filters.push(new fabric.Image.filters.Sepia());
+            if (f.invert) filters.push(new fabric.Image.filters.Invert());
+            if (f.sharpen) filters.push(new fabric.Image.filters.Convolute({ matrix: SHARPEN_MATRIX }));
+            if (f.blur > 0) filters.push(new fabric.Image.filters.Blur({ blur: f.blur }));
+            if (f.pixelate > 0) filters.push(new fabric.Image.filters.Pixelate({ blocksize: f.pixelate }));
+            if (f.noise > 0) filters.push(new fabric.Image.filters.Noise({ noise: f.noise }));
+            img.filters = filters;
+            img.applyFilters();
+          }
+
+          if (el.isLocked) {
+            img.set({
+              lockMovementX: true,
+              lockMovementY: true,
+              lockScalingX: true,
+              lockScalingY: true,
+              lockRotation: true,
+              hasControls: false,
+              isLocked: true
+            } as any);
+          }
+
           fCanvas.add(img);
           fCanvas.requestRenderAll();
         }, { crossOrigin: 'anonymous' });
@@ -4179,6 +4193,12 @@ export default function FabricCoverStudio({
         charSpacing: o.charSpacing,
         textAlign: o.textAlign,
         lineHeight: o.lineHeight,
+        paintFirst: o.paintFirst,
+        textBackgroundColor: o.textBackgroundColor,
+        textBgRadius: o.textBgRadius,
+        textBgPadding: o.textBgPadding,
+        textBgOpacity: o.textBgOpacity,
+        padding: o.padding,
       });
     }
     setCopiedStyle(style);
@@ -4186,10 +4206,18 @@ export default function FabricCoverStudio({
 
   const pasteStyleToActive = () => {
     if (!canvas || !activeObject || !copiedStyle) return;
-    const { fontFamily, fontSize, fontWeight, fontStyle, underline, charSpacing, textAlign, lineHeight, ...common } = copiedStyle;
+    const {
+      fontFamily, fontSize, fontWeight, fontStyle, underline, charSpacing, textAlign, lineHeight,
+      paintFirst, textBackgroundColor, textBgRadius, textBgPadding, textBgOpacity, padding,
+      ...common
+    } = copiedStyle;
     activeObject.set(common);
     if (isTextLikeObject(activeObject)) {
-      (activeObject as any).set({ fontFamily, fontSize, fontWeight, fontStyle, underline, charSpacing, textAlign, lineHeight });
+      (activeObject as any).set({
+        fontFamily, fontSize, fontWeight, fontStyle, underline, charSpacing, textAlign, lineHeight,
+        paintFirst, textBackgroundColor, textBgRadius, textBgPadding, textBgOpacity, padding,
+        dirty: true
+      });
     }
     canvas.requestRenderAll();
     canvas.fire("object:modified", { target: activeObject });

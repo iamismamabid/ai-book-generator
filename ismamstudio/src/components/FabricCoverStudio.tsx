@@ -28,7 +28,7 @@ import SeriesBrandingModal from "@/components/SeriesBrandingModal";
 import BackgroundRemoverModal from "@/components/BackgroundRemoverModal";
 import FontPicker from "@/components/FontPicker";
 import DesktopRecommendedBanner from "@/components/DesktopRecommendedBanner";
-import { loadGoogleFontFamilies } from "@/lib/loadGoogleFont";
+import { loadGoogleFontFamilies, ensureGoogleFontsLoaded } from "@/lib/loadGoogleFont";
 import { COVER_TEXTURES, TEXTURE_CATEGORIES, renderTexture, CoverTexture } from "@/lib/coverTextures";
 import VersionHistoryModal from "@/components/VersionHistoryModal";
 import { CoverVersion } from "@/lib/coverVersions";
@@ -739,8 +739,11 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       base.fontSize = Math.round((obj.fontSize || 24) * (obj.scaleX || 1));
       base.scaleX = 1;
       base.scaleY = 1;
-      base.fontFamily = obj.fontFamily;
-      base.fontStyle = obj.fontStyle;
+      base.fontFamily = obj.fontFamily || 'Arial';
+      const rawStyle = String(obj.fontStyle || 'normal').toLowerCase();
+      const rawWeight = String(obj.fontWeight || 'normal').toLowerCase();
+      base.fontStyle = rawStyle === 'italic' || rawStyle === 'oblique' ? rawStyle : 'normal';
+      base.fontWeight = rawStyle === 'bold' || rawWeight === 'bold' ? 'bold' : (obj.fontWeight || 'normal');
       base.align = obj.textAlign;
       base.width = (obj.width || 240) * (obj.scaleX || 1);
       base.fontWeight = obj.fontWeight;
@@ -856,10 +859,10 @@ export default function FabricCoverStudio({
 
   // Dynamically load Google Fonts for the cover studio — every font in
   // GOOGLE_FONT_FAMILIES (everything but the browser-native "System" group)
-  // gets requested at both regular and bold weight in one combined stylesheet.
+  // gets requested at both regular and bold weight with italic variants.
   useEffect(() => {
     const familyParams = GOOGLE_FONT_FAMILIES
-      .map(f => `family=${f.replace(/\s+/g, '+')}:wght@400;700`)
+      .map(f => `family=${f.replace(/\s+/g, '+')}:ital,wght@0,400;0,700;1,400;1,700`)
       .join('&');
     const link = document.createElement('link');
     link.href = `https://fonts.googleapis.com/css2?${familyParams}&display=swap`;
@@ -1003,24 +1006,55 @@ export default function FabricCoverStudio({
   const [userZoom, setUserZoom] = useState(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
 
-  // Fabric.js renders text with whatever font is available at the moment it
-  // draws — it doesn't know when a webfont finishes downloading. With 50+
-  // fonts now loading async, without this any text already placed with a
-  // not-yet-loaded font would silently stay on the fallback font.
-  useEffect(() => {
-    if (!canvas || typeof document === 'undefined' || !document.fonts?.ready) return;
-    // Resolves asynchronously, by which point a trim-size change may have
-    // replaced (and disposed) this canvas.
-    document.fonts.ready.then(() => {
-      if (isCanvasAlive(canvas)) canvas.requestRenderAll();
-    });
-  }, [canvas]);
-
   // fabric.Canvas.dispose() tears down the 2D contexts but the instance stays
   // referenced by React state until the replacement commits, so anything that
   // might run in that window has to check the canvas is still usable.
   const isCanvasAlive = (c: fabric.Canvas | null): c is fabric.Canvas =>
     !!c && !!c.getContext();
+
+  // Re-measures character widths and invalidates caches for all text objects on canvas.
+  // When external Google Fonts download asynchronously, Fabric's cached bounding boxes
+  // and textures must be refreshed so text renders with true font metrics and glyphs.
+  const refreshCanvasTextObjects = (c: fabric.Canvas) => {
+    if (!isCanvasAlive(c)) return;
+    let didUpdate = false;
+    c.getObjects().forEach((obj: any) => {
+      if (obj.type === 'text' || obj.type === 'i-text' || obj.type === 'textbox') {
+        obj.initDimensions?.();
+        obj.dirty = true;
+        didUpdate = true;
+      } else if (obj.isCurvedText) {
+        obj.dirty = true;
+        didUpdate = true;
+      }
+    });
+    if (didUpdate) {
+      c.requestRenderAll();
+    }
+  };
+
+  // Fabric.js renders text with whatever font is available at the moment it
+  // draws — it doesn't know when a webfont finishes downloading. With 50+
+  // fonts now loading async, without this any text already placed with a
+  // not-yet-loaded font would silently stay on the fallback font.
+  useEffect(() => {
+    if (!canvas || typeof document === 'undefined') return;
+
+    const onFontsDone = () => {
+      refreshCanvasTextObjects(canvas);
+    };
+
+    if (document.fonts) {
+      document.fonts.ready.then(onFontsDone);
+      document.fonts.addEventListener?.('loadingdone', onFontsDone);
+    }
+
+    return () => {
+      if (document.fonts?.removeEventListener) {
+        document.fonts.removeEventListener('loadingdone', onFontsDone);
+      }
+    };
+  }, [canvas]);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
@@ -1591,14 +1625,15 @@ export default function FabricCoverStudio({
         if (property === 'flipX') setObjectFlipX(!!value);
         if (property === 'flipY') setObjectFlipY(!!value);
       } else {
-        if (textObj && property === 'fill') {
-          // If changing fill on the entire text object, clear individual char fill overrides so the whole text gets the new color
+        if (textObj && perCharProperties.includes(property)) {
+          // If changing a text property on the entire text object without selection,
+          // clear individual char overrides so the whole text gets the new styling consistently
           const styles = (textObj as any).styles;
           if (styles) {
             for (const line in styles) {
               for (const char in styles[line]) {
-                if (styles[line][char] && styles[line][char].fill !== undefined) {
-                  delete styles[line][char].fill;
+                if (styles[line][char] && styles[line][char][property] !== undefined) {
+                  delete styles[line][char][property];
                 }
               }
             }
@@ -1606,6 +1641,19 @@ export default function FabricCoverStudio({
         }
         activeObject.set({ [property]: value });
         activeObject.setCoords();
+        if (textObj) {
+          textObj.initDimensions?.();
+          activeObject.dirty = true;
+        }
+        if (property === "fontFamily" && typeof value === "string") {
+          ensureGoogleFontsLoaded([value]).then(() => {
+            if (canvas && isCanvasAlive(canvas)) {
+              textObj?.initDimensions?.();
+              activeObject.dirty = true;
+              canvas.requestRenderAll();
+            }
+          });
+        }
       }
     }
 
@@ -2453,7 +2501,13 @@ export default function FabricCoverStudio({
       if (el?.fontFamily) restoredFonts.add(el.fontFamily);
       if (el?.curvedTextData?.fontFamily) restoredFonts.add(el.curvedTextData.fontFamily);
     }
-    if (restoredFonts.size > 0) loadGoogleFontFamilies(Array.from(restoredFonts));
+    if (restoredFonts.size > 0) {
+      const fontList = Array.from(restoredFonts);
+      loadGoogleFontFamilies(fontList);
+      ensureGoogleFontsLoaded(fontList).then(() => {
+        refreshCanvasTextObjects(fCanvas);
+      });
+    }
 
     // Smart resize: this effect re-runs (and rebuilds the canvas) whenever the
     // trim size, page count or paper type changes the cover geometry. Without a
@@ -2500,6 +2554,18 @@ export default function FabricCoverStudio({
     if (initialElements && initialElements.length > 0) {
       hasImportedInitialRef.current = true;
       ensureFabricRoundedTextBg();
+      const restoredFonts = new Set<string>();
+      for (const el of initialElements) {
+        if (el?.fontFamily) restoredFonts.add(el.fontFamily);
+        if (el?.curvedTextData?.fontFamily) restoredFonts.add(el.curvedTextData.fontFamily);
+      }
+      if (restoredFonts.size > 0) {
+        const fontList = Array.from(restoredFonts);
+        loadGoogleFontFamilies(fontList);
+        ensureGoogleFontsLoaded(fontList).then(() => {
+          refreshCanvasTextObjects(canvas);
+        });
+      }
       importLegacyElements(canvas, initialElements, layout);
       canvas.requestRenderAll();
       setLayers([...canvas.getObjects()].reverse());
@@ -2927,13 +2993,18 @@ export default function FabricCoverStudio({
       if (el.type === 'text' || el.type === 'textbox') {
         const fillVal = resolveFill(el.fill, '#FFFFFF');
 
+        const rawStyle = String(el.fontStyle || 'normal').toLowerCase();
+        const rawWeight = String(el.fontWeight || 'normal').toLowerCase();
+        const resolvedStyle = rawStyle === 'italic' || rawStyle === 'oblique' ? rawStyle : 'normal';
+        const resolvedWeight = rawStyle === 'bold' || rawWeight === 'bold' ? 'bold' : (el.fontWeight || 'normal');
+
         const textOptions = {
           ...resolveCommon(el),
           fontSize: el.fontSize || 24,
           fill: fillVal,
           fontFamily: el.fontFamily || 'Arial',
-          fontStyle: el.fontStyle || 'normal',
-          fontWeight: el.fontWeight || 'normal',
+          fontStyle: resolvedStyle,
+          fontWeight: resolvedWeight,
           textAlign: el.align || 'center',
           underline: !!el.underline,
           linethrough: !!el.linethrough,
@@ -4295,6 +4366,10 @@ export default function FabricCoverStudio({
         paintFirst, textBackgroundColor, textBgRadius, textBgPadding, textBgOpacity, textBgStroke, textBgStrokeWidth, padding,
         dirty: true
       });
+      (activeObject as any).initDimensions?.();
+      if (fontFamily) {
+        ensureGoogleFontsLoaded([fontFamily]);
+      }
     }
     canvas.requestRenderAll();
     canvas.fire("object:modified", { target: activeObject });

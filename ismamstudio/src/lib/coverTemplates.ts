@@ -523,13 +523,18 @@ export function resolveTemplateElements(template: CoverTemplate, layout: KdpLayo
     };
 
     if (el.type === "textbox") {
+      const rawStyle = String(el.fontStyle || "normal").toLowerCase();
+      const rawWeight = String((el as any).fontWeight || "normal").toLowerCase();
+      const isBold = rawStyle === "bold" || rawWeight === "bold";
+      const isItalic = rawStyle === "italic" || rawStyle === "oblique";
       return {
         ...base,
         type: "textbox",
         isTextbox: true,
         text: el.text || "",
         fontFamily: el.fontFamily || "Arial",
-        fontStyle: el.fontStyle || "normal",
+        fontStyle: isItalic ? "italic" : "normal",
+        fontWeight: isBold ? "bold" : (rawWeight !== "normal" ? rawWeight : "normal"),
         fontSize: Math.round((el.fontSizeFrac ?? 0.05) * frontWidth),
         align: el.align || "center",
       };

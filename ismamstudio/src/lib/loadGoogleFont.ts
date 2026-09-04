@@ -11,7 +11,7 @@ export function loadGoogleFontFamilies(families: string[]): void {
   toLoad.forEach((f) => loadedFamilies.add(f));
 
   const familyParams = toLoad
-    .map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}:wght@400;700`)
+    .map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}:ital,wght@0,400;0,700;1,400;1,700`)
     .join("&");
   const link = document.createElement("link");
   link.rel = "stylesheet";
@@ -19,6 +19,30 @@ export function loadGoogleFontFamilies(families: string[]): void {
   document.head.appendChild(link);
 }
 
+export async function ensureGoogleFontsLoaded(families: string[]): Promise<void> {
+  if (typeof document === "undefined") return;
+  const valid = families.filter(Boolean);
+  if (valid.length === 0) return;
+
+  loadGoogleFontFamilies(valid);
+
+  if (document.fonts && typeof document.fonts.load === "function") {
+    const promises: Promise<any>[] = [];
+    valid.forEach((fam) => {
+      promises.push(document.fonts.load(`16px "${fam}"`));
+      promises.push(document.fonts.load(`bold 16px "${fam}"`));
+      promises.push(document.fonts.load(`italic 16px "${fam}"`));
+      promises.push(document.fonts.load(`bold italic 16px "${fam}"`));
+    });
+    try {
+      await Promise.allSettled(promises);
+    } catch {
+      // Ignore font loading errors; canvas will use best match
+    }
+  }
+}
+
 export function isGoogleFontLoaded(family: string): boolean {
   return loadedFamilies.has(family);
 }
+

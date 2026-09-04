@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, Check, ChevronDown } from "lucide-react";
 import { GOOGLE_FONTS_CATALOG } from "@/lib/googleFontsCatalog";
-import { loadGoogleFontFamilies } from "@/lib/loadGoogleFont";
+import { loadGoogleFontFamilies, ensureGoogleFontsLoaded } from "@/lib/loadGoogleFont";
 
 interface FontPickerProps {
   value: string;
@@ -58,6 +58,7 @@ export default function FontPicker({ value, onChange, curatedCategories }: FontP
 
   const handleSelect = (family: string) => {
     loadGoogleFontFamilies([family]);
+    ensureGoogleFontsLoaded([family]);
     onChange(family);
     setQuery("");
     setIsOpen(false);

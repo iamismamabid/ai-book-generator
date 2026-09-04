@@ -291,16 +291,46 @@ export async function checkPremiumStatus() {
     if (user) {
       const publicMetadata = (user.publicMetadata || {}) as any;
 
-      // 🛑 TRIAL RESTRICTION (FIRST CHECK):
-      // Free trial users get full studio creation access, but MUST NOT get watermark-free or 300 DPI exports until paid
-      const isTrial =
-        publicMetadata.subscriptionStatus === "trialing" ||
-        publicMetadata.isTrial === true ||
-        (publicMetadata.trialEndsAt &&
-          new Date(publicMetadata.trialEndsAt).getTime() > Date.now() &&
-          publicMetadata.subscriptionStatus !== "active");
+      // 🛑 TRIAL RESTRICTION & EXPIRATION CHECK:
+      const trialEndsAtMs = publicMetadata.trialEndsAt ? new Date(publicMetadata.trialEndsAt).getTime() : 0;
+      const wasTrialUser = trialEndsAtMs > 0 || publicMetadata.isTrial === true || publicMetadata.subscriptionStatus === "trialing";
+      const hasTrialExpired = trialEndsAtMs > 0 ? Date.now() > trialEndsAtMs : false;
+      const hasVerifiedPayment = publicMetadata.hasPaidTransaction === true && publicMetadata.subscriptionStatus === "active";
 
-      if (isTrial) {
+      // Case A: User was on a trial and 7 days have expired without verified payment (card had no money / payment failed)
+      if (wasTrialUser && hasTrialExpired && !hasVerifiedPayment) {
+        // Auto-heal Clerk metadata if stale isPremium: true was accidentally granted
+        if (publicMetadata.isPremium === true || publicMetadata.subscriptionStatus === "active") {
+          clerkClient()
+            .then((client) =>
+              client.users.updateUserMetadata(userId, {
+                publicMetadata: {
+                  ...publicMetadata,
+                  isPremium: false,
+                  isTrial: false,
+                  subscriptionStatus: "inactive",
+                  plan: "free",
+                  trialExpired: true,
+                  lastPaymentStatus: "failed_or_expired",
+                },
+              })
+            )
+            .catch((err) => console.error("Auto-heal trial metadata error:", err));
+        }
+
+        return {
+          checked: true,
+          isPremium: false, // 🔒 Strictly blocked from watermark-free downloads
+          isTrial: false,
+          trialExpired: true,
+          plan: "free",
+          limits: defaultFreeLimits,
+          reason: "trial_expired_unpaid",
+        };
+      }
+
+      // Case B: User is currently inside active 7-day trial window
+      if (wasTrialUser && !hasTrialExpired && !hasVerifiedPayment) {
         const userPlan = publicMetadata.plan || "pro";
         let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
 
@@ -311,9 +341,9 @@ export async function checkPremiumStatus() {
         }
 
         let daysRemaining = 7;
-        if (publicMetadata.trialEndsAt) {
-          const msRemaining = new Date(publicMetadata.trialEndsAt).getTime() - Date.now();
-          daysRemaining = Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
+        if (trialEndsAtMs > 0) {
+          const msRemaining = trialEndsAtMs - Date.now();
+          daysRemaining = Math.max(1, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
         }
 
         return {
@@ -327,13 +357,32 @@ export async function checkPremiumStatus() {
         };
       }
 
-      // Strictly grant premium only to active paid subscriptions (never unpaid trials, expired, or canceled)
+      // Case C: Explicitly failed, canceled, or past-due subscriptions
+      if (
+        publicMetadata.subscriptionStatus === "past_due" ||
+        publicMetadata.subscriptionStatus === "canceled" ||
+        publicMetadata.subscriptionStatus === "paused" ||
+        publicMetadata.subscriptionStatus === "inactive" ||
+        publicMetadata.lastPaymentStatus === "failed"
+      ) {
+        return {
+          checked: true,
+          isPremium: false,
+          isTrial: false,
+          plan: "free",
+          limits: defaultFreeLimits,
+          reason: "subscription_inactive_or_past_due",
+        };
+      }
+
+      // Case D: Strictly grant premium only to active paid subscriptions
       const isPaidSubscribed =
         publicMetadata.subscriptionStatus === "active" &&
         (publicMetadata.plan === "starter" ||
           publicMetadata.plan === "pro" ||
           publicMetadata.plan === "agency" ||
-          publicMetadata.isPremium === true);
+          publicMetadata.isPremium === true) &&
+        (!wasTrialUser || hasVerifiedPayment);
 
       if (isPaidSubscribed) {
         const userPlan = publicMetadata.plan || "pro";
@@ -450,8 +499,11 @@ export async function confirmPaddleCheckoutSuccess(checkoutData: any) {
       publicMetadata: {
         isPremium: !isTrial, // 🔒 Strictly false during trial
         isTrial: isTrial,
+        hasPaidTransaction: !isTrial,
+        trialExpired: false,
         plan: plan,
         subscriptionStatus: subscriptionStatus,
+        lastPaymentStatus: isTrial ? "trial" : "paid",
         ...(customerId ? { paddleCustomerId: customerId } : {}),
         ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
         ...(trialEndsAt ? { trialEndsAt } : { trialEndsAt: null }),
@@ -489,6 +541,8 @@ export async function syncMySubscription() {
           ...meta,
           isPremium: true,
           isTrial: false,
+          hasPaidTransaction: true,
+          trialExpired: false,
           plan,
           tier: redemptionsCount,
           subscriptionStatus: "active",
@@ -511,31 +565,87 @@ export async function syncMySubscription() {
         });
         if (pRes.ok) {
           const pData = await pRes.json();
-          const paddleStatus = pData?.data?.status; // "trialing", "active", "past_due", "canceled"
-          const isPaid = paddleStatus === "active";
+          const paddleStatus = pData?.data?.status; // "trialing", "active", "past_due", "canceled", "paused"
           const isTrial = paddleStatus === "trialing";
           const trialEndsAt = isTrial
             ? (pData?.data?.current_billing_period?.ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
-            : null;
+            : (meta.trialEndsAt || null);
+
+          // If past_due, paused, or canceled in Paddle, downgrade immediately
+          if (paddleStatus === "past_due" || paddleStatus === "canceled" || paddleStatus === "paused") {
+            const clerk = await clerkClient();
+            await clerk.users.updateUserMetadata(userId, {
+              publicMetadata: {
+                ...meta,
+                isPremium: false,
+                isTrial: false,
+                hasPaidTransaction: false,
+                trialExpired: true,
+                plan: "free",
+                subscriptionStatus: paddleStatus,
+                lastPaymentStatus: "failed",
+              },
+            });
+            return {
+              success: false,
+              error: `Subscription is ${paddleStatus.replace("_", " ")}. Please update your payment method in billing.`
+            };
+          }
+
+          // If Paddle status is active, verify that a genuine paid transaction occurred
+          let hasVerifiedPaidTxn = meta.hasPaidTransaction === true;
+          if (paddleStatus === "active" && !hasVerifiedPaidTxn) {
+            try {
+              const txRes = await fetch(`${apiBase}/transactions?subscription_id=${meta.paddleSubscriptionId}&status=paid`, {
+                headers: { Authorization: `Bearer ${apiKey}` },
+              });
+              if (txRes.ok) {
+                const txData = await txRes.json();
+                const paidList = txData?.data || [];
+                hasVerifiedPaidTxn = paidList.some((t: any) => {
+                  const total = Number(t?.details?.totals?.total ?? t?.payments?.[0]?.amount ?? 0);
+                  return total > 0;
+                });
+              }
+            } catch (txErr) {
+              console.error("Failed to verify paid transactions in syncMySubscription:", txErr);
+            }
+          }
+
+          const trialEndsAtMs = trialEndsAt ? new Date(trialEndsAt).getTime() : 0;
+          const isTrialOver = trialEndsAtMs > 0 && Date.now() > trialEndsAtMs;
+
+          // 🔒 Security Guard: If trial expired and no paid transaction exists, DO NOT grant premium
+          const isPaid = paddleStatus === "active" && hasVerifiedPaidTxn;
 
           const clerk = await clerkClient();
           await clerk.users.updateUserMetadata(userId, {
             publicMetadata: {
               ...meta,
               isPremium: isPaid,
-              isTrial: isTrial,
-              subscriptionStatus: paddleStatus,
-              trialEndsAt: trialEndsAt,
+              isTrial: isTrial && !isTrialOver,
+              trialExpired: isTrialOver && !isPaid,
+              hasPaidTransaction: hasVerifiedPaidTxn,
+              subscriptionStatus: isPaid ? "active" : (isTrialOver ? "past_due" : paddleStatus),
+              trialEndsAt: isPaid ? null : trialEndsAt,
+              lastPaymentStatus: isPaid ? "paid" : (isTrialOver ? "failed" : "trial"),
             },
           });
 
-          if (isTrial) {
+          if (isTrial && !isTrialOver) {
             return {
               success: true,
               isPremium: false,
               isTrial: true,
               plan: meta.plan || "pro",
               message: "Free trial active. Watermark-free 300 DPI exports unlock upon paid activation."
+            };
+          }
+
+          if (isTrialOver && !isPaid) {
+            return {
+              success: false,
+              error: "Your 7-day trial has ended and payment could not be processed. Please activate a paid plan to unlock Pro."
             };
           }
 
@@ -549,7 +659,17 @@ export async function syncMySubscription() {
     }
 
     // 3. Check existing metadata if no Paddle API or DB match
-    if (meta.subscriptionStatus === "trialing" || meta.isTrial) {
+    const trialEndsAtMs = meta.trialEndsAt ? new Date(meta.trialEndsAt).getTime() : 0;
+    const isTrialExpired = trialEndsAtMs > 0 && Date.now() > trialEndsAtMs;
+
+    if (isTrialExpired && meta.hasPaidTransaction !== true) {
+      return {
+        success: false,
+        error: "Your 7-day free trial has expired and payment could not be processed. Please activate your paid plan to unlock watermark-free downloads."
+      };
+    }
+
+    if ((meta.subscriptionStatus === "trialing" || meta.isTrial) && !isTrialExpired) {
       return {
         success: true,
         isPremium: false,
@@ -559,7 +679,12 @@ export async function syncMySubscription() {
       };
     }
 
-    if (meta.subscriptionStatus === "active" && meta.isPremium && (meta.plan === "starter" || meta.plan === "pro" || meta.plan === "agency")) {
+    if (
+      meta.subscriptionStatus === "active" &&
+      meta.isPremium &&
+      (meta.plan === "starter" || meta.plan === "pro" || meta.plan === "agency") &&
+      (meta.hasPaidTransaction === true || !meta.trialEndsAt)
+    ) {
       return { success: true, isPremium: true, plan: meta.plan };
     }
 

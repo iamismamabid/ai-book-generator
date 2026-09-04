@@ -2,7 +2,7 @@
 
 import posthog from "posthog-js";
 import { useState, useEffect, Suspense } from "react";
-import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X, ArrowRight, RefreshCw, ShieldCheck } from "lucide-react";
+import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X, ArrowRight, RefreshCw, ShieldCheck, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -590,9 +590,39 @@ function PricingSectionInner() {
         <div className="mt-8">
           {(() => {
             const currentUserPlan = (user?.publicMetadata?.plan as string) || "free";
-            const isTrialUser = Boolean(user?.publicMetadata?.subscriptionStatus === "trialing" || user?.publicMetadata?.isTrial);
-            const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) && !isTrialUser;
-            const isCurrentPlan = (isPremiumUser || isTrialUser) && currentUserPlan === plan.planKey;
+            const trialEndsAt = user?.publicMetadata?.trialEndsAt as string | undefined;
+            const trialEndsAtMs = trialEndsAt ? new Date(trialEndsAt).getTime() : 0;
+            const isTrialExpired = Boolean(
+              user?.publicMetadata?.trialExpired ||
+              (trialEndsAtMs > 0 && Date.now() > trialEndsAtMs && user?.publicMetadata?.hasPaidTransaction !== true)
+            );
+            const isTrialUser = Boolean((user?.publicMetadata?.subscriptionStatus === "trialing" || user?.publicMetadata?.isTrial) && !isTrialExpired);
+            const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) && !isTrialUser && !isTrialExpired;
+            const isCurrentPlan = (isPremiumUser || isTrialUser || isTrialExpired) && currentUserPlan === plan.planKey;
+
+            if (isCurrentPlan && isTrialExpired) {
+              return (
+                <div className="space-y-2">
+                  <div className="w-full py-3 rounded-2xl font-black text-xs bg-rose-500/15 border border-rose-500/40 text-rose-400 flex items-center justify-center gap-2 shadow-md">
+                    <AlertTriangle className="w-4 h-4 text-rose-400" />
+                    Trial Expired (Payment Required)
+                  </div>
+                  <button
+                    onClick={() => handleCheckout(plan.planKey, { skipTrial: true })}
+                    className="w-full py-3.5 rounded-xl font-black text-xs bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 text-white flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer hover:scale-[1.01] active:scale-95"
+                  >
+                    <span>⚡ Activate Paid Plan (${plan.price}/mo)</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <Link
+                    href="/studio"
+                    className="w-full py-2 rounded-xl font-bold text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center gap-1.5 transition"
+                  >
+                    Continue Testing in Studio <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              );
+            }
 
             if (isCurrentPlan && isTrialUser) {
               return (
@@ -776,8 +806,40 @@ function PricingSectionInner() {
         {/* 🌟 Subscription Sync & Active Plan Banner on Pricing Section */}
         {(() => {
           const userPlan = (user?.publicMetadata?.plan as string) || "free";
-          const isTrialUser = Boolean(user?.publicMetadata?.subscriptionStatus === "trialing" || user?.publicMetadata?.isTrial);
-          const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) && !isTrialUser;
+          const trialEndsAt = user?.publicMetadata?.trialEndsAt as string | undefined;
+          const trialEndsAtMs = trialEndsAt ? new Date(trialEndsAt).getTime() : 0;
+          const isTrialExpired = Boolean(
+            user?.publicMetadata?.trialExpired ||
+            (trialEndsAtMs > 0 && Date.now() > trialEndsAtMs && user?.publicMetadata?.hasPaidTransaction !== true)
+          );
+          const isTrialUser = Boolean((user?.publicMetadata?.subscriptionStatus === "trialing" || user?.publicMetadata?.isTrial) && !isTrialExpired);
+          const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) && !isTrialUser && !isTrialExpired;
+
+          if (isTrialExpired) {
+            return (
+              <div className="mt-8 max-w-2xl mx-auto p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-left shadow-lg shadow-rose-500/5 animate-in fade-in duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-black shrink-0">
+                    <AlertTriangle className="w-5 h-5 text-rose-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-rose-400 uppercase tracking-wide">
+                      7-Day Free Trial Expired ({userPlan.toUpperCase()})
+                    </p>
+                    <p className="text-xs text-slate-300 font-semibold">
+                      Your trial period has ended and subscription payment could not be charged. Activate your paid subscription to unlock 300 DPI watermark-free downloads.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleCheckout(userPlan, { skipTrial: true })}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 text-white text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95"
+                >
+                  ⚡ Activate Paid Plan <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            );
+          }
 
           if (isTrialUser) {
             return (

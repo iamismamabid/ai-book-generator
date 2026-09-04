@@ -102,68 +102,212 @@ export async function POST(request: Request) {
       plan = "agency";
     }
 
-    // 3. Handle activation events (subscriptions or completed transactions)
+    // 3. Handle Payment Declines, Past Due, Cancellations, or Expirations FIRST
     if (
-      eventType === "subscription.created" ||
-      eventType === "subscription.updated" ||
-      eventType === "subscription.activated" ||
-      eventType === "subscription.trialing" ||
-      eventType === "transaction.completed" ||
-      eventType === "transaction.paid"
-    ) {
-      const txnTotal = Number(data.details?.totals?.total ?? data.payments?.[0]?.amount ?? 1);
-      const isZeroCharge = txnTotal === 0;
-      const isExplicitTrial = data.status === "trialing" || eventType === "subscription.trialing";
-      const isTrial = isExplicitTrial || (isZeroCharge && (eventType === "subscription.created" || eventType === "transaction.completed"));
-
-      const status = isTrial ? "trialing" : (data.status === "active" || eventType === "subscription.activated" || (eventType === "transaction.paid" && txnTotal > 0) ? "active" : data.status || "active");
-      console.log(`Processing Clerk User ${userId} for plan ${plan} (status: ${status}, isTrial: ${isTrial}, txnTotal: ${txnTotal})`);
-
-      const customerId = data.customer_id;
-      const subscriptionId = data.id || data.subscription_id;
-      const trialEndsAt = status === "trialing"
-        ? (data.current_billing_period?.ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
-        : null;
-
-      // 🔒 Watermark-free / 300 DPI exports are strictly locked for trials. Only genuine paid charges get isPremium: true!
-      const isPaid = status === "active" && !isTrial && !isZeroCharge;
-      await clerk.users.updateUserMetadata(userId, {
-        publicMetadata: {
-          isPremium: isPaid,
-          isTrial: status === "trialing",
-          plan: plan,
-          subscriptionStatus: status,
-          ...(customerId ? { paddleCustomerId: customerId } : {}),
-          ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
-          ...(trialEndsAt ? { trialEndsAt } : { trialEndsAt: null }),
-        },
-      });
-
-      posthog.capture({
-        distinctId: userId,
-        event: isPaid ? "server_paddle_subscription_activated" : "server_paddle_trial_started",
-        properties: { plan, priceId, status, isTrial, customerId, subscriptionId },
-      });
-    } else if (
+      eventType === "transaction.payment_failed" ||
+      eventType === "subscription.past_due" ||
       eventType === "subscription.canceled" ||
       eventType === "subscription.expired" ||
-      eventType === "subscription.past_due"
+      eventType === "subscription.paused" ||
+      (eventType === "subscription.updated" && (data.status === "past_due" || data.status === "canceled" || data.status === "paused"))
     ) {
-      console.log(`Downgrading Clerk User ${userId} due to cancel/expiry`);
+      const declineReason = data.payments?.[0]?.error_code || data.payments?.[0]?.status || "payment_failed";
+      console.log(`Paddle Webhook: Payment failed / subscription past_due for Clerk User ${userId} (event: ${eventType}, status: ${data.status}, reason: ${declineReason})`);
 
       await clerk.users.updateUserMetadata(userId, {
         publicMetadata: {
           isPremium: false,
+          isTrial: false,
+          trialExpired: true,
           plan: "free",
-          subscriptionStatus: "inactive",
+          subscriptionStatus: data.status || "past_due",
+          hasPaidTransaction: false,
+          lastPaymentStatus: "failed",
+          paymentFailedAt: new Date().toISOString(),
         },
       });
 
       posthog.capture({
         distinctId: userId,
-        event: "server_paddle_subscription_deactivated",
-        properties: { priceId },
+        event: "server_paddle_payment_failed",
+        properties: { plan, priceId, eventType, status: data.status, declineReason },
       });
+    }
+    // 4. Handle Confirmed Paid Transactions (Genuine payment collected from card)
+    else if (
+      eventType === "transaction.paid" ||
+      (eventType === "transaction.completed" && (data.status === "paid" || data.payments?.[0]?.status === "captured"))
+    ) {
+      const txnTotal = Number(data.details?.totals?.total ?? data.payments?.[0]?.amount ?? 0);
+      const isGenuinePayment = txnTotal > 0;
+
+      if (isGenuinePayment) {
+        console.log(`Paddle Webhook: Confirmed PAID transaction for Clerk User ${userId} (amount: ${txnTotal})`);
+
+        const customerId = data.customer_id;
+        const subscriptionId = data.subscription_id || data.id;
+
+        await clerk.users.updateUserMetadata(userId, {
+          publicMetadata: {
+            isPremium: true,
+            hasPaidTransaction: true,
+            isTrial: false,
+            trialExpired: false,
+            plan: plan,
+            subscriptionStatus: "active",
+            lastPaymentStatus: "paid",
+            paidAt: new Date().toISOString(),
+            trialEndsAt: null,
+            ...(customerId ? { paddleCustomerId: customerId } : {}),
+            ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+          },
+        });
+
+        posthog.capture({
+          distinctId: userId,
+          event: "server_paddle_subscription_activated",
+          properties: { plan, priceId, txnTotal, customerId, subscriptionId },
+        });
+      } else {
+        // $0 Trial Checkout transaction
+        console.log(`Paddle Webhook: $0 trial transaction completed for Clerk User ${userId}`);
+        const customerId = data.customer_id;
+        const subscriptionId = data.subscription_id || data.id;
+        const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        await clerk.users.updateUserMetadata(userId, {
+          publicMetadata: {
+            isPremium: false,
+            isTrial: true,
+            hasPaidTransaction: false,
+            trialExpired: false,
+            plan: plan,
+            subscriptionStatus: "trialing",
+            trialEndsAt,
+            lastPaymentStatus: "trial",
+            ...(customerId ? { paddleCustomerId: customerId } : {}),
+            ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+          },
+        });
+
+        posthog.capture({
+          distinctId: userId,
+          event: "server_paddle_trial_started",
+          properties: { plan, priceId, customerId, subscriptionId },
+        });
+      }
+    }
+    // 5. Handle Trial Subscription Creation / Trial State
+    else if (
+      eventType === "subscription.trialing" ||
+      (eventType === "subscription.created" && (data.status === "trialing" || Boolean(data.trial_billing_period)))
+    ) {
+      const customerId = data.customer_id;
+      const subscriptionId = data.id || data.subscription_id;
+      const trialEndsAt =
+        data.trial_billing_period?.ends_at ||
+        data.current_billing_period?.ends_at ||
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      console.log(`Paddle Webhook: Trial subscription created for Clerk User ${userId}`);
+
+      await clerk.users.updateUserMetadata(userId, {
+        publicMetadata: {
+          isPremium: false,
+          isTrial: true,
+          hasPaidTransaction: false,
+          trialExpired: false,
+          plan: plan,
+          subscriptionStatus: "trialing",
+          trialEndsAt,
+          lastPaymentStatus: "trial",
+          ...(customerId ? { paddleCustomerId: customerId } : {}),
+          ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+        },
+      });
+
+      posthog.capture({
+        distinctId: userId,
+        event: "server_paddle_trial_started",
+        properties: { plan, priceId, customerId, subscriptionId },
+      });
+    }
+    // 6. Handle Subscription Lifecycle Updates (subscription.updated / subscription.activated / subscription.created)
+    else if (
+      eventType === "subscription.updated" ||
+      eventType === "subscription.activated" ||
+      eventType === "subscription.created"
+    ) {
+      const customerId = data.customer_id;
+      const subscriptionId = data.id || data.subscription_id;
+
+      // 🔍 Fetch user's current metadata to verify whether payment was already verified
+      let currentMetadata: any = {};
+      try {
+        const u = await clerk.users.getUser(userId);
+        currentMetadata = u.publicMetadata || {};
+      } catch (err) {
+        console.error("Paddle Webhook: error fetching Clerk user for subscription update:", err);
+      }
+
+      const hasPaid = currentMetadata.hasPaidTransaction === true;
+      const trialEndsAtMs = currentMetadata.trialEndsAt ? new Date(currentMetadata.trialEndsAt).getTime() : 0;
+      const wasTrialUser = trialEndsAtMs > 0 || currentMetadata.isTrial === true;
+      const trialHasPassed = trialEndsAtMs > 0 && Date.now() > trialEndsAtMs;
+
+      if (data.status === "trialing") {
+        const trialEndsAt =
+          data.trial_billing_period?.ends_at ||
+          data.current_billing_period?.ends_at ||
+          currentMetadata.trialEndsAt ||
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        await clerk.users.updateUserMetadata(userId, {
+          publicMetadata: {
+            ...currentMetadata,
+            isPremium: false,
+            isTrial: true,
+            hasPaidTransaction: false,
+            plan: plan,
+            subscriptionStatus: "trialing",
+            trialEndsAt,
+            ...(customerId ? { paddleCustomerId: customerId } : {}),
+            ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+          },
+        });
+      } else if (wasTrialUser && !hasPaid) {
+        // 🛑 CRITICAL SECURITY GUARD:
+        // User was on a trial and no transaction.paid has ever been recorded.
+        // Even if Paddle sets data.status === "active" during the renewal/dunning attempt,
+        // we MUST NOT grant isPremium: true until an actual transaction.paid arrives!
+        console.warn(`Paddle Webhook: subscription.updated with status '${data.status}' for unpaid trial user ${userId}. Retaining isPremium: false.`);
+
+        await clerk.users.updateUserMetadata(userId, {
+          publicMetadata: {
+            ...currentMetadata,
+            isPremium: false,
+            isTrial: !trialHasPassed,
+            trialExpired: trialHasPassed,
+            subscriptionStatus: trialHasPassed ? "past_due" : (data.status || "trialing"),
+            hasPaidTransaction: false,
+            ...(customerId ? { paddleCustomerId: customerId } : {}),
+            ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+          },
+        });
+      } else {
+        // Direct non-trial subscription or user who already completed a paid transaction
+        await clerk.users.updateUserMetadata(userId, {
+          publicMetadata: {
+            ...currentMetadata,
+            isPremium: hasPaid,
+            isTrial: false,
+            plan: plan,
+            subscriptionStatus: data.status || "active",
+            ...(customerId ? { paddleCustomerId: customerId } : {}),
+            ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+          },
+        });
+      }
     }
 
     await posthog.flush();

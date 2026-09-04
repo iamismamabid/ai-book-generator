@@ -855,6 +855,7 @@ export default function FabricCoverStudio({
   }, [isActive]);
 
   const hasImportedInitialRef = useRef(false);
+  const lastLiveElementsRef = useRef<any[] | null>(null);
 
   // Dynamically load Google Fonts for the cover studio — every font in
   // GOOGLE_FONT_FAMILIES (everything but the browser-native "System" group)
@@ -2510,30 +2511,37 @@ export default function FabricCoverStudio({
     // old canvas, so a 6x9 layout would land wrong on an 8.5x11. Transform the
     // element data rather than the built objects so asynchronously loaded
     // images go through the same mapping.
+    const sourceElements = (lastLiveElementsRef.current && lastLiveElementsRef.current.length > 0)
+      ? lastLiveElementsRef.current
+      : initialElements;
     const previousLayout = lastImportLayoutRef.current;
     const shouldRelayout =
       autoRelayoutRef.current && previousLayout && layoutsDiffer(previousLayout, layout);
     const elementsToImport = shouldRelayout
-      ? relayoutLegacyElements(initialElements, previousLayout!, layout)
-      : initialElements;
+      ? relayoutLegacyElements(sourceElements, previousLayout!, layout)
+      : sourceElements;
     lastImportLayoutRef.current = layout;
 
     // Initial elements import (translation from Konva element nodes to Fabric objects).
     // Ensure custom rounded background prototype patch is active before importing objects
     ensureFabricRoundedTextBg();
-    // Adding each object fires object:added -> saveState, which serializes the
-    // canvas and persists the remapped coordinates — so no explicit save here.
-    // (Calling onSaveWorkspace directly at this point re-renders the parent
-    // mid-effect and makes other effects render against the just-disposed canvas.)
+    isUpdatingHistory.current = true;
     if (elementsToImport && elementsToImport.length > 0) {
       hasImportedInitialRef.current = true;
     }
     importLegacyElements(fCanvas, elementsToImport, layout);
+    isUpdatingHistory.current = false;
 
     // Initial layers load
     updateLayers();
 
     return () => {
+      fCanvas.off("object:added", saveState);
+      fCanvas.off("object:modified", saveState);
+      fCanvas.off("object:removed", saveState);
+      if (fCanvas.getObjects().length > 0) {
+        lastLiveElementsRef.current = serializeToLegacyElements(fCanvas);
+      }
       if (typeof window !== "undefined") {
         window.removeEventListener("mouseup", handleWindowMouseUp);
       }

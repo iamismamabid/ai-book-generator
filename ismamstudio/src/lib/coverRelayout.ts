@@ -44,6 +44,41 @@ export function relayoutLegacyElements(
 ): any[] {
   if (!elements || elements.length === 0) return elements;
 
+  // Check if trim dimensions (height in inches) are the same.
+  // When only page count or paper type changes, the book trim is identical (e.g. 8.5x11),
+  // so ONLY the spine width changes. In this case, NEVER rescale font sizes or element dimensions!
+  const isSpineOnlyChange =
+    Math.abs(from.coverHeightInches - to.coverHeightInches) < 0.001;
+
+  if (isSpineOnlyChange) {
+    const deltaSpineRight = to.spineRightPx - from.spineRightPx;
+    const deltaSpineCenter = to.spineCenterPx - from.spineCenterPx;
+
+    return elements.map((el) => {
+      if (!el || typeof el.x !== "number" || typeof el.y !== "number") return el;
+
+      const scaleX = el.scaleX ?? 1;
+      const width = (el.width ?? 0) * scaleX;
+      const centerX = el.originX === "center" ? el.x : el.x + width / 2;
+      const region = regionOf(centerX, from);
+
+      const next: any = { ...el };
+
+      if (region === "back") {
+        next.x = el.x;
+        next.y = el.y;
+      } else if (region === "spine") {
+        next.x = el.x + deltaSpineCenter;
+        next.y = el.y;
+      } else {
+        next.x = el.x + deltaSpineRight;
+        next.y = el.y;
+      }
+
+      return next;
+    });
+  }
+
   const fromHeight = Math.max(from.canvasHeight, 1);
   const heightRatio = to.canvasHeight / fromHeight;
 

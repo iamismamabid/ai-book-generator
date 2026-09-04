@@ -854,6 +854,11 @@ export default function FabricCoverStudio({
     isActiveRef.current = isActive;
   }, [isActive]);
 
+  const [sliderPageCount, setSliderPageCount] = useState(pageCount);
+  useEffect(() => {
+    setSliderPageCount(pageCount);
+  }, [pageCount]);
+
   const hasImportedInitialRef = useRef(false);
   const lastLiveElementsRef = useRef<any[] | null>(null);
 
@@ -8078,8 +8083,23 @@ export default function FabricCoverStudio({
                     type="number" 
                     min="24" 
                     max="1000" 
-                    value={pageCount} 
-                    onChange={(e) => setPageCount(Math.max(24, Math.min(1000, Number(e.target.value) || 24)))}
+                    value={sliderPageCount} 
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setSliderPageCount(val);
+                    }}
+                    onBlur={() => {
+                      const finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                      setSliderPageCount(finalVal);
+                      if (finalVal !== pageCount) setPageCount(finalVal);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                        setSliderPageCount(finalVal);
+                        if (finalVal !== pageCount) setPageCount(finalVal);
+                      }
+                    }}
                     className="w-16 px-2 py-1 text-xs font-bold text-center border border-slate-300 rounded-lg bg-white focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
@@ -8087,8 +8107,16 @@ export default function FabricCoverStudio({
                   type="range" 
                   min="24" 
                   max="1000" 
-                  value={pageCount} 
-                  onChange={(e) => setPageCount(Number(e.target.value))}
+                  value={sliderPageCount} 
+                  onChange={(e) => setSliderPageCount(Number(e.target.value))}
+                  onPointerUp={() => {
+                    const finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                    if (finalVal !== pageCount) setPageCount(finalVal);
+                  }}
+                  onKeyUp={() => {
+                    const finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                    if (finalVal !== pageCount) setPageCount(finalVal);
+                  }}
                   className="w-full accent-amber-500 cursor-ew-resize bg-slate-200 rounded"
                 />
                 <p className="text-[10px] text-slate-400 font-semibold mt-1">Spine size: {layout.spineWidth.toFixed(4)}" inches</p>

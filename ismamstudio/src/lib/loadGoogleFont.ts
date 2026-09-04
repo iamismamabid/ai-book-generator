@@ -11,7 +11,7 @@ export function loadGoogleFontFamilies(families: string[]): void {
   toLoad.forEach((f) => loadedFamilies.add(f));
 
   const familyParams = toLoad
-    .map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}:ital,wght@0,400;0,700;1,400;1,700`)
+    .map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}:wght@400;700`)
     .join("&");
   const link = document.createElement("link");
   link.rel = "stylesheet";
@@ -31,8 +31,6 @@ export async function ensureGoogleFontsLoaded(families: string[]): Promise<void>
     valid.forEach((fam) => {
       promises.push(document.fonts.load(`16px "${fam}"`));
       promises.push(document.fonts.load(`bold 16px "${fam}"`));
-      promises.push(document.fonts.load(`italic 16px "${fam}"`));
-      promises.push(document.fonts.load(`bold italic 16px "${fam}"`));
     });
     try {
       await Promise.allSettled(promises);

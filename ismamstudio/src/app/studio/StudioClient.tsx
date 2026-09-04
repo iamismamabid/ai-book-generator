@@ -8,7 +8,6 @@ import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { checkPremiumStatus, saveCoverProject, loadCoverProject, getNotebookEntryData } from "../actions";
 import { saveCoverDraftToIndexedDB, loadCoverDraftFromIndexedDB } from "@/lib/indexedDbStorage";
-import { ensureGoogleFontsLoaded } from "@/lib/loadGoogleFont";
 
 // Dynamic imports — both components use browser-only APIs (canvas, localStorage)
 const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
@@ -146,17 +145,7 @@ export default function MasterStudioApp() {
       fullCoverImageOffsetY: data.fullCoverImageOffsetY ?? 0
     };
     setCoverBackground(loadedBg);
-    if (data.coverElements) {
-      setCoverElements(data.coverElements);
-      const fontsToPreload: string[] = [];
-      data.coverElements.forEach((el: any) => {
-        if (el?.fontFamily) fontsToPreload.push(el.fontFamily);
-        if (el?.curvedTextData?.fontFamily) fontsToPreload.push(el.curvedTextData.fontFamily);
-      });
-      if (fontsToPreload.length > 0) {
-        ensureGoogleFontsLoaded(fontsToPreload);
-      }
-    }
+    if (data.coverElements) setCoverElements(data.coverElements);
     if (data.pageCount) setPageCount(data.pageCount);
     if (data.trimSize) {
       // Restore an exact preset match by reference (keeps the dropdown's own

@@ -1411,6 +1411,11 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
             ctx.rect(bgX, bgY, bgW, bgH);
           }
           ctx.fill();
+          if (el.textBgStroke && el.textBgStrokeWidth && el.textBgStrokeWidth > 0) {
+            ctx.strokeStyle = el.textBgStroke;
+            ctx.lineWidth = el.textBgStrokeWidth * scaleX;
+            ctx.stroke();
+          }
           ctx.restore();
         }
 
@@ -1856,6 +1861,11 @@ export const drawCoverPagePart = async (doc: any, coverState: any, side: 'front'
             ctx.rect(bgX, bgY, bgW, bgH);
           }
           ctx.fill();
+          if (el.textBgStroke && el.textBgStrokeWidth && el.textBgStrokeWidth > 0) {
+            ctx.strokeStyle = el.textBgStroke;
+            ctx.lineWidth = el.textBgStrokeWidth * scaleX;
+            ctx.stroke();
+          }
           ctx.restore();
         }
 

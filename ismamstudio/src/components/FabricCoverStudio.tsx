@@ -55,6 +55,8 @@ function ensureFabricRoundedTextBg() {
         const pad = typeof this.textBgPadding === "number" ? this.textBgPadding : 12;
         const rad = typeof this.textBgRadius === "number" ? this.textBgRadius : 16;
         const opac = typeof this.textBgOpacity === "number" ? this.textBgOpacity : 1;
+        const bgStroke = this.textBgStroke;
+        const bgStrokeW = typeof this.textBgStrokeWidth === "number" ? this.textBgStrokeWidth : 0;
 
         const padX = pad;
         const padY = Math.round(pad * 0.75);
@@ -86,6 +88,13 @@ function ensureFabricRoundedTextBg() {
           ctx.closePath();
         }
         ctx.fill();
+
+        if (bgStroke && bgStrokeW > 0) {
+          ctx.strokeStyle = bgStroke;
+          ctx.lineWidth = bgStrokeW;
+          ctx.stroke();
+        }
+
         ctx.restore();
         return;
       }
@@ -96,10 +105,10 @@ function ensureFabricRoundedTextBg() {
     };
 
     if (proto.stateProperties && !proto.stateProperties.includes("textBgRadius")) {
-      proto.stateProperties.push("textBgRadius", "textBgPadding", "textBgOpacity");
+      proto.stateProperties.push("textBgRadius", "textBgPadding", "textBgOpacity", "textBgStroke", "textBgStrokeWidth");
     }
     if (proto.cacheProperties && !proto.cacheProperties.includes("textBgRadius")) {
-      proto.cacheProperties.push("textBgRadius", "textBgPadding", "textBgOpacity");
+      proto.cacheProperties.push("textBgRadius", "textBgPadding", "textBgOpacity", "textBgStroke", "textBgStrokeWidth");
     }
   };
 
@@ -747,6 +756,8 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
       base.textBgRadius = typeof obj.textBgRadius === 'number' ? obj.textBgRadius : undefined;
       base.textBgPadding = typeof obj.textBgPadding === 'number' ? obj.textBgPadding : undefined;
       base.textBgOpacity = typeof obj.textBgOpacity === 'number' ? obj.textBgOpacity : undefined;
+      base.textBgStroke = obj.textBgStroke || '';
+      base.textBgStrokeWidth = typeof obj.textBgStrokeWidth === 'number' ? obj.textBgStrokeWidth : undefined;
       if (type === 'textbox') {
         base.isTextbox = true;
       }
@@ -840,6 +851,8 @@ export default function FabricCoverStudio({
   useEffect(() => {
     isActiveRef.current = isActive;
   }, [isActive]);
+
+  const hasImportedInitialRef = useRef(false);
 
   // Dynamically load Google Fonts for the cover studio — every font in
   // GOOGLE_FONT_FAMILIES (everything but the browser-native "System" group)
@@ -1292,6 +1305,8 @@ export default function FabricCoverStudio({
   const [objectTextBgRadius, setObjectTextBgRadius] = useState<number>(16);
   const [objectTextBgPadding, setObjectTextBgPadding] = useState<number>(12);
   const [objectTextBgOpacity, setObjectTextBgOpacity] = useState<number>(100);
+  const [objectTextBgStroke, setObjectTextBgStroke] = useState<string>("");
+  const [objectTextBgStrokeWidth, setObjectTextBgStrokeWidth] = useState<number>(0);
 
   // KDP Pre-Flight Inspector state
   const [isPreflightOpen, setIsPreflightOpen] = useState(false);
@@ -1492,6 +1507,8 @@ export default function FabricCoverStudio({
       setObjectTextBgRadius(typeof objAny.textBgRadius === 'number' ? objAny.textBgRadius : 16);
       setObjectTextBgPadding(typeof objAny.textBgPadding === 'number' ? objAny.textBgPadding : 12);
       setObjectTextBgOpacity(typeof objAny.textBgOpacity === 'number' ? Math.round(objAny.textBgOpacity * 100) : 100);
+      setObjectTextBgStroke(objAny.textBgStroke || '');
+      setObjectTextBgStrokeWidth(typeof objAny.textBgStrokeWidth === 'number' ? objAny.textBgStrokeWidth : 0);
 
       if (objAny.stroke) setObjectStrokeColor(objAny.stroke);
       setObjectStrokeWidth(objAny.strokeWidth || 0);
@@ -1725,7 +1742,15 @@ export default function FabricCoverStudio({
       setActiveTextEffectPreset('background');
     } else if (preset === 'none') {
       setActiveTextEffectPreset('none');
+      (activeObject as any).set({
+        textBackgroundColor: '',
+        textBgStroke: '',
+        textBgStrokeWidth: 0,
+        dirty: true,
+      });
       setObjectTextBgColor('');
+      setObjectTextBgStroke('');
+      setObjectTextBgStrokeWidth(0);
     } else {
       const config = preset === 'shadow'
         ? { color: 'rgba(0,0,0,0.45)', blur: 6, offsetX: 3, offsetY: 3 }
@@ -2211,7 +2236,7 @@ export default function FabricCoverStudio({
 
     // Initial history step
     const initialJson = JSON.stringify({
-      canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity']),
+      canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity', 'textBgStroke', 'textBgStrokeWidth']),
       background: coverBackgroundRef.current
     });
     historyRef.current = [initialJson];
@@ -2393,7 +2418,7 @@ export default function FabricCoverStudio({
     const saveState = () => {
       if (isUpdatingHistory.current) return;
       const stateObj = {
-        canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity', 'paintFirst']),
+        canvasJson: fCanvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity', 'textBgStroke', 'textBgStrokeWidth', 'paintFirst']),
         background: coverBackgroundRef.current
       };
       const json = JSON.stringify(stateObj);
@@ -2451,6 +2476,9 @@ export default function FabricCoverStudio({
     // canvas and persists the remapped coordinates — so no explicit save here.
     // (Calling onSaveWorkspace directly at this point re-renders the parent
     // mid-effect and makes other effects render against the just-disposed canvas.)
+    if (elementsToImport && elementsToImport.length > 0) {
+      hasImportedInitialRef.current = true;
+    }
     importLegacyElements(fCanvas, elementsToImport, layout);
 
     // Initial layers load
@@ -2464,6 +2492,19 @@ export default function FabricCoverStudio({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout.canvasWidth, layout.canvasHeight]);
+
+  // Failsafe: if initialElements arrived asynchronously after the canvas mounted,
+  // import them so no saved draft is ever silently dropped.
+  useEffect(() => {
+    if (!canvas || hasImportedInitialRef.current) return;
+    if (initialElements && initialElements.length > 0) {
+      hasImportedInitialRef.current = true;
+      ensureFabricRoundedTextBg();
+      importLegacyElements(canvas, initialElements, layout);
+      canvas.requestRenderAll();
+      setLayers([...canvas.getObjects()].reverse());
+    }
+  }, [canvas, initialElements, layout]);
 
   // Handle snap-to-grid & guides alignment
   useEffect(() => {
@@ -2906,7 +2947,9 @@ export default function FabricCoverStudio({
           textBgRadius: typeof el.textBgRadius === 'number' ? el.textBgRadius : undefined,
           textBgPadding: typeof el.textBgPadding === 'number' ? el.textBgPadding : undefined,
           textBgOpacity: typeof el.textBgOpacity === 'number' ? el.textBgOpacity : undefined,
-          padding: el.textBackgroundColor ? Math.max(4, el.textBgPadding || 12) : 4
+          textBgStroke: el.textBgStroke || '',
+          textBgStrokeWidth: typeof el.textBgStrokeWidth === 'number' ? el.textBgStrokeWidth : undefined,
+          padding: el.textBackgroundColor ? Math.max(6, el.textBgPadding || 14) : 4
         };
 
         if (el.isTextbox || el.type === 'textbox') {
@@ -3193,7 +3236,7 @@ export default function FabricCoverStudio({
     pageCount,
     trimSize,
     background: coverBackgroundRef.current,
-    canvasJson: canvas ? canvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity']) : null,
+    canvasJson: canvas ? canvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity', 'textBgStroke', 'textBgStrokeWidth']) : null,
   });
 
   // Review links carry a flattened preview rather than the editable design.
@@ -3388,8 +3431,10 @@ export default function FabricCoverStudio({
     canvas.fire("object:modified", { target: band });
   };
 
-  const addKdpBadge = (type: "bestseller" | "largeprint" | "vol1" | "puzzles" | "solutions") => {
+  const addKdpBadge = (type: "bestseller" | "largeprint" | "vol1" | "puzzles" | "solutions" | "premium") => {
     if (!canvas) return;
+    loadGoogleFontFamilies(["Montserrat", "Outfit", "Inter"]);
+
     const centerX = layout.frontCoverCenterPx;
     const centerY = layout.canvasHeight * 0.76;
 
@@ -3397,67 +3442,90 @@ export default function FabricCoverStudio({
     let bgFill = "#F59E0B";
     let textFill = "#0F172A";
     let badgeRadius = 24;
-    let badgePadding = 14;
-    let fontSize = 15;
-    let strokeColor = "#D97706";
-    let strokeW = 1.5;
+    let badgePadding = 16;
+    let fontSize = 22;
+    let bgStrokeColor = "#FDE68A";
+    let bgStrokeW = 2;
+    let charSpacing = 110;
 
     if (type === "largeprint") {
-      badgeText = "LARGE PRINT EDITION";
-      bgFill = "#000000";
-      textFill = "#FACC15";
-      badgeRadius = 8;
-      badgePadding = 12;
-      fontSize = 15;
-      strokeColor = "#FACC15";
-      strokeW = 2;
+      badgeText = "▪ LARGE PRINT EDITION ▪";
+      bgFill = "#09090B";
+      textFill = "#FEF08A";
+      badgeRadius = 14;
+      badgePadding = 16;
+      fontSize = 21;
+      bgStrokeColor = "#EAB308";
+      bgStrokeW = 2;
+      charSpacing = 120;
     } else if (type === "vol1") {
       badgeText = "VOLUME 1 • COLLECTOR'S EDITION";
-      bgFill = "#4F46E5";
+      bgFill = "#4338CA";
       textFill = "#FFFFFF";
-      badgeRadius = 20;
-      badgePadding = 10;
-      fontSize = 13;
-      strokeColor = "#818CF8";
-      strokeW = 1;
+      badgeRadius = 22;
+      badgePadding = 16;
+      fontSize = 20;
+      bgStrokeColor = "#818CF8";
+      bgStrokeW = 2;
+      charSpacing = 100;
     } else if (type === "puzzles") {
-      badgeText = "100+ PUZZLES WITH SOLUTIONS";
-      bgFill = "#EF4444";
+      badgeText = "★ 100+ PUZZLES WITH SOLUTIONS ★";
+      bgFill = "#BE123C";
       textFill = "#FFFFFF";
-      badgeRadius = 30;
-      badgePadding = 14;
-      fontSize = 14;
-      strokeColor = "#FFFFFF";
-      strokeW = 1.5;
+      badgeRadius = 24;
+      badgePadding = 16;
+      fontSize = 20;
+      bgStrokeColor = "#FDA4AF";
+      bgStrokeW = 2;
+      charSpacing = 90;
     } else if (type === "solutions") {
       badgeText = "✓ COMPLETE SOLUTIONS INCLUDED";
-      bgFill = "#10B981";
+      bgFill = "#047857";
       textFill = "#FFFFFF";
-      badgeRadius = 12;
-      badgePadding = 10;
-      fontSize = 13;
-      strokeColor = "#059669";
-      strokeW = 1;
+      badgeRadius = 20;
+      badgePadding = 16;
+      fontSize = 20;
+      bgStrokeColor = "#6EE7B7";
+      bgStrokeW = 2;
+      charSpacing = 90;
+    } else if (type === "premium") {
+      badgeText = "★★★★★ PREMIUM QUALITY EDITION";
+      bgFill = "#1E1B4B";
+      textFill = "#F8FAFC";
+      badgeRadius = 24;
+      badgePadding = 16;
+      fontSize = 20;
+      bgStrokeColor = "#F59E0B";
+      bgStrokeW = 2;
+      charSpacing = 100;
     }
 
-    const badgeObj = new fabric.Text(badgeText, {
+    const badgeObj = new fabric.IText(badgeText, {
       id: `kdp-badge-${Date.now()}`,
       left: centerX,
       top: centerY,
       originX: "center",
       originY: "center",
-      fontFamily: "Arial",
+      fontFamily: "Montserrat",
       fontWeight: "bold",
       fontSize: fontSize,
+      charSpacing: charSpacing,
       fill: textFill,
       textBackgroundColor: bgFill,
       textBgRadius: badgeRadius,
       textBgPadding: badgePadding,
       textBgOpacity: 1,
-      stroke: strokeColor,
-      strokeWidth: strokeW,
-      paintFirst: "stroke",
-      padding: badgePadding,
+      textBgStroke: bgStrokeColor,
+      textBgStrokeWidth: bgStrokeW,
+      stroke: undefined,
+      strokeWidth: 0,
+      padding: badgePadding + 4,
+      shadow: new fabric.Shadow({
+        color: "rgba(0, 0, 0, 0.35)",
+        blur: 14,
+        offsetX: 0,
+        offsetY: 4,
+      }),
     } as any);
 
     canvas.add(badgeObj);
@@ -3465,6 +3533,13 @@ export default function FabricCoverStudio({
     setActiveObject(badgeObj);
     canvas.requestRenderAll();
     canvas.fire("object:modified", { target: badgeObj });
+
+    if (typeof document !== "undefined" && (document as any).fonts) {
+      (document as any).fonts.ready.then(() => {
+        badgeObj.initDimensions();
+        canvas.requestRenderAll();
+      });
+    }
   };
 
   const handleTextCase = (mode: "upper" | "lower" | "title") => {
@@ -4198,6 +4273,8 @@ export default function FabricCoverStudio({
         textBgRadius: o.textBgRadius,
         textBgPadding: o.textBgPadding,
         textBgOpacity: o.textBgOpacity,
+        textBgStroke: o.textBgStroke,
+        textBgStrokeWidth: o.textBgStrokeWidth,
         padding: o.padding,
       });
     }
@@ -4208,14 +4285,14 @@ export default function FabricCoverStudio({
     if (!canvas || !activeObject || !copiedStyle) return;
     const {
       fontFamily, fontSize, fontWeight, fontStyle, underline, charSpacing, textAlign, lineHeight,
-      paintFirst, textBackgroundColor, textBgRadius, textBgPadding, textBgOpacity, padding,
+      paintFirst, textBackgroundColor, textBgRadius, textBgPadding, textBgOpacity, textBgStroke, textBgStrokeWidth, padding,
       ...common
     } = copiedStyle;
     activeObject.set(common);
     if (isTextLikeObject(activeObject)) {
       (activeObject as any).set({
         fontFamily, fontSize, fontWeight, fontStyle, underline, charSpacing, textAlign, lineHeight,
-        paintFirst, textBackgroundColor, textBgRadius, textBgPadding, textBgOpacity, padding,
+        paintFirst, textBackgroundColor, textBgRadius, textBgPadding, textBgOpacity, textBgStroke, textBgStrokeWidth, padding,
         dirty: true
       });
     }
@@ -4980,7 +5057,7 @@ export default function FabricCoverStudio({
     (targetObj as any).seriesTitleMarker = true;
     canvas.discardActiveObject();
     canvas.requestRenderAll();
-    const snapshot = canvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity', 'seriesTitleMarker']);
+    const snapshot = canvas.toJSON(['isCurvedText', 'curvedTextData', 'textBgRadius', 'textBgPadding', 'textBgOpacity', 'textBgStroke', 'textBgStrokeWidth', 'seriesTitleMarker']);
     delete (targetObj as any).seriesTitleMarker;
     canvas.requestRenderAll();
 
@@ -5620,6 +5697,69 @@ export default function FabricCoverStudio({
                           }}
                           className="w-full accent-indigo-600 h-1.5 cursor-pointer bg-slate-200 rounded-lg"
                         />
+                      </div>
+
+                      {/* Pill Border / Stroke Controls */}
+                      <div className="space-y-1.5 pt-1 border-t border-slate-200/80">
+                        <div className="flex justify-between text-[9px] font-black text-slate-500 uppercase">
+                          <span>Pill Border (Stroke)</span>
+                          <span className="text-indigo-600 font-bold font-mono">{objectTextBgStrokeWidth}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="8"
+                          step="1"
+                          value={objectTextBgStrokeWidth}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setObjectTextBgStrokeWidth(val);
+                            const strokeCol = objectTextBgStroke || (val > 0 ? '#F59E0B' : '');
+                            if (val > 0 && !objectTextBgStroke) {
+                              setObjectTextBgStroke(strokeCol);
+                            }
+                            (activeObject as any).set({ textBgStrokeWidth: val, textBgStroke: strokeCol, dirty: true });
+                            canvas?.requestRenderAll();
+                            canvas?.fire("object:modified", { target: activeObject });
+                          }}
+                          className="w-full accent-indigo-600 h-1.5 cursor-pointer bg-slate-200 rounded-lg"
+                        />
+                        {objectTextBgStrokeWidth > 0 && (
+                          <div className="flex items-center gap-2 pt-0.5">
+                            <div className="relative w-6 h-6 rounded-md overflow-hidden border border-slate-300 shadow-sm shrink-0 cursor-pointer">
+                              <input
+                                type="color"
+                                value={objectTextBgStroke && objectTextBgStroke.startsWith('#') ? objectTextBgStroke : '#F59E0B'}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setObjectTextBgStroke(val);
+                                  (activeObject as any).set({ textBgStroke: val, dirty: true });
+                                  canvas?.requestRenderAll();
+                                  canvas?.fire("object:modified", { target: activeObject });
+                                }}
+                                className="absolute -top-2 -left-2 w-10 h-10 cursor-pointer border-0 p-0"
+                              />
+                            </div>
+                            <div className="flex-1 flex gap-1 items-center overflow-x-auto py-0.5">
+                              {['#F59E0B', '#FACC15', '#FFFFFF', '#000000', '#6366F1', '#F43F5E', '#10B981', '#6EE7B7'].map((hex) => (
+                                <button
+                                  key={hex}
+                                  onClick={() => {
+                                    setObjectTextBgStroke(hex);
+                                    (activeObject as any).set({ textBgStroke: hex, dirty: true });
+                                    canvas?.requestRenderAll();
+                                    canvas?.fire("object:modified", { target: activeObject });
+                                  }}
+                                  style={{ backgroundColor: hex }}
+                                  className={`w-4 h-4 rounded border shrink-0 transition-transform hover:scale-110 cursor-pointer ${
+                                    objectTextBgStroke?.toLowerCase() === hex.toLowerCase() ? 'ring-2 ring-indigo-500 ring-offset-1 border-slate-400' : 'border-slate-300'
+                                  }`}
+                                  title={hex}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Opacity Slider */}
@@ -6701,38 +6841,45 @@ export default function FabricCoverStudio({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => addKdpBadge('bestseller')}
-                    className="p-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-amber-900 cursor-pointer text-left"
+                    className="p-2 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black border border-amber-300 rounded-xl text-[10px] flex items-center gap-1.5 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-left shadow-sm"
                   >
-                    <span className="text-amber-500 text-xs">★</span>
-                    <span>#1 Best Seller</span>
+                    <span className="text-amber-900 text-xs">★</span>
+                    <span className="truncate">#1 Best Seller</span>
                   </button>
                   <button
                     onClick={() => addKdpBadge('largeprint')}
-                    className="p-2 bg-slate-900 text-yellow-300 border border-slate-800 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:border-yellow-400 hover:shadow-sm transition-all cursor-pointer text-left"
+                    className="p-2 bg-zinc-950 text-yellow-300 border border-yellow-500/70 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-left shadow-sm"
                   >
-                    <span>👓</span>
-                    <span>Large Print</span>
+                    <span className="text-yellow-400 font-bold">▪</span>
+                    <span className="truncate">Large Print</span>
                   </button>
                   <button
                     onClick={() => addKdpBadge('vol1')}
-                    className="p-2 bg-indigo-50 text-indigo-900 border border-indigo-200 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:border-indigo-400 hover:shadow-sm transition-all cursor-pointer text-left"
+                    className="p-2 bg-indigo-600 text-white border border-indigo-400/80 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-left shadow-sm"
                   >
                     <span>📖</span>
-                    <span>Vol. 1 Edition</span>
+                    <span className="truncate">Vol. 1 Edition</span>
                   </button>
                   <button
                     onClick={() => addKdpBadge('puzzles')}
-                    className="p-2 bg-rose-50 text-rose-900 border border-rose-200 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:border-rose-400 hover:shadow-sm transition-all cursor-pointer text-left"
+                    className="p-2 bg-rose-600 text-white border border-rose-300/80 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-left shadow-sm"
                   >
                     <span>🧩</span>
-                    <span>100+ Puzzles</span>
+                    <span className="truncate">100+ Puzzles</span>
                   </button>
                   <button
                     onClick={() => addKdpBadge('solutions')}
-                    className="col-span-2 p-2 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl text-[10px] font-black flex items-center justify-center gap-1.5 hover:border-emerald-400 hover:shadow-sm transition-all cursor-pointer"
+                    className="p-2 bg-emerald-600 text-white border border-emerald-400/80 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-left shadow-sm"
                   >
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Complete Solutions Included</span>
+                    <Check className="w-3.5 h-3.5 text-emerald-200 shrink-0" />
+                    <span className="truncate">With Solutions</span>
+                  </button>
+                  <button
+                    onClick={() => addKdpBadge('premium')}
+                    className="p-2 bg-slate-900 text-amber-300 border border-amber-400/80 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-left shadow-sm"
+                  >
+                    <span className="text-amber-400 text-xs">★</span>
+                    <span className="truncate">Premium Quality</span>
                   </button>
                 </div>
               </div>

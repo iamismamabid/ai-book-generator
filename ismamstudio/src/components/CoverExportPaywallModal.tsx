@@ -29,6 +29,21 @@ export default function CoverExportPaywallModal({
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [trialStatus, setTrialStatus] = useState<{ isTrial: boolean; daysRemaining?: number }>({ isTrial: false });
+
+  React.useEffect(() => {
+    if (isOpen) {
+      checkPremiumStatus()
+        .then((st: any) => {
+          if (st?.isTrial) {
+            setTrialStatus({ isTrial: true, daysRemaining: st.daysRemaining });
+          } else {
+            setTrialStatus({ isTrial: false });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -84,16 +99,18 @@ export default function CoverExportPaywallModal({
           </div>
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-wider mb-1">
-              <Lock className="w-3 h-3" /> Pro Export Feature
+              <Lock className="w-3 h-3" /> {trialStatus.isTrial ? "7-Day Free Trial Active" : "Pro Export Feature"}
             </div>
             <h3 className="text-xl font-black text-white tracking-tight">
-              Your 300 DPI Cover is Ready!
+              {trialStatus.isTrial ? "Activate Paid Plan to Export" : "Your 300 DPI Cover is Ready!"}
             </h3>
           </div>
         </div>
 
         <p className="text-slate-300 text-xs font-medium leading-relaxed mb-5">
-          Designing covers in KDPage Studio is 100% free. Unlock instant high-resolution 300 DPI vector PDF export formatted for immediate Amazon KDP upload.
+          {trialStatus.isTrial
+            ? "You have full access to design covers in the studio. To download high-resolution watermark-free 300 DPI vector PDF covers for Amazon KDP, please activate your paid plan."
+            : "Designing covers in KDPage Studio is 100% free. Unlock instant high-resolution 300 DPI vector PDF export formatted for immediate Amazon KDP upload."}
         </p>
 
         {/* Cover Specs Card */}
@@ -121,7 +138,7 @@ export default function CoverExportPaywallModal({
             target="_blank"
             className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 transition-all hover:scale-[1.02] active:scale-95"
           >
-            <span>Unlock Pro &amp; Download 300 DPI Cover ($11.99/mo)</span>
+            <span>{trialStatus.isTrial ? "⚡ Activate Paid Plan to Download Cover ($11.99/mo)" : "Unlock Pro & Download 300 DPI Cover ($11.99/mo)"}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

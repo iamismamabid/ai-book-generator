@@ -113,6 +113,7 @@ export default function MasterStudioApp() {
   });
 
   const [coverElements, setCoverElements] = useState<any[]>([]);
+  const [coverDraftLoaded, setCoverDraftLoaded] = useState(false);
   const [showKdpGuides, setShowKdpGuides] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(false);
 
@@ -163,28 +164,36 @@ export default function MasterStudioApp() {
   // Load Cover draft on mount — IndexedDB first (durable & supports large images),
   // then localStorage fallback, then cloud copy if signed in and no local work exists.
   useEffect(() => {
+    let isCancelled = false;
     (async () => {
       try {
         const idbCover = await loadCoverDraftFromIndexedDB();
-        if (idbCover) {
+        if (!isCancelled && idbCover) {
           hasLocalDraftLoadedRef.current = true;
           applyCoverData(idbCover);
+          setCoverDraftLoaded(true);
           return;
         }
       } catch (e) {
         console.warn("IndexedDB load error:", e);
       }
 
-      const savedCover = localStorage.getItem("kdp-cover-draft");
-      if (savedCover) {
-        try {
-          hasLocalDraftLoadedRef.current = true;
-          applyCoverData(JSON.parse(savedCover));
-        } catch (e) {
-          console.error("Failed to parse cover draft", e);
+      if (!isCancelled) {
+        const savedCover = localStorage.getItem("kdp-cover-draft");
+        if (savedCover) {
+          try {
+            hasLocalDraftLoadedRef.current = true;
+            applyCoverData(JSON.parse(savedCover));
+          } catch (e) {
+            console.error("Failed to parse cover draft", e);
+          }
         }
+        setCoverDraftLoaded(true);
       }
     })();
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -206,8 +215,10 @@ export default function MasterStudioApp() {
 
   // Save Cover draft on change — IndexedDB instantly (unlimited quota, durable),
   // localStorage safe cache, and debounced cloud sync.
+  // CRITICAL: Must wait until coverDraftLoaded is true before saving, otherwise
+  // empty initial state will overwrite the user's stored draft on page reload!
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || !coverDraftLoaded) return;
     hasUserEditedInThisSession.current = true;
 
     const data = {
@@ -262,6 +273,7 @@ export default function MasterStudioApp() {
     }, 1500);
   }, [
     isMounted,
+    coverDraftLoaded,
     isSignedIn,
     coverBackground,
     coverElements,
@@ -418,6 +430,10 @@ export default function MasterStudioApp() {
                   </Link>
                 </div>
               </div>
+            </div>
+          ) : !coverDraftLoaded ? (
+            <div className="w-full h-full flex items-center justify-center bg-slate-950 text-indigo-400">
+              <Loader2 className="w-8 h-8 animate-spin" />
             </div>
           ) : (
             <FabricCoverStudio

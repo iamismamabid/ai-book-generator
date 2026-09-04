@@ -291,35 +291,16 @@ export async function checkPremiumStatus() {
     if (user) {
       const publicMetadata = (user.publicMetadata || {}) as any;
 
-      // Strictly grant premium only to active paid subscriptions (never unpaid trials)
-      const isPaidSubscribed =
-        publicMetadata.isPremium === true ||
-        ((publicMetadata.plan === "starter" ||
-          publicMetadata.plan === "pro" ||
-          publicMetadata.plan === "agency") &&
-          publicMetadata.subscriptionStatus === "active");
+      // 🛑 TRIAL RESTRICTION (FIRST CHECK):
+      // Free trial users get full studio creation access, but MUST NOT get watermark-free or 300 DPI exports until paid
+      const isTrial =
+        publicMetadata.subscriptionStatus === "trialing" ||
+        publicMetadata.isTrial === true ||
+        (publicMetadata.trialEndsAt &&
+          new Date(publicMetadata.trialEndsAt).getTime() > Date.now() &&
+          publicMetadata.subscriptionStatus !== "active");
 
-      if (isPaidSubscribed) {
-        const userPlan = publicMetadata.plan || "pro";
-        let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
-
-        if (userPlan === "starter") {
-          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 100 };
-        } else if (userPlan === "agency") {
-          limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
-        }
-
-        return {
-          checked: true,
-          isPremium: true,
-          plan: userPlan,
-          limits,
-        };
-      }
-
-      // If user is currently in a 7-day trial state:
-      // Allow full studio exploration & creation, but keep isPremium = false so 300 DPI exports prompt for paid upgrade
-      if (publicMetadata.subscriptionStatus === "trialing") {
+      if (isTrial) {
         const userPlan = publicMetadata.plan || "pro";
         let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
 
@@ -337,12 +318,38 @@ export async function checkPremiumStatus() {
 
         return {
           checked: true,
-          isPremium: false, // 🔒 Block 300 DPI downloads during trial until paid
+          isPremium: false, // 🔒 Strictly false during trial to block 300 DPI watermark-free exports
           isTrial: true,
           plan: userPlan,
           daysRemaining,
           limits,
           reason: "trial_unpaid",
+        };
+      }
+
+      // Strictly grant premium only to active paid subscriptions (never unpaid trials, expired, or canceled)
+      const isPaidSubscribed =
+        publicMetadata.subscriptionStatus === "active" &&
+        (publicMetadata.plan === "starter" ||
+          publicMetadata.plan === "pro" ||
+          publicMetadata.plan === "agency" ||
+          publicMetadata.isPremium === true);
+
+      if (isPaidSubscribed) {
+        const userPlan = publicMetadata.plan || "pro";
+        let limits = { tier: 2, brands: 10, aiChapters: 30, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
+
+        if (userPlan === "starter") {
+          limits = { tier: 1, brands: 3, aiChapters: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 100 };
+        } else if (userPlan === "agency") {
+          limits = { tier: 3, brands: 25, aiChapters: 100, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
+        }
+
+        return {
+          checked: true,
+          isPremium: true,
+          plan: userPlan,
+          limits,
         };
       }
     }
@@ -379,6 +386,7 @@ export async function confirmPaddleCheckoutSuccess(checkoutData: any) {
     let plan = "pro";
     const starterMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY || "pri_01kwbgsarn24e1rn46dhadfcnx";
     const starterAnnual = process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL || "pri_01kwbh8envq2yez7j7hsd1y679";
+    const proMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY || "pri_01kwbgyfhhq6h86av5qycv52fs";
     const agencyMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY || "pri_01kwbwhfxnebsj6nds4m65jjrq";
     const agencyAnnual = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL || "pri_01kwbwkrk1w7tnc318ga4d6xt6";
 
@@ -390,18 +398,67 @@ export async function confirmPaddleCheckoutSuccess(checkoutData: any) {
       plan = "pro";
     }
 
+    // Determine if this is a trial checkout
+    let isTrial = false;
+    let trialEndsAt: string | null = null;
+    let subscriptionStatus = "active";
+
+    const apiKey = process.env.PADDLE_API_KEY;
+    const apiBase =
+      process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "sandbox"
+        ? "https://sandbox-api.paddle.com"
+        : "https://api.paddle.com";
+
+    // 1. If we have Paddle API key and a subscription ID, query Paddle directly for ground truth
+    if (apiKey && subscriptionId && subscriptionId.startsWith("sub_")) {
+      try {
+        const pRes = await fetch(`${apiBase}/subscriptions/${subscriptionId}`, {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
+        if (pRes.ok) {
+          const pData = await pRes.json();
+          const pStatus = pData?.data?.status;
+          if (pStatus === "trialing") {
+            isTrial = true;
+            subscriptionStatus = "trialing";
+            trialEndsAt = pData?.data?.current_billing_period?.ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+          } else if (pStatus === "active") {
+            subscriptionStatus = "active";
+          }
+        }
+      } catch (e) {
+        console.error("confirmPaddleCheckoutSuccess: Paddle API check failed:", e);
+      }
+    }
+
+    // 2. Fallback inspection on checkoutData payload
+    if (!isTrial) {
+      const txnTotal = Number(checkoutData?.details?.totals?.total ?? checkoutData?.totals?.total ?? checkoutData?.details?.totals?.grand_total ?? 1);
+      const isZeroCharge = txnTotal === 0;
+      const isTrialStatus = checkoutData?.status === "trialing" || checkoutData?.subscription?.status === "trialing";
+      const isStandardTrialPrice = priceId === starterMonthly || priceId === proMonthly || priceId === agencyMonthly;
+
+      if (isTrialStatus || (isZeroCharge && (subscriptionId || isStandardTrialPrice))) {
+        isTrial = true;
+        subscriptionStatus = "trialing";
+        trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      }
+    }
+
     const clerk = await clerkClient();
     await clerk.users.updateUserMetadata(userId, {
       publicMetadata: {
-        isPremium: true,
+        isPremium: !isTrial, // 🔒 Strictly false during trial
+        isTrial: isTrial,
         plan: plan,
-        subscriptionStatus: "active",
+        subscriptionStatus: subscriptionStatus,
         ...(customerId ? { paddleCustomerId: customerId } : {}),
         ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
+        ...(trialEndsAt ? { trialEndsAt } : { trialEndsAt: null }),
       },
     });
 
-    return { success: true, plan };
+    return { success: true, plan, isTrial };
   } catch (err: any) {
     console.error("Error in confirmPaddleCheckoutSuccess:", err);
     return { success: false, error: err.message };
@@ -418,11 +475,8 @@ export async function syncMySubscription() {
     if (!user) return { success: false, error: "user_not_found" };
 
     const meta = (user.publicMetadata || {}) as any;
-    if (meta.isPremium && (meta.plan === "starter" || meta.plan === "pro" || meta.plan === "agency")) {
-      return { success: true, isPremium: true, plan: meta.plan };
-    }
 
-    // Check database redemptions
+    // 1. Check database redemptions first (AppSumo / DealFuel lifetime licenses)
     const redemption = await prisma.redemption.findFirst({
       where: { userId },
       orderBy: { redeemedAt: "desc" },
@@ -435,11 +489,78 @@ export async function syncMySubscription() {
         publicMetadata: {
           ...meta,
           isPremium: true,
+          isTrial: false,
           plan,
           subscriptionStatus: "active",
         },
       });
       return { success: true, isPremium: true, plan };
+    }
+
+    // 2. If user has a Paddle subscription, query Paddle API for ground truth
+    const apiKey = process.env.PADDLE_API_KEY;
+    const apiBase =
+      process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "sandbox"
+        ? "https://sandbox-api.paddle.com"
+        : "https://api.paddle.com";
+
+    if (meta.paddleSubscriptionId && apiKey) {
+      try {
+        const pRes = await fetch(`${apiBase}/subscriptions/${meta.paddleSubscriptionId}`, {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
+        if (pRes.ok) {
+          const pData = await pRes.json();
+          const paddleStatus = pData?.data?.status; // "trialing", "active", "past_due", "canceled"
+          const isPaid = paddleStatus === "active";
+          const isTrial = paddleStatus === "trialing";
+          const trialEndsAt = isTrial
+            ? (pData?.data?.current_billing_period?.ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
+            : null;
+
+          const clerk = await clerkClient();
+          await clerk.users.updateUserMetadata(userId, {
+            publicMetadata: {
+              ...meta,
+              isPremium: isPaid,
+              isTrial: isTrial,
+              subscriptionStatus: paddleStatus,
+              trialEndsAt: trialEndsAt,
+            },
+          });
+
+          if (isTrial) {
+            return {
+              success: true,
+              isPremium: false,
+              isTrial: true,
+              plan: meta.plan || "pro",
+              message: "Free trial active. Watermark-free 300 DPI exports unlock upon paid activation."
+            };
+          }
+
+          if (isPaid) {
+            return { success: true, isPremium: true, plan: meta.plan || "pro" };
+          }
+        }
+      } catch (e) {
+        console.error("Failed to query Paddle API in syncMySubscription:", e);
+      }
+    }
+
+    // 3. Check existing metadata if no Paddle API or DB match
+    if (meta.subscriptionStatus === "trialing" || meta.isTrial) {
+      return {
+        success: true,
+        isPremium: false,
+        isTrial: true,
+        plan: meta.plan || "pro",
+        message: "Free trial active. Watermark-free 300 DPI exports unlock upon paid activation."
+      };
+    }
+
+    if (meta.subscriptionStatus === "active" && meta.isPremium && (meta.plan === "starter" || meta.plan === "pro" || meta.plan === "agency")) {
+      return { success: true, isPremium: true, plan: meta.plan };
     }
 
     return { success: false, error: "No active subscription found. Please complete checkout to unlock Pro." };

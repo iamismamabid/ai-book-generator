@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       plan = "agency";
     }
 
-    // 3. Handle activation events (subscriptions or completed 1-dollar trial transactions)
+    // 3. Handle activation events (subscriptions or completed transactions)
     if (
       eventType === "subscription.created" ||
       eventType === "subscription.updated" ||
@@ -108,8 +108,13 @@ export async function POST(request: Request) {
       eventType === "transaction.completed" ||
       eventType === "transaction.paid"
     ) {
-      const status = data.status === "trialing" || eventType === "subscription.trialing" ? "trialing" : "active";
-      console.log(`Upgrading Clerk User ${userId} to plan ${plan} (status: ${status})`);
+      const txnTotal = Number(data.details?.totals?.total ?? data.payments?.[0]?.amount ?? 1);
+      const isZeroCharge = txnTotal === 0;
+      const isExplicitTrial = data.status === "trialing" || eventType === "subscription.trialing";
+      const isTrial = isExplicitTrial || (isZeroCharge && (eventType === "subscription.created" || eventType === "transaction.completed"));
+
+      const status = isTrial ? "trialing" : (data.status === "active" || eventType === "subscription.activated" || (eventType === "transaction.paid" && txnTotal > 0) ? "active" : data.status || "active");
+      console.log(`Processing Clerk User ${userId} for plan ${plan} (status: ${status}, isTrial: ${isTrial}, txnTotal: ${txnTotal})`);
 
       const customerId = data.customer_id;
       const subscriptionId = data.id || data.subscription_id;
@@ -117,10 +122,12 @@ export async function POST(request: Request) {
         ? (data.current_billing_period?.ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
         : null;
 
-      const isPaid = status === "active" || eventType === "transaction.paid" || eventType === "transaction.completed";
+      // 🔒 Watermark-free / 300 DPI exports are strictly locked for trials. Only genuine paid charges get isPremium: true!
+      const isPaid = status === "active" && !isTrial && !isZeroCharge;
       await clerk.users.updateUserMetadata(userId, {
         publicMetadata: {
           isPremium: isPaid,
+          isTrial: status === "trialing",
           plan: plan,
           subscriptionStatus: status,
           ...(customerId ? { paddleCustomerId: customerId } : {}),
@@ -131,8 +138,8 @@ export async function POST(request: Request) {
 
       posthog.capture({
         distinctId: userId,
-        event: "server_paddle_subscription_activated",
-        properties: { plan, priceId, status, customerId, subscriptionId },
+        event: isPaid ? "server_paddle_subscription_activated" : "server_paddle_trial_started",
+        properties: { plan, priceId, status, isTrial, customerId, subscriptionId },
       });
     } else if (
       eventType === "subscription.canceled" ||

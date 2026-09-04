@@ -14,9 +14,10 @@ import {
   AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil,
   Image as ImageIcon, ZoomIn, ZoomOut, Group as GroupIcon, Ungroup as UngroupIcon, Store,
   Paintbrush, ClipboardPaste, ImageOff, RefreshCw, FlipHorizontal, FlipVertical, SlidersHorizontal, Pipette,
-  Keyboard, X as XIcon
+  Keyboard, X as XIcon, ShieldCheck, AlertTriangle, AlertOctagon
 } from "lucide-react";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
+import KdpPreflightModal, { runKdpPreflightChecks } from "@/components/KdpPreflightModal";
 import { initFabricSnapping } from "@/hooks/useFabricSnap";
 import { COVER_TEMPLATES, resolveTemplateElements, CoverTemplate } from "@/lib/coverTemplates";
 import TemplateGalleryModal from "@/components/TemplateGalleryModal";
@@ -975,6 +976,7 @@ export default function FabricCoverStudio({
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
   const [clipboard, setClipboard] = useState<any>(null);
+  const clipboardRef = useRef<any>(null);
   const [copiedStyle, setCopiedStyle] = useState<Record<string, any> | null>(null);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [brandKit, setBrandKit] = useState<BrandKit>({ colors: [], fonts: [] });
@@ -1249,11 +1251,14 @@ export default function FabricCoverStudio({
   const [objectShadowOffsetY, setObjectShadowOffsetY] = useState(5);
 
   // Text Rounded Background States
-  const [activeTextEffectPreset, setActiveTextEffectPreset] = useState<'none' | 'shadow' | 'lift' | 'hollow' | 'neon' | 'background'>('none');
+  const [activeTextEffectPreset, setActiveTextEffectPreset] = useState<'none' | 'shadow' | 'lift' | 'hollow' | 'outline' | 'neon' | 'background'>('none');
   const [objectTextBgColor, setObjectTextBgColor] = useState<string>("");
   const [objectTextBgRadius, setObjectTextBgRadius] = useState<number>(16);
   const [objectTextBgPadding, setObjectTextBgPadding] = useState<number>(12);
   const [objectTextBgOpacity, setObjectTextBgOpacity] = useState<number>(100);
+
+  // KDP Pre-Flight Inspector state
+  const [isPreflightOpen, setIsPreflightOpen] = useState(false);
 
   // Blend mode (Photoshop-style layer compositing)
   const [objectBlendMode, setObjectBlendMode] = useState<string>("source-over");
@@ -1452,6 +1457,9 @@ export default function FabricCoverStudio({
       setObjectTextBgPadding(typeof objAny.textBgPadding === 'number' ? objAny.textBgPadding : 12);
       setObjectTextBgOpacity(typeof objAny.textBgOpacity === 'number' ? Math.round(objAny.textBgOpacity * 100) : 100);
 
+      if (objAny.stroke) setObjectStrokeColor(objAny.stroke);
+      setObjectStrokeWidth(objAny.strokeWidth || 0);
+
       if (bg) {
         setActiveTextEffectPreset('background');
       } else if (objAny.shadow) {
@@ -1462,6 +1470,8 @@ export default function FabricCoverStudio({
         else setActiveTextEffectPreset('shadow');
       } else if (objAny.fill === 'transparent' && (objAny.strokeWidth || 0) > 0) {
         setActiveTextEffectPreset('hollow');
+      } else if ((objAny.strokeWidth || 0) > 0 && objAny.fill && objAny.fill !== 'transparent') {
+        setActiveTextEffectPreset('outline');
       } else {
         setActiveTextEffectPreset('none');
       }
@@ -1607,7 +1617,7 @@ export default function FabricCoverStudio({
   // sliders. Restricted to properties fabric.Text/IText already supports
   // natively (stroke/shadow), even though the manual "Border Settings" panel
   // hides those controls for text objects.
-  const applyTextEffectPreset = (preset: 'none' | 'shadow' | 'lift' | 'hollow' | 'neon' | 'background') => {
+  const applyTextEffectPreset = (preset: 'none' | 'shadow' | 'lift' | 'hollow' | 'outline' | 'neon' | 'background') => {
     if (!canvas || !activeObject) return;
     const currentFill = (typeof activeObject.fill === 'string' && activeObject.fill !== 'transparent')
       ? activeObject.fill as string
@@ -1633,6 +1643,25 @@ export default function FabricCoverStudio({
       setObjectStrokeColor(currentFill);
       setObjectStrokeWidth(2);
       setActiveTextEffectPreset('hollow');
+      setObjectTextBgColor('');
+    } else if (preset === 'outline') {
+      const r = parseInt(currentFill.slice(1, 3), 16) || 0;
+      const g = parseInt(currentFill.slice(3, 5), 16) || 0;
+      const b = parseInt(currentFill.slice(5, 7), 16) || 0;
+      const isLightFill = (r * 299 + g * 587 + b * 114) / 1000 > 150;
+      const outlineColor = isLightFill ? '#0F172A' : '#FFFFFF';
+      const outlineWidth = 4;
+
+      (activeObject as any).set({
+        fill: currentFill,
+        stroke: outlineColor,
+        strokeWidth: outlineWidth,
+        paintFirst: 'stroke',
+        dirty: true,
+      });
+      setObjectStrokeColor(outlineColor);
+      setObjectStrokeWidth(outlineWidth);
+      setActiveTextEffectPreset('outline');
       setObjectTextBgColor('');
     } else if (preset === 'background') {
       // Rounded highlight box behind the text with custom radius and padding
@@ -1946,8 +1975,12 @@ export default function FabricCoverStudio({
         e.preventDefault();
         handlersRef.current.cutSelected();
       } else if ((e.ctrlKey || e.metaKey) && key === 'v') {
-        e.preventDefault();
-        handlersRef.current.pasteSelected();
+        if (clipboardRef.current) {
+          e.preventDefault();
+          handlersRef.current.pasteSelected();
+        }
+        // If no internal fabric object in clipboard, do not preventDefault
+        // so browser fires window 'paste' event and pasted images/screenshots are uploaded!
       } else if ((e.ctrlKey || e.metaKey) && key === 'd') {
         e.preventDefault();
         handlersRef.current.duplicateSelected();
@@ -1963,9 +1996,57 @@ export default function FabricCoverStudio({
       }
     };
 
+    const handlePaste = (e: ClipboardEvent) => {
+      if (!isActiveRef.current) return;
+      const activeEl = document.activeElement;
+      const isInput = activeEl?.tagName === "INPUT" || activeEl?.tagName === "TEXTAREA";
+
+      // 1. Check clipboard items for image blobs (screenshots, copied photos)
+      const items = e.clipboardData?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.type.indexOf("image") !== -1) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            if (file) {
+              handlersRef.current.pasteImage?.(file);
+              return;
+            }
+          }
+        }
+      }
+
+      // 2. Check files directly
+      const files = e.clipboardData?.files;
+      if (files && files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          if (files[i].type.startsWith("image/")) {
+            e.preventDefault();
+            handlersRef.current.pasteImage?.(files[i]);
+            return;
+          }
+        }
+      }
+
+      // 3. If not focused on text input, check if clipboard has image URL
+      if (!isInput) {
+        const text = e.clipboardData?.getData("text")?.trim();
+        if (text && (text.startsWith("http://") || text.startsWith("https://") || text.startsWith("data:image/"))) {
+          if (/\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(text) || text.startsWith("data:image/")) {
+            e.preventDefault();
+            handlersRef.current.pasteImage?.(text);
+            return;
+          }
+        }
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('paste', handlePaste);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('paste', handlePaste);
     };
   }, []);
 
@@ -2595,6 +2676,23 @@ export default function FabricCoverStudio({
           layout.frontLiveRightPx - layout.frontLiveLeftPx,
           layout.frontLiveBottomPx - layout.frontLiveTopPx
         );
+
+        // 4. Draw KDP Official Barcode Safety Box on Lower Back Cover
+        const bcW = 2.0 * layout.scale;
+        const bcH = 1.2 * layout.scale;
+        const bcMargin = 0.375 * layout.scale;
+        const bcBoxLeft = layout.trimLeftPx + bcMargin;
+        const bcBoxTop = layout.trimBottomPx - bcMargin - bcH;
+
+        ctx.fillStyle = "rgba(100, 116, 139, 0.08)";
+        ctx.fillRect(bcBoxLeft, bcBoxTop, bcW, bcH);
+        ctx.strokeStyle = "#94A3B8";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.strokeRect(bcBoxLeft, bcBoxTop, bcW, bcH);
+        ctx.fillStyle = "rgba(100, 116, 139, 0.75)";
+        ctx.font = "bold 8px sans-serif";
+        ctx.fillText("BARCODE ZONE (2\" × 1.2\")", bcBoxLeft + 4, bcBoxTop + 12);
 
         // Labels — stacked on a fixed vertical cadence rather than each
         // computed independently from its own box's corner. On a narrow
@@ -3246,6 +3344,133 @@ export default function FabricCoverStudio({
     fitSpineTextObject(text);
   };
 
+  const addSpineBand = (color: string = "#1E293B") => {
+    if (!canvas) return;
+    const existing = canvas.getObjects().find((o: any) => o.id === "spine-band");
+    if (existing) {
+      existing.set({ fill: color, dirty: true });
+      canvas.setActiveObject(existing);
+      setActiveObject(existing);
+      canvas.requestRenderAll();
+      return;
+    }
+
+    const band = new fabric.Rect({
+      id: "spine-band",
+      left: layout.spineLeftPx,
+      top: 0,
+      width: Math.max(layout.spineWidthPx, 4),
+      height: layout.canvasHeight,
+      fill: color,
+      selectable: true,
+      lockMovementY: true,
+    } as any);
+
+    canvas.add(band);
+    band.sendToBack();
+    canvas.setActiveObject(band);
+    setActiveObject(band);
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: band });
+  };
+
+  const addKdpBadge = (type: "bestseller" | "largeprint" | "vol1" | "puzzles" | "solutions") => {
+    if (!canvas) return;
+    const centerX = layout.frontCoverCenterPx;
+    const centerY = layout.canvasHeight * 0.76;
+
+    let badgeText = "★ #1 BESTSELLER";
+    let bgFill = "#F59E0B";
+    let textFill = "#0F172A";
+    let badgeRadius = 24;
+    let badgePadding = 14;
+    let fontSize = 15;
+    let strokeColor = "#D97706";
+    let strokeW = 1.5;
+
+    if (type === "largeprint") {
+      badgeText = "LARGE PRINT EDITION";
+      bgFill = "#000000";
+      textFill = "#FACC15";
+      badgeRadius = 8;
+      badgePadding = 12;
+      fontSize = 15;
+      strokeColor = "#FACC15";
+      strokeW = 2;
+    } else if (type === "vol1") {
+      badgeText = "VOLUME 1 • COLLECTOR'S EDITION";
+      bgFill = "#4F46E5";
+      textFill = "#FFFFFF";
+      badgeRadius = 20;
+      badgePadding = 10;
+      fontSize = 13;
+      strokeColor = "#818CF8";
+      strokeW = 1;
+    } else if (type === "puzzles") {
+      badgeText = "100+ PUZZLES WITH SOLUTIONS";
+      bgFill = "#EF4444";
+      textFill = "#FFFFFF";
+      badgeRadius = 30;
+      badgePadding = 14;
+      fontSize = 14;
+      strokeColor = "#FFFFFF";
+      strokeW = 1.5;
+    } else if (type === "solutions") {
+      badgeText = "✓ COMPLETE SOLUTIONS INCLUDED";
+      bgFill = "#10B981";
+      textFill = "#FFFFFF";
+      badgeRadius = 12;
+      badgePadding = 10;
+      fontSize = 13;
+      strokeColor = "#059669";
+      strokeW = 1;
+    }
+
+    const badgeObj = new fabric.Text(badgeText, {
+      id: `kdp-badge-${Date.now()}`,
+      left: centerX,
+      top: centerY,
+      originX: "center",
+      originY: "center",
+      fontFamily: "Arial",
+      fontWeight: "bold",
+      fontSize: fontSize,
+      fill: textFill,
+      textBackgroundColor: bgFill,
+      textBgRadius: badgeRadius,
+      textBgPadding: badgePadding,
+      textBgOpacity: 1,
+      stroke: strokeColor,
+      strokeWidth: strokeW,
+      paintFirst: "stroke",
+      padding: badgePadding,
+    } as any);
+
+    canvas.add(badgeObj);
+    canvas.setActiveObject(badgeObj);
+    setActiveObject(badgeObj);
+    canvas.requestRenderAll();
+    canvas.fire("object:modified", { target: badgeObj });
+  };
+
+  const handleTextCase = (mode: "upper" | "lower" | "title") => {
+    if (!canvas || !activeObject) return;
+    if (activeObject.type === "i-text" || activeObject.type === "textbox" || activeObject.type === "text") {
+      const textObj = activeObject as fabric.IText;
+      const current = textObj.text || "";
+      let next = current;
+      if (mode === "upper") next = current.toUpperCase();
+      else if (mode === "lower") next = current.toLowerCase();
+      else if (mode === "title") {
+        next = current.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+      }
+      textObj.set({ text: next, dirty: true });
+      setObjectText(next);
+      canvas.requestRenderAll();
+      canvas.fire("object:modified", { target: textObj });
+    }
+  };
+
   const addMultilineText = () => {
     if (!canvas) return;
     const textbox = new fabric.Textbox("Add paragraph text here. Resize the box to wrap text automatically, and format it.", {
@@ -3794,6 +4019,7 @@ export default function FabricCoverStudio({
     if (!active) return;
     active.clone((cloned: any) => {
       setClipboard(cloned);
+      clipboardRef.current = cloned;
     });
   };
 
@@ -3803,36 +4029,111 @@ export default function FabricCoverStudio({
     if (!active) return;
     active.clone((cloned: any) => {
       setClipboard(cloned);
+      clipboardRef.current = cloned;
       canvas.remove(active);
       canvas.discardActiveObject();
       canvas.requestRenderAll();
     });
   };
 
-  const pasteSelected = () => {
-    if (!canvas || !clipboard) return;
-    clipboard.clone((cloned: any) => {
-      canvas.discardActiveObject();
-      cloned.set({
-        left: (cloned.left || 0) + 15,
-        top: (cloned.top || 0) + 15,
-        id: `${cloned.type}-${Date.now()}`,
-        evented: true,
-      });
-      if (cloned.type === 'activeSelection') {
-        cloned.canvas = canvas;
-        cloned.forEachObject((obj: any) => {
-          canvas.add(obj);
+  const pasteImageFileOrUrl = (source: File | Blob | string) => {
+    if (!canvas) return;
+
+    const addImageToCanvas = (dataUrl: string) => {
+      // 1. Add to uploadedImages state so it appears in the Graphics sidebar gallery
+      setUploadedImages((prev) => (prev.includes(dataUrl) ? prev : [dataUrl, ...prev]));
+
+      // 2. Load onto canvas
+      fabric.Image.fromURL(
+        dataUrl,
+        (img) => {
+          if (!img || !canvas) return;
+          const origW = img.width || 200;
+          const origH = img.height || 200;
+
+          // Scale proportionally to fit comfortably on the front cover (max 380px wide/tall)
+          const maxDim = Math.min(layout.canvasWidth * 0.45, 380);
+          const scale = Math.min(maxDim / origW, maxDim / origH, 1);
+
+          const scaledW = origW * scale;
+          const scaledH = origH * scale;
+
+          img.set({
+            id: `pasted-image-${Date.now()}`,
+            left: layout.frontCoverCenterPx - scaledW / 2,
+            top: layout.canvasHeight / 2 - scaledH / 2,
+            scaleX: scale,
+            scaleY: scale,
+          });
+
+          canvas.add(img);
+          canvas.setActiveObject(img);
+          setActiveObject(img);
+          canvas.requestRenderAll();
+          canvas.fire("object:modified", { target: img });
+        },
+        { crossOrigin: "anonymous" }
+      );
+    };
+
+    if (typeof source === "string") {
+      addImageToCanvas(source);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event: any) => {
+        if (event.target?.result) {
+          addImageToCanvas(event.target.result);
+        }
+      };
+      reader.readAsDataURL(source);
+    }
+  };
+
+  const pasteSelected = async () => {
+    if (!canvas) return;
+    if (clipboardRef.current || clipboard) {
+      const targetClip = clipboardRef.current || clipboard;
+      targetClip.clone((cloned: any) => {
+        canvas.discardActiveObject();
+        cloned.set({
+          left: (cloned.left || 0) + 15,
+          top: (cloned.top || 0) + 15,
+          id: `${cloned.type}-${Date.now()}`,
+          evented: true,
         });
-        cloned.setCoords();
-      } else {
-        canvas.add(cloned);
+        if (cloned.type === 'activeSelection') {
+          cloned.canvas = canvas;
+          cloned.forEachObject((obj: any) => {
+            canvas.add(obj);
+          });
+          cloned.setCoords();
+        } else {
+          canvas.add(cloned);
+        }
+        targetClip.top += 15;
+        targetClip.left += 15;
+        canvas.setActiveObject(cloned);
+        canvas.requestRenderAll();
+      });
+      return;
+    }
+
+    // Try system clipboard for images
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.read) {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          const imageType = item.types.find((t) => t.startsWith('image/'));
+          if (imageType) {
+            const blob = await item.getType(imageType);
+            pasteImageFileOrUrl(blob);
+            return;
+          }
+        }
       }
-      clipboard.top += 15;
-      clipboard.left += 15;
-      canvas.setActiveObject(cloned);
-      canvas.requestRenderAll();
-    });
+    } catch {
+      // Handled via window paste event
+    }
   };
 
   const duplicateSelected = () => {
@@ -4478,19 +4779,8 @@ export default function FabricCoverStudio({
     }
   };
 
-  const handleGenerateCover = async () => {
+  const handleGenerateCoverDirect = () => {
     if (!canvas) return;
-
-    try {
-      const status = await checkPremiumStatus();
-      if (!status.isPremium) {
-        setIsExportPaywallOpen(true);
-        return;
-      }
-    } catch (e) {
-      console.error("Premium check error:", e);
-    }
-
     setIsGenerating(true);
     canvas.discardActiveObject();
     canvas.requestRenderAll();
@@ -4509,6 +4799,36 @@ export default function FabricCoverStudio({
       doc.save(`KDP_Premium_Cover_${trimSize.w}x${trimSize.h}.pdf`);
       setIsGenerating(false);
     }, 300);
+  };
+
+  const handleGenerateCover = async () => {
+    if (!canvas) return;
+
+    try {
+      const status = await checkPremiumStatus();
+      if (!status.isPremium) {
+        setIsExportPaywallOpen(true);
+        return;
+      }
+    } catch (e) {
+      console.error("Premium check error:", e);
+    }
+
+    // Run Pre-Flight Inspection before compile
+    const findings = runKdpPreflightChecks(canvas, layout, {
+      trimWidth: trimSize.w,
+      trimHeight: trimSize.h,
+      pageCount: pageCount,
+      paperType: paperType,
+    });
+
+    const hasCritical = findings.some((f) => f.severity === "critical");
+    if (hasCritical) {
+      setIsPreflightOpen(true);
+      return;
+    }
+
+    handleGenerateCoverDirect();
   };
 
   // Crops the front-cover and spine regions out of the full wraparound export
@@ -4691,6 +5011,7 @@ export default function FabricCoverStudio({
     toggleLockSelected,
     copyStyleFromActive,
     pasteStyleToActive,
+    pasteImage: pasteImageFileOrUrl,
     handleNudge: (key: string, shiftKey: boolean) => {
       if (!canvas) return;
       const active = canvas.getActiveObject();
@@ -4851,6 +5172,13 @@ export default function FabricCoverStudio({
             className="p-2.5 mx-auto rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
           >
             <Share2 className="w-5 h-5"/>
+          </button>
+          <button
+            onClick={() => setIsPreflightOpen(true)}
+            title="KDP Pre-Flight Inspector — Validate Trim, Spine & Margins"
+            className="p-2.5 mx-auto rounded-xl text-slate-500 hover:text-white hover:bg-slate-900 transition-all duration-200 ease-out active:scale-[0.94]"
+          >
+            <ShieldCheck className="w-5 h-5 text-indigo-400"/>
           </button>
           <button
             onClick={handleGenerateCover}
@@ -5071,9 +5399,9 @@ export default function FabricCoverStudio({
                   <Ruler className="w-3.5 h-3.5" /> Auto-Align Text to Spine Line
                 </button>
 
-                {/* Bold, Italic, Underline */}
-                <div>
-                  <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Style</label>
+                {/* Bold, Italic, Underline & Letter Case */}
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-black text-slate-400 uppercase block">Text Style & Case</label>
                   <div className="flex border border-slate-200 rounded-lg overflow-hidden bg-white">
                     <button
                       onClick={toggleBold}
@@ -5100,17 +5428,42 @@ export default function FabricCoverStudio({
                       U
                     </button>
                   </div>
+                  {/* Letter Case Transform Buttons */}
+                  <div className="flex border border-slate-200 rounded-lg overflow-hidden bg-white text-[10px] font-black">
+                    <button
+                      onClick={() => handleTextCase("upper")}
+                      title="UPPERCASE (ALL CAPS)"
+                      className="flex-1 py-1 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    >
+                      AA
+                    </button>
+                    <button
+                      onClick={() => handleTextCase("title")}
+                      title="Title Case (Capitalize Words)"
+                      className="flex-1 py-1 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-x border-slate-100"
+                    >
+                      Aa
+                    </button>
+                    <button
+                      onClick={() => handleTextCase("lower")}
+                      title="lowercase (small letters)"
+                      className="flex-1 py-1 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    >
+                      aa
+                    </button>
+                  </div>
                 </div>
 
                 {/* Text Effects */}
                 <div>
                   <label className="text-[9px] font-black text-slate-400 uppercase block mb-1">Text Effects</label>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="grid grid-cols-4 gap-1.5">
                     {([
                       { key: 'none', label: 'None' },
                       { key: 'shadow', label: 'Shadow' },
                       { key: 'lift', label: 'Lift' },
                       { key: 'hollow', label: 'Hollow' },
+                      { key: 'outline', label: 'Outline' },
                       { key: 'neon', label: 'Neon' },
                       { key: 'background', label: 'Background' },
                     ] as const).map((fx) => {
@@ -5257,6 +5610,95 @@ export default function FabricCoverStudio({
                             const val = parseInt(e.target.value);
                             setObjectTextBgOpacity(val);
                             (activeObject as any).set({ textBgOpacity: val / 100, dirty: true });
+                            canvas?.requestRenderAll();
+                            canvas?.fire("object:modified", { target: activeObject });
+                          }}
+                          className="w-full accent-indigo-600 h-1.5 cursor-pointer bg-slate-200 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Custom Outline / Stroke Controls (shown when Outline effect is active or text has stroke) */}
+                  {(activeTextEffectPreset === 'outline' || ((activeObject as any)?.strokeWidth || 0) > 0) && (
+                    <div className="mt-2.5 p-3 rounded-xl bg-slate-100/90 border border-slate-200/90 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-pink-500 inline-block" />
+                          Text Outline (Stroke)
+                        </span>
+                        <button
+                          onClick={() => {
+                            (activeObject as any).set({ stroke: undefined, strokeWidth: 0, dirty: true });
+                            setObjectStrokeWidth(0);
+                            setActiveTextEffectPreset('none');
+                            canvas?.requestRenderAll();
+                            canvas?.fire("object:modified", { target: activeObject });
+                          }}
+                          className="text-[8px] font-black text-rose-500 hover:text-rose-700 uppercase cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      {/* Stroke Color */}
+                      <div>
+                        <div className="flex justify-between items-center text-[9px] font-black text-slate-500 uppercase mb-1">
+                          <span>Outline Color</span>
+                          <span className="text-slate-700 font-mono text-[10px]">{objectStrokeColor || '#000000'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-slate-300 shadow-sm shrink-0 cursor-pointer">
+                            <input
+                              type="color"
+                              value={objectStrokeColor && objectStrokeColor.startsWith('#') ? objectStrokeColor : '#000000'}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setObjectStrokeColor(val);
+                                (activeObject as any).set({ stroke: val, paintFirst: 'stroke', dirty: true });
+                                canvas?.requestRenderAll();
+                                canvas?.fire("object:modified", { target: activeObject });
+                              }}
+                              className="absolute -top-2 -left-2 w-12 h-12 cursor-pointer border-0 p-0"
+                            />
+                          </div>
+                          <div className="flex-1 flex gap-1 items-center overflow-x-auto py-0.5">
+                            {['#000000', '#FFFFFF', '#F59E0B', '#EF4444', '#10B981', '#3B82F6', '#6366F1', '#EC4899'].map((hex) => (
+                              <button
+                                key={hex}
+                                onClick={() => {
+                                  setObjectStrokeColor(hex);
+                                  (activeObject as any).set({ stroke: hex, paintFirst: 'stroke', dirty: true });
+                                  canvas?.requestRenderAll();
+                                  canvas?.fire("object:modified", { target: activeObject });
+                                }}
+                                style={{ backgroundColor: hex }}
+                                className={`w-5 h-5 rounded-md border shrink-0 transition-transform hover:scale-110 cursor-pointer ${
+                                  objectStrokeColor?.toLowerCase() === hex.toLowerCase() ? 'ring-2 ring-indigo-500 ring-offset-1 border-slate-400' : 'border-slate-300'
+                                }`}
+                                title={hex}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stroke Width Slider */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-black text-slate-500 uppercase">
+                          <span>Outline Thickness</span>
+                          <span className="text-indigo-600 font-bold font-mono">{objectStrokeWidth || 4}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="20"
+                          step="1"
+                          value={objectStrokeWidth || 4}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setObjectStrokeWidth(val);
+                            (activeObject as any).set({ strokeWidth: val, paintFirst: 'stroke', dirty: true });
                             canvas?.requestRenderAll();
                             canvas?.fire("object:modified", { target: activeObject });
                           }}
@@ -6218,6 +6660,52 @@ export default function FabricCoverStudio({
                     </svg>
                     <span>Add Spine Text (Auto-Fit)</span>
                   </button>
+                  <button onClick={() => addSpineBand('#1E293B')} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black flex items-center gap-2.5 hover:border-indigo-400 hover:shadow-sm transition-all text-slate-700 cursor-pointer">
+                    <Box className="w-4 h-4 text-indigo-500"/>
+                    <span>Add Spine Color Band (Ribbon)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* KDP Marketing Badges */}
+              <div>
+                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">KDP Marketing Badges</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => addKdpBadge('bestseller')}
+                    className="p-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:border-amber-400 hover:shadow-sm transition-all text-amber-900 cursor-pointer text-left"
+                  >
+                    <span className="text-amber-500 text-xs">★</span>
+                    <span>#1 Best Seller</span>
+                  </button>
+                  <button
+                    onClick={() => addKdpBadge('largeprint')}
+                    className="p-2 bg-slate-900 text-yellow-300 border border-slate-800 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:border-yellow-400 hover:shadow-sm transition-all cursor-pointer text-left"
+                  >
+                    <span>👓</span>
+                    <span>Large Print</span>
+                  </button>
+                  <button
+                    onClick={() => addKdpBadge('vol1')}
+                    className="p-2 bg-indigo-50 text-indigo-900 border border-indigo-200 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:border-indigo-400 hover:shadow-sm transition-all cursor-pointer text-left"
+                  >
+                    <span>📖</span>
+                    <span>Vol. 1 Edition</span>
+                  </button>
+                  <button
+                    onClick={() => addKdpBadge('puzzles')}
+                    className="p-2 bg-rose-50 text-rose-900 border border-rose-200 rounded-xl text-[10px] font-black flex items-center gap-1.5 hover:border-rose-400 hover:shadow-sm transition-all cursor-pointer text-left"
+                  >
+                    <span>🧩</span>
+                    <span>100+ Puzzles</span>
+                  </button>
+                  <button
+                    onClick={() => addKdpBadge('solutions')}
+                    className="col-span-2 p-2 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl text-[10px] font-black flex items-center justify-center gap-1.5 hover:border-emerald-400 hover:shadow-sm transition-all cursor-pointer"
+                  >
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Complete Solutions Included</span>
+                  </button>
                 </div>
               </div>
 
@@ -6967,21 +7455,45 @@ export default function FabricCoverStudio({
             )}
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-600 block">Upload Local Image</label>
+              <label className="text-xs font-bold text-slate-600 block">Add Image to Cover</label>
+              
+              {/* One-Click Paste from Clipboard */}
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    if (typeof navigator !== "undefined" && navigator.clipboard?.read) {
+                      const items = await navigator.clipboard.read();
+                      for (const item of items) {
+                        const imageType = item.types.find((t) => t.startsWith("image/"));
+                        if (imageType) {
+                          const blob = await item.getType(imageType);
+                          pasteImageFileOrUrl(blob);
+                          return;
+                        }
+                      }
+                    }
+                    alert("No image found in clipboard. Copy an image or take a screenshot, then click Paste or press Ctrl+V!");
+                  } catch (e) {
+                    alert("Please press Ctrl+V anywhere on the page to paste your copied image.");
+                  }
+                }}
+                className="w-full p-2.5 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 hover:bg-indigo-100/80 rounded-xl text-xs font-black flex items-center justify-center gap-2 text-indigo-700 cursor-pointer transition-all shadow-sm"
+              >
+                <ClipboardPaste className="w-4 h-4 text-indigo-600" />
+                <span>Paste Copied Image (Ctrl+V)</span>
+              </button>
+
               <label className="w-full p-3 bg-white border border-dashed border-slate-300 rounded-xl text-xs font-black flex flex-col items-center justify-center gap-2 hover:border-amber-400 hover:bg-slate-50/50 cursor-pointer transition-all text-slate-600">
                 <Upload className="w-5 h-5 text-indigo-500"/>
-                <span>Choose Image File</span>
+                <span>Choose Image File (or Drop on Canvas)</span>
                 <input 
                   type="file" 
                   accept="image/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (event: any) => {
-                        setUploadedImages(prev => [...prev, event.target.result]);
-                      };
-                      reader.readAsDataURL(file);
+                      pasteImageFileOrUrl(file);
                     }
                   }}
                   className="hidden" 
@@ -7607,6 +8119,15 @@ export default function FabricCoverStudio({
             <div className="w-px h-5 bg-slate-200 mx-1" />
 
             <button
+              onClick={() => setIsPreflightOpen(true)}
+              title="KDP Pre-Flight Inspector — Validate Amazon POD Guidelines"
+              className="p-2 pl-2.5 pr-3 rounded-full bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5 cursor-pointer border border-slate-200/60"
+            >
+              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">Pre-Flight</span>
+            </button>
+
+            <button
               onClick={handleGenerateCover}
               disabled={isGenerating}
               title="Compile & Download PDF Cover"
@@ -7908,7 +8429,27 @@ export default function FabricCoverStudio({
       </div>
 
         {/* Responsive parent container to calculate scale */}
-        <div ref={containerRef} className={`flex-1 w-full h-full min-h-0 overflow-auto flex relative ${userZoom > 1 ? 'items-start justify-start p-4' : 'items-center justify-center p-2 sm:p-4'}`}>
+        <div 
+          ref={containerRef} 
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const files = e.dataTransfer?.files;
+            if (files && files.length > 0) {
+              for (let i = 0; i < files.length; i++) {
+                if (files[i].type.startsWith("image/")) {
+                  pasteImageFileOrUrl(files[i]);
+                  break;
+                }
+              }
+            }
+          }}
+          className={`flex-1 w-full h-full min-h-0 overflow-auto flex relative ${userZoom > 1 ? 'items-start justify-start p-4' : 'items-center justify-center p-2 sm:p-4'}`}
+        >
           {/* Exact-size wrapper so flexbox centers the scaled bounding box precisely */}
           <div
             style={{
@@ -8015,9 +8556,8 @@ export default function FabricCoverStudio({
             ) : (
               <>
                 <button
-                  onClick={() => { if (clipboard) pasteSelected(); setContextMenu(null); }}
-                  disabled={!clipboard}
-                  className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left disabled:opacity-40 disabled:cursor-not-allowed"
+                  onClick={() => { pasteSelected(); setContextMenu(null); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 text-left cursor-pointer"
                 >
                   <Clipboard className="w-3.5 h-3.5 text-slate-400" /> Paste <span className="ml-auto text-[10px] text-slate-400">Ctrl+V</span>
                 </button>
@@ -8176,6 +8716,23 @@ export default function FabricCoverStudio({
           pageCount,
           fullWidthInches: layout.coverWidthInches,
           fullHeightInches: layout.coverHeightInches,
+        }}
+      />
+
+      <KdpPreflightModal
+        isOpen={isPreflightOpen}
+        onClose={() => setIsPreflightOpen(false)}
+        canvas={canvas}
+        layout={layout}
+        specs={{
+          trimWidth: trimSize.w,
+          trimHeight: trimSize.h,
+          pageCount: pageCount,
+          paperType: paperType,
+        }}
+        onProceedDownload={() => {
+          setIsPreflightOpen(false);
+          handleGenerateCoverDirect();
         }}
       />
       </div>

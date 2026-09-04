@@ -270,7 +270,7 @@ function PricingSectionInner() {
         paddleLoaded: !!(window as any).Paddle,
         planKey,
         planIdKey,
-        configuredPriceIds: priceIds
+        configuredPriceIds: { standardPriceIds, directPriceIds }
       });
       if (!selectedPriceId) {
         alert(`Checkout Error: Price ID for '${planIdKey}' is missing in environment variables.`);

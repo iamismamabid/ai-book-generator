@@ -477,20 +477,20 @@ export async function syncMySubscription() {
     const meta = (user.publicMetadata || {}) as any;
 
     // 1. Check database redemptions first (AppSumo / DealFuel lifetime licenses)
-    const redemption = await prisma.redemption.findFirst({
-      where: { userId },
-      orderBy: { redeemedAt: "desc" },
+    const redemptionsCount = await prisma.appSumoRedemption.count({
+      where: { clerkId: userId },
     });
 
-    if (redemption) {
+    if (redemptionsCount > 0) {
       const clerk = await clerkClient();
-      const plan = redemption.tier >= 3 ? "agency" : redemption.tier >= 2 ? "pro" : "starter";
+      const plan = redemptionsCount >= 3 ? "agency" : redemptionsCount >= 2 ? "pro" : "starter";
       await clerk.users.updateUserMetadata(userId, {
         publicMetadata: {
           ...meta,
           isPremium: true,
           isTrial: false,
           plan,
+          tier: redemptionsCount,
           subscriptionStatus: "active",
         },
       });

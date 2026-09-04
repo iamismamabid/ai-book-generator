@@ -37,6 +37,8 @@ export default function InstantNavPrefetcher() {
 
     // 1. IntersectionObserver to prefetch all visible links in viewport when idle
     let observer: IntersectionObserver | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
     if (typeof IntersectionObserver !== "undefined") {
       observer = new IntersectionObserver(
         (entries) => {
@@ -61,8 +63,7 @@ export default function InstantNavPrefetcher() {
 
       observeAllLinks();
       // Re-scan occasionally when DOM updates
-      const timer = setTimeout(observeAllLinks, 2000);
-      return () => clearTimeout(timer);
+      timer = setTimeout(observeAllLinks, 2000);
     }
 
     // 2. High-priority instant prefetch on pointer/touch interaction
@@ -80,6 +81,7 @@ export default function InstantNavPrefetcher() {
     document.addEventListener("pointerdown", handleInteraction, { passive: true });
 
     return () => {
+      if (timer) clearTimeout(timer);
       observer?.disconnect();
       document.removeEventListener("mouseover", handleInteraction);
       document.removeEventListener("touchstart", handleInteraction);

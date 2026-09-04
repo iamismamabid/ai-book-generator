@@ -655,7 +655,7 @@ interface FabricCoverStudioProps {
   trimSize: { label: string; w: number; h: number };
   setTrimSize: (size: any) => void;
   pageCount: number;
-  setPageCount: (cnt: number) => void;
+  setPageCount: (cnt: number | ((prev: number) => number)) => void;
 
   coverBackground: CoverBackgroundState;
   setCoverBackground: React.Dispatch<React.SetStateAction<CoverBackgroundState>>;

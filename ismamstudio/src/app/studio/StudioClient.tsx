@@ -456,7 +456,7 @@ export default function MasterStudioApp() {
                 setTrimSize={setTrimSize}
                 pageCount={pageCount}
                 setPageCount={(val) => {
-                  const numeric = typeof val === 'function' ? val(pageCount) : val;
+                  const numeric = typeof val === 'function' ? (val as (prev: number) => number)(pageCount) : val;
                   const safe = Math.max(24, Math.min(1000, Number(numeric) || 100));
                   setPageCount(safe);
                 }}

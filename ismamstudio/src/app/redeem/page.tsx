@@ -13,7 +13,8 @@ export default async function RedeemPage({
 }: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const resolvedParams = searchParams ? await searchParams.catch(() => ({})) : {};
+  const resolvedParams: Record<string, string | string[] | undefined> =
+    (searchParams ? await searchParams.catch(() => ({})) : {}) || {};
   const partner =
     typeof resolvedParams?.partner === "string"
       ? resolvedParams.partner

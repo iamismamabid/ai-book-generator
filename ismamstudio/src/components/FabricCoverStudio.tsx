@@ -5075,6 +5075,8 @@ export default function FabricCoverStudio({
       }
     } catch (e) {
       console.error("Premium check error:", e);
+      setIsExportPaywallOpen(true);
+      return;
     }
 
     // Run Pre-Flight Inspection before compile
@@ -5205,6 +5207,8 @@ export default function FabricCoverStudio({
       }
     } catch (e) {
       console.error("Premium check error:", e);
+      setIsExportPaywallOpen(true);
+      return;
     }
 
     const targetObj = findSeriesTargetObject();

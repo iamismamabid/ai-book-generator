@@ -130,7 +130,7 @@ export default function SudokuClient() {
     };
   }>({ checked: false, isPremium: false, plan: "free" });
 
-  const isPro = Boolean(premiumStatus.isPremium || user?.publicMetadata?.isPremium);
+  const isPro = Boolean(premiumStatus.isPremium);
 
   // True when this page was opened to restore a saved My Notebook entry, so
   // the plan-based defaults below don't clobber the restored settings.
@@ -280,7 +280,7 @@ export default function SudokuClient() {
     const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
 
     const freshStatus = await getFreshPremiumStatus();
-    const effectiveIsPro = freshStatus.isPremium || Boolean(user?.publicMetadata?.isPremium);
+    const effectiveIsPro = Boolean(freshStatus.isPremium);
     const count = Math.min(Math.max(1, bookCount), tierMaxFor(effectiveIsPro ? "pro" : freshStatus.plan));
     const puzzles = generateSudokuBook(count, difficulty);
     const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');

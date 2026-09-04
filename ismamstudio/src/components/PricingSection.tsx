@@ -597,7 +597,7 @@ function PricingSectionInner() {
               (trialEndsAtMs > 0 && Date.now() > trialEndsAtMs && user?.publicMetadata?.hasPaidTransaction !== true)
             );
             const isTrialUser = Boolean((user?.publicMetadata?.subscriptionStatus === "trialing" || user?.publicMetadata?.isTrial) && !isTrialExpired);
-            const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) && !isTrialUser && !isTrialExpired;
+            const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) && !isTrialUser && !isTrialExpired && user?.publicMetadata?.hasPaidTransaction === true;
             const isCurrentPlan = (isPremiumUser || isTrialUser || isTrialExpired) && currentUserPlan === plan.planKey;
 
             if (isCurrentPlan && isTrialExpired) {
@@ -813,7 +813,7 @@ function PricingSectionInner() {
             (trialEndsAtMs > 0 && Date.now() > trialEndsAtMs && user?.publicMetadata?.hasPaidTransaction !== true)
           );
           const isTrialUser = Boolean((user?.publicMetadata?.subscriptionStatus === "trialing" || user?.publicMetadata?.isTrial) && !isTrialExpired);
-          const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) && !isTrialUser && !isTrialExpired;
+          const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) && !isTrialUser && !isTrialExpired && user?.publicMetadata?.hasPaidTransaction === true;
 
           if (isTrialExpired) {
             return (

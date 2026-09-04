@@ -291,7 +291,76 @@ export async function checkPremiumStatus() {
     if (user) {
       const publicMetadata = (user.publicMetadata || {}) as any;
 
-      // 🛑 TRIAL RESTRICTION & EXPIRATION CHECK:
+      // 🛑 LIVE PADDLE GROUND TRUTH & STRICT BILLING VERIFICATION
+      const apiKey = process.env.PADDLE_API_KEY;
+      const apiBase =
+        process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "sandbox"
+          ? "https://sandbox-api.paddle.com"
+          : "https://api.paddle.com";
+      const subId = publicMetadata.paddleSubscriptionId;
+
+      // 1. If user has a Paddle subscription, query Paddle live if apiKey is available and payment is not verified
+      if (apiKey && subId && subId.startsWith("sub_") && publicMetadata.hasPaidTransaction !== true) {
+        try {
+          const [subRes, txnRes] = await Promise.all([
+            fetch(`${apiBase}/subscriptions/${subId}`, {
+              headers: { Authorization: `Bearer ${apiKey}` },
+              cache: "no-store",
+            }),
+            fetch(`${apiBase}/transactions?subscription_id=${subId}&status=paid`, {
+              headers: { Authorization: `Bearer ${apiKey}` },
+              cache: "no-store",
+            }),
+          ]);
+
+          if (subRes.ok) {
+            const subData = await subRes.json();
+            const pStatus = subData?.data?.status; // "active", "trialing", "past_due", "canceled", "paused"
+            let pHasPaidTxn = false;
+
+            if (txnRes.ok) {
+              const txnData = await txnRes.json();
+              const paidList = txnData?.data || [];
+              pHasPaidTxn = Array.isArray(paidList) && paidList.some((t: any) => {
+                const total = Number(t?.details?.totals?.total ?? t?.totals?.total ?? 0);
+                return total > 0 && (t.status === "paid" || t.status === "completed");
+              });
+            }
+
+            const isTrialActive = pStatus === "trialing";
+            const isActuallyPaid = pStatus === "active" && pHasPaidTxn;
+            const isExpiredOrPastDue = pStatus === "past_due" || pStatus === "canceled" || pStatus === "paused" || (!isTrialActive && !isActuallyPaid);
+
+            const clerk = await clerkClient();
+            await clerk.users.updateUserMetadata(userId, {
+              publicMetadata: {
+                ...publicMetadata,
+                isPremium: isActuallyPaid,
+                isTrial: isTrialActive,
+                hasPaidTransaction: isActuallyPaid,
+                trialExpired: isExpiredOrPastDue,
+                plan: isActuallyPaid ? (publicMetadata.plan || "pro") : (isTrialActive ? (publicMetadata.plan || "pro") : "free"),
+                subscriptionStatus: isActuallyPaid ? "active" : (isTrialActive ? "trialing" : "inactive"),
+                lastPaymentStatus: isActuallyPaid ? "paid" : (isTrialActive ? "trial" : "failed"),
+              },
+            });
+
+            publicMetadata.isPremium = isActuallyPaid;
+            publicMetadata.hasPaidTransaction = isActuallyPaid;
+            publicMetadata.isTrial = isTrialActive;
+            publicMetadata.trialExpired = isExpiredOrPastDue;
+            publicMetadata.subscriptionStatus = isActuallyPaid ? "active" : (isTrialActive ? "trialing" : "inactive");
+            publicMetadata.lastPaymentStatus = isActuallyPaid ? "paid" : (isTrialActive ? "trial" : "failed");
+            if (!isActuallyPaid && !isTrialActive) {
+              publicMetadata.plan = "free";
+            }
+          }
+        } catch (livePaddleErr) {
+          console.error("Live Paddle check error in checkPremiumStatus:", livePaddleErr);
+        }
+      }
+
+      // 2. TRIAL RESTRICTION & EXPIRATION CHECK:
       const trialEndsAtMs = publicMetadata.trialEndsAt ? new Date(publicMetadata.trialEndsAt).getTime() : 0;
       const wasTrialUser = trialEndsAtMs > 0 || publicMetadata.isTrial === true || publicMetadata.subscriptionStatus === "trialing";
       const hasTrialExpired = trialEndsAtMs > 0 ? Date.now() > trialEndsAtMs : false;
@@ -312,6 +381,7 @@ export async function checkPremiumStatus() {
                   plan: "free",
                   trialExpired: true,
                   lastPaymentStatus: "failed_or_expired",
+                  hasPaidTransaction: false,
                 },
               })
             )
@@ -363,26 +433,61 @@ export async function checkPremiumStatus() {
         publicMetadata.subscriptionStatus === "canceled" ||
         publicMetadata.subscriptionStatus === "paused" ||
         publicMetadata.subscriptionStatus === "inactive" ||
-        publicMetadata.lastPaymentStatus === "failed"
+        publicMetadata.lastPaymentStatus === "failed" ||
+        publicMetadata.trialExpired === true
       ) {
         return {
           checked: true,
           isPremium: false,
           isTrial: false,
+          trialExpired: true,
           plan: "free",
           limits: defaultFreeLimits,
           reason: "subscription_inactive_or_past_due",
         };
       }
 
-      // Case D: Strictly grant premium only to active paid subscriptions
+      // Case D: CRITICAL AUTO-HEAL: User has isPremium: true or paddleSubscriptionId, but hasPaidTransaction !== true
+      // This catches any old trials where trialEndsAt was wiped to null by the old webhook, or users whose card had no money!
+      if (publicMetadata.hasPaidTransaction !== true && (publicMetadata.isPremium === true || publicMetadata.paddleSubscriptionId)) {
+        clerkClient()
+          .then((client) =>
+            client.users.updateUserMetadata(userId, {
+              publicMetadata: {
+                ...publicMetadata,
+                isPremium: false,
+                isTrial: false,
+                subscriptionStatus: "inactive",
+                plan: "free",
+                trialExpired: true,
+                lastPaymentStatus: "failed_or_expired",
+                hasPaidTransaction: false,
+              },
+            })
+          )
+          .catch((err) => console.error("Auto-heal unverified premium error:", err));
+
+        return {
+          checked: true,
+          isPremium: false, // 🔒 Strictly blocked
+          isTrial: false,
+          trialExpired: true,
+          plan: "free",
+          limits: defaultFreeLimits,
+          reason: "trial_expired_unpaid",
+        };
+      }
+
+      // Case E: Strictly grant premium only to active paid subscriptions with verified payments
       const isPaidSubscribed =
         publicMetadata.subscriptionStatus === "active" &&
+        publicMetadata.hasPaidTransaction === true &&
+        publicMetadata.isPremium === true &&
+        publicMetadata.trialExpired !== true &&
+        publicMetadata.lastPaymentStatus !== "failed" &&
         (publicMetadata.plan === "starter" ||
           publicMetadata.plan === "pro" ||
-          publicMetadata.plan === "agency" ||
-          publicMetadata.isPremium === true) &&
-        (!wasTrialUser || hasVerifiedPayment);
+          publicMetadata.plan === "agency");
 
       if (isPaidSubscribed) {
         const userPlan = publicMetadata.plan || "pro";

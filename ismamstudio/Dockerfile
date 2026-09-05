@@ -14,6 +14,11 @@ RUN npm ci
 COPY prisma ./prisma/
 
 # ৫. ডকার বিল্ডের ভেতরেই প্রিজমা ক্লায়েন্ট জেনারেট করা
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+ENV DIRECT_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_dummy"
+ENV CLERK_SECRET_KEY="sk_test_dummy"
+
 RUN npx prisma generate
 
 # ৬. প্রজেক্টের বাকি সব কোড কপি করা

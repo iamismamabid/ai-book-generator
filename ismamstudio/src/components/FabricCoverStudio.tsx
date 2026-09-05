@@ -2311,8 +2311,30 @@ export default function FabricCoverStudio({
       selectionLineWidth: 2
     });
 
+    // Auto-heal any image on canvas that may have been cropped or corrupted
+    const ensureImageNotCropped = (img: any) => {
+      if (!img || (img.type !== 'image' && !img._element)) return;
+      const el = img._element;
+      const natW = el?.naturalWidth || img.naturalWidth;
+      const natH = el?.naturalHeight || img.naturalHeight;
+      if (natW && natH && (img.width !== natW || img.height !== natH || (img.cropX && img.cropX !== 0) || (img.cropY && img.cropY !== 0))) {
+        const displayW = (img.width || natW) * (img.scaleX || 1);
+        const displayH = (img.height || natH) * (img.scaleY || 1);
+        img.set({
+          width: natW,
+          height: natH,
+          scaleX: natW > 0 ? displayW / natW : (img.scaleX || 1),
+          scaleY: natH > 0 ? displayH / natH : (img.scaleY || 1),
+          cropX: 0,
+          cropY: 0,
+        });
+        img.setCoords();
+      }
+    };
+
     fCanvas.on('object:added', (e) => {
       if (e.target) {
+        ensureImageNotCropped(e.target);
         e.target.set({
           transparentCorners: false,
           cornerColor: '#FFFFFF',
@@ -2362,6 +2384,7 @@ export default function FabricCoverStudio({
     const syncActiveObjectDimensions = () => {
       const active = fCanvas.getActiveObject();
       if (active) {
+        ensureImageNotCropped(active);
         setObjectWidth(Math.round((active.width || 0) * (active.scaleX || 1)));
         setObjectHeight(Math.round((active.height || 0) * (active.scaleY || 1)));
         setObjectPosX(Math.round(active.left || 0));
@@ -2453,6 +2476,7 @@ export default function FabricCoverStudio({
       setActiveObject(obj);
       setSelectionCount(fCanvas.getActiveObjects().length);
       if (obj) {
+        ensureImageNotCropped(obj);
         setObjectWidth(Math.round((obj.width || 0) * (obj.scaleX || 1)));
         setObjectHeight(Math.round((obj.height || 0) * (obj.scaleY || 1)));
         setObjectPosX(Math.round(obj.left || 0));
@@ -8653,16 +8677,45 @@ export default function FabricCoverStudio({
 
               <div className="w-px h-4 bg-slate-200" />
 
-              {/* Image Edit Filter shortcut */}
+              {/* Image Edit Filter & Full Picture shortcuts */}
               {activeObject.type === 'image' && (
-                <button
-                  onClick={() => {
-                    imageAdjustmentsRef.current?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="px-2.5 py-1 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5" /> Edit FX
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      const img = activeObject as any;
+                      const el = img._element;
+                      const natW = el?.naturalWidth || img.naturalWidth;
+                      const natH = el?.naturalHeight || img.naturalHeight;
+                      if (natW && natH) {
+                        const displayW = (img.width || natW) * (img.scaleX || 1);
+                        const displayH = (img.height || natH) * (img.scaleY || 1);
+                        img.set({
+                          width: natW,
+                          height: natH,
+                          scaleX: natW > 0 ? displayW / natW : 1,
+                          scaleY: natH > 0 ? displayH / natH : 1,
+                          cropX: 0,
+                          cropY: 0,
+                        });
+                        img.setCoords();
+                        canvas?.requestRenderAll();
+                        canvas?.fire('object:modified', { target: img });
+                      }
+                    }}
+                    title="Restore full uncropped picture"
+                    className="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> Full Picture
+                  </button>
+                  <button
+                    onClick={() => {
+                      imageAdjustmentsRef.current?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-2.5 py-1 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" /> Edit FX
+                  </button>
+                </>
               )}
 
               {/* Color Fill Swatch for shapes/text */}

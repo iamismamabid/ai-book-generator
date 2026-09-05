@@ -30,7 +30,8 @@ export function loadVersions(): CoverVersion[] {
 
 // Snapshots include the full canvas JSON, so a design with an uploaded
 // background photo can be large. Rather than failing the save outright, drop
-// the oldest snapshots until the write fits.
+// the oldest snapshots until the write fits, while never destructively clearing
+// previously saved valid versions.
 function persist(versions: CoverVersion[]): { ok: boolean; stored: CoverVersion[] } {
   let candidate = [...versions];
   while (candidate.length > 0) {
@@ -41,26 +42,26 @@ function persist(versions: CoverVersion[]): { ok: boolean; stored: CoverVersion[
       candidate = candidate.slice(0, -1);
     }
   }
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    /* nothing more we can do */
-  }
   return { ok: false, stored: [] };
 }
 
 export function saveVersion(
   version: Omit<CoverVersion, "id" | "createdAt">
 ): { versions: CoverVersion[]; ok: boolean } {
+  const existing = loadVersions();
   const entry: CoverVersion = {
     ...version,
     id: `v-${Date.now()}-${Math.round(Math.random() * 1000)}`,
     createdAt: Date.now(),
   };
   // Newest first, oldest evicted once the cap is hit.
-  const next = [entry, ...loadVersions()].slice(0, MAX_VERSIONS);
+  const next = [entry, ...existing].slice(0, MAX_VERSIONS);
   const { ok, stored } = persist(next);
-  return { versions: stored, ok };
+  if (!ok) {
+    console.warn("Cover version storage quota reached; preserving previous versions.");
+    return { versions: existing, ok: false };
+  }
+  return { versions: stored, ok: true };
 }
 
 export function deleteVersion(id: string): CoverVersion[] {

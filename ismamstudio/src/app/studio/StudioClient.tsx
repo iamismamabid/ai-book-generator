@@ -247,10 +247,10 @@ export default function MasterStudioApp() {
     // 1. Save to IndexedDB (durable, supports multi-megabyte AI artwork)
     saveCoverDraftToIndexedDB(data);
 
-    // 2. Save lightweight copy to localStorage (strip giant data URLs if over 2MB)
+    // 2. Save lightweight copy to localStorage (strip giant data URLs if over 1.5MB)
     try {
       const dataStr = JSON.stringify(data);
-      if (dataStr.length < 2_000_000) {
+      if (dataStr.length < 1_500_000) {
         localStorage.setItem("kdp-cover-draft", dataStr);
       } else {
         const safeData = {
@@ -258,11 +258,20 @@ export default function MasterStudioApp() {
           backCoverImage: data.backCoverImage?.startsWith('data:') ? '' : data.backCoverImage,
           frontCoverImage: data.frontCoverImage?.startsWith('data:') ? '' : data.frontCoverImage,
           fullCoverImage: data.fullCoverImage?.startsWith('data:') ? '' : data.fullCoverImage,
+          coverElements: (data.coverElements || []).map((el: any) => {
+            if (el?.src && typeof el.src === 'string' && el.src.startsWith('data:') && el.src.length > 300_000) {
+              return { ...el, src: '' };
+            }
+            return el;
+          })
         };
-        localStorage.setItem("kdp-cover-draft", JSON.stringify(safeData));
+        const safeStr = JSON.stringify(safeData);
+        if (safeStr.length < 2_000_000) {
+          localStorage.setItem("kdp-cover-draft", safeStr);
+        }
       }
     } catch (err) {
-      console.warn("Couldn't cache cover draft locally:", err);
+      console.warn("Couldn't cache cover draft locally in localStorage (IndexedDB has full copy):", err);
     }
 
     if (!isSignedIn) return;

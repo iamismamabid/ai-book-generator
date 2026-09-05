@@ -34,6 +34,7 @@ import VersionHistoryModal from "@/components/VersionHistoryModal";
 import { CoverVersion } from "@/lib/coverVersions";
 import { BrandKit, loadBrandKit, addBrandColor, removeBrandColor, addBrandFont, removeBrandFont } from "@/lib/brandKit";
 import { relayoutLegacyElements, layoutsDiffer } from "@/lib/coverRelayout";
+import { optimizeImageForCanvas } from "@/lib/imageOptimizer";
 import ShareReviewModal from "@/components/ShareReviewModal";
 import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
 import ByokNewsBanner from "@/components/ByokNewsBanner";
@@ -1330,12 +1331,13 @@ export default function FabricCoverStudio({
     canvas.fire("object:modified", { target: active });
   };
 
-  // History Undo/Redo States
-  const [history, setHistory] = useState<string[]>([]);
-  const [historyStep, setHistoryStep] = useState(-1);
+  // History Undo/Redo States (using lightweight booleans to avoid multi-hundred-megabyte React state re-renders)
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
   const historyRef = useRef<string[]>([]);
   const historyStepRef = useRef<number>(-1);
   const isUpdatingHistory = useRef(false);
+  const saveWorkspaceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Unsplash search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -2342,8 +2344,8 @@ export default function FabricCoverStudio({
     });
     historyRef.current = [initialJson];
     historyStepRef.current = 0;
-    setHistory([initialJson]);
-    setHistoryStep(0);
+    setCanUndo(false);
+    setCanRedo(false);
 
     // Sync layers list helper
     const updateLayers = () => {
@@ -2515,7 +2517,7 @@ export default function FabricCoverStudio({
       }
     });
 
-    // Save history on changes
+    // Save history on changes with memory capping & debounced persistence
     const saveState = () => {
       if (isUpdatingHistory.current) return;
       const stateObj = {
@@ -2527,20 +2529,36 @@ export default function FabricCoverStudio({
       const currentHistory = historyRef.current;
       const currentStep = historyStepRef.current;
       const sliced = currentHistory.slice(0, currentStep + 1);
-      const MAX_HISTORY = 30;
+      const MAX_HISTORY = 15;
       let nextHistory = [...sliced, json];
       if (nextHistory.length > MAX_HISTORY) {
         nextHistory = nextHistory.slice(nextHistory.length - MAX_HISTORY);
       }
-      const nextStep = nextHistory.length - 1;
 
+      // Memory budget guard: limit total history memory footprint to 20MB (~20M chars)
+      const MAX_HISTORY_BYTES = 20 * 1024 * 1024;
+      let totalChars = nextHistory.reduce((sum, item) => sum + item.length, 0);
+      while (nextHistory.length > 2 && totalChars > MAX_HISTORY_BYTES) {
+        const removed = nextHistory.shift();
+        if (removed) totalChars -= removed.length;
+      }
+
+      const nextStep = nextHistory.length - 1;
       historyRef.current = nextHistory;
       historyStepRef.current = nextStep;
-      setHistory(nextHistory);
-      setHistoryStep(nextStep);
+      setCanUndo(nextStep > 0);
+      setCanRedo(false);
       
-      const legacyElements = serializeToLegacyElements(fCanvas);
-      onSaveWorkspace(legacyElements);
+      // Debounce saving workspace by 400ms to prevent rapid mouse events from choking main thread with serialization
+      if (saveWorkspaceTimeoutRef.current) {
+        clearTimeout(saveWorkspaceTimeoutRef.current);
+      }
+      saveWorkspaceTimeoutRef.current = setTimeout(() => {
+        if (!isCanvasAlive(fCanvas)) return;
+        const legacyElements = serializeToLegacyElements(fCanvas);
+        onSaveWorkspace(legacyElements);
+      }, 400);
+
       updateLayers();
     };
 
@@ -2594,6 +2612,9 @@ export default function FabricCoverStudio({
     updateLayers();
 
     return () => {
+      if (saveWorkspaceTimeoutRef.current) {
+        clearTimeout(saveWorkspaceTimeoutRef.current);
+      }
       try {
         fCanvas.off("object:added", saveState);
         fCanvas.off("object:modified", saveState);
@@ -2791,7 +2812,15 @@ export default function FabricCoverStudio({
         ctx.scale(multiplier, multiplier);
         paintCoverBackground(ctx);
         ctx.drawImage(img, 0, 0, layout.canvasWidth, layout.canvasHeight);
-        resolve(compositeEl.toDataURL('image/png'));
+        const result = compositeEl.toDataURL('image/png');
+        // Immediate offscreen buffer reclamation
+        compositeEl.width = 0;
+        compositeEl.height = 0;
+        img.src = '';
+        resolve(result);
+      };
+      img.onerror = () => {
+        resolve(objectsOnlyDataUrl);
       };
       img.src = objectsOnlyDataUrl;
     });
@@ -3358,8 +3387,20 @@ export default function FabricCoverStudio({
       canvas.loadFromJSON(canvasData, () => {
         canvas.requestRenderAll();
         historyStepRef.current = prevStep;
-        setHistoryStep(prevStep);
+        setCanUndo(prevStep > 0);
+        setCanRedo(true);
         isUpdatingHistory.current = false;
+
+        if (saveWorkspaceTimeoutRef.current) {
+          clearTimeout(saveWorkspaceTimeoutRef.current);
+        }
+        saveWorkspaceTimeoutRef.current = setTimeout(() => {
+          if (!isCanvasAlive(canvas)) return;
+          const legacyElements = serializeToLegacyElements(canvas);
+          onSaveWorkspace(legacyElements);
+        }, 400);
+
+        setLayers([...canvas.getObjects()].reverse());
       });
     }
   };
@@ -3380,8 +3421,20 @@ export default function FabricCoverStudio({
       canvas.loadFromJSON(canvasData, () => {
         canvas.requestRenderAll();
         historyStepRef.current = nextStep;
-        setHistoryStep(nextStep);
+        setCanUndo(true);
+        setCanRedo(nextStep < historyRef.current.length - 1);
         isUpdatingHistory.current = false;
+
+        if (saveWorkspaceTimeoutRef.current) {
+          clearTimeout(saveWorkspaceTimeoutRef.current);
+        }
+        saveWorkspaceTimeoutRef.current = setTimeout(() => {
+          if (!isCanvasAlive(canvas)) return;
+          const legacyElements = serializeToLegacyElements(canvas);
+          onSaveWorkspace(legacyElements);
+        }, 400);
+
+        setLayers([...canvas.getObjects()].reverse());
       });
     }
   };
@@ -3414,7 +3467,11 @@ export default function FabricCoverStudio({
         const ctx = el.getContext('2d');
         if (!ctx) return reject(new Error("No 2D context"));
         ctx.drawImage(img, 0, 0);
-        resolve(el.toDataURL('image/jpeg', 0.85));
+        const result = el.toDataURL('image/jpeg', 0.85);
+        el.width = 0;
+        el.height = 0;
+        img.src = '';
+        resolve(result);
       };
       img.onerror = () => reject(new Error("Failed to render preview"));
       img.src = pngUrl;
@@ -4282,18 +4339,22 @@ export default function FabricCoverStudio({
     });
   };
 
-  const pasteImageFileOrUrl = (source: File | Blob | string) => {
+  const pasteImageFileOrUrl = async (source: File | Blob | string) => {
     if (!canvas) return;
 
-    const addImageToCanvas = (dataUrl: string) => {
+    try {
+      // Pre-scale and compress image to prevent browser out-of-memory crashes
+      const optimizedDataUrl = await optimizeImageForCanvas(source, { maxDimension: 2400, quality: 0.90 });
+      if (!optimizedDataUrl || !isCanvasAlive(canvas)) return;
+
       // 1. Add to uploadedImages state so it appears in the Graphics sidebar gallery
-      setUploadedImages((prev) => (prev.includes(dataUrl) ? prev : [dataUrl, ...prev]));
+      setUploadedImages((prev) => (prev.includes(optimizedDataUrl) ? prev : [optimizedDataUrl, ...prev]));
 
       // 2. Load onto canvas
       fabric.Image.fromURL(
-        dataUrl,
+        optimizedDataUrl,
         (img) => {
-          if (!img || !canvas) return;
+          if (!img || !isCanvasAlive(canvas)) return;
           const origW = img.width || 200;
           const origH = img.height || 200;
 
@@ -4320,18 +4381,8 @@ export default function FabricCoverStudio({
         },
         { crossOrigin: "anonymous" }
       );
-    };
-
-    if (typeof source === "string") {
-      addImageToCanvas(source);
-    } else {
-      const reader = new FileReader();
-      reader.onload = (event: any) => {
-        if (event.target?.result) {
-          addImageToCanvas(event.target.result);
-        }
-      };
-      reader.readAsDataURL(source);
+    } catch (err) {
+      console.warn("Failed to optimize and paste image:", err);
     }
   };
 
@@ -4461,18 +4512,21 @@ export default function FabricCoverStudio({
   // Swaps the underlying image source in place via Fabric's own setSrc, which
   // keeps the object's current position/scale/rotation/crop untouched --
   // unlike removing and re-adding a fresh image, which would reset all of it.
-  const handleReplaceImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleReplaceImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = ""; // allow re-selecting the same file later
     if (!file || !canvas || !activeObject || activeObject.type !== "image") return;
-    const reader = new FileReader();
-    reader.onload = (event: any) => {
-      (activeObject as fabric.Image).setSrc(event.target.result, () => {
+    try {
+      const optimized = await optimizeImageForCanvas(file, { maxDimension: 2400, quality: 0.90 });
+      if (!optimized || !isCanvasAlive(canvas)) return;
+      (activeObject as fabric.Image).setSrc(optimized, () => {
+        if (!isCanvasAlive(canvas)) return;
         canvas.requestRenderAll();
         canvas.fire("object:modified", { target: activeObject });
       }, { crossOrigin: "anonymous" });
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.warn("Failed to replace image:", err);
+    }
   };
 
   const jumpToImageAdjustments = () => {
@@ -4861,28 +4915,38 @@ export default function FabricCoverStudio({
     if (canvas) canvas.renderAll();
   };
 
-  const applyBackgroundImage = (url: string, target: 'full' | 'front' | 'back', textureId = '') => {
+  const applyBackgroundImage = async (url: string, target: 'full' | 'front' | 'back', textureId = '') => {
     if (!canvas) return;
+
+    let finalUrl = url;
+    if (url.startsWith('data:') && url.length > 1_000_000) {
+      try {
+        finalUrl = await optimizeImageForCanvas(url, { maxDimension: 2400, quality: 0.90 });
+      } catch (err) {
+        console.warn("Background image optimization fallback:", err);
+      }
+    }
 
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = url;
+    img.src = finalUrl;
     img.onload = () => {
+      if (!isCanvasAlive(canvas)) return;
       if (target === 'full') {
         fullCoverImageEl.current = img;
-        setFullCoverImage(url);
+        setFullCoverImage(finalUrl);
         setBackCoverImage('');
         setFrontCoverImage('');
         backCoverImageEl.current = null;
         frontCoverImageEl.current = null;
       } else if (target === 'front') {
         frontCoverImageEl.current = img;
-        setFrontCoverImage(url);
+        setFrontCoverImage(finalUrl);
         setFullCoverImage('');
         fullCoverImageEl.current = null;
       } else if (target === 'back') {
         backCoverImageEl.current = img;
-        setBackCoverImage(url);
+        setBackCoverImage(finalUrl);
         setFullCoverImage('');
         fullCoverImageEl.current = null;
       }
@@ -5119,7 +5183,10 @@ export default function FabricCoverStudio({
           const ctx = cropCanvas.getContext('2d');
           if (!ctx) return fullDataUrl;
           ctx.drawImage(img, xPx, yPx, wPx, hPx, 0, 0, wPx, hPx);
-          return cropCanvas.toDataURL('image/png');
+          const res = cropCanvas.toDataURL('image/png');
+          cropCanvas.width = 0;
+          cropCanvas.height = 0;
+          return res;
         };
 
         const frontX = layout.frontLiveLeftPx - layout.safeMarginPx; // = spineRightPx, the trimmed front-cover left edge
@@ -5132,6 +5199,7 @@ export default function FabricCoverStudio({
         } else {
           setMockupSpineUrl(null);
         }
+        img.src = '';
         setIsMockupLoading(false);
       };
       img.src = fullDataUrl;
@@ -5169,7 +5237,10 @@ export default function FabricCoverStudio({
             0, 0, frontW * multiplier, frontH * multiplier
           );
           setThumbPreviewUrl(cropCanvas.toDataURL('image/png'));
+          cropCanvas.width = 0;
+          cropCanvas.height = 0;
         }
+        img.src = '';
         setIsThumbPreviewLoading(false);
       };
       img.src = fullDataUrl;
@@ -5246,6 +5317,8 @@ export default function FabricCoverStudio({
           const doc = new JsPdfCtor({ orientation: "landscape", unit: "in", format: [layout.coverWidthInches, layout.coverHeightInches] });
           doc.addImage(dataUrl, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
           tempCanvas.dispose();
+          tempEl.width = 0;
+          tempEl.height = 0;
           resolve(doc.output('blob'));
         });
       });
@@ -8410,7 +8483,7 @@ export default function FabricCoverStudio({
           <div className="flex items-center gap-2 sm:gap-3 bg-white py-2 px-4 rounded-full border border-slate-200/80 shadow-md max-w-full overflow-x-auto">
             <button
               onClick={handleUndo}
-              disabled={historyStep <= 0}
+              disabled={!canUndo}
               title="Undo (Ctrl+Z)"
               className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
             >
@@ -8420,7 +8493,7 @@ export default function FabricCoverStudio({
 
             <button
               onClick={handleRedo}
-              disabled={historyStep === history.length - 1}
+              disabled={!canRedo}
               title="Redo (Ctrl+Y)"
               className="p-2 rounded-full text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5"
             >

@@ -57,6 +57,21 @@ function getCtaLink(slug: string) {
   if (slug.includes("keyword") || slug.includes("niche")) {
     return { href: "/tools/keyword-research", label: "Open Keyword Research Tool" };
   }
+  if (slug.includes("coloring")) {
+    return { href: "/tools/coloring-book-generator", label: "Open Coloring Book Generator" };
+  }
+  if (slug.includes("book-bolt") || slug.includes("alternative")) {
+    return { href: "/compare/book-bolt", label: "Compare KDPage vs Book Bolt" };
+  }
+  if (slug.includes("royalty") || slug.includes("profit")) {
+    return { href: "/tools/royalty-estimator", label: "Open KDP Royalty Calculator" };
+  }
+  if (slug.includes("spine") || slug.includes("cover-size")) {
+    return { href: "/tools/spine-calculator", label: "Open KDP Spine Calculator" };
+  }
+  if (slug.includes("cover") || slug.includes("design")) {
+    return { href: "/studio", label: "Open Cover Studio" };
+  }
   if (slug.includes("tool")) {
     return { href: "/tools", label: "Browse Free KDP Tools" };
   }

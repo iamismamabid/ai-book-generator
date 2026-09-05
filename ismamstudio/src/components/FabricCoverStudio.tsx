@@ -4558,7 +4558,7 @@ export default function FabricCoverStudio({
           scaleY: natH > 0 ? oldH / natH : 1,
           cropX: 0,
           cropY: 0,
-        });
+        } as any);
         canvas.requestRenderAll();
         canvas.fire("object:modified", { target: activeObject });
       }, { crossOrigin: "anonymous" });

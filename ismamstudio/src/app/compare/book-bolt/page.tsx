@@ -19,7 +19,7 @@ import {
 export const metadata: Metadata = {
   title: "Best Book Bolt Alternative (2026) — KDPage vs Book Bolt Comparison",
   description:
-    "Looking for a Book Bolt alternative? Compare KDPage vs Book Bolt. See how KDPage delivers deterministic unique puzzle generation, 300 DPI vector PDF exports, automatic spine calculations, and better pricing with zero duplicate content ban risk.",
+    "Looking for a Book Bolt alternative? Compare KDPage vs Book Bolt. See how KDPage delivers deterministic unique puzzle generation, 300 DPI vector PDF exports, automatic spine calculations, and better pricing with mathematically verified unique puzzle generation.",
   alternates: {
     canonical: "https://www.kdpage.com/compare/book-bolt",
   },
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
 const FAQ_ITEMS = [
   {
     q: "Why is KDPage considered the best alternative to Book Bolt?",
-    a: "Unlike Book Bolt which relies on static pre-rendered puzzle templates that hundreds of publishers share, KDPage uses deterministic backtracking algorithms. Every Sudoku, shape-masked maze, and word search is mathematically synthesized with unique seed coordinates, eliminating the risk of Amazon KDP duplicate content account flags.",
+    a: "Unlike Book Bolt which relies on static pre-rendered puzzle templates that hundreds of publishers share, KDPage uses deterministic backtracking algorithms. Every Sudoku, shape-masked maze, and word search is mathematically synthesized with unique seed coordinates, ensuring algorithmically unique, single-solution puzzle interiors designed to meet Amazon KDP content standards.",
   },
   {
     q: "How does KDPage pricing compare to Book Bolt?",
@@ -78,8 +78,8 @@ const COMPARISON_FEATURES = [
     kdpageWins: true,
   },
   {
-    feature: "Duplicate Content Ban Protection",
-    kdpage: "Guaranteed unique interiors per export",
+    feature: "Mathematically Verified Unique Puzzles",
+    kdpage: "Algorithmically generated unique interiors per export",
     bookbolt: "Shared template library used by thousands of publishers",
     kdpageWins: true,
   },
@@ -180,7 +180,7 @@ export default function BookBoltAlternativePage() {
           </h1>
 
           <p className="text-slate-300 text-base sm:text-lg font-medium leading-relaxed">
-            Discover why self-publishers are switching from Book Bolt to KDPage. Create mathematically unique puzzle books, shape-masked mazes, and print-ready covers with zero duplicate content risk.
+            Discover why self-publishers are switching from Book Bolt to KDPage. Create mathematically unique puzzle books, shape-masked mazes, and print-ready covers with mathematically verified unique puzzles.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">

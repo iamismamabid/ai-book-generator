@@ -94,7 +94,7 @@ export default function HomePage() {
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              Zero Duplicate Ban Risk
+              Mathematically Verified Unique Puzzles
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />

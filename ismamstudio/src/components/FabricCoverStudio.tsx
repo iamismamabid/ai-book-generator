@@ -744,6 +744,8 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
           globalCompositeOperation: obj.globalCompositeOperation || 'source-over',
           flipX: !!obj.flipX,
           flipY: !!obj.flipY,
+          originX: obj.originX || 'left',
+          originY: obj.originY || 'top',
           isLocked: !!obj.isLocked
         };
 
@@ -806,6 +808,10 @@ const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
             srcVal = '';
           }
           base.src = srcVal;
+          const natW = obj._element?.naturalWidth || obj.width || 150;
+          const natH = obj._element?.naturalHeight || obj.height || 150;
+          base.naturalWidth = natW;
+          base.naturalHeight = natH;
           base.width = (obj.width || 150) * (obj.scaleX || 1);
           base.height = (obj.height || 150) * (obj.scaleY || 1);
           base.scaleX = 1;
@@ -3075,6 +3081,8 @@ export default function FabricCoverStudio({
       opacity: el.opacity ?? 1,
       flipX: !!el.flipX,
       flipY: !!el.flipY,
+      originX: el.originX || 'left',
+      originY: el.originY || 'top',
       stroke: el.stroke || undefined,
       strokeWidth: typeof el.strokeWidth === 'number' ? el.strokeWidth : 0,
       strokeDashArray: el.strokeDashArray || null,
@@ -3300,10 +3308,28 @@ export default function FabricCoverStudio({
             fabric.Image.fromURL(secureSrc, (img) => {
               if (!img || !isCanvasAlive(fCanvas)) return;
               try {
+                // Determine natural uncropped bitmap dimensions
+                const natW = (img as any)._element?.naturalWidth || img.width || 150;
+                const natH = (img as any)._element?.naturalHeight || img.height || 150;
+
+                // Desired display dimensions on canvas (accounting for any legacy scale factors)
+                const targetW = Math.max(1, (el.width || natW) * (el.scaleX || 1));
+                const targetH = Math.max(1, (el.height || natH) * (el.scaleY || 1));
+
+                // Compute proper scale factor relative to uncropped natural dimensions
+                const finalScaleX = natW > 0 ? targetW / natW : (el.scaleX || 1);
+                const finalScaleY = natH > 0 ? targetH / natH : (el.scaleY || 1);
+
                 img.set({
                   ...resolveCommon(el),
-                  width: el.width || 150,
-                  height: el.height || 150,
+                  // IMPORTANT: Keep width/height as the true natural dimensions so Fabric.js
+                  // never clips or crops the source image bitmap into a partial thumbnail!
+                  width: natW,
+                  height: natH,
+                  scaleX: finalScaleX,
+                  scaleY: finalScaleY,
+                  cropX: 0,
+                  cropY: 0,
                 } as any);
 
                 if (el.imageFilters) {
@@ -4517,10 +4543,22 @@ export default function FabricCoverStudio({
     e.target.value = ""; // allow re-selecting the same file later
     if (!file || !canvas || !activeObject || activeObject.type !== "image") return;
     try {
+      const oldW = (activeObject.width || 150) * (activeObject.scaleX || 1);
+      const oldH = (activeObject.height || 150) * (activeObject.scaleY || 1);
       const optimized = await optimizeImageForCanvas(file, { maxDimension: 2400, quality: 0.90 });
       if (!optimized || !isCanvasAlive(canvas)) return;
       (activeObject as fabric.Image).setSrc(optimized, () => {
         if (!isCanvasAlive(canvas)) return;
+        const natW = (activeObject as any)._element?.naturalWidth || activeObject.width || oldW;
+        const natH = (activeObject as any)._element?.naturalHeight || activeObject.height || oldH;
+        activeObject.set({
+          width: natW,
+          height: natH,
+          scaleX: natW > 0 ? oldW / natW : 1,
+          scaleY: natH > 0 ? oldH / natH : 1,
+          cropX: 0,
+          cropY: 0,
+        });
         canvas.requestRenderAll();
         canvas.fire("object:modified", { target: activeObject });
       }, { crossOrigin: "anonymous" });

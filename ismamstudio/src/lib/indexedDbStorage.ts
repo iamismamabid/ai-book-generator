@@ -77,6 +77,54 @@ export async function loadCoverDraftFromIndexedDB(): Promise<any | null> {
   }
 }
 
+// Persistent storage for Cover Studio user-uploaded assets
+export async function saveUserUploadsToIndexedDB(uploads: string[]): Promise<boolean> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(COVER_STORE, "readwrite");
+      const store = tx.objectStore(COVER_STORE);
+      const record = { id: "user-uploaded-images", uploads: uploads.filter(Boolean), updatedAt: Date.now() };
+      store.put(record);
+
+      tx.oncomplete = () => {
+        db.close();
+        resolve(true);
+      };
+      tx.onerror = () => {
+        db.close();
+        resolve(false);
+      };
+    });
+  } catch (e) {
+    console.warn("IndexedDB save user uploads failed:", e);
+    return false;
+  }
+}
+
+export async function loadUserUploadsFromIndexedDB(): Promise<string[]> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(COVER_STORE, "readonly");
+      const store = tx.objectStore(COVER_STORE);
+      const request = store.get("user-uploaded-images");
+
+      request.onsuccess = () => {
+        db.close();
+        resolve(request.result?.uploads && Array.isArray(request.result.uploads) ? request.result.uploads : []);
+      };
+      request.onerror = () => {
+        db.close();
+        resolve([]);
+      };
+    });
+  } catch (e) {
+    console.warn("IndexedDB load user uploads failed:", e);
+    return [];
+  }
+}
+
 // Interior Multi-Page Book Draft Persistence
 export async function saveBookDraftToIndexedDB(pages: any[]): Promise<boolean> {
   try {

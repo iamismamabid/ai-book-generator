@@ -40,7 +40,8 @@ import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
 import ByokNewsBanner from "@/components/ByokNewsBanner";
 import ByokStudioPanel from "@/components/ByokStudioPanel";
 import CoverExportPaywallModal from "@/components/CoverExportPaywallModal";
-import { checkPremiumStatus } from "@/app/actions";
+import { checkPremiumStatus, saveAccountUploadedAsset, getAccountUploadedAssets, deleteAccountUploadedAsset } from "@/app/actions";
+import { saveUserUploadsToIndexedDB, loadUserUploadsFromIndexedDB } from "@/lib/indexedDbStorage";
 
 // Patch Fabric.Text prototype to support modern rounded text backgrounds with custom radius, padding & opacity
 function ensureFabricRoundedTextBg() {
@@ -2242,6 +2243,96 @@ export default function FabricCoverStudio({
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [imageUrlInput, setImageUrlInput] = useState('');
 
+  // Persistent user-uploaded assets:
+  // 1. IndexedDB (fast, offline, unlimited local quota)
+  // 2. localStorage fallback cache
+  // 3. User account cloud storage (permanent sync across logins/devices)
+  useEffect(() => {
+    let isCancelled = false;
+
+    (async () => {
+      let localList: string[] = [];
+      try {
+        const idbList = await loadUserUploadsFromIndexedDB();
+        if (idbList && idbList.length > 0) {
+          localList = idbList;
+        }
+      } catch (err) {
+        console.warn("Error reading uploaded images from IndexedDB:", err);
+      }
+
+      if (localList.length === 0) {
+        try {
+          const cached = localStorage.getItem("kdpage_cover_user_uploads");
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed)) localList = parsed;
+          }
+        } catch {}
+      }
+
+      if (!isCancelled && localList.length > 0) {
+        setUploadedImages(prev => Array.from(new Set([...prev, ...localList])));
+      }
+
+      // Fetch cloud assets linked to user's account
+      try {
+        const res = await getAccountUploadedAssets();
+        if (!isCancelled && res.success && Array.isArray(res.assets) && res.assets.length > 0) {
+          setUploadedImages(prev => {
+            const combined = Array.from(new Set([...res.assets, ...prev]));
+            saveUserUploadsToIndexedDB(combined);
+            return combined;
+          });
+        }
+      } catch (err) {
+        console.warn("Failed to load account uploaded assets from cloud:", err);
+      }
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  const registerUploadedAsset = useCallback(async (assetUrl: string) => {
+    if (!assetUrl || typeof assetUrl !== 'string') return;
+    setUploadedImages((prev) => {
+      const next = prev.includes(assetUrl) ? prev : [assetUrl, ...prev];
+      saveUserUploadsToIndexedDB(next);
+      try {
+        const recentSafe = next.slice(0, 25).map(u => u.length > 300_000 ? '' : u).filter(Boolean);
+        localStorage.setItem("kdpage_cover_user_uploads", JSON.stringify(recentSafe));
+      } catch {}
+      return next;
+    });
+
+    try {
+      await saveAccountUploadedAsset(assetUrl);
+    } catch (err) {
+      console.warn("Failed to sync uploaded asset to user account:", err);
+    }
+  }, []);
+
+  const handleDeleteUploadedImage = useCallback(async (assetUrl: string) => {
+    if (!assetUrl) return;
+    setUploadedImages((prev) => {
+      const next = prev.filter((u) => u !== assetUrl);
+      saveUserUploadsToIndexedDB(next);
+      try {
+        const recentSafe = next.slice(0, 25).map(u => u.length > 300_000 ? '' : u).filter(Boolean);
+        localStorage.setItem("kdpage_cover_user_uploads", JSON.stringify(recentSafe));
+      } catch {}
+      return next;
+    });
+
+    try {
+      await deleteAccountUploadedAsset(assetUrl);
+    } catch (err) {
+      console.warn("Failed to delete uploaded asset from user account:", err);
+    }
+  }, []);
+
   // KDP specs calculations
   const layout = calculateKdpLayout({
     trimWidth: safeTrimSize.w,
@@ -4397,8 +4488,8 @@ export default function FabricCoverStudio({
       const optimizedDataUrl = await optimizeImageForCanvas(source, { maxDimension: 2400, quality: 0.90 });
       if (!optimizedDataUrl || !isCanvasAlive(canvas)) return;
 
-      // 1. Add to uploadedImages state so it appears in the Graphics sidebar gallery
-      setUploadedImages((prev) => (prev.includes(optimizedDataUrl) ? prev : [optimizedDataUrl, ...prev]));
+      // 1. Persist to account and local storage so it appears permanently in Uploaded Assets gallery
+      registerUploadedAsset(optimizedDataUrl);
 
       // 2. Load onto canvas
       fabric.Image.fromURL(
@@ -7986,7 +8077,7 @@ export default function FabricCoverStudio({
                 <button 
                   onClick={() => {
                     if (imageUrlInput.trim()) {
-                      setUploadedImages(prev => [...prev, imageUrlInput.trim()]);
+                      registerUploadedAsset(imageUrlInput.trim());
                       setImageUrlInput('');
                     }
                   }}
@@ -7999,7 +8090,12 @@ export default function FabricCoverStudio({
 
             {uploadedImages.length > 0 && (
               <div className="space-y-3 pt-3 border-t border-slate-200">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Uploaded Assets</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Uploaded Assets</p>
+                  <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60 flex items-center gap-1">
+                    <Check className="w-2.5 h-2.5" /> Saved to Account
+                  </span>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   {uploadedImages.map((src, i) => (
                     <div 
@@ -8009,30 +8105,37 @@ export default function FabricCoverStudio({
                       <img src={src} alt="UploadedAsset" className="w-full h-full object-cover rounded-lg" />
                       
                       {/* Hover Actions Menu */}
-                      <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1.5 p-2 z-10">
+                      <div className="absolute inset-0 bg-slate-950/85 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1 p-2 z-10">
                         <button
                           onClick={() => addClipart(src)}
-                          className="w-full py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[9px] font-black uppercase tracking-wider"
+                          className="w-full py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[9px] font-black uppercase tracking-wider transition-colors"
                         >
                           Add Layer
                         </button>
                         <button
                           onClick={() => applyBackgroundImage(src, 'full')}
-                          className="w-full py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                          className="w-full py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[9px] font-black uppercase tracking-wider transition-colors"
                         >
                           Full BG
                         </button>
                         <button
                           onClick={() => applyBackgroundImage(src, 'front')}
-                          className="w-full py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                          className="w-full py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-[9px] font-black uppercase tracking-wider transition-colors"
                         >
                           Front BG
                         </button>
                         <button
                           onClick={() => applyBackgroundImage(src, 'back')}
-                          className="w-full py-1 bg-teal-600 hover:bg-teal-600 text-white rounded text-[9px] font-black uppercase tracking-wider"
+                          className="w-full py-1 bg-teal-600 hover:bg-teal-500 text-white rounded text-[9px] font-black uppercase tracking-wider transition-colors"
                         >
                           Back BG
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUploadedImage(src)}
+                          title="Delete from account library"
+                          className="w-full py-1 bg-rose-600/90 hover:bg-rose-600 text-white rounded text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-colors"
+                        >
+                          <Trash2 className="w-2.5 h-2.5" /> Remove
                         </button>
                       </div>
                     </div>

@@ -1025,6 +1025,89 @@ export async function loadCoverProject() {
   }
 }
 
+// Persists user-uploaded assets (images, cliparts, cover photos) to their account in PostgreSQL
+export async function saveAccountUploadedAsset(urlOrDataUrl: string, title = "Uploaded Asset") {
+  const { userId } = await auth();
+  if (!userId || !urlOrDataUrl || typeof urlOrDataUrl !== 'string') {
+    return { success: false, error: "unauthorized" };
+  }
+
+  try {
+    // Check if asset already exists for this user to avoid duplicates
+    const existing = await prisma.notebook.findFirst({
+      where: {
+        userId,
+        category: "cover_asset",
+        content: urlOrDataUrl,
+      },
+    });
+
+    if (existing) {
+      return { success: true, id: existing.id };
+    }
+
+    const entry = await prisma.notebook.create({
+      data: {
+        userId,
+        category: "cover_asset",
+        title: title.slice(0, 100),
+        content: urlOrDataUrl,
+      },
+    });
+
+    return { success: true, id: entry.id };
+  } catch (err) {
+    console.error("Failed to save account uploaded asset:", err);
+    return { success: false, error: "Failed to save asset" };
+  }
+}
+
+export async function getAccountUploadedAssets(): Promise<{ success: boolean; assets: string[] }> {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, assets: [] };
+  }
+
+  try {
+    const records = await prisma.notebook.findMany({
+      where: {
+        userId,
+        category: "cover_asset",
+      },
+      orderBy: { createdAt: "desc" },
+      take: 60,
+      select: { content: true },
+    });
+
+    const assets = records.map((r) => r.content).filter(Boolean);
+    return { success: true, assets };
+  } catch (err) {
+    console.error("Failed to fetch account uploaded assets:", err);
+    return { success: false, assets: [] };
+  }
+}
+
+export async function deleteAccountUploadedAsset(urlOrDataUrl: string) {
+  const { userId } = await auth();
+  if (!userId || !urlOrDataUrl) {
+    return { success: false, error: "unauthorized" };
+  }
+
+  try {
+    await prisma.notebook.deleteMany({
+      where: {
+        userId,
+        category: "cover_asset",
+        content: urlOrDataUrl,
+      },
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("Failed to delete account uploaded asset:", err);
+    return { success: false, error: "Failed to delete asset" };
+  }
+}
+
 // One row per (user, preset) -- a signed-in user has independent Coloring
 // Book progress per template, unlike the single CoverProject per user above.
 // Mirrors the same "localStorage as instant cache, cloud as durable copy"

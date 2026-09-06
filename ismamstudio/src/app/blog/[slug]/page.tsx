@@ -33,6 +33,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // Map blog post slugs to relevant internal creator tools
 function getCtaLink(slug: string) {
+  if (slug.includes("bleed") || slug.includes("margin") || slug.includes("rejection")) {
+    return { href: "/tools/spine-calculator", label: "Calculate KDP Cover Bleed & Spine Free" };
+  }
+  if (slug.includes("puzzle-book") || slug.includes("solutions")) {
+    return { href: "/studio", label: "Launch KDPage Creator Studio" };
+  }
   if (slug.includes("sudoku")) {
     return { href: "/sudoku", label: "Open Sudoku Generator" };
   }

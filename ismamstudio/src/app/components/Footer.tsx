@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Mail, Shield, BookOpen } from "lucide-react";
+import { Mail, Shield, BookOpen, Scale, Wrench } from "lucide-react";
 import GlowSettingToggle from "@/app/components/GlowSettingToggle";
 import CursorSettingToggle from "@/app/components/CursorSettingToggle";
 import NewsletterLeadForm from "@/app/components/NewsletterLeadForm";
@@ -9,10 +9,10 @@ export default function Footer() {
   return (
     <footer className="relative z-10 bg-slate-950/80 border-t border-slate-900 backdrop-blur-md" suppressHydrationWarning>
       <div className="max-w-7xl mx-auto px-6 py-16" suppressHydrationWarning>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
 
           {/* Brand Info */}
-          <div className="space-y-4">
+          <div className="space-y-4 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-3 group select-none">
               <div className="relative w-12 h-12 rounded-2xl overflow-hidden shadow-md shadow-amber-500/10 bg-white/95 p-1 group-hover:scale-105 transition-transform flex items-center justify-center border border-slate-700/60">
                 <Image
@@ -40,9 +40,10 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-              Your all-in-one KDP publishing toolkit. Create puzzles, write story chapters, and compile custom book designs in minutes.
+              Your all-in-one KDP publishing toolkit. Create puzzles, calculate cover bleeds, and export 300 DPI vector books in minutes.
             </p>
             <div className="pt-2 flex flex-wrap items-center gap-3">
+              {/* Smol Launch Badge */}
               <a
                 href="https://smollaunch.com"
                 target="_blank"
@@ -97,7 +98,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Navigation Links */}
+          {/* Platform & Studios */}
           <div>
             <h4 className="text-white font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-1.5">
               <BookOpen className="w-4 h-4 text-indigo-400" /> Platform
@@ -107,7 +108,10 @@ export default function Footer() {
                 <Link href="/" className="text-slate-400 hover:text-indigo-400 transition-colors">Home</Link>
               </li>
               <li>
-                <Link href="/about" className="text-slate-400 hover:text-indigo-400 transition-colors">About Us &amp; Founder Story</Link>
+                <Link href="/studio" className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Creator Studio</Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-slate-400 hover:text-indigo-400 transition-colors">About Us &amp; Story</Link>
               </li>
               <li>
                 <Link href="/#features" className="text-slate-400 hover:text-indigo-400 transition-colors">Features</Link>
@@ -116,31 +120,76 @@ export default function Footer() {
                 <Link href="/#pricing" className="text-slate-400 hover:text-indigo-400 transition-colors">Pricing</Link>
               </li>
               <li>
-                <Link href="/examples" className="text-slate-400 hover:text-indigo-400 transition-colors">Examples</Link>
+                <Link href="/examples" className="text-slate-400 hover:text-indigo-400 transition-colors">Book Examples</Link>
               </li>
               <li>
-                <Link href="/blog" className="text-slate-400 hover:text-indigo-400 transition-colors">Blog</Link>
+                <Link href="/blog" className="text-slate-400 hover:text-indigo-400 transition-colors">Blog &amp; Tutorials</Link>
               </li>
               <li>
-                <Link href="/tools" className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Browse Free Tools</Link>
+                <Link href="/docs" className="text-slate-400 hover:text-indigo-400 transition-colors">Documentation</Link>
               </li>
               <li>
-                <Link href="/tools/keyword-research" className="text-slate-400 hover:text-indigo-400 transition-colors">KDP Keyword Explorer</Link>
+                <Link href="/contact" className="text-slate-400 hover:text-indigo-400 transition-colors">Contact Support</Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Free SEO Tools */}
+          <div>
+            <h4 className="text-white font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Wrench className="w-4 h-4 text-amber-400" /> Free KDP Tools
+            </h4>
+            <ul className="space-y-2.5 text-xs font-semibold">
+              <li>
+                <Link href="/tools" className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Browse 30+ Free Tools</Link>
               </li>
               <li>
                 <Link href="/tools/spine-calculator" className="text-slate-400 hover:text-indigo-400 transition-colors">KDP Spine Calculator</Link>
               </li>
               <li>
+                <Link href="/tools/word-search" className="text-slate-400 hover:text-indigo-400 transition-colors">Word Search Generator</Link>
+              </li>
+              <li>
+                <Link href="/studio/kakuro" className="text-slate-400 hover:text-indigo-400 transition-colors">Kakuro Puzzle Generator</Link>
+              </li>
+              <li>
+                <Link href="/tools/keyword-research" className="text-slate-400 hover:text-indigo-400 transition-colors">KDP Keyword Explorer</Link>
+              </li>
+              <li>
+                <Link href="/tools/book-planner" className="text-slate-400 hover:text-indigo-400 transition-colors">Free Book Planner</Link>
+              </li>
+              <li>
+                <Link href="/tools/interior-templates" className="text-slate-400 hover:text-indigo-400 transition-colors">Free Interior Templates</Link>
+              </li>
+              <li>
                 <Link href="/tools/isbn-generator" className="text-slate-400 hover:text-indigo-400 transition-colors">ISBN Barcode Generator</Link>
               </li>
               <li>
-                <Link href="/docs" className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Documentation &amp; Help Center</Link>
+                <Link href="/tools/kdp-file-validator" className="text-slate-400 hover:text-indigo-400 transition-colors">KDP File Validator</Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Comparison Pages for Competitor Traffic */}
+          <div>
+            <h4 className="text-white font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Scale className="w-4 h-4 text-cyan-400" /> Compare
+            </h4>
+            <ul className="space-y-2.5 text-xs font-semibold">
+              <li>
+                <Link href="/compare/canva" className="text-slate-400 hover:text-cyan-400 transition-colors">Canva Alternative for KDP</Link>
+              </li>
+              <li>
+                <Link href="/compare/book-bolt" className="text-slate-400 hover:text-cyan-400 transition-colors">Book Bolt Alternative</Link>
+              </li>
+              <li>
+                <Link href="/compare/tangent-templates" className="text-slate-400 hover:text-cyan-400 transition-colors">Tangent Templates Alt</Link>
+              </li>
+              <li>
+                <Link href="/compare" className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors">Full Feature Matrix</Link>
               </li>
               <li>
                 <Link href="/faq" className="text-slate-400 hover:text-indigo-400 transition-colors">FAQ</Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-slate-400 hover:text-indigo-400 transition-colors">Contact Support</Link>
               </li>
               <li>
                 <Link href="/affiliate" className="text-slate-400 hover:text-indigo-400 transition-colors">Affiliate Program</Link>
@@ -148,12 +197,12 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Legal / Policy */}
+          {/* Policies & Newsletter */}
           <div>
             <h4 className="text-white font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-indigo-400" /> Policies
+              <Shield className="w-4 h-4 text-indigo-400" /> Policies &amp; Help
             </h4>
-            <ul className="space-y-2.5 text-xs font-semibold">
+            <ul className="space-y-2 text-xs font-semibold mb-6">
               <li>
                 <Link href="/privacy" className="text-slate-400 hover:text-indigo-400 transition-colors">Privacy Policy</Link>
               </li>
@@ -167,25 +216,18 @@ export default function Footer() {
                 <Link href="/cookies" className="text-slate-400 hover:text-indigo-400 transition-colors">Cookie Policy</Link>
               </li>
             </ul>
-          </div>
-
-          {/* Support & Newsletter */}
-          <div>
-            <h4 className="text-white font-black text-sm uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <Mail className="w-4 h-4 text-indigo-400" /> Newsletter &amp; Support
-            </h4>
-            <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-3">
-              Subscribe for free KDP tool updates, interior templates, and publishing tips.
-            </p>
-            <div className="mb-4">
-              <NewsletterLeadForm source="footer_newsletter" />
-            </div>
-            <div className="space-y-3 flex flex-col items-start pt-1">
+            <div className="pt-2 border-t border-slate-900">
+              <p className="text-slate-400 text-xs font-semibold leading-relaxed mb-2.5">
+                Subscribe for free KDP tool updates &amp; interior templates.
+              </p>
+              <div className="mb-3">
+                <NewsletterLeadForm source="footer_newsletter" />
+              </div>
               <a
                 href="mailto:support@kdpage.com"
                 className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
               >
-                <Mail className="w-4 h-4" /> support@kdpage.com
+                <Mail className="w-3.5 h-3.5" /> support@kdpage.com
               </a>
             </div>
           </div>

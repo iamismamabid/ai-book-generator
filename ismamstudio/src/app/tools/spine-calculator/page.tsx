@@ -91,10 +91,18 @@ const faqSchema = {
     },
     {
       "@type": "Question",
-      name: "What is the minimum and maximum page count for KDP paperback?",
+      name: "What are the exact 8.5 x 11 KDP cover dimensions in inches and pixels?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "KDP paperback requires a minimum of 24 pages. Maximum is 828 pages for white paper (B&W), 776 for cream paper, and 828 for color paper.",
+        text: "For an 8.5\" × 11\" KDP workbook with 100 pages on white paper, the spine is 0.225\". Total wrap cover width is 17.475\" (17.25\" + 0.225\" spine) and height is 11.25\" with 0.125\" bleed included. At 300 DPI print resolution, canvas dimensions are exactly 5243 × 3375 pixels.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What are the exact 6 x 9 KDP cover dimensions in inches and pixels?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "For a standard 6\" × 9\" KDP novel with 120 pages on white paper, the spine width is 0.270\". Total wrap cover width is 12.520\" and height is 9.25\" with 0.125\" bleed included. At 300 DPI print resolution, canvas dimensions are exactly 3756 × 2775 pixels.",
       },
     },
   ],

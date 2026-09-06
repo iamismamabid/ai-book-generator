@@ -832,6 +832,91 @@ export default function SpineCalculator() {
             </div>
           </div>
 
+          {/* Popular Cover Dimensions Cheat Sheet (6x9 and 8.5x11) */}
+          <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 md:p-8 space-y-6">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider mb-2">
+                <Sparkles className="w-3.5 h-3.5" /> Fast Dimensions Lookup
+              </div>
+              <h2 className="text-2xl font-black text-white">
+                KDP Cover Dimensions Quick Reference (6&quot; × 9&quot; &amp; 8.5&quot; × 11&quot;)
+              </h2>
+              <p className="text-slate-400 text-sm font-medium mt-1">
+                Full wrap-around cover dimensions including 0.125&quot; bleed on all outer edges for white paper (0.002252&quot;/page):
+              </p>
+            </div>
+
+            {/* 6x9 Table */}
+            <div className="space-y-2">
+              <h3 className="text-base font-bold text-indigo-300">6&quot; × 9&quot; Standard Paperback Dimensions</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-slate-800 font-bold uppercase tracking-wider">
+                      <th className="py-2.5 pr-4">Page Count</th>
+                      <th className="py-2.5 pr-4">Spine Width</th>
+                      <th className="py-2.5 pr-4">Full Width (with bleed)</th>
+                      <th className="py-2.5 pr-4">Full Height</th>
+                      <th className="py-2.5">Canvas Pixels (300 DPI)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-900/60 font-medium text-slate-300">
+                    {[
+                      { pages: "100 pages", spine: '0.225"', width: '12.475"', height: '9.250"', px: "3743 × 2775 px" },
+                      { pages: "120 pages", spine: '0.270"', width: '12.520"', height: '9.250"', px: "3756 × 2775 px" },
+                      { pages: "150 pages", spine: '0.338"', width: '12.588"', height: '9.250"', px: "3776 × 2775 px" },
+                      { pages: "200 pages", spine: '0.450"', width: '12.700"', height: '9.250"', px: "3810 × 2775 px" },
+                      { pages: "300 pages", spine: '0.676"', width: '12.926"', height: '9.250"', px: "3878 × 2775 px" },
+                    ].map((row) => (
+                      <tr key={row.pages} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2.5 pr-4 font-bold text-white">{row.pages}</td>
+                        <td className="py-2.5 pr-4 font-mono text-indigo-300">{row.spine}</td>
+                        <td className="py-2.5 pr-4 font-mono text-emerald-300">{row.width}</td>
+                        <td className="py-2.5 pr-4 font-mono text-slate-300">{row.height}</td>
+                        <td className="py-2.5 font-mono text-amber-300 font-bold">{row.px}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 8.5x11 Table */}
+            <div className="space-y-2 pt-2">
+              <h3 className="text-base font-bold text-amber-300">8.5&quot; × 11&quot; Workbook &amp; Activity Book Dimensions</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-slate-800 font-bold uppercase tracking-wider">
+                      <th className="py-2.5 pr-4">Page Count</th>
+                      <th className="py-2.5 pr-4">Spine Width</th>
+                      <th className="py-2.5 pr-4">Full Width (with bleed)</th>
+                      <th className="py-2.5 pr-4">Full Height</th>
+                      <th className="py-2.5">Canvas Pixels (300 DPI)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-900/60 font-medium text-slate-300">
+                    {[
+                      { pages: "80 pages", spine: '0.180"', width: '17.430"', height: '11.250"', px: "5229 × 3375 px" },
+                      { pages: "100 pages", spine: '0.225"', width: '17.475"', height: '11.250"', px: "5243 × 3375 px" },
+                      { pages: "120 pages", spine: '0.270"', width: '17.520"', height: '11.250"', px: "5256 × 3375 px" },
+                      { pages: "150 pages", spine: '0.338"', width: '17.588"', height: '11.250"', px: "5276 × 3375 px" },
+                      { pages: "200 pages", spine: '0.450"', width: '17.700"', height: '11.250"', px: "5310 × 3375 px" },
+                    ].map((row) => (
+                      <tr key={row.pages} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2.5 pr-4 font-bold text-white">{row.pages}</td>
+                        <td className="py-2.5 pr-4 font-mono text-indigo-300">{row.spine}</td>
+                        <td className="py-2.5 pr-4 font-mono text-emerald-300">{row.width}</td>
+                        <td className="py-2.5 pr-4 font-mono text-slate-300">{row.height}</td>
+                        <td className="py-2.5 font-mono text-amber-300 font-bold">{row.px}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
         </section>
 
       </div>

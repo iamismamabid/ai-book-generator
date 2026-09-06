@@ -95,6 +95,23 @@ export default function Footer() {
                   style={{ maxWidth: "150px" }}
                 />
               </a>
+              {/* Fazier Launch Badge */}
+              <a
+                href="https://fazier.com/launches/kdpage.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block hover:opacity-85 transition-opacity"
+                title="KDPage on Fazier"
+              >
+                <img
+                  src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light"
+                  alt="Fazier badge"
+                  loading="lazy"
+                  width={120}
+                  height={36}
+                  className="h-9 w-auto rounded-lg shadow-sm"
+                />
+              </a>
             </div>
           </div>
 

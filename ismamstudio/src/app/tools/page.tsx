@@ -4,11 +4,16 @@ import ToolsClient from "./ToolsClient";
 const SITE_URL = "https://www.kdpage.com";
 
 export const metadata: Metadata = {
-  title: "30+ Free KDP Tools: Calculators, Generators & PDF Utilities | KDPage",
+  title: "Best Free KDP Tools (2026) — 30+ Amazon Publishing Calculators & Generators | KDPage",
   description:
-    "Over 30 free tools for Amazon KDP self-publishers — royalty & print cost calculators, QR code and pattern generators, background remover, PDF compressor, OCR scanner, spine calculator, and more. No signup, no limits.",
+    "Over 30 free tools for Amazon KDP self-publishers: spine & cover bleed calculators, royalty estimators, word search & puzzle generators, ISBN barcodes, and KDP file validator. 100% free, no signup required.",
   keywords: [
-    "free kdp tools",
+    "kdp tools",
+    "best kdp tools",
+    "free kdp tools 2026",
+    "amazon kdp tools",
+    "kdp publishing tools",
+    "kdp tools free",
     "free kdp calculator",
     "kdp royalty calculator free",
     "kdp print cost calculator",
@@ -27,7 +32,7 @@ export const metadata: Metadata = {
     canonical: `${SITE_URL}/tools`,
   },
   openGraph: {
-    title: "30+ Free KDP Tools: Calculators, Generators & PDF Utilities | KDPage",
+    title: "Best Free KDP Tools (2026) — 30+ Amazon Publishing Calculators & Generators | KDPage",
     description:
       "Royalty & print cost calculators, cover and interior design generators, SEO analyzers, PDF utilities, and print-ready templates for Amazon KDP publishers — 100% free, no signup.",
     url: `${SITE_URL}/tools`,
@@ -37,8 +42,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "30+ Free KDP Tools | KDPage",
-    description: "Royalty calculators, design generators, PDF utilities & more for Amazon KDP publishers — 100% free.",
+    title: "Best Free KDP Tools (2026) | KDPage",
+    description: "30+ free Amazon KDP calculators, generators & PDF utilities for self-publishers — 100% free.",
     images: ["/og-image.png"],
   },
 };

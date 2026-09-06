@@ -682,13 +682,13 @@ export default function FreeToolsHub() {
         <div className="mb-16 border-b border-stone-200 pb-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 border border-amber-200/60 text-amber-800 text-xs font-black uppercase tracking-wider shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> {toolsList.length}+ Free KDP Tools — No Signup
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> {toolsList.length}+ Free KDP Tools (2026) — No Signup Required
             </div>
             <h1 className="text-4xl md:text-6xl font-black text-stone-900 tracking-tight">
-              Free KDP Tools for <span className="bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-600 bg-clip-text text-transparent">Smarter Publishing</span>
+              Best Free KDP Tools for <span className="bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-600 bg-clip-text text-transparent">Amazon Self-Publishing</span>
             </h1>
             <p className="text-stone-600 text-base md:text-lg max-w-2xl font-semibold leading-relaxed">
-              Royalty and print cost calculators, cover and interior design generators, SEO and readability analyzers, PDF utilities, and print-ready templates — everything an Amazon KDP self-publisher needs, completely free with no registration.
+              30+ free KDP tools for Amazon publishers — spine &amp; bleed calculators, royalty estimators, puzzle &amp; word search generators, ISBN barcodes, and KDP file validator. 100% free with no registration.
             </p>
           </div>
           <Link

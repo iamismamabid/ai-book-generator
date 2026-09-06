@@ -31,11 +31,38 @@ import UserReviewsSection from "./components/UserReviewsSection";
 import PricingSection from "../components/PricingSection";
 
 export const metadata: Metadata = {
-  title: "KDPage | KDP Book Creator: Puzzle Interiors, Covers & Free Tools",
+  title: "KDPage — Free Amazon KDP Book Creator & 30+ Publishing Tools (2026)",
   description:
-    "Create print-ready Amazon KDP books in minutes — Sudoku, mazes, word searches, crosswords, full manuscripts, and covers. Free KDP tools included: spine calculator, ISBN barcode generator, and keyword research.",
+    "The all-in-one Amazon KDP book creation toolkit. Generate unique puzzle interiors (Sudoku, mazes, word searches), full-wrap covers with automatic spine calculation, and access 30+ free KDP tools.",
+  keywords: [
+    "kdp tools",
+    "kdp book creator",
+    "free kdp tools 2026",
+    "amazon kdp tools",
+    "kdp puzzle book generator",
+    "kdp cover calculator",
+    "kdp spine calculator",
+    "book bolt alternative",
+    "canva alternative for kdp",
+    "kdp low content software"
+  ],
   alternates: {
     canonical: "https://www.kdpage.com",
+  },
+  openGraph: {
+    title: "KDPage — Free Amazon KDP Book Creator & 30+ Publishing Tools (2026)",
+    description:
+      "Create print-ready puzzle books, calculate exact cover spine bleeds, and export 300 DPI vector PDFs for Amazon KDP in minutes.",
+    url: "https://www.kdpage.com",
+    siteName: "KDPage",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "KDPage — KDP Book Creator & Tools" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KDPage — Free Amazon KDP Book Creator & 30+ Publishing Tools (2026)",
+    description: "Algorithmic puzzle engines, live spine calculation, and 30+ free KDP publishing utilities.",
+    images: ["/og-image.png"],
   },
 };
 

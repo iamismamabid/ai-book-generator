@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku';
@@ -409,24 +410,33 @@ export default function SudokuClient() {
             </span>
           </div>
         ) : (
-          <div className="mb-8 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-3">
+          <div className="mb-8 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold shrink-0">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-300">Free Tier Mode (Watermarked & 5 Puzzles)</p>
-                <p className="text-[11px] text-slate-500">Have a subscription or license code? Click sync to refresh.</p>
+                <p className="text-xs font-bold text-slate-200">Free Tier Mode (Watermarked &amp; 5 Puzzles Preview)</p>
+                <p className="text-[11px] text-slate-400">Unlock unlimited 1,000-puzzle batch exports, watermark-free vector PDFs, and solution keys with KDPage Pro.</p>
               </div>
             </div>
-            <button
-              onClick={handleSyncStatus}
-              disabled={isSyncing}
-              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-              {isSyncing ? "Syncing..." : "Sync Subscription"}
-            </button>
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <Link
+                href="/pricing"
+                target="_blank"
+                className="text-xs font-black px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 transition shadow-md shadow-orange-500/10"
+              >
+                ⚡ Upgrade Pro
+              </Link>
+              <button
+                onClick={handleSyncStatus}
+                disabled={isSyncing}
+                className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+                {isSyncing ? "Syncing..." : "Sync"}
+              </button>
+            </div>
           </div>
         )}
 

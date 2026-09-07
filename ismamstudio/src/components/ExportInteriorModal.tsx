@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Settings2, FileDown, AlertTriangle, Loader2, Lock, Sparkles, ShieldCheck, Ticket, Info } from "lucide-react";
+import { X, Settings2, FileDown, AlertTriangle, Loader2, Lock, Sparkles, ShieldCheck, Ticket, Info, Check } from "lucide-react";
 import { checkPremiumStatus, redeemAppSumoCode } from "@/app/actions";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
@@ -368,28 +368,55 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
 
             {/* Free Plan (Non-Trial) Paywall Banner */}
             {!premiumStatus.isPremium && !premiumStatus.isTrial && !premiumStatus.trialExpired && premiumStatus.reason !== "trial_expired_unpaid" && premiumStatus.reason !== "status_check_failed" && (
-              <div className="p-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl border border-indigo-500/30 shadow-lg shadow-indigo-950/30 space-y-3 mb-4">
+              <div className="p-4 sm:p-5 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl sm:rounded-3xl border border-indigo-500/30 shadow-xl shadow-indigo-950/40 space-y-3.5 mb-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center shrink-0 text-indigo-400 mt-0.5">
-                    <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 text-amber-400 mt-0.5">
+                    <Sparkles className="w-5 h-5 animate-pulse" />
                   </div>
                   <div>
-                    <span className="font-black text-white text-xs block uppercase tracking-wide">
-                      Your 300 DPI KDP Book is Ready!
+                    <span className="font-black text-white text-xs sm:text-sm block tracking-tight uppercase">
+                      Unlock Unlimited Full Book Exports with KDPage Pro
                     </span>
-                    <p className="text-slate-300 text-[11px] font-medium leading-relaxed mt-1">
-                      Full studio creation is 100% free. Unlock instant print-ready 300 DPI vector PDF download to publish on Amazon KDP today.
+                    <p className="text-slate-300 text-[11px] font-medium leading-relaxed mt-0.5">
+                      Free export contains sample watermarks. Unlock high-resolution, watermark-free vector PDFs calibrated for immediate Amazon KDP upload.
                     </p>
                   </div>
                 </div>
+
+                {/* Value Checklist */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-950/60 p-3 rounded-xl border border-indigo-500/15 text-[11px]">
+                  <div className="flex items-center gap-2 text-slate-200">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>100% Watermark-Free 300 DPI</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-200">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Auto-Generated Answer Keys</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-200">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Up to 1,000 Pages / Batch</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-200">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Commercial &amp; KDP Resale License</span>
+                  </div>
+                </div>
                 
-                <div className="pt-2 border-t border-indigo-500/20 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
+                <div className="pt-2 border-t border-indigo-500/20 flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
                   <Link
                     href="/pricing"
                     target="_blank"
-                    className="flex-1 text-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-[11px] font-black uppercase tracking-wider shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
+                    className="flex-1 text-center py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5"
                   >
-                    ⚡ Unlock Instant Download ($11.99/mo) →
+                    ⚡ Unlock Pro ($11.99/mo) →
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    target="_blank"
+                    className="sm:w-auto text-center py-3 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-amber-500/30 hover:border-amber-400/50 whitespace-nowrap"
+                  >
+                    🎁 Get Lifetime Deal ($49)
                   </Link>
                 </div>
               </div>

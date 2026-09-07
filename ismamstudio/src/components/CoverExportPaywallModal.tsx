@@ -104,18 +104,38 @@ export default function CoverExportPaywallModal({
               <Lock className="w-3 h-3" /> {trialStatus.isExpired ? "7-Day Free Trial Expired" : trialStatus.isTrial ? "7-Day Free Trial Active" : "Pro Export Feature"}
             </div>
             <h3 className="text-xl font-black text-white tracking-tight">
-              {trialStatus.isExpired ? "Trial Expired • Activate Paid Plan" : trialStatus.isTrial ? "Activate Paid Plan to Export" : "Your 300 DPI Cover is Ready!"}
+              {trialStatus.isExpired ? "Trial Expired • Activate Paid Plan" : trialStatus.isTrial ? "Activate Paid Plan to Export" : "Unlock 300 DPI Cover Export with KDPage Pro"}
             </h3>
           </div>
         </div>
 
-        <p className="text-slate-300 text-xs font-medium leading-relaxed mb-5">
+        <p className="text-slate-300 text-xs font-medium leading-relaxed mb-4">
           {trialStatus.isExpired
             ? "Your 7-day trial has finished and recurring payment could not be charged to your card. Activate your paid subscription or update your billing details to download 300 DPI vector PDF covers for Amazon KDP."
             : trialStatus.isTrial
             ? "You have full access to design covers in the studio. To download high-resolution watermark-free 300 DPI vector PDF covers for Amazon KDP, please activate your paid plan."
             : "Designing covers in KDPage Studio is 100% free. Unlock instant high-resolution 300 DPI vector PDF export formatted for immediate Amazon KDP upload."}
         </p>
+
+        {/* Feature Highlights */}
+        <div className="grid grid-cols-2 gap-2 bg-slate-950/60 border border-indigo-500/20 p-3 rounded-2xl text-[11px] mb-4 text-slate-200">
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>100% Watermark-Free</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>Zero Rejection Guarantee</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>Print-Ready 300 DPI Vector</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>Commercial Resale Rights</span>
+          </div>
+        </div>
 
         {/* Cover Specs Card */}
         {coverSpecs && (
@@ -135,15 +155,22 @@ export default function CoverExportPaywallModal({
           </div>
         )}
 
-        {/* Direct Upgrade Button */}
-        <div className="mb-5">
+        {/* Direct Upgrade Buttons */}
+        <div className="flex flex-col sm:flex-row gap-2.5 mb-5">
           <Link
             href="/pricing"
             target="_blank"
-            className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 transition-all hover:scale-[1.02] active:scale-95"
+            className="flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02] active:scale-95"
           >
-            <span>{trialStatus.isExpired ? "⚡ Activate Paid Subscription ($11.99/mo)" : trialStatus.isTrial ? "⚡ Activate Paid Plan to Download Cover ($11.99/mo)" : "Unlock Pro & Download 300 DPI Cover ($11.99/mo)"}</span>
+            <span>{trialStatus.isExpired ? "⚡ Activate Subscription ($11.99/mo)" : trialStatus.isTrial ? "⚡ Activate Plan to Download" : "⚡ Unlock Pro ($11.99/mo)"}</span>
             <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            href="/pricing"
+            target="_blank"
+            className="sm:w-auto text-center py-3.5 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-amber-500/30 hover:border-amber-400/50 whitespace-nowrap flex items-center justify-center"
+          >
+            🎁 Lifetime Deal ($49)
           </Link>
         </div>
 

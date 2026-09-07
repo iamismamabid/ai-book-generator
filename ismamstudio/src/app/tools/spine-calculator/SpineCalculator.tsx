@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { 
   ArrowLeft, 
+  ArrowRight,
   Copy, 
   Check, 
   RotateCcw, 
@@ -917,6 +918,36 @@ export default function SpineCalculator() {
             </div>
           </div>
 
+        </section>
+
+        {/* Conversion Bridge to Studio */}
+        <section className="p-8 rounded-3xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/25 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 text-center md:text-left">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5" /> Next Step: Design &amp; Publish
+            </span>
+            <h3 className="text-xl md:text-2xl font-black text-white tracking-tight">
+              Ready to create your book cover &amp; interior?
+            </h3>
+            <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed max-w-xl">
+              Take your calculated dimensions directly into KDPage Studio. Design full-bleed covers, auto-generate 100+ pages of compliant puzzle interiors, and export print-ready 300 DPI vector PDFs with zero Amazon KDP rejection risk.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+            <Link
+              href="/studio"
+              className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2"
+            >
+              <span>Open Creator Studio</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/pricing"
+              className="px-5 py-3.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-white font-bold text-xs border border-slate-700 hover:border-slate-600 transition flex items-center justify-center text-center"
+            >
+              View Pro Plans &amp; LTD
+            </Link>
+          </div>
         </section>
 
       </div>

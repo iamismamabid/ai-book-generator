@@ -22,6 +22,11 @@ function PricingSectionInner() {
   const searchParams = useSearchParams();
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSyncSubscription = async () => {
     setIsSyncing(true);
@@ -660,7 +665,7 @@ function PricingSectionInner() {
             );
             const isTrialUser = Boolean((user?.publicMetadata?.subscriptionStatus === "trialing" || user?.publicMetadata?.isTrial) && !isTrialExpired);
             const isPremiumUser = Boolean(user?.publicMetadata?.isPremium) && !isTrialUser && !isTrialExpired && user?.publicMetadata?.hasPaidTransaction === true;
-            const isCurrentPlan = (isPremiumUser || isTrialUser || isTrialExpired) && currentUserPlan === plan.planKey;
+            const isCurrentPlan = isMounted && (isPremiumUser || isTrialUser || isTrialExpired) && currentUserPlan === plan.planKey;
 
             if (isCurrentPlan && isTrialExpired) {
               return (
@@ -921,6 +926,39 @@ function PricingSectionInner() {
 
         {/* 🌟 Subscription Sync & Active Plan Banner on Pricing Section */}
         {(() => {
+          if (!isMounted || !user) {
+            return (
+              <div className="mt-8 max-w-2xl mx-auto p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 backdrop-blur-md shadow-xl">
+                <div className="flex items-center gap-3 text-left">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-slate-200">
+                      Already purchased a plan or lifetime deal?
+                    </p>
+                    <p className="text-[11px] text-slate-400 font-semibold">
+                      Click sync to instantly verify and unlock Pro features on this account.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-2 shrink-0 w-full sm:w-auto">
+                  {syncMessage && (
+                    <span className="text-[10px] font-bold text-amber-300">{syncMessage}</span>
+                  )}
+                  <button
+                    onClick={handleSyncSubscription}
+                    disabled={isSyncing}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-md shadow-indigo-600/20"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+                    {isSyncing ? "Syncing..." : "Sync / Restore Purchase"}
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
           const userPlan = (user?.publicMetadata?.plan as string) || "free";
           const trialEndsAt = user?.publicMetadata?.trialEndsAt as string | undefined;
           const trialEndsAtMs = trialEndsAt ? new Date(trialEndsAt).getTime() : 0;

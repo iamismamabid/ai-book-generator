@@ -805,8 +805,12 @@ export default function ColoringBookClient() {
       const lineImg = new window.Image();
       lineImg.onload = () => {
         if (snapshotLoadTokenRef.current !== token) return;
-        lineCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
-        lineCtx.drawImage(lineImg, 0, 0);
+        const curLineCanvas = canvasRef.current;
+        const curLineCtx = curLineCanvas?.getContext("2d");
+        if (curLineCanvas && curLineCtx) {
+          curLineCtx.clearRect(0, 0, curLineCanvas.width, curLineCanvas.height);
+          curLineCtx.drawImage(lineImg, 0, 0);
+        }
       };
       lineImg.src = snapshot.line;
     }
@@ -815,8 +819,12 @@ export default function ColoringBookClient() {
       const colorImg = new window.Image();
       colorImg.onload = () => {
         if (snapshotLoadTokenRef.current !== token) return;
-        colorCtx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
-        colorCtx.drawImage(colorImg, 0, 0);
+        const curColorCanvas = colorCanvasRef.current;
+        const curColorCtx = curColorCanvas?.getContext("2d");
+        if (curColorCanvas && curColorCtx) {
+          curColorCtx.clearRect(0, 0, curColorCanvas.width, curColorCanvas.height);
+          curColorCtx.drawImage(colorImg, 0, 0);
+        }
       };
       colorImg.src = snapshot.color;
     }
@@ -1032,8 +1040,12 @@ export default function ColoringBookClient() {
         const img = new window.Image();
         img.onload = () => {
           if (snapshotLoadTokenRef.current !== token) return;
-          colorCtx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
-          colorCtx.drawImage(img, 0, 0);
+          const curColorCanvas = colorCanvasRef.current;
+          const curColorCtx = curColorCanvas?.getContext("2d");
+          if (curColorCanvas && curColorCtx) {
+            curColorCtx.clearRect(0, 0, curColorCanvas.width, curColorCanvas.height);
+            curColorCtx.drawImage(img, 0, 0);
+          }
         };
         img.src = saved;
       }

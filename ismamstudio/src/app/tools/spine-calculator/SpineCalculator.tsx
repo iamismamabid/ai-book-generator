@@ -726,7 +726,7 @@ export default function SpineCalculator() {
               ))}
             </div>
             <div className="bg-slate-950/60 rounded-xl p-4 font-mono text-xs space-y-1">
-              <p className="text-emerald-400 font-black">/* KDP Spine Width Formula */</p>
+              <p className="text-emerald-400 font-black">{"/* KDP Spine Width Formula */"}</p>
               <p className="text-slate-300">Spine Width = Page Count × Paper Multiplier</p>
               <p className="text-slate-300">Full Cover Width = (Trim Width × 2) + Spine Width + 0.25&quot;</p>
               <p className="text-slate-300">Full Cover Height = Trim Height + 0.25&quot;</p>

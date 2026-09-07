@@ -14,7 +14,7 @@ import { visibleFeatures } from "@/lib/features";
 import { confirmPaddleCheckoutSuccess, syncMySubscription } from "@/app/actions";
 
 function PricingSectionInner() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual' | 'lifetime'>('monthly');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { userId } = useAuth();
   const { user } = useUser();
@@ -433,6 +433,37 @@ function PricingSectionInner() {
     },
   ];
 
+  const ltdPlan = {
+    name: "KDPage Pro Lifetime",
+    description: "Pay once, own forever. Unlimited 300 DPI vector PDF exports, full puzzle engines & commercial rights.",
+    price: 69,
+    originalPrice: 240,
+    popular: true,
+    features: [
+      "Instant 300 DPI Vector PDF Downloads",
+      "100% Commercial-Use Rights (Keep all royalties)",
+      "Zero Monthly Fees Forever (One-Time Payment)",
+      "Full BYOK AI Magic Studio (DALL-E 3, Gemini & Stability with 0% markup)",
+      "Full Sudoku, Maze, Word Search, Cryptogram & Crossword Engines",
+      "Automated Solution Keys Appended to PDFs",
+      "Full Cover & Interior Canvas Studio",
+      "Standard & Custom Trim Sizes (6x9, 8.5x11, etc.)",
+      "KDP Bulk Book Batch Studio & CSV mass import",
+      "Up to 10 Pen-Name & Brand Profiles",
+      "Zero Amazon KDP Rejection Guarantee",
+      "Priority Customer Support (< 12 hours)",
+    ],
+    ctaText: "Claim $69 Lifetime Deal Now →",
+    colorClass: "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-[0_20px_50px_rgba(245,158,11,0.25),_0_0_40px_rgba(245,158,11,0.15)]",
+    borderClass: "border-amber-400 border-2",
+    icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
+    accentIconBg: "bg-amber-500/10 border-amber-500/20",
+    accentBadge: "text-black font-black bg-amber-400 border-amber-300",
+    badge: "Lifetime Access",
+    ctaLink: "/pricing",
+    planKey: "pro"
+  };
+
 
 
   const faqs = [
@@ -667,18 +698,14 @@ function PricingSectionInner() {
 
             if (isLtd) {
               return (
-                <Link
-                  href={ctaHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-full py-4.5 rounded-2xl font-black text-sm transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
-                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 hover:scale-[1.02]"
-                      : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
-                    }`}
+                <button
+                  type="button"
+                  onClick={() => handleCheckout('pro', { skipTrial: true })}
+                  className="w-full py-4.5 rounded-2xl font-black text-sm md:text-base transition-all duration-300 active:scale-95 shadow-xl flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black shadow-amber-500/30 hover:scale-[1.02] border border-amber-300 cursor-pointer"
                 >
-                  {plan.ctaText}
-                  <Zap className="w-4 h-4 shrink-0 opacity-80" />
-                </Link>
+                  <span>{plan.ctaText || "Claim $69 Lifetime Deal"}</span>
+                  <Zap className="w-4 h-4 shrink-0 fill-current text-black" />
+                </button>
               );
             }
 
@@ -779,10 +806,10 @@ function PricingSectionInner() {
         </p>
 
         {/* Toggle Switch */}
-        <div className="mt-10 inline-flex items-center gap-2 bg-slate-950/80 p-2 rounded-full border border-slate-800 backdrop-blur-md">
+        <div className="mt-10 inline-flex flex-wrap items-center justify-center gap-2 bg-slate-950/80 p-2 rounded-full border border-slate-800 backdrop-blur-md">
           <button
             onClick={() => setBillingCycle('monthly')}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all ${billingCycle === 'monthly'
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all cursor-pointer ${billingCycle === 'monthly'
                 ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
                 : "text-slate-400 hover:text-white"
               }`}
@@ -791,7 +818,7 @@ function PricingSectionInner() {
           </button>
           <button
             onClick={() => setBillingCycle('annual')}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 ${billingCycle === 'annual'
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 cursor-pointer ${billingCycle === 'annual'
                 ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
                 : "text-slate-400 hover:text-white"
               }`}
@@ -801,13 +828,25 @@ function PricingSectionInner() {
               🎁 2 Months Free
             </span>
           </button>
+          <button
+            onClick={() => setBillingCycle('lifetime')}
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 cursor-pointer ${billingCycle === 'lifetime'
+                ? "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-black shadow-lg shadow-amber-500/20"
+                : "text-amber-400 hover:text-amber-300"
+              }`}
+          >
+            <span>🎁 Lifetime Deal</span>
+            <span className="bg-amber-400 text-black font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-md">
+              $69 One-Time
+            </span>
+          </button>
         </div>
 
         {/* 🔥 Special Lifetime Launch Banner */}
-        <div className="mt-8 max-w-3xl mx-auto p-5 md:p-6 rounded-3xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-indigo-500/20 border-2 border-amber-500/40 shadow-2xl shadow-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-5 text-left">
+        <div className="mt-8 max-w-3xl mx-auto p-5 md:p-6 rounded-3xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-indigo-500/20 border-2 border-amber-400/80 shadow-2xl shadow-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-5 text-left">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider animate-pulse">
+              <span className="px-3 py-1 rounded-full bg-amber-400 text-black text-[11px] font-black uppercase tracking-wider animate-pulse shadow-sm border border-amber-300">
                 ⚡ Limited Launch Deal
               </span>
               <span className="text-amber-400 text-xs font-black uppercase tracking-wider">
@@ -824,10 +863,10 @@ function PricingSectionInner() {
           <button
             type="button"
             onClick={() => handleCheckout('pro', { skipTrial: true })}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider shadow-xl shadow-orange-500/25 hover:scale-[1.03] active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs uppercase tracking-wider shadow-xl shadow-amber-500/25 hover:scale-[1.03] active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer border border-amber-300"
           >
             <span>Claim $69 Lifetime Deal</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-black" />
           </button>
         </div>
 
@@ -997,6 +1036,16 @@ function PricingSectionInner() {
         className="grid grid-cols-1 items-stretch mb-24 relative md:grid-cols-2 xl:grid-cols-4 gap-8"
       >
         {plans.map((plan) => renderPricingCard(plan, false))}
+      </div>
+
+      {/* Lifetime Grid */}
+      <div 
+        style={{ display: billingCycle === 'lifetime' ? 'grid' : 'none' }}
+        className="grid grid-cols-1 items-stretch mb-24 relative md:grid-cols-3 max-w-6xl mx-auto gap-8"
+      >
+        {renderPricingCard(plans[0], false)}
+        {renderPricingCard(ltdPlan, true)}
+        {renderPricingCard(plans[3], false)}
       </div>
 
       {/* 🛡️ Value Proposition Cards */}

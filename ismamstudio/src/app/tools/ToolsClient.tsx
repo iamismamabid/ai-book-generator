@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  Sparkles, ArrowLeft, BookOpen, Calculator, Search, CheckCircle2,
+  Sparkles, ArrowLeft, ArrowRight, BookOpen, Calculator, Search, CheckCircle2,
   HelpCircle, Settings, FileText, Layout, Copy, Check, ChevronRight, X,
   BookMarked, PenTool, Hash, RefreshCw, BarChart2, ShieldAlert, Loader2, AlertTriangle
 } from "lucide-react";
@@ -696,6 +696,33 @@ export default function FreeToolsHub() {
             className="inline-flex items-center gap-2 text-sm font-black text-stone-500 hover:text-amber-700 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Back to Home
+          </Link>
+        </div>
+
+        {/* 🎁 Prominent Lifetime Deal Launch Banner on Tools Hub */}
+        <div className="mb-12 p-6 md:p-8 rounded-[2rem] bg-gradient-to-r from-amber-500/15 via-amber-500/25 to-yellow-500/15 border-2 border-amber-400/80 shadow-xl shadow-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-left">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-amber-400 text-black text-[10px] font-black uppercase tracking-wider shadow-sm border border-amber-300">
+                ⚡ Limited Launch Special
+              </span>
+              <span className="text-amber-800 font-black text-xs uppercase tracking-wider">
+                Expires in a few days!
+              </span>
+            </div>
+            <h3 className="text-2xl md:text-3xl font-black text-stone-900 tracking-tight">
+              Love our free tools? Get KDPage Pro Lifetime Access for <span className="text-amber-700 underline decoration-amber-400">$69</span>
+            </h3>
+            <p className="text-stone-700 text-xs md:text-sm font-semibold leading-relaxed max-w-2xl">
+              Unlock unlimited 300 DPI vector PDF exports, 1,000-puzzle book batch compiler, automated answer keys, and full commercial resale license. Never pay monthly fees.
+            </p>
+          </div>
+          <Link
+            href="/pricing"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs uppercase tracking-wider shadow-xl shadow-amber-500/25 hover:scale-105 active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2"
+          >
+            <span>Claim $69 Lifetime Deal</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 

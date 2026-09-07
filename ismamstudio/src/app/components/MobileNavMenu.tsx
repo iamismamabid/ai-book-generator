@@ -25,6 +25,18 @@ export default function MobileNavMenu({ userId }: MobileNavMenuProps) {
       {/* 📱 Mobile Navigation Menu Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-b border-slate-200 dark:border-slate-800 px-6 py-6 space-y-4 shadow-2xl animate-in slide-in-from-top-4 duration-200 z-50">
+          {/* Mobile Lifetime Deal Highlight */}
+          <Link
+            href="/pricing"
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full py-3 px-4 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-2xl flex items-center justify-between shadow-lg shadow-amber-500/20 border border-amber-300"
+          >
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-black animate-ping" />
+              <span>🔥 $69 Lifetime Deal (Expires Soon)</span>
+            </span>
+            <span>→</span>
+          </Link>
           {userId && (
             <>
               <Link

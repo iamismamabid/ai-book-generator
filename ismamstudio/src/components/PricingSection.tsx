@@ -233,9 +233,10 @@ function PricingSectionInner() {
     }
 
     if (!userId) {
-      // Preserve affiliate tracking key during signup redirect
+      // Preserve affiliate tracking key and skipTrial parameter during signup redirect
       const affParam = customerKey ? `&aff=${encodeURIComponent(customerKey)}` : "";
-      router.push(`/sign-up?redirect_url=${encodeURIComponent(`/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}${affParam}`)}`);
+      const skipTrialParam = options?.skipTrial ? "&skipTrial=true" : "";
+      router.push(`/sign-up?redirect_url=${encodeURIComponent(`/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}${skipTrialParam}${affParam}`)}`);
       return;
     }
 
@@ -285,15 +286,16 @@ function PricingSectionInner() {
     }
   };
 
-  // Trigger auto-checkout if redirected from signup page with credentials
+  // Trigger auto-checkout if redirected from signup page with credentials or direct upgrade link
   useEffect(() => {
     const checkoutParam = searchParams.get("checkout");
     const billingParam = searchParams.get("billing");
+    const skipTrialParam = searchParams.get("skipTrial") === "true";
     if (checkoutParam && userId) {
       const timer = setTimeout(() => {
         const isAnnualBilling = billingParam === "annual";
         setBillingCycle(isAnnualBilling ? 'annual' : 'monthly');
-        handleCheckout(checkoutParam);
+        handleCheckout(checkoutParam, { skipTrial: skipTrialParam });
       }, 1000);
       return () => clearTimeout(timer);
     }

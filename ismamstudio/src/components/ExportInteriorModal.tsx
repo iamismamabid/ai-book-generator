@@ -356,11 +356,11 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 
                 <div className="pt-2 border-t border-amber-500/20 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
                   <Link
-                    href="/pricing"
+                    href={`/pricing?checkout=${premiumStatus.plan === 'agency' ? 'agency' : 'pro'}&skipTrial=true`}
                     target="_blank"
                     className="flex-1 text-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-[11px] font-black uppercase tracking-wider shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
                   >
-                    ⚡ Activate Paid Plan to Download →
+                    ⚡ Activate Paid Plan to Download Now →
                   </Link>
                 </div>
               </div>
@@ -702,7 +702,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 </button>
               ) : (
                 <Link
-                  href="/pricing"
+                  href={premiumStatus.isTrial || premiumStatus.trialExpired ? `/pricing?checkout=${premiumStatus.plan === 'agency' ? 'agency' : 'pro'}&skipTrial=true` : "/pricing"}
                   target="_blank"
                   className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-4 rounded-2xl text-xs font-black shadow-lg shadow-orange-500/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 text-center uppercase tracking-wider"
                 >

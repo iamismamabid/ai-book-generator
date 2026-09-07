@@ -169,11 +169,11 @@ export default function CoverExportPaywallModal({
         {/* Direct Upgrade Buttons */}
         <div className="flex flex-col sm:flex-row gap-2.5 mb-5">
           <Link
-            href="/pricing"
+            href={trialStatus.isTrial || trialStatus.isExpired ? "/pricing?checkout=pro&skipTrial=true" : "/pricing"}
             target="_blank"
             className="flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02] active:scale-95"
           >
-            <span>{trialStatus.isExpired ? "⚡ Activate Subscription ($11.99/mo)" : trialStatus.isTrial ? "⚡ Activate Plan to Download" : "⚡ Unlock Pro ($11.99/mo)"}</span>
+            <span>{trialStatus.isExpired ? "⚡ Activate Subscription ($21/mo)" : trialStatus.isTrial ? "⚡ Activate Plan to Download Now" : "⚡ Unlock Pro ($21/mo)"}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link

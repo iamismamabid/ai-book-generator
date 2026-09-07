@@ -170,7 +170,7 @@ export default function CoverExportPaywallModal({
             target="_blank"
             className="sm:w-auto text-center py-3.5 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-amber-500/30 hover:border-amber-400/50 whitespace-nowrap flex items-center justify-center"
           >
-            🎁 Lifetime Deal ($49)
+            🎁 Lifetime Deal ($69)
           </Link>
         </div>
 

@@ -416,7 +416,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                     target="_blank"
                     className="sm:w-auto text-center py-3 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-amber-500/30 hover:border-amber-400/50 whitespace-nowrap"
                   >
-                    🎁 Get Lifetime Deal ($49)
+                    🎁 Get Lifetime Deal ($69)
                   </Link>
                 </div>
               </div>

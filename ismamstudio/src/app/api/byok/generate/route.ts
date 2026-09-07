@@ -12,14 +12,34 @@ interface ByokGenerateRequest {
   stylePreset?: string;
 }
 
+export async function GET() {
+  const envGemini = process.env.GEMINI_API_KEY;
+  const hasServerGeminiKey = Boolean(envGemini && envGemini.trim().length > 5);
+  const geminiKeyHint = hasServerGeminiKey
+    ? `${envGemini!.trim().slice(0, 6)}...${envGemini!.trim().slice(-4)}`
+    : null;
+
+  return NextResponse.json({
+    hasServerGeminiKey,
+    geminiKeyHint,
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const body: ByokGenerateRequest = await req.json();
-    const { provider, apiKey, prompt, studioType, size = "1024x1024", stylePreset } = body;
+    let { provider, apiKey, prompt, studioType, size = "1024x1024", stylePreset } = body;
+
+    // Platform / .env fallback for Gemini if apiKey is "env", "system", or not entered
+    if (provider === "gemini") {
+      if ((!apiKey || apiKey === "env" || apiKey === "system" || (typeof apiKey === "string" && apiKey.trim().length < 5)) && process.env.GEMINI_API_KEY) {
+        apiKey = process.env.GEMINI_API_KEY;
+      }
+    }
 
     if (!apiKey || typeof apiKey !== "string" || apiKey.trim().length < 5) {
       return NextResponse.json(
-        { success: false, error: "Please provide a valid API key for the selected provider." },
+        { success: false, error: `Please provide a valid API key for ${provider === "openai" ? "OpenAI" : provider === "gemini" ? "Google Gemini" : "Stability AI"}.` },
         { status: 400 }
       );
     }

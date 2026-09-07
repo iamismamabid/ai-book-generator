@@ -18,6 +18,7 @@ import { ColoringBookEditor } from "./ColoringBookEditor";
 import LowContentEditor from "./LowContentEditor";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import BookBuilderTour from "./BookBuilderTour";
+import QuickStartTour from "./QuickStartTour";
 import { BORDER_THEMES, BorderThemeId } from "@/lib/borderThemes";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
@@ -626,13 +627,38 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         <div className="w-72 p-5 space-y-6 flex flex-col h-full justify-between">
           <div className="space-y-6">
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Content Creator</h2>
-                <BookBuilderTour />
+                <div className="flex items-center gap-1.5">
+                  <QuickStartTour />
+                  <BookBuilderTour />
+                </div>
               </div>
+
+              {/* Step 1 Tour Target: KDP Trim Size Selector */}
+              <div className="mb-3.5 bg-slate-800/40 p-2.5 rounded-2xl border border-slate-800/80" data-tour="quick-trim-size">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider">Book Trim Size</span>
+                  <span className="text-[9px] font-bold text-indigo-400 bg-indigo-950/80 border border-indigo-800/60 px-1.5 py-0.5 rounded-md">KDP Standard</span>
+                </div>
+                <select
+                  value={selectedTrim.label}
+                  onChange={(e) => {
+                    const found = TRIM_SIZES.find(t => t.label === e.target.value);
+                    if (found) setSelectedTrim(found);
+                  }}
+                  className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-100 outline-none focus:border-indigo-500 cursor-pointer shadow-xs transition"
+                >
+                  {TRIM_SIZES.map((t, idx) => (
+                    <option key={idx} value={t.label}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Step 2 Tour Target: Add Page Button */}
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                data-tour="add-page-btn"
+                data-tour="quick-add-page"
                 className="btn-premium-primary w-full py-4 rounded-2xl normal-case text-sm"
               >
                 <Plus className="w-4 h-4" /> Add New Page
@@ -945,8 +971,8 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
             </DndContext>
           </div>
 
-          {/* PDF Export Button */}
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800" data-tour="export-section">
+          {/* PDF Export Button (Step 3 Tour Target) */}
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800" data-tour="quick-export-pdf">
             {bookPages.length > 0 ? (
               <button
                 onClick={() => setIsExportModalOpen(true)}

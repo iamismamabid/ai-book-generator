@@ -13,10 +13,21 @@ import {
   FileText, 
   Layers, 
   Calendar,
-  Tag
+  Tag,
+  Folder,
+  FolderPlus,
+  Edit2,
+  FolderInput,
+  Plus,
+  FolderOpen
 } from "lucide-react";
 import Link from "next/link";
-import { deleteNotebookEntry } from "../actions";
+import { 
+  deleteNotebookEntry, 
+  moveNotebookEntryToFolder, 
+  renameNotebookFolder, 
+  deleteNotebookFolder 
+} from "../actions";
 
 interface NotebookItem {
   id: string;
@@ -33,9 +44,6 @@ interface NotebookClientProps {
 }
 
 // Where each saved entry reopens, keyed by the category its save button set.
-// The tool at the far end reads ?notebookId= and restores the entry's data.
-// Cover Studio is the exception: it has its own account-level cover project
-// sync that reloads on mount, so it just needs the right tab.
 const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) => string }> = {
   cover: { label: "Open in Cover Studio", href: () => "/studio?tab=cover" },
   "puzzle-book": { label: "Open in Book Builder", href: (id) => `/studio?notebookId=${id}` },
@@ -51,9 +59,34 @@ const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) =
   "qr-code-generator": { label: "Open in QR Code Generator", href: (id) => `/tools/qr-code-generator?notebookId=${id}` },
 };
 
-export default function NotebookClient({ items }: NotebookClientProps) {
+export default function NotebookClient({ items: initialItems }: NotebookClientProps) {
+  const [items, setItems] = useState<NotebookItem[]>(initialItems);
   const [selectedItem, setSelectedItem] = useState<NotebookItem | null>(null);
   const [copied, setCopied] = useState(false);
+  const [activeFolder, setActiveFolder] = useState<string>("all");
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [editingFolder, setEditingFolder] = useState<string | null>(null);
+  const [renamedFolderTitle, setRenamedFolderTitle] = useState("");
+  const [movingItemId, setMovingItemId] = useState<string | null>(null);
+  const [folderActionFeedback, setFolderActionFeedback] = useState<string | null>(null);
+
+  // Tally counts per folder
+  const folderCounts: Record<string, number> = {};
+  items.forEach((item) => {
+    const f = item.data?.folder?.trim() || "Unfiled";
+    folderCounts[f] = (folderCounts[f] || 0) + 1;
+  });
+
+  const customFolders = Object.keys(folderCounts).filter((f) => f !== "Unfiled").sort();
+  const allFolderNames = ["Unfiled", ...customFolders];
+
+  // Filter items by active folder tab
+  const filteredItems = items.filter((item) => {
+    if (activeFolder === "all") return true;
+    const itemFolder = item.data?.folder?.trim() || "Unfiled";
+    return itemFolder === activeFolder;
+  });
 
   const handleCopyContent = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -61,16 +94,251 @@ export default function NotebookClient({ items }: NotebookClientProps) {
     setTimeout(() => setCopied(false), 2500);
   };
 
+  const handleCreateFolder = () => {
+    const name = newFolderName.trim();
+    if (!name) return;
+    setActiveFolder(name);
+    setIsCreatingFolder(false);
+    setNewFolderName("");
+    setFolderActionFeedback(`Folder "${name}" created!`);
+    setTimeout(() => setFolderActionFeedback(null), 3000);
+  };
+
+  const handleMoveItem = async (itemId: string, targetFolder: string) => {
+    setMovingItemId(null);
+    setItems((prev) =>
+      prev.map((it) =>
+        it.id === itemId
+          ? { ...it, data: { ...(it.data || {}), folder: targetFolder } }
+          : it
+      )
+    );
+    if (selectedItem?.id === itemId) {
+      setSelectedItem((prev) =>
+        prev ? { ...prev, data: { ...(prev.data || {}), folder: targetFolder } } : null
+      );
+    }
+    await moveNotebookEntryToFolder(itemId, targetFolder);
+    setFolderActionFeedback(`Moved to "${targetFolder}"`);
+    setTimeout(() => setFolderActionFeedback(null), 2500);
+  };
+
+  const handleRenameFolder = async (oldName: string) => {
+    const newName = renamedFolderTitle.trim();
+    if (!newName || newName === oldName) {
+      setEditingFolder(null);
+      return;
+    }
+    setItems((prev) =>
+      prev.map((it) =>
+        it.data?.folder === oldName
+          ? { ...it, data: { ...(it.data || {}), folder: newName } }
+          : it
+      )
+    );
+    if (activeFolder === oldName) setActiveFolder(newName);
+    setEditingFolder(null);
+    await renameNotebookFolder(oldName, newName);
+  };
+
+  const handleDeleteFolder = async (folderName: string) => {
+    if (confirm(`Remove folder "${folderName}"? Items in this folder will be moved to Unfiled.`)) {
+      setItems((prev) =>
+        prev.map((it) =>
+          it.data?.folder === folderName
+            ? { ...it, data: { ...(it.data || {}), folder: "Unfiled" } }
+            : it
+        )
+      );
+      if (activeFolder === folderName) setActiveFolder("all");
+      await deleteNotebookFolder(folderName);
+    }
+  };
+
   return (
     <>
-      {items.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[380px]">
-          <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/60 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4">
-            <BookOpen className="w-8 h-8" />
+      {/* ── CLOUD FOLDER NAVIGATION TABS ── */}
+      <div className="mb-8 space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <FolderOpen className="w-5 h-5 text-indigo-500" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+              Cloud Folders &amp; Organization
+            </h2>
           </div>
-          <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Your Notebook is Empty</h3>
+
+          {folderActionFeedback && (
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 animate-in fade-in">
+              ✓ {folderActionFeedback}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {/* "All" tab */}
+          <button
+            type="button"
+            onClick={() => setActiveFolder("all")}
+            className={`px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
+              activeFolder === "all"
+                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800"
+            }`}
+          >
+            All Items ({items.length})
+          </button>
+
+          {/* "Unfiled" tab */}
+          <button
+            type="button"
+            onClick={() => setActiveFolder("Unfiled")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+              activeFolder === "Unfiled"
+                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800"
+            }`}
+          >
+            <Folder className="w-3.5 h-3.5" />
+            <span>Unfiled ({folderCounts["Unfiled"] || 0})</span>
+          </button>
+
+          {/* Custom Folders */}
+          {customFolders.map((folder) => {
+            const isSelected = activeFolder === folder;
+            const count = folderCounts[folder] || 0;
+            return (
+              <div
+                key={folder}
+                className={`inline-flex items-center rounded-2xl border transition-all shrink-0 ${
+                  isSelected
+                    ? "bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/20"
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveFolder(folder)}
+                  className="px-3.5 py-2 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Folder className="w-3.5 h-3.5" />
+                  <span>{folder}</span>
+                  <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${isSelected ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>
+                    {count}
+                  </span>
+                </button>
+                {isSelected && (
+                  <div className="flex items-center pr-1.5 gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRenamedFolderTitle(folder);
+                        setEditingFolder(folder);
+                      }}
+                      className="p-1 rounded hover:bg-white/20 text-white/80 hover:text-white cursor-pointer"
+                      title="Rename Folder"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteFolder(folder)}
+                      className="p-1 rounded hover:bg-white/20 text-white/80 hover:text-white cursor-pointer"
+                      title="Delete Folder"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* New Folder Action Button */}
+          {isCreatingFolder ? (
+            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-2xl shrink-0">
+              <input
+                type="text"
+                placeholder="e.g. Q4 Holiday Books"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                className="text-xs px-2.5 py-1 bg-transparent text-slate-900 dark:text-white outline-none w-36"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreateFolder();
+                  if (e.key === "Escape") setIsCreatingFolder(false);
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleCreateFolder}
+                className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] rounded-xl cursor-pointer"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCreatingFolder(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsCreatingFolder(true)}
+              className="px-3.5 py-2 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-100 flex items-center gap-1.5 cursor-pointer shrink-0 transition"
+            >
+              <FolderPlus className="w-3.5 h-3.5" /> + New Folder
+            </button>
+          )}
+        </div>
+
+        {/* Rename Folder Dialog Modal */}
+        {editingFolder && (
+          <div className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-3xl max-w-sm w-full shadow-2xl space-y-4">
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase">Rename Folder</h3>
+              <input
+                type="text"
+                value={renamedFolderTitle}
+                onChange={(e) => setRenamedFolderTitle(e.target.value)}
+                className="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none"
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingFolder(null)}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRenameFolder(editingFolder)}
+                  className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs cursor-pointer"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {filteredItems.length === 0 ? (
+        <div className="bg-white dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[340px]">
+          <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/60 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4">
+            <Folder className="w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
+            {activeFolder === "all" ? "Your Notebook is Empty" : `No items in "${activeFolder}"`}
+          </h3>
           <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md font-medium mb-6">
-            Use the "Save to My Notebook" button on any studio page or tool to permanently store your items in your account.
+            {activeFolder === "all"
+              ? "Use the 'Save to My Notebook' button on any studio page to permanently store your books in your account."
+              : `You can move items into "${activeFolder}" using the folder menu on any saved item.`}
           </p>
           <Link
             href="/studio"
@@ -81,50 +349,96 @@ export default function NotebookClient({ items }: NotebookClientProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => setSelectedItem(item)}
-              className="group bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-indigo-500/40 transition-all duration-300 flex flex-col justify-between cursor-pointer"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-3 mb-4">
-                  <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-lg font-black group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                    {(item.title?.[0] || "?").toUpperCase()}
+          {filteredItems.map((item) => {
+            const currentFolder = item.data?.folder || "Unfiled";
+            return (
+              <div
+                key={item.id}
+                onClick={() => setSelectedItem(item)}
+                className="group bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-indigo-500/40 transition-all duration-300 flex flex-col justify-between cursor-pointer relative"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-lg font-black group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                      {(item.title?.[0] || "?").toUpperCase()}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      {/* Folder Badge / Quick Move Trigger */}
+                      <div className="relative" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => setMovingItemId(movingItemId === item.id ? null : item.id)}
+                          className="text-[10px] font-bold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 px-2.5 py-1 rounded-full flex items-center gap-1 hover:bg-indigo-100 transition cursor-pointer"
+                          title="Click to move to another folder"
+                        >
+                          <Folder className="w-3 h-3 text-indigo-500" />
+                          <span className="truncate max-w-[100px]">{currentFolder}</span>
+                        </button>
+
+                        {/* Move To Folder Dropdown Menu */}
+                        {movingItemId === item.id && (
+                          <div className="absolute right-0 top-full mt-1 z-50 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1.5 space-y-1 text-xs">
+                            <span className="text-[9px] font-black uppercase text-slate-400 px-2 py-1 block">
+                              Move to folder:
+                            </span>
+                            {allFolderNames.map((f) => (
+                              <button
+                                key={f}
+                                type="button"
+                                onClick={() => handleMoveItem(item.id, f)}
+                                className={`w-full text-left px-2 py-1.5 rounded-lg flex items-center justify-between text-xs cursor-pointer ${
+                                  currentFolder === f
+                                    ? "bg-indigo-600 text-white font-bold"
+                                    : "text-slate-300 hover:bg-slate-800"
+                                }`}
+                              >
+                                <span className="truncate">📁 {f}</span>
+                                {currentFolder === f && <Check className="w-3 h-3 text-white" />}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full uppercase tracking-wider">
+                        {new Date(item.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                    {new Date(item.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                  </span>
+
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white mb-1.5 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-2 mb-6">
+                    {item.subtitle || "Permanently saved in My Notebook"}
+                  </p>
                 </div>
 
-                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-1.5 line-clamp-1 group-hover:text-indigo-600 transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-2 mb-6">
-                  {item.subtitle || "Permanently saved in My Notebook"}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/80" onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => setSelectedItem(item)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white text-indigo-600 dark:text-indigo-400 text-xs font-black rounded-xl transition-all cursor-pointer"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>View Entry</span>
-                </button>
-
-                <form action={async () => { await deleteNotebookEntry(item.id); }}>
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/80" onClick={(e) => e.stopPropagation()}>
                   <button
-                    title="Delete from My Notebook"
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all cursor-pointer"
+                    onClick={() => setSelectedItem(item)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white text-indigo-600 dark:text-indigo-400 text-xs font-black rounded-xl transition-all cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>View Entry</span>
                   </button>
-                </form>
+
+                  <form action={async () => {
+                    setItems(prev => prev.filter(it => it.id !== item.id));
+                    await deleteNotebookEntry(item.id);
+                  }}>
+                    <button
+                      title="Delete from My Notebook"
+                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

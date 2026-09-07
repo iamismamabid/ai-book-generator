@@ -1301,11 +1301,24 @@ export async function saveProjectToLibrary(title: string, content: string, subti
 }
 
 // 📓 📓 📓 Dedicated "Save to My Notebook" Action for permanent account storage (Separate from Book model)
-export async function saveToNotebook(title: string, content: string, subtitle?: string, category?: string, data?: any) {
+export async function saveToNotebook(
+  title: string, 
+  content: string, 
+  subtitle?: string, 
+  category?: string, 
+  data?: any,
+  folder?: string
+) {
   const { userId } = await auth();
   if (!userId) {
     return { success: false, error: "Unauthorized. Please sign in to save to your Notebook." };
   }
+
+  const assignedFolder = folder && folder.trim() ? folder.trim() : "Unfiled";
+  const payloadData = {
+    ...(typeof data === "object" && data !== null ? data : { raw: data }),
+    folder: assignedFolder,
+  };
 
   try {
     const notebookDelegate = (prisma as any).notebook;
@@ -1319,7 +1332,7 @@ export async function saveToNotebook(title: string, content: string, subtitle?: 
           subtitle: subtitle || "Permanent Cloud Storage Entry",
           content: content || "",
           category: category || "general",
-          data: data || null,
+          data: payloadData,
         },
       });
       entryId = entry.id;
@@ -1336,17 +1349,214 @@ export async function saveToNotebook(title: string, content: string, subtitle?: 
         subtitle || "Permanent Cloud Storage Entry",
         content || "",
         category || "general",
-        JSON.stringify(data || {}),
+        JSON.stringify(payloadData),
         now,
         now
       );
     }
 
     revalidatePath("/notebook");
-    return { success: true, id: entryId };
+    return { success: true, id: entryId, folder: assignedFolder };
   } catch (err: any) {
     console.error("Save to notebook failed:", err);
     return { success: false, error: err?.message || "Failed to save to Notebook." };
+  }
+}
+
+// 📁 Fetch all unique custom folders for the authenticated workspace
+export async function getUserNotebookFolders(): Promise<{ success: boolean; folders: string[] }> {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, folders: [] };
+  }
+  try {
+    const workspaceUserIds = await getWorkspaceUserIds(userId);
+    const notebookDelegate = (prisma as any).notebook;
+    let entries: any[] = [];
+    if (notebookDelegate?.findMany) {
+      entries = await notebookDelegate.findMany({
+        where: { userId: { in: workspaceUserIds } },
+        select: { data: true },
+      });
+    } else {
+      entries = await prisma.$queryRawUnsafe(
+        `SELECT "data" FROM "notebooks" WHERE "userId" = ANY($1)`,
+        workspaceUserIds
+      );
+    }
+    const folderSet = new Set<string>();
+    entries.forEach((e) => {
+      const f = e?.data?.folder;
+      if (typeof f === "string" && f.trim() && f.trim() !== "Unfiled") {
+        folderSet.add(f.trim());
+      }
+    });
+    return { success: true, folders: Array.from(folderSet).sort() };
+  } catch (err) {
+    console.error("Failed to fetch folders:", err);
+    return { success: false, folders: [] };
+  }
+}
+
+// 📁 Move a Notebook entry into a custom folder
+export async function moveNotebookEntryToFolder(id: string, folderName: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "Unauthorized." };
+  }
+  try {
+    const workspaceUserIds = await getWorkspaceUserIds(userId);
+    const notebookDelegate = (prisma as any).notebook;
+    const targetFolder = folderName.trim() || "Unfiled";
+
+    let entry: any = null;
+    if (notebookDelegate?.findFirst) {
+      entry = await notebookDelegate.findFirst({
+        where: { id, userId: { in: workspaceUserIds } },
+      });
+    } else {
+      const rows = await prisma.$queryRawUnsafe(
+        `SELECT * FROM "notebooks" WHERE "id" = $1 AND "userId" = ANY($2)`,
+        id,
+        workspaceUserIds
+      );
+      entry = Array.isArray(rows) ? rows[0] : null;
+    }
+
+    if (!entry) {
+      return { success: false, error: "Item not found." };
+    }
+
+    const updatedData = {
+      ...(typeof entry.data === "object" && entry.data !== null ? entry.data : {}),
+      folder: targetFolder,
+    };
+
+    if (notebookDelegate?.update) {
+      await notebookDelegate.update({
+        where: { id },
+        data: { data: updatedData },
+      });
+    } else {
+      await prisma.$executeRawUnsafe(
+        `UPDATE "notebooks" SET "data" = $1::jsonb, "updatedAt" = $2 WHERE "id" = $3`,
+        JSON.stringify(updatedData),
+        new Date(),
+        id
+      );
+    }
+
+    revalidatePath("/notebook");
+    return { success: true, folder: targetFolder };
+  } catch (err: any) {
+    console.error("Failed to move notebook entry:", err);
+    return { success: false, error: err?.message || "Failed to move item to folder." };
+  }
+}
+
+// 📁 Rename an existing folder across all items
+export async function renameNotebookFolder(oldFolder: string, newFolder: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "Unauthorized." };
+  }
+  const trimmedOld = oldFolder.trim();
+  const trimmedNew = newFolder.trim();
+  if (!trimmedOld || !trimmedNew) {
+    return { success: false, error: "Invalid folder name." };
+  }
+  try {
+    const workspaceUserIds = await getWorkspaceUserIds(userId);
+    const notebookDelegate = (prisma as any).notebook;
+    let entries: any[] = [];
+    if (notebookDelegate?.findMany) {
+      entries = await notebookDelegate.findMany({
+        where: { userId: { in: workspaceUserIds } },
+      });
+    } else {
+      entries = await prisma.$queryRawUnsafe(
+        `SELECT * FROM "notebooks" WHERE "userId" = ANY($1)`,
+        workspaceUserIds
+      );
+    }
+
+    for (const item of entries) {
+      if (item?.data?.folder === trimmedOld) {
+        const updated = {
+          ...(item.data || {}),
+          folder: trimmedNew,
+        };
+        if (notebookDelegate?.update) {
+          await notebookDelegate.update({
+            where: { id: item.id },
+            data: { data: updated },
+          });
+        } else {
+          await prisma.$executeRawUnsafe(
+            `UPDATE "notebooks" SET "data" = $1::jsonb WHERE "id" = $2`,
+            JSON.stringify(updated),
+            item.id
+          );
+        }
+      }
+    }
+
+    revalidatePath("/notebook");
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to rename folder:", err);
+    return { success: false, error: err?.message || "Failed to rename folder." };
+  }
+}
+
+// 📁 Delete a folder (moves its items back to Unfiled)
+export async function deleteNotebookFolder(folderName: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "Unauthorized." };
+  }
+  const trimmed = folderName.trim();
+  try {
+    const workspaceUserIds = await getWorkspaceUserIds(userId);
+    const notebookDelegate = (prisma as any).notebook;
+    let entries: any[] = [];
+    if (notebookDelegate?.findMany) {
+      entries = await notebookDelegate.findMany({
+        where: { userId: { in: workspaceUserIds } },
+      });
+    } else {
+      entries = await prisma.$queryRawUnsafe(
+        `SELECT * FROM "notebooks" WHERE "userId" = ANY($1)`,
+        workspaceUserIds
+      );
+    }
+
+    for (const item of entries) {
+      if (item?.data?.folder === trimmed) {
+        const updated = {
+          ...(item.data || {}),
+          folder: "Unfiled",
+        };
+        if (notebookDelegate?.update) {
+          await notebookDelegate.update({
+            where: { id: item.id },
+            data: { data: updated },
+          });
+        } else {
+          await prisma.$executeRawUnsafe(
+            `UPDATE "notebooks" SET "data" = $1::jsonb WHERE "id" = $2`,
+            JSON.stringify(updated),
+            item.id
+          );
+        }
+      }
+    }
+
+    revalidatePath("/notebook");
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to delete folder:", err);
+    return { success: false, error: err?.message || "Failed to delete folder." };
   }
 }
 

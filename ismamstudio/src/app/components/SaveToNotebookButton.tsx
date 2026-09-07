@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { BookOpen, Check, Loader2, Cloud, CloudCheck } from "lucide-react";
-import { saveToNotebook } from "../actions";
+import { useState, useEffect } from "react";
+import { BookOpen, Check, Loader2, Folder, FolderPlus, ChevronDown, Plus, X } from "lucide-react";
+import { saveToNotebook, getUserNotebookFolders } from "../actions";
 import Link from "next/link";
 
 interface SaveToNotebookButtonProps {
@@ -11,6 +11,7 @@ interface SaveToNotebookButtonProps {
   subtitle?: string;
   category?: string;
   data?: any;
+  defaultFolder?: string;
   className?: string;
   iconOnly?: boolean;
 }
@@ -21,6 +22,7 @@ export default function SaveToNotebookButton({
   subtitle,
   category = "general",
   data,
+  defaultFolder = "Unfiled",
   className = "",
   iconOnly = false,
 }: SaveToNotebookButtonProps) {
@@ -28,13 +30,32 @@ export default function SaveToNotebookButton({
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSave = async () => {
+  // Folder management states
+  const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false);
+  const [folders, setFolders] = useState<string[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<string>(defaultFolder);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [isCreatingNewFolder, setIsCreatingNewFolder] = useState(false);
+
+  useEffect(() => {
+    getUserNotebookFolders()
+      .then((res) => {
+        if (res.success && res.folders) {
+          setFolders(res.folders);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSave = async (overrideFolder?: string) => {
     setSaving(true);
     setError(null);
+    const targetFolder = overrideFolder || selectedFolder;
     try {
-      const res = await saveToNotebook(title, content, subtitle, category, data);
+      const res = await saveToNotebook(title, content, subtitle, category, data, targetFolder);
       if (res.success) {
         setSaved(true);
+        setIsFolderPickerOpen(false);
         setTimeout(() => setSaved(false), 5000);
       } else {
         setError(res.error || "Failed to sync to Notebook");
@@ -46,12 +67,22 @@ export default function SaveToNotebookButton({
     }
   };
 
+  const handleAddNewFolderAndSave = () => {
+    if (!newFolderName.trim()) return;
+    const name = newFolderName.trim();
+    setSelectedFolder(name);
+    setFolders((prev) => (prev.includes(name) ? prev : [...prev, name]));
+    setIsCreatingNewFolder(false);
+    setNewFolderName("");
+    handleSave(name);
+  };
+
   if (iconOnly) {
     return (
       <button
-        onClick={handleSave}
+        onClick={() => handleSave()}
         disabled={saving}
-        title={saved ? "Saved to My Notebook!" : saving ? "Saving to Notebook..." : "Save Design to My Notebook"}
+        title={saved ? `Saved to ${selectedFolder}!` : saving ? "Saving to Notebook..." : "Save Design to My Notebook"}
         className={`p-2.5 mx-auto rounded-xl transition-all duration-200 ease-out active:scale-[0.94] cursor-pointer flex items-center justify-center ${
           saved
             ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
@@ -70,40 +101,151 @@ export default function SaveToNotebookButton({
   }
 
   return (
-    <div className="inline-flex flex-col items-start gap-1">
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-          saved
-            ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-            : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 hover:scale-[1.02]"
-        } ${className}`}
-      >
-        {saving ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin text-white" />
-            <span>Syncing to Notebook...</span>
-          </>
-        ) : saved ? (
-          <>
-            <Check className="w-4 h-4 text-white" />
-            <span>Saved to My Notebook!</span>
-          </>
-        ) : (
-          <>
-            <BookOpen className="w-4 h-4 text-white" />
-            <span>Save to My Notebook</span>
-          </>
-        )}
-      </button>
+    <div className="relative inline-flex flex-col items-start gap-1 w-full">
+      <div className="flex items-center w-full gap-1">
+        {/* Main Save Action */}
+        <button
+          onClick={() => handleSave()}
+          disabled={saving}
+          className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+            saved
+              ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+              : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 hover:scale-[1.01]"
+          } ${className}`}
+        >
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin text-white" />
+              <span>Syncing...</span>
+            </>
+          ) : saved ? (
+            <>
+              <Check className="w-4 h-4 text-white" />
+              <span>Saved to {selectedFolder === "Unfiled" ? "Notebook" : selectedFolder}!</span>
+            </>
+          ) : (
+            <>
+              <BookOpen className="w-4 h-4 text-white" />
+              <span>Save to Notebook</span>
+            </>
+          )}
+        </button>
+
+        {/* Folder Select Dropdown Trigger */}
+        <button
+          type="button"
+          onClick={() => setIsFolderPickerOpen(!isFolderPickerOpen)}
+          title="Choose or Create Cloud Folder"
+          className="p-2.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white transition-colors cursor-pointer shrink-0"
+        >
+          <Folder className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Folder Picker Modal Popover */}
+      {isFolderPickerOpen && (
+        <div className="absolute top-full left-0 mt-2 z-50 w-72 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-3.5 text-slate-100 text-xs animate-in fade-in zoom-in-95 duration-150">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+            <span className="font-black text-[11px] uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <Folder className="w-3.5 h-3.5 text-indigo-400" /> Save to Cloud Folder
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsFolderPickerOpen(false)}
+              className="text-slate-400 hover:text-white p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+            {/* Unfiled option */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedFolder("Unfiled");
+                handleSave("Unfiled");
+              }}
+              className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between cursor-pointer transition ${
+                selectedFolder === "Unfiled"
+                  ? "bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/30"
+                  : "hover:bg-slate-800 text-slate-300"
+              }`}
+            >
+              <span>📁 Unfiled (Default)</span>
+              {selectedFolder === "Unfiled" && <Check className="w-3.5 h-3.5 text-indigo-400" />}
+            </button>
+
+            {/* Custom Folders */}
+            {folders.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => {
+                  setSelectedFolder(f);
+                  handleSave(f);
+                }}
+                className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between cursor-pointer transition ${
+                  selectedFolder === f
+                    ? "bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/30"
+                    : "hover:bg-slate-800 text-slate-300"
+                }`}
+              >
+                <span className="truncate">📁 {f}</span>
+                {selectedFolder === f && <Check className="w-3.5 h-3.5 text-indigo-400" />}
+              </button>
+            ))}
+          </div>
+
+          {/* Create New Folder Field */}
+          <div className="mt-3 pt-2.5 border-t border-slate-800">
+            {isCreatingNewFolder ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="e.g. Q4 Holiday Books"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  className="w-full text-xs py-1.5 px-2.5 bg-slate-950 border border-slate-700 rounded-lg text-white outline-none focus:border-indigo-400"
+                  autoFocus
+                />
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleAddNewFolderAndSave}
+                    disabled={!newFolderName.trim()}
+                    className="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] uppercase transition cursor-pointer disabled:opacity-40"
+                  >
+                    Create &amp; Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatingNewFolder(false)}
+                    className="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsCreatingNewFolder(true)}
+                className="w-full py-1.5 px-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 text-indigo-400 font-bold text-[11px] flex items-center justify-center gap-1 transition cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> + New Folder
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {saved && (
         <Link
           href="/notebook"
           className="text-[10px] font-bold text-emerald-600 hover:underline inline-flex items-center gap-1"
         >
-          Synced with Account — View in My Notebook →
+          Synced to {selectedFolder === "Unfiled" ? "Notebook" : `"${selectedFolder}"`} — View in My Notebook →
         </Link>
       )}
 
@@ -111,3 +253,4 @@ export default function SaveToNotebookButton({
     </div>
   );
 }
+

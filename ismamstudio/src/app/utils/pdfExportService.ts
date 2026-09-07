@@ -50,18 +50,21 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     // Apply gutter margin if requested
     const leftMarginShift = gutterMargin ? (index % 2 === 0 ? requiredGutter : 0) : 0;
 
-    // Page Title (except for title/blank pages)
+    // Page Title (except for title/blank pages, and single word search which centers its title above the grid)
+    const isSingleWordSearch = page.type === 'word_search' && !page.config.isMultiSolution;
     if (page.type !== 'title' && page.type !== 'blank') {
-      doc.setFont("Helvetica", "bold");
-      doc.setFontSize(18);
-      const isSol = page.config.isSolution || false;
-      const isMultiSol = page.config.isMultiSolution || false;
-      const solSuffix = isSol
-        ? (!isMultiSol && page.config.pageNumber ? ` (PAGE ${page.config.pageNumber} SOLUTION)` : ' (SOLUTION)')
-        : '';
-      const title = `${page.type.replace('_', ' ').toUpperCase()}${solSuffix}`;
-      const titleWidth = doc.getTextWidth(title);
-      doc.text(title, (w - titleWidth) / 2 + leftMarginShift, 0.6);
+      if (!isSingleWordSearch) {
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(18);
+        const isSol = page.config.isSolution || false;
+        const isMultiSol = page.config.isMultiSolution || false;
+        const solSuffix = isSol
+          ? (!isMultiSol && page.config.pageNumber ? ` (PAGE ${page.config.pageNumber} SOLUTION)` : ' (SOLUTION)')
+          : '';
+        const title = `${page.type.replace('_', ' ').toUpperCase()}${solSuffix}`;
+        const titleWidth = doc.getTextWidth(title);
+        doc.text(title, (w - titleWidth) / 2 + leftMarginShift, 0.6);
+      }
 
       // Render Page Number
       if (includePageNumbers) {
@@ -631,7 +634,7 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  const titleBlockH = 0.45;
+  const titleBlockH = 0.65;
   const wordColumns = 3;
   const wordRowStep = 0.24;
   const numWordRows = isSolution ? 0 : Math.ceil((data.words?.length || 12) / wordColumns);
@@ -649,6 +652,18 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
   const startY = contentTop + titleBlockH;
+
+  // Render Title cleanly balanced right above the grid (in the redline zone)
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(0);
+  const solSuffix = isSolution
+    ? (page.config.pageNumber ? ` (PAGE ${page.config.pageNumber} SOLUTION)` : ' (SOLUTION)')
+    : '';
+  const baseTitle = page.config.title || page.type.replace('_', ' ').toUpperCase();
+  const title = `${baseTitle}${solSuffix}`;
+  const titleWidth = doc.getTextWidth(title);
+  doc.text(title, (pageWidth - titleWidth) / 2 + xShift, contentTop + 0.35);
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
 

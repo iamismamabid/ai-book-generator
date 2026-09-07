@@ -543,10 +543,11 @@ export async function confirmPaddleCheckoutSuccess(checkoutData: any) {
     const proMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY || "pri_01kwbgyfhhq6h86av5qycv52fs";
     const agencyMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY || "pri_01kwbwhfxnebsj6nds4m65jjrq";
     const agencyAnnual = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL || "pri_01kwbwkrk1w7tnc318ga4d6xt6";
+    const agencyDirectMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY || "pri_01m1xpfd1pbtgfw3qj4gmp2h9x";
 
     if (priceId === starterMonthly || priceId === starterAnnual) {
       plan = "starter";
-    } else if (priceId === agencyMonthly || priceId === agencyAnnual) {
+    } else if (priceId === agencyMonthly || priceId === agencyAnnual || priceId === agencyDirectMonthly) {
       plan = "agency";
     } else {
       plan = "pro";

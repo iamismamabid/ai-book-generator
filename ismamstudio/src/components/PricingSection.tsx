@@ -183,7 +183,7 @@ function PricingSectionInner() {
   const directPriceIds: Record<string, string | undefined> = {
     "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_DIRECT_MONTHLY),
     "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_DIRECT_MONTHLY) || "pri_01m1xp939ywtagxwqc8qrr7z7t",
-    "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY),
+    "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY) || "pri_01m1xpfd1pbtgfw3qj4gmp2h9x",
   };
 
   const handleCheckout = (planKey: string, options?: { skipTrial?: boolean }) => {

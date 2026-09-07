@@ -437,7 +437,7 @@ function PricingSectionInner() {
     name: "KDPage Pro Lifetime",
     description: "Pay once, own forever. Unlimited 300 DPI vector PDF exports, full puzzle engines & commercial rights.",
     price: 69,
-    originalPrice: 240,
+    originalPrice: 199,
     popular: true,
     features: [
       "Instant 300 DPI Vector PDF Downloads",
@@ -468,7 +468,7 @@ function PricingSectionInner() {
     name: "Publisher Agency Lifetime",
     description: "For high-output publishers & scaling agencies. 3 team member seats, mass CSV batch imports, and VIP support.",
     price: 98,
-    originalPrice: 468,
+    originalPrice: 399,
     popular: false,
     features: [
       "Instant 300 DPI Vector PDF Downloads",

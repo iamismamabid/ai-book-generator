@@ -100,16 +100,16 @@ export default function Footer() {
                 href="https://fazier.com/launches/kdpage.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block hover:opacity-85 transition-opacity"
+                className="inline-flex items-center justify-center bg-white hover:bg-slate-100 px-3 py-1 rounded-xl shadow-sm hover:opacity-95 transition-all border border-slate-200"
                 title="KDPage on Fazier"
               >
                 <img
-                  src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light"
-                  alt="Fazier badge"
+                  src="/fazier-badge.png"
+                  alt="KDPage Launched on Fazier"
                   loading="lazy"
                   width={120}
                   height={36}
-                  className="h-9 w-auto rounded-lg shadow-sm"
+                  className="h-7 w-auto object-contain"
                 />
               </a>
             </div>

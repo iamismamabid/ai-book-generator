@@ -130,11 +130,11 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       doc.text(authorText, (w - authorW) / 2 + leftMarginShift, h * 0.68);
     }
 
-    // Apply the decorative border theme and the free-tier watermark
+    // Apply the decorative border theme and the free-tier watermark (sudoku pages are exempt from watermarking)
     if (borderTheme && borderTheme !== "none") {
       drawPageBorderTheme(doc, borderTheme, w, h, leftMarginShift);
     }
-    if (!options.isPremium) {
+    if (!options.isPremium && page.type !== 'sudoku') {
       drawWatermark(doc, w, h);
     }
   });

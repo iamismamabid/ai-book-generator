@@ -1,7 +1,7 @@
 // src/lib/sudoku-pdf.ts
 import { jsPDF } from "jspdf";
 import { Grid, Difficulty } from "./sudokuGenerator";
-import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
+import { drawCoverPagePart, drawMarginGuides } from "../app/utils/pdfExportService";
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
 
@@ -265,16 +265,15 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     await drawCoverPagePart(doc, coverState, 'back', width, height);
   }
 
-  // Apply watermark (free tier) and the decorative border theme
-  if (!isPremium || (borderTheme && borderTheme !== "none")) {
+  // Apply the decorative border theme (Sudoku Book Studio exports are 100% watermark-free even without a paid plan)
+  if (borderTheme && borderTheme !== "none") {
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       const isFrontCover = includeCover && coverState && i === 1;
       const isBackCover = includeCover && coverState && i === totalPages;
       if (!isFrontCover && !isBackCover) {
         doc.setPage(i);
-        if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, width, height);
-        if (!isPremium) drawWatermark(doc, width, height);
+        drawPageBorderTheme(doc, borderTheme, width, height);
       }
     }
   }

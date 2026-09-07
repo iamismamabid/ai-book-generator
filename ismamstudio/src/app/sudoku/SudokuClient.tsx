@@ -301,7 +301,7 @@ export default function SudokuClient() {
         coverState,
         hasBleed,
         showGuides,
-        isPremium: effectiveIsPro,
+        isPremium: true, // Sudoku Book Studio exports are 100% watermark-free even without a paid plan
         borderTheme,
       },
       `sudoku-${difficulty}-${count}puzzles.pdf`
@@ -412,12 +412,12 @@ export default function SudokuClient() {
         ) : (
           <div className="mb-8 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold shrink-0">
-                <Sparkles className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-200">Free Tier Mode (Watermarked &amp; 5 Puzzles Preview)</p>
-                <p className="text-[11px] text-slate-400">Unlock unlimited 1,000-puzzle batch exports, watermark-free vector PDFs, and solution keys with KDPage Pro.</p>
+                <p className="text-xs font-bold text-slate-200">Free Tier Mode (Watermark-Free Enabled • Up to 5 Puzzles)</p>
+                <p className="text-[11px] text-slate-400">Download clean 300 DPI vector PDFs with zero watermarks. Upgrade to Pro for unlimited 1,000-puzzle batch exports.</p>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
@@ -831,6 +831,7 @@ export default function SudokuClient() {
         onClose={() => setIsExportModalOpen(false)}
         defaultTrimSize={trimSize}
         onExport={handleDownloadPdf}
+        allowFreeExport={true}
       />
     </div>
   );

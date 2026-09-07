@@ -459,9 +459,40 @@ function PricingSectionInner() {
     icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
     accentIconBg: "bg-amber-500/10 border-amber-500/20",
     accentBadge: "text-black font-black bg-amber-400 border-amber-300",
-    badge: "Lifetime Access",
-    ctaLink: "/pricing",
+    badge: "Pro Lifetime",
+    ctaLink: "https://www.dealfuel.com/seller/kdpage-kdp-book-creator/",
     planKey: "pro"
+  };
+
+  const ltdAgencyPlan = {
+    name: "Publisher Agency Lifetime",
+    description: "For high-output publishers & scaling agencies. 3 team member seats, mass CSV batch imports, and VIP support.",
+    price: 98,
+    originalPrice: 468,
+    popular: false,
+    features: [
+      "Instant 300 DPI Vector PDF Downloads",
+      "Everything in Pro Lifetime plan",
+      "One-Time Payment Forever (Never pay $39/mo or $329/yr)",
+      "Up to 3 Team Member Account Seats",
+      "Up to 25 Brand & Pen-Name Profiles",
+      "Bulk Batch Generation & Mass CSV Importer",
+      "Enterprise BYOK AI Studio (DALL-E 3, Gemini, SDXL)",
+      "Vector SVG & Source File Exports",
+      "Advanced Custom Shapes & Puzzle Masking",
+      "KDP Niche Hunter & Keyword Spy",
+      "Priority High-Speed Generation Queues",
+      "Dedicated Customer Support Manager",
+    ],
+    ctaText: "Claim $98 Agency Deal Now →",
+    colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-emerald-400 dark:hover:border-emerald-400 shadow-xl shadow-emerald-500/5",
+    borderClass: "border-emerald-500/40 border-2",
+    icon: <Award className="w-6 h-6 text-emerald-500" />,
+    accentIconBg: "bg-emerald-500/10 border-emerald-500/20",
+    accentBadge: "text-emerald-400 font-black bg-emerald-500/10 border-emerald-500/30",
+    badge: "Agency Lifetime",
+    ctaLink: "https://www.dealfuel.com/seller/kdpage-kdp-book-creator/",
+    planKey: "agency"
   };
 
 
@@ -489,7 +520,7 @@ function PricingSectionInner() {
     },
     {
       q: "Is there a money-back guarantee?",
-      a: "We offer a 14-day money-back guarantee for direct SaaS subscription plans. For purchases made via AppSumo, refunds are governed by AppSumo's standard 60-day refund policy via your AppSumo portal.",
+      a: "We offer a 14-day money-back guarantee for direct SaaS subscription plans. For purchases made via DealFuel or lifetime deal partners, refunds are governed by the platform's standard refund policy via your partner portal.",
     },
     {
       q: "Do the puzzle books include solution keys?",
@@ -545,7 +576,7 @@ function PricingSectionInner() {
               {plan.icon}
             </div>
             <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${plan.accentBadge}`}>
-              {isLtd ? "Lifetime Deal" : plan.badge}
+              {isLtd ? (plan.badge || "Lifetime Deal") : plan.badge}
             </span>
           </div>
 
@@ -697,16 +728,25 @@ function PricingSectionInner() {
             }
 
             if (isLtd) {
+              const isAgency = plan.planKey === "agency";
               return (
-                <a
-                  href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-4.5 rounded-2xl font-black text-sm md:text-base transition-all duration-300 active:scale-95 shadow-xl flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black shadow-amber-500/30 hover:scale-[1.02] border border-amber-300 cursor-pointer"
-                >
-                  <span>{plan.ctaText || "Claim $69 Lifetime Deal Now →"}</span>
-                  <Zap className="w-4 h-4 shrink-0 fill-current text-black" />
-                </a>
+                <div className="w-full">
+                  <a
+                    href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-full py-4.5 rounded-2xl font-black text-sm md:text-base transition-all duration-300 active:scale-95 shadow-xl flex items-center justify-center gap-2 hover:scale-[1.02] cursor-pointer ${isAgency
+                        ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-white shadow-emerald-500/25 border border-emerald-400"
+                        : "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black shadow-amber-500/30 border border-amber-300"
+                      }`}
+                  >
+                    <span>{plan.ctaText || `Claim $${plan.price} Lifetime Deal Now →`}</span>
+                    <Zap className={`w-4 h-4 shrink-0 fill-current ${isAgency ? "text-white" : "text-black"}`} />
+                  </a>
+                  <p className="text-[11px] text-center font-semibold text-slate-400 mt-2.5">
+                    {isAgency ? "🔒 3 Team Seats • Pay Once, Own Forever • DealFuel Exclusive" : "🔒 Pay Once, Own Forever • Zero Monthly Fees • DealFuel Exclusive"}
+                  </p>
+                </div>
               );
             }
 
@@ -836,9 +876,9 @@ function PricingSectionInner() {
                 : "text-amber-400 hover:text-amber-300"
               }`}
           >
-            <span>🎁 Lifetime Deal</span>
+            <span>🎁 Lifetime Deals</span>
             <span className="bg-amber-400 text-black font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-md">
-              $69 One-Time
+              From $69
             </span>
           </button>
         </div>
@@ -855,10 +895,10 @@ function PricingSectionInner() {
               </span>
             </div>
             <h3 className="text-xl font-black text-white">
-              Prefer to pay once? Get KDPage Pro Lifetime Access for <span className="text-amber-300">$69</span>
+              Prefer to pay once? Get Lifetime Access from <span className="text-amber-300">$69</span> (Pro) or <span className="text-emerald-400">$98</span> (Agency)
             </h3>
             <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-lg">
-              Never pay monthly recurring fees. Includes unlimited 300 DPI vector PDF exports, full puzzle generators, auto-generated answer keys, and commercial rights.
+              Never pay monthly recurring fees. Includes unlimited 300 DPI vector PDF exports, full puzzle generators, auto-generated answer keys, team seats, and commercial rights.
             </p>
           </div>
           <a
@@ -867,7 +907,7 @@ function PricingSectionInner() {
             rel="noopener noreferrer"
             className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs uppercase tracking-wider shadow-xl shadow-amber-500/25 hover:scale-[1.03] active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer border border-amber-300"
           >
-            <span>Claim $69 Lifetime Deal</span>
+            <span>Claim Lifetime Deals →</span>
             <ArrowRight className="w-4 h-4 text-black" />
           </a>
         </div>
@@ -1047,7 +1087,7 @@ function PricingSectionInner() {
       >
         {renderPricingCard(plans[0], false)}
         {renderPricingCard(ltdPlan, true)}
-        {renderPricingCard(plans[3], false)}
+        {renderPricingCard(ltdAgencyPlan, true)}
       </div>
 
       {/* 🛡️ Value Proposition Cards */}

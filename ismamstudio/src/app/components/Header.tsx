@@ -19,7 +19,7 @@ export default async function Header() {
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-950 text-amber-300 text-[9px] font-black uppercase tracking-widest animate-pulse">
           ⚡ Limited Launch Deal
         </span>
-        <span className="truncate font-black">🔥 Get KDPage Pro Lifetime Access for only $69 (Expires in a few days!)</span>
+        <span className="truncate font-black">🔥 KDPage Lifetime Deals: Pro ($69) &amp; Agency ($98) — Expires in a few days!</span>
         <span className="group-hover:translate-x-1 transition-transform inline-block shrink-0">→</span>
       </Link>
 

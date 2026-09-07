@@ -5711,7 +5711,7 @@ export default function FabricCoverStudio({
 
       {/* 2. Left Configuration Panel */}
       {activeToolTab && (
-        <div className="w-80 bg-slate-50 border-r border-slate-200 flex flex-col p-5 overflow-y-auto shrink-0 absolute md:relative left-16 top-0 h-full z-30 shadow-2xl md:shadow-none">
+        <div className={`${activeToolTab === 'ai-byok' ? 'w-88 sm:w-96' : 'w-80'} bg-slate-50 border-r border-slate-200 flex flex-col p-5 overflow-y-auto shrink-0 absolute md:relative left-16 top-0 h-full z-30 shadow-2xl md:shadow-none transition-all duration-150`}>
         
         {/* Contextual Edit Panel (Consolidated Sidebar Editor) */}
         {activeObject && (

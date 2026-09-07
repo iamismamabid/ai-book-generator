@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { 
   Sparkles, Key, Eye, EyeOff, Check, Trash2, ExternalLink,
   Loader2, Download, Plus, LayoutTemplate, Layers, AlertCircle,
-  CheckCircle2, ChevronDown, ChevronUp, Settings2, Wand2, Image as ImageIcon
+  CheckCircle2, ChevronDown, ChevronUp, Settings2, Wand2, Image as ImageIcon,
+  Maximize2, ZoomIn, X
 } from "lucide-react";
 import { 
   ByokProvider, 
@@ -88,6 +89,7 @@ export default function ByokStudioPanel({
     prompt: string;
   } | null>(null);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [isModalPreviewOpen, setIsModalPreviewOpen] = useState(false);
 
   // Sync keys from localStorage on mount & provider switch
   useEffect(() => {
@@ -429,13 +431,38 @@ export default function ByokStudioPanel({
             </a>
           </div>
 
-          {/* High-Res Preview */}
-          <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-950 flex items-center justify-center max-h-52 aspect-video">
+          {/* Large High-Res Preview */}
+          <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 flex flex-col items-center justify-center min-h-[300px] max-h-[440px] group shadow-inner">
             <img
               src={generatedResult.imageUrl}
               alt="AI Generated Artwork"
-              className="max-h-52 w-full object-contain"
+              onClick={() => setIsModalPreviewOpen(true)}
+              className="w-full h-auto max-h-[440px] object-contain rounded-xl cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.01]"
             />
+
+            {/* Quick Enlarge Floating Button */}
+            <button
+              type="button"
+              onClick={() => setIsModalPreviewOpen(true)}
+              className="absolute top-2.5 right-2.5 py-1 px-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-900 text-white border border-white/20 backdrop-blur-md shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider"
+              title="Click to view full large preview"
+            >
+              <Maximize2 className="w-3.5 h-3.5 text-amber-400" />
+              <span>Enlarge</span>
+            </button>
+
+            {/* Click to expand prompt bar */}
+            <div
+              onClick={() => setIsModalPreviewOpen(true)}
+              className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent flex items-center justify-between text-[10px] text-slate-300 cursor-pointer"
+            >
+              <span className="font-semibold flex items-center gap-1 text-slate-300 hover:text-white">
+                <ZoomIn className="w-3 h-3 text-amber-400" /> Click for large view
+              </span>
+              <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">
+                Full Res
+              </span>
+            </div>
           </div>
 
           {/* Action Buttons */}
@@ -510,6 +537,149 @@ export default function ByokStudioPanel({
                 </button>
               )
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 7. Large Lightbox Preview Modal */}
+      {isModalPreviewOpen && generatedResult && (
+        <div 
+          className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+          onClick={() => setIsModalPreviewOpen(false)}
+        >
+          <div 
+            className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-4 sm:px-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white flex items-center gap-2">
+                    Large Artwork Preview
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      High-Resolution
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-400 line-clamp-1 max-w-lg">
+                    {generatedResult.prompt}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <a
+                  href={generatedResult.imageUrl}
+                  download={`byok-${studioType}-${Date.now()}.png`}
+                  className="py-1.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5 transition border border-slate-700"
+                >
+                  <Download className="w-3.5 h-3.5" /> Save PNG
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setIsModalPreviewOpen(false)}
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Image Area */}
+            <div className="flex-1 min-h-0 bg-slate-950 p-4 sm:p-6 flex items-center justify-center overflow-auto">
+              <img
+                src={generatedResult.imageUrl}
+                alt="AI Generated Artwork Full Preview"
+                className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl shadow-2xl border border-slate-800"
+              />
+            </div>
+
+            {/* Modal Footer with Actions */}
+            <div className="p-4 sm:px-6 bg-slate-950/80 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2.5">
+              <div className="text-xs text-slate-400 font-semibold">
+                Apply this artwork directly to your book:
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {isCover ? (
+                  <>
+                    {onApplyFrontCover && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onApplyFrontCover(generatedResult.imageUrl);
+                          setActionFeedback("Applied as Front Cover!");
+                          setIsModalPreviewOpen(false);
+                          setTimeout(() => setActionFeedback(null), 3000);
+                        }}
+                        className="py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition active:scale-95"
+                      >
+                        <LayoutTemplate className="w-3.5 h-3.5" /> Front Cover
+                      </button>
+                    )}
+                    {onApplyBackCover && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onApplyBackCover(generatedResult.imageUrl);
+                          setActionFeedback("Applied as Back Cover!");
+                          setIsModalPreviewOpen(false);
+                          setTimeout(() => setActionFeedback(null), 3000);
+                        }}
+                        className="py-2 px-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition active:scale-95"
+                      >
+                        <LayoutTemplate className="w-3.5 h-3.5" /> Back Cover
+                      </button>
+                    )}
+                    {onApplyFullCover && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onApplyFullCover(generatedResult.imageUrl);
+                          setActionFeedback("Applied as Full Cover Wrap!");
+                          setIsModalPreviewOpen(false);
+                          setTimeout(() => setActionFeedback(null), 3000);
+                        }}
+                        className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-slate-700 shadow-sm transition active:scale-95"
+                      >
+                        <Layers className="w-3.5 h-3.5" /> Full Wrap Cover
+                      </button>
+                    )}
+                    {onAddToCanvas && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onAddToCanvas(generatedResult.imageUrl);
+                          setActionFeedback("Added to Canvas Layer!");
+                          setIsModalPreviewOpen(false);
+                          setTimeout(() => setActionFeedback(null), 3000);
+                        }}
+                        className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-slate-700 transition active:scale-95"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Overlay Layer
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  onApplyColoringPage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onApplyColoringPage(generatedResult.imageUrl, generatedResult.prompt);
+                        setActionFeedback("Loaded into Canvas Editor!");
+                        setIsModalPreviewOpen(false);
+                        setTimeout(() => setActionFeedback(null), 3000);
+                      }}
+                      className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-sm cursor-pointer active:scale-95 transition"
+                    >
+                      <Sparkles className="w-4 h-4" /> Open &amp; Color on Canvas
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

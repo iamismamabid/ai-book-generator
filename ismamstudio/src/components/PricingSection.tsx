@@ -180,6 +180,12 @@ function PricingSectionInner() {
     }
   }, [user]);
 
+  const directPriceIds: Record<string, string | undefined> = {
+    "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_DIRECT_MONTHLY),
+    "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_DIRECT_MONTHLY) || "pri_01m1xp939ywtagxwqc8qrr7z7t",
+    "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY),
+  };
+
   const handleCheckout = (planKey: string, options?: { skipTrial?: boolean }) => {
     const isAnnualBilling = billingCycle === 'annual';
     posthog.capture("checkout_initiated", {
@@ -188,12 +194,6 @@ function PricingSectionInner() {
       skip_trial: !!options?.skipTrial,
     });
     const planIdKey = `${planKey}_${isAnnualBilling ? "annual" : "monthly"}`;
-
-    const directPriceIds: Record<string, string | undefined> = {
-      "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_DIRECT_MONTHLY),
-      "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_DIRECT_MONTHLY),
-      "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY),
-    };
 
     const standardPriceIds: Record<string, string | undefined> = {
       "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kwbgsarn24e1rn46dhadfcnx",
@@ -806,8 +806,8 @@ function PricingSectionInner() {
                   🔒 7 Days Free • $0 Charged Today • Full Studio Access
                 </p>
 
-                {/* Direct Purchase / Skip Trial option for Monthly */}
-                {plan.priceMonthly > 0 && (
+                {/* Direct Purchase / Skip Trial option for Monthly (only when direct price ID is configured) */}
+                {plan.priceMonthly > 0 && !!directPriceIds[`${plan.planKey}_monthly`] && (
                   <button
                     type="button"
                     onClick={() => handleCheckout(plan.planKey, { skipTrial: true })}

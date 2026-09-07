@@ -56,7 +56,7 @@ export default async function Header() {
           </Link>
 
           {/* Central Standard Navigation Links (Desktop) */}
-          <div className="hidden md:flex items-center gap-4 lg:gap-6 mx-auto">
+          <div className="hidden md:flex items-center gap-6 lg:gap-8 mx-auto">
             <Link href="/" prefetch={true} className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Home
             </Link>
@@ -66,7 +66,7 @@ export default async function Header() {
             <Link href="/#features" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Features
             </Link>
-            <Link href="/#pricing" className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
+            <Link href="/pricing" prefetch={true} className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Pricing
             </Link>
             <Link href="/blog" prefetch={true} className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
@@ -74,14 +74,6 @@ export default async function Header() {
             </Link>
             <Link href="/tools" prefetch={true} className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Free Tools
-            </Link>
-            <Link 
-              href="/pricing" 
-              prefetch={true} 
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-300 text-black text-xs font-black shadow-md shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all border border-amber-300 shrink-0"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-black animate-ping" />
-              <span>🔥 Lifetime Deal ($69)</span>
             </Link>
           </div>
 

@@ -11,7 +11,7 @@ import {
   Bold, Italic, Underline, AlignJustify, Box, Layers as LayersIcon,
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
-  AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil,
+  AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil, Pause,
   Image as ImageIcon, ZoomIn, ZoomOut, Group as GroupIcon, Ungroup as UngroupIcon, Store,
   Paintbrush, ClipboardPaste, ImageOff, RefreshCw, FlipHorizontal, FlipVertical, SlidersHorizontal, Pipette,
   Keyboard, X as XIcon, ShieldCheck, AlertTriangle, AlertOctagon
@@ -1186,6 +1186,14 @@ export default function FabricCoverStudio({
       applyBrushSettings(brushType, drawingColor, drawingWidth);
     }
   };
+
+  // Auto-pause freehand drawing mode when leaving or closing the draw tab so selection & manipulation works
+  useEffect(() => {
+    if (activeToolTab !== 'draw' && canvas && canvas.isDrawingMode) {
+      canvas.isDrawingMode = false;
+      setIsDrawingMode(false);
+    }
+  }, [activeToolTab, canvas]);
 
   const handleBrushTypeChange = (type: typeof brushType) => {
     setBrushType(type);
@@ -5588,16 +5596,17 @@ export default function FabricCoverStudio({
         </button>
         <button
           onClick={() => {
-            const nextTab = activeToolTab === 'draw' ? null : 'draw';
-            setActiveToolTab(nextTab);
-            toggleDrawingMode(nextTab === 'draw');
+            setActiveToolTab(prev => prev === 'draw' ? null : 'draw');
           }}
           title="Pencil / Freehand Draw"
-          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] ${
+          className={`p-2.5 rounded-xl transition-all duration-200 ease-out active:scale-[0.94] relative ${
             activeToolTab === 'draw' ? 'bg-amber-500 text-slate-950 font-bold shadow-md' : 'hover:bg-slate-900 hover:text-white'
           }`}
         >
           <Pencil className="w-5 h-5"/>
+          {isDrawingMode && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-slate-950 animate-pulse" />
+          )}
         </button>
         <button
           onClick={() => setActiveToolTab(prev => prev === 'ai-byok' ? null : 'ai-byok')}
@@ -8151,20 +8160,29 @@ export default function FabricCoverStudio({
             <div className="flex items-center justify-between">
               <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Freehand Pencil & Brush</h3>
               <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${isDrawingMode ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-slate-200 text-slate-500'}`}>
-                {isDrawingMode ? 'Drawing Active' : 'Paused'}
+                {isDrawingMode ? 'Drawing Active' : 'Inactive (Click to Draw)'}
               </span>
             </div>
 
             <button
               onClick={() => toggleDrawingMode()}
-              className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
+              className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 isDrawingMode
                   ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
-                  : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md'
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20'
               }`}
             >
-              <Pencil className="w-4 h-4" />
-              {isDrawingMode ? 'Pause Freehand Draw' : 'Activate Pencil Brush'}
+              {isDrawingMode ? (
+                <>
+                  <Pause className="w-4 h-4" />
+                  Pause Freehand Draw
+                </>
+              ) : (
+                <>
+                  <Pencil className="w-4 h-4" />
+                  Activate Pencil Brush
+                </>
+              )}
             </button>
 
             {/* Brush Type */}

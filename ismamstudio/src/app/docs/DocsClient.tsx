@@ -131,7 +131,7 @@ const ARTICLES: HelpArticle[] = [
     steps: [
       "Go to your User Dashboard (/dashboard) to view your active plan, line art credits, and saved projects.",
       "To update your email or password, click on your Profile Avatar in the top-right corner.",
-      "AppSumo Lifetime Deal users never expire and have no recurring subscription fees."
+      "Lifetime Deal users never expire and have no recurring subscription fees."
     ]
   },
 

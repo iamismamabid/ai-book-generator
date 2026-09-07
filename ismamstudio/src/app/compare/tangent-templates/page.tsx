@@ -62,7 +62,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Do I get commercial rights with KDPage?",
-    a: "Yes! All paid KDPage creators and AppSumo lifetime code holders receive 100% royalty-free commercial rights to publish and sell generated interiors and covers on Amazon KDP, Etsy, and IngramSpark.",
+    a: "Yes! All paid KDPage creators and Lifetime Deal license holders receive 100% royalty-free commercial rights to publish and sell generated interiors and covers on Amazon KDP, Etsy, and IngramSpark.",
   },
 ];
 

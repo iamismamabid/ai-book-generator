@@ -49,10 +49,10 @@ export default function JsonLdSchema() {
           },
           {
             "@type": "Offer",
-            "name": "AppSumo Lifetime Deal",
-            "price": "49.00",
+            "name": "Lifetime Deal",
+            "price": "69.00",
             "priceCurrency": "USD",
-            "url": "https://www.kdpage.com/redeem"
+            "url": "https://www.kdpage.com/pricing"
           }
         ],
         "aggregateRating": {

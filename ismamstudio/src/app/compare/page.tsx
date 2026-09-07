@@ -208,7 +208,7 @@ export default function ComparePage() {
                     <td className="py-4 px-4 text-center text-slate-500">Few</td>
                   </tr>
                   <tr className="hover:bg-slate-900/10 transition-colors">
-                    <td className="py-4 px-4 font-bold text-white">AppSumo Lifetime Deal Options</td>
+                    <td className="py-4 px-4 font-bold text-white">Lifetime Deal Options</td>
                     <td className="py-4 px-4 text-center bg-indigo-500/10 font-bold text-indigo-400">Yes (LTD Tiers)</td>
                     <td className="py-4 px-4 text-center text-rose-400 font-semibold">$19-$29/mo Only</td>
                     <td className="py-4 px-4 text-center text-rose-400 font-semibold">$13/mo Only</td>

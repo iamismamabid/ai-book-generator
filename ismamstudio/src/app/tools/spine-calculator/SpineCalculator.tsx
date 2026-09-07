@@ -923,9 +923,10 @@ export default function SpineCalculator() {
         {/* Conversion Bridge to Studio */}
         <section className="p-8 rounded-3xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/25 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 text-center md:text-left">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> Next Step: Design &amp; Publish
-            </span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+              <span>Launch Special: $69 Lifetime Deal (Expires in a few days!)</span>
+            </div>
             <h3 className="text-xl md:text-2xl font-black text-white tracking-tight">
               Ready to create your book cover &amp; interior?
             </h3>

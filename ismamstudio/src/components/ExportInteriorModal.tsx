@@ -403,6 +403,17 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   </div>
                 </div>
                 
+                {/* Urgency Badge */}
+                <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[10px] font-bold text-amber-300">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                    🔥 Launch Special: <strong>$69 Lifetime Deal</strong>
+                  </span>
+                  <span className="text-amber-400 font-black uppercase tracking-wider text-[9px] animate-pulse">
+                    Expires in a few days!
+                  </span>
+                </div>
+
                 <div className="pt-2 border-t border-indigo-500/20 flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
                   <Link
                     href="/pricing"
@@ -414,9 +425,12 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   <Link
                     href="/pricing"
                     target="_blank"
-                    className="sm:w-auto text-center py-3 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-amber-500/30 hover:border-amber-400/50 whitespace-nowrap"
+                    className="sm:w-auto text-center py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 font-black text-xs transition border border-amber-500/40 hover:border-amber-400 shadow-md shadow-amber-500/10 whitespace-nowrap flex flex-col items-center justify-center leading-tight"
                   >
-                    🎁 Get Lifetime Deal ($69)
+                    <span>🎁 Lifetime Deal ($69)</span>
+                    <span className="text-[9px] text-amber-400 font-extrabold uppercase tracking-widest mt-0.5 animate-pulse">
+                      Expires in a few days
+                    </span>
                   </Link>
                 </div>
               </div>

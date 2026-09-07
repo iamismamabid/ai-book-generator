@@ -155,6 +155,17 @@ export default function CoverExportPaywallModal({
           </div>
         )}
 
+        {/* Urgency Badge */}
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[10px] font-bold text-amber-300 mb-3">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+            🔥 Special Launch Offer: <strong>$69 Lifetime Deal</strong>
+          </span>
+          <span className="text-amber-400 font-black uppercase tracking-wider text-[9px] animate-pulse">
+            Expires in a few days!
+          </span>
+        </div>
+
         {/* Direct Upgrade Buttons */}
         <div className="flex flex-col sm:flex-row gap-2.5 mb-5">
           <Link
@@ -168,9 +179,12 @@ export default function CoverExportPaywallModal({
           <Link
             href="/pricing"
             target="_blank"
-            className="sm:w-auto text-center py-3.5 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-amber-500/30 hover:border-amber-400/50 whitespace-nowrap flex items-center justify-center"
+            className="sm:w-auto text-center py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 font-black text-xs transition border border-amber-500/40 hover:border-amber-400 shadow-md shadow-amber-500/10 whitespace-nowrap flex flex-col items-center justify-center leading-tight"
           >
-            🎁 Lifetime Deal ($69)
+            <span>🎁 Lifetime Deal ($69)</span>
+            <span className="text-[9px] text-amber-400 font-extrabold uppercase tracking-widest mt-0.5 animate-pulse">
+              Expires in a few days
+            </span>
           </Link>
         </div>
 

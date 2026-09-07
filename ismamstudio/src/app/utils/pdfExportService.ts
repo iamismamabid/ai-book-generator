@@ -634,26 +634,26 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - (margin * 2);
 
-  const titleBlockH = 0.65;
+  // Place title in the upper line area (y ≈ 1.07" on Letter) matching the red line area,
+  // instead of centering the whole page which pushed the entire puzzle "too underneath".
+  const contentTop = (pageHeight || 11) >= 10 ? 0.72 : 0.60;
+  const titleY = contentTop + 0.35; // y ≈ 1.07" on Letter (exact red line position)
+  const startY = contentTop + 0.75; // Grid starts comfortably below the title (y ≈ 1.47" on Letter)
+
   const wordColumns = 3;
   const wordRowStep = 0.24;
   const numWordRows = isSolution ? 0 : Math.ceil((data.words?.length || 12) / wordColumns);
   const wordListSpace = isSolution ? 0 : 0.35 + (numWordRows * wordRowStep);
 
-  // Balanced KDP layout: grid stays well short of full page width, leaving
-  // proper breathing room instead of running edge-to-edge.
+  // Balanced KDP layout: grid stays well proportioned without spilling over
+  const maxAvailableGridH = safeH - (startY - margin) - wordListSpace;
   const gridDrawSize = isSolution
-    ? Math.min(safeW * 0.82, safeH - titleBlockH, 4.5)
-    : Math.min(safeW * 0.82, safeH - titleBlockH - wordListSpace);
-
-  const totalContentH = titleBlockH + gridDrawSize + wordListSpace;
-  const verticalOffset = Math.max(0, (safeH - totalContentH) / 2);
-  const contentTop = margin + verticalOffset;
+    ? Math.min(safeW * 0.82, maxAvailableGridH, 4.5)
+    : Math.min(safeW * 0.82, maxAvailableGridH, 5.2);
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
-  const startY = contentTop + titleBlockH;
 
-  // Render Title cleanly balanced right above the grid (in the redline zone)
+  // Render Title directly on the header line area above the grid
   doc.setFont("Helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(0);
@@ -663,7 +663,7 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const baseTitle = page.config.title || page.type.replace('_', ' ').toUpperCase();
   const title = `${baseTitle}${solSuffix}`;
   const titleWidth = doc.getTextWidth(title);
-  doc.text(title, (pageWidth - titleWidth) / 2 + xShift, contentTop + 0.35);
+  doc.text(title, (pageWidth - titleWidth) / 2 + xShift, titleY);
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
 

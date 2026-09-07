@@ -847,11 +847,11 @@ function PricingSectionInner() {
         </p>
 
         {/* Toggle Switch */}
-        <div className="mt-10 inline-flex flex-wrap items-center justify-center gap-2 bg-slate-950/80 p-2 rounded-full border border-slate-800 backdrop-blur-md">
+        <div className="mt-10 inline-flex flex-wrap items-center justify-center gap-2 bg-slate-950/90 p-2 rounded-full border border-slate-800 backdrop-blur-md shadow-xl">
           <button
             onClick={() => setBillingCycle('monthly')}
             className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all cursor-pointer ${billingCycle === 'monthly'
-                ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
+                ? "bg-white text-slate-950 shadow-md"
                 : "text-slate-400 hover:text-white"
               }`}
           >
@@ -860,44 +860,51 @@ function PricingSectionInner() {
           <button
             onClick={() => setBillingCycle('annual')}
             className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 cursor-pointer ${billingCycle === 'annual'
-                ? "bg-gradient-to-r from-amber-400 via-white to-slate-100 text-slate-950 shadow-md shadow-amber-500/10"
+                ? "bg-white text-slate-950 shadow-md"
                 : "text-slate-400 hover:text-white"
               }`}
           >
             <span>Annual</span>
-            <span className="bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-md animate-pulse">
+            <span className="bg-emerald-500 text-white font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-md">
               🎁 2 Months Free
             </span>
           </button>
           <button
             onClick={() => setBillingCycle('lifetime')}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-1.5 cursor-pointer ${billingCycle === 'lifetime'
-                ? "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-black shadow-lg shadow-amber-500/20"
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-2 cursor-pointer ${billingCycle === 'lifetime'
+                ? "bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-lg shadow-amber-500/25"
                 : "text-amber-400 hover:text-amber-300"
               }`}
           >
             <span>🎁 Lifetime Deals</span>
-            <span className="bg-amber-400 text-black font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-md">
+            <span className={`font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-sm ${billingCycle === 'lifetime'
+                ? "bg-slate-950 text-amber-300"
+                : "bg-amber-400/20 text-amber-400 border border-amber-400/30"
+              }`}>
               From $69
             </span>
           </button>
         </div>
 
         {/* 🔥 Special Lifetime Launch Banner */}
-        <div className="mt-8 max-w-3xl mx-auto p-5 md:p-6 rounded-3xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-indigo-500/20 border-2 border-amber-400/80 shadow-2xl shadow-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-5 text-left">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-amber-400 text-black text-[11px] font-black uppercase tracking-wider animate-pulse shadow-sm border border-amber-300">
+        <div className="mt-8 max-w-3xl mx-auto p-6 md:p-7 rounded-3xl bg-slate-950 border-2 border-amber-400 shadow-2xl shadow-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-left relative overflow-hidden">
+          {/* Subtle warm ambient lighting on solid dark background */}
+          <div className="absolute -top-20 -left-20 w-52 h-52 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -right-20 w-52 h-52 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="space-y-2 relative z-10">
+            <div className="flex items-center gap-2.5">
+              <span className="px-3 py-1 rounded-full bg-amber-400 text-black text-[10px] font-black uppercase tracking-wider shadow-sm border border-amber-300">
                 ⚡ Limited Launch Deal
               </span>
               <span className="text-amber-400 text-xs font-black uppercase tracking-wider">
                 Expires in a few days!
               </span>
             </div>
-            <h3 className="text-xl font-black text-white">
-              Prefer to pay once? Get Lifetime Access from <span className="text-amber-300">$69</span> (Pro) or <span className="text-emerald-400">$98</span> (Agency)
+            <h3 className="text-xl md:text-2xl font-black text-white tracking-tight leading-snug">
+              Prefer to pay once? Get Lifetime Access from <span className="text-amber-400 font-black">$69</span> (Pro) or <span className="text-emerald-400 font-black">$98</span> (Agency)
             </h3>
-            <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-lg">
+            <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed max-w-lg">
               Never pay monthly recurring fees. Includes unlimited 300 DPI vector PDF exports, full puzzle generators, auto-generated answer keys, team seats, and commercial rights.
             </p>
           </div>
@@ -905,7 +912,7 @@ function PricingSectionInner() {
             href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs uppercase tracking-wider shadow-xl shadow-amber-500/25 hover:scale-[1.03] active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer border border-amber-300"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs uppercase tracking-wider shadow-xl shadow-amber-500/25 hover:scale-[1.03] active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer border border-amber-300 relative z-10"
           >
             <span>Claim Lifetime Deals →</span>
             <ArrowRight className="w-4 h-4 text-black" />

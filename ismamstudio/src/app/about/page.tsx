@@ -156,7 +156,7 @@ export default function AboutPage() {
                 {/* Social Links */}
                 <div className="flex items-center gap-3 justify-center sm:justify-start pt-1">
                   <a
-                    href="https://www.linkedin.com/in/ismam-abid-edu"
+                    href="https://www.linkedin.com/in/ismamabidofficial/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/15 border border-indigo-500/25 text-indigo-400 hover:bg-indigo-600/25 hover:text-indigo-300 transition-all text-xs font-bold"

@@ -188,7 +188,7 @@ export default function ContactClient() {
                 </div>
               </div>
               <a
-                href="https://www.linkedin.com/in/ismam-abid-edu/"
+                href="https://www.linkedin.com/in/ismamabidofficial/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-indigo-600/20 border border-slate-700 text-slate-300 hover:text-white transition"

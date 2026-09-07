@@ -53,8 +53,8 @@ interface ExportInteriorModalProps<T extends string = "6x9" | "8.5x11" | "5x8"> 
   trimSizeOptions?: TrimSizeOption<T>[];
   /** Hide the decorative page-border picker -- irrelevant for prose/manuscript exports. */
   showBorderThemePicker?: boolean;
-  /** When true, allows full watermark-free export even without an active paid plan (e.g. Sudoku Studio). */
-  allowFreeExport?: boolean;
+  /** When true, allows free tier users to download a watermarked sample export. */
+  allowFreeWatermarkedExport?: boolean;
 }
 
 export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" | "5x8">({
@@ -65,7 +65,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
   showSolutionsToggle = true,
   trimSizeOptions,
   showBorderThemePicker = true,
-  allowFreeExport = false,
+  allowFreeWatermarkedExport = false,
 }: ExportInteriorModalProps<T>) {
   const trimOptions = (trimSizeOptions ?? DEFAULT_TRIM_OPTIONS) as unknown as TrimSizeOption<T>[];
   const { userId, isLoaded, isSignedIn } = useAuth();
@@ -134,13 +134,11 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
     }
   }, [isOpen, userId, isLoaded, isSignedIn]);
 
-  const userTierRank = allowFreeExport || premiumStatus.isPremium
-    ? TIER_RANK.pro
-    : (premiumStatus.plan === "free" || !premiumStatus.plan
+  const userTierRank = premiumStatus.plan === "free" || !premiumStatus.plan
     ? TIER_RANK.free
     : premiumStatus.plan === "starter"
     ? TIER_RANK.starter
-    : TIER_RANK.pro);
+    : TIER_RANK.pro;
 
   useEffect(() => {
     if (!premiumStatus.checked) return;
@@ -208,8 +206,6 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
     }
   };
 
-  const isEffectivelyUnlocked = premiumStatus.isPremium || allowFreeExport;
-
   const handleActionExport = async () => {
     if (includeCover && !coverState) {
       alert("Please design a cover in the Cover Studio first, or uncheck the Cover option.");
@@ -225,7 +221,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
         trimSize,
         hasBleed,
         showGuides,
-        isPremium: isEffectivelyUnlocked,
+        isPremium: premiumStatus.isPremium,
         borderTheme,
       });
       onClose();
@@ -301,25 +297,25 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
               </div>
             )}
 
-            {/* Free Unlocked (e.g. Sudoku Studio) Banner */}
-            {allowFreeExport && !premiumStatus.isPremium && (
-              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-slate-200 flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black shrink-0">
-                  <Check className="w-4 h-4 text-emerald-400" />
+            {/* Watermarked Free Tier Notice (e.g. Sudoku Studio) */}
+            {allowFreeWatermarkedExport && !premiumStatus.isPremium && (
+              <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-slate-200 flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold shrink-0">
+                  <FileDown className="w-4 h-4 text-amber-400" />
                 </div>
                 <div>
-                  <span className="font-black text-emerald-400 text-xs block">
-                    Watermark-Free Export Active
+                  <span className="font-bold text-amber-300 text-xs block">
+                    Free Tier: Watermarked Sample Mode
                   </span>
                   <p className="text-slate-300 text-[11px] font-medium leading-relaxed mt-0.5">
-                    Sudoku Book Studio exports are 100% watermark-free with full 300 DPI vector quality.
+                    Free PDF exports include a SAMPLE watermark. Upgrade to Pro for 100% clean, watermark-free 300 DPI vector books.
                   </p>
                 </div>
               </div>
             )}
 
             {/* 7-Day Trial Expired / Card Declined Paywall Banner */}
-            {!isEffectivelyUnlocked && (premiumStatus.trialExpired || premiumStatus.reason === "trial_expired_unpaid") && (
+            {!premiumStatus.isPremium && (premiumStatus.trialExpired || premiumStatus.reason === "trial_expired_unpaid") && (
               <div className="p-4 bg-gradient-to-br from-rose-950 via-slate-900 to-slate-950 text-white rounded-2xl border border-rose-500/40 shadow-lg shadow-rose-950/30 space-y-3 mb-4">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-400/30 flex items-center justify-center shrink-0 text-rose-400 mt-0.5">
@@ -353,7 +349,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
             )}
 
             {/* 7-Day Trial Mode Paywall Banner */}
-            {!isEffectivelyUnlocked && premiumStatus.isTrial && !premiumStatus.trialExpired && premiumStatus.reason !== "trial_expired_unpaid" && (
+            {!premiumStatus.isPremium && premiumStatus.isTrial && !premiumStatus.trialExpired && premiumStatus.reason !== "trial_expired_unpaid" && (
               <div className="p-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl border border-amber-500/40 shadow-lg shadow-amber-950/30 space-y-3 mb-4">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0 text-amber-400 mt-0.5">
@@ -389,7 +385,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
             )}
 
             {/* Free Plan (Non-Trial) Paywall Banner */}
-            {!isEffectivelyUnlocked && !premiumStatus.isTrial && !premiumStatus.trialExpired && premiumStatus.reason !== "trial_expired_unpaid" && premiumStatus.reason !== "status_check_failed" && (
+            {!premiumStatus.isPremium && !premiumStatus.isTrial && !premiumStatus.trialExpired && premiumStatus.reason !== "trial_expired_unpaid" && premiumStatus.reason !== "status_check_failed" && (
               <div className="p-4 sm:p-5 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl sm:rounded-3xl border border-indigo-500/30 shadow-xl shadow-indigo-950/40 space-y-3.5 mb-4">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 text-amber-400 mt-0.5">
@@ -704,7 +700,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
 
             {/* Action Button */}
             <div className="mt-5">
-              {isEffectivelyUnlocked ? (
+              {premiumStatus.isPremium ? (
                 <button
                   onClick={handleActionExport}
                   disabled={isExporting || (includeCover && !hasSavedCover)}
@@ -718,10 +714,39 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   ) : (
                     <>
                       <FileDown className="w-4 h-4" />
-                      Export 300 DPI Print-Ready PDF {allowFreeExport && !premiumStatus.isPremium ? "(Watermark-Free)" : ""}
+                      Export 300 DPI Print-Ready PDF
                     </>
                   )}
                 </button>
+              ) : allowFreeWatermarkedExport ? (
+                <div className="space-y-2.5">
+                  <Link
+                    href={premiumStatus.isTrial || premiumStatus.trialExpired ? `/pricing?checkout=${premiumStatus.plan === 'agency' ? 'agency' : 'pro'}&skipTrial=true` : "/pricing"}
+                    target="_blank"
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-3.5 rounded-2xl text-xs font-black shadow-lg shadow-orange-500/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 text-center uppercase tracking-wider"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-200" />
+                    Unlock Pro for Watermark-Free PDF →
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleActionExport}
+                    disabled={isExporting || (includeCover && !hasSavedCover)}
+                    className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white py-3 rounded-2xl text-xs font-bold border border-slate-700 transition cursor-pointer disabled:opacity-50"
+                  >
+                    {isExporting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Compiling Watermarked PDF...
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="w-4 h-4 text-amber-400" />
+                        Download Free PDF (With Sample Watermark)
+                      </>
+                    )}
+                  </button>
+                </div>
               ) : (
                 <Link
                   href={premiumStatus.isTrial || premiumStatus.trialExpired ? `/pricing?checkout=${premiumStatus.plan === 'agency' ? 'agency' : 'pro'}&skipTrial=true` : "/pricing"}

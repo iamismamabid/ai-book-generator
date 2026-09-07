@@ -301,7 +301,7 @@ export default function SudokuClient() {
         coverState,
         hasBleed,
         showGuides,
-        isPremium: true, // Sudoku Book Studio exports are 100% watermark-free even without a paid plan
+        isPremium: effectiveIsPro,
         borderTheme,
       },
       `sudoku-${difficulty}-${count}puzzles.pdf`
@@ -309,15 +309,13 @@ export default function SudokuClient() {
     setIsDownloading(false);
   };
 
-  // A genuinely small, fixed-size sample -- always exactly 10 puzzles and
-  // never watermarked, regardless of plan. Previously this reused the
-  // user-adjustable bookCount and hardcoded isPremium: true, so while
-  // bookCount was tier-clamped, the label's promised "10" wasn't actually
-  // enforced (it downloaded whatever bookCount currently held).
+  // Fixed 10-puzzle sample export. Applies watermark on free accounts, clean on paid accounts.
   const SAMPLE_SUDOKU_COUNT = 10;
   const handleDownloadSample = async () => {
     setIsDownloading(true);
     try {
+      const freshStatus = await getFreshPremiumStatus();
+      const effectiveIsPro = Boolean(freshStatus.isPremium);
       const puzzles = generateSudokuBook(SAMPLE_SUDOKU_COUNT, difficulty);
       const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');
       await downloadSudokuPdf(
@@ -325,7 +323,7 @@ export default function SudokuClient() {
           puzzles,
           difficulty,
           trimSize: "6x9",
-          title: headerText || `Free Sample Sudoku Book`,
+          title: headerText || `Sample Sudoku Book`,
           headerText,
           footerText,
           borderThickness,
@@ -334,9 +332,9 @@ export default function SudokuClient() {
           solutionsPerPage,
           includeCover: false,
           coverState: null,
-          isPremium: true,
+          isPremium: effectiveIsPro,
         },
-        `sudoku-${difficulty}-free-sample.pdf`
+        `sudoku-${difficulty}-sample.pdf`
       );
     } finally {
       setIsDownloading(false);
@@ -412,12 +410,12 @@ export default function SudokuClient() {
         ) : (
           <div className="mb-8 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold shrink-0">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold shrink-0">
+                <Sparkles className="w-4 h-4 text-amber-400" />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-200">Free Tier Mode (Watermark-Free Enabled • Up to 5 Puzzles)</p>
-                <p className="text-[11px] text-slate-400">Download clean 300 DPI vector PDFs with zero watermarks. Upgrade to Pro for unlimited 1,000-puzzle batch exports.</p>
+                <p className="text-xs font-bold text-slate-200">Free Tier Mode (Watermarked PDF Exports • Up to 5 Puzzles)</p>
+                <p className="text-[11px] text-slate-400">Free exports include a SAMPLE watermark. Upgrade to Pro for 100% watermark-free 300 DPI vector PDFs and 1,000-puzzle batch compiling.</p>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
@@ -679,7 +677,7 @@ export default function SudokuClient() {
                 className="w-full bg-slate-900/80 hover:bg-slate-900 text-amber-400 font-bold py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-500/60 transition text-xs flex items-center justify-center gap-2"
               >
                 <Download className="w-3.5 h-3.5" />
-                Download 10 Free Sample Puzzles PDF (Vector 300 DPI)
+                Download 10 Sample Puzzles PDF (Vector 300 DPI)
               </button>
 
               {/* Summary badge */}
@@ -831,7 +829,7 @@ export default function SudokuClient() {
         onClose={() => setIsExportModalOpen(false)}
         defaultTrimSize={trimSize}
         onExport={handleDownloadPdf}
-        allowFreeExport={true}
+        allowFreeWatermarkedExport={true}
       />
     </div>
   );

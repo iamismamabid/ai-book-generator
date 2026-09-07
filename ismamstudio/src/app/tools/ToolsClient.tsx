@@ -717,13 +717,15 @@ export default function FreeToolsHub() {
               Unlock unlimited 300 DPI vector PDF exports, 1,000-puzzle book batch compiler, automated answer keys, and full commercial resale license. Never pay monthly fees.
             </p>
           </div>
-          <Link
-            href="/pricing"
+          <a
+            href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs uppercase tracking-wider shadow-xl shadow-amber-500/25 hover:scale-105 active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2"
           >
             <span>Claim $69 Lifetime Deal</span>
             <ArrowRight className="w-4 h-4" />
-          </Link>
+          </a>
         </div>
 
         {/* Search Bar & Category Filter Toolbar */}

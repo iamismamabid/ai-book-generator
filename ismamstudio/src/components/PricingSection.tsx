@@ -698,14 +698,15 @@ function PricingSectionInner() {
 
             if (isLtd) {
               return (
-                <button
-                  type="button"
-                  onClick={() => handleCheckout('pro', { skipTrial: true })}
+                <a
+                  href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full py-4.5 rounded-2xl font-black text-sm md:text-base transition-all duration-300 active:scale-95 shadow-xl flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black shadow-amber-500/30 hover:scale-[1.02] border border-amber-300 cursor-pointer"
                 >
-                  <span>{plan.ctaText || "Claim $69 Lifetime Deal"}</span>
+                  <span>{plan.ctaText || "Claim $69 Lifetime Deal Now →"}</span>
                   <Zap className="w-4 h-4 shrink-0 fill-current text-black" />
-                </button>
+                </a>
               );
             }
 
@@ -860,14 +861,15 @@ function PricingSectionInner() {
               Never pay monthly recurring fees. Includes unlimited 300 DPI vector PDF exports, full puzzle generators, auto-generated answer keys, and commercial rights.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => handleCheckout('pro', { skipTrial: true })}
+          <a
+            href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs uppercase tracking-wider shadow-xl shadow-amber-500/25 hover:scale-[1.03] active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer border border-amber-300"
           >
             <span>Claim $69 Lifetime Deal</span>
             <ArrowRight className="w-4 h-4 text-black" />
-          </button>
+          </a>
         </div>
 
         {/* 🌟 Subscription Sync & Active Plan Banner on Pricing Section */}

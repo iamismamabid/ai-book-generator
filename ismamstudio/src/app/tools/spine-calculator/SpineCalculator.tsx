@@ -626,13 +626,15 @@ export default function SpineCalculator() {
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto shrink-0">
-                  <Link
-                    href="/pricing"
+                  <a
+                    href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-full text-center px-6 py-3.5 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-amber-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 border border-amber-300 cursor-pointer"
                   >
                     <span>🎁 Claim $69 Lifetime Deal</span>
                     <ArrowRight className="w-3.5 h-3.5 text-black" />
-                  </Link>
+                  </a>
                   <Link
                     href="/studio?tab=cover"
                     className="w-full text-center px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 hover:border-slate-600 transition flex items-center justify-center gap-1.5"
@@ -974,13 +976,15 @@ export default function SpineCalculator() {
 
             {/* High-converting action buttons */}
             <div className="flex flex-col sm:flex-row lg:flex-col gap-3.5 w-full lg:w-auto shrink-0">
-              <Link
-                href="/pricing"
+              <a
+                href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full text-center px-9 py-4.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-sm uppercase tracking-wider shadow-2xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 border border-amber-300 cursor-pointer"
               >
                 <span>🎁 Claim $69 Lifetime Deal</span>
                 <ArrowRight className="w-4 h-4 text-black" />
-              </Link>
+              </a>
               
               <Link
                 href="/studio"

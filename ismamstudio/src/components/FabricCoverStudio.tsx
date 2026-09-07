@@ -3699,7 +3699,7 @@ export default function FabricCoverStudio({
 
   const addAuthorText = () => {
     if (!canvas) return;
-    const author = new fabric.IText("By Islam Abid", {
+    const author = new fabric.IText("By Ismam Abid", {
       left: layout.frontCoverCenterPx - 60,
       top: layout.canvasHeight * 0.85,
       fontFamily: "Arial",

@@ -13,13 +13,13 @@ export default async function Header() {
     <header className="fixed top-0 inset-x-0 z-50 flex flex-col transition-all duration-300" suppressHydrationWarning>
       {/* 📣 Announcement Bar */}
       <Link 
-        href="/tools/spine-calculator" 
-        className="w-full bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 text-slate-950 text-center py-2 px-4 text-xs font-black tracking-wider hover:opacity-95 transition-opacity flex items-center justify-center gap-2 group z-50 shadow-md"
+        href="/pricing" 
+        className="w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-slate-950 text-center py-2 px-4 text-xs font-black tracking-wider hover:opacity-95 transition-opacity flex items-center justify-center gap-2 group z-50 shadow-md"
       >
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/10 text-slate-950 text-[9px] font-black uppercase tracking-widest animate-pulse">
-          Free Tool
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-950 text-amber-300 text-[9px] font-black uppercase tracking-widest animate-pulse">
+          ⚡ Limited Launch Deal
         </span>
-        <span className="truncate">New: Amazon KDP Spine & Cover Calculator is 100% free!</span>
+        <span className="truncate font-black">🔥 Get KDPage Pro Lifetime Access for only $69 (Expires in a few days!)</span>
         <span className="group-hover:translate-x-1 transition-transform inline-block shrink-0">→</span>
       </Link>
 

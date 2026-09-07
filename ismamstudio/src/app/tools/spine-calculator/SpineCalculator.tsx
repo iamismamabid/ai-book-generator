@@ -920,34 +920,63 @@ export default function SpineCalculator() {
 
         </section>
 
-        {/* Conversion Bridge to Studio */}
-        <section className="p-8 rounded-3xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-500/25 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-              <span>Launch Special: $69 Lifetime Deal (Expires in a few days!)</span>
+        {/* Conversion Bridge to Studio & Lifetime Deal */}
+        <section className="relative overflow-hidden p-8 md:p-10 rounded-3xl bg-gradient-to-br from-amber-500/20 via-slate-900 to-slate-950 border-2 border-amber-500/50 shadow-2xl shadow-amber-500/15">
+          {/* Ambient Glows */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="space-y-4 text-center lg:text-left">
+              {/* Eye-catching badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-xs font-black uppercase tracking-wider shadow-lg shadow-amber-500/30">
+                <span className="w-2 h-2 rounded-full bg-slate-950 animate-ping" />
+                <span>🔥 Limited Launch Offer: $69 Lifetime Deal — Expires in a few days!</span>
+              </div>
+              
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+                Turn Your Cover Math Into A <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-yellow-300 bg-clip-text text-transparent">Published Book</span> Today
+              </h3>
+              
+              <p className="text-slate-200 text-sm md:text-base font-medium leading-relaxed max-w-2xl">
+                Ready to publish? Skip Photoshop and Canva hassles. Take your calculated dimensions directly into KDPage Studio to design full-bleed covers, auto-generate 100+ pages of puzzle interiors with solution keys, and export print-ready 300 DPI vector PDFs.
+              </p>
+
+              {/* 3 bullet perks */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-bold text-slate-200 pt-1">
+                <span className="flex items-center gap-1.5 text-emerald-400">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="text-slate-200">100% Watermark-Free 300 DPI</span>
+                </span>
+                <span className="flex items-center gap-1.5 text-emerald-400">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="text-slate-200">Commercial Resale License</span>
+                </span>
+                <span className="flex items-center gap-1.5 text-emerald-400">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="text-slate-200">Zero KDP Rejection Guarantee</span>
+                </span>
+              </div>
             </div>
-            <h3 className="text-xl md:text-2xl font-black text-white tracking-tight">
-              Ready to create your book cover &amp; interior?
-            </h3>
-            <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed max-w-xl">
-              Take your calculated dimensions directly into KDPage Studio. Design full-bleed covers, auto-generate 100+ pages of compliant puzzle interiors, and export print-ready 300 DPI vector PDFs with zero Amazon KDP rejection risk.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
-            <Link
-              href="/studio"
-              className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2"
-            >
-              <span>Open Creator Studio</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/pricing"
-              className="px-5 py-3.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-white font-bold text-xs border border-slate-700 hover:border-slate-600 transition flex items-center justify-center text-center"
-            >
-              View Pro Plans &amp; LTD
-            </Link>
+
+            {/* High-converting action buttons */}
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3.5 w-full lg:w-auto shrink-0">
+              <Link
+                href="/pricing"
+                className="w-full text-center px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-black text-sm uppercase tracking-wider shadow-xl shadow-orange-500/30 hover:scale-[1.03] active:scale-98 transition-all flex items-center justify-center gap-2"
+              >
+                <span>🎁 Claim $69 Lifetime Deal</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              
+              <Link
+                href="/studio"
+                className="w-full text-center px-8 py-3.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-white font-bold text-xs border border-slate-700 hover:border-slate-600 transition flex items-center justify-center gap-2"
+              >
+                <span>Launch Free Studio</span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              </Link>
+            </div>
           </div>
         </section>
 

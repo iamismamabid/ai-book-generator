@@ -803,6 +803,34 @@ function PricingSectionInner() {
           </button>
         </div>
 
+        {/* 🔥 Special Lifetime Launch Banner */}
+        <div className="mt-8 max-w-3xl mx-auto p-5 md:p-6 rounded-3xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-indigo-500/20 border-2 border-amber-500/40 shadow-2xl shadow-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-5 text-left">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider animate-pulse">
+                ⚡ Limited Launch Deal
+              </span>
+              <span className="text-amber-400 text-xs font-black uppercase tracking-wider">
+                Expires in a few days!
+              </span>
+            </div>
+            <h3 className="text-xl font-black text-white">
+              Prefer to pay once? Get KDPage Pro Lifetime Access for <span className="text-amber-300">$69</span>
+            </h3>
+            <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-lg">
+              Never pay monthly recurring fees. Includes unlimited 300 DPI vector PDF exports, full puzzle generators, auto-generated answer keys, and commercial rights.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleCheckout('pro', { skipTrial: true })}
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider shadow-xl shadow-orange-500/25 hover:scale-[1.03] active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>Claim $69 Lifetime Deal</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
         {/* 🌟 Subscription Sync & Active Plan Banner on Pricing Section */}
         {(() => {
           const userPlan = (user?.publicMetadata?.plan as string) || "free";

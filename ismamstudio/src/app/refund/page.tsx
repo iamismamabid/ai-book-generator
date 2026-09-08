@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Refund Policy | KDPage Help Center",
-  description: "Read the comprehensive Refund Policy of KDPage. Learn about our 14-day money-back guarantee, fair usage terms, AppSumo policy, and Paddle Merchant of Record terms.",
+  description: "Read the comprehensive Refund Policy of KDPage. Learn about our 14-day money-back guarantee, fair usage terms, Lifetime Deal marketplace policy, and Paddle Merchant of Record terms.",
 };
 
 export default function RefundPolicyPage() {
@@ -71,9 +71,9 @@ export default function RefundPolicyPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">5. Third-Party Purchases (AppSumo Deals)</h2>
+              <h2 className="text-xl font-black text-white">5. Third-Party Marketplace Purchases (Lifetime Deals)</h2>
               <p>
-                AppSumo lifetime purchases are handled entirely through AppSumo under their **standard 60-day refund policy**. We cannot issue refunds for AppSumo purchases directly from our dashboard. When an AppSumo code is refunded on AppSumo's portal, the code and corresponding tier access are automatically deactivated on our platform. Tier upgrades and code stacking are managed directly through your AppSumo user portal.
+                Lifetime deal purchases made through authorized third-party partner marketplaces (such as Dealify, DealFuel, AppSumo, or Gumroad) are handled directly under each marketplace's respective refund guarantee policy. We cannot issue direct dashboard refunds for marketplace orders. When a license key is refunded through the partner marketplace portal, that key and its corresponding tier privileges are automatically deactivated on our platform.
               </p>
             </section>
 

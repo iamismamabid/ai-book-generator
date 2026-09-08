@@ -23,7 +23,7 @@ interface ChatMessage {
 }
 
 const QUICK_QUESTIONS = [
-  "How do I redeem my AppSumo code?",
+  "How do I redeem my Lifetime Deal code?",
   "What is the difference between Tier 1, 2, and 3?",
   "How do I calculate KDP cover spine thickness?",
   "Can I create shape-masked mazes (Hearts, Circles)?",
@@ -39,7 +39,7 @@ export default function GeminiSupportAssistant() {
     {
       role: "assistant",
       content:
-        "👋 Hi! I'm the **KDPage Virtual Assistant**. Ask me anything about KDP publishing, book cover dimensions, puzzle generation, or AppSumo lifetime deals!",
+        "👋 Hi! I'm the **KDPage Virtual Assistant**. Ask me anything about KDP publishing, book cover dimensions, puzzle generation, or Lifetime Deals!",
     },
   ]);
 
@@ -131,7 +131,7 @@ export default function GeminiSupportAssistant() {
       {
         role: "assistant",
         content:
-          "👋 Hi! I'm the **KDPage Virtual Assistant**. Ask me anything about KDP publishing, book cover dimensions, puzzle generation, or AppSumo lifetime deals!",
+          "👋 Hi! I'm the **KDPage Virtual Assistant**. Ask me anything about KDP publishing, book cover dimensions, puzzle generation, or Lifetime Deals!",
       },
     ]);
   };
@@ -216,7 +216,7 @@ export default function GeminiSupportAssistant() {
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                 </h3>
                 <p className="text-[10px] text-indigo-100 font-medium">
-                  Instant 24/7 KDP & AppSumo Assistance
+                  Instant 24/7 KDP & Lifetime Deal Assistance
                 </p>
               </div>
             </div>

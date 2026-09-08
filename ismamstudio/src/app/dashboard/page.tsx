@@ -48,7 +48,7 @@ export default async function DashboardPage() {
   if (rawPlan === "starter" || rawPlan === "pro") {
     upgradeHint = (
       <Link href="/redeem" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline block mt-0.5">
-        Stack AppSumo Code to Upgrade →
+        Stack Lifetime Code to Upgrade →
       </Link>
     );
   } else if (rawPlan === "agency") {

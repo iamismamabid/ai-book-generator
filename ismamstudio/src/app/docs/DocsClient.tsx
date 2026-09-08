@@ -68,29 +68,29 @@ const ARTICLES: HelpArticle[] = [
     ]
   },
   {
-    id: "redeeming-appsumo-license",
+    id: "redeeming-lifetime-license",
     category: "getting-started",
     categoryLabel: "Getting Started",
-    title: "How to Redeem & Stack AppSumo License Codes",
-    summary: "Complete guide on redeeming 1, 2, or 3 AppSumo codes on KDPage to unlock Starter, Pro, or Agency Tier lifetime access.",
+    title: "How to Redeem Lifetime Deal & Partner License Codes",
+    summary: "Complete guide on redeeming your Lifetime Deal license codes (Dealify, DealFuel, AppSumo, or Partner keys) on KDPage to unlock Pro or Agency Tier lifetime access.",
     readTime: "2 min read",
     icon: "Key",
     content: [
-      "Redeeming your AppSumo purchase is fast and automatic. You can redeem via the 1-click button on AppSumo or manually on our redemption page.",
-      "Code Stacking Tiers:",
-      "• 1 Code ($49) = License Tier 1: Starter Creator Plan (Commercial License, Standard Trim Sizes, 25 Line Art Credits/mo)",
-      "• 2 Codes ($79) = License Tier 2: Pro Studio Plan (All 8 Puzzle Engines, Shaped Mazes, Custom Sizes, 100 Line Art Credits/mo)",
-      "• 3 Codes ($149) = License Tier 3: Publisher Agency Plan (Everything in Pro + 300 Line Art Credits/mo, 3 Team Seats, 25 Brand Profiles, Bulk Batch Studio - Max Stack)"
+      "Redeeming your Lifetime Deal purchase is fast, 100% free, and automatic. You can redeem directly on our universal redemption page with zero credit card or billing details required.",
+      "Lifetime License Tiers:",
+      "• Pro Studio Plan (Tier 1): Unlimited 300 DPI Vector PDF Exports, All 8 Puzzle Engines, Shaped Mazes, Custom Sizes, Full Fabric Cover Studio with Live Spine Calculator, 100% Commercial Rights.",
+      "• Publisher Agency Plan (Tier 2): Everything in Pro + Multi-User Seats, BYOK Unlimited AI Engine, Advanced Coloring Book Generator, Bulk Batch Studio, and Priority Queues."
     ],
     steps: [
       "Log in to your KDPage account (or create a free account at /sign-up).",
       "Go to the Redemption Page at: https://www.kdpage.com/redeem",
-      "Paste your AppSumo License Key (e.g., KDPAGE-XXXX-XXXX) into the input box.",
-      "Click 'Redeem License Code'. Your account plan will immediately upgrade!",
-      "To stack multiple codes for higher tiers, simply repeat the process with your second or third code."
+      "Paste your unique Lifetime License Key (e.g., DEALIFY-XXXX-XXXX, DEALFUEL-XXXX-XXXX, or Partner Key) into the input box.",
+      "Click 'Activate Access' (or 'Redeem License Code'). Your account plan will immediately upgrade to Lifetime Access!",
+      "If your purchase includes multiple codes or stackable licenses, simply repeat the process with your second code."
     ],
     tips: [
-      "If you click 'Redeem' directly inside AppSumo, your code will be pre-filled automatically on the redemption page.",
+      "No credit card or billing details are ever requested during license activation.",
+      "If you clicked 'Redeem' directly from a partner portal with a pre-filled link, your code will be populated automatically.",
       "Need help with your code? Contact us anytime at support@kdpage.com."
     ]
   },
@@ -125,7 +125,7 @@ const ARTICLES: HelpArticle[] = [
     readTime: "2 min read",
     icon: "ShieldCheck",
     content: [
-      "When you upgrade to any paid tier (Starter, Pro, Agency, or AppSumo LTD), you receive 100% Commercial Usage Rights for all generated interiors, puzzles, and covers.",
+      "When you upgrade to any paid tier (Starter, Pro, Agency, or Lifetime Deal), you receive 100% Commercial Usage Rights for all generated interiors, puzzles, and covers.",
       "You keep 100% of all royalties earned on Amazon KDP, Etsy, IngramSpark, or your own store."
     ],
     steps: [
@@ -380,7 +380,7 @@ export default function DocsClient() {
           </h1>
 
           <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base max-w-2xl mx-auto font-medium leading-relaxed">
-            Browse 14+ step-by-step guides covering KDP puzzle generation, cover design, margin compliance, and AppSumo code redemption.
+            Browse 14+ step-by-step guides covering KDP puzzle generation, cover design, margin compliance, and Lifetime Deal code redemption.
           </p>
 
           {/* Search Box */}
@@ -389,7 +389,7 @@ export default function DocsClient() {
               <Search className="w-5 h-5 text-slate-400 ml-4 shrink-0" />
               <input
                 type="text"
-                placeholder="Search articles... (e.g. 'AppSumo', 'Sudoku', 'Spine width', 'KDP Margin')"
+                placeholder="Search articles... (e.g. 'Lifetime Deal', 'Sudoku', 'Spine width', 'KDP Margin')"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full py-4 px-4 bg-transparent text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none"
@@ -588,7 +588,7 @@ export default function DocsClient() {
           <div className="relative z-10 space-y-3">
             <h3 className="text-2xl font-black">Still have questions or need human support?</h3>
             <p className="text-slate-300 text-xs md:text-sm max-w-xl mx-auto font-medium leading-relaxed">
-              Our support team is active 24/7. Whether you need help with an AppSumo code redemption or a custom KDP interior layout, we are here for you.
+              Our support team is active 24/7. Whether you need help with a Lifetime Deal code redemption or a custom KDP interior layout, we are here for you.
             </p>
             <div className="pt-2">
               <a

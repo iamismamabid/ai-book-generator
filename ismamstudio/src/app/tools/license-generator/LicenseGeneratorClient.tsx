@@ -8,7 +8,7 @@ export default function LicenseGeneratorClient() {
   const [publisherName, setPublisherName] = useState("Acme Publishing");
   const [bookTitle, setBookTitle] = useState("Ultimate Puzzle Challenge 2026");
   const [isbn, setIsbn] = useState("978-1-23456-789-0");
-  const [licenseTier, setLicenseTier] = useState("AppSumo Lifetime Partner / Pro Tier");
+  const [licenseTier, setLicenseTier] = useState("Lifetime Deal Partner / Pro Tier");
   const [licenseId] = useState(() => "KDP-LIC-" + Math.floor(100000 + Math.random() * 900000));
   const [issueDate, setIssueDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [copied, setCopied] = useState(false);
@@ -155,9 +155,12 @@ Amazon KDP Verification Reference: ${licenseId}`;
                 onChange={(e) => setLicenseTier(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm"
               >
-                <option value="AppSumo Lifetime Partner / Tier 1">AppSumo Lifetime Partner (Tier 1)</option>
-                <option value="AppSumo Lifetime Partner / Pro Tier">AppSumo Lifetime Partner (Tier 2 / Pro)</option>
-                <option value="AppSumo Agency Lifetime Partner">AppSumo Agency Lifetime Partner (Tier 3)</option>
+                <option value="Lifetime Deal Partner / Starter Tier">Lifetime Deal Partner (Tier 1)</option>
+                <option value="Lifetime Deal Partner / Pro Tier">Lifetime Deal Partner (Tier 2 / Pro)</option>
+                <option value="Lifetime Deal Partner / Agency Tier">Lifetime Deal Partner (Tier 3 / Agency)</option>
+                <option value="AppSumo Lifetime Partner">AppSumo Lifetime Partner</option>
+                <option value="Dealify Lifetime Partner">Dealify Lifetime Partner</option>
+                <option value="DealFuel Lifetime Partner">DealFuel Lifetime Partner</option>
                 <option value="KDPage Pro Subscription">KDPage Pro Subscription</option>
                 <option value="KDPage Unlimited Commercial License">KDPage Unlimited Commercial License</option>
               </select>

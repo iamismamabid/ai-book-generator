@@ -126,7 +126,7 @@ export default function JsonLdSchema() {
             "name": "Do I own full commercial rights to sell books created with KDPage?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. All paid subscribers (Starter, Pro, Agency) and AppSumo lifetime code holders receive 100% commercial-use rights and a royalty-free license to publish and sell generated books, covers, and puzzle interiors on Amazon KDP, Etsy, IngramSpark, or personal online stores. You keep 100% of your royalties."
+              "text": "Yes. All paid subscribers (Starter, Pro, Agency) and Lifetime Deal license holders receive 100% commercial-use rights and a royalty-free license to publish and sell generated books, covers, and puzzle interiors on Amazon KDP, Etsy, IngramSpark, or personal online stores. You keep 100% of your royalties."
             }
           },
           {

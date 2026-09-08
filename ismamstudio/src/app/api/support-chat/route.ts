@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 const SYSTEM_INSTRUCTION = `You are "KDPage Virtual Assistant", the official, friendly, and expert customer support assistant for KDPage (https://kdpage.com).
-Your job is to assist Amazon KDP publishers, low-content creators, activity book authors, and AppSumo buyers.
+Your job is to assist Amazon KDP publishers, low-content creators, activity book authors, and Lifetime Deal buyers (Dealify, DealFuel, AppSumo, etc.).
 
 ## Key Knowledge & Facts:
 1. **What is KDPage?**
@@ -18,13 +18,13 @@ Your job is to assist Amazon KDP publishers, low-content creators, activity book
    - **Coloring Book Studio (/tools/coloring-book-generator):** Vector line art & mandala coloring page generator.
    - **Calculators & Utilities (/tools):** KDP Spine Calculator (/tools/spine-calculator), KDP Margin/Bleed Validator, Royalty Calculator, Ads ROI, ISBN generator.
 
-3. **AppSumo Lifetime Deal (LTD) & Stacking:**
-   - **Tier 1 (1 Code / $49):** 3 Brand & Pen-Name Profiles, 20 books, full low-content puzzle generation, 300 DPI vector PDF exports, standard trim sizes (6"x9", 8.5"x11").
-   - **Tier 2 (2 Codes / $79):** 10 Brand Profiles, 50 books, hard Sudoku difficulty, custom maze shapes (Heart, Circle), priority support.
-   - **Tier 3 (3+ Codes / $149):** 25 Brand Profiles, 500 books, team multi-seats (3 seats), agency usage.
-   - **Stacking:** Users can stack up to 5 codes at https://kdpage.com/redeem.
-   - **How to Redeem:** Go to https://kdpage.com/redeem, sign in, enter your AppSumo purchase code, and click "Activate Access".
-   - **Refunds:** AppSumo purchases are protected by AppSumo's official 60-day money-back guarantee via the AppSumo buyer portal.
+3. **Lifetime Deals (LTD) & Partner Code Redemption:**
+   - **Tier 1 (1 Code / Starter):** 3 Brand & Pen-Name Profiles, 20 books, full low-content puzzle generation, 300 DPI vector PDF exports, standard trim sizes (6"x9", 8.5"x11").
+   - **Tier 2 (2 Codes / Pro):** 10 Brand Profiles, 50 books, hard Sudoku difficulty, custom maze shapes (Heart, Circle), priority support.
+   - **Tier 3 (3+ Codes / Agency):** 25 Brand Profiles, 500 books, team multi-seats (3 seats), agency usage.
+   - **Stacking:** Users can stack codes at https://kdpage.com/redeem.
+   - **How to Redeem:** Go to https://kdpage.com/redeem, sign in, enter your Lifetime Deal license key (Dealify, DealFuel, AppSumo, etc.), and click "Activate Access".
+   - **Refunds:** Marketplace purchases are protected by their respective official money-back guarantee policies via the partner marketplace buyer portal.
 
 4. **Amazon KDP Print Specifications:**
    - **Trim Sizes:** Standard 6x9 in, 8.5x11 in, 8.25x6 in, 5x8 in, etc.
@@ -171,8 +171,8 @@ export async function POST(req: Request) {
 
     let fallbackReply = "👋 Welcome to **KDPage**! We provide algorithmic puzzle engines (Sudoku, Shape Mazes, Word Search) and full wrap-around cover creation tools for Amazon KDP.\n\n• Explore all 30+ utilities at [Free Tools](/tools)\n• Design covers at [Cover Studio](/studio)\n• Generate mazes at [Maze Studio](/maze)\n• Redeem codes at [Redeem Page](/redeem)\n\nFor real-time human assistance, click **'Talk to Live Human'** below!";
 
-    if (lastUserMsg.includes("appsumo") || lastUserMsg.includes("redeem") || lastUserMsg.includes("code")) {
-      fallbackReply = "🔑 **How to Redeem Your AppSumo Code:**\n1. Sign in to your KDPage account.\n2. Navigate to the **[Redeem Page](/redeem)**.\n3. Enter your AppSumo license code and click **Activate Access**.\n\n• **Tier 1 (1 Code / $49):** 3 Brands, 20 books\n• **Tier 2 (2 Codes / $79):** 10 Brands, 50 books, hard Sudoku & shape mazes\n• **Tier 3 (3 Codes / $149):** 25 Brands, 500 books, 3-seat agency access\n\nYou can stack up to 5 codes at any time!";
+    if (lastUserMsg.includes("appsumo") || lastUserMsg.includes("dealify") || lastUserMsg.includes("dealfuel") || lastUserMsg.includes("redeem") || lastUserMsg.includes("code") || lastUserMsg.includes("lifetime") || lastUserMsg.includes("license")) {
+      fallbackReply = "🔑 **How to Redeem Your Lifetime Deal & License Code:**\n1. Sign in to your KDPage account (or register free at /sign-up).\n2. Navigate to the **[Redeem Page](/redeem)**.\n3. Enter your Lifetime Deal license code (Dealify, DealFuel, AppSumo, or KDPage direct) and click **Activate Access**.\n\n• **Tier 1 (Pro Starter):** Unlimited puzzle generation, standard trim sizes, 300 DPI exports, commercial rights.\n• **Tier 2 (Pro Studio):** All puzzle engines, shaped mazes, custom trim sizes, priority support.\n• **Tier 3 (Agency):** Everything in Pro + team seats, brand profiles, and bulk batch interior studio.\n\nRedemption is 100% free with zero credit card required!";
     } else if (lastUserMsg.includes("price") || lastUserMsg.includes("plan") || lastUserMsg.includes("cost")) {
       fallbackReply = "💳 **KDPage Plans & Pricing:**\n• **Free Tier ($0):** Export up to 5 pages watermark-free to test in KDP Print Previewer\n• **Starter ($11.99/mo or $99/yr):** 2 Months Free with annual billing\n• **Pro Studio ($21/mo or $179/yr):** 2 Months Free with annual billing (Most Popular)\n• **Publisher Agency ($39/mo or $329/yr):** 3-seat team access & bulk CSV batching\n\nCheck the full comparison at **[Pricing Plans](/pricing)**!";
     } else if (lastUserMsg.includes("spine") || lastUserMsg.includes("bleed") || lastUserMsg.includes("margin") || lastUserMsg.includes("size")) {

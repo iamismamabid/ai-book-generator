@@ -72,21 +72,19 @@ const ARTICLES: HelpArticle[] = [
     category: "getting-started",
     categoryLabel: "Getting Started",
     title: "How to Redeem Lifetime Deal & Partner License Codes",
-    summary: "Complete guide on redeeming your Lifetime Deal license codes (Dealify, DealFuel, AppSumo, or Partner keys) on KDPage to unlock Pro or Agency Tier lifetime access.",
+    summary: "Step-by-step guide on redeeming your Lifetime Deal or Partner license code on KDPage to unlock lifetime access.",
     readTime: "2 min read",
     icon: "Key",
     content: [
       "Redeeming your Lifetime Deal purchase is fast, 100% free, and automatic. You can redeem directly on our universal redemption page with zero credit card or billing details required.",
-      "Lifetime License Tiers:",
-      "• Pro Studio Plan (Tier 1): Unlimited 300 DPI Vector PDF Exports, All 8 Puzzle Engines, Shaped Mazes, Custom Sizes, Full Fabric Cover Studio with Live Spine Calculator, 100% Commercial Rights.",
-      "• Publisher Agency Plan (Tier 2): Everything in Pro + Multi-User Seats, BYOK Unlimited AI Engine, Advanced Coloring Book Generator, Bulk Batch Studio, and Priority Queues."
+      "Once activated, your account immediately unlocks lifetime commercial access, 300 DPI vector PDF exports, unlimited puzzle engines, and full cover design tools."
     ],
     steps: [
       "Log in to your KDPage account (or create a free account at /sign-up).",
       "Go to the Redemption Page at: https://www.kdpage.com/redeem",
-      "Paste your unique Lifetime License Key (e.g., DEALIFY-XXXX-XXXX, DEALFUEL-XXXX-XXXX, or Partner Key) into the input box.",
+      "Paste your unique License Key (e.g., from Dealify, DealFuel, AppSumo, or KDPage direct) into the input box.",
       "Click 'Activate Access' (or 'Redeem License Code'). Your account plan will immediately upgrade to Lifetime Access!",
-      "If your purchase includes multiple codes or stackable licenses, simply repeat the process with your second code."
+      "If your purchase includes multiple stackable license codes, simply repeat the process with your additional code."
     ],
     tips: [
       "No credit card or billing details are ever requested during license activation.",

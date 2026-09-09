@@ -959,7 +959,7 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
   doc.setTextColor(0);
 };
 
-// Helper: Draw Maze Challenge (Ultra Large 7.8" Grid Size)
+// Helper: Draw Maze Challenge (Standard KDP Grid Size)
 const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
   const data = page.config.gridData;
   if (!data || !data.grid) return;
@@ -972,11 +972,15 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHe
   const safeW = pageWidth - (margin * 2);
   const safeH = (pageHeight || 11) - topReserved - margin;
 
+  let standardSize = 5.6;
+  if (pageWidth <= 5.5) standardSize = 3.5;
+  else if (pageWidth <= 6.5) standardSize = 4.2;
+
   // The solution maze is an answer key, not a second full-size puzzle to
-  // solve, so cap it smaller than the puzzle's own "ultra large" grid.
+  // solve, so cap it smaller than the puzzle's own grid.
   const mazeSize = showSolution
-    ? Math.min(safeW * 0.85, safeH - 0.2, 4.5)
-    : Math.min(safeW * 0.85, safeH - 0.2);
+    ? Math.min(standardSize, safeW, safeH - 0.2, 4.5)
+    : Math.min(standardSize, safeW, safeH - 0.2);
   const cellSize = mazeSize / Math.max(rows, cols);
 
   const mazeW = cols * cellSize;

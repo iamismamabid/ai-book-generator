@@ -124,9 +124,23 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     format: [widthInches, heightInches],
   });
 
-  const margin = 0.35;
-  const contentWidth = widthInches - margin * 2;
-  const contentHeight = heightInches - margin * 2;
+  // Standard KDP Interior Dimensions & Sizing
+  let standardSize = 5.6;
+  let safeMarginX = 0.75;
+  if (trimSize === "6x9") {
+    standardSize = 4.2;
+    safeMarginX = 0.65;
+  } else if (trimSize === "5x8") {
+    standardSize = 3.5;
+    safeMarginX = 0.6;
+  }
+
+  const safeW = widthInches - safeMarginX * 2;
+  const safeH = heightInches - 1.6; // clearance for header and footer
+  const mazeSize = Math.min(standardSize, safeW, safeH);
+
+  const mazeX = (widthInches - mazeSize) / 2;
+  const mazeY = (heightInches - mazeSize) / 2 - 0.1;
 
   // 1. Draw Front Cover if integrated
   let firstPageAdded = false;
@@ -169,33 +183,35 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
   mazes.forEach((maze, index) => {
     doc.addPage();
     
-    // Header Info
+    // Header Info (Framed to match maze width boundaries)
+    const headerY = mazeY - 0.35;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
+    doc.setFontSize(18);
     doc.setTextColor(15, 23, 42);
-    doc.text(`Maze #${index + 1}`, margin, margin + 0.2);
+    doc.text(`Maze #${index + 1}`, mazeX, headerY);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
-    doc.text(`Shape: ${shape}`, widthInches - margin, margin + 0.18, { align: "right" });
-
-    // Center layout structure calculation
-    const mazeSize = Math.min(contentWidth, contentHeight - 1.2);
-    const mazeX = margin + (contentWidth - mazeSize) / 2;
-    const mazeY = margin + 0.6 + (contentHeight - 1.2 - mazeSize) / 2;
+    doc.text(
+      `Shape: ${shape.charAt(0).toUpperCase() + shape.slice(1)}`,
+      mazeX + mazeSize,
+      headerY - 0.02,
+      { align: "right" }
+    );
 
     // Draw the clean template puzzle without solution
     drawMaze(doc, maze.grid, maze.start, maze.end, mazeX, mazeY, mazeSize);
 
     if (showGuides) {
-      drawMarginGuides(doc, margin, margin, margin, margin, widthInches, heightInches);
+      drawMarginGuides(doc, safeMarginX, safeMarginX, 0.75, 0.75, widthInches, heightInches);
     }
 
     // Footer info
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(148, 163, 184);
-    doc.text(`Page ${index + 2}`, widthInches / 2, heightInches - 0.4, { align: "center" });
+    doc.text(`Page ${index + 2}`, widthInches / 2, heightInches - 0.5, { align: "center" });
   });
 
   // --------------------------------------------------
@@ -211,7 +227,23 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     doc.text("Solutions", widthInches / 2, heightInches / 2, { align: "center" });
     
     let currentSolutionCount = 0;
-    const solutionMazeSize = (contentWidth - 0.3) / 2; // Maximum 2-column tile width (3.75" on 8.5x11)
+    const solSafeMarginX = safeMarginX;
+    const solSafeW = widthInches - solSafeMarginX * 2;
+    const solTopReserved = 1.0;
+    const solBottomReserved = 0.7;
+    const solSafeH = heightInches - solTopReserved - solBottomReserved;
+
+    const gapX = 0.35;
+    const gapY = 0.45;
+    const maxTileW = (solSafeW - gapX) / 2;
+    const maxTileH = (solSafeH - gapY) / 2;
+    const maxAllowedTileSize = trimSize === "5x8" ? 1.7 : trimSize === "6x9" ? 2.2 : 3.2;
+    const solutionMazeSize = Math.min(maxTileW, maxTileH, maxAllowedTileSize);
+
+    const totalGridW = solutionMazeSize * 2 + gapX;
+    const totalGridH = solutionMazeSize * 2 + gapY;
+    const solGridStartX = (widthInches - totalGridW) / 2;
+    const solGridStartY = solTopReserved + (solSafeH - totalGridH) / 2;
 
     mazes.forEach((maze, index) => {
       // Every 4 solutions require a clean new page break
@@ -220,9 +252,9 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
         doc.setTextColor(15, 23, 42);
-        doc.text("Answer Keys", margin, margin + 0.15);
+        doc.text("Answer Keys", widthInches / 2, 0.8, { align: "center" });
         if (showGuides) {
-          drawMarginGuides(doc, margin, margin, margin, margin, widthInches, heightInches);
+          drawMarginGuides(doc, solSafeMarginX, solSafeMarginX, 0.75, 0.75, widthInches, heightInches);
         }
       }
 
@@ -230,14 +262,14 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
       const colIndex = currentSolutionCount % 2;
       const rowIndex = Math.floor((currentSolutionCount % 4) / 2);
 
-      const x = margin + colIndex * (solutionMazeSize + 0.3);
-      const y = margin + 0.45 + rowIndex * (solutionMazeSize + 0.5);
+      const x = solGridStartX + colIndex * (solutionMazeSize + gapX);
+      const y = solGridStartY + rowIndex * (solutionMazeSize + gapY);
 
       // Label indicator over the micro-solution preview grid
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
+      doc.setFontSize(10);
       doc.setTextColor(51, 65, 85);
-      doc.text(`Solution #${index + 1}`, x, y - 0.15);
+      doc.text(`Solution #${index + 1}`, x + solutionMazeSize / 2, y - 0.12, { align: "center" });
 
       // Execute optimal path calculations (BFS algorithm)
       const solvedPath = solveMaze(maze.grid, maze.start, maze.end);

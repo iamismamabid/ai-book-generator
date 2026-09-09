@@ -56,8 +56,7 @@ import {
   Pencil,
   FilePlus,
   CloudOff,
-  Loader2,
-  Move
+  Loader2
 } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
@@ -827,125 +826,6 @@ export default function ColoringBookClient() {
     showToast("Created Blank Clean 300 DPI Canvas! Start drawing from scratch 🎨");
   };
 
-// Renders custom uploaded or AI-generated line art with line thickness dilation,
-// framing, position offsetting, scaling, and midnight mode inversion.
-function renderCustomLineArtToCanvas(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  customLineArt: ImageData,
-  options: {
-    lineArtScale?: number;
-    lineArtOffsetX?: number;
-    lineArtOffsetY?: number;
-    lineWidth?: number;
-    isMidnightMode?: boolean;
-    frameStyle?: "ornamental" | "circle" | "minimal" | "none";
-    clear?: boolean;
-  }
-) {
-  if (options.clear) {
-    ctx.clearRect(0, 0, width, height);
-  }
-
-  const tempCanvas = document.createElement("canvas");
-  tempCanvas.width = customLineArt.width;
-  tempCanvas.height = customLineArt.height;
-  const tempCtx = tempCanvas.getContext("2d");
-  if (!tempCtx) return;
-
-  if (options.isMidnightMode) {
-    const invertedData = new ImageData(
-      new Uint8ClampedArray(customLineArt.data),
-      customLineArt.width,
-      customLineArt.height
-    );
-    const d = invertedData.data;
-    for (let i = 0; i < d.length; i += 4) {
-      const a = d[i + 3];
-      if (a > 20) {
-        const lum = (d[i] + d[i + 1] + d[i + 2]) / 3;
-        if (lum < 160) {
-          d[i] = 255;
-          d[i + 1] = 255;
-          d[i + 2] = 255;
-        }
-      }
-    }
-    tempCtx.putImageData(invertedData, 0, 0);
-  } else {
-    tempCtx.putImageData(customLineArt, 0, 0);
-  }
-
-  ctx.save();
-  const scale = options.lineArtScale || 1.0;
-  const dw = width * scale;
-  const dh = height * scale;
-  const dx = (width - dw) / 2 + (options.lineArtOffsetX || 0);
-  const dy = (height - dh) / 2 + (options.lineArtOffsetY || 0);
-
-  // Line thickness dilation:
-  // For lineWidth > 2, add offset dilation passes so changing line thickness visibly bolds the custom line art
-  const lw = options.lineWidth || 2;
-  const passes = Math.min(4, Math.floor((lw - 1) / 2));
-  if (passes > 0) {
-    for (let offset = 1; offset <= passes; offset++) {
-      ctx.drawImage(tempCanvas, dx - offset, dy, dw, dh);
-      ctx.drawImage(tempCanvas, dx + offset, dy, dw, dh);
-      ctx.drawImage(tempCanvas, dx, dy - offset, dw, dh);
-      ctx.drawImage(tempCanvas, dx, dy + offset, dw, dh);
-      if (offset > 1) {
-        ctx.drawImage(tempCanvas, dx - offset, dy - offset, dw, dh);
-        ctx.drawImage(tempCanvas, dx + offset, dy + offset, dw, dh);
-      }
-    }
-  }
-  ctx.drawImage(tempCanvas, dx, dy, dw, dh);
-  ctx.restore();
-
-  // Page Border Frame for custom line art
-  if (options.frameStyle && options.frameStyle !== "none") {
-    ctx.save();
-    ctx.strokeStyle = options.isMidnightMode ? "#FFFFFF" : "#000000";
-    ctx.lineWidth = Math.max(2, lw);
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    const margin = width * 0.08;
-    const innerW = width - margin * 2;
-    const innerH = height - margin * 2;
-    const cx = width / 2;
-    const cy = height / 2;
-
-    if (options.frameStyle === "ornamental") {
-      ctx.strokeRect(margin, margin, innerW, innerH);
-      ctx.strokeRect(margin + 12, margin + 12, innerW - 24, innerH - 24);
-      const cLen = 30;
-      [
-        [margin, margin],
-        [margin + innerW, margin],
-        [margin, margin + innerH],
-        [margin + innerW, margin + innerH],
-      ].forEach(([x, y]) => {
-        ctx.beginPath();
-        ctx.arc(x, y, cLen, 0, Math.PI * 2);
-        ctx.stroke();
-      });
-    } else if (options.frameStyle === "circle") {
-      ctx.beginPath();
-      const r = Math.min(innerW, innerH) / 2;
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, cy, r - 15, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (options.frameStyle === "minimal") {
-      ctx.strokeRect(margin, margin, innerW, innerH);
-    }
-    ctx.restore();
-  }
-}
-
   // Render procedure on Canvas
   const drawPattern = useCallback(() => {
     const canvas = canvasRef.current;
@@ -954,15 +834,21 @@ function renderCustomLineArtToCanvas(
     if (!ctx) return;
 
     if (customLineArt) {
-      renderCustomLineArtToCanvas(ctx, canvas.width, canvas.height, customLineArt, {
-        lineArtScale,
-        lineArtOffsetX,
-        lineArtOffsetY,
-        lineWidth,
-        isMidnightMode,
-        frameStyle,
-        clear: true,
-      });
+      // Paint uploaded custom line art with scaling & positioning
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = customLineArt.width;
+      tempCanvas.height = customLineArt.height;
+      tempCanvas.getContext("2d")?.putImageData(customLineArt, 0, 0);
+
+      ctx.save();
+      const scale = lineArtScale || 1.0;
+      const dw = canvas.width * scale;
+      const dh = canvas.height * scale;
+      const dx = (canvas.width - dw) / 2 + lineArtOffsetX;
+      const dy = (canvas.height - dh) / 2 + lineArtOffsetY;
+      ctx.drawImage(tempCanvas, dx, dy, dw, dh);
+      ctx.restore();
     } else {
       drawColoringPattern(ctx, canvas.width, canvas.height, {
         presetId: activePreset.id,
@@ -1904,15 +1790,20 @@ function renderCustomLineArtToCanvas(
 
         if (pageCtx) {
           if (customLineArt) {
-            renderCustomLineArtToCanvas(pageCtx, pageCanvas.width, pageCanvas.height, customLineArt, {
-              lineArtScale,
-              lineArtOffsetX,
-              lineArtOffsetY,
-              lineWidth,
-              isMidnightMode,
-              frameStyle,
-              clear: true,
-            });
+            pageCtx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = customLineArt.width;
+            tempCanvas.height = customLineArt.height;
+            tempCanvas.getContext("2d")?.putImageData(customLineArt, 0, 0);
+
+            pageCtx.save();
+            const scale = lineArtScale || 1.0;
+            const dw = pageCanvas.width * scale;
+            const dh = pageCanvas.height * scale;
+            const dx = (pageCanvas.width - dw) / 2 + lineArtOffsetX;
+            const dy = (pageCanvas.height - dh) / 2 + lineArtOffsetY;
+            pageCtx.drawImage(tempCanvas, dx, dy, dw, dh);
+            pageCtx.restore();
           } else {
             drawColoringPattern(pageCtx, pageCanvas.width, pageCanvas.height, {
               presetId: activePreset.id,
@@ -2168,83 +2059,33 @@ function renderCustomLineArtToCanvas(
 
             {/* Customization Settings */}
             <div data-tour="customization-controls" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-4 h-4 text-emerald-500" /> Customization Controls
-                </h3>
-                <div className="flex items-center gap-1.5">
-                  <a href="#studio-canvas-workspace" className="lg:hidden text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
-                    View Canvas ↓
-                  </a>
-                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
-                    customLineArt
-                      ? "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
-                      : "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-                  }`}>
-                    {customLineArt ? "Custom Art Mode" : "Vector Preset Mode"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Active Image Notification Banner */}
-              {customLineArt && (
-                <div className="bg-gradient-to-r from-indigo-50/80 via-purple-50/50 to-indigo-50/80 dark:from-indigo-950/40 dark:via-purple-950/30 dark:to-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-xs">
-                  <div className="flex items-center gap-2 truncate">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <div className="truncate text-left">
-                      <div className="text-[9px] uppercase font-black text-indigo-600 dark:text-indigo-400 leading-none">Custom Image Active</div>
-                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{customImageName || "AI Line Art"}</div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={clearCustomUpload}
-                    className="text-[10px] font-bold text-rose-500 hover:text-rose-600 hover:underline shrink-0 cursor-pointer"
-                  >
-                    Reset to Presets
-                  </button>
-                </div>
-              )}
+              <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                <SlidersHorizontal className="w-4 h-4 text-emerald-500" /> Customization Controls
+              </h3>
 
               {/* Color by Number Toggle */}
-              {!customLineArt ? (
-                <div className="bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50 p-3.5 rounded-xl flex items-center justify-between">
-                  <div>
-                    <div className="text-xs font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                      <Hash className="w-3.5 h-3.5 text-indigo-600" /> Color-by-Number Overlay
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                      Adds numbered regions (1-10) + Top Color Palette Key
-                    </div>
+              <div className="bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50 p-3.5 rounded-xl flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                    <Hash className="w-3.5 h-3.5 text-indigo-600" /> Color-by-Number Overlay
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={isColorByNumber}
-                    onChange={(e) => setIsColorByNumber(e.target.checked)}
-                    className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                  />
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                    Adds numbered regions (1-10) + Top Color Palette Key
+                  </div>
                 </div>
-              ) : (
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Hash className="w-3 h-3 text-slate-400" /> Color-by-Number Overlay
-                  </span>
-                  <span className="text-[9px] font-bold text-slate-400 bg-slate-200/70 dark:bg-slate-700/70 px-2 py-0.5 rounded-full">
-                    Vector Presets Only
-                  </span>
-                </div>
-              )}
+                <input
+                  type="checkbox"
+                  checked={isColorByNumber}
+                  onChange={(e) => setIsColorByNumber(e.target.checked)}
+                  className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                />
+              </div>
 
               {/* Line Thickness */}
               <div>
                 <div className="flex justify-between text-xs font-bold mb-1.5">
-                  <span className="flex items-center gap-1">
-                    Line Thickness
-                    {customLineArt && (
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">(Live Line Boldness)</span>
-                    )}
-                  </span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-mono font-bold">{lineWidth}px</span>
+                  <span>Line Thickness</span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-mono">{lineWidth}px</span>
                 </div>
                 <input
                   type="range"
@@ -2254,39 +2095,23 @@ function renderCustomLineArtToCanvas(
                   onChange={(e) => setLineWidth(Number(e.target.value))}
                   className="w-full accent-indigo-600 cursor-pointer"
                 />
-                <div className="flex justify-between text-[9px] text-slate-400 font-semibold px-0.5 mt-0.5">
-                  <span>Fine (1px)</span>
-                  <span>Standard (3px)</span>
-                  <span>Ultra Bold (8px)</span>
-                </div>
               </div>
 
               {/* Detail Complexity */}
-              {!customLineArt ? (
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1.5">
-                    <span>Pattern Complexity</span>
-                    <span className="text-indigo-600 dark:text-indigo-400 font-mono font-bold">{complexity} density</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="6"
-                    max="24"
-                    value={complexity}
-                    onChange={(e) => setComplexity(Number(e.target.value))}
-                    className="w-full accent-indigo-600 cursor-pointer"
-                  />
+              <div>
+                <div className="flex justify-between text-xs font-bold mb-1.5">
+                  <span>Pattern Complexity</span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-mono">{complexity} density</span>
                 </div>
-              ) : (
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <SlidersHorizontal className="w-3 h-3 text-slate-400" /> Pattern Complexity
-                  </span>
-                  <span className="text-[9px] font-bold text-slate-400 bg-slate-200/70 dark:bg-slate-700/70 px-2 py-0.5 rounded-full">
-                    Vector Presets Only
-                  </span>
-                </div>
-              )}
+                <input
+                  type="range"
+                  min="6"
+                  max="24"
+                  value={complexity}
+                  onChange={(e) => setComplexity(Number(e.target.value))}
+                  className="w-full accent-indigo-600 cursor-pointer"
+                />
+              </div>
 
               {/* Line Art Size / Scale */}
               <div>
@@ -2336,59 +2161,6 @@ function renderCustomLineArtToCanvas(
                     </button>
                   )}
                 </div>
-
-                {/* Position Nudge Controls for Custom Line Art */}
-                {customLineArt && (
-                  <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                      <Move className="w-3 h-3 text-indigo-500" /> Position Offset
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setLineArtOffsetX((x) => x - 20)}
-                        className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
-                        title="Move Left"
-                      >
-                        ←
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLineArtOffsetX((x) => x + 20)}
-                        className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
-                        title="Move Right"
-                      >
-                        →
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLineArtOffsetY((y) => y - 20)}
-                        className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
-                        title="Move Up"
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLineArtOffsetY((y) => y + 20)}
-                        className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
-                        title="Move Down"
-                      >
-                        ↓
-                      </button>
-                      {(lineArtOffsetX !== 0 || lineArtOffsetY !== 0) && (
-                        <button
-                          type="button"
-                          onClick={() => { setLineArtOffsetX(0); setLineArtOffsetY(0); }}
-                          className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline ml-1 cursor-pointer"
-                          title="Center image"
-                        >
-                          Center
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Frame Style & Page Mode */}
@@ -2400,7 +2172,7 @@ function renderCustomLineArtToCanvas(
                   <select
                     value={frameStyle}
                     onChange={(e) => setFrameStyle(e.target.value as any)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold cursor-pointer"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold"
                   >
                     <option value="ornamental">Ornamental Frame</option>
                     <option value="circle">Circle Vignette</option>
@@ -2415,7 +2187,7 @@ function renderCustomLineArtToCanvas(
                   </label>
                   <button
                     onClick={() => setIsMidnightMode(!isMidnightMode)}
-                    className={`w-full py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`w-full py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 ${
                       isMidnightMode
                         ? "bg-slate-950 text-white border-slate-800"
                         : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
@@ -2437,7 +2209,7 @@ function renderCustomLineArtToCanvas(
                     const found = TRIM_SIZES.find((t) => t.id === e.target.value);
                     if (found) setTrimSize(found);
                   }}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold cursor-pointer"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold"
                 >
                   {TRIM_SIZES.map((t) => (
                     <option key={t.id} value={t.id}>{t.label}</option>
@@ -2471,27 +2243,13 @@ function renderCustomLineArtToCanvas(
                 </div>
               </div>
 
-              {/* Regenerate Seed / Center Action */}
-              {!customLineArt ? (
-                <button
-                  onClick={() => setSeed(Math.floor(Math.random() * 10000))}
-                  className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <RefreshCw className="w-4 h-4" /> Regenerate Endless Variation
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setLineArtScale(1.0);
-                    setLineArtOffsetX(0);
-                    setLineArtOffsetY(0);
-                    showToast("Centered and reset line art scale to 100%!");
-                  }}
-                  className="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 dark:bg-indigo-950/40 hover:bg-indigo-100 text-xs font-bold text-indigo-700 dark:text-indigo-300 transition flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Maximize2 className="w-4 h-4 text-indigo-600" /> Center &amp; Reset Subject Size
-                </button>
-              )}
+              {/* Regenerate Seed */}
+              <button
+                onClick={() => setSeed(Math.floor(Math.random() * 10000))}
+                className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" /> Regenerate Endless Variation
+              </button>
 
             </div>
 
@@ -2555,11 +2313,7 @@ function renderCustomLineArtToCanvas(
           </div>
 
           {/* 🖼️ Right Expanded Canvas Live Workspace Area (Cols: 8) */}
-          <div
-            id="studio-canvas-workspace"
-            data-tour="interactive-coloring"
-            className="lg:col-span-8 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto no-scrollbar bg-slate-200 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[640px]"
-          >
+          <div data-tour="interactive-coloring" className="lg:col-span-8 bg-slate-200 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[720px]">
 
             <div className="w-full max-w-[760px] flex items-center justify-between gap-2 mb-3">
               <button

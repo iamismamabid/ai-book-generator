@@ -11,6 +11,7 @@ interface SaveToNotebookButtonProps {
   subtitle?: string;
   category?: string;
   data?: any;
+  getData?: () => any | Promise<any>;
   defaultFolder?: string;
   className?: string;
   iconOnly?: boolean;
@@ -22,6 +23,7 @@ export default function SaveToNotebookButton({
   subtitle,
   category = "general",
   data,
+  getData,
   defaultFolder = "Unfiled",
   className = "",
   iconOnly = false,
@@ -74,7 +76,8 @@ export default function SaveToNotebookButton({
     setError(null);
     const targetFolder = overrideFolder || selectedFolder;
     try {
-      const res = await saveToNotebook(title, content, subtitle, category, data, targetFolder);
+      const payloadData = getData ? await getData() : data;
+      const res = await saveToNotebook(title, content, subtitle, category, payloadData, targetFolder);
       if (res.success) {
         setSaved(true);
         setIsFolderPickerOpen(false);

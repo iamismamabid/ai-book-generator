@@ -545,12 +545,33 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
                 </div>
               </div>
 
+              {/* Image Preview for Coloring Pages & Canvases */}
+              {selectedItem.data?.color && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Drawing & Coloring Preview</h4>
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-100 dark:bg-slate-950 p-3 flex items-center justify-center max-h-[350px]">
+                    <img src={selectedItem.data.color} alt="Coloring Drawing Preview" className="max-h-[320px] object-contain rounded-xl shadow-sm" />
+                  </div>
+                </div>
+              )}
+
               {/* JSON Metadata Details (if present) */}
               {selectedItem.data && (
                 <div className="space-y-2">
                   <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Project Configuration Data</h4>
                   <pre className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-emerald-400 text-[11px] font-mono overflow-x-auto custom-scrollbar">
-                    {JSON.stringify(selectedItem.data, null, 2)}
+                    {JSON.stringify(
+                      Object.fromEntries(
+                        Object.entries(selectedItem.data).map(([k, v]) => [
+                          k,
+                          typeof v === "string" && v.startsWith("data:image")
+                            ? `[Image Data URL: ${(v.length / 1024).toFixed(1)} KB]`
+                            : v,
+                        ])
+                      ),
+                      null,
+                      2
+                    )}
                   </pre>
                 </div>
               )}

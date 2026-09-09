@@ -1569,25 +1569,37 @@ export async function getNotebookEntryData(id: string) {
   }
 
   try {
-    const workspaceUserIds = await getWorkspaceUserIds(userId);
     const notebookDelegate = (prisma as any).notebook;
     let entry: any = null;
 
-    if (notebookDelegate?.findFirst) {
+    if (notebookDelegate?.findUnique) {
+      entry = await notebookDelegate.findUnique({
+        where: { id },
+      });
+    } else if (notebookDelegate?.findFirst) {
       entry = await notebookDelegate.findFirst({
-        where: { id, userId: { in: workspaceUserIds } },
+        where: { id },
       });
     } else {
       const rows = await prisma.$queryRawUnsafe(
-        `SELECT * FROM "notebooks" WHERE "id" = $1 AND "userId" = ANY($2)`,
-        id,
-        workspaceUserIds
+        `SELECT * FROM "notebooks" WHERE "id" = $1 LIMIT 1`,
+        id
       );
       entry = Array.isArray(rows) ? rows[0] : null;
     }
 
     if (!entry) {
       return { success: false, error: "Notebook entry not found." };
+    }
+
+    // Fast path: if the item belongs to the signed-in user, return immediately without secondary team query
+    if (entry.userId === userId) {
+      return { success: true, title: entry.title, category: entry.category, data: entry.data };
+    }
+
+    const workspaceUserIds = await getWorkspaceUserIds(userId);
+    if (!workspaceUserIds.includes(entry.userId)) {
+      return { success: false, error: "Unauthorized. Notebook entry belongs to another account." };
     }
 
     return { success: true, title: entry.title, category: entry.category, data: entry.data };

@@ -359,25 +359,65 @@ const TRIM_SIZES: {
   },
 ];
 
+function getInitialNotebookCache(): any | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+    if (!notebookId) return null;
+    const cachedStr = sessionStorage.getItem(`kdpage_notebook_entry_${notebookId}`);
+    if (cachedStr) {
+      return JSON.parse(cachedStr);
+    }
+  } catch {}
+  return null;
+}
+
 export default function ColoringBookClient() {
   const { isSignedIn } = useAuth();
   const [isByokModalOpen, setIsByokModalOpen] = useState(false);
+  const initialNotebookData = getInitialNotebookCache();
+
   // Config state
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [activePreset, setActivePreset] = useState<PresetItem>(() => {
+    if (initialNotebookData?.activePreset) {
+      const targetId = typeof initialNotebookData.activePreset === "string" ? initialNotebookData.activePreset : initialNotebookData.activePreset.id;
+      const targetName = typeof initialNotebookData.activePreset === "object" ? initialNotebookData.activePreset.name : undefined;
+      const found = PRESETS.find((p) => p.id === targetId || (targetName && p.name.toLowerCase() === targetName.toLowerCase()));
+      if (found) return found;
+    }
     return PRESETS.find((p) => p.id === "tropical_palms") || PRESETS[1] || PRESETS[0];
   });
-  const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
+  const [trimSize, setTrimSize] = useState(() => {
+    if (initialNotebookData?.trimSize) {
+      const targetTrimId = typeof initialNotebookData.trimSize === "string" ? initialNotebookData.trimSize : initialNotebookData.trimSize.id;
+      const foundTrim = TRIM_SIZES.find(t => t.id === targetTrimId);
+      if (foundTrim) return foundTrim;
+    }
+    return TRIM_SIZES[0];
+  });
   const [useBleed, setUseBleed] = useState(false);
-  const [lineWidth, setLineWidth] = useState<number>(3);
-  const [complexity, setComplexity] = useState<number>(12);
+  const [lineWidth, setLineWidth] = useState<number>(() => {
+    return typeof initialNotebookData?.lineWidth === "number" ? initialNotebookData.lineWidth : 3;
+  });
+  const [complexity, setComplexity] = useState<number>(() => {
+    return typeof initialNotebookData?.complexity === "number" ? initialNotebookData.complexity : 12;
+  });
   const [lineArtScale, setLineArtScale] = useState<number>(1.0);
   const [lineArtOffsetX, setLineArtOffsetX] = useState<number>(0);
   const [lineArtOffsetY, setLineArtOffsetY] = useState<number>(0);
-  const [isColorByNumber, setIsColorByNumber] = useState<boolean>(true);
-  const [isMidnightMode, setIsMidnightMode] = useState<boolean>(false);
-  const [frameStyle, setFrameStyle] = useState<"ornamental" | "circle" | "minimal" | "none">("ornamental");
-  const [seed, setSeed] = useState<number>(42);
+  const [isColorByNumber, setIsColorByNumber] = useState<boolean>(() => {
+    return typeof initialNotebookData?.isColorByNumber === "boolean" ? initialNotebookData.isColorByNumber : true;
+  });
+  const [isMidnightMode, setIsMidnightMode] = useState<boolean>(() => {
+    return typeof initialNotebookData?.isMidnightMode === "boolean" ? initialNotebookData.isMidnightMode : false;
+  });
+  const [frameStyle, setFrameStyle] = useState<"ornamental" | "circle" | "minimal" | "none">(() => {
+    return initialNotebookData?.frameStyle || "ornamental";
+  });
+  const [seed, setSeed] = useState<number>(() => {
+    return typeof initialNotebookData?.seed === "number" ? initialNotebookData.seed : 42;
+  });
   const [bookPagesCount, setBookPagesCount] = useState<number>(30);
 
   // Custom Image Upload State
@@ -439,7 +479,22 @@ export default function ColoringBookClient() {
   const cloudLoadedForPresetRef = useRef<string | null>(null);
   const cloudSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isNotebookModeRef = useRef<boolean>(false);
-  const notebookDrawingRef = useRef<{ color?: string; line?: string; shouldLoadLine?: boolean } | null>(null);
+  const notebookDrawingRef = useRef<{ color?: string; line?: string; shouldLoadLine?: boolean } | null>(
+    initialNotebookData?.color || initialNotebookData?.line
+      ? {
+          color: initialNotebookData.color,
+          line: initialNotebookData.line,
+          shouldLoadLine:
+            (typeof initialNotebookData.activePreset === "string"
+              ? initialNotebookData.activePreset
+              : initialNotebookData.activePreset?.id) === "blank_canvas" || !!initialNotebookData.customLineArtDataUrl,
+        }
+      : null
+  );
+  const cachedColorImgRef = useRef<HTMLImageElement | null>(null);
+  const cachedLineImgRef = useRef<HTMLImageElement | null>(null);
+  const lastPaintedColorSrcRef = useRef<string | null>(null);
+  const lastPaintedLineSrcRef = useRef<string | null>(null);
 
   // Synchronously detect notebook mode on mount so background effects are immediately inhibited
   if (typeof window !== "undefined") {
@@ -457,28 +512,49 @@ export default function ColoringBookClient() {
 
   const paintDrawingToCanvas = useCallback((colorData?: string, lineData?: string, loadLine = false) => {
     if (colorData) {
-      const colorImg = new window.Image();
-      colorImg.onload = () => {
-        const colorCanvas = colorCanvasRef.current;
-        if (!colorCanvas) return;
-        const ctx = colorCanvas.getContext("2d");
-        if (!ctx) return;
+      const colorCanvas = colorCanvasRef.current;
+      const ctx = colorCanvas?.getContext("2d");
+
+      if (cachedColorImgRef.current && lastPaintedColorSrcRef.current === colorData && colorCanvas && ctx) {
         ctx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
-        ctx.drawImage(colorImg, 0, 0, colorCanvas.width, colorCanvas.height);
-      };
-      colorImg.src = colorData;
+        ctx.drawImage(cachedColorImgRef.current, 0, 0, colorCanvas.width, colorCanvas.height);
+      } else {
+        const colorImg = new window.Image();
+        lastPaintedColorSrcRef.current = colorData;
+        colorImg.onload = () => {
+          cachedColorImgRef.current = colorImg;
+          const curCanvas = colorCanvasRef.current;
+          if (!curCanvas) return;
+          const curCtx = curCanvas.getContext("2d");
+          if (!curCtx) return;
+          curCtx.clearRect(0, 0, curCanvas.width, curCanvas.height);
+          curCtx.drawImage(colorImg, 0, 0, curCanvas.width, curCanvas.height);
+        };
+        colorImg.src = colorData;
+      }
     }
+
     if (lineData && loadLine) {
-      const lineImg = new window.Image();
-      lineImg.onload = () => {
-        const lineCanvas = canvasRef.current;
-        if (!lineCanvas) return;
-        const ctx = lineCanvas.getContext("2d");
-        if (!ctx) return;
+      const lineCanvas = canvasRef.current;
+      const ctx = lineCanvas?.getContext("2d");
+
+      if (cachedLineImgRef.current && lastPaintedLineSrcRef.current === lineData && lineCanvas && ctx) {
         ctx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
-        ctx.drawImage(lineImg, 0, 0, lineCanvas.width, lineCanvas.height);
-      };
-      lineImg.src = lineData;
+        ctx.drawImage(cachedLineImgRef.current, 0, 0, lineCanvas.width, lineCanvas.height);
+      } else {
+        const lineImg = new window.Image();
+        lastPaintedLineSrcRef.current = lineData;
+        lineImg.onload = () => {
+          cachedLineImgRef.current = lineImg;
+          const curCanvas = canvasRef.current;
+          if (!curCanvas) return;
+          const curCtx = curCanvas.getContext("2d");
+          if (!curCtx) return;
+          curCtx.clearRect(0, 0, curCanvas.width, curCanvas.height);
+          curCtx.drawImage(lineImg, 0, 0, curCanvas.width, curCanvas.height);
+        };
+        lineImg.src = lineData;
+      }
     }
   }, []);
 
@@ -537,6 +613,81 @@ export default function ColoringBookClient() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  const applyNotebookPayload = useCallback(async (d: any) => {
+    let targetId = activePreset.id;
+    if (d.activePreset) {
+      targetId = typeof d.activePreset === "string" ? d.activePreset : d.activePreset.id;
+      const targetName = typeof d.activePreset === "object" ? d.activePreset.name : undefined;
+      const found = PRESETS.find((p) => p.id === targetId || (targetName && p.name.toLowerCase() === targetName.toLowerCase())) || d.activePreset;
+      restoredCustomArtForPresetRef.current = targetId;
+      cloudLoadedForPresetRef.current = targetId;
+      setActivePreset(found);
+      if (found.category) setSelectedCategory(found.category);
+    } else {
+      restoredCustomArtForPresetRef.current = targetId;
+      cloudLoadedForPresetRef.current = targetId;
+    }
+    if (typeof d.lineWidth === "number") setLineWidth(d.lineWidth);
+    if (typeof d.complexity === "number") setComplexity(d.complexity);
+    if (typeof d.isColorByNumber === "boolean") setIsColorByNumber(d.isColorByNumber);
+    if (typeof d.isMidnightMode === "boolean") setIsMidnightMode(d.isMidnightMode);
+    if (d.frameStyle) setFrameStyle(d.frameStyle);
+    if (typeof d.seed === "number") setSeed(d.seed);
+    if (d.trimSize) {
+      const targetTrimId = typeof d.trimSize === "string" ? d.trimSize : d.trimSize.id;
+      const foundTrim = TRIM_SIZES.find(t => t.id === targetTrimId) || d.trimSize;
+      setTrimSize(foundTrim);
+    }
+
+    if (typeof d.customLineArtDataUrl === "string") {
+      try {
+        const imgData = await dataUrlToImageData(d.customLineArtDataUrl);
+        setCustomLineArt(imgData);
+        if (typeof d.customImageName === "string") setCustomImageName(d.customImageName);
+        if (typeof d.lineArtScale === "number") setLineArtScale(d.lineArtScale);
+        if (typeof d.lineArtOffsetX === "number") setLineArtOffsetX(d.lineArtOffsetX);
+        if (typeof d.lineArtOffsetY === "number") setLineArtOffsetY(d.lineArtOffsetY);
+      } catch (e) {
+        console.error("Failed restoring custom line art from notebook:", e);
+      }
+    }
+
+    setIsColoringMode(true);
+
+    let colorData: string | undefined = d.color || d.colorDataUrl;
+    let lineData: string | undefined = d.line || d.lineDataUrl;
+
+    if (!colorData) {
+      try {
+        const localAutosave = localStorage.getItem(`kdpage_coloring_autosave_${targetId}`) || localStorage.getItem(`kdpage_coloring_progress_${targetId}`);
+        if (localAutosave) {
+          const parsed = JSON.parse(localAutosave);
+          if (parsed && typeof parsed.color === "string") {
+            colorData = parsed.color;
+            if (typeof parsed.line === "string") lineData = parsed.line;
+          }
+        }
+      } catch {}
+    }
+
+    if (!colorData && isSignedIn) {
+      try {
+        const cloudRes = await loadColoringProject(targetId);
+        if (cloudRes.success && cloudRes.data && typeof (cloudRes.data as any).color === "string") {
+          colorData = (cloudRes.data as any).color;
+          if (typeof (cloudRes.data as any).line === "string") lineData = (cloudRes.data as any).line;
+        }
+      } catch {}
+    }
+
+    if (colorData || lineData) {
+      const shouldLoadLine = targetId === "blank_canvas" || !!d.customLineArtDataUrl;
+      notebookDrawingRef.current = { color: colorData, line: lineData, shouldLoadLine };
+      paintDrawingToCanvas(colorData, lineData, shouldLoadLine);
+      setHistory({ stack: [{ color: colorData || "", line: lineData || "" }], index: 0 });
+    }
+  }, [activePreset.id, isSignedIn, paintDrawingToCanvas]);
+
   useEffect(() => {
     checkPremiumStatus()
       .then((res: any) => setIsPremium(!!res.isPremium))
@@ -546,99 +697,25 @@ export default function ColoringBookClient() {
     if (typeof window !== "undefined") {
       const notebookId = new URLSearchParams(window.location.search).get("notebookId");
       if (notebookId) {
+        // Fast path: Apply cached notebook data immediately (0ms latency!)
+        try {
+          const cachedStr = sessionStorage.getItem(`kdpage_notebook_entry_${notebookId}`);
+          if (cachedStr) {
+            const cached = JSON.parse(cachedStr);
+            if (cached) {
+              applyNotebookPayload(cached);
+            }
+          }
+        } catch {}
+
+        // Background fetch to guarantee latest version from server
         getNotebookEntryData(notebookId)
           .then(async (res) => {
             if (!res.success || !res.data) return;
-            const d: any = res.data;
-            let targetId = activePreset.id;
-            if (d.activePreset) {
-              targetId = typeof d.activePreset === "string" ? d.activePreset : d.activePreset.id;
-              const targetName = typeof d.activePreset === "object" ? d.activePreset.name : undefined;
-              const found = PRESETS.find((p) => p.id === targetId || (targetName && p.name.toLowerCase() === targetName.toLowerCase())) || d.activePreset;
-              // Guard ref so preset-switch effect doesn't clear loaded colors
-              restoredCustomArtForPresetRef.current = targetId;
-              cloudLoadedForPresetRef.current = targetId;
-              setActivePreset(found);
-              if (found.category) setSelectedCategory(found.category);
-            } else {
-              restoredCustomArtForPresetRef.current = targetId;
-              cloudLoadedForPresetRef.current = targetId;
-            }
-            if (typeof d.lineWidth === "number") setLineWidth(d.lineWidth);
-            if (typeof d.complexity === "number") setComplexity(d.complexity);
-            if (typeof d.isColorByNumber === "boolean") setIsColorByNumber(d.isColorByNumber);
-            if (typeof d.isMidnightMode === "boolean") setIsMidnightMode(d.isMidnightMode);
-            if (d.frameStyle) setFrameStyle(d.frameStyle);
-            if (typeof d.seed === "number") setSeed(d.seed);
-            if (d.trimSize) {
-              const targetTrimId = typeof d.trimSize === "string" ? d.trimSize : d.trimSize.id;
-              const foundTrim = TRIM_SIZES.find(t => t.id === targetTrimId) || d.trimSize;
-              setTrimSize(foundTrim);
-            }
-
-            // Restore custom line art if present
-            if (typeof d.customLineArtDataUrl === "string") {
-              try {
-                const imgData = await dataUrlToImageData(d.customLineArtDataUrl);
-                setCustomLineArt(imgData);
-                if (typeof d.customImageName === "string") setCustomImageName(d.customImageName);
-                if (typeof d.lineArtScale === "number") setLineArtScale(d.lineArtScale);
-                if (typeof d.lineArtOffsetX === "number") setLineArtOffsetX(d.lineArtOffsetX);
-                if (typeof d.lineArtOffsetY === "number") setLineArtOffsetY(d.lineArtOffsetY);
-              } catch (e) {
-                console.error("Failed restoring custom line art from notebook:", e);
-              }
-            }
-
-            // Always open in interactive coloring mode so all drawings & tools are visible
-            setIsColoringMode(true);
-
-            // Read saved color and line drawing data
-            let colorData: string | undefined = d.color || d.colorDataUrl;
-            let lineData: string | undefined = d.line || d.lineDataUrl;
-
-            // Seamless fallback for older saves where color was omitted from notebook payload
-            if (!colorData) {
-              try {
-                const localAutosave = localStorage.getItem(`kdpage_coloring_autosave_${targetId}`) || localStorage.getItem(`kdpage_coloring_progress_${targetId}`);
-                if (localAutosave) {
-                  const parsed = JSON.parse(localAutosave);
-                  if (parsed && typeof parsed.color === "string") {
-                    colorData = parsed.color;
-                    if (typeof parsed.line === "string") lineData = parsed.line;
-                  }
-                }
-              } catch {}
-            }
-
-            if (!colorData && isSignedIn) {
-              try {
-                const cloudRes = await loadColoringProject(targetId);
-                if (cloudRes.success && cloudRes.data && typeof (cloudRes.data as any).color === "string") {
-                  colorData = (cloudRes.data as any).color;
-                  if (typeof (cloudRes.data as any).line === "string") lineData = (cloudRes.data as any).line;
-                }
-              } catch {}
-            }
-
-            if (colorData || lineData) {
-              const shouldLoadLine = targetId === "blank_canvas" || !!d.customLineArtDataUrl;
-              notebookDrawingRef.current = { color: colorData, line: lineData, shouldLoadLine };
-
-              paintDrawingToCanvas(colorData, lineData, shouldLoadLine);
-              setTimeout(() => {
-                paintDrawingToCanvas(colorData, lineData, shouldLoadLine);
-              }, 80);
-              setTimeout(() => {
-                paintDrawingToCanvas(colorData, lineData, shouldLoadLine);
-              }, 250);
-              setTimeout(() => {
-                paintDrawingToCanvas(colorData, lineData, shouldLoadLine);
-              }, 600);
-
-              setHistory({ stack: [{ color: colorData || "", line: lineData || "" }], index: 0 });
-            }
-
+            try {
+              sessionStorage.setItem(`kdpage_notebook_entry_${notebookId}`, JSON.stringify(res.data));
+            } catch {}
+            applyNotebookPayload(res.data);
             showToast("Restored coloring page & drawing from Notebook! 🎨");
           })
           .catch((err) => console.error("Failed to load notebook entry:", err));

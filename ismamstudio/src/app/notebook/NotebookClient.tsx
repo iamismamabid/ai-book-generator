@@ -455,6 +455,13 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
                       return (
                         <Link
                           href={href}
+                          onClick={() => {
+                            try {
+                              if (item.data) {
+                                sessionStorage.setItem(`kdpage_notebook_entry_${item.id}`, JSON.stringify(item.data));
+                              }
+                            } catch {}
+                          }}
                           className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-xl shadow-sm hover:-translate-y-0.5 transition-all"
                         >
                           <span>Open</span>
@@ -589,6 +596,13 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
                   return (
                     <Link
                       href={href}
+                      onClick={() => {
+                        try {
+                          if (selectedItem.data) {
+                            sessionStorage.setItem(`kdpage_notebook_entry_${selectedItem.id}`, JSON.stringify(selectedItem.data));
+                          }
+                        } catch {}
+                      }}
                       className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md hover:-translate-y-0.5 transition-all"
                     >
                       <span>{label}</span>

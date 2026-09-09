@@ -1924,139 +1924,6 @@ export default function ColoringBookClient() {
           {/* ⚙️ Left Compact Control Panel (Cols: 4) */}
           <div className="lg:col-span-4 space-y-4">
 
-            {/* 🔑 BYOK AI Line Art Generator */}
-            <div className="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-sm space-y-3">
-              <ByokStudioPanel
-                studioType="coloring"
-                onApplyColoringPage={handleApplyAiColoringPage}
-              />
-            </div>
-            
-            {/* Custom Upload & Template Selection */}
-            <div data-tour="select-template" className="space-y-4">
-              {/* Compact Custom Upload & Blank Canvas Toolbar */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                    <Upload className="w-3 h-3 text-indigo-500" /> Custom Line Art &amp; Canvas
-                  </span>
-                  {customImageName && (
-                    <button 
-                      onClick={clearCustomUpload} 
-                      className="text-[9px] text-rose-500 hover:underline font-bold cursor-pointer"
-                    >
-                      Reset to Presets
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Upload Photo Button */}
-                  <label className="cursor-pointer bg-indigo-50/60 dark:bg-indigo-950/30 border border-dashed border-indigo-300 dark:border-indigo-700/60 hover:border-indigo-500 rounded-xl p-2 text-center transition flex flex-col items-center justify-center gap-1 group">
-                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                    <div className="flex items-center gap-1.5 text-indigo-900 dark:text-indigo-300">
-                      <Upload className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
-                      <span className="text-[11px] font-bold truncate max-w-[120px]">
-                        {customImageName ? customImageName : "Photo to Line Art"}
-                      </span>
-                    </div>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400 leading-none">
-                      Sobel 300 DPI Filter
-                    </span>
-                  </label>
-
-                  {/* Blank Canvas Button */}
-                  <button
-                    onClick={handleCreateBlankPage}
-                    className="bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-center transition flex flex-col items-center justify-center gap-1 text-slate-700 dark:text-slate-200 cursor-pointer group active:scale-95"
-                  >
-                    <div className="flex items-center gap-1.5 font-bold">
-                      <FilePlus className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
-                      <span className="text-[11px] font-bold">Blank Canvas</span>
-                    </div>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400 leading-none">
-                      Draw From Scratch
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Compact Combined Category & Design Template Selector */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-xs space-y-2">
-                {/* Header with Category Dropdown */}
-                <div className="flex items-center justify-between gap-2">
-                  <label className="text-[11px] font-black uppercase text-slate-700 dark:text-slate-200 tracking-wider flex items-center gap-1.5 shrink-0">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Templates
-                    <span className="text-[9px] text-slate-400 font-semibold">({filteredPresets.length})</span>
-                  </label>
-
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="text-[10px] font-bold py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 outline-none cursor-pointer max-w-[160px] truncate"
-                  >
-                    {["All", "Botanical & Floral", "Mandalas & Sacred Geometry", "Stained Glass & Architecture", "Landscapes & Celestial", "Food, Drinks & Kitchen", "Cozy Objects & Still Life", "Abstract & Art Deco", "Single Object Clip-Art", "European Flags", "North American Flags", "Concept Cars"].map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Compact Horizontal Quick-Pills for Categories */}
-                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
-                  {CATEGORY_PILLS.map((pill) => (
-                    <button
-                      key={pill.value}
-                      onClick={() => setSelectedCategory(pill.value)}
-                      className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold shrink-0 transition-all cursor-pointer ${
-                        selectedCategory === pill.value
-                          ? "bg-indigo-600 text-white shadow-xs"
-                          : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
-                    >
-                      {pill.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Compact 3-Column Preset Thumbnails Grid */}
-                <div className="grid grid-cols-3 gap-1.5 max-h-[175px] overflow-y-auto pr-1">
-                  {filteredPresets.map((preset) => (
-                    <button
-                      key={preset.id}
-                      onClick={() => {
-                        isNotebookModeRef.current = false;
-                        notebookDrawingRef.current = null;
-                        setCustomLineArt(null);
-                        setCustomImageName(null);
-                        setLineArtScale(1.0);
-                        setLineArtOffsetX(0);
-                        setLineArtOffsetY(0);
-                        const colorCanvas = colorCanvasRef.current;
-                        if (colorCanvas) {
-                          const cCtx = colorCanvas.getContext("2d");
-                          cCtx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
-                        }
-                        setActivePreset(preset);
-                        setComplexity(preset.defaultComplexity);
-                      }}
-                      className={`p-1.5 rounded-lg border text-left transition-all cursor-pointer group ${
-                        activePreset.id === preset.id && !customLineArt
-                          ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 ring-1 ring-indigo-500/40 shadow-xs"
-                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
-                      }`}
-                    >
-                      <PresetThumbnail preset={preset} />
-                      <div className="text-[9px] font-bold mt-1 leading-tight line-clamp-1 text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                        {preset.name}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
             {/* Customization Settings */}
             <div data-tour="customization-controls" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-4">
               <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
@@ -2251,6 +2118,139 @@ export default function ColoringBookClient() {
                 <RefreshCw className="w-4 h-4" /> Regenerate Endless Variation
               </button>
 
+            </div>
+
+            {/* Custom Upload & Template Selection */}
+            <div data-tour="select-template" className="space-y-4">
+              {/* Compact Custom Upload & Blank Canvas Toolbar */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                    <Upload className="w-3 h-3 text-indigo-500" /> Custom Line Art &amp; Canvas
+                  </span>
+                  {customImageName && (
+                    <button 
+                      onClick={clearCustomUpload} 
+                      className="text-[9px] text-rose-500 hover:underline font-bold cursor-pointer"
+                    >
+                      Reset to Presets
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Upload Photo Button */}
+                  <label className="cursor-pointer bg-indigo-50/60 dark:bg-indigo-950/30 border border-dashed border-indigo-300 dark:border-indigo-700/60 hover:border-indigo-500 rounded-xl p-2 text-center transition flex flex-col items-center justify-center gap-1 group">
+                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                    <div className="flex items-center gap-1.5 text-indigo-900 dark:text-indigo-300">
+                      <Upload className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
+                      <span className="text-[11px] font-bold truncate max-w-[120px]">
+                        {customImageName ? customImageName : "Photo to Line Art"}
+                      </span>
+                    </div>
+                    <span className="text-[8px] text-slate-500 dark:text-slate-400 leading-none">
+                      Sobel 300 DPI Filter
+                    </span>
+                  </label>
+
+                  {/* Blank Canvas Button */}
+                  <button
+                    onClick={handleCreateBlankPage}
+                    className="bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-center transition flex flex-col items-center justify-center gap-1 text-slate-700 dark:text-slate-200 cursor-pointer group active:scale-95"
+                  >
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <FilePlus className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+                      <span className="text-[11px] font-bold">Blank Canvas</span>
+                    </div>
+                    <span className="text-[8px] text-slate-500 dark:text-slate-400 leading-none">
+                      Draw From Scratch
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Compact Combined Category & Design Template Selector */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-xs space-y-2">
+                {/* Header with Category Dropdown */}
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-[11px] font-black uppercase text-slate-700 dark:text-slate-200 tracking-wider flex items-center gap-1.5 shrink-0">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Templates
+                    <span className="text-[9px] text-slate-400 font-semibold">({filteredPresets.length})</span>
+                  </label>
+
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="text-[10px] font-bold py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 outline-none cursor-pointer max-w-[160px] truncate"
+                  >
+                    {["All", "Botanical & Floral", "Mandalas & Sacred Geometry", "Stained Glass & Architecture", "Landscapes & Celestial", "Food, Drinks & Kitchen", "Cozy Objects & Still Life", "Abstract & Art Deco", "Single Object Clip-Art", "European Flags", "North American Flags", "Concept Cars"].map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Compact Horizontal Quick-Pills for Categories */}
+                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
+                  {CATEGORY_PILLS.map((pill) => (
+                    <button
+                      key={pill.value}
+                      onClick={() => setSelectedCategory(pill.value)}
+                      className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold shrink-0 transition-all cursor-pointer ${
+                        selectedCategory === pill.value
+                          ? "bg-indigo-600 text-white shadow-xs"
+                          : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      {pill.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Compact 3-Column Preset Thumbnails Grid */}
+                <div className="grid grid-cols-3 gap-1.5 max-h-[175px] overflow-y-auto pr-1">
+                  {filteredPresets.map((preset) => (
+                    <button
+                      key={preset.id}
+                      onClick={() => {
+                        isNotebookModeRef.current = false;
+                        notebookDrawingRef.current = null;
+                        setCustomLineArt(null);
+                        setCustomImageName(null);
+                        setLineArtScale(1.0);
+                        setLineArtOffsetX(0);
+                        setLineArtOffsetY(0);
+                        const colorCanvas = colorCanvasRef.current;
+                        if (colorCanvas) {
+                          const cCtx = colorCanvas.getContext("2d");
+                          cCtx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+                        }
+                        setActivePreset(preset);
+                        setComplexity(preset.defaultComplexity);
+                      }}
+                      className={`p-1.5 rounded-lg border text-left transition-all cursor-pointer group ${
+                        activePreset.id === preset.id && !customLineArt
+                          ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 ring-1 ring-indigo-500/40 shadow-xs"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
+                      }`}
+                    >
+                      <PresetThumbnail preset={preset} />
+                      <div className="text-[9px] font-bold mt-1 leading-tight line-clamp-1 text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                        {preset.name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 🔑 BYOK AI Line Art Generator */}
+            <div className="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-sm space-y-3">
+              <ByokStudioPanel
+                studioType="coloring"
+                onApplyColoringPage={handleApplyAiColoringPage}
+              />
             </div>
 
             {/* Export Actions */}

@@ -10,6 +10,12 @@ import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { checkPremiumStatus } from "@/app/actions";
+import { 
+  generateWordScramblePuzzles, 
+  WordScramblePuzzle, 
+  WORD_SCRAMBLE_DICTIONARY,
+  scrambleWord 
+} from "@/lib/wordScrambleDictionary";
 
 const DEFAULT_WORDS = [
   "AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION",
@@ -37,7 +43,9 @@ export default function WordScrambleGenerator() {
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [numPages, setNumPages] = useState<number>(3);
+  const [wordsPerPage, setWordsPerPage] = useState<number>(8);
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
+  const [downloadProgress, setDownloadProgress] = useState<number>(0);
 
   useEffect(() => {
     async function loadPremium() {
@@ -51,11 +59,6 @@ export default function WordScrambleGenerator() {
     loadPremium();
   }, []);
 
-  // Fetches plan status fresh rather than trusting whatever `premiumStatus`
-  // happened to hold at render time -- the numPages input was only ever
-  // clamped using that possibly-stale state, so a genuinely premium account
-  // could get capped to the free-tier limit if this ran before the async
-  // mount check resolved (or before a newly-redeemed plan reflected).
   const getFreshPremiumStatus = async () => {
     try {
       const res = await checkPremiumStatus();
@@ -67,11 +70,10 @@ export default function WordScrambleGenerator() {
     }
   };
 
-  const tierMaxFor = (plan: string) =>
-    plan === "free" ? 3 :
-      plan === "starter" ? 50 :
-        plan === "pro" ? 200 :
-          1000;
+  const tierMaxFor = (plan: string, isPremium?: boolean) =>
+    (isPremium || plan === "agency" || plan === "pro") ? 1000 :
+      plan === "starter" ? 100 :
+        10;
 
   const [includeAnswers, setIncludeAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
@@ -79,107 +81,48 @@ export default function WordScrambleGenerator() {
   const [includeCover, setIncludeCover] = useState<boolean>(false);
   
   // Puzzle data states
-  const [puzzles, setPuzzles] = useState<Array<{
-    index: number;
-    original: string[];
-    scrambled: string[];
-    wordBank: string[];
-  }>>([]);
+  const [puzzles, setPuzzles] = useState<WordScramblePuzzle[]>([]);
   
   const [activePreviewIndex, setActivePreviewIndex] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
-  // Parse words & generate puzzles
+  // Parse words & generate puzzles up to 1,000 pages without premature breaks
   const parseAndGeneratePuzzles = async () => {
     setIsGenerating(true);
 
-    // Parse words from textarea
     const parsed = inputText
       .split("\n")
       .map(w => w.trim().toUpperCase())
-      .filter(w => w.length > 0 && /^[A-Z]+$/.test(w)); // letters only
+      .filter(w => w.length > 0 && /^[A-Z]+$/.test(w));
 
-    if (parsed.length === 0) {
-      alert("Please enter at least a few valid words (letters only).");
-      setIsGenerating(false);
-      return;
-    }
+    const sourceWords = parsed.length > 0 ? parsed : DEFAULT_WORDS;
+    setWords(sourceWords);
 
-    setWords(parsed);
-
-    // Re-verify and re-clamp against the real plan at generation time --
-    // don't trust numPages just because the input's onChange clamped it
-    // against a possibly-stale premiumStatus.
     const freshStatus = await getFreshPremiumStatus();
-    const finalNumPages = Math.min(numPages, tierMaxFor(freshStatus.plan));
+    const maxAllowed = tierMaxFor(freshStatus.plan, Boolean(freshStatus.isPremium));
+    const finalNumPages = Math.min(Math.max(1, numPages), maxAllowed);
 
-    // Distribute words to pages
-    const generated: typeof puzzles = [];
-    const wordsPerPage = Math.ceil(parsed.length / finalNumPages);
-
-    for (let p = 0; p < finalNumPages; p++) {
-      const startIndex = p * wordsPerPage;
-      const originalList = parsed.slice(startIndex, startIndex + wordsPerPage);
-      
-      if (originalList.length === 0) break;
-      
-      const scrambledList = originalList.map(word => scrambleWord(word, difficulty));
-      
-      // Shuffle original words for the word bank helper box
-      const bankList = [...originalList].sort(() => 0.5 - Math.random());
-      
-      generated.push({
-        index: p + 1,
-        original: originalList,
-        scrambled: scrambledList,
-        wordBank: bankList
-      });
-    }
+    const generated = generateWordScramblePuzzles(
+      finalNumPages,
+      wordsPerPage,
+      sourceWords,
+      difficulty
+    );
     
     setPuzzles(generated);
     setActivePreviewIndex(0);
     setIsGenerating(false);
   };
 
-  // Helper: Scramble letters
-  const scrambleWord = (word: string, diff: typeof difficulty) => {
-    if (word.length <= 2) return word;
-    
-    // Easy: Keep first and last letter in place, scramble middle
-    if (diff === "easy" && word.length > 3) {
-      const first = word[0];
-      const last = word[word.length - 1];
-      const middle = word.substring(1, word.length - 1).split("");
-      
-      // shuffle middle
-      for (let i = middle.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [middle[i], middle[j]] = [middle[j], middle[i]];
-      }
-      
-      return first + middle.join("") + last;
-    } 
-    // Medium / Hard: full shuffle
-    else {
-      const letters = word.split("");
-      for (let i = letters.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [letters[i], letters[j]] = [letters[j], letters[i]];
-      }
-      
-      return letters.join("");
-    }
-  };
-
-  // Run on mount
+  // Run on mount or configuration changes
   useEffect(() => {
     parseAndGeneratePuzzles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [difficulty, numPages]);
+  }, [difficulty, numPages, wordsPerPage]);
 
-  // Export PDF function
+  // Export PDF function with async yielding & live progress for 1,000 pages
   const handleExportPDF = async (options: {
     includeCover: boolean;
     coverState: any;
@@ -192,9 +135,12 @@ export default function WordScrambleGenerator() {
   }) => {
     if (puzzles.length === 0) return;
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides, isPremium, borderTheme } = options;
-    
-    setTimeout(async () => {
+    setDownloadProgress(0);
+    setIsExportModalOpen(false);
+
+    try {
+      const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides, isPremium, borderTheme } = options;
+      
       let finalW = 8.5;
       let finalH = 11;
       if (finalTrim === "6x9") {
@@ -221,13 +167,15 @@ export default function WordScrambleGenerator() {
       });
 
       // Safety Margins
-      const marginL = 0.75; // Inside/gutter margin
+      const marginL = 0.75;
       const marginR = 0.5;
       const marginT = 0.75;
       const marginB = 0.75;
       
       const contentW = pageW - marginL - marginR;
       const contentH = pageH - marginT - marginB;
+
+      const totalSteps = puzzles.length + (incSol ? Math.ceil(puzzles.length / 8) : 0);
 
       // 1. Draw Front Cover if integrated
       let firstPageAdded = false;
@@ -236,15 +184,21 @@ export default function WordScrambleGenerator() {
         firstPageAdded = true;
       }
       
-      // 1. Draw Puzzles
-      puzzles.forEach((puzzle, pIdx) => {
+      // 1. Draw Puzzles with periodic yielding
+      for (let pIdx = 0; pIdx < puzzles.length; pIdx++) {
+        const puzzle = puzzles[pIdx];
         if (firstPageAdded || pIdx > 0) doc.addPage();
         firstPageAdded = true;
-        
+
+        if (pIdx % 20 === 0) {
+          setDownloadProgress(Math.min(90, Math.round(((pIdx + 1) / totalSteps) * 100)));
+          await new Promise(r => setTimeout(r, 0));
+        }
+
         // Header Title
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
-        doc.setTextColor(30, 41, 59); // slate-800
+        doc.setTextColor(30, 41, 59);
         doc.text(`Word Scramble #${puzzle.index}`, marginL + contentW / 2, marginT + 0.3, { align: "center" });
 
         if (finalGuides) {
@@ -254,7 +208,7 @@ export default function WordScrambleGenerator() {
         // Subtitle instructions
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        doc.setTextColor(100, 116, 139); // slate-500
+        doc.setTextColor(100, 116, 139);
         doc.text(
           "Unscramble the letters below and write the correct word in the blank space.",
           marginL + contentW / 2, 
@@ -264,31 +218,28 @@ export default function WordScrambleGenerator() {
         
         // Divider line
         doc.setLineWidth(0.015);
-        doc.setDrawColor(226, 232, 240); // slate-200
+        doc.setDrawColor(226, 232, 240);
         doc.line(marginL, marginT + 0.8, marginL + contentW, marginT + 0.8);
         
         // Draw Words list
         const listStartY = marginT + 1.2;
-        const availableHeight = contentH - 2.2; // leave space for word bank
+        const availableHeight = contentH - 2.2;
         const stepY = Math.min(0.55, availableHeight / puzzle.scrambled.length);
         
         puzzle.scrambled.forEach((scrambled, wIdx) => {
           const y = listStartY + wIdx * stepY;
           
-          // Number indicator
           doc.setFont("helvetica", "bold");
           doc.setFontSize(12);
-          doc.setTextColor(148, 163, 184); // slate-400
+          doc.setTextColor(148, 163, 184);
           doc.text(`${wIdx + 1}.`, marginL + 0.2, y);
           
-          // Scrambled letters separated by spaces
           const displayScrambled = scrambled.split("").join(" ");
           doc.setFont("courier", "bold");
           doc.setFontSize(13);
           doc.setTextColor(30, 41, 59);
           doc.text(displayScrambled, marginL + 0.6, y);
           
-          // Write-in underline
           doc.setDrawColor(148, 163, 184);
           doc.setLineWidth(0.01);
           doc.line(marginL + contentW - 2.5, y + 0.05, marginL + contentW - 0.2, y + 0.05);
@@ -302,21 +253,19 @@ export default function WordScrambleGenerator() {
           const boxHeight = 0.35 + numRows * rowSpacing;
           const bankStartY = marginT + contentH - boxHeight;
           
-          // Word bank container box
-          doc.setDrawColor(203, 213, 225); // slate-300
-          doc.setFillColor(248, 250, 252); // slate-50
+          doc.setDrawColor(203, 213, 225);
+          doc.setFillColor(248, 250, 252);
           doc.setLineWidth(0.01);
           doc.roundedRect(marginL + 0.1, bankStartY, contentW - 0.2, boxHeight, 0.1, 0.1, "FD");
           
           doc.setFont("helvetica", "bold");
           doc.setFontSize(9);
-          doc.setTextColor(79, 70, 229); // indigo-600
+          doc.setTextColor(79, 70, 229);
           doc.text("WORD BANK", marginL + 0.3, bankStartY + 0.22);
           
-          // Render sorted list in columns
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9.5);
-          doc.setTextColor(71, 85, 105); // slate-600
+          doc.setTextColor(71, 85, 105);
           
           const colW = (contentW - 0.6) / 3;
           let row = 0;
@@ -339,7 +288,7 @@ export default function WordScrambleGenerator() {
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
         doc.text(`Page ${pIdx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
-      });
+      }
       
       // 2. Draw Answer Keys Page
       if (incSol) {
@@ -356,25 +305,22 @@ export default function WordScrambleGenerator() {
           drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
         }
 
-        // Divider line
         doc.setLineWidth(0.015);
         doc.setDrawColor(226, 232, 240);
         doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
 
-        // Render mini-keys in 2 columns
         const gridCols = 2;
         const colW = contentW / gridCols;
         let itemsOnPage = 0;
 
-        puzzles.forEach((puzzle, pIdx) => {
+        for (let pIdx = 0; pIdx < puzzles.length; pIdx++) {
+          const puzzle = puzzles[pIdx];
           const wordCount = puzzle.original ? puzzle.original.length : 6;
-          const blockHeight = 0.25 + wordCount * 0.16 + 0.3; // Estimated block height
+          const blockHeight = 0.25 + wordCount * 0.16 + 0.3;
           const pageRowIdx = Math.floor(itemsOnPage / gridCols);
           const testStartY = marginT + 0.8 + pageRowIdx * 2.2;
 
-          // Check if adding this row will exceed the printable area
           if (itemsOnPage > 0 && itemsOnPage % gridCols === 0 && testStartY + blockHeight > pageH - marginB - 0.3) {
-            // Footer page numbering for previous Answer page
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8);
             doc.setTextColor(148, 163, 184);
@@ -417,9 +363,13 @@ export default function WordScrambleGenerator() {
           });
 
           itemsOnPage++;
-        });
 
-        // Footer page numbering for final Answer page
+          if (pIdx % 50 === 0) {
+            setDownloadProgress(Math.min(95, Math.round(((puzzles.length + pIdx / 8) / totalSteps) * 100)));
+            await new Promise(r => setTimeout(r, 0));
+          }
+        }
+
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
@@ -432,8 +382,7 @@ export default function WordScrambleGenerator() {
         await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
       }
 
-      // Apply watermark (free tier) and the decorative border theme to every
-      // interior page, skipping the front/back cover pages.
+      // 4. Apply watermark / border theme
       if (!isPremium || (borderTheme && borderTheme !== "none")) {
         const totalPages = doc.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
@@ -444,12 +393,20 @@ export default function WordScrambleGenerator() {
             if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, pageW, pageH);
             if (!isPremium) drawWatermark(doc, pageW, pageH);
           }
+          if (i % 50 === 0) await new Promise(r => setTimeout(r, 0));
         }
       }
       
-      doc.save(`word-scramble-${difficulty}-${numPages}pages.pdf`);
+      setDownloadProgress(100);
+      await new Promise(r => setTimeout(r, 100));
+      doc.save(`word-scramble-${difficulty}-${puzzles.length}pages.pdf`);
+    } catch (err) {
+      console.error("PDF export error:", err);
+      alert("An error occurred during PDF generation. Please try again.");
+    } finally {
       setIsDownloading(false);
-    }, 50);
+      setDownloadProgress(0);
+    }
   };
 
   return (
@@ -480,7 +437,7 @@ export default function WordScrambleGenerator() {
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Word List</label>
               <button 
                 onClick={() => setInputText(DEFAULT_WORDS.join("\n"))}
-                className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition flex items-center gap-1"
+                className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition flex items-center gap-1 cursor-pointer"
                 title="Reset to defaults"
               >
                 <RefreshCw className="w-2.5 h-2.5"/> Default List
@@ -489,10 +446,43 @@ export default function WordScrambleGenerator() {
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Enter one word per line..."
-              className="w-full h-44 bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs font-semibold focus:border-indigo-500 focus:outline-none transition-colors duration-200 text-slate-200 resize-none font-mono"
+              placeholder="Enter one word per line (or use presets below)..."
+              className="w-full h-36 bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs font-semibold focus:border-indigo-500 focus:outline-none transition-colors duration-200 text-slate-200 resize-none font-mono"
             />
-            <p className="text-[10px] text-slate-500 font-medium">Valid characters: A-Z letters only. Spaces & special signs ignored.</p>
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <button 
+                type="button"
+                onClick={() => {
+                  setInputText(DEFAULT_WORDS.join("\n"));
+                  setNumPages(3);
+                }}
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg text-[10px] font-bold transition cursor-pointer"
+              >
+                Defaults (30)
+              </button>
+              <button
+                type="button"
+                onClick={() => setNumPages(50)}
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition cursor-pointer"
+              >
+                50 Pages
+              </button>
+              <button
+                type="button"
+                onClick={() => setNumPages(100)}
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition cursor-pointer"
+              >
+                100 Pages
+              </button>
+              <button
+                type="button"
+                onClick={() => setNumPages(1000)}
+                className="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-[10px] font-black transition cursor-pointer"
+              >
+                ⚡ 1,000 Pages
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-500 font-medium">Valid characters: A-Z letters only. Multi-page books draw from your words + built-in dictionary.</p>
           </div>
 
           <div className="h-px bg-slate-800/60" />
@@ -541,25 +531,66 @@ export default function WordScrambleGenerator() {
             </div>
 
             <div>
+              <label className="text-xs font-black uppercase text-slate-400 tracking-wider block mb-1.5">Words Per Page</label>
+              <select
+                value={wordsPerPage}
+                onChange={(e) => setWordsPerPage(parseInt(e.target.value) || 8)}
+                className="w-full text-xs font-bold bg-slate-900 border border-slate-800 p-2.5 rounded-2xl text-white outline-none focus:border-indigo-500 transition-colors duration-200"
+              >
+                <option value={6}>6 Words (Easy / Large Print)</option>
+                <option value={8}>8 Words (Standard KDP Layout)</option>
+                <option value={10}>10 Words (Compact Interior)</option>
+                <option value={12}>12 Words (Challenging)</option>
+              </select>
+            </div>
+
+            <div>
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex justify-between block mb-1.5">
                 <span>Number of Pages</span>
                 <span className="text-amber-400 font-bold">
-                  Max {tierMaxFor(premiumStatus.plan)} Pages ({premiumStatus.plan === "free" ? "Free" : premiumStatus.plan})
+                  Max {tierMaxFor(premiumStatus.plan, premiumStatus.isPremium)} Pages ({premiumStatus.plan === "free" ? "Free" : premiumStatus.plan})
                 </span>
               </label>
               <input
                 type="number"
                 min="1"
-                max={tierMaxFor(premiumStatus.plan)}
+                max={tierMaxFor(premiumStatus.plan, premiumStatus.isPremium)}
                 value={numPages}
                 onChange={(e) => {
                   let val = Math.max(1, parseInt(e.target.value) || 1);
-                  const maxLimit = tierMaxFor(premiumStatus.plan);
+                  const maxLimit = tierMaxFor(premiumStatus.plan, premiumStatus.isPremium);
                   if (val > maxLimit) val = maxLimit;
                   setNumPages(val);
                 }}
                 className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-2xl text-xs font-mono text-amber-400 focus:border-indigo-500 outline-none transition-colors duration-200"
               />
+              <div className="flex items-center gap-1.5 pt-2">
+                {[3, 50, 100].map((pCount) => (
+                  <button
+                    key={pCount}
+                    type="button"
+                    onClick={() => setNumPages(pCount)}
+                    className={`flex-1 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                      numPages === pCount
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "bg-slate-800 hover:bg-slate-700 text-slate-300"
+                    }`}
+                  >
+                    {pCount} P
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setNumPages(1000)}
+                  className={`flex-1 py-1 rounded-lg text-[10px] font-black transition cursor-pointer ${
+                    numPages === 1000
+                      ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
+                      : "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30"
+                  }`}
+                >
+                  ⚡ 1,000
+                </button>
+              </div>
             </div>
           </div>
 
@@ -614,12 +645,34 @@ export default function WordScrambleGenerator() {
 
         {/* Generate / Action buttons */}
         <div data-tour="export-section" className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
+          {/* Live Progress Bar during PDF compilation */}
+          {isDownloading && (
+            <div className="w-full bg-slate-900 border border-amber-500/40 rounded-xl p-3 space-y-2 animate-in fade-in">
+              <div className="flex justify-between items-center text-[10px] font-black uppercase text-amber-400">
+                <span className="flex items-center gap-1.5">
+                  <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />
+                  Compiling {puzzles.length}-Page PDF
+                </span>
+                <span>{downloadProgress}%</span>
+              </div>
+              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-200"
+                  style={{ width: `${downloadProgress}%` }}
+                />
+              </div>
+              <p className="text-[9px] text-slate-400 text-center font-semibold">
+                Rendering vector pages... Please keep this tab open.
+              </p>
+            </div>
+          )}
+
           <button
             onClick={parseAndGeneratePuzzles}
-            disabled={isGenerating}
+            disabled={isGenerating || isDownloading}
             className="btn-premium w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 normal-case"
           >
-            {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin"/> : "Generate Scramble"}
+            {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin"/> : `Generate ${numPages} Page${numPages > 1 ? "s" : ""}`}
           </button>
 
           <button
@@ -628,8 +681,17 @@ export default function WordScrambleGenerator() {
             className="btn-premium w-full bg-amber-500 hover:bg-amber-600 text-slate-950 normal-case hover:-translate-y-0.5"
             style={{ boxShadow: "0 8px 24px rgba(245, 158, 11, 0.18)" }}
           >
-            {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
-            Download Print PDF
+            {isDownloading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin"/>
+                {downloadProgress > 0 ? `Exporting PDF (${downloadProgress}%)...` : "Exporting PDF..."}
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4"/>
+                Download Print PDF ({puzzles.length} Pages)
+              </>
+            )}
           </button>
 
           <SaveToNotebookButton
@@ -651,19 +713,44 @@ export default function WordScrambleGenerator() {
         <div className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between transition-colors duration-300">
           <div className="flex items-center gap-2">
             <span className="text-xs font-black uppercase text-slate-400 tracking-wider">Active Preview:</span>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
-              {puzzles.map((_, idx) => (
+            {puzzles.length > 8 ? (
+              <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
                 <button
-                  key={idx}
-                  onClick={() => setActivePreviewIndex(idx)}
-                  className={`px-2.5 py-1 rounded-full font-bold transition-all ${
-                    activePreviewIndex === idx ? 'bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                  }`}
+                  type="button"
+                  onClick={() => setActivePreviewIndex(prev => Math.max(0, prev - 1))}
+                  disabled={activePreviewIndex === 0}
+                  className="px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 font-bold cursor-pointer"
                 >
-                  P#{idx + 1}
+                  ← Prev
                 </button>
-              ))}
-            </div>
+                <span className="font-bold text-slate-800 dark:text-slate-200 px-1 text-xs">
+                  Page {activePreviewIndex + 1} of {puzzles.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setActivePreviewIndex(prev => Math.min(puzzles.length - 1, prev + 1))}
+                  disabled={activePreviewIndex === puzzles.length - 1}
+                  className="px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 font-bold cursor-pointer"
+                >
+                  Next →
+                </button>
+              </div>
+            ) : (
+              <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
+                {puzzles.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActivePreviewIndex(idx)}
+                    className={`px-2.5 py-1 rounded-full font-bold transition-all cursor-pointer ${
+                      activePreviewIndex === idx ? 'bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    P#{idx + 1}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2">

@@ -438,6 +438,49 @@ export default function ColoringBookClient() {
   const restoredCustomArtForPresetRef = useRef<string | null>(null);
   const cloudLoadedForPresetRef = useRef<string | null>(null);
   const cloudSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isNotebookModeRef = useRef<boolean>(false);
+  const notebookDrawingRef = useRef<{ color?: string; line?: string; shouldLoadLine?: boolean } | null>(null);
+
+  // Synchronously detect notebook mode on mount so background effects are immediately inhibited
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("notebookId")) {
+      isNotebookModeRef.current = true;
+      if (restoredCustomArtForPresetRef.current === null) {
+        restoredCustomArtForPresetRef.current = "NOTEBOOK_ACTIVE";
+      }
+      if (cloudLoadedForPresetRef.current === null) {
+        cloudLoadedForPresetRef.current = "NOTEBOOK_ACTIVE";
+      }
+    }
+  }
+
+  const paintDrawingToCanvas = useCallback((colorData?: string, lineData?: string, loadLine = false) => {
+    if (colorData) {
+      const colorImg = new window.Image();
+      colorImg.onload = () => {
+        const colorCanvas = colorCanvasRef.current;
+        if (!colorCanvas) return;
+        const ctx = colorCanvas.getContext("2d");
+        if (!ctx) return;
+        ctx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+        ctx.drawImage(colorImg, 0, 0, colorCanvas.width, colorCanvas.height);
+      };
+      colorImg.src = colorData;
+    }
+    if (lineData && loadLine) {
+      const lineImg = new window.Image();
+      lineImg.onload = () => {
+        const lineCanvas = canvasRef.current;
+        if (!lineCanvas) return;
+        const ctx = lineCanvas.getContext("2d");
+        if (!ctx) return;
+        ctx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+        ctx.drawImage(lineImg, 0, 0, lineCanvas.width, lineCanvas.height);
+      };
+      lineImg.src = lineData;
+    }
+  }, []);
 
   const loadSnapshot = useCallback((snapshot: { line?: string; color?: string }, loadLine = false) => {
     const lineCanvas = canvasRef.current;
@@ -455,7 +498,7 @@ export default function ColoringBookClient() {
         const curLineCtx = curLineCanvas?.getContext("2d");
         if (curLineCanvas && curLineCtx) {
           curLineCtx.clearRect(0, 0, curLineCanvas.width, curLineCanvas.height);
-          curLineCtx.drawImage(lineImg, 0, 0);
+          curLineCtx.drawImage(lineImg, 0, 0, curLineCanvas.width, curLineCanvas.height);
         }
       };
       lineImg.src = snapshot.line;
@@ -469,12 +512,25 @@ export default function ColoringBookClient() {
         const curColorCtx = curColorCanvas?.getContext("2d");
         if (curColorCanvas && curColorCtx) {
           curColorCtx.clearRect(0, 0, curColorCanvas.width, curColorCanvas.height);
-          curColorCtx.drawImage(colorImg, 0, 0);
+          curColorCtx.drawImage(colorImg, 0, 0, curColorCanvas.width, curColorCanvas.height);
         }
       };
       colorImg.src = snapshot.color;
+    } else {
+      colorCtx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
     }
   }, []);
+
+  // Re-paint active notebook drawing whenever canvas size or activePreset changes
+  useEffect(() => {
+    if (notebookDrawingRef.current?.color) {
+      paintDrawingToCanvas(
+        notebookDrawingRef.current.color,
+        notebookDrawingRef.current.line,
+        notebookDrawingRef.current.shouldLoadLine
+      );
+    }
+  }, [trimSize, useBleed, activePreset.id, paintDrawingToCanvas]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -567,10 +623,20 @@ export default function ColoringBookClient() {
 
             if (colorData || lineData) {
               const shouldLoadLine = targetId === "blank_canvas" || !!d.customLineArtDataUrl;
+              notebookDrawingRef.current = { color: colorData, line: lineData, shouldLoadLine };
+
+              paintDrawingToCanvas(colorData, lineData, shouldLoadLine);
               setTimeout(() => {
-                loadSnapshot({ color: colorData, line: lineData }, shouldLoadLine);
-                setHistory({ stack: [{ color: colorData || "", line: lineData || "" }], index: 0 });
-              }, 50);
+                paintDrawingToCanvas(colorData, lineData, shouldLoadLine);
+              }, 80);
+              setTimeout(() => {
+                paintDrawingToCanvas(colorData, lineData, shouldLoadLine);
+              }, 250);
+              setTimeout(() => {
+                paintDrawingToCanvas(colorData, lineData, shouldLoadLine);
+              }, 600);
+
+              setHistory({ stack: [{ color: colorData || "", line: lineData || "" }], index: 0 });
             }
 
             showToast("Restored coloring page & drawing from Notebook! 🎨");
@@ -597,6 +663,7 @@ export default function ColoringBookClient() {
 
   // Persist active preset id to localStorage
   useEffect(() => {
+    if (isNotebookModeRef.current) return;
     try {
       if (activePreset?.id) {
         localStorage.setItem("kdpage_coloring_active_preset_id", activePreset.id);
@@ -660,6 +727,8 @@ export default function ColoringBookClient() {
 
   // Blank Page Creator Action
   const handleCreateBlankPage = () => {
+    isNotebookModeRef.current = false;
+    notebookDrawingRef.current = null;
     setActivePreset(PRESETS[0]); // blank_canvas
     setCustomLineArt(null);
     setCustomImageName(null);
@@ -732,6 +801,7 @@ export default function ColoringBookClient() {
   // re-trigger that same effect, and loop. The ref guard runs this at most
   // once per preset per mount.
   useEffect(() => {
+    if (isNotebookModeRef.current) return;
     if (restoredCustomArtForPresetRef.current === activePreset.id) return;
     restoredCustomArtForPresetRef.current = activePreset.id;
     try {
@@ -754,7 +824,7 @@ export default function ColoringBookClient() {
     } catch {
       // ignore
     }
-  }, [activePreset.id]);
+  }, [activePreset.id, loadSnapshot]);
 
   // Cloud load for signed-in users -- runs after the localStorage-based
   // restore effects above, so a cloud copy (the durable one, survives a
@@ -763,6 +833,7 @@ export default function ColoringBookClient() {
   // deliberately doesn't mark the ref done while signed out, so it retries
   // once the user actually signs in rather than getting stuck skipped.
   useEffect(() => {
+    if (isNotebookModeRef.current) return;
     if (!isSignedIn) return;
     if (cloudLoadedForPresetRef.current === activePreset.id) return;
     cloudLoadedForPresetRef.current = activePreset.id;
@@ -779,7 +850,7 @@ export default function ColoringBookClient() {
         console.error("Failed to load cloud coloring project:", err);
       }
     })();
-  }, [isSignedIn, activePreset.id]);
+  }, [isSignedIn, activePreset.id, loadSnapshot]);
 
   // Custom File Upload Handler
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -885,6 +956,17 @@ export default function ColoringBookClient() {
         const next = [...trimmed, snapshot].slice(-25);
         return { stack: next, index: next.length - 1 };
       });
+
+      // Keep notebookDrawingRef up to date if user drew on top of it
+      if (notebookDrawingRef.current) {
+        notebookDrawingRef.current = { color: snapshot.color, line: snapshot.line, shouldLoadLine: true };
+      }
+
+      // If in notebook mode, don't automatically overwrite cloud preset slot
+      if (isNotebookModeRef.current) {
+        return;
+      }
+
       try {
         const autosavePayload: Record<string, unknown> = { ...snapshot };
         if (customLineArt) {
@@ -926,6 +1008,9 @@ export default function ColoringBookClient() {
       if (prev.index <= 0) return prev;
       const newIndex = prev.index - 1;
       const target = prev.stack[newIndex];
+      if (notebookDrawingRef.current) {
+        notebookDrawingRef.current = { color: target.color, line: target.line, shouldLoadLine: true };
+      }
       loadSnapshot(target, activePreset.id === "blank_canvas" || !!customLineArt);
       return { ...prev, index: newIndex };
     });
@@ -936,12 +1021,18 @@ export default function ColoringBookClient() {
       if (prev.index >= prev.stack.length - 1) return prev;
       const newIndex = prev.index + 1;
       const target = prev.stack[newIndex];
+      if (notebookDrawingRef.current) {
+        notebookDrawingRef.current = { color: target.color, line: target.line, shouldLoadLine: true };
+      }
       loadSnapshot(target, activePreset.id === "blank_canvas" || !!customLineArt);
       return { ...prev, index: newIndex };
     });
   };
 
   const handleClearColors = () => {
+    if (notebookDrawingRef.current) {
+      notebookDrawingRef.current = { ...notebookDrawingRef.current, color: "" };
+    }
     const canvas = colorCanvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
@@ -951,6 +1042,7 @@ export default function ColoringBookClient() {
   };
 
   const handleEraseEverything = () => {
+    notebookDrawingRef.current = null;
     const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
     if (!lineCanvas || !colorCanvas) return;
@@ -963,6 +1055,8 @@ export default function ColoringBookClient() {
   };
 
   const handleResetToTemplate = () => {
+    isNotebookModeRef.current = false;
+    notebookDrawingRef.current = null;
     const colorCanvas = colorCanvasRef.current;
     if (colorCanvas) {
       const cCtx = colorCanvas.getContext("2d");
@@ -1855,6 +1949,8 @@ export default function ColoringBookClient() {
                     <button
                       key={preset.id}
                       onClick={() => {
+                        isNotebookModeRef.current = false;
+                        notebookDrawingRef.current = null;
                         setCustomLineArt(null);
                         setCustomImageName(null);
                         setLineArtScale(1.0);

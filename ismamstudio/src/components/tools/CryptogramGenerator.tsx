@@ -64,6 +64,30 @@ export default function CryptogramGenerator() {
 
   useEffect(() => {
     getFreshPremiumStatus();
+
+    if (typeof window !== "undefined") {
+      const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+      if (notebookId) {
+        import("@/app/actions").then(({ getNotebookEntryData }) => {
+          getNotebookEntryData(notebookId).then((res) => {
+            if (!res.success || !res.data) return;
+            const d: any = res.data;
+            if (typeof d.inputText === "string") {
+              setInputText(d.inputText);
+              parseAndGeneratePuzzles(d.inputText);
+            }
+            if (d.puzzlesPerPage) setPuzzlesPerPage(d.puzzlesPerPage);
+            if (d.trimSize) {
+              const found = TRIM_SIZES.find(t => t.id === d.trimSize);
+              if (found) setTrimSize(found);
+            }
+            if (typeof d.includeAnswers === "boolean") setIncludeAnswers(d.includeAnswers);
+            if (typeof d.includeCover === "boolean") setIncludeCover(d.includeCover);
+            if (typeof d.hasBleed === "boolean") setHasBleed(d.hasBleed);
+          }).catch(console.error);
+        });
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

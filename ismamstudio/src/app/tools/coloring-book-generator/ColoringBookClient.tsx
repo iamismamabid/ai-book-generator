@@ -63,7 +63,7 @@ import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { PRESETS, PresetItem, drawColoringPattern } from "@/lib/coloringBookPatterns";
-import { checkPremiumStatus, saveColoringProject, loadColoringProject } from "@/app/actions";
+import { checkPremiumStatus, saveColoringProject, loadColoringProject, getNotebookEntryData } from "@/app/actions";
 import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
 import ByokNewsBanner from "@/components/ByokNewsBanner";
 import ByokStudioPanel from "@/components/ByokStudioPanel";
@@ -437,6 +437,39 @@ export default function ColoringBookClient() {
     checkPremiumStatus()
       .then((res: any) => setIsPremium(!!res.isPremium))
       .catch(() => setIsPremium(false));
+
+    // Restore a saved My Notebook entry (via ?notebookId=...)
+    if (typeof window !== "undefined") {
+      const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+      if (notebookId) {
+        getNotebookEntryData(notebookId)
+          .then((res) => {
+            if (!res.success || !res.data) return;
+            const d: any = res.data;
+            if (d.activePreset) {
+              const targetId = typeof d.activePreset === "string" ? d.activePreset : d.activePreset.id;
+              const targetName = typeof d.activePreset === "object" ? d.activePreset.name : undefined;
+              const found = PRESETS.find((p) => p.id === targetId || (targetName && p.name.toLowerCase() === targetName.toLowerCase())) || d.activePreset;
+              setActivePreset(found);
+              if (found.category) setSelectedCategory(found.category);
+            }
+            if (typeof d.lineWidth === "number") setLineWidth(d.lineWidth);
+            if (typeof d.complexity === "number") setComplexity(d.complexity);
+            if (typeof d.isColorByNumber === "boolean") setIsColorByNumber(d.isColorByNumber);
+            if (typeof d.isMidnightMode === "boolean") setIsMidnightMode(d.isMidnightMode);
+            if (d.frameStyle) setFrameStyle(d.frameStyle);
+            if (typeof d.seed === "number") setSeed(d.seed);
+            if (d.trimSize) {
+              const targetTrimId = typeof d.trimSize === "string" ? d.trimSize : d.trimSize.id;
+              const foundTrim = TRIM_SIZES.find(t => t.id === targetTrimId) || d.trimSize;
+              setTrimSize(foundTrim);
+            }
+            showToast("Restored coloring page from Notebook! 🎨");
+          })
+          .catch((err) => console.error("Failed to load notebook entry:", err));
+        return;
+      }
+    }
 
     // Restore previously active preset on page reload
     try {

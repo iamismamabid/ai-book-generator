@@ -47,6 +47,12 @@ interface NotebookClientProps {
 const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) => string }> = {
   cover: { label: "Open in Cover Studio", href: () => "/studio?tab=cover" },
   "puzzle-book": { label: "Open in Book Builder", href: (id) => `/studio?notebookId=${id}` },
+  "coloring-book": { label: "Open in Coloring Page Studio", href: (id) => `/tools/coloring-book-generator?notebookId=${id}` },
+  crossword: { label: "Open in Crossword Studio", href: (id) => `/studio/crossword?notebookId=${id}` },
+  "math-puzzle": { label: "Open in Math Puzzle Studio", href: (id) => `/studio/math-puzzle?notebookId=${id}` },
+  "word-scramble": { label: "Open in Word Scramble Studio", href: (id) => `/studio/word-scramble?notebookId=${id}` },
+  kakuro: { label: "Open in Kakuro Studio", href: (id) => `/studio/kakuro?notebookId=${id}` },
+  cryptogram: { label: "Open in Cryptogram Studio", href: (id) => `/studio/cryptogram?notebookId=${id}` },
   "word-search": { label: "Open in Word Search Studio", href: (id) => `/tools/word-search?notebookId=${id}` },
   sudoku: { label: "Open in Sudoku Generator", href: (id) => `/sudoku?notebookId=${id}` },
   maze: { label: "Open in Maze Generator", href: (id) => `/maze?notebookId=${id}` },
@@ -57,7 +63,27 @@ const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) =
   "word-cloud": { label: "Open in Word Cloud Generator", href: (id) => `/tools/word-cloud?notebookId=${id}` },
   "pattern-generator": { label: "Open in Pattern Generator", href: (id) => `/tools/pattern-generator?notebookId=${id}` },
   "qr-code-generator": { label: "Open in QR Code Generator", href: (id) => `/tools/qr-code-generator?notebookId=${id}` },
+  "ai-book": { label: "Open in AI Generator", href: (id) => `/generate?notebookId=${id}` },
 };
+
+function resolveDestination(category?: string, id?: string) {
+  const cat = (category || "").toLowerCase().trim();
+  const dest = OPEN_IN_DESTINATIONS[cat] ||
+    (cat.includes("color") ? OPEN_IN_DESTINATIONS["coloring-book"] : undefined) ||
+    (cat.includes("crossword") ? OPEN_IN_DESTINATIONS["crossword"] : undefined) ||
+    (cat.includes("cryptogram") ? OPEN_IN_DESTINATIONS["cryptogram"] : undefined) ||
+    (cat.includes("scramble") ? OPEN_IN_DESTINATIONS["word-scramble"] : undefined) ||
+    (cat.includes("kakuro") ? OPEN_IN_DESTINATIONS["kakuro"] : undefined) ||
+    (cat.includes("math") ? OPEN_IN_DESTINATIONS["math-puzzle"] : undefined) ||
+    (cat.includes("sudoku") ? OPEN_IN_DESTINATIONS["sudoku"] : undefined) ||
+    (cat.includes("maze") ? OPEN_IN_DESTINATIONS["maze"] : undefined) ||
+    (cat.includes("word-search") ? OPEN_IN_DESTINATIONS["word-search"] : undefined);
+
+  if (dest) {
+    return { label: dest.label, href: dest.href(id || "") };
+  }
+  return { label: "Open in Studio", href: "/studio" };
+}
 
 export default function NotebookClient({ items: initialItems }: NotebookClientProps) {
   const [items, setItems] = useState<NotebookItem[]>(initialItems);
@@ -416,13 +442,27 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/80" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => setSelectedItem(item)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white text-indigo-600 dark:text-indigo-400 text-xs font-black rounded-xl transition-all cursor-pointer"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>View Entry</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedItem(item)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Details</span>
+                    </button>
+                    {(() => {
+                      const { href } = resolveDestination(item.category, item.id);
+                      return (
+                        <Link
+                          href={href}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-xl shadow-sm hover:-translate-y-0.5 transition-all"
+                        >
+                          <span>Open</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      );
+                    })()}
+                  </div>
 
                   <form action={async () => {
                     setItems(prev => prev.filter(it => it.id !== item.id));
@@ -524,14 +564,11 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
 
               <div className="flex items-center gap-3">
                 {(() => {
-                  const dest = OPEN_IN_DESTINATIONS[selectedItem.category || ""];
-                  const { label, href } = dest
-                    ? { label: dest.label, href: dest.href(selectedItem.id) }
-                    : { label: "Open in Studio", href: "/studio" };
+                  const { label, href } = resolveDestination(selectedItem.category, selectedItem.id);
                   return (
                     <Link
                       href={href}
-                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md"
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl uppercase tracking-wider flex items-center gap-2 shadow-md hover:-translate-y-0.5 transition-all"
                     >
                       <span>{label}</span>
                       <ExternalLink className="w-3.5 h-3.5" />

@@ -57,6 +57,27 @@ export default function WordScrambleGenerator() {
       }
     }
     loadPremium();
+
+    if (typeof window !== "undefined") {
+      const notebookId = new URLSearchParams(window.location.search).get("notebookId");
+      if (notebookId) {
+        import("@/app/actions").then(({ getNotebookEntryData }) => {
+          getNotebookEntryData(notebookId).then((res) => {
+            if (!res.success || !res.data) return;
+            const d: any = res.data;
+            if (typeof d.inputText === "string") setInputText(d.inputText);
+            if (d.difficulty) setDifficulty(d.difficulty);
+            if (d.trimSize) {
+              const found = TRIM_SIZES.find(t => t.id === d.trimSize);
+              if (found) setTrimSize(found);
+            }
+            if (typeof d.includeAnswers === "boolean") setIncludeAnswers(d.includeAnswers);
+            if (typeof d.includeCover === "boolean") setIncludeCover(d.includeCover);
+            if (typeof d.hasBleed === "boolean") setHasBleed(d.hasBleed);
+          }).catch(console.error);
+        });
+      }
+    }
   }, []);
 
   const getFreshPremiumStatus = async () => {

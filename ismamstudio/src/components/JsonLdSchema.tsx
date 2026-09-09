@@ -81,6 +81,7 @@ export default function JsonLdSchema() {
         "description": "Provider of algorithmic book publishing software and vector tools for Amazon KDP self-publishers.",
         "sameAs": [
           "https://www.trustpilot.com/review/kdpage.com",
+          "https://launchbuff.com/products/kdpage-lnyusy",
           "https://github.com/iamismamabid/ai-book-generator"
         ]
       },

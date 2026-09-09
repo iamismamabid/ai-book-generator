@@ -60,6 +60,23 @@ export default function Footer() {
                   className="h-9 w-auto rounded-lg shadow-sm"
                 />
               </a>
+              {/* LaunchBuff Featured Badge */}
+              <a
+                href="https://launchbuff.com/products/kdpage-lnyusy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block hover:opacity-85 transition-opacity"
+                title="Featured on LaunchBuff"
+              >
+                <img
+                  src="https://launchbuff.com/badge-featured-dark.svg"
+                  alt="Featured on LaunchBuff"
+                  loading="lazy"
+                  width={256}
+                  height={80}
+                  className="h-9 w-auto rounded-lg shadow-sm"
+                />
+              </a>
               {/* SourceForge Review Badge */}
               <a
                 href="https://sourceforge.net/software/product/KDPage/"

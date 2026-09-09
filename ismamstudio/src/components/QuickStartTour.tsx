@@ -15,21 +15,18 @@ const QUICK_STEPS: Step[] = [
     title: "1. Pick Trim Size",
     content:
       "Select your Amazon KDP paperback trim size (8.5\" × 11\", 6\" × 9\", or 5.5\" × 8.5\"). All interior puzzle grids, borders, and margins adapt dynamically to your selected book dimensions.",
-    disableBeacon: true,
   },
   {
     target: '[data-tour="quick-add-page"]',
     title: "2. Generate Interior",
     content:
       "Click 'Add New Page' to generate Sudoku, Word Search, Crosswords, Mazes, Coloring pages, or custom KDP activity templates. You can customize difficulty and auto-build solutions with 1 click.",
-    disableBeacon: true,
   },
   {
     target: '[data-tour="quick-export-pdf"]',
     title: "3. Export Print-Ready PDF",
     content:
       "Export your complete interior as a 300 DPI, KDP-compliant PDF with automatic answer keys, page numbers, and gutter margins—ready for direct upload to Amazon KDP.",
-    disableBeacon: true,
   },
 ];
 
@@ -95,7 +92,6 @@ export default function QuickStartTour({ className, buttonLabel = "Quick Tour" }
         run={run}
         continuous
         scrollToFirstStep
-        showProgress
         onEvent={handleEvent}
         locale={{ last: "Got it! Start Creating 🚀", skip: "Skip Tour" }}
         options={{

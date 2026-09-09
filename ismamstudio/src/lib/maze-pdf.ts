@@ -20,6 +20,7 @@ interface PdfOptions {
   hasBleed?: boolean;
   showGuides?: boolean;
   borderTheme?: BorderThemeId;
+  scale?: number;
 }
 
 const TRIM_SIZES: Record<string, [number, number]> = {
@@ -110,6 +111,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     coverState = null,
     hasBleed = false,
     showGuides = false,
+    scale = 100,
   } = options;
 
   const [baseWidthInches, baseHeightInches] = TRIM_SIZES[trimSize] || TRIM_SIZES["8.5x11"];
@@ -124,20 +126,23 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     format: [widthInches, heightInches],
   });
 
-  // Standard KDP Interior Dimensions & Sizing
-  let standardSize = 5.6;
+  // Standard KDP Interior Dimensions & Sizing (with user scale control)
+  let standardBaseSize = 5.6;
   let safeMarginX = 0.75;
   if (trimSize === "6x9") {
-    standardSize = 4.2;
+    standardBaseSize = 4.2;
     safeMarginX = 0.65;
   } else if (trimSize === "5x8") {
-    standardSize = 3.5;
+    standardBaseSize = 3.5;
     safeMarginX = 0.6;
   }
 
+  const scaleFactor = Math.max(0.5, Math.min(1.4, (scale || 100) / 100));
+  const targetSize = standardBaseSize * scaleFactor;
+
   const safeW = widthInches - safeMarginX * 2;
   const safeH = heightInches - 1.6; // clearance for header and footer
-  const mazeSize = Math.min(standardSize, safeW, safeH);
+  const mazeSize = Math.min(targetSize, safeW, safeH);
 
   const mazeX = (widthInches - mazeSize) / 2;
   const mazeY = (heightInches - mazeSize) / 2 - 0.1;

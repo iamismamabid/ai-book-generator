@@ -14,48 +14,55 @@ import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
 function MazePreview({ 
   grid, 
   start, 
-  end 
+  end,
+  scale = 100,
 }: { 
   grid: MazeGrid; 
   start: [number, number]; 
   end: [number, number]; 
+  scale?: number;
 }) {
   const rows = grid.length;
   const cols = grid[0].length;
+  const scaleRatio = Math.max(0.5, Math.min(1.35, (scale || 100) / 100));
 
   return (
-    <div 
-      className="grid gap-0 bg-slate-900 p-4 rounded-xl border border-slate-800 max-w-md mx-auto w-full aspect-square justify-center items-center overflow-hidden"
-      style={{
-        gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-      }}
-    >
-      {grid.flatMap((row, r) =>
-        row.map((cell, c) => {
-          if (!cell.active) {
-            return <div key={`${r}-${c}`} className="bg-transparent aspect-square" />;
-          }
+    <div className="w-full h-full flex items-center justify-center p-2">
+      <div 
+        className="grid gap-0 bg-slate-900 p-4 rounded-xl border border-slate-800 aspect-square justify-center items-center overflow-hidden transition-all duration-300 ease-out shadow-2xl mx-auto"
+        style={{
+          width: `${Math.round(28 * scaleRatio)}rem`,
+          maxWidth: `${Math.min(100, Math.round(96 * scaleRatio))}%`,
+          gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+        }}
+      >
+        {grid.flatMap((row, r) =>
+          row.map((cell, c) => {
+            if (!cell.active) {
+              return <div key={`${r}-${c}`} className="bg-transparent aspect-square" />;
+            }
 
-          const isStart = r === start[0] && c === start[1];
-          const isEnd = r === end[0] && c === end[1];
+            const isStart = r === start[0] && c === start[1];
+            const isEnd = r === end[0] && c === end[1];
 
-          return (
-            <div
-              key={`${r}-${c}`}
-              className={`aspect-square relative border border-slate-700/20 bg-slate-950 flex items-center justify-center text-[10px] font-black
-                ${cell.walls.top ? "border-t-2 border-t-slate-400" : ""}
-                ${cell.walls.bottom ? "border-b-2 border-b-slate-400" : ""}
-                ${cell.walls.left ? "border-l-2 border-l-slate-400" : ""}
-                ${cell.walls.right ? "border-r-2 border-r-slate-400" : ""}
-              `}
-            >
-              {isStart && <span className="text-blue-500 animate-pulse">S</span>}
-              {isEnd && <span className="text-red-500 animate-pulse">E</span>}
-            </div>
-          );
-        })
-      )}
+            return (
+              <div
+                key={`${r}-${c}`}
+                className={`aspect-square relative border border-slate-700/20 bg-slate-950 flex items-center justify-center text-[10px] font-black
+                  ${cell.walls.top ? "border-t-2 border-t-slate-400" : ""}
+                  ${cell.walls.bottom ? "border-b-2 border-b-slate-400" : ""}
+                  ${cell.walls.left ? "border-l-2 border-l-slate-400" : ""}
+                  ${cell.walls.right ? "border-r-2 border-r-slate-400" : ""}
+                `}
+              >
+                {isStart && <span className="text-blue-500 animate-pulse">S</span>}
+                {isEnd && <span className="text-red-500 animate-pulse">E</span>}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
@@ -67,6 +74,7 @@ export default function MazeGeneratorPage() {
   const [gridSize, setGridSize] = useState<number>(15);
   const [bookCount, setBookCount] = useState<number>(5);
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
+  const [mazeScale, setMazeScale] = useState<number>(100);
   const [includeSolutions, setIncludeSolutions] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
@@ -137,6 +145,7 @@ export default function MazeGeneratorPage() {
         if (typeof d.gridSize === "number") setGridSize(d.gridSize);
         if (typeof d.bookCount === "number") setBookCount(d.bookCount);
         if (d.trimSize) setTrimSize(d.trimSize);
+        if (typeof d.scale === "number") setMazeScale(d.scale);
         if (typeof d.includeSolutions === "boolean") setIncludeSolutions(d.includeSolutions);
         if (typeof d.includeCover === "boolean") setIncludeCover(d.includeCover);
       })
@@ -221,6 +230,7 @@ export default function MazeGeneratorPage() {
           shape,
           trimSize: finalTrim,
           includeSolutions: incSol,
+          scale: mazeScale,
           title: `Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
           includeCover: incCover,
           coverState,
@@ -255,6 +265,7 @@ export default function MazeGeneratorPage() {
           shape,
           trimSize: "6x9",
           includeSolutions: true,
+          scale: mazeScale,
           title: `Free Sample ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
           includeCover: false,
           coverState: null,
@@ -371,6 +382,74 @@ export default function MazeGeneratorPage() {
                   <span>10 (Easy)</span>
                   <span>20 (Medium)</span>
                   <span>30 (Hard)</span>
+                </div>
+              </div>
+
+              {/* Maze Box Scale / Zoom Slider */}
+              <div className="pt-2 border-t border-slate-800/60">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-slate-400 flex items-center gap-2">
+                    <span>Maze Box Scale / Zoom:</span>
+                    <span className="text-white font-bold font-mono">{mazeScale}%</span>
+                  </label>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                    mazeScale === 100
+                      ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                      : mazeScale > 100
+                      ? "text-amber-400 bg-amber-500/10 border-amber-500/20"
+                      : "text-blue-400 bg-blue-500/10 border-blue-500/20"
+                  }`}>
+                    {mazeScale === 100 ? "Standard KDP" : mazeScale > 100 ? "Big Box" : "Little Box"}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={50}
+                  max={130}
+                  step={5}
+                  value={mazeScale}
+                  onChange={(e) => setMazeScale(Number(e.target.value))}
+                  className="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
+                />
+                <div className="flex justify-between text-xs text-slate-500 mt-1 mb-2">
+                  <span>50% (Little)</span>
+                  <span>100% (Standard)</span>
+                  <span>130% (Big)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMazeScale(70)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold border transition ${
+                      mazeScale === 70
+                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                        : "bg-slate-950 text-slate-400 border-slate-800 hover:text-white"
+                    }`}
+                  >
+                    Little (70%)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMazeScale(100)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold border transition ${
+                      mazeScale === 100
+                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                        : "bg-slate-950 text-slate-400 border-slate-800 hover:text-white"
+                    }`}
+                  >
+                    Standard (100%)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMazeScale(125)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold border transition ${
+                      mazeScale === 125
+                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                        : "bg-slate-950 text-slate-400 border-slate-800 hover:text-white"
+                    }`}
+                  >
+                    Big (125%)
+                  </button>
                 </div>
               </div>
 
@@ -491,9 +570,9 @@ export default function MazeGeneratorPage() {
 
               <SaveToNotebookButton
                 title={`Maze Collection (${bookCount} Puzzles)`}
-                content={`Maze interior with ${bookCount} ${shape} mazes at ${gridSize}x${gridSize}, trim size ${trimSize}${includeSolutions ? ", with solutions" : ", no solutions"}.`}
+                content={`Maze interior with ${bookCount} ${shape} mazes at ${gridSize}x${gridSize}, trim size ${trimSize}, scale ${mazeScale}%${includeSolutions ? ", with solutions" : ", no solutions"}.`}
                 category="maze"
-                data={{ shape, gridSize, bookCount, trimSize, includeSolutions, includeCover }}
+                data={{ shape, gridSize, bookCount, trimSize, includeSolutions, includeCover, scale: mazeScale }}
                 className="w-full justify-center"
               />
 
@@ -503,20 +582,45 @@ export default function MazeGeneratorPage() {
 
           {/* Live Preview Column */}
           <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-900 flex flex-col justify-between items-center min-h-[450px]">
-            <div className="w-full border-b border-slate-800 pb-3 mb-4">
-              <h3 className="text-lg font-bold text-slate-300">Live Architecture Canvas</h3>
+            <div className="w-full border-b border-slate-800 pb-3 mb-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-300">Live Architecture Canvas</h3>
+                <p className="text-xs text-slate-500">Real-time KDP page scale preview</p>
+              </div>
+              <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setMazeScale((prev) => Math.max(50, prev - 10))}
+                  title="Zoom Out (Smaller Box)"
+                  className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm transition active:scale-95"
+                >
+                  -
+                </button>
+                <span className="text-xs font-mono font-bold text-amber-400 px-2 select-none min-w-[3.2rem] text-center">
+                  {mazeScale}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMazeScale((prev) => Math.min(130, prev + 10))}
+                  title="Zoom In (Bigger Box)"
+                  className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm transition active:scale-95"
+                >
+                  +
+                </button>
+              </div>
             </div>
             
             {previewMaze ? (
-              <div className="w-full flex-grow flex items-center justify-center">
+              <div className="w-full flex-grow flex items-center justify-center min-h-[360px] overflow-hidden">
                 <MazePreview 
                   grid={previewMaze.grid} 
                   start={previewMaze.start} 
                   end={previewMaze.end} 
+                  scale={mazeScale}
                 />
               </div>
             ) : (
-              <div className="w-full flex-grow flex flex-col items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-800 rounded-xl p-8 text-center">
+              <div className="w-full flex-grow flex flex-col items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-800 rounded-xl p-8 text-center min-h-[360px]">
                 <span className="text-4xl mb-3">🧭</span>
                 Click "Generate Preview Grid" to visualize the structure before compile.
               </div>

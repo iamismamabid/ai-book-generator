@@ -976,11 +976,15 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHe
   if (pageWidth <= 5.5) standardSize = 3.5;
   else if (pageWidth <= 6.5) standardSize = 4.2;
 
+  const scale = typeof page.config?.scale === "number" ? page.config.scale : 100;
+  const scaleMultiplier = Math.max(0.5, Math.min(1.4, scale / 100));
+  const targetSize = standardSize * scaleMultiplier;
+
   // The solution maze is an answer key, not a second full-size puzzle to
   // solve, so cap it smaller than the puzzle's own grid.
   const mazeSize = showSolution
-    ? Math.min(standardSize, safeW, safeH - 0.2, 4.5)
-    : Math.min(standardSize, safeW, safeH - 0.2);
+    ? Math.min(targetSize, safeW, safeH - 0.2, 4.5)
+    : Math.min(targetSize, safeW, safeH - 0.2);
   const cellSize = mazeSize / Math.max(rows, cols);
 
   const mazeW = cols * cellSize;

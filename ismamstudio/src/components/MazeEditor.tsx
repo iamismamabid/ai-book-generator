@@ -8,6 +8,7 @@ export function MazeEditor({ page, updatePage }: any) {
   const [shape, setShape] = useState<Shape>(page.config.shape || "square");
   const [gridSize, setGridSize] = useState<number>(page.config.gridSize || 20);
   const [showSolution, setShowSolution] = useState<boolean>(page.config.showSolution || false);
+  const [scale, setScale] = useState<number>(page.config.scale || 100);
   const [mazeData, setMazeData] = useState<any>(page.config.gridData || null);
 
   const handleGenerate = () => {
@@ -26,14 +27,14 @@ export function MazeEditor({ page, updatePage }: any) {
       solution
     };
     setMazeData(data);
-    updatePage({ shape, gridSize, showSolution, gridData: data });
+    updatePage({ shape, gridSize, showSolution, scale, gridData: data });
   };
 
   const toggleSolution = () => {
     const nextSol = !showSolution;
     setShowSolution(nextSol);
     if (mazeData) {
-      updatePage({ shape, gridSize, showSolution: nextSol, gridData: mazeData });
+      updatePage({ shape, gridSize, showSolution: nextSol, scale, gridData: mazeData });
     }
   };
 
@@ -101,14 +102,23 @@ export function MazeEditor({ page, updatePage }: any) {
       );
     }
 
+    const scaleRatio = Math.max(0.5, Math.min(1.4, (scale || 100) / 100));
+
     return (
-      <svg id="maze-svg-element" width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="max-w-2xl w-full mx-auto drop-shadow-md">
-        <g>{lines}</g>
-        <g>{pathLines}</g>
-        {/* Start / End Labels */}
-        <text x={startCell[1] * cellSize + cellSize/2} y={startCell[0] * cellSize - 4} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#2563EB">START</text>
-        <text x={endCell[1] * cellSize + cellSize/2} y={endCell[0] * cellSize + cellSize + 12} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#DC2626">EXIT</text>
-      </svg>
+      <div 
+        className="w-full flex items-center justify-center transition-all duration-200 mx-auto"
+        style={{
+          maxWidth: `${Math.round(42 * scaleRatio)}rem`,
+        }}
+      >
+        <svg id="maze-svg-element" width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="w-full drop-shadow-md">
+          <g>{lines}</g>
+          <g>{pathLines}</g>
+          {/* Start / End Labels */}
+          <text x={startCell[1] * cellSize + cellSize/2} y={startCell[0] * cellSize - 4} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#2563EB">START</text>
+          <text x={endCell[1] * cellSize + cellSize/2} y={endCell[0] * cellSize + cellSize + 12} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#DC2626">EXIT</text>
+        </svg>
+      </div>
     );
   };
 
@@ -126,7 +136,7 @@ export function MazeEditor({ page, updatePage }: any) {
                   onClick={() => {
                     setShape(sh);
                     // Persist immediately so a page-switch doesn't lose the change
-                    updatePage({ shape: sh, gridSize, showSolution, gridData: mazeData || undefined });
+                    updatePage({ shape: sh, gridSize, showSolution, scale, gridData: mazeData || undefined });
                   }}
                   className={`py-2 rounded-lg font-bold text-xs capitalize transition ${
                     shape === sh
@@ -152,10 +162,35 @@ export function MazeEditor({ page, updatePage }: any) {
                 const size = Number(e.target.value);
                 setGridSize(size);
                 // Persist immediately so a page-switch doesn't lose the change
-                updatePage({ shape, gridSize: size, showSolution, gridData: mazeData || undefined });
+                updatePage({ shape, gridSize: size, showSolution, scale, gridData: mazeData || undefined });
               }}
               className="w-full accent-indigo-600"
             />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Scale / Zoom</h3>
+              <span className="text-xs font-bold text-indigo-600">{scale}%</span>
+            </div>
+            <input 
+              type="range"
+              min="50"
+              max="130"
+              step="5"
+              value={scale}
+              onChange={(e) => {
+                const s = Number(e.target.value);
+                setScale(s);
+                updatePage({ shape, gridSize, showSolution, scale: s, gridData: mazeData || undefined });
+              }}
+              className="w-full accent-indigo-600 cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+              <span>50% (Small)</span>
+              <span>100% (Standard)</span>
+              <span>130% (Large)</span>
+            </div>
           </div>
         </div>
 

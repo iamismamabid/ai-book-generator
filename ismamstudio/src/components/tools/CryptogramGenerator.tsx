@@ -9,6 +9,7 @@ import CoverStudioCTA from "@/components/CoverStudioCTA";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
+import { getBulkCryptogramQuotes } from "@/lib/cryptogramQuotes";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -66,50 +67,18 @@ export default function CryptogramGenerator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const tierMaxFor = (plan: string) =>
-    plan === "free" ? 7 :
+  const tierMaxFor = (plan?: string, isPremium?: boolean) =>
+    (isPremium || plan === "agency" || plan === "pro") ? 1000 :
       plan === "starter" ? 100 :
-        plan === "pro" ? 300 :
-          1000;
+        7;
 
   const generateBulkQuotes = async (count: number) => {
-    const baseQuotes = [
-      "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
-      "SUCCESS IS NOT FINAL, FAILURE IS NOT FATAL: IT IS THE COURAGE TO CONTINUE THAT COUNTS.",
-      "BE THE CHANGE THAT YOU WISH TO SEE IN THE WORLD.",
-      "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY.",
-      "IMAGINATION IS MORE IMPORTANT THAN KNOWLEDGE. KNOWLEDGE IS LIMITED. IMAGINATION ENCIRCLES THE WORLD.",
-      "DO NOT GO WHERE THE PATH MAY LEAD, GO INSTEAD WHERE THERE IS NO PATH AND LEAVE A TRAIL.",
-      "THE FUTURE BELONGS TO THOSE WHO BELIEVE IN THE BEAUTY OF THEIR DREAMS.",
-      "WHAT LIES BEHIND US AND WHAT LIES BEFORE US ARE TINY MATTERS COMPARED TO WHAT LIES WITHIN US.",
-      "IT IS DURING OUR DARKEST MOMENTS THAT WE MUST FOCUS TO SEE THE LIGHT.",
-      "DO NOT WATCH THE CLOCK; DO WHAT IT DOES. KEEP GOING.",
-      "YOU DEFINE YOUR OWN LIFE. DON'T LET OTHER PEOPLE WRITE YOUR SCRIPT.",
-      "YOU ARE NEVER TOO OLD TO SET ANOTHER GOAL OR TO DREAM A NEW DREAM.",
-      "SPREAD LOVE EVERYWHERE YOU GO. LET NO ONE EVER COME TO YOU WITHOUT LEAVING HAPPIER.",
-      "BELIEVE YOU CAN AND YOU'RE HALFWAY THERE.",
-      "LIFE IS WHAT HAPPENS WHEN YOU'RE BUSY MAKING OTHER PLANS.",
-      "STAY HUNGRY, STAY FOOLISH.",
-      "YOUR TIME IS LIMITED, SO DON'T WASTE IT LIVING SOMEONE ELSE'S LIFE.",
-      "TURN YOUR WOUNDS INTO WISDOM.",
-      "HAPPINESS DEPENDS UPON OURSELVES.",
-      "SIMPLICITY IS THE ULTIMATE SOPHISTICATION."
-    ];
-
     const freshStatus = await getFreshPremiumStatus();
-    const maxCount = Math.min(count, tierMaxFor(freshStatus.plan));
-    const generated: string[] = [];
-    for (let i = 0; i < maxCount; i++) {
-      const base = baseQuotes[i % baseQuotes.length];
-      if (i < baseQuotes.length) {
-        generated.push(base);
-      } else {
-        generated.push(`${base} (PUZZLE #${i + 1})`);
-      }
-    }
-
-    const text = generated.join("\n");
+    const maxCount = Math.min(count, tierMaxFor(freshStatus.plan, freshStatus.isPremium));
+    const quotesList = getBulkCryptogramQuotes(maxCount);
+    const text = quotesList.join("\n");
     setInputText(text);
+    await parseAndGeneratePuzzles(text);
   };
 
   // Substitution mapping states
@@ -123,6 +92,7 @@ export default function CryptogramGenerator() {
   const [activePreviewIndex, setActivePreviewIndex] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [downloadProgress, setDownloadProgress] = useState<number>(0);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   // 1. Generate Cipher Substitution Key
@@ -150,10 +120,11 @@ export default function CryptogramGenerator() {
       .join("");
   };
 
-  const parseAndGeneratePuzzles = async () => {
+  const parseAndGeneratePuzzles = async (customText?: string) => {
     setIsGenerating(true);
     const mapping = generateCipherMapping();
-    const rawLines = inputText
+    const sourceText = typeof customText === "string" ? customText : inputText;
+    const rawLines = sourceText
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
@@ -164,15 +135,8 @@ export default function CryptogramGenerator() {
       return;
     }
 
-    // The "Free Limit: 7" / "Premium: Max 1,000" label above the textarea is
-    // only true if it's enforced here too -- the quick-fill buttons already
-    // capped themselves, but someone pasting quotes directly bypassed both
-    // the free-tier limit and the 1,000 safety ceiling entirely. Fetched
-    // fresh (not the possibly-stale `premiumStatus` state) so a premium
-    // account isn't capped just because this ran before the initial status
-    // load resolved.
     const freshStatus = await getFreshPremiumStatus();
-    const maxAllowed = tierMaxFor(freshStatus.plan);
+    const maxAllowed = tierMaxFor(freshStatus.plan, freshStatus.isPremium);
     const lines = rawLines.slice(0, maxAllowed);
     if (rawLines.length > maxAllowed) {
       alert(
@@ -224,289 +188,319 @@ export default function CryptogramGenerator() {
   }) => {
     if (puzzles.length === 0) return;
     setIsDownloading(true);
+    setDownloadProgress(5);
     const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides, isPremium, borderTheme } = options;
 
     setTimeout(async () => {
-      let finalW = 8.5;
-      let finalH = 11;
-      if (finalTrim === "6x9") {
-        finalW = 6;
-        finalH = 9;
-      } else if (finalTrim === "5x8") {
-        finalW = 5;
-        finalH = 8;
-      }
-
-      const bleed = 0.125;
-      const pageW = finalBleed ? finalW + bleed * 2 : finalW;
-      const pageH = finalBleed ? finalH + bleed * 2 : finalH;
-
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([
-        import("jspdf"),
-        import("@/app/utils/pdfExportService"),
-        import("@/app/utils/borderThemeDrawing"),
-      ]);
-      const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "in",
-        format: [pageW, pageH]
-      });
-
-      const marginL = 0.75;
-      const marginR = 0.5;
-      const marginT = 0.75;
-      const marginB = 0.75;
-
-      const contentW = pageW - marginL - marginR;
-      
-      // Calculate packaging
-      const itemsPerPage = puzzlesPerPage;
-
-      // Font sizing configuration
-      const charBoxW = fontSizeType === "large" ? 0.28 : 0.22;
-      const charBoxH = fontSizeType === "large" ? 0.32 : 0.26;
-      const charSpacing = fontSizeType === "large" ? 0.08 : 0.05;
-      const wordSpacing = fontSizeType === "large" ? 0.32 : 0.24;
-      const lineStepY = fontSizeType === "large" ? 0.85 : 0.7;
-
-      // 1. Draw Front Cover if integrated
-      let firstPageAdded = false;
-      if (incCover && coverState) {
-        await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
-        firstPageAdded = true;
-      }
-
-      // 1. Draw Puzzles dynamically with height checks to prevent overlap/footer clipping
-      let pageIdx = 0;
-      const drawPageHeaderAndFooter = (idx: number) => {
-        // Header Title
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(22);
-        doc.setTextColor(30, 41, 59);
-        doc.text("Cryptogram Puzzles", marginL + contentW / 2, marginT + 0.3, { align: "center" });
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9.5);
-        doc.setTextColor(100, 116, 139);
-        doc.text(
-          "Decode the cipher substitution. Each letter represents another letter of the alphabet.",
-          marginL + contentW / 2,
-          marginT + 0.55,
-          { align: "center" }
-        );
-
-        doc.setLineWidth(0.015);
-        doc.setDrawColor(226, 232, 240);
-        doc.line(marginL, marginT + 0.7, marginL + contentW, marginT + 0.7);
-
-        if (finalGuides) {
-          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+      try {
+        let finalW = 8.5;
+        let finalH = 11;
+        if (finalTrim === "6x9") {
+          finalW = 6;
+          finalH = 9;
+        } else if (finalTrim === "5x8") {
+          finalW = 5;
+          finalH = 8;
         }
 
-        // Page Number Footer
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text(`Page ${idx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
-      };
+        const bleed = 0.125;
+        const pageW = finalBleed ? finalW + bleed * 2 : finalW;
+        const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      if (firstPageAdded) {
-        doc.addPage();
-      }
-      firstPageAdded = true;
-      drawPageHeaderAndFooter(pageIdx);
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([
+          import("jspdf"),
+          import("@/app/utils/pdfExportService"),
+          import("@/app/utils/borderThemeDrawing"),
+        ]);
+        const doc = new jsPDF({
+          orientation: "portrait",
+          unit: "in",
+          format: [pageW, pageH]
+        });
 
-      let curY = marginT + 1.1;
-      let puzzlesOnCurrentPage = 0;
+        const marginL = 0.75;
+        const marginR = 0.5;
+        const marginT = 0.75;
+        const marginB = 0.75;
 
-      puzzles.forEach((puzzle) => {
-        // Calculate the height this puzzle needs based on word wrap rows
-        let tempX = marginL;
-        let rowsCount = 1;
-        const wordsList = puzzle.encrypted.split(" ");
+        const contentW = pageW - marginL - marginR;
         
-        wordsList.forEach((word) => {
-          const wordLen = word.length;
-          const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
-          if (tempX + wordWidthInches > marginL + contentW - 0.2) {
-            tempX = marginL;
-            rowsCount++;
-          }
-          tempX += wordWidthInches + wordSpacing;
-        });
+        // Calculate packaging
+        const itemsPerPage = puzzlesPerPage;
 
-        const estimatedHeight = 0.45 + (rowsCount * lineStepY) + 0.4;
+        // Font sizing configuration
+        const charBoxW = fontSizeType === "large" ? 0.28 : 0.22;
+        const charBoxH = fontSizeType === "large" ? 0.32 : 0.26;
+        const charSpacing = fontSizeType === "large" ? 0.08 : 0.05;
+        const wordSpacing = fontSizeType === "large" ? 0.32 : 0.24;
+        const lineStepY = fontSizeType === "large" ? 0.85 : 0.7;
 
-        // Trigger page break if we exceed vertical height limits or exceed item count limit
-        if (puzzlesOnCurrentPage > 0 && (curY + estimatedHeight > pageH - marginB || puzzlesOnCurrentPage >= itemsPerPage)) {
-          doc.addPage();
-          pageIdx++;
-          drawPageHeaderAndFooter(pageIdx);
-          curY = marginT + 1.1;
-          puzzlesOnCurrentPage = 0;
+        // 1. Draw Front Cover if integrated
+        let firstPageAdded = false;
+        if (incCover && coverState) {
+          await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
+          firstPageAdded = true;
         }
 
-        const puzzleStartY = curY;
-
-        // Draw Puzzle Title
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(13);
-        doc.setTextColor(79, 70, 229);
-        doc.text(`Puzzle #${puzzle.index}`, marginL, puzzleStartY);
-
-        // Word-wrapped rendering of letters with boxes
-        let curX = marginL;
-        let curBoxY = puzzleStartY + 0.4;
-
-        wordsList.forEach((word) => {
-          // Calculate word width
-          const wordLen = word.length;
-          const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
-
-          // Wrap to next line if word exceeds right boundary
-          if (curX + wordWidthInches > marginL + contentW - 0.2) {
-            curX = marginL;
-            curBoxY += lineStepY;
-          }
-
-          // Draw letters of the word
-          for (let i = 0; i < wordLen; i++) {
-            const char = word[i];
-            const isLetter = /[A-Z]/.test(char);
-
-            if (isLetter) {
-              // Write-in Box
-              doc.setDrawColor(148, 163, 184); // slate-400
-              doc.setLineWidth(0.008);
-              doc.rect(curX, curBoxY, charBoxW, charBoxH);
-
-              // Cipher Letter (Bottom)
-              doc.setFont("courier", "bold");
-              doc.setFontSize(fontSizeType === "large" ? 13 : 11);
-              doc.setTextColor(15, 23, 42); // slate-900
-              doc.text(char, curX + charBoxW / 2, curBoxY + charBoxH + 0.16, { align: "center" });
-            } else {
-              // Non-alphabetic character (e.g. punctuation, comma, dot)
-              doc.setFont("courier", "bold");
-              doc.setFontSize(fontSizeType === "large" ? 13 : 11);
-              doc.setTextColor(15, 23, 42);
-              doc.text(char, curX + charBoxW / 2, curBoxY + charBoxH - 0.05, { align: "center" });
-            }
-
-            curX += charBoxW + charSpacing;
-          }
-
-          // Word Space
-          curX += wordSpacing;
-        });
-
-        curY = curBoxY + lineStepY + 0.5; // Update curY for the next puzzle, adding space below
-        puzzlesOnCurrentPage++;
-      });
-
-      // 2. Renders Answers Key at the end
-      if (incSol) {
-        doc.addPage();
-        const ansPageIdx = pageIdx + 2;
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(22);
-        doc.setTextColor(30, 41, 59);
-        doc.text("Answer Key", marginL + contentW / 2, marginT + 0.3, { align: "center" });
-
-        doc.setLineWidth(0.015);
-        doc.setDrawColor(226, 232, 240);
-        doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
-
-        if (finalGuides) {
-          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
-        }
-
-        // A. Print Cipher Key alphabet mapping
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
-        doc.setTextColor(15, 23, 42);
-        doc.text("SUBSTITUTION KEY:", marginL, marginT + 1.0);
-
-        doc.setFont("courier", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(30, 41, 59);
-
-        // Draw alphabet row and matching cipher row
-        const alphaStr = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z";
-        const cipherStr = alphaStr
-          .split(" ")
-          .map(l => cipherMap[l] || "_")
-          .join(" ");
-
-        doc.text(`Original: ${alphaStr}`, marginL, marginT + 1.25);
-        doc.text(`Cipher:   ${cipherStr}`, marginL, marginT + 1.45);
-
-        doc.setDrawColor(226, 232, 240);
-        doc.line(marginL, marginT + 1.65, marginL + contentW, marginT + 1.65);
-
-        // B. Print Decrypted Solutions List
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
-        doc.setTextColor(15, 23, 42);
-        doc.text("DECRYPTED PUZZLES:", marginL, marginT + 1.95);
-
-        let ansY = marginT + 2.25;
-
-        puzzles.forEach((puzzle) => {
-          if (ansY + 1.0 > pageH - marginB) {
-            doc.addPage();
-            ansY = marginT + 0.5;
-            if (finalGuides) {
-              drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
-            }
-          }
-
+        // 1. Draw Puzzles dynamically with height checks to prevent overlap/footer clipping
+        let pageIdx = 0;
+        const drawPageHeaderAndFooter = (idx: number) => {
+          // Header Title
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(10);
-          doc.setTextColor(51, 65, 85);
-          doc.text(`Puzzle #${puzzle.index}:`, marginL, ansY);
+          doc.setFontSize(22);
+          doc.setTextColor(30, 41, 59);
+          doc.text("Cryptogram Puzzles", marginL + contentW / 2, marginT + 0.3, { align: "center" });
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9.5);
-          doc.setTextColor(71, 85, 105);
+          doc.setTextColor(100, 116, 139);
+          doc.text(
+            "Decode the cipher substitution. Each letter represents another letter of the alphabet.",
+            marginL + contentW / 2,
+            marginT + 0.55,
+            { align: "center" }
+          );
 
-          // Wrap solution string inside the margins
-          const wrappedSol = doc.splitTextToSize(puzzle.original, contentW - 0.2);
-          doc.text(wrappedSol, marginL + 0.2, ansY + 0.2);
-          ansY += 0.25 + wrappedSol.length * 0.18;
-        });
+          doc.setLineWidth(0.015);
+          doc.setDrawColor(226, 232, 240);
+          doc.line(marginL, marginT + 0.7, marginL + contentW, marginT + 0.7);
 
-        // Footer page index for answer page
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text(`Page ${ansPageIdx}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
-      }
+          if (finalGuides) {
+            drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+          }
 
-      // 3. Draw Back Cover if integrated
-      if (incCover && coverState) {
-        doc.addPage();
-        await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
-      }
+          // Page Number Footer
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(148, 163, 184);
+          doc.text(`Page ${idx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+        };
 
-      // Apply watermark (free tier) and the decorative border theme to every
-      // interior page, skipping the front/back cover pages.
-      if (!isPremium || (borderTheme && borderTheme !== "none")) {
-        const totalPages = doc.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-          const isFrontCover = incCover && coverState && i === 1;
-          const isBackCover = incCover && coverState && i === totalPages;
-          if (!isFrontCover && !isBackCover) {
-            doc.setPage(i);
-            if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, pageW, pageH);
-            if (!isPremium) drawWatermark(doc, pageW, pageH);
+        if (firstPageAdded) {
+          doc.addPage();
+        }
+        firstPageAdded = true;
+        drawPageHeaderAndFooter(pageIdx);
+
+        let curY = marginT + 1.1;
+        let puzzlesOnCurrentPage = 0;
+
+        for (let pIdx = 0; pIdx < puzzles.length; pIdx++) {
+          const puzzle = puzzles[pIdx];
+
+          // Yield to browser UI thread periodically to prevent tab freezing and update progress
+          if (pIdx % 20 === 0) {
+            const progressVal = Math.round(5 + (pIdx / puzzles.length) * 70);
+            setDownloadProgress(progressVal);
+            await new Promise((resolve) => setTimeout(resolve, 0));
+          }
+
+          // Calculate the height this puzzle needs based on word wrap rows
+          let tempX = marginL;
+          let rowsCount = 1;
+          const wordsList = puzzle.encrypted.split(" ");
+          
+          wordsList.forEach((word) => {
+            const wordLen = word.length;
+            const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
+            if (tempX + wordWidthInches > marginL + contentW - 0.2) {
+              tempX = marginL;
+              rowsCount++;
+            }
+            tempX += wordWidthInches + wordSpacing;
+          });
+
+          const estimatedHeight = 0.45 + (rowsCount * lineStepY) + 0.4;
+
+          // Trigger page break if we exceed vertical height limits or exceed item count limit
+          if (puzzlesOnCurrentPage > 0 && (curY + estimatedHeight > pageH - marginB || puzzlesOnCurrentPage >= itemsPerPage)) {
+            doc.addPage();
+            pageIdx++;
+            drawPageHeaderAndFooter(pageIdx);
+            curY = marginT + 1.1;
+            puzzlesOnCurrentPage = 0;
+          }
+
+          const puzzleStartY = curY;
+
+          // Draw Puzzle Title
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(13);
+          doc.setTextColor(79, 70, 229);
+          doc.text(`Puzzle #${puzzle.index}`, marginL, puzzleStartY);
+
+          // Word-wrapped rendering of letters with boxes
+          let curX = marginL;
+          let curBoxY = puzzleStartY + 0.4;
+
+          wordsList.forEach((word) => {
+            // Calculate word width
+            const wordLen = word.length;
+            const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
+
+            // Wrap to next line if word exceeds right boundary
+            if (curX + wordWidthInches > marginL + contentW - 0.2) {
+              curX = marginL;
+              curBoxY += lineStepY;
+            }
+
+            // Draw letters of the word
+            for (let i = 0; i < wordLen; i++) {
+              const char = word[i];
+              const isLetter = /[A-Z]/.test(char);
+
+              if (isLetter) {
+                // Write-in Box
+                doc.setDrawColor(148, 163, 184); // slate-400
+                doc.setLineWidth(0.008);
+                doc.rect(curX, curBoxY, charBoxW, charBoxH);
+
+                // Cipher Letter (Bottom)
+                doc.setFont("courier", "bold");
+                doc.setFontSize(fontSizeType === "large" ? 13 : 11);
+                doc.setTextColor(15, 23, 42); // slate-900
+                doc.text(char, curX + charBoxW / 2, curBoxY + charBoxH + 0.16, { align: "center" });
+              } else {
+                // Non-alphabetic character (e.g. punctuation, comma, dot)
+                doc.setFont("courier", "bold");
+                doc.setFontSize(fontSizeType === "large" ? 13 : 11);
+                doc.setTextColor(15, 23, 42);
+                doc.text(char, curX + charBoxW / 2, curBoxY + charBoxH - 0.05, { align: "center" });
+              }
+
+              curX += charBoxW + charSpacing;
+            }
+
+            // Word Space
+            curX += wordSpacing;
+          });
+
+          curY = curBoxY + lineStepY + 0.5; // Update curY for the next puzzle, adding space below
+          puzzlesOnCurrentPage++;
+        }
+
+        // 2. Renders Answers Key at the end
+        if (incSol) {
+          doc.addPage();
+          const ansPageIdx = pageIdx + 2;
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(22);
+          doc.setTextColor(30, 41, 59);
+          doc.text("Answer Key", marginL + contentW / 2, marginT + 0.3, { align: "center" });
+
+          doc.setLineWidth(0.015);
+          doc.setDrawColor(226, 232, 240);
+          doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
+
+          if (finalGuides) {
+            drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+          }
+
+          // A. Print Cipher Key alphabet mapping
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.setTextColor(15, 23, 42);
+          doc.text("SUBSTITUTION KEY:", marginL, marginT + 1.0);
+
+          doc.setFont("courier", "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(30, 41, 59);
+
+          // Draw alphabet row and matching cipher row
+          const alphaStr = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z";
+          const cipherStr = alphaStr
+            .split(" ")
+            .map(l => cipherMap[l] || "_")
+            .join(" ");
+
+          doc.text(`Original: ${alphaStr}`, marginL, marginT + 1.25);
+          doc.text(`Cipher:   ${cipherStr}`, marginL, marginT + 1.45);
+
+          doc.setDrawColor(226, 232, 240);
+          doc.line(marginL, marginT + 1.65, marginL + contentW, marginT + 1.65);
+
+          // B. Print Decrypted Solutions List
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.setTextColor(15, 23, 42);
+          doc.text("DECRYPTED PUZZLES:", marginL, marginT + 1.95);
+
+          let ansY = marginT + 2.25;
+
+          for (let aIdx = 0; aIdx < puzzles.length; aIdx++) {
+            const puzzle = puzzles[aIdx];
+
+            if (aIdx % 40 === 0) {
+              const progressVal = Math.round(75 + (aIdx / puzzles.length) * 20);
+              setDownloadProgress(progressVal);
+              await new Promise((resolve) => setTimeout(resolve, 0));
+            }
+
+            if (ansY + 1.0 > pageH - marginB) {
+              doc.addPage();
+              ansY = marginT + 0.5;
+              if (finalGuides) {
+                drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+              }
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(51, 65, 85);
+            doc.text(`Puzzle #${puzzle.index}:`, marginL, ansY);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9.5);
+            doc.setTextColor(71, 85, 105);
+
+            // Wrap solution string inside the margins
+            const wrappedSol = doc.splitTextToSize(puzzle.original, contentW - 0.2);
+            doc.text(wrappedSol, marginL + 0.2, ansY + 0.2);
+            ansY += 0.25 + wrappedSol.length * 0.18;
+          }
+
+          // Footer page index for answer page
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(148, 163, 184);
+          doc.text(`Page ${ansPageIdx}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+        }
+
+        // 3. Draw Back Cover if integrated
+        if (incCover && coverState) {
+          doc.addPage();
+          await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
+        }
+
+        // Apply watermark (free tier) and the decorative border theme to every
+        // interior page, skipping the front/back cover pages.
+        if (!isPremium || (borderTheme && borderTheme !== "none")) {
+          const totalPages = doc.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            const isFrontCover = incCover && coverState && i === 1;
+            const isBackCover = incCover && coverState && i === totalPages;
+            if (!isFrontCover && !isBackCover) {
+              doc.setPage(i);
+              if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, pageW, pageH);
+              if (!isPremium) drawWatermark(doc, pageW, pageH);
+            }
+            if (i % 40 === 0) {
+              await new Promise((resolve) => setTimeout(resolve, 0));
+            }
           }
         }
-      }
 
-      doc.save(`cryptogram-${fontSizeType}-${puzzles.length}puzzles.pdf`);
-      setIsDownloading(false);
+        setDownloadProgress(100);
+        doc.save(`cryptogram-${fontSizeType}-${puzzles.length}puzzles.pdf`);
+        setIsDownloading(false);
+        setDownloadProgress(0);
+      } catch (err) {
+        console.error("PDF export error:", err);
+        alert("Failed to export PDF. Please try again.");
+        setIsDownloading(false);
+        setDownloadProgress(0);
+      }
     }, 50);
   };
 
@@ -537,7 +531,7 @@ export default function CryptogramGenerator() {
             <div className="flex justify-between items-center flex-wrap gap-1">
               <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Phrases / Quotes</label>
               <span className="text-[10px] font-bold text-amber-400">
-                Max {tierMaxFor(premiumStatus.plan)} Puzzles ({premiumStatus.plan === "free" ? "Free" : premiumStatus.plan})
+                Max {tierMaxFor(premiumStatus.plan, premiumStatus.isPremium)} Puzzles ({premiumStatus.plan === "free" && !premiumStatus.isPremium ? "Free" : premiumStatus.plan})
               </span>
             </div>
             <textarea
@@ -548,26 +542,41 @@ export default function CryptogramGenerator() {
             />
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
               <button 
-                onClick={() => setInputText(DEFAULT_QUOTES.join("\n"))}
-                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg text-[10px] font-bold transition"
+                type="button"
+                onClick={async () => {
+                  const text = DEFAULT_QUOTES.join("\n");
+                  setInputText(text);
+                  await parseAndGeneratePuzzles(text);
+                }}
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg text-[10px] font-bold transition cursor-pointer"
               >
                 Defaults (7)
               </button>
               <button
+                type="button"
                 onClick={() => generateBulkQuotes(50)}
-                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition"
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition cursor-pointer"
               >
                 50 Quotes
               </button>
               <button
+                type="button"
                 onClick={() => generateBulkQuotes(100)}
-                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition"
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition cursor-pointer"
               >
                 100 Quotes
               </button>
               <button
+                type="button"
+                onClick={() => generateBulkQuotes(500)}
+                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition cursor-pointer"
+              >
+                500 Quotes
+              </button>
+              <button
+                type="button"
                 onClick={() => generateBulkQuotes(1000)}
-                className="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-[10px] font-black transition"
+                className="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-[10px] font-black transition cursor-pointer"
               >
                 ⚡ 1,000 Puzzles
               </button>
@@ -632,6 +641,19 @@ export default function CryptogramGenerator() {
                 </select>
               </div>
             </div>
+
+            {/* Estimated Pages Card */}
+            <div className="bg-indigo-950/30 border border-indigo-500/20 rounded-xl p-2.5 flex items-center justify-between text-[11px] font-semibold text-indigo-300">
+              <span>Estimated Interior Pages:</span>
+              <span className="font-mono font-black text-amber-400">
+                {Math.ceil(puzzles.length / puzzlesPerPage)} Page{Math.ceil(puzzles.length / puzzlesPerPage) === 1 ? "" : "s"}
+              </span>
+            </div>
+            {puzzlesPerPage > 1 && puzzles.length >= 100 && (
+              <p className="text-[10px] text-slate-400 leading-tight">
+                💡 Tip: For exactly <strong>{puzzles.length} pages</strong>, select <strong>1 puzzle / page</strong>.
+              </p>
+            )}
           </div>
 
           <div className="h-px bg-slate-800/60" />
@@ -685,22 +707,53 @@ export default function CryptogramGenerator() {
 
         {/* Action Panel */}
         <div data-tour="export-section" className="p-6 border-t border-slate-800 space-y-3 bg-slate-950/40">
+          {/* Live Progress Bar during PDF compilation */}
+          {isDownloading && (
+            <div className="w-full bg-slate-900 border border-amber-500/40 rounded-xl p-3 space-y-2 animate-in fade-in">
+              <div className="flex justify-between items-center text-[10px] font-black uppercase text-amber-400">
+                <span className="flex items-center gap-1.5">
+                  <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />
+                  Compiling {puzzles.length} Puzzles ({Math.ceil(puzzles.length / puzzlesPerPage)} Pages)
+                </span>
+                <span>{downloadProgress}%</span>
+              </div>
+              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-200"
+                  style={{ width: `${downloadProgress}%` }}
+                />
+              </div>
+              <p className="text-[9px] text-slate-400 text-center font-semibold">
+                Rendering vector pages... Please keep this tab open.
+              </p>
+            </div>
+          )}
+
           <button
             onClick={() => parseAndGeneratePuzzles()}
-            disabled={isGenerating}
+            disabled={isGenerating || isDownloading}
             className="btn-premium w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 normal-case"
           >
-            {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin"/> : "Generate Cryptogram"}
+            {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin"/> : `Generate Cryptogram (${puzzles.length || "0"})`}
           </button>
 
-           <button
+          <button
             onClick={() => setIsExportModalOpen(true)}
             disabled={isDownloading || puzzles.length === 0}
             className="btn-premium w-full bg-amber-500 hover:bg-amber-600 text-slate-950 normal-case hover:-translate-y-0.5"
             style={{ boxShadow: "0 8px 24px rgba(245, 158, 11, 0.18)" }}
           >
-            {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
-            Download Print PDF
+            {isDownloading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin"/>
+                {downloadProgress > 0 ? `Exporting PDF (${downloadProgress}%)...` : "Exporting PDF..."}
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4"/>
+                Download Print PDF ({puzzles.length} Puzzles)
+              </>
+            )}
           </button>
 
           <SaveToNotebookButton
@@ -722,19 +775,44 @@ export default function CryptogramGenerator() {
         <div className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between transition-colors duration-300">
           <div className="flex items-center gap-2">
             <span className="text-xs font-black uppercase text-slate-400 tracking-wider">Active Preview:</span>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
-              {puzzles.map((_, idx) => (
+            {puzzles.length > 8 ? (
+              <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
                 <button
-                  key={idx}
-                  onClick={() => setActivePreviewIndex(idx)}
-                  className={`px-2.5 py-1 rounded-full font-bold transition-all ${
-                    activePreviewIndex === idx ? 'bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                  }`}
+                  type="button"
+                  onClick={() => setActivePreviewIndex(prev => Math.max(0, prev - 1))}
+                  disabled={activePreviewIndex === 0}
+                  className="px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 font-bold cursor-pointer"
                 >
-                  P#{idx + 1}
+                  ← Prev
                 </button>
-              ))}
-            </div>
+                <span className="font-bold text-slate-800 dark:text-slate-200 px-1 text-xs">
+                  Puzzle {activePreviewIndex + 1} of {puzzles.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setActivePreviewIndex(prev => Math.min(puzzles.length - 1, prev + 1))}
+                  disabled={activePreviewIndex === puzzles.length - 1}
+                  className="px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 font-bold cursor-pointer"
+                >
+                  Next →
+                </button>
+              </div>
+            ) : (
+              <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
+                {puzzles.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActivePreviewIndex(idx)}
+                    className={`px-2.5 py-1 rounded-full font-bold transition-all cursor-pointer ${
+                      activePreviewIndex === idx ? 'bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    P#{idx + 1}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2">

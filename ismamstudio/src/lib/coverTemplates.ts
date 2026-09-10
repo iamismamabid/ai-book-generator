@@ -8,7 +8,9 @@ import type { KdpLayoutResult } from "@/app/utils/kdpLayout";
 // stays roughly proportional across trim sizes and gives consistent-looking
 // type scale.
 export interface TemplateElement {
-  type: "textbox" | "rect" | "circle" | "triangle" | "heart";
+  type: "textbox" | "rect" | "circle" | "triangle" | "heart" | "clipart";
+  src?: string;
+  coverSide?: "front" | "back";
   xFrac: number;
   yFrac: number;
   widthFrac: number;
@@ -16,7 +18,7 @@ export interface TemplateElement {
   fontSizeFrac?: number;
   fontFamily?: string;
   fontStyle?: string;
-  fill: string;
+  fill?: string;
   stroke?: string;
   strokeWidth?: number;
   cornerRadius?: number;
@@ -47,6 +49,99 @@ export interface CoverTemplate {
 }
 
 export const COVER_TEMPLATES: CoverTemplate[] = [
+  {
+    id: "variety-puzzle-master",
+    name: "Variety Puzzle Master (All-in-One)",
+    category: "Puzzle Books",
+    swatch: "#1E1B4B",
+    photoQuery: "puzzle brain teaser variety",
+    background: {
+      frontCoverColor: "#0F172A",
+      frontCoverType: "gradient",
+      frontCoverGradientStart: "#1E1B4B",
+      frontCoverGradientEnd: "#0F172A",
+      backCoverColor: "#0F172A",
+      backCoverType: "solid",
+      backCoverGradientStart: "#0F172A",
+      backCoverGradientEnd: "#020617",
+    },
+    elements: [
+      // Front Cover Elements
+      { type: "textbox", xFrac: 0.08, yFrac: 0.06, widthFrac: 0.84, fontSizeFrac: 0.035, fontFamily: "Oswald", fontStyle: "bold", fill: "#F59E0B", align: "center", text: "★ THE ULTIMATE COLLECTION ★" },
+      { type: "textbox", xFrac: 0.06, yFrac: 0.11, widthFrac: 0.88, fontSizeFrac: 0.12, fontFamily: "Montserrat", fontStyle: "bold", fill: "#FFFFFF", align: "center", text: "VARIETY PUZZLE BOOK" },
+      { type: "textbox", xFrac: 0.08, yFrac: 0.24, widthFrac: 0.84, fontSizeFrac: 0.038, fontFamily: "Outfit", fill: "#CBD5E1", align: "center", text: "Mazes • Word Search • Sudoku • Crosswords" },
+      { type: "clipart", src: "/puzzle_previews/3d_puzzle_fan_mockup.png", xFrac: 0.08, yFrac: 0.32, widthFrac: 0.84, heightFrac: 0.46 },
+      { type: "rect", xFrac: 0.12, yFrac: 0.83, widthFrac: 0.76, heightFrac: 0.08, fill: "#F59E0B", cornerRadius: 24 },
+      { type: "textbox", xFrac: 0.12, yFrac: 0.852, widthFrac: 0.76, fontSizeFrac: 0.032, fontFamily: "Montserrat", fontStyle: "bold", fill: "#0F172A", align: "center", text: "150+ PUZZLES WITH SOLUTIONS" },
+
+      // Back Cover Elements
+      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.08, widthFrac: 0.84, fontSizeFrac: 0.055, fontFamily: "Montserrat", fontStyle: "bold", fill: "#F59E0B", align: "center", text: "WHAT'S INSIDE THIS BOOK?" },
+      { type: "clipart", coverSide: "back", src: "/puzzle_previews/all_puzzles_grid.png", xFrac: 0.14, yFrac: 0.18, widthFrac: 0.72, heightFrac: 0.42 },
+      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.64, widthFrac: 0.84, fontSizeFrac: 0.032, fontFamily: "Lora", fill: "#E2E8F0", align: "center", text: "✔ 50+ Challenging Mazes\n✔ Themed Word Searches\n✔ Classic 9x9 Sudoku Grids\n✔ Complete Solutions Included" },
+    ],
+  },
+  {
+    id: "variety-puzzle-vibrant",
+    name: "Mega Puzzle Challenge (Activity Mania)",
+    category: "Puzzle Books",
+    swatch: "#0284C7",
+    photoQuery: "colorful puzzle game activity",
+    background: {
+      frontCoverColor: "#0284C7",
+      frontCoverType: "gradient",
+      frontCoverGradientStart: "#0284C7",
+      frontCoverGradientEnd: "#0369A1",
+      backCoverColor: "#0369A1",
+      backCoverType: "solid",
+      backCoverGradientStart: "#0369A1",
+      backCoverGradientEnd: "#075985",
+    },
+    elements: [
+      // Front Cover Elements
+      { type: "textbox", xFrac: 0.08, yFrac: 0.06, widthFrac: 0.84, fontSizeFrac: 0.035, fontFamily: "Montserrat", fontStyle: "bold", fill: "#FDE047", align: "center", text: "FUN BRAIN-BUILDING GAMES" },
+      { type: "textbox", xFrac: 0.06, yFrac: 0.11, widthFrac: 0.88, fontSizeFrac: 0.13, fontFamily: "Bebas Neue", fill: "#FFFFFF", align: "center", text: "MEGA PUZZLE CHALLENGE" },
+      { type: "textbox", xFrac: 0.08, yFrac: 0.24, widthFrac: 0.84, fontSizeFrac: 0.04, fontFamily: "Outfit", fill: "#F1F5F9", align: "center", text: "Word Finds, Mazes, Numbers & Logic" },
+      { type: "clipart", src: "/puzzle_previews/3d_puzzle_fan_mockup.png", xFrac: 0.08, yFrac: 0.32, widthFrac: 0.84, heightFrac: 0.46 },
+      { type: "rect", xFrac: 0.14, yFrac: 0.83, widthFrac: 0.72, heightFrac: 0.08, fill: "#FDE047", cornerRadius: 24 },
+      { type: "textbox", xFrac: 0.14, yFrac: 0.852, widthFrac: 0.72, fontSizeFrac: 0.034, fontFamily: "Montserrat", fontStyle: "bold", fill: "#0369A1", align: "center", text: "FOR TEENS, ADULTS & SENIORS" },
+
+      // Back Cover Elements
+      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.08, widthFrac: 0.84, fontSizeFrac: 0.055, fontFamily: "Montserrat", fontStyle: "bold", fill: "#FDE047", align: "center", text: "LOOK INSIDE!" },
+      { type: "clipart", coverSide: "back", src: "/puzzle_previews/all_puzzles_grid.png", xFrac: 0.14, yFrac: 0.18, widthFrac: 0.72, heightFrac: 0.42 },
+      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.64, widthFrac: 0.84, fontSizeFrac: 0.032, fontFamily: "Outfit", fill: "#FFFFFF", align: "center", text: "Designed to boost memory, focus, and problem-solving skills.\nFull answer keys provided at the back of the book." },
+    ],
+  },
+  {
+    id: "variety-puzzle-badges",
+    name: "Classic Variety Compendium (Badges)",
+    category: "Puzzle Books",
+    swatch: "#059669",
+    photoQuery: "green nature puzzle relaxing",
+    background: {
+      frontCoverColor: "#064E3B",
+      frontCoverType: "gradient",
+      frontCoverGradientStart: "#059669",
+      frontCoverGradientEnd: "#064E3B",
+      backCoverColor: "#064E3B",
+      backCoverType: "solid",
+      backCoverGradientStart: "#064E3B",
+      backCoverGradientEnd: "#022C22",
+    },
+    elements: [
+      // Front Cover Elements
+      { type: "textbox", xFrac: 0.08, yFrac: 0.07, widthFrac: 0.84, fontSizeFrac: 0.035, fontFamily: "Lora", fontStyle: "italic", fill: "#A7F3D0", align: "center", text: "Relax & Sharpen Your Mind" },
+      { type: "textbox", xFrac: 0.06, yFrac: 0.12, widthFrac: 0.88, fontSizeFrac: 0.11, fontFamily: "Playfair Display", fontStyle: "bold", fill: "#FFFFFF", align: "center", text: "VARIETY PUZZLES" },
+      { type: "textbox", xFrac: 0.08, yFrac: 0.24, widthFrac: 0.84, fontSizeFrac: 0.038, fontFamily: "Outfit", fill: "#CBD5E1", align: "center", text: "Crosswords • Word Search • Sudoku • Mazes" },
+      { type: "clipart", src: "/puzzle_previews/all_circular_badges.png", xFrac: 0.12, yFrac: 0.32, widthFrac: 0.76, heightFrac: 0.46 },
+      { type: "rect", xFrac: 0.14, yFrac: 0.83, widthFrac: 0.72, heightFrac: 0.08, fill: "#FFFFFF", cornerRadius: 24 },
+      { type: "textbox", xFrac: 0.14, yFrac: 0.852, widthFrac: 0.72, fontSizeFrac: 0.032, fontFamily: "Montserrat", fontStyle: "bold", fill: "#064E3B", align: "center", text: "LARGE PRINT • SOLUTIONS INCLUDED" },
+
+      // Back Cover Elements
+      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.08, widthFrac: 0.84, fontSizeFrac: 0.055, fontFamily: "Playfair Display", fontStyle: "bold", fill: "#A7F3D0", align: "center", text: "DAILY BRAIN WELLNESS" },
+      { type: "clipart", coverSide: "back", src: "/puzzle_previews/all_puzzles_grid.png", xFrac: 0.14, yFrac: 0.18, widthFrac: 0.72, heightFrac: 0.42 },
+      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.64, widthFrac: 0.84, fontSizeFrac: 0.032, fontFamily: "Lora", fill: "#E2E8F0", align: "center", text: "A mindful collection of classic puzzles created to keep your mind agile and entertained. Generous margins and easy-to-read print." },
+    ],
+  },
   {
     id: "puzzle-activity",
     name: "Puzzle & Activity Book",
@@ -507,15 +602,23 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
 export function resolveTemplateElements(template: CoverTemplate, layout: KdpLayoutResult, withPhotoOverlay: boolean = false): any[] {
   const frontWidth = layout.frontLiveRightPx - layout.frontLiveLeftPx;
   const frontHeight = layout.frontLiveBottomPx - layout.frontLiveTopPx;
+  const backWidth = layout.backLiveRightPx - layout.backLiveLeftPx;
+  const backHeight = layout.backLiveBottomPx - layout.backLiveTopPx;
 
   const resolved: any[] = template.elements.map((el, i) => {
+    const isBack = el.coverSide === "back";
+    const liveLeft = isBack ? layout.backLiveLeftPx : layout.frontLiveLeftPx;
+    const liveTop = isBack ? layout.backLiveTopPx : layout.frontLiveTopPx;
+    const liveWidth = isBack ? backWidth : frontWidth;
+    const liveHeight = isBack ? backHeight : frontHeight;
+
     const base = {
       id: `tpl-${template.id}-${i}-${Date.now()}`,
-      x: layout.frontLiveLeftPx + el.xFrac * frontWidth,
-      y: layout.frontLiveTopPx + el.yFrac * frontHeight,
-      width: el.widthFrac * frontWidth,
-      height: (el.heightFrac ?? 0.1) * frontHeight,
-      fill: el.fill,
+      x: liveLeft + el.xFrac * liveWidth,
+      y: liveTop + el.yFrac * liveHeight,
+      width: el.widthFrac * liveWidth,
+      height: (el.heightFrac ?? 0.1) * liveHeight,
+      fill: el.fill || "transparent",
       stroke: el.stroke,
       strokeWidth: el.strokeWidth || 0,
       opacity: el.opacity ?? 1,
@@ -535,7 +638,7 @@ export function resolveTemplateElements(template: CoverTemplate, layout: KdpLayo
         fontFamily: el.fontFamily || "Arial",
         fontStyle: isItalic ? "italic" : "normal",
         fontWeight: isBold ? "bold" : (rawWeight !== "normal" ? rawWeight : "normal"),
-        fontSize: Math.round((el.fontSizeFrac ?? 0.05) * frontWidth),
+        fontSize: Math.round((el.fontSizeFrac ?? 0.05) * liveWidth),
         align: el.align || "center",
       };
     }
@@ -543,6 +646,14 @@ export function resolveTemplateElements(template: CoverTemplate, layout: KdpLayo
     if (el.type === "circle") {
       // importLegacyElements' circle branch reads `radius`, not width/height.
       return { ...base, type: "circle", radius: base.width / 2 };
+    }
+
+    if (el.type === "clipart") {
+      return {
+        ...base,
+        type: "clipart",
+        src: el.src,
+      };
     }
 
     return { ...base, type: el.type };

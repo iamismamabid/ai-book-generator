@@ -44,8 +44,30 @@ const nextConfig = {
     ],
   },
 
-  // ─── Webpack: bundle analyzer (dev-only) ─────────────────────────────────
-  webpack(config, { isServer }) {
+  // ─── Vercel Deployment & Functions Storage Optimization ─────────────────────
+  productionBrowserSourceMaps: false,
+  serverExternalPackages: ['@prisma/client', 'prisma'],
+  outputFileTracingExcludes: {
+    '*': [
+      '@swc/core/**',
+      '@esbuild/**',
+      'cypress/**',
+      '**/*.md',
+      '**/*.map',
+      'android/**',
+      'ios/**',
+      'scripts/**',
+      'test/**',
+      'tests/**',
+    ],
+  },
+
+  // ─── Webpack: bundle analyzer (dev-only) & production sourcemap purge ───────
+  webpack(config, { isServer, dev }) {
+    if (!dev) {
+      // Disable server and chunk sourcemap output in production to minimize Vercel storage
+      config.devtool = false;
+    }
     if (process.env.ANALYZE === 'true') {
       const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
       config.plugins.push(

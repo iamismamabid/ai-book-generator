@@ -53,3 +53,16 @@ analyze/
 .idea/
 .DS_Store
 Thumbs.db
+.claude/
+
+# ─── Mobile Apps (Capacitor Native Projects) ──────────────────────────────────
+android/
+ios/
+capacitor.config.ts
+
+# ─── Local Data, Tooling & Scripts ────────────────────────────────────────────
+appsumo_codes.txt
+*.csv
+scripts/
+tsconfig.tsbuildinfo
+prisma/migrations/

@@ -48,8 +48,13 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     }
     firstPageAdded = true;
 
-    // Apply gutter margin if requested
-    const leftMarginShift = gutterMargin ? (index % 2 === 0 ? requiredGutter : 0) : 0;
+    // Apply gutter margin if requested:
+    // Odd pages (recto, right-hand): spine is on the LEFT -> shift content right (+shift)
+    // Even pages (verso, left-hand): spine is on the RIGHT -> shift content left (-shift)
+    const gutterShiftAmount = Math.min(0.2, Math.max(0.1, requiredGutter - 0.35));
+    const leftMarginShift = gutterMargin
+      ? (index % 2 === 0 ? gutterShiftAmount : -gutterShiftAmount)
+      : 0;
 
     // Page Title (except for title/blank pages, and single word search which centers its title above the grid)
     const isSingleWordSearch = page.type === 'word_search' && !page.config.isMultiSolution;
@@ -67,11 +72,15 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
         doc.text(title, (w - titleWidth) / 2 + leftMarginShift, 0.6);
       }
 
-      // Render Page Number
+      // Render Page Number - center-aligned at the bottom so it is always safely
+      // within margins on both odd (recto) and even (verso) pages, completely
+      // immune to KDP inside gutter or edge margin violations.
       if (includePageNumbers) {
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(9);
-        doc.text(`Page ${index + 1}`, w - 1.0 + leftMarginShift, h - 0.6);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Page ${index + 1}`, w / 2, h - 0.45, { align: "center" });
+        doc.setTextColor(0);
       }
     }
 
@@ -246,7 +255,7 @@ export function drawMarginGuides(doc: any, marginL: number, marginR: number, mar
 // is generated procedurally on a 2D canvas, not drawn as jsPDF vector
 // primitives like the grid-based puzzle types.
 const drawColoringBookPage = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const margin = 0.5;
+  const margin = 0.65;
   const topReserved = 0.95;
   const safeW = pageWidth - margin * 2;
   const safeH = pageHeight - topReserved - margin;
@@ -337,9 +346,22 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number, p
     // Safe bottom — keep 0.5" footer clearance
     const maxClueY = (pageHeight || 11) - 0.5;
     // Dynamic two-column split: half the available content width, min 2"
-    const contentRight = pageWidth - 0.5 + xShift;
+    const contentRight = pageWidth - 0.65 + xShift;
     const halfW = Math.max(2.0, (contentRight - startX) / 2);
     const downColX = startX + halfW;
+    const maxClueW = halfW - 0.35;
+
+    // Helper to clamp clue text so it never penetrates margins
+    const fitClue = (text: string) => {
+      let t = text;
+      if (doc.getTextWidth(t) > maxClueW) {
+        while (t.length > 5 && doc.getTextWidth(t + "...") > maxClueW) {
+          t = t.slice(0, -1);
+        }
+        return t + "...";
+      }
+      return t;
+    };
 
     // Across Clues
     doc.text("ACROSS", startX + 0.2, clueY);
@@ -350,7 +372,7 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number, p
     for (const w of acrossWords) {
       const y = clueY + acrossOffset;
       if (y > maxClueY) { doc.text("...", startX + 0.2, y); break; }
-      doc.text(`${w.num}. ${w.clue}`, startX + 0.2, y);
+      doc.text(fitClue(`${w.num}. ${w.clue}`), startX + 0.2, y);
       acrossOffset += 0.17;
     }
 
@@ -365,7 +387,7 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number, p
     for (const w of downWords) {
       const y = clueY + downOffset;
       if (y > maxClueY) { doc.text("...", downColX + 0.2, y); break; }
-      doc.text(`${w.num}. ${w.clue}`, downColX + 0.2, y);
+      doc.text(fitClue(`${w.num}. ${w.clue}`), downColX + 0.2, y);
       downOffset += 0.17;
     }
   }
@@ -702,7 +724,7 @@ const getSolutionPackZones = (count: number, x0: number, y0: number, safeW: numb
 
 const drawWordSearchSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
   const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
-  const margin = 0.5;
+  const margin = 0.65;
   const topReserved = 1.4; // matches drawWordSearch's own startY, below the generic page title
   const x0 = margin + xShift;
   const safeW = pageWidth - margin * 2;
@@ -796,7 +818,7 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
 
 const drawSudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
   const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
-  const margin = 0.5;
+  const margin = 0.65;
   const topReserved = 1.2;
   const x0 = margin + xShift;
   const safeW = pageWidth - margin * 2;
@@ -2027,7 +2049,7 @@ const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number
   const isSolution = page.config.isSolution || false;
 
   const marginL = 0.75 + xShift;
-  const marginR = 0.5;
+  const marginR = 0.65;
   const marginT = 1.3;
   const marginB = 0.75;
 
@@ -2477,7 +2499,7 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
 // ── Crossword Solution Pack (1, 2, or 4 per page) ─────────────────────────────
 const drawCrosswordSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
   const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
-  const margin = 0.5;
+  const margin = 0.65;
   const topReserved = 1.2;
   const x0 = margin + xShift;
   const safeW = pageWidth - margin * 2;
@@ -2527,7 +2549,7 @@ const drawCrosswordSolutionPack = (doc: any, page: any, xShift: number, pageWidt
 // ── Kakuro Solution Pack (1, 2, or 4 per page) ─────────────────────────────────
 const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
   const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
-  const margin = 0.5;
+  const margin = 0.65;
   const topReserved = 1.2;
   const x0 = margin + xShift;
   const safeW = pageWidth - margin * 2;
@@ -2590,7 +2612,7 @@ const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
 // ── Maze Solution Pack (1, 2, or 4 per page) ──────────────────────────────────
 const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
   const group: { gridData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
-  const margin = 0.35;
+  const margin = 0.65;
   const topReserved = 0.8;
   const x0 = margin + xShift;
   const safeW = pageWidth - margin * 2;
@@ -2663,7 +2685,7 @@ const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: nu
 // ── Word Scramble Solution Pack (1, 2, or 4 per page) ─────────────────────────
 const drawWordScrambleSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
   const group: { scrambledData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
-  const margin = 0.5;
+  const margin = 0.65;
   const topReserved = 1.2;
   const x0 = margin + xShift;
   const safeW = pageWidth - margin * 2;
@@ -2698,7 +2720,7 @@ const drawWordScrambleSolutionPack = (doc: any, page: any, xShift: number, pageW
 // ── Cryptogram Solution Pack (1, 2, or 4 per page) ────────────────────────────
 const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
   const group: { cryptogramData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
-  const margin = 0.5;
+  const margin = 0.65;
   const topReserved = 1.2;
   const x0 = margin + xShift;
   const safeW = pageWidth - margin * 2;
@@ -2766,7 +2788,7 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
 // ── Math Puzzle Solution Pack (1, 2, or 4 per page) ───────────────────────────
 const drawMathPuzzleSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
   const group: { puzzleData: any; puzzleType: string; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
-  const margin = 0.5;
+  const margin = 0.65;
   const topReserved = 1.2;
   const x0 = margin + xShift;
   const safeW = pageWidth - margin * 2;

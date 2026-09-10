@@ -103,7 +103,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [includeCover, setIncludeCover] = useState(false);
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
-  const [gutterMargin, setGutterMargin] = useState(false);
+  const [gutterMargin, setGutterMargin] = useState(true);
   const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);
   const [borderTheme, setBorderTheme] = useState<BorderThemeId>("none");
   const [isExporting, setIsExporting] = useState(false);

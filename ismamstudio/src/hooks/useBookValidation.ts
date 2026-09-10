@@ -95,6 +95,23 @@ export function useBookValidation() {
       });
     }
 
+    // ─── Rule 5: Puzzle Integrity & Zero-Blank Check ────────────────────────
+    let ungeneratedCount = 0;
+    pages.forEach((p) => {
+      if (puzzleTypes.includes(p.type)) {
+        const cfg = p.config || {};
+        if (cfg.isMultiSolution && Array.isArray(cfg.solutionGroup)) return;
+        const hasData = cfg.gridData || cfg.scrambledData || cfg.cryptogramData || cfg.puzzleData;
+        if (!hasData) ungeneratedCount++;
+      }
+    });
+    if (ungeneratedCount > 0) {
+      errors.push({
+        type: 'warning',
+        message: `${ungeneratedCount} puzzle page(s) have ungenerated content. Our exporter will auto-generate fresh puzzles before export so your book will have zero blank pages.`
+      });
+    }
+
     const isValid = !errors.some((err) => err.type === 'error');
     const hasWarnings = errors.some((err) => err.type === 'warning');
 

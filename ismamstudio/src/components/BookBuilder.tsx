@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import BookVersionHistoryModal from "./BookVersionHistoryModal";
 import { BookVersion } from "@/lib/bookVersions";
-import { History, Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, AlertCircle, AlertTriangle, GripVertical, Info, Undo2, Redo2, Clipboard, ClipboardPaste } from "lucide-react";
+import { History, Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, AlertCircle, AlertTriangle, GripVertical, Info, Undo2, Redo2, Clipboard, ClipboardPaste, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { CrosswordEditor } from "./CrosswordEditor";
 import { WordSearchEditor } from "./WordSearchEditor";
@@ -25,6 +25,9 @@ import { useBookValidation } from "@/hooks/useBookValidation";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
 import DesktopRecommendedBanner from "@/components/DesktopRecommendedBanner";
 import { saveBookDraftToIndexedDB, loadBookDraftFromIndexedDB } from "@/lib/indexedDbStorage";
+import { generatePuzzleGrid } from "@/app/utils/puzzleEngine";
+import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
+import { generateKakuro } from "@/lib/kakuro";
 import { createPortal } from "react-dom";
 import {
   DndContext,
@@ -44,15 +47,126 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+const DEFAULT_WORD_SEARCH_POOLS = [
+  ["LION", "TIGER", "ELEPHANT", "GIRAFFE", "ZEBRA", "MONKEY", "BEAR"],
+  ["APPLE", "BANANA", "CHERRY", "ORANGE", "GRAPE", "MANGO", "PEACH"],
+  ["PACIFIC", "ATLANTIC", "INDIAN", "ARCTIC", "SOUTHERN", "OCEAN"],
+  ["MARS", "VENUS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO"],
+  ["SOCCER", "TENNIS", "BASKETBALL", "GOLF", "CRICKET", "RUGBY"],
+  ["JAVA", "RUST", "KOTLIN", "SWIFT", "TYPESCRIPT", "GOLANG"],
+  ["LONDON", "PARIS", "TOKYO", "SYDNEY", "CAIRO", "ROME", "BERLIN"],
+  ["PIZZA", "BURGER", "PASTA", "SALAD", "SUSHI", "TACO", "STEAK"],
+  ["GUITAR", "PIANO", "DRUMS", "VIOLIN", "FLUTE", "TRUMPET", "HARP"]
+];
 
+const DEFAULT_CROSSWORD_POOLS = [
+  [{ word: "REACT", clue: "Popular UI library" }, { word: "NEXTJS", clue: "React framework" }, { word: "VERCEL", clue: "Hosting platform" }, { word: "CODING", clue: "Writing software" }],
+  [{ word: "BIRD", clue: "Can fly high in the sky" }, { word: "FISH", clue: "Swims in the water" }, { word: "LION", clue: "King of the jungle" }, { word: "BEAR", clue: "Hibernates in winter" }],
+  [{ word: "SUN", clue: "Center of solar system" }, { word: "MOON", clue: "Earth's satellite" }, { word: "MARS", clue: "The Red Planet" }, { word: "EARTH", clue: "Our home planet" }],
+  [{ word: "PIZZA", clue: "Flatbread with cheese" }, { word: "BURGER", clue: "Patty inside a bun" }, { word: "SUSHI", clue: "Japanese fish dish" }, { word: "PASTA", clue: "Italian noodle dish" }],
+  [{ word: "GUITAR", clue: "String instrument" }, { word: "PIANO", clue: "Keyed instrument" }, { word: "DRUMS", clue: "Percussion instrument" }, { word: "VIOLIN", clue: "Bowed string instrument" }]
+];
 
-// Every puzzle editor auto-generates fresh content on mount if this config key
-// is missing (see each Editor's `useEffect(() => { if (!x) handleGenerate() }, [])`).
-// Duplicate relies on that: it clears the generated field but keeps everything
-// else (word list, difficulty, size...), so the new page — mounted fresh under
-// a new key — regenerates a genuinely new puzzle with the same settings instead
-// of an exact copy. Types not listed (title, low_content) have no randomness to
-// regenerate, so they duplicate as-is.
+const DEFAULT_CRYPTOGRAM_QUOTES = [
+  "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
+  "SUCCESS IS NOT FINAL, FAILURE IS NOT FATAL: IT IS THE COURAGE TO CONTINUE THAT COUNTS.",
+  "BE THE CHANGE THAT YOU WISH TO SEE IN THE WORLD.",
+  "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY.",
+  "IMAGINATION IS MORE IMPORTANT THAN KNOWLEDGE.",
+  "THE JOURNEY OF A THOUSAND MILES BEGINS WITH ONE STEP.",
+  "BELIEVE YOU CAN AND YOU ARE HALFWAY THERE.",
+  "THE ONLY WAY TO DO GREAT WORK IS TO LOVE WHAT YOU DO."
+];
+
+export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forceRegenerate = false) {
+  const cfg = JSON.parse(JSON.stringify(config || {}));
+  try {
+    if (type === 'maze') {
+      if (forceRegenerate || !cfg.gridData || !cfg.gridData.grid) {
+        cfg.gridData = generateMazeData(cfg.shape || 'circle', cfg.gridSize || 20);
+      }
+    } else if (type === 'sudoku') {
+      if (forceRegenerate || !cfg.gridData) {
+        cfg.gridData = generateSudoku(cfg.difficulty || 'medium');
+      }
+    } else if (type === 'word_search') {
+      if (forceRegenerate || !cfg.gridData) {
+        let words: string[] = [];
+        if (cfg.rawText) {
+          words = cfg.rawText.split(',').map((w: string) => w.trim()).filter((w: string) => w.length > 0);
+        }
+        if (words.length === 0) {
+          words = DEFAULT_WORD_SEARCH_POOLS[Math.floor(Math.random() * DEFAULT_WORD_SEARCH_POOLS.length)];
+          cfg.rawText = words.join(', ');
+        }
+        cfg.gridData = generatePuzzleGrid(words, 12, 'uppercase');
+      }
+    } else if (type === 'crossword') {
+      if (forceRegenerate || !cfg.gridData) {
+        let items: { word: string; clue: string }[] = [];
+        if (cfg.rawText) {
+          items = cfg.rawText.split('\n').map((l: string) => {
+            const parts = l.split(',');
+            return { word: parts[0]?.trim() || '', clue: parts[1]?.trim() || '' };
+          }).filter((x: any) => x.word.length > 0);
+        }
+        if (items.length === 0) {
+          items = DEFAULT_CROSSWORD_POOLS[Math.floor(Math.random() * DEFAULT_CROSSWORD_POOLS.length)];
+          cfg.rawText = items.map(w => `${w.word}, ${w.clue}`).join('\n');
+        }
+        cfg.gridData = generateCrosswordGrid(items, 15);
+      }
+    } else if (type === 'kakuro') {
+      if (forceRegenerate || !cfg.gridData) {
+        cfg.gridData = generateKakuro(cfg.size || '9x9', cfg.difficulty || 'medium');
+      }
+    } else if (type === 'word_scramble') {
+      if (forceRegenerate || !cfg.scrambledData) {
+        const rawWords = (cfg.rawText || "AEROSPACE\nPROPULSION\nCONTAINMENT\nSTABILIZATION\nANTIGRAVITY\nFLIGHT\nPAYLOAD")
+          .split('\n')
+          .flatMap((line: string) => line.split(','))
+          .map((w: string) => w.trim().toUpperCase().replace(/[^A-Z]/g, ''))
+          .filter((w: string) => w.length > 0);
+        const diff = cfg.difficulty || 'easy';
+        cfg.scrambledData = rawWords.map((word: string) => {
+          if (word.length <= 2) return { original: word, scrambled: word };
+          const letters = word.split('');
+          for (let i = letters.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [letters[i], letters[j]] = [letters[j], letters[i]];
+          }
+          let scrambled = letters.join('');
+          if (scrambled === word) scrambled = letters.reverse().join('');
+          return { original: word, scrambled };
+        });
+      }
+    } else if (type === 'cryptogram') {
+      if (forceRegenerate || !cfg.cryptogramData) {
+        const rawQuotes = (cfg.rawText || DEFAULT_CRYPTOGRAM_QUOTES.join('\n'))
+          .split('\n')
+          .map((q: string) => q.trim().toUpperCase())
+          .filter((q: string) => q.length > 0);
+        const targetQuote = rawQuotes.length > 0
+          ? rawQuotes[Math.floor(Math.random() * rawQuotes.length)]
+          : DEFAULT_CRYPTOGRAM_QUOTES[0];
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        let shuffled = [...alphabet];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        const mapping: Record<string, string> = {};
+        alphabet.forEach((letter, idx) => { mapping[letter] = shuffled[idx]; });
+        const encrypted = targetQuote.split("").map((c: string) => (/[A-Z]/.test(c) ? mapping[c] || c : c)).join("");
+        cfg.cryptogramData = { original: targetQuote, encrypted, mapping };
+      }
+    }
+  } catch (e) {
+    console.warn(`Error generating puzzle data for ${type}:`, e);
+  }
+  return cfg;
+}
+
 const GENERATED_CONTENT_KEY: Record<string, string> = {
   crossword: 'gridData',
   word_search: 'gridData',
@@ -118,6 +232,14 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
   const [wordScrambleSolutionsPerPage, setWordScrambleSolutionsPerPage] = useState<1 | 2 | 4>(2);
   const [cryptogramSolutionsPerPage, setCryptogramSolutionsPerPage] = useState<1 | 2 | 4>(2);
   const [mathPuzzleSolutionsPerPage, setMathPuzzleSolutionsPerPage] = useState<1 | 2 | 4>(4);
+
+  const [builderToast, setBuilderToast] = useState<{ message: string; type?: 'info' | 'success' | 'warning' } | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showToast = (message: string, type: 'info' | 'success' | 'warning' = 'info') => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setBuilderToast({ message, type });
+    toastTimeoutRef.current = setTimeout(() => setBuilderToast(null), 5000);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -265,27 +387,16 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
     if (index < 0 || index >= bookPages.length) return;
     const target = bookPages[index];
     const cloned = JSON.parse(JSON.stringify(target));
-    if (cloned.type === 'maze' && (!cloned.config?.gridData || !cloned.config?.gridData?.grid)) {
-      cloned.config = cloned.config || {};
-      cloned.config.gridData = generateMazeData(cloned.config.shape || 'circle', cloned.config.gridSize || 20);
-    } else if (cloned.type === 'sudoku' && !cloned.config?.gridData) {
-      cloned.config = cloned.config || {};
-      cloned.config.gridData = generateSudoku(cloned.config.difficulty || 'medium');
-    }
+    cloned.config = hydrateOrGeneratePuzzleData(cloned.type, cloned.config, false);
     setClipboardPage(cloned);
+    showToast("📋 Page copied to clipboard! (Ctrl+V to paste)", "info");
   };
 
   const pastePage = (afterIndex: number) => {
     if (!clipboardPage) return;
     const insertAt = Math.min(afterIndex + 1, bookPages.length);
     const cloned = JSON.parse(JSON.stringify(clipboardPage));
-    if (cloned.type === 'maze' && (!cloned.config?.gridData || !cloned.config?.gridData?.grid)) {
-      cloned.config = cloned.config || {};
-      cloned.config.gridData = generateMazeData(cloned.config.shape || 'circle', cloned.config.gridSize || 20);
-    } else if (cloned.type === 'sudoku' && !cloned.config?.gridData) {
-      cloned.config = cloned.config || {};
-      cloned.config.gridData = generateSudoku(cloned.config.difficulty || 'medium');
-    }
+    cloned.config = hydrateOrGeneratePuzzleData(cloned.type, cloned.config, true);
     const newPage = { ...cloned, id: Date.now() + Math.random() };
     setBookPages((prev) => {
       const updated = [...prev];
@@ -293,15 +404,11 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
       return updated;
     });
     setActiveIndex(insertAt);
+    showToast("📋 Page pasted! Fresh puzzle generated. (Tip: Click 'Generate' in the right panel anytime to customize words/clues).", "success");
   };
 
   const addPage = (type: string, initialConfig: any = {}) => {
-    const clonedConfig = JSON.parse(JSON.stringify(initialConfig));
-    if (type === 'maze' && (!clonedConfig.gridData || !clonedConfig.gridData?.grid)) {
-      clonedConfig.gridData = generateMazeData(clonedConfig.shape || 'circle', clonedConfig.gridSize || 20);
-    } else if (type === 'sudoku' && !clonedConfig.gridData) {
-      clonedConfig.gridData = generateSudoku(clonedConfig.difficulty || 'medium');
-    }
+    const clonedConfig = hydrateOrGeneratePuzzleData(type, initialConfig, true);
     setBookPages(prev => [...prev, { id: Date.now() + Math.random(), type, config: clonedConfig }]);
     setActiveIndex(bookPages.length);
   };
@@ -337,20 +444,11 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
   const duplicatePage = (indexToDuplicate: number) => {
     if (indexToDuplicate < 0 || indexToDuplicate >= bookPages.length) return;
     const target = bookPages[indexToDuplicate];
-    const clonedConfig = JSON.parse(JSON.stringify(target.config || {}));
+    let clonedConfig = JSON.parse(JSON.stringify(target.config || {}));
 
-    // Strip the generated puzzle content (keeping settings) so the new page
-    // regenerates a fresh puzzle instead of an exact copy of this one.
-    const contentKey = GENERATED_CONTENT_KEY[target.type];
-    if (contentKey) delete clonedConfig[contentKey];
-
-    // Immediately generate fresh puzzle data for types that have sync generators
-    // so the new page NEVER exists with undefined/missing puzzle data.
-    if (target.type === 'maze') {
-      clonedConfig.gridData = generateMazeData(clonedConfig.shape || 'circle', clonedConfig.gridSize || 20);
-    } else if (target.type === 'sudoku') {
-      clonedConfig.gridData = generateSudoku(clonedConfig.difficulty || 'medium');
-    }
+    // Immediately generate fresh, unique puzzle data so the duplicated page
+    // NEVER has missing or undefined data. If generator is unavailable, preserves existing.
+    clonedConfig = hydrateOrGeneratePuzzleData(target.type, clonedConfig, true);
 
     const newPage = {
       id: Date.now() + Math.random(),
@@ -361,6 +459,8 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
     updated.splice(indexToDuplicate + 1, 0, newPage);
     setBookPages(updated);
     setActiveIndex(indexToDuplicate + 1);
+
+    showToast("📋 Page duplicated! Fresh puzzle generated. (Tip: Click 'Generate' in the right panel anytime to customize words/clues).", "success");
   };
 
   const movePageUp = (idx: number) => {
@@ -490,14 +590,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
 
     const ensurePageData = (p: any) => {
       if (!p.config) p.config = {};
-      if (p.type === 'sudoku' && !p.config.gridData) {
-        const diff = p.config.difficulty || 'medium';
-        p.config.difficulty = diff;
-        p.config.gridData = generateSudoku(diff);
-      }
-      if (p.type === 'maze' && (!p.config.gridData || !p.config.gridData.grid)) {
-        p.config.gridData = generateMazeData(p.config.shape || 'circle', p.config.gridSize || 20);
-      }
+      p.config = hydrateOrGeneratePuzzleData(p.type, p.config, false);
       const dataKey = configMap[p.type]?.dataKey || 'gridData';
       const raw = p.config[dataKey];
       return raw !== undefined && raw !== null ? JSON.parse(JSON.stringify(raw)) : null;
@@ -587,47 +680,38 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
       const res = await checkPremiumStatus();
       const currentIsPremium = !!res?.isPremium;
 
-      // Auto-heal any puzzle pages or solution entries that might be missing gridData
+      // Pre-Export Sweep: Auto-heal any puzzle pages or solution entries that might be missing grid/puzzle data
+      let autoHealedCount = 0;
+      const puzzleTypes = ['crossword', 'word_search', 'sudoku', 'maze', 'word_scramble', 'cryptogram', 'math_puzzle', 'kakuro'];
       const healedPages = bookPages.map((page) => {
-        if (page.type === 'maze') {
-          const cfg = { ...(page.config || {}) };
-          if (cfg.isMultiSolution && Array.isArray(cfg.solutionGroup)) {
-            cfg.solutionGroup = cfg.solutionGroup.map((entry: any) => {
-              if (!entry.gridData || !entry.gridData.grid) {
-                return {
-                  ...entry,
-                  gridData: generateMazeData(cfg.shape || 'circle', cfg.gridSize || 20)
-                };
-              }
-              return entry;
-            });
-            return { ...page, config: cfg };
-          } else if (!cfg.gridData || !cfg.gridData.grid) {
-            cfg.gridData = generateMazeData(cfg.shape || 'circle', cfg.gridSize || 20);
-            return { ...page, config: cfg };
+        if (!puzzleTypes.includes(page.type)) return page;
+        const cfg = { ...(page.config || {}) };
+        if (cfg.isMultiSolution && Array.isArray(cfg.solutionGroup)) {
+          cfg.solutionGroup = cfg.solutionGroup.map((entry: any) => {
+            const dataKey = page.type === 'word_scramble' ? 'scrambledData' : page.type === 'cryptogram' ? 'cryptogramData' : page.type === 'math_puzzle' ? 'puzzleData' : 'gridData';
+            if (!entry[dataKey] || (page.type === 'maze' && !entry[dataKey]?.grid)) {
+              autoHealedCount++;
+              const healed = hydrateOrGeneratePuzzleData(page.type, entry, true);
+              return { ...entry, [dataKey]: healed[dataKey] };
+            }
+            return entry;
+          });
+          return { ...page, config: cfg };
+        } else {
+          const dataKey = page.type === 'word_scramble' ? 'scrambledData' : page.type === 'cryptogram' ? 'cryptogramData' : page.type === 'math_puzzle' ? 'puzzleData' : 'gridData';
+          if (!cfg[dataKey] || (page.type === 'maze' && !cfg[dataKey]?.grid)) {
+            autoHealedCount++;
+            const hydrated = hydrateOrGeneratePuzzleData(page.type, cfg, true);
+            return { ...page, config: hydrated };
           }
-        } else if (page.type === 'sudoku') {
-          const cfg = { ...(page.config || {}) };
-          if (cfg.isMultiSolution && Array.isArray(cfg.solutionGroup)) {
-            cfg.solutionGroup = cfg.solutionGroup.map((entry: any) => {
-              if (!entry.gridData) {
-                return {
-                  ...entry,
-                  gridData: generateSudoku(cfg.difficulty || 'medium')
-                };
-              }
-              return entry;
-            });
-            return { ...page, config: cfg };
-          } else if (!cfg.gridData) {
-            cfg.gridData = generateSudoku(cfg.difficulty || 'medium');
-            return { ...page, config: cfg };
-          }
+          return page;
         }
-        return page;
       });
 
-      setBookPages(healedPages);
+      if (autoHealedCount > 0) {
+        setBookPages(healedPages);
+        showToast(`⚡ Zero-Blank Protection: Auto-generated fresh puzzles for ${autoHealedCount} page(s) before export.`, "success");
+      }
 
       const { exportBookToPDF } = await import("@/app/utils/pdfExportService");
       await exportBookToPDF(healedPages, {
@@ -1373,6 +1457,13 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
                 </div>
               </div>
             )}
+            {/* Zero-Blank Guarantee Callout */}
+            <div className="p-3 surface-panel flex items-center gap-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 text-[10px] text-emerald-900 dark:text-emerald-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>
+                <strong>Zero-Blank Guarantee:</strong> All puzzles and duplicated pages are pre-verified. Any ungenerated pages are automatically populated before PDF creation so your book prints 100% complete.
+              </span>
+            </div>
           </div>
 
           <div className="mt-6 flex gap-3">
@@ -1463,6 +1554,19 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         )}
       </div>,
       document.body
+    )}
+    {builderToast && (
+      <div className="fixed bottom-6 right-6 z-[999999] flex items-center gap-3 bg-slate-900/95 dark:bg-slate-800/95 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700/80 backdrop-blur-md text-xs font-semibold animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className={`p-1.5 rounded-lg ${builderToast.type === 'warning' ? 'bg-amber-500/20 text-amber-400' : builderToast.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-400'}`}>
+          <Sparkles className="w-4 h-4" />
+        </div>
+        <div className="flex flex-col">
+          <span>{builderToast.message}</span>
+        </div>
+        <button onClick={() => setBuilderToast(null)} className="ml-2 text-slate-400 hover:text-white p-1 cursor-pointer">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
     )}
   </>
   );

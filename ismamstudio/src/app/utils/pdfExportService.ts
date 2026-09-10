@@ -4,6 +4,10 @@ import { drawPageBorderTheme } from "./borderThemeDrawing";
 import { BorderThemeId } from "@/lib/borderThemes";
 import { drawColoringPattern } from "@/lib/coloringBookPatterns";
 import { generateMazeData } from "@/lib/maze";
+import { generateSudoku } from "@/lib/sudokuGenerator";
+import { generatePuzzleGrid } from "./puzzleEngine";
+import { generateCrosswordGrid } from "./crosswordGenerator";
+import { generateKakuro } from "@/lib/kakuro";
 
 export interface ExportOptions {
   includeCover?: boolean;
@@ -86,19 +90,41 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
 
     if (page.type === 'crossword' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawCrosswordSolutionPack(doc, page, leftMarginShift, w, h);
-    } else if (page.type === 'crossword' && page.config.gridData) {
+    } else if (page.type === 'crossword') {
+      if (!page.config?.gridData) {
+        page.config = page.config || {};
+        const pool = [
+          { word: "REACT", clue: "Popular UI library" },
+          { word: "NEXTJS", clue: "React framework" },
+          { word: "VERCEL", clue: "Hosting platform" },
+          { word: "CODING", clue: "Writing software" }
+        ];
+        page.config.gridData = generateCrosswordGrid(pool, 15);
+      }
       drawCrossword(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_search' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawWordSearchSolutionPack(doc, page, leftMarginShift, w, h);
-    } else if (page.type === 'word_search' && page.config.gridData) {
+    } else if (page.type === 'word_search') {
+      if (!page.config?.gridData) {
+        page.config = page.config || {};
+        page.config.gridData = generatePuzzleGrid(["SEARCH", "FIND", "PUZZLE", "WORDS", "GRID", "SOLVE"], 12, 'uppercase');
+      }
       drawWordSearch(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'sudoku' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawSudokuSolutionPack(doc, page, leftMarginShift, w, h);
-    } else if (page.type === 'sudoku' && page.config.gridData) {
+    } else if (page.type === 'sudoku') {
+      if (!page.config?.gridData) {
+        page.config = page.config || {};
+        page.config.gridData = generateSudoku(page.config.difficulty || 'medium');
+      }
       drawSudoku(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'kakuro' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawKakuroSolutionPack(doc, page, leftMarginShift, w, h);
-    } else if (page.type === 'kakuro' && page.config.gridData) {
+    } else if (page.type === 'kakuro') {
+      if (!page.config?.gridData) {
+        page.config = page.config || {};
+        page.config.gridData = generateKakuro(page.config.size || '9x9', page.config.difficulty || 'medium');
+      }
       drawKakuro(doc, page, leftMarginShift, w);
     } else if (page.type === 'maze' && page.config?.isMultiSolution && page.config?.solutionGroup) {
       drawMazeSolutionPack(doc, page, leftMarginShift, w, h);
@@ -110,11 +136,35 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       drawMaze(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_scramble' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawWordScrambleSolutionPack(doc, page, leftMarginShift, w, h);
-    } else if (page.type === 'word_scramble' && page.config.scrambledData) {
+    } else if (page.type === 'word_scramble') {
+      if (!page.config?.scrambledData) {
+        page.config = page.config || {};
+        const words = ["AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION", "ANTIGRAVITY", "FLIGHT", "PAYLOAD"];
+        page.config.scrambledData = words.map((w: string) => {
+          const letters = w.split('');
+          for (let i = letters.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [letters[i], letters[j]] = [letters[j], letters[i]];
+          }
+          let scrambled = letters.join('');
+          if (scrambled === w) scrambled = letters.reverse().join('');
+          return { original: w, scrambled };
+        });
+      }
       drawWordScramble(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'cryptogram' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawCryptogramSolutionPack(doc, page, leftMarginShift, w, h);
-    } else if (page.type === 'cryptogram' && page.config.cryptogramData) {
+    } else if (page.type === 'cryptogram') {
+      if (!page.config?.cryptogramData) {
+        page.config = page.config || {};
+        const quote = "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.";
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        const shuffled = [...alphabet].sort(() => Math.random() - 0.5);
+        const mapping: Record<string, string> = {};
+        alphabet.forEach((l, idx) => { mapping[l] = shuffled[idx]; });
+        const encrypted = quote.split("").map((c: string) => (/[A-Z]/.test(c) ? mapping[c] || c : c)).join("");
+        page.config.cryptogramData = { original: quote, encrypted, mapping };
+      }
       drawCryptogram(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'math_puzzle' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawMathPuzzleSolutionPack(doc, page, leftMarginShift, w, h);

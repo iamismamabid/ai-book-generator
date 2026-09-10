@@ -59,13 +59,13 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     previewImage: "/puzzle_previews/3d_puzzle_fan_mockup.png",
     background: {
       frontCoverColor: "#0F172A",
-      frontCoverType: "gradient",
-      frontCoverGradientStart: "#1E1B4B",
+      frontCoverType: "solid",
+      frontCoverGradientStart: "#0F172A",
       frontCoverGradientEnd: "#0F172A",
       backCoverColor: "#0F172A",
       backCoverType: "solid",
       backCoverGradientStart: "#0F172A",
-      backCoverGradientEnd: "#020617",
+      backCoverGradientEnd: "#0F172A",
     },
     elements: [
       // Front Cover Elements
@@ -91,13 +91,13 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     previewImage: "/puzzle_previews/all_puzzles_grid.png",
     background: {
       frontCoverColor: "#0284C7",
-      frontCoverType: "gradient",
+      frontCoverType: "solid",
       frontCoverGradientStart: "#0284C7",
-      frontCoverGradientEnd: "#0369A1",
-      backCoverColor: "#0369A1",
+      frontCoverGradientEnd: "#0284C7",
+      backCoverColor: "#0284C7",
       backCoverType: "solid",
-      backCoverGradientStart: "#0369A1",
-      backCoverGradientEnd: "#075985",
+      backCoverGradientStart: "#0284C7",
+      backCoverGradientEnd: "#0284C7",
     },
     elements: [
       // Front Cover Elements
@@ -123,13 +123,13 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     previewImage: "/puzzle_previews/all_circular_badges.png",
     background: {
       frontCoverColor: "#064E3B",
-      frontCoverType: "gradient",
-      frontCoverGradientStart: "#059669",
+      frontCoverType: "solid",
+      frontCoverGradientStart: "#064E3B",
       frontCoverGradientEnd: "#064E3B",
       backCoverColor: "#064E3B",
       backCoverType: "solid",
       backCoverGradientStart: "#064E3B",
-      backCoverGradientEnd: "#022C22",
+      backCoverGradientEnd: "#064E3B",
     },
     elements: [
       // Front Cover Elements

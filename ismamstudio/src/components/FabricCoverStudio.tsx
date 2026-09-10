@@ -884,10 +884,10 @@ export default function FabricCoverStudio({
     backCoverColor: '#0F172A',
     backCoverType: 'solid' as 'solid' | 'gradient',
     backCoverGradientStart: '#0F172A',
-    backCoverGradientEnd: '#020617',
-    frontCoverColor: '#1E293B',
+    backCoverGradientEnd: '#0F172A',
+    frontCoverColor: '#0F172A',
     frontCoverType: 'solid' as 'solid' | 'gradient',
-    frontCoverGradientStart: '#1E293B',
+    frontCoverGradientStart: '#0F172A',
     frontCoverGradientEnd: '#0F172A',
     backCoverImage: '',
     frontCoverImage: '',
@@ -2898,15 +2898,21 @@ export default function FabricCoverStudio({
       }
       ctx.fillRect(0, 0, layout.spineLeftPx, layout.canvasHeight);
 
-      if (bg.backCoverType === 'gradient' && bg.frontCoverType === 'gradient') {
-        const grad = ctx.createLinearGradient(layout.spineLeftPx, 0, layout.spineRightPx, 0);
-        grad.addColorStop(0, backEnd);
-        grad.addColorStop(1, frontStart);
-        ctx.fillStyle = grad;
+      // 2. Spine: Smooth seamless blend between back and front cover colors
+      // Eliminates sharp vertical dividing lines and prevents KDP mechanical folding shift flaws
+      const colorAtSpineLeft = bg.backCoverType === 'gradient' ? backEnd : backColor;
+      const colorAtSpineRight = bg.frontCoverType === 'gradient' ? frontStart : frontColor;
+
+      if (colorAtSpineLeft === colorAtSpineRight) {
+        ctx.fillStyle = colorAtSpineRight;
+        ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
       } else {
-        ctx.fillStyle = backColor;
+        const spineGrad = ctx.createLinearGradient(layout.spineLeftPx, 0, layout.spineRightPx, 0);
+        spineGrad.addColorStop(0, colorAtSpineLeft);
+        spineGrad.addColorStop(1, colorAtSpineRight);
+        ctx.fillStyle = spineGrad;
+        ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
       }
-      ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
 
       if (bg.frontCoverType === 'gradient') {
         const grad = ctx.createLinearGradient(layout.spineRightPx, 0, layout.canvasWidth, 0);

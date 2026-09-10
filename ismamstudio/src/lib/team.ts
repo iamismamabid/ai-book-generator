@@ -29,10 +29,19 @@ export async function getTeamOwnerIdForMember(userId: string): Promise<string | 
   return membership?.team.ownerId ?? null;
 }
 
+const workspaceUserIdsCache = new Map<string, { ids: string[]; expires: number }>();
+
 // All Clerk userIds that share this user's workspace (Notebook-saved
 // projects): the team owner plus every accepted member. A solo user (no
 // team, not a member of one) just gets back their own id.
 export async function getWorkspaceUserIds(userId: string): Promise<string[]> {
+  const now = Date.now();
+  const cached = workspaceUserIdsCache.get(userId);
+  if (cached && cached.expires > now) {
+    return cached.ids;
+  }
+
+  let result = [userId];
   try {
     const [ownedTeam, membership] = await Promise.all([
       prisma.team.findUnique({
@@ -46,14 +55,14 @@ export async function getWorkspaceUserIds(userId: string): Promise<string[]> {
     ]);
 
     if (ownedTeam) {
-      return [ownedTeam.ownerId, ...ownedTeam.members.map((m) => m.userId)];
-    }
-    if (membership?.team) {
-      return [membership.team.ownerId, ...membership.team.members.map((m) => m.userId)];
+      result = [ownedTeam.ownerId, ...ownedTeam.members.map((m) => m.userId)];
+    } else if (membership?.team) {
+      result = [membership.team.ownerId, ...membership.team.members.map((m) => m.userId)];
     }
   } catch (err) {
     console.error("Failed to resolve workspace user IDs:", err);
   }
 
-  return [userId];
+  workspaceUserIdsCache.set(userId, { ids: result, expires: now + 60_000 });
+  return result;
 }

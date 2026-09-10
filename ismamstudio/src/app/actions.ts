@@ -1592,9 +1592,25 @@ export async function getNotebookEntryData(id: string) {
       return { success: false, error: "Notebook entry not found." };
     }
 
+    const resultPayload = {
+      success: true,
+      entry: {
+        id: entry.id,
+        title: entry.title,
+        subtitle: entry.subtitle,
+        category: entry.category,
+        content: entry.content,
+        data: entry.data,
+      },
+      title: entry.title,
+      category: entry.category,
+      content: entry.content,
+      data: entry.data,
+    };
+
     // Fast path: if the item belongs to the signed-in user, return immediately without secondary team query
     if (entry.userId === userId) {
-      return { success: true, title: entry.title, category: entry.category, data: entry.data };
+      return resultPayload;
     }
 
     const workspaceUserIds = await getWorkspaceUserIds(userId);
@@ -1602,7 +1618,7 @@ export async function getNotebookEntryData(id: string) {
       return { success: false, error: "Unauthorized. Notebook entry belongs to another account." };
     }
 
-    return { success: true, title: entry.title, category: entry.category, data: entry.data };
+    return resultPayload;
   } catch (err: any) {
     console.error("Fetch notebook entry failed:", err);
     return { success: false, error: err?.message || "Failed to load Notebook entry." };

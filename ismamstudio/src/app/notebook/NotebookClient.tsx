@@ -19,24 +19,28 @@ import {
   Edit2,
   FolderInput,
   Plus,
-  FolderOpen
+  FolderOpen,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { 
   deleteNotebookEntry, 
   moveNotebookEntryToFolder, 
   renameNotebookFolder, 
-  deleteNotebookFolder 
+  deleteNotebookFolder,
+  getNotebookEntryData,
 } from "../actions";
 
 interface NotebookItem {
   id: string;
   title: string;
   subtitle?: string;
-  content: string;
+  content?: string;
   category?: string;
+  folder?: string;
   data?: any;
   createdAt: string | Date;
+  updatedAt?: string | Date;
 }
 
 interface NotebookClientProps {
@@ -88,6 +92,7 @@ function resolveDestination(category?: string, id?: string) {
 export default function NotebookClient({ items: initialItems }: NotebookClientProps) {
   const [items, setItems] = useState<NotebookItem[]>(initialItems);
   const [selectedItem, setSelectedItem] = useState<NotebookItem | null>(null);
+  const [loadingDetailsId, setLoadingDetailsId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeFolder, setActiveFolder] = useState<string>("all");
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
@@ -97,10 +102,47 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
   const [movingItemId, setMovingItemId] = useState<string | null>(null);
   const [folderActionFeedback, setFolderActionFeedback] = useState<string | null>(null);
 
+  // Lazy-load complete entry details on demand when viewing details
+  const handleOpenDetails = async (item: NotebookItem) => {
+    setSelectedItem(item);
+    if (!item.content && !item.data) {
+      setLoadingDetailsId(item.id);
+      try {
+        const res = await getNotebookEntryData(item.id);
+        if (res?.success) {
+          const fullEntry = res.entry || {};
+          const fullData = res.data || fullEntry.data;
+          const fullContent = res.content || fullEntry.content || "";
+          setSelectedItem((prev) =>
+            prev && prev.id === item.id
+              ? {
+                  ...prev,
+                  content: fullContent,
+                  data: fullData,
+                }
+              : prev
+          );
+          // Cache in memory for quick reuse
+          setItems((prev) =>
+            prev.map((it) =>
+              it.id === item.id
+                ? { ...it, content: fullContent, data: fullData }
+                : it
+            )
+          );
+        }
+      } catch (err) {
+        console.error("Failed to load full item details:", err);
+      } finally {
+        setLoadingDetailsId(null);
+      }
+    }
+  };
+
   // Tally counts per folder
   const folderCounts: Record<string, number> = {};
   items.forEach((item) => {
-    const f = item.data?.folder?.trim() || "Unfiled";
+    const f = (item.folder || item.data?.folder || "").trim() || "Unfiled";
     folderCounts[f] = (folderCounts[f] || 0) + 1;
   });
 
@@ -110,7 +152,7 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
   // Filter items by active folder tab
   const filteredItems = items.filter((item) => {
     if (activeFolder === "all") return true;
-    const itemFolder = item.data?.folder?.trim() || "Unfiled";
+    const itemFolder = (item.folder || item.data?.folder || "").trim() || "Unfiled";
     return itemFolder === activeFolder;
   });
 
@@ -135,13 +177,13 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
     setItems((prev) =>
       prev.map((it) =>
         it.id === itemId
-          ? { ...it, data: { ...(it.data || {}), folder: targetFolder } }
+          ? { ...it, folder: targetFolder, data: { ...(it.data || {}), folder: targetFolder } }
           : it
       )
     );
     if (selectedItem?.id === itemId) {
       setSelectedItem((prev) =>
-        prev ? { ...prev, data: { ...(prev.data || {}), folder: targetFolder } } : null
+        prev ? { ...prev, folder: targetFolder, data: { ...(prev.data || {}), folder: targetFolder } } : null
       );
     }
     await moveNotebookEntryToFolder(itemId, targetFolder);
@@ -157,8 +199,8 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
     }
     setItems((prev) =>
       prev.map((it) =>
-        it.data?.folder === oldName
-          ? { ...it, data: { ...(it.data || {}), folder: newName } }
+        (it.folder || it.data?.folder) === oldName
+          ? { ...it, folder: newName, data: { ...(it.data || {}), folder: newName } }
           : it
       )
     );
@@ -171,8 +213,8 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
     if (confirm(`Remove folder "${folderName}"? Items in this folder will be moved to Unfiled.`)) {
       setItems((prev) =>
         prev.map((it) =>
-          it.data?.folder === folderName
-            ? { ...it, data: { ...(it.data || {}), folder: "Unfiled" } }
+          (it.folder || it.data?.folder) === folderName
+            ? { ...it, folder: "Unfiled", data: { ...(it.data || {}), folder: "Unfiled" } }
             : it
         )
       );
@@ -376,11 +418,11 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map((item) => {
-            const currentFolder = item.data?.folder || "Unfiled";
+            const currentFolder = item.folder || item.data?.folder || "Unfiled";
             return (
               <div
                 key={item.id}
-                onClick={() => setSelectedItem(item)}
+                onClick={() => handleOpenDetails(item)}
                 className="group bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-indigo-500/40 transition-all duration-300 flex flex-col justify-between cursor-pointer relative"
               >
                 <div>
@@ -444,7 +486,7 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/80" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setSelectedItem(item)}
+                      onClick={() => handleOpenDetails(item)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
@@ -544,43 +586,53 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
                 </button>
               </div>
 
-              {/* Content Text Viewer */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Entry Content</h4>
-                <div className="bg-slate-50 dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 font-mono text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto custom-scrollbar">
-                  {selectedItem.content || "No text content stored for this entry."}
+              {/* Content Text Viewer / Lazy-Loading State */}
+              {loadingDetailsId === selectedItem.id ? (
+                <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Loading full entry content & configuration...</span>
                 </div>
-              </div>
-
-              {/* Image Preview for Coloring Pages & Canvases */}
-              {selectedItem.data?.color && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Drawing & Coloring Preview</h4>
-                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-100 dark:bg-slate-950 p-3 flex items-center justify-center max-h-[350px]">
-                    <img src={selectedItem.data.color} alt="Coloring Drawing Preview" className="max-h-[320px] object-contain rounded-xl shadow-sm" />
+              ) : (
+                <>
+                  {/* Content Text Viewer */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Entry Content</h4>
+                    <div className="bg-slate-50 dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 font-mono text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto custom-scrollbar">
+                      {selectedItem.content || "No text content stored for this entry."}
+                    </div>
                   </div>
-                </div>
-              )}
 
-              {/* JSON Metadata Details (if present) */}
-              {selectedItem.data && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Project Configuration Data</h4>
-                  <pre className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-emerald-400 text-[11px] font-mono overflow-x-auto custom-scrollbar">
-                    {JSON.stringify(
-                      Object.fromEntries(
-                        Object.entries(selectedItem.data).map(([k, v]) => [
-                          k,
-                          typeof v === "string" && v.startsWith("data:image")
-                            ? `[Image Data URL: ${(v.length / 1024).toFixed(1)} KB]`
-                            : v,
-                        ])
-                      ),
-                      null,
-                      2
-                    )}
-                  </pre>
-                </div>
+                  {/* Image Preview for Coloring Pages & Canvases */}
+                  {selectedItem.data?.color && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Drawing & Coloring Preview</h4>
+                      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-100 dark:bg-slate-950 p-3 flex items-center justify-center max-h-[350px]">
+                        <img src={selectedItem.data.color} alt="Coloring Drawing Preview" className="max-h-[320px] object-contain rounded-xl shadow-sm" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* JSON Metadata Details (if present) */}
+                  {selectedItem.data && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Project Configuration Data</h4>
+                      <pre className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-emerald-400 text-[11px] font-mono overflow-x-auto custom-scrollbar">
+                        {JSON.stringify(
+                          Object.fromEntries(
+                            Object.entries(selectedItem.data).map(([k, v]) => [
+                              k,
+                              typeof v === "string" && v.startsWith("data:image")
+                                ? `[Image Data URL: ${(v.length / 1024).toFixed(1)} KB]`
+                                : v,
+                            ])
+                          ),
+                          null,
+                          2
+                        )}
+                      </pre>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

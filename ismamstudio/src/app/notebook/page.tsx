@@ -37,31 +37,71 @@ export default async function NotebookPage() {
     );
   }
 
-  // Scoped to the whole workspace, not just this exact userId, so a team
-  // shares one Notebook rather than each member seeing only their own saves.
-  const workspaceUserIds = await getWorkspaceUserIds(userId);
+  // Fetch notebook entries for the whole team workspace in a single roundtrip
   let notebookItems: any[] = [];
   try {
-    const notebookDelegate = (prisma as any).notebook;
-    if (notebookDelegate?.findMany) {
-      notebookItems = await notebookDelegate.findMany({
-        where: { userId: { in: workspaceUserIds } },
-        orderBy: { createdAt: "desc" },
-        take: 100,
-      });
-    } else {
-      notebookItems = await prisma.$queryRawUnsafe(
-        `SELECT * FROM "notebooks" WHERE "userId" = ANY($1) ORDER BY "createdAt" DESC LIMIT 100`,
-        workspaceUserIds
-      );
-    }
+    notebookItems = await prisma.$queryRawUnsafe(`
+      WITH user_team AS (
+        SELECT id, "ownerId" FROM "teams" WHERE "ownerId" = $1
+        UNION ALL
+        SELECT t.id, t."ownerId" FROM "teams" t
+        JOIN "team_members" tm ON tm."teamId" = t.id
+        WHERE tm."userId" = $1
+        LIMIT 1
+      ),
+      workspace_users AS (
+        SELECT "ownerId" as "userId" FROM user_team
+        UNION
+        SELECT tm."userId" FROM "team_members" tm
+        JOIN user_team ut ON ut.id = tm."teamId"
+        UNION
+        SELECT $1 as "userId"
+      )
+      SELECT 
+        n.id, 
+        n.title, 
+        n.subtitle, 
+        n.category, 
+        n."createdAt", 
+        n."updatedAt", 
+        COALESCE(n.data->>'folder', 'Unfiled') as folder
+      FROM "notebooks" n
+      JOIN workspace_users wu ON n."userId" = wu."userId"
+      WHERE (n."category" IS NULL OR n."category" != 'cover_asset')
+      ORDER BY n."createdAt" DESC
+      LIMIT 100;
+    `, userId);
   } catch (error) {
-    console.error("Failed to fetch notebook entries:", error);
+    console.error("Unified notebook query failed, falling back:", error);
+    try {
+      const workspaceUserIds = await getWorkspaceUserIds(userId);
+      notebookItems = await prisma.$queryRawUnsafe(`
+        SELECT 
+          id, 
+          title, 
+          subtitle, 
+          category, 
+          "createdAt", 
+          "updatedAt", 
+          COALESCE(data->>'folder', 'Unfiled') as folder
+        FROM "notebooks"
+        WHERE "userId" = ANY($1)
+          AND ("category" IS NULL OR "category" != 'cover_asset')
+        ORDER BY "createdAt" DESC
+        LIMIT 100
+      `, workspaceUserIds);
+    } catch (fallbackErr) {
+      console.error("Notebook fallback query failed:", fallbackErr);
+    }
   }
 
-  // Serialize Date objects to ISO strings for Client Component
+  // Serialize Date objects to ISO strings with lightweight payload
   const serializedItems = notebookItems.map((item: any) => ({
-    ...item,
+    id: item.id,
+    title: item.title,
+    subtitle: item.subtitle || "Permanently saved in My Notebook",
+    category: item.category || "general",
+    folder: item.folder || "Unfiled",
     createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
     updatedAt: item.updatedAt instanceof Date ? item.updatedAt.toISOString() : item.updatedAt,
   }));

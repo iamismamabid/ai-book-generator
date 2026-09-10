@@ -49,6 +49,7 @@ model Notebook {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([userId, createdAt(sort: Desc)])
   @@map("notebooks")
 }
 

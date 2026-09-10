@@ -3454,11 +3454,24 @@ export default function FabricCoverStudio({
                 const targetH = Math.max(1, (el.height || natH) * (el.scaleY || 1));
 
                 // Compute proper scale factor relative to uncropped natural dimensions
-                const finalScaleX = natW > 0 ? targetW / natW : (el.scaleX || 1);
-                const finalScaleY = natH > 0 ? targetH / natH : (el.scaleY || 1);
+                // Proportional fit ensures preview snippets and mockup graphics don't get squished
+                const isProportional = el.keepAspectRatio !== false;
+                const rawScaleX = natW > 0 ? targetW / natW : (el.scaleX || 1);
+                const rawScaleY = natH > 0 ? targetH / natH : (el.scaleY || 1);
+                const fitScale = isProportional && natW > 0 && natH > 0 ? Math.min(rawScaleX, rawScaleY) : rawScaleX;
+                const finalScaleX = isProportional ? fitScale : rawScaleX;
+                const finalScaleY = isProportional ? fitScale : rawScaleY;
+
+                // Center within target box if proportional
+                const displayW = natW * finalScaleX;
+                const displayH = natH * finalScaleY;
+                const leftPos = isProportional && el.x !== undefined ? el.x + (targetW - displayW) / 2 : (el.x ?? 0);
+                const topPos = isProportional && el.y !== undefined ? el.y + (targetH - displayH) / 2 : (el.y ?? 0);
 
                 img.set({
                   ...resolveCommon(el),
+                  left: leftPos,
+                  top: topPos,
                   // IMPORTANT: Keep width/height as the true natural dimensions so Fabric.js
                   // never clips or crops the source image bitmap into a partial thumbnail!
                   width: natW,
@@ -5241,21 +5254,18 @@ export default function FabricCoverStudio({
     if (!canvas) return;
 
     try {
-      // No confirm() dialog here on purpose — it's a synchronous, blocking
-      // native prompt, and since Cover Studio already has full undo/redo,
-      // it's redundant friction (and can read as a frozen page if the user
-      // isn't expecting a modal).
-      // getObjects() returns a COPY of the internal array, so iterate it
-      // directly rather than looping on objects.length (see handleClearCanvas).
+      // 1. Remove all existing objects on canvas
       canvas.getObjects().forEach((obj) => canvas.remove(obj));
       canvas.discardActiveObject();
 
-      // Sync the ref synchronously (matching applyPresetColors' pattern) so
-      // the immediate renderAll() below doesn't paint one frame of the stale
-      // background — nothing else forces a repaint for a plain color/gradient
-      // change. The real Unsplash photo (if fetched) becomes the front cover
-      // background image; a dark overlay element (added in
-      // resolveTemplateElements) keeps the title text legible on top of it.
+      // 2. CRITICAL: Clear all lingering HTMLImageElement background references immediately!
+      // Otherwise, the previous background photo (from prior drafts or templates) stays drawn on canvas.
+      frontCoverImageEl.current = null;
+      backCoverImageEl.current = null;
+      fullCoverImageEl.current = null;
+
+      // 3. Setup new background configuration
+      const finalFrontImage = photoUrl || '';
       const newBg = {
         ...coverBackground,
         frontCoverColor: template.background.frontCoverColor,
@@ -5267,7 +5277,7 @@ export default function FabricCoverStudio({
         backCoverGradientStart: template.background.backCoverGradientStart,
         backCoverGradientEnd: template.background.backCoverGradientEnd,
         backCoverImage: '',
-        frontCoverImage: photoUrl || '',
+        frontCoverImage: finalFrontImage,
         fullCoverImage: '',
         backCoverTextureId: '',
         frontCoverTextureId: '',
@@ -5279,10 +5289,29 @@ export default function FabricCoverStudio({
       coverBackgroundRef.current = newBg;
       setCoverBackground(newBg);
 
+      // Pre-load photoUrl into frontCoverImageEl if provided
+      if (photoUrl) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = photoUrl;
+        img.onload = () => {
+          frontCoverImageEl.current = img;
+          canvas.requestRenderAll();
+        };
+      }
+
+      // 4. Resolve and import template elements
       const resolvedElements = resolveTemplateElements(template, layout, !!photoUrl);
       importLegacyElements(canvas, resolvedElements, layout);
-      canvas.renderAll();
+      canvas.requestRenderAll();
       setActiveToolTab('elements');
+
+      // 5. Trigger immediate state save so history, onSaveWorkspace, and draft sync are updated
+      setTimeout(() => {
+        if (saveStateRef.current) {
+          saveStateRef.current();
+        }
+      }, 50);
     } catch (err) {
       console.error("Failed to apply cover template:", err);
     }

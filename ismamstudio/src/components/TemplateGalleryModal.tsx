@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { X, Loader2, ImageOff } from "lucide-react";
+import { X, Loader2, ImageOff, LayoutTemplate } from "lucide-react";
 import { COVER_TEMPLATES, CoverTemplate } from "@/lib/coverTemplates";
 
 interface TemplateGalleryModalProps {
@@ -49,6 +49,9 @@ export default function TemplateGalleryModal({ isOpen, onClose, onSelectTemplate
     const now = Date.now();
 
     COVER_TEMPLATES.forEach((template) => {
+      // Templates with direct local preview images don't require Unsplash network requests
+      if (template.previewImage) return;
+
       const cached = cache[template.photoQuery];
       if (cached && now - cached.cachedAt < CACHE_TTL_MS) {
         setPhotos((prev) => ({ ...prev, [template.id]: cached }));
@@ -94,7 +97,7 @@ export default function TemplateGalleryModal({ isOpen, onClose, onSelectTemplate
           <div>
             <h2 className="text-lg font-black text-slate-900">Cover Templates</h2>
             <p className="text-xs text-slate-500 font-semibold">
-              {COVER_TEMPLATES.length} genre templates with real photo backgrounds from Unsplash — click one to apply
+              {COVER_TEMPLATES.length} professionally designed cover templates for KDP books — click one to apply
             </p>
           </div>
           <button
@@ -124,36 +127,47 @@ export default function TemplateGalleryModal({ isOpen, onClose, onSelectTemplate
         <div className="p-6 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {visibleTemplates.map((template) => {
             const photo = photos[template.id];
+            const hasLocalPreview = Boolean(template.previewImage);
             return (
               <button
                 key={template.id}
-                onClick={() => onSelectTemplate(template, photo?.regular ?? null)}
-                className="group text-left rounded-2xl overflow-hidden border border-slate-200 hover:border-amber-400 hover:shadow-lg transition-all cursor-pointer"
+                onClick={() => onSelectTemplate(template, hasLocalPreview ? null : (photo?.regular ?? null))}
+                className="group text-left rounded-2xl overflow-hidden border border-slate-200 hover:border-amber-400 hover:shadow-lg transition-all cursor-pointer bg-white"
               >
                 <div
                   className="w-full aspect-[3/4] flex items-center justify-center relative overflow-hidden"
                   style={{ backgroundColor: template.swatch }}
                 >
-                  {photo === undefined && (
-                    <Loader2 className="w-6 h-6 text-white/80 animate-spin" />
-                  )}
-                  {photo === null && (
-                    <ImageOff className="w-6 h-6 text-white/60" />
-                  )}
-                  {photo && (
+                  {hasLocalPreview && template.previewImage ? (
+                    <img
+                      src={template.previewImage}
+                      alt={template.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : photo ? (
                     <img
                       src={photo.thumb}
                       alt={template.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
+                  ) : photo === undefined ? (
+                    <Loader2 className="w-6 h-6 text-white/80 animate-spin" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-3 text-center">
+                      <LayoutTemplate className="w-7 h-7 text-white/40 mb-1" />
+                      <span className="text-[10px] font-bold text-white/80 line-clamp-2">{template.name}</span>
+                    </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
                   <span className="absolute bottom-2 left-2 right-2 text-white text-xs font-black leading-tight drop-shadow">
                     {template.name}
                   </span>
                 </div>
-                <div className="px-2.5 py-1.5 bg-white">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">{template.category}</span>
+                <div className="px-2.5 py-1.5 bg-white flex items-center justify-between">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 truncate">{template.category}</span>
+                  {hasLocalPreview && (
+                    <span className="text-[8px] font-black uppercase bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded shrink-0">Design Kit</span>
+                  )}
                 </div>
               </button>
             );

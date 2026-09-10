@@ -44,6 +44,7 @@ export interface CoverTemplate {
   category: string;
   swatch: string; // fallback color for the picker card if the photo fails to load
   photoQuery: string; // Unsplash search term used to fetch this template's real photo
+  previewImage?: string; // direct local preview image (bypasses Unsplash photo query)
   background: CoverBackgroundConfig;
   elements: TemplateElement[];
 }
@@ -55,6 +56,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     category: "Puzzle Books",
     swatch: "#1E1B4B",
     photoQuery: "puzzle brain teaser variety",
+    previewImage: "/puzzle_previews/3d_puzzle_fan_mockup.png",
     background: {
       frontCoverColor: "#0F172A",
       frontCoverType: "gradient",
@@ -86,6 +88,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     category: "Puzzle Books",
     swatch: "#0284C7",
     photoQuery: "colorful puzzle game activity",
+    previewImage: "/puzzle_previews/all_puzzles_grid.png",
     background: {
       frontCoverColor: "#0284C7",
       frontCoverType: "gradient",
@@ -117,6 +120,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     category: "Puzzle Books",
     swatch: "#059669",
     photoQuery: "green nature puzzle relaxing",
+    previewImage: "/puzzle_previews/all_circular_badges.png",
     background: {
       frontCoverColor: "#064E3B",
       frontCoverType: "gradient",

@@ -687,7 +687,9 @@ interface FabricCoverStudioProps {
 const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
   if (!fCanvas || typeof fCanvas.getObjects !== 'function') return [];
   try {
-    return fCanvas.getObjects().map((obj: any) => {
+    const objs = fCanvas.getObjects();
+    if (!Array.isArray(objs)) return [];
+    return objs.map((obj: any) => {
       try {
         let type = '';
         if (obj.type === 'i-text' || obj.type === 'text' || obj.type === 'textbox') {
@@ -5962,7 +5964,7 @@ export default function FabricCoverStudio({
                       updateActiveObjectProperty("fontFamily", font);
                     }}
                   />
-                  {brandKit.fonts.length > 0 && (
+                  {Array.isArray(brandKit?.fonts) && brandKit.fonts.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       {brandKit.fonts.map((font) => (
                         <button
@@ -6863,7 +6865,7 @@ export default function FabricCoverStudio({
                   </div>
                 )}
 
-                {brandKit.colors.length > 0 && (
+                {Array.isArray(brandKit?.colors) && brandKit.colors.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {brandKit.colors.map((hex) => (
                       <button
@@ -7451,12 +7453,12 @@ export default function FabricCoverStudio({
 
             {/* Canvas Layers Manager */}
             <div className="pt-4 border-t border-slate-200 space-y-2.5">
-              <h4 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Canvas Layers ({layers.length})</h4>
-              {layers.length === 0 ? (
+              <h4 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Canvas Layers ({layers?.length || 0})</h4>
+              {(!layers || layers.length === 0) ? (
                 <p className="text-[10px] text-slate-400 italic">No layers added yet.</p>
               ) : (
                 <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
-                  {layers.map((layer: any, idx) => {
+                  {(layers || []).map((layer: any, idx) => {
                     const isSelected = activeObject === layer;
                     let icon = "📝";
                     let label = "Layer";
@@ -7798,7 +7800,7 @@ export default function FabricCoverStudio({
                     </summary>
                     <div className="p-3 bg-white">
                       <div className="grid grid-cols-4 gap-2">
-                        {category.icons.map((icon, iconIdx) => (
+                        {(category?.icons || []).map((icon, iconIdx) => (
                           <button
                             key={iconIdx}
                             onClick={() => addVectorIcon(icon.path, icon.fill, icon.stroke, icon.strokeWidth, (icon as any).strokeDashArray, icon.viewBox)}
@@ -7854,7 +7856,7 @@ export default function FabricCoverStudio({
                 </div>
 
                 {/* Display Unsplash Results if Search matches */}
-                {searchResults.length > 0 && (
+                {Array.isArray(searchResults) && searchResults.length > 0 && (
                   <div className="space-y-2 pt-2 border-t border-slate-200">
                     <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400">Search Results</h3>
                     <div className="grid grid-cols-2 gap-2 max-h-[250px] overflow-y-auto pr-1">
@@ -8291,7 +8293,7 @@ export default function FabricCoverStudio({
               </div>
             </div>
 
-            {uploadedImages.length > 0 && (
+            {Array.isArray(uploadedImages) && uploadedImages.length > 0 && (
               <div className="space-y-3 pt-3 border-t border-slate-200">
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Uploaded Assets</p>

@@ -13,6 +13,7 @@ import { saveCoverDraftToIndexedDB, loadCoverDraftFromIndexedDB } from "@/lib/in
 const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
 const BookBuilder = dynamic(() => import("@/components/BookBuilder"), { ssr: false });
 import CoverStudioErrorBoundary from "@/components/CoverStudioErrorBoundary";
+import InteriorErrorBoundary from "@/components/InteriorErrorBoundary";
 
 const TRIM_SIZES = [
   { label: '6" x 9" (Novel)', w: 6, h: 9 },
@@ -474,15 +475,17 @@ export default function MasterStudioApp() {
             activeTab === 'interior' ? 'opacity-100 z-10 pointer-events-auto visible' : 'opacity-0 z-0 pointer-events-none invisible'
           }`}
         >
-          <BookBuilder
-            coverState={{
-              coverElements,
-              spineWidth,
-              trimSize,
-              ...coverBackground
-            }}
-            initialPages={notebookInitialPages ?? undefined}
-          />
+          <InteriorErrorBoundary>
+            <BookBuilder
+              coverState={{
+                coverElements,
+                spineWidth,
+                trimSize,
+                ...coverBackground
+              }}
+              initialPages={notebookInitialPages ?? undefined}
+            />
+          </InteriorErrorBoundary>
         </div>
 
         {/* Cover Studio Tab Content (FabricCoverStudio) */}

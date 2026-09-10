@@ -128,8 +128,8 @@ export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forc
           .map((w: string) => w.trim().toUpperCase().replace(/[^A-Z]/g, ''))
           .filter((w: string) => w.length > 0);
         const diff = cfg.difficulty || 'easy';
-        cfg.scrambledData = rawWords.map((word: string) => {
-          if (word.length <= 2) return { original: word, scrambled: word };
+        const scrambledList = rawWords.map((word: string) => {
+          if (word.length <= 2) return word;
           const letters = word.split('');
           for (let i = letters.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -137,8 +137,20 @@ export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forc
           }
           let scrambled = letters.join('');
           if (scrambled === word) scrambled = letters.reverse().join('');
-          return { original: word, scrambled };
+          return scrambled;
         });
+        const wordBank = [...rawWords].sort((a, b) => a.localeCompare(b));
+        cfg.scrambledData = {
+          original: rawWords,
+          scrambled: scrambledList,
+          wordBank
+        };
+      } else if (Array.isArray(cfg.scrambledData)) {
+        const raw = cfg.scrambledData;
+        const original = raw.map((item: any) => (typeof item === 'string' ? item : item.original || item.word || '')).filter(Boolean);
+        const scrambled = raw.map((item: any) => (typeof item === 'string' ? item : item.scrambled || item.original || '')).filter(Boolean);
+        const wordBank = [...original].sort((a, b) => a.localeCompare(b));
+        cfg.scrambledData = { original, scrambled, wordBank };
       }
     } else if (type === 'cryptogram') {
       if (forceRegenerate || !cfg.cryptogramData) {
@@ -158,7 +170,9 @@ export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forc
         const mapping: Record<string, string> = {};
         alphabet.forEach((letter, idx) => { mapping[letter] = shuffled[idx]; });
         const encrypted = targetQuote.split("").map((c: string) => (/[A-Z]/.test(c) ? mapping[c] || c : c)).join("");
-        cfg.cryptogramData = { original: targetQuote, encrypted, mapping };
+        cfg.cryptogramData = { original: targetQuote, encrypted, mapping, cipherMap: mapping };
+      } else if (cfg.cryptogramData && !cfg.cryptogramData.cipherMap && cfg.cryptogramData.mapping) {
+        cfg.cryptogramData.cipherMap = cfg.cryptogramData.mapping;
       }
     }
   } catch (e) {

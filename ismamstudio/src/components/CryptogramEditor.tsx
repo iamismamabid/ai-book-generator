@@ -313,7 +313,7 @@ export function CryptogramEditor({ page, updatePage }: any) {
                       <div key={l} className="flex flex-col border border-slate-200 bg-white p-0.5 rounded min-w-[12px] flex-1">
                         <span>{l}</span>
                         <span className="text-indigo-600 border-t border-slate-100 mt-0.5">
-                          {cryptogramData.cipherMap[l] || "_"}
+                          {cryptogramData?.cipherMap?.[l] || cryptogramData?.mapping?.[l] || "_"}
                         </span>
                       </div>
                     ))}

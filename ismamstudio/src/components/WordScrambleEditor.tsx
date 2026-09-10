@@ -8,6 +8,25 @@ const DEFAULT_WORDS = [
   "ANTIGRAVITY", "FLIGHT", "PAYLOAD"
 ];
 
+function normalizeScrambledData(data: any): { original: string[]; scrambled: string[]; wordBank: string[] } | null {
+  if (!data) return null;
+  if (Array.isArray(data)) {
+    const original = data.map((item: any) => (typeof item === 'string' ? item : item.original || item.word || '')).filter(Boolean);
+    const scrambled = data.map((item: any) => (typeof item === 'string' ? item : item.scrambled || item.original || '')).filter(Boolean);
+    const wordBank = [...original].sort((a, b) => a.localeCompare(b));
+    return { original, scrambled, wordBank };
+  }
+  if (typeof data === 'object') {
+    const original = Array.isArray(data.original) ? data.original : [];
+    const scrambled = Array.isArray(data.scrambled) ? data.scrambled : [];
+    const wordBank = Array.isArray(data.wordBank)
+      ? data.wordBank
+      : [...original].sort((a, b) => a.localeCompare(b));
+    return { original, scrambled, wordBank };
+  }
+  return null;
+}
+
 export function WordScrambleEditor({ page, updatePage }: any) {
   const [inputText, setInputText] = useState(() => {
     if (page.config.rawText) return page.config.rawText;
@@ -26,8 +45,8 @@ export function WordScrambleEditor({ page, updatePage }: any) {
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
     page.config.difficulty || "easy"
   );
-  const [scrambledData, setScrambledData] = useState<any>(
-    page.config.scrambledData || null
+  const [scrambledData, setScrambledData] = useState<any>(() =>
+    normalizeScrambledData(page.config.scrambledData)
   );
   const csvInputRef = useRef<HTMLInputElement>(null);
 
@@ -135,7 +154,7 @@ export function WordScrambleEditor({ page, updatePage }: any) {
   };
 
   useEffect(() => {
-    if (!scrambledData) {
+    if (!scrambledData || !Array.isArray(scrambledData.scrambled) || scrambledData.scrambled.length === 0) {
       handleGenerate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -227,17 +246,17 @@ export function WordScrambleEditor({ page, updatePage }: any) {
           Unscramble the letters below
         </p>
 
-        {scrambledData ? (
+        {scrambledData && Array.isArray(scrambledData.scrambled) && scrambledData.scrambled.length > 0 ? (
           <div className="w-full max-w-md space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
               {scrambledData.scrambled.map((scrambled: string, wIdx: number) => {
-                const solutionWord = scrambledData.original[wIdx];
+                const solutionWord = scrambledData.original?.[wIdx] || "";
                 return (
                   <div key={wIdx} className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-4">
                       <span className="text-xs font-bold text-slate-300">#{wIdx + 1}</span>
                       <span className="text-sm font-bold tracking-widest text-slate-800 font-mono">
-                        {scrambled.split("").join(" ")}
+                        {(scrambled || "").split("").join(" ")}
                       </span>
                     </div>
 
@@ -256,7 +275,7 @@ export function WordScrambleEditor({ page, updatePage }: any) {
             </div>
 
             {/* Word Bank (Skip if Hard) */}
-            {difficulty !== "hard" && !isSolution && (
+            {difficulty !== "hard" && !isSolution && Array.isArray(scrambledData.wordBank) && scrambledData.wordBank.length > 0 && (
               <div className="mt-8 p-4 bg-slate-50 border border-slate-200 rounded-xl">
                 <h3 className="text-[10px] font-black uppercase tracking-wider text-indigo-600 mb-2">Word Bank</h3>
                 <div className="grid grid-cols-3 gap-2">

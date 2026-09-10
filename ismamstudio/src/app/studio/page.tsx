@@ -18,7 +18,10 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <CoverStudioErrorBoundary>
+    <CoverStudioErrorBoundary
+      title="Creator Studio Paused"
+      subtitle="An issue occurred while rendering the studio layout. Your saved design elements and settings are safely stored."
+    >
       <MasterStudioApp />
     </CoverStudioErrorBoundary>
   );

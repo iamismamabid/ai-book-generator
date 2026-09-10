@@ -6,8 +6,6 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 interface Props {
   children: ReactNode;
   onReset?: () => void;
-  title?: string;
-  subtitle?: string;
 }
 
 interface State {
@@ -15,7 +13,7 @@ interface State {
   error: Error | null;
 }
 
-export default class CoverStudioErrorBoundary extends Component<Props, State> {
+export default class InteriorErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -26,7 +24,7 @@ export default class CoverStudioErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("CoverStudio ErrorBoundary caught an error:", error, errorInfo);
+    console.error("InteriorErrorBoundary caught an interior render error:", error, errorInfo);
   }
 
   handleReset = () => {
@@ -39,10 +37,7 @@ export default class CoverStudioErrorBoundary extends Component<Props, State> {
   handleClearCorruptCacheAndReload = () => {
     try {
       if (typeof window !== "undefined") {
-        localStorage.removeItem("kdp-cover-draft");
-        if (window.indexedDB) {
-          window.indexedDB.deleteDatabase("KDPageStudioDB");
-        }
+        localStorage.removeItem("kdp-book-draft");
         window.location.reload();
       }
     } catch {
@@ -55,18 +50,18 @@ export default class CoverStudioErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-[#0b0f19] text-white select-none">
-          <div className="max-w-md w-full bg-slate-900/80 border border-rose-500/20 rounded-3xl p-8 text-center space-y-5 shadow-2xl backdrop-blur-xl">
+        <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-slate-900 text-white select-none">
+          <div className="max-w-md w-full bg-slate-800/90 border border-rose-500/20 rounded-3xl p-8 text-center space-y-5 shadow-2xl backdrop-blur-xl">
             <div className="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-400 border border-rose-500/20 mx-auto">
               <AlertTriangle className="w-7 h-7" />
             </div>
 
             <div className="space-y-2">
               <h2 className="text-xl font-black text-white tracking-tight">
-                {this.props.title || "Cover Studio Canvas Paused"}
+                Book Interior Builder Paused
               </h2>
               <p className="text-slate-400 text-xs font-semibold leading-relaxed">
-                {this.props.subtitle || "An issue occurred while rendering the canvas layout. Your saved design elements and settings are safely stored."}
+                An issue occurred while rendering this book page. Your overall book configuration and other pages are safely preserved.
               </p>
               {this.state.error?.message && (
                 <p className="mt-2 text-[11px] font-mono text-rose-400/80 bg-rose-950/40 p-2.5 rounded-xl border border-rose-800/30 overflow-hidden text-ellipsis whitespace-pre-wrap break-all text-left max-h-24 overflow-y-auto">
@@ -78,15 +73,15 @@ export default class CoverStudioErrorBoundary extends Component<Props, State> {
             <div className="pt-2 flex flex-col gap-2">
               <button
                 onClick={this.handleReset}
-                className="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-xs rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-[0.98]"
+                className="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-xs rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-[0.98] cursor-pointer"
               >
-                <RefreshCw className="w-4 h-4" /> Reload Studio Canvas
+                <RefreshCw className="w-4 h-4" /> Reload Book Interior
               </button>
               <button
                 onClick={this.handleClearCorruptCacheAndReload}
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-all duration-200"
+                className="w-full py-2.5 bg-slate-700/80 hover:bg-slate-700 border border-slate-600 text-slate-300 font-semibold text-xs rounded-xl transition-all duration-200 cursor-pointer"
               >
-                Reset Saved Draft Cache &amp; Reload
+                Reset Interior Draft &amp; Reload
               </button>
             </div>
           </div>

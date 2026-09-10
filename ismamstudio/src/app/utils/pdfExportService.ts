@@ -137,19 +137,29 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     } else if (page.type === 'word_scramble' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawWordScrambleSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_scramble') {
-      if (!page.config?.scrambledData) {
+      if (!page.config?.scrambledData || Array.isArray(page.config.scrambledData)) {
         page.config = page.config || {};
-        const words = ["AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION", "ANTIGRAVITY", "FLIGHT", "PAYLOAD"];
-        page.config.scrambledData = words.map((w: string) => {
-          const letters = w.split('');
-          for (let i = letters.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [letters[i], letters[j]] = [letters[j], letters[i]];
-          }
-          let scrambled = letters.join('');
-          if (scrambled === w) scrambled = letters.reverse().join('');
-          return { original: w, scrambled };
-        });
+        if (Array.isArray(page.config.scrambledData)) {
+          const raw = page.config.scrambledData;
+          const original = raw.map((item: any) => (typeof item === 'string' ? item : item.original || item.word || '')).filter(Boolean);
+          const scrambled = raw.map((item: any) => (typeof item === 'string' ? item : item.scrambled || item.original || '')).filter(Boolean);
+          const wordBank = [...original].sort((a, b) => a.localeCompare(b));
+          page.config.scrambledData = { original, scrambled, wordBank };
+        } else {
+          const words = ["AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION", "ANTIGRAVITY", "FLIGHT", "PAYLOAD"];
+          const scrambledList = words.map((w: string) => {
+            const letters = w.split('');
+            for (let i = letters.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [letters[i], letters[j]] = [letters[j], letters[i]];
+            }
+            let scrambled = letters.join('');
+            if (scrambled === w) scrambled = letters.reverse().join('');
+            return scrambled;
+          });
+          const wordBank = [...words].sort((a, b) => a.localeCompare(b));
+          page.config.scrambledData = { original: words, scrambled: scrambledList, wordBank };
+        }
       }
       drawWordScramble(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'cryptogram' && page.config.isMultiSolution && page.config.solutionGroup) {
@@ -163,7 +173,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
         const mapping: Record<string, string> = {};
         alphabet.forEach((l, idx) => { mapping[l] = shuffled[idx]; });
         const encrypted = quote.split("").map((c: string) => (/[A-Z]/.test(c) ? mapping[c] || c : c)).join("");
-        page.config.cryptogramData = { original: quote, encrypted, mapping };
+        page.config.cryptogramData = { original: quote, encrypted, mapping, cipherMap: mapping };
       }
       drawCryptogram(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'math_puzzle' && page.config.isMultiSolution && page.config.solutionGroup) {
@@ -2094,7 +2104,24 @@ const loadAndCropImage = (
 
 // Helper: Draw Word Scramble
 const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
-  const data = page.config.scrambledData;
+  let rawData = page.config?.scrambledData;
+  let data: { original: string[]; scrambled: string[]; wordBank: string[] };
+  if (Array.isArray(rawData)) {
+    const original = rawData.map((item: any) => (typeof item === 'string' ? item : item.original || item.word || '')).filter(Boolean);
+    const scrambled = rawData.map((item: any) => (typeof item === 'string' ? item : item.scrambled || item.original || '')).filter(Boolean);
+    const wordBank = [...original].sort((a, b) => a.localeCompare(b));
+    data = { original, scrambled, wordBank };
+  } else if (rawData && typeof rawData === 'object') {
+    const original = Array.isArray(rawData.original) ? rawData.original : [];
+    const scrambled = Array.isArray(rawData.scrambled) ? rawData.scrambled : [];
+    const wordBank = Array.isArray(rawData.wordBank)
+      ? rawData.wordBank
+      : [...original].sort((a, b) => a.localeCompare(b));
+    data = { original, scrambled, wordBank };
+  } else {
+    data = { original: [], scrambled: [], wordBank: [] };
+  }
+
   const difficulty = page.config.difficulty || "easy";
   const isSolution = page.config.isSolution || false;
 
@@ -2109,7 +2136,7 @@ const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number
   // Draw Words list
   const listStartY = marginT + 0.3;
   const availableHeight = contentH - 1.5;
-  const stepY = Math.min(0.5, availableHeight / data.scrambled.length);
+  const stepY = Math.min(0.5, availableHeight / Math.max(1, data.scrambled.length));
 
   data.scrambled.forEach((scrambled: string, wIdx: number) => {
     const y = listStartY + wIdx * stepY;
@@ -2121,7 +2148,7 @@ const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number
     doc.text(`${wIdx + 1}.`, marginL + 0.2, y);
 
     // Scrambled letters
-    const displayScrambled = scrambled.split("").join(" ");
+    const displayScrambled = (scrambled || "").split("").join(" ");
     doc.setFont("Courier", "bold");
     doc.setFontSize(12);
     doc.setTextColor(30, 41, 59);
@@ -2132,7 +2159,7 @@ const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(79, 70, 229);
-      doc.text(data.original[wIdx], marginL + contentW - 2.0, y);
+      doc.text(data.original[wIdx] || "", marginL + contentW - 2.0, y);
     } else {
       // Underline
       doc.setDrawColor(148, 163, 184);
@@ -2145,7 +2172,7 @@ const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number
   doc.setTextColor(0);
 
   // Word Bank (if easy/medium and not solution)
-  if (difficulty !== "hard" && !isSolution) {
+  if (difficulty !== "hard" && !isSolution && Array.isArray(data.wordBank) && data.wordBank.length > 0) {
     const numWords = data.wordBank.length;
     const numRows = Math.ceil(numWords / 3);
     const rowSpacing = 0.2;
@@ -2274,7 +2301,8 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
   });
 
   // Substitution Key (Solution only)
-  if (isSolution && data.cipherMap) {
+  const cipher = data?.cipherMap || data?.mapping;
+  if (isSolution && cipher) {
     const keyStartY = pageHeight - marginB - 1.2;
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(9);
@@ -2291,7 +2319,7 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
     const getCipherStr = (alpha: string) =>
       alpha
         .split(" ")
-        .map((l) => data.cipherMap[l] || "_")
+        .map((l) => cipher[l] || "_")
         .join(" ");
 
     doc.text(`ALPHABET: ${alpha1}`, marginL + 0.2, keyStartY + 0.25);
@@ -2745,21 +2773,27 @@ const drawWordScrambleSolutionPack = (doc: any, page: any, xShift: number, pageW
   group.forEach((entry, i) => {
     const zone = zones[i];
     if (!zone || !entry.scrambledData) return;
-    const data = entry.scrambledData;
+    let data = entry.scrambledData;
+    if (Array.isArray(data)) {
+      const original = data.map((item: any) => (typeof item === 'string' ? item : item.original || item.word || '')).filter(Boolean);
+      const scrambled = data.map((item: any) => (typeof item === 'string' ? item : item.scrambled || item.original || '')).filter(Boolean);
+      data = { original, scrambled, wordBank: [...original].sort() };
+    }
 
     doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
     const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
     doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
     const titleSpace = 0.28;
-    const words = data.original || [];
+    const words = Array.isArray(data?.original) ? data.original : [];
     const stepY = Math.min(0.26, (zone.h - titleSpace - 0.1) / Math.max(1, words.length));
     words.forEach((word: string, wi: number) => {
       const y = zone.y + titleSpace + wi * stepY + 0.1;
       doc.setFont("Helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
       doc.text(`${wi + 1}.`, zone.x + 0.1, y);
       doc.setFont("Courier", "bold"); doc.setFontSize(9); doc.setTextColor(30, 41, 59);
-      doc.text((data.scrambled[wi] || "").split("").join(" "), zone.x + 0.32, y);
+      const scr = data?.scrambled?.[wi] || "";
+      doc.text(scr.split("").join(" "), zone.x + 0.32, y);
       doc.setFont("Helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(79, 70, 229);
       doc.text(word, zone.x + zone.w - 0.1, y, { align: "right" });
     });

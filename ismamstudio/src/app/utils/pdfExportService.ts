@@ -1100,11 +1100,29 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
     const spineLeftPx = (bleed + trimSize.w) * scale_canvas;
     const spineRightPx = spineLeftPx + (spineWidth * scale_canvas);
 
-    // 1. Draw Back Cover Background
+    // 1. Base Layer: Fill entire canvas with frontCoverColor to guarantee 100% opaque underlay
+    ctx.fillStyle = frontCoverColor;
+    ctx.fillRect(0, 0, width, height);
+
+    // 2. Draw Spine + Front Cover Background (Seamless single block from spineLeft to right edge)
+    // Completely eliminates any dividing line or seam at spineRightPx!
+    const spineLeft = Math.floor(spineLeftPx * scaleX);
+    const frontTotalWidth = width - spineLeft;
+    if (frontCoverType === 'gradient') {
+      const gradient = ctx.createLinearGradient(spineLeft, 0, width, 0);
+      gradient.addColorStop(0, frontCoverGradientStart);
+      gradient.addColorStop(1, frontCoverGradientEnd);
+      ctx.fillStyle = gradient;
+    } else {
+      ctx.fillStyle = frontCoverColor;
+    }
+    ctx.fillRect(spineLeft, 0, frontTotalWidth, height);
+
+    // 3. Draw Back Cover Background (with 1px overlap to guarantee solid contact)
     const backLeft = 0;
-    const backWidth = spineLeftPx * scaleX;
+    const backWidth = Math.ceil(spineLeftPx * scaleX);
     if (backCoverType === 'gradient') {
-      const gradient = ctx.createLinearGradient(backLeft, 0, backLeft + backWidth, 0);
+      const gradient = ctx.createLinearGradient(backLeft, 0, backWidth, 0);
       gradient.addColorStop(0, backCoverGradientStart);
       gradient.addColorStop(1, backCoverGradientEnd);
       ctx.fillStyle = gradient;
@@ -1112,25 +1130,6 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
       ctx.fillStyle = backCoverColor;
     }
     ctx.fillRect(backLeft, 0, backWidth, height);
-
-    // 2. Draw Spine Background
-    const spineLeft = spineLeftPx * scaleX;
-    const spineWidthCanvas = (spineRightPx - spineLeftPx) * scaleX;
-    ctx.fillStyle = frontCoverColor;
-    ctx.fillRect(spineLeft, 0, spineWidthCanvas, height);
-
-    // 3. Draw Front Cover Background
-    const frontLeft = spineRightPx * scaleX;
-    const frontWidth = width - frontLeft;
-    if (frontCoverType === 'gradient') {
-      const gradient = ctx.createLinearGradient(frontLeft, 0, frontLeft + frontWidth, 0);
-      gradient.addColorStop(0, frontCoverGradientStart);
-      gradient.addColorStop(1, frontCoverGradientEnd);
-      ctx.fillStyle = gradient;
-    } else {
-      ctx.fillStyle = frontCoverColor;
-    }
-    ctx.fillRect(frontLeft, 0, frontWidth, height);
 
     // 4. Draw Background Images if present
     if (fullCoverImage) {

@@ -585,7 +585,7 @@ const BACKGROUNDS = [
   { name: "Midnight Space", back: "#05070F", front: "#0F172A", type: 'gradient', backStart: '#020617', backEnd: '#0f172a', frontStart: '#0f172a', frontEnd: '#1e1b4b' },
   { name: "Watercolor Sunset", back: "#FEF08A", front: "#FECDD3", type: 'gradient', backStart: '#fef08a', backEnd: '#fde047', frontStart: '#fde047', frontEnd: '#fecdd3' },
   { name: "Botanical Forest", back: "#064E3B", front: "#022C22", type: 'gradient', backStart: '#064e3b', backEnd: '#022c22', frontStart: '#022c22', frontEnd: '#022c22' },
-  { name: "Vintage Cream", back: "#FEF3C7", front: "#FDE68A", type: 'solid', backStart: '#FEF3C7', backEnd: '#FEF3C7', frontStart: '#FDE68A', frontEnd: '#FDE68A' },
+  { name: "Vintage Cream", back: "#FDE68A", front: "#FDE68A", type: 'solid', backStart: '#FDE68A', backEnd: '#FDE68A', frontStart: '#FDE68A', frontEnd: '#FDE68A' },
   { name: "Cyberpunk Glow", back: "#030712", front: "#3B0764", type: 'gradient', backStart: '#030712', backEnd: '#111827', frontStart: '#111827', frontEnd: '#3b0764' }
 ];
 
@@ -2888,41 +2888,54 @@ export default function FabricCoverStudio({
       const frontStart = bg.frontCoverGradientStart || frontColor;
       const frontEnd = bg.frontCoverGradientEnd || frontColor;
 
-      if (bg.backCoverType === 'gradient') {
-        const grad = ctx.createLinearGradient(0, 0, layout.spineLeftPx, 0);
-        grad.addColorStop(0, backStart);
-        grad.addColorStop(1, backEnd);
-        ctx.fillStyle = grad;
-      } else {
-        ctx.fillStyle = backColor;
-      }
-      ctx.fillRect(0, 0, layout.spineLeftPx, layout.canvasHeight);
+      // 1. Base Layer: Fill entire canvas with frontColor to guarantee 100% opaque underlay
+      // and eliminate any sub-pixel transparent anti-aliasing gaps between regions.
+      ctx.fillStyle = frontColor;
+      ctx.fillRect(0, 0, layout.canvasWidth, layout.canvasHeight);
 
-      // 2. Spine: Smooth seamless blend between back and front cover colors
-      // Eliminates sharp vertical dividing lines and prevents KDP mechanical folding shift flaws
-      const colorAtSpineLeft = bg.backCoverType === 'gradient' ? backEnd : backColor;
-      const colorAtSpineRight = bg.frontCoverType === 'gradient' ? frontStart : frontColor;
+      // 2. Check if the cover background is completely uniform (Front and Back match)
+      const isUniformSolid = bg.backCoverType === 'solid' && bg.frontCoverType === 'solid' && backColor === frontColor;
+      const isUniformGradient = bg.backCoverType === 'gradient' && bg.frontCoverType === 'gradient' &&
+                                backStart === frontStart && backEnd === frontEnd;
 
-      if (colorAtSpineLeft === colorAtSpineRight) {
-        ctx.fillStyle = colorAtSpineRight;
-        ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
+      if (isUniformSolid) {
+        // Entire canvas is already filled with frontColor (which equals backColor) — zero seams anywhere!
+      } else if (isUniformGradient) {
+        // Continuous gradient spanning the entire wraparound cover (Back + Spine + Front) seamlessly
+        const fullGrad = ctx.createLinearGradient(0, 0, layout.canvasWidth, 0);
+        fullGrad.addColorStop(0, frontStart);
+        fullGrad.addColorStop(1, frontEnd);
+        ctx.fillStyle = fullGrad;
+        ctx.fillRect(0, 0, layout.canvasWidth, layout.canvasHeight);
       } else {
-        const spineGrad = ctx.createLinearGradient(layout.spineLeftPx, 0, layout.spineRightPx, 0);
-        spineGrad.addColorStop(0, colorAtSpineLeft);
-        spineGrad.addColorStop(1, colorAtSpineRight);
-        ctx.fillStyle = spineGrad;
-        ctx.fillRect(layout.spineLeftPx, 0, layout.spineWidthPx, layout.canvasHeight);
-      }
+        // Distinct Front and Back styling:
+        // In professional KDP publishing standards, the Spine ALWAYS continues the Front Cover.
+        // Rendering Spine + Front Cover as ONE SINGLE UNBROKEN RECTANGLE from spineLeftPx to canvasWidth
+        // completely eliminates any dividing line, seam, or color shift at spineRightPx!
+        const spineLeft = Math.floor(layout.spineLeftPx);
+        const frontBlockWidth = layout.canvasWidth - spineLeft;
 
-      if (bg.frontCoverType === 'gradient') {
-        const grad = ctx.createLinearGradient(layout.spineRightPx, 0, layout.canvasWidth, 0);
-        grad.addColorStop(0, frontStart);
-        grad.addColorStop(1, frontEnd);
-        ctx.fillStyle = grad;
-      } else {
-        ctx.fillStyle = frontColor;
+        if (bg.frontCoverType === 'gradient') {
+          const grad = ctx.createLinearGradient(spineLeft, 0, layout.canvasWidth, 0);
+          grad.addColorStop(0, frontStart);
+          grad.addColorStop(1, frontEnd);
+          ctx.fillStyle = grad;
+        } else {
+          ctx.fillStyle = frontColor;
+        }
+        ctx.fillRect(spineLeft, 0, frontBlockWidth, layout.canvasHeight);
+
+        // Back Cover: Drawn from 0 to spineLeftPx with 1px overlap (Math.ceil) to guarantee solid contact
+        if (bg.backCoverType === 'gradient') {
+          const grad = ctx.createLinearGradient(0, 0, Math.ceil(layout.spineLeftPx), 0);
+          grad.addColorStop(0, backStart);
+          grad.addColorStop(1, backEnd);
+          ctx.fillStyle = grad;
+        } else {
+          ctx.fillStyle = backColor;
+        }
+        ctx.fillRect(0, 0, Math.ceil(layout.spineLeftPx), layout.canvasHeight);
       }
-      ctx.fillRect(layout.spineRightPx, 0, layout.canvasWidth - layout.spineRightPx, layout.canvasHeight);
 
       if (fullCoverImageEl.current) {
         drawCoverImage(ctx, fullCoverImageEl.current, 0, 0, layout.canvasWidth, layout.canvasHeight,
@@ -3787,7 +3800,10 @@ export default function FabricCoverStudio({
       fontSize: 28,
       fontWeight: "bold",
       fill: "#FFFFFF",
-      textAlign: "center"
+      textAlign: "center",
+      textBackgroundColor: '',
+      textBgRadius: 0,
+      textBgPadding: 0
     } as any);
     canvas.add(text);
     canvas.setActiveObject(text);
@@ -8105,6 +8121,21 @@ export default function FabricCoverStudio({
                     </div>
                   </div>
                 )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBackCoverType(frontCoverType);
+                    setBackCoverColor(frontCoverColor);
+                    setBackCoverGradientStart(frontCoverGradientStart);
+                    setBackCoverGradientEnd(frontCoverGradientEnd);
+                    if (canvas) canvas.requestRenderAll();
+                  }}
+                  className="w-full mt-2 py-1.5 px-2.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 border border-slate-200 rounded-xl text-[10px] font-bold text-slate-700 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                  title="Apply Front Cover color across Back Cover and Spine for a clean seamless wraparound"
+                >
+                  <Layers className="w-3 h-3 text-indigo-600" />
+                  <span>Apply to Entire Cover (Seamless)</span>
+                </button>
               </div>
             </div>
           </div>

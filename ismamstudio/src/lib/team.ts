@@ -33,20 +33,26 @@ export async function getTeamOwnerIdForMember(userId: string): Promise<string | 
 // projects): the team owner plus every accepted member. A solo user (no
 // team, not a member of one) just gets back their own id.
 export async function getWorkspaceUserIds(userId: string): Promise<string[]> {
-  const ownedTeam = await prisma.team.findUnique({
-    where: { ownerId: userId },
-    include: { members: true },
-  });
-  if (ownedTeam) {
-    return [ownedTeam.ownerId, ...ownedTeam.members.map((m) => m.userId)];
-  }
+  try {
+    const [ownedTeam, membership] = await Promise.all([
+      prisma.team.findUnique({
+        where: { ownerId: userId },
+        select: { ownerId: true, members: { select: { userId: true } } },
+      }),
+      prisma.teamMember.findUnique({
+        where: { userId },
+        select: { team: { select: { ownerId: true, members: { select: { userId: true } } } } },
+      }),
+    ]);
 
-  const membership = await prisma.teamMember.findUnique({
-    where: { userId },
-    include: { team: { include: { members: true } } },
-  });
-  if (membership) {
-    return [membership.team.ownerId, ...membership.team.members.map((m) => m.userId)];
+    if (ownedTeam) {
+      return [ownedTeam.ownerId, ...ownedTeam.members.map((m) => m.userId)];
+    }
+    if (membership?.team) {
+      return [membership.team.ownerId, ...membership.team.members.map((m) => m.userId)];
+    }
+  } catch (err) {
+    console.error("Failed to resolve workspace user IDs:", err);
   }
 
   return [userId];

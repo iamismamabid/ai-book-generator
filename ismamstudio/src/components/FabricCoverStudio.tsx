@@ -912,7 +912,8 @@ export default function FabricCoverStudio({
   const coverBackgroundRef = useRef(safeCoverBackground);
   useEffect(() => {
     coverBackgroundRef.current = safeCoverBackground;
-  }, [coverBackground]);
+    if (canvas) canvas.requestRenderAll();
+  }, [safeCoverBackground, canvas]);
 
   const isActiveRef = useRef(isActive);
   useEffect(() => {
@@ -936,6 +937,8 @@ export default function FabricCoverStudio({
 
   const hasImportedInitialRef = useRef(false);
   const lastLiveElementsRef = useRef<any[] | null>(null);
+  const lastImportedElementsRef = useRef<any[] | null>(null);
+  const lastEmittedElementsRef = useRef<any[] | null>(null);
 
   // Dynamically load Google Fonts for the cover studio — every font in
   // GOOGLE_FONT_FAMILIES (everything but the browser-native "System" group)
@@ -2699,6 +2702,7 @@ export default function FabricCoverStudio({
       saveWorkspaceTimeoutRef.current = setTimeout(() => {
         if (!isCanvasAlive(fCanvas)) return;
         const legacyElements = serializeToLegacyElements(fCanvas);
+        lastEmittedElementsRef.current = legacyElements;
         onSaveWorkspace(legacyElements);
       }, 400);
 
@@ -2749,6 +2753,7 @@ export default function FabricCoverStudio({
       hasImportedInitialRef.current = true;
     }
     importLegacyElements(fCanvas, elementsToImport, layout);
+    lastImportedElementsRef.current = elementsToImport || initialElements;
     isUpdatingHistory.current = false;
 
     // Initial layers load
@@ -2780,26 +2785,39 @@ export default function FabricCoverStudio({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout.canvasWidth, layout.canvasHeight]);
 
-  // Failsafe: if initialElements arrived asynchronously after the canvas mounted,
-  // import them so no saved draft is ever silently dropped.
+  // Listen for initialElements arriving or changing from an external source (e.g. Notebook entry load)
   useEffect(() => {
-    if (!canvas || hasImportedInitialRef.current) return;
-    if (initialElements && initialElements.length > 0) {
-      hasImportedInitialRef.current = true;
-      ensureFabricRoundedTextBg();
-      const restoredFonts = new Set<string>();
-      for (const el of initialElements) {
-        if (el?.fontFamily) restoredFonts.add(el.fontFamily);
-        if (el?.curvedTextData?.fontFamily) restoredFonts.add(el.curvedTextData.fontFamily);
-      }
-      if (restoredFonts.size > 0) {
-        const fontList = Array.from(restoredFonts);
-        loadGoogleFontFamilies(fontList);
-      }
-      importLegacyElements(canvas, initialElements, layout);
-      canvas.requestRenderAll();
-      setLayers([...canvas.getObjects()].reverse());
+    if (!isCanvasAlive(canvas) || !initialElements) return;
+    // Ignore internal feedback loop when canvas saves itself to React parent state
+    if (initialElements === lastEmittedElementsRef.current) return;
+    // Ignore if these exact elements were already imported
+    if (initialElements === lastImportedElementsRef.current) return;
+
+    lastImportedElementsRef.current = initialElements;
+    lastLiveElementsRef.current = null;
+    hasImportedInitialRef.current = true;
+
+    ensureFabricRoundedTextBg();
+    const restoredFonts = new Set<string>();
+    for (const el of initialElements) {
+      if (el?.fontFamily) restoredFonts.add(el.fontFamily);
+      if (el?.curvedTextData?.fontFamily) restoredFonts.add(el.curvedTextData.fontFamily);
     }
+    if (restoredFonts.size > 0) {
+      const fontList = Array.from(restoredFonts);
+      loadGoogleFontFamilies(fontList);
+    }
+
+    // Clear previous objects on canvas before importing the incoming elements
+    const existingObjects = [...canvas.getObjects()];
+    existingObjects.forEach((obj) => canvas.remove(obj));
+    canvas.discardActiveObject();
+
+    isUpdatingHistory.current = true;
+    importLegacyElements(canvas, initialElements, layout);
+    isUpdatingHistory.current = false;
+    canvas.requestRenderAll();
+    setLayers([...canvas.getObjects()].reverse());
   }, [canvas, initialElements, layout]);
 
   // Handle snap-to-grid & guides alignment
@@ -3592,6 +3610,7 @@ export default function FabricCoverStudio({
         saveWorkspaceTimeoutRef.current = setTimeout(() => {
           if (!isCanvasAlive(canvas)) return;
           const legacyElements = serializeToLegacyElements(canvas);
+          lastEmittedElementsRef.current = legacyElements;
           onSaveWorkspace(legacyElements);
         }, 400);
 
@@ -3626,6 +3645,7 @@ export default function FabricCoverStudio({
         saveWorkspaceTimeoutRef.current = setTimeout(() => {
           if (!isCanvasAlive(canvas)) return;
           const legacyElements = serializeToLegacyElements(canvas);
+          lastEmittedElementsRef.current = legacyElements;
           onSaveWorkspace(legacyElements);
         }, 400);
 
@@ -5393,6 +5413,29 @@ export default function FabricCoverStudio({
     handleGenerateCoverDirect();
   };
 
+  // Dedicated snapshot getter for SaveToNotebookButton so cover elements, background,
+  // trim size, and page count are permanently preserved in My Notebook
+  const getCoverNotebookData = useCallback(() => {
+    let elements: any[] = [];
+    if (isCanvasAlive(canvas)) {
+      elements = serializeToLegacyElements(canvas);
+    } else if (lastLiveElementsRef.current && lastLiveElementsRef.current.length > 0) {
+      elements = lastLiveElementsRef.current;
+    } else if (initialElements && initialElements.length > 0) {
+      elements = initialElements;
+    }
+
+    const currentBg = coverBackgroundRef.current || safeCoverBackground;
+    return {
+      type: "kdp_cover",
+      category: "cover",
+      ...currentBg,
+      coverElements: elements,
+      pageCount: safePageCount,
+      trimSize: safeTrimSize,
+    };
+  }, [canvas, initialElements, safeCoverBackground, safePageCount, safeTrimSize]);
+
   // Crops the front-cover and spine regions out of the full wraparound export
   // (excluding bleed) so the 3D mockup shows just those two faces, not the
   // whole flat back+spine+front strip.
@@ -5764,9 +5807,11 @@ export default function FabricCoverStudio({
           </button>
           <div className="pt-2 border-t border-slate-900/80 w-full flex justify-center">
             <SaveToNotebookButton
-              title={`KDP Cover Design (${trimSize.w}x${trimSize.h})`}
-              content={`Custom KDP Book Cover for ${pageCount} pages, trim size ${trimSize.w}x${trimSize.h} inches.`}
+              title={`KDP Cover Design (${safeTrimSize.w}x${safeTrimSize.h})`}
+              subtitle={`${safePageCount} pages • ${safeTrimSize.label || `${safeTrimSize.w}x${safeTrimSize.h}`}`}
+              content={`Custom KDP Book Cover for ${safePageCount} pages, trim size ${safeTrimSize.w}x${safeTrimSize.h} inches.`}
               category="cover"
+              getData={getCoverNotebookData}
               iconOnly={true}
             />
           </div>

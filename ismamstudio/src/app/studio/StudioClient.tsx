@@ -59,20 +59,6 @@ export default function MasterStudioApp() {
       if (tab === "cover" || tab === "interior") {
         setActiveTab(tab);
       }
-
-      const notebookId = params.get("notebookId");
-      if (notebookId) {
-        setActiveTab("interior");
-        setNotebookLoadState("loading");
-        getNotebookEntryData(notebookId)
-          .then((res) => {
-            if (res.success && res.data?.pages) {
-              setNotebookInitialPages(res.data.pages);
-            }
-          })
-          .catch((err) => console.error("Failed to load notebook entry:", err))
-          .finally(() => setNotebookLoadState("done"));
-      }
     }
   }, []);
 
@@ -174,11 +160,89 @@ export default function MasterStudioApp() {
     }
   };
 
-  // Load Cover draft on mount — IndexedDB first (durable & supports large images),
-  // then localStorage fallback, then cloud copy if signed in and no local work exists.
+  // Load Cover draft or Notebook entry on mount —
+  // If notebookId is present, check sessionStorage first for instant load, then fetch
+  // from getNotebookEntryData. If it's a cover, apply it, cache in IndexedDB, and activate cover tab.
+  // Otherwise, load from IndexedDB (durable & supports large images), then localStorage,
+  // then cloud copy if signed in and no local work exists.
   useEffect(() => {
     let isCancelled = false;
     (async () => {
+      const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const notebookId = params?.get("notebookId");
+      const tabParam = params?.get("tab");
+
+      if (notebookId) {
+        setNotebookLoadState("loading");
+
+        // 1. Fast path: check if sessionStorage cached the notebook entry on click
+        let fastPayload: any = null;
+        try {
+          const cachedStr = sessionStorage.getItem(`kdpage_notebook_entry_${notebookId}`);
+          if (cachedStr) {
+            fastPayload = JSON.parse(cachedStr);
+          }
+        } catch {}
+
+        if (fastPayload) {
+          const isCoverFast =
+            tabParam === "cover" ||
+            fastPayload?.type === "kdp_cover" ||
+            Array.isArray(fastPayload?.coverElements) ||
+            typeof fastPayload?.backCoverColor === "string";
+
+          if (isCoverFast) {
+            setActiveTab("cover");
+            hasUserEditedInThisSession.current = true;
+            hasLocalDraftLoadedRef.current = true;
+            applyCoverData(fastPayload);
+            saveCoverDraftToIndexedDB(fastPayload);
+            setCoverDraftLoaded(true);
+            setNotebookLoadState("done");
+            return;
+          } else if (fastPayload?.pages) {
+            setActiveTab("interior");
+            setNotebookInitialPages(fastPayload.pages);
+            setNotebookLoadState("done");
+          }
+        }
+
+        // 2. Authoritative path: fetch from server action
+        try {
+          const res = await getNotebookEntryData(notebookId);
+          if (!isCancelled && res?.success) {
+            const rawData = res.data || res.entry?.data;
+            const entryCategory = (res.category || res.entry?.category || "").toLowerCase();
+            const isCoverEntry =
+              entryCategory === "cover" ||
+              tabParam === "cover" ||
+              rawData?.type === "kdp_cover" ||
+              Array.isArray(rawData?.coverElements) ||
+              typeof rawData?.backCoverColor === "string";
+
+            if (isCoverEntry && rawData) {
+              setActiveTab("cover");
+              hasUserEditedInThisSession.current = true;
+              hasLocalDraftLoadedRef.current = true;
+              applyCoverData(rawData);
+              saveCoverDraftToIndexedDB(rawData);
+              setCoverDraftLoaded(true);
+              setNotebookLoadState("done");
+              return;
+            } else if (rawData?.pages) {
+              setActiveTab("interior");
+              setNotebookInitialPages(rawData.pages);
+              setNotebookLoadState("done");
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load notebook entry:", err);
+        } finally {
+          if (!isCancelled) setNotebookLoadState("done");
+        }
+      }
+
+      // Standard draft restore when no cover notebookId was applied
       try {
         const idbCover = await loadCoverDraftFromIndexedDB();
         if (!isCancelled && idbCover) {

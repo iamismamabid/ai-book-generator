@@ -49,7 +49,7 @@ interface NotebookClientProps {
 
 // Where each saved entry reopens, keyed by the category its save button set.
 const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) => string }> = {
-  cover: { label: "Open in Cover Studio", href: () => "/studio?tab=cover" },
+  cover: { label: "Open in Cover Studio", href: (id) => `/studio?tab=cover&notebookId=${id}` },
   "puzzle-book": { label: "Open in Book Builder", href: (id) => `/studio?notebookId=${id}` },
   "coloring-book": { label: "Open in Coloring Page Studio", href: (id) => `/tools/coloring-book-generator?notebookId=${id}` },
   crossword: { label: "Open in Crossword Studio", href: (id) => `/studio/crossword?notebookId=${id}` },

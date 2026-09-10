@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { RefreshCw, Eye, EyeOff } from "lucide-react";
-import { generateMaze, solveMaze, Shape } from "../lib/maze";
+import { generateMaze, solveMaze, Shape, generateMazeData } from "../lib/maze";
 
 export function MazeEditor({ page, updatePage }: any) {
   const [shape, setShape] = useState<Shape>(page.config.shape || "square");
@@ -11,23 +11,10 @@ export function MazeEditor({ page, updatePage }: any) {
   const [scale, setScale] = useState<number>(page.config.scale || 100);
   const [mazeData, setMazeData] = useState<any>(page.config.gridData || null);
 
-  const handleGenerate = () => {
-    // Keep rows & cols equal to gridSize
-    const result = generateMaze({ rows: gridSize, cols: gridSize, shape });
-    const solution = solveMaze(result.grid, result.start, result.end);
-    const data = {
-      grid: result.grid.map(row => row.map(cell => ({
-        row: cell.row,
-        col: cell.col,
-        walls: { ...cell.walls },
-        active: cell.active
-      }))),
-      start: result.start,
-      end: result.end,
-      solution
-    };
+  const handleGenerate = (targetShape: Shape = shape, targetGridSize: number = gridSize) => {
+    const data = generateMazeData(targetShape, targetGridSize);
     setMazeData(data);
-    updatePage({ shape, gridSize, showSolution, scale, gridData: data });
+    updatePage({ shape: targetShape, gridSize: targetGridSize, showSolution, scale, gridData: data });
   };
 
   const toggleSolution = () => {
@@ -39,8 +26,8 @@ export function MazeEditor({ page, updatePage }: any) {
   };
 
   useEffect(() => {
-    if (!mazeData) {
-      handleGenerate();
+    if (!mazeData || !mazeData.grid) {
+      handleGenerate(shape, gridSize);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -135,8 +122,7 @@ export function MazeEditor({ page, updatePage }: any) {
                   key={sh}
                   onClick={() => {
                     setShape(sh);
-                    // Persist immediately so a page-switch doesn't lose the change
-                    updatePage({ shape: sh, gridSize, showSolution, scale, gridData: mazeData || undefined });
+                    handleGenerate(sh, gridSize);
                   }}
                   className={`py-2 rounded-lg font-bold text-xs capitalize transition ${
                     shape === sh

@@ -272,3 +272,45 @@ export function generateMazeBook(
   }
   return mazes;
 }
+
+/**
+ * Generates a complete maze dataset (grid with cell wall flags, start, end, solution path).
+ * Safe against small sizes and shape masks.
+ */
+export function generateMazeData(shape: Shape = "square", gridSize: number = 20) {
+  const safeShape: Shape = (shape === "circle" || shape === "heart" || shape === "square") ? shape : "square";
+  const safeSize = Math.max(10, Math.min(40, gridSize || 20));
+  try {
+    const result = generateMaze({ rows: safeSize, cols: safeSize, shape: safeShape });
+    const solution = solveMaze(result.grid, result.start, result.end);
+    return {
+      grid: result.grid.map((row) =>
+        row.map((cell) => ({
+          row: cell.row,
+          col: cell.col,
+          walls: { ...cell.walls },
+          active: cell.active,
+        }))
+      ),
+      start: result.start,
+      end: result.end,
+      solution,
+    };
+  } catch {
+    const fallback = generateMaze({ rows: safeSize, cols: safeSize, shape: "square" });
+    const solution = solveMaze(fallback.grid, fallback.start, fallback.end);
+    return {
+      grid: fallback.grid.map((row) =>
+        row.map((cell) => ({
+          row: cell.row,
+          col: cell.col,
+          walls: { ...cell.walls },
+          active: cell.active,
+        }))
+      ),
+      start: fallback.start,
+      end: fallback.end,
+      solution,
+    };
+  }
+}

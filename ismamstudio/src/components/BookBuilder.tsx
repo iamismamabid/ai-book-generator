@@ -10,6 +10,7 @@ import { WordSearchEditor } from "./WordSearchEditor";
 import { SudokuEditor } from "./SudokuEditor";
 import { generateSudoku } from "../lib/sudokuGenerator";
 import { MazeEditor } from "./MazeEditor";
+import { generateMazeData } from "@/lib/maze";
 import { WordScrambleEditor } from "./WordScrambleEditor";
 import { CryptogramEditor } from "./CryptogramEditor";
 import { MathPuzzleEditor } from "./MathPuzzleEditor";
@@ -262,22 +263,46 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
 
   const copyPage = (index: number) => {
     if (index < 0 || index >= bookPages.length) return;
-    setClipboardPage(JSON.parse(JSON.stringify(bookPages[index])));
+    const target = bookPages[index];
+    const cloned = JSON.parse(JSON.stringify(target));
+    if (cloned.type === 'maze' && (!cloned.config?.gridData || !cloned.config?.gridData?.grid)) {
+      cloned.config = cloned.config || {};
+      cloned.config.gridData = generateMazeData(cloned.config.shape || 'circle', cloned.config.gridSize || 20);
+    } else if (cloned.type === 'sudoku' && !cloned.config?.gridData) {
+      cloned.config = cloned.config || {};
+      cloned.config.gridData = generateSudoku(cloned.config.difficulty || 'medium');
+    }
+    setClipboardPage(cloned);
   };
 
   const pastePage = (afterIndex: number) => {
     if (!clipboardPage) return;
     const insertAt = Math.min(afterIndex + 1, bookPages.length);
-    const newPage = { ...JSON.parse(JSON.stringify(clipboardPage)), id: Date.now() + Math.random() };
-    const updated = [...bookPages];
-    updated.splice(insertAt, 0, newPage);
-    setBookPages(updated);
+    const cloned = JSON.parse(JSON.stringify(clipboardPage));
+    if (cloned.type === 'maze' && (!cloned.config?.gridData || !cloned.config?.gridData?.grid)) {
+      cloned.config = cloned.config || {};
+      cloned.config.gridData = generateMazeData(cloned.config.shape || 'circle', cloned.config.gridSize || 20);
+    } else if (cloned.type === 'sudoku' && !cloned.config?.gridData) {
+      cloned.config = cloned.config || {};
+      cloned.config.gridData = generateSudoku(cloned.config.difficulty || 'medium');
+    }
+    const newPage = { ...cloned, id: Date.now() + Math.random() };
+    setBookPages((prev) => {
+      const updated = [...prev];
+      updated.splice(insertAt, 0, newPage);
+      return updated;
+    });
     setActiveIndex(insertAt);
   };
 
   const addPage = (type: string, initialConfig: any = {}) => {
     const clonedConfig = JSON.parse(JSON.stringify(initialConfig));
-    setBookPages([...bookPages, { id: Date.now() + Math.random(), type, config: clonedConfig }]);
+    if (type === 'maze' && (!clonedConfig.gridData || !clonedConfig.gridData?.grid)) {
+      clonedConfig.gridData = generateMazeData(clonedConfig.shape || 'circle', clonedConfig.gridSize || 20);
+    } else if (type === 'sudoku' && !clonedConfig.gridData) {
+      clonedConfig.gridData = generateSudoku(clonedConfig.difficulty || 'medium');
+    }
+    setBookPages(prev => [...prev, { id: Date.now() + Math.random(), type, config: clonedConfig }]);
     setActiveIndex(bookPages.length);
   };
 
@@ -304,7 +329,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
   };
 
   const updatePageConfig = (id: number, newConfig: any) => {
-    setBookPages(bookPages.map(page =>
+    setBookPages(prev => prev.map(page =>
       page.id === id ? { ...page, config: newConfig } : page
     ));
   };
@@ -318,6 +343,14 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
     // regenerates a fresh puzzle instead of an exact copy of this one.
     const contentKey = GENERATED_CONTENT_KEY[target.type];
     if (contentKey) delete clonedConfig[contentKey];
+
+    // Immediately generate fresh puzzle data for types that have sync generators
+    // so the new page NEVER exists with undefined/missing puzzle data.
+    if (target.type === 'maze') {
+      clonedConfig.gridData = generateMazeData(clonedConfig.shape || 'circle', clonedConfig.gridSize || 20);
+    } else if (target.type === 'sudoku') {
+      clonedConfig.gridData = generateSudoku(clonedConfig.difficulty || 'medium');
+    }
 
     const newPage = {
       id: Date.now() + Math.random(),
@@ -462,6 +495,9 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         p.config.difficulty = diff;
         p.config.gridData = generateSudoku(diff);
       }
+      if (p.type === 'maze' && (!p.config.gridData || !p.config.gridData.grid)) {
+        p.config.gridData = generateMazeData(p.config.shape || 'circle', p.config.gridSize || 20);
+      }
       const dataKey = configMap[p.type]?.dataKey || 'gridData';
       const raw = p.config[dataKey];
       return raw !== undefined && raw !== null ? JSON.parse(JSON.stringify(raw)) : null;
@@ -551,8 +587,50 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
       const res = await checkPremiumStatus();
       const currentIsPremium = !!res?.isPremium;
 
+      // Auto-heal any puzzle pages or solution entries that might be missing gridData
+      const healedPages = bookPages.map((page) => {
+        if (page.type === 'maze') {
+          const cfg = { ...(page.config || {}) };
+          if (cfg.isMultiSolution && Array.isArray(cfg.solutionGroup)) {
+            cfg.solutionGroup = cfg.solutionGroup.map((entry: any) => {
+              if (!entry.gridData || !entry.gridData.grid) {
+                return {
+                  ...entry,
+                  gridData: generateMazeData(cfg.shape || 'circle', cfg.gridSize || 20)
+                };
+              }
+              return entry;
+            });
+            return { ...page, config: cfg };
+          } else if (!cfg.gridData || !cfg.gridData.grid) {
+            cfg.gridData = generateMazeData(cfg.shape || 'circle', cfg.gridSize || 20);
+            return { ...page, config: cfg };
+          }
+        } else if (page.type === 'sudoku') {
+          const cfg = { ...(page.config || {}) };
+          if (cfg.isMultiSolution && Array.isArray(cfg.solutionGroup)) {
+            cfg.solutionGroup = cfg.solutionGroup.map((entry: any) => {
+              if (!entry.gridData) {
+                return {
+                  ...entry,
+                  gridData: generateSudoku(cfg.difficulty || 'medium')
+                };
+              }
+              return entry;
+            });
+            return { ...page, config: cfg };
+          } else if (!cfg.gridData) {
+            cfg.gridData = generateSudoku(cfg.difficulty || 'medium');
+            return { ...page, config: cfg };
+          }
+        }
+        return page;
+      });
+
+      setBookPages(healedPages);
+
       const { exportBookToPDF } = await import("@/app/utils/pdfExportService");
-      await exportBookToPDF(bookPages, {
+      await exportBookToPDF(healedPages, {
         includeCover,
         coverState,
         includePageNumbers,

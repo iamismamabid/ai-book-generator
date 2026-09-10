@@ -3,6 +3,7 @@ import { getGutterMargin } from "@/lib/pdfFormatter";
 import { drawPageBorderTheme } from "./borderThemeDrawing";
 import { BorderThemeId } from "@/lib/borderThemes";
 import { drawColoringPattern } from "@/lib/coloringBookPatterns";
+import { generateMazeData } from "@/lib/maze";
 
 export interface ExportOptions {
   includeCover?: boolean;
@@ -90,9 +91,13 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       drawKakuroSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'kakuro' && page.config.gridData) {
       drawKakuro(doc, page, leftMarginShift, w);
-    } else if (page.type === 'maze' && page.config.isMultiSolution && page.config.solutionGroup) {
+    } else if (page.type === 'maze' && page.config?.isMultiSolution && page.config?.solutionGroup) {
       drawMazeSolutionPack(doc, page, leftMarginShift, w, h);
-    } else if (page.type === 'maze' && page.config.gridData) {
+    } else if (page.type === 'maze') {
+      if (!page.config?.gridData?.grid) {
+        page.config = page.config || {};
+        page.config.gridData = generateMazeData(page.config.shape || 'circle', page.config.gridSize || 20);
+      }
       drawMaze(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'word_scramble' && page.config.isMultiSolution && page.config.solutionGroup) {
       drawWordScrambleSolutionPack(doc, page, leftMarginShift, w, h);
@@ -961,7 +966,11 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
 
 // Helper: Draw Maze Challenge (Standard KDP Grid Size)
 const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number = 11) => {
-  const data = page.config.gridData;
+  let data = page.config?.gridData;
+  if (!data || !data.grid) {
+    data = generateMazeData(page.config?.shape || 'circle', page.config?.gridSize || 20);
+    if (page.config) page.config.gridData = data;
+  }
   if (!data || !data.grid) return;
   const showSolution = page.config.showSolution || page.config.isSolution || false;
   const rows = data.grid.length;
@@ -2590,8 +2599,13 @@ const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: nu
 
   group.forEach((entry, i) => {
     const zone = zones[i];
-    if (!zone || !entry.gridData) return;
-    const data = entry.gridData;
+    if (!zone) return;
+    let data = entry.gridData;
+    if (!data || !data.grid) {
+      data = generateMazeData(page.config?.shape || 'circle', page.config?.gridSize || 20);
+      entry.gridData = data;
+    }
+    if (!data || !data.grid) return;
     const rows = data.grid.length;
     const cols = data.grid[0].length;
     const titleSpace = 0.25;

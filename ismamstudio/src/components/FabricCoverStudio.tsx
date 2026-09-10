@@ -8,7 +8,7 @@ import {
   Trash2, Undo2, Redo2, Loader2, Download, Check, Settings,
   Sparkles, Shapes, Upload, LayoutTemplate, Grid, ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight,
   Plus, Eraser, Lock, Unlock, Copy, Scissors, Clipboard, ChevronsUp, ChevronsDown,
-  Bold, Italic, Underline, AlignJustify, Box, Layers as LayersIcon,
+  Bold, Italic, Underline, AlignJustify, Box, Layers, Layers as LayersIcon,
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
   AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal,
   AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil, Pause,
@@ -912,8 +912,7 @@ export default function FabricCoverStudio({
   const coverBackgroundRef = useRef(safeCoverBackground);
   useEffect(() => {
     coverBackgroundRef.current = safeCoverBackground;
-    if (canvas) canvas.requestRenderAll();
-  }, [safeCoverBackground, canvas]);
+  }, [safeCoverBackground]);
 
   const isActiveRef = useRef(isActive);
   useEffect(() => {
@@ -1094,6 +1093,13 @@ export default function FabricCoverStudio({
   // might run in that window has to check the canvas is still usable.
   const isCanvasAlive = (c: fabric.Canvas | null): c is fabric.Canvas =>
     !!c && !!c.getContext();
+
+  // Repaint canvas background when safeCoverBackground changes
+  useEffect(() => {
+    if (isCanvasAlive(canvas)) {
+      canvas.requestRenderAll();
+    }
+  }, [safeCoverBackground, canvas]);
 
   // Re-measures character widths and invalidates caches for all text objects on canvas.
   // When external Google Fonts download asynchronously, Fabric's cached bounding boxes
@@ -8178,7 +8184,7 @@ export default function FabricCoverStudio({
                   className="w-full mt-2 py-1.5 px-2.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 border border-slate-200 rounded-xl text-[10px] font-bold text-slate-700 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
                   title="Apply Front Cover color across Back Cover and Spine for a clean seamless wraparound"
                 >
-                  <Layers className="w-3 h-3 text-indigo-600" />
+                  <LayersIcon className="w-3 h-3 text-indigo-600" />
                   <span>Apply to Entire Cover (Seamless)</span>
                 </button>
               </div>

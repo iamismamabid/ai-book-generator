@@ -5,6 +5,14 @@ import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
 
+export interface PdfProgressInfo {
+  phase: "generating_pages" | "generating_solutions" | "decorating" | "saving";
+  current: number;
+  total: number;
+  percent: number;
+  message: string;
+}
+
 export interface PdfOptions {
   puzzles: { puzzle: Grid; solution: Grid }[];
   difficulty: Difficulty;
@@ -22,6 +30,7 @@ export interface PdfOptions {
   hasBleed?: boolean;
   showGuides?: boolean;
   borderTheme?: BorderThemeId;
+  onProgress?: (info: PdfProgressInfo) => void;
 }
 
 const FONT_MAP: Record<string, string> = {
@@ -136,6 +145,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     hasBleed = false,
     showGuides = false,
     borderTheme,
+    onProgress,
   } = options;
 
   const pdfFont = FONT_MAP[fontFamily] || "helvetica";
@@ -163,7 +173,8 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
   }
 
   // ── Puzzle pages (1 per page - Standard KDP Book Format) ─────────
-  puzzles.forEach((item, index) => {
+  for (let index = 0; index < puzzles.length; index++) {
+    const item = puzzles[index];
     if (firstPageAdded || index > 0) doc.addPage();
     firstPageAdded = true;
 
@@ -206,7 +217,20 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     } else {
       doc.text(`Page ${index + 1}`, width - 0.5, height - 0.4, { align: "right" });
     }
-  });
+
+    // Yield periodically to keep UI fluid and responsive
+    if ((index + 1) % 10 === 0 || index === puzzles.length - 1) {
+      const pct = Math.round(((index + 1) / puzzles.length) * 100);
+      onProgress?.({
+        phase: "generating_pages",
+        current: index + 1,
+        total: puzzles.length,
+        percent: pct,
+        message: `Compiling puzzle pages (${index + 1}/${puzzles.length})...`,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+  }
 
   // ── Solution pages (1, 2, or 4 per page) ─────────────────────
   if (includeSolutions) {
@@ -256,6 +280,19 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
         doc.setTextColor(148, 163, 184);
         doc.text(footerText, margin, height - 0.35);
       }
+
+      // Yield periodically to keep UI responsive
+      if ((p + 1) % 5 === 0 || p === totalSolPages - 1) {
+        const pct = Math.round(((p + 1) / totalSolPages) * 100);
+        onProgress?.({
+          phase: "generating_solutions",
+          current: p + 1,
+          total: totalSolPages,
+          percent: pct,
+          message: `Compiling solutions (${p + 1}/${totalSolPages})...`,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
     }
   }
 
@@ -276,6 +313,17 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
         if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, width, height);
         if (!isPremium) drawWatermark(doc, width, height);
       }
+
+      if (i % 20 === 0 || i === totalPages) {
+        onProgress?.({
+          phase: "decorating",
+          current: i,
+          total: totalPages,
+          percent: Math.round((i / totalPages) * 100),
+          message: `Finalizing page styling (${i}/${totalPages})...`,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
     }
   }
 
@@ -284,5 +332,13 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
 
 export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
   const doc = await generateSudokuPdf(options);
+  options.onProgress?.({
+    phase: "saving",
+    current: 100,
+    total: 100,
+    percent: 100,
+    message: "Saving PDF file...",
+  });
+  await new Promise((resolve) => setTimeout(resolve, 10));
   doc.save(filename);
 }

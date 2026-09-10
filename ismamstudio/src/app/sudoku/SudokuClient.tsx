@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../../lib/sudoku';
+import { generateSudoku, generateSudokuBook, generateSudokuBookAsync, Grid, Difficulty } from '../../lib/sudoku';
 import DownloadButton from "@/components/DownloadButton";
 import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock, Download, ShieldCheck, Sparkles, RefreshCw } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
@@ -87,6 +87,8 @@ export default function SudokuClient() {
   const [solutionsPerPage, setSolutionsPerPage] = useState<number>(4);
   const [includeCover, setIncludeCover] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportProgressText, setExportProgressText] = useState<string>("");
+  const [exportProgressPercent, setExportProgressPercent] = useState<number>(0);
 
   // Advanced Styling & Brand Presets
   const [borderThickness, setBorderThickness] = useState<number>(2);
@@ -278,45 +280,75 @@ export default function SudokuClient() {
     isPremium?: boolean;
   }) => {
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
+    setExportProgressText("Preparing puzzle generation...");
+    setExportProgressPercent(5);
 
-    const freshStatus = await getFreshPremiumStatus();
-    const effectiveIsPro = Boolean(freshStatus.isPremium);
-    const count = Math.min(Math.max(1, bookCount), tierMaxFor(effectiveIsPro ? "pro" : freshStatus.plan));
-    const puzzles = generateSudokuBook(count, difficulty);
-    const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');
-    await downloadSudokuPdf(
-      {
-        puzzles,
-        difficulty,
-        trimSize: finalTrim,
-        title: headerText || `Sudoku Puzzle Book`,
-        headerText,
-        footerText,
-        borderThickness,
-        fontFamily,
-        includeSolutions: incSol,
-        solutionsPerPage,
-        includeCover: incCover,
-        coverState,
-        hasBleed,
-        showGuides,
-        isPremium: effectiveIsPro,
-        borderTheme,
-      },
-      `sudoku-${difficulty}-${count}puzzles.pdf`
-    );
-    setIsDownloading(false);
+    try {
+      const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
+
+      const freshStatus = await getFreshPremiumStatus();
+      const effectiveIsPro = Boolean(freshStatus.isPremium);
+      const count = Math.min(Math.max(1, bookCount), tierMaxFor(effectiveIsPro ? "pro" : freshStatus.plan));
+
+      setExportProgressText(`Generating puzzles (0/${count})...`);
+      setExportProgressPercent(10);
+
+      const puzzles = await generateSudokuBookAsync(count, difficulty, (curr, tot) => {
+        const pct = 10 + Math.round((curr / tot) * 35); // 10% to 45%
+        setExportProgressPercent(pct);
+        setExportProgressText(`Generating puzzles (${curr}/${tot})...`);
+      });
+
+      setExportProgressText("Loading PDF compiler engine...");
+      setExportProgressPercent(48);
+
+      const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');
+      await downloadSudokuPdf(
+        {
+          puzzles,
+          difficulty,
+          trimSize: finalTrim,
+          title: headerText || `Sudoku Puzzle Book`,
+          headerText,
+          footerText,
+          borderThickness,
+          fontFamily,
+          includeSolutions: incSol,
+          solutionsPerPage,
+          includeCover: incCover,
+          coverState,
+          hasBleed,
+          showGuides,
+          isPremium: effectiveIsPro,
+          borderTheme,
+          onProgress: (info) => {
+            const mappedPct = 50 + Math.round((info.percent / 100) * 50);
+            setExportProgressPercent(Math.min(100, mappedPct));
+            setExportProgressText(info.message);
+          },
+        },
+        `sudoku-${difficulty}-${count}puzzles.pdf`
+      );
+    } finally {
+      setIsDownloading(false);
+      setExportProgressText("");
+      setExportProgressPercent(0);
+    }
   };
 
   // Fixed 10-puzzle sample export. Applies watermark on free accounts, clean on paid accounts.
   const SAMPLE_SUDOKU_COUNT = 10;
   const handleDownloadSample = async () => {
     setIsDownloading(true);
+    setExportProgressText("Preparing sample puzzles...");
+    setExportProgressPercent(10);
     try {
       const freshStatus = await getFreshPremiumStatus();
       const effectiveIsPro = Boolean(freshStatus.isPremium);
-      const puzzles = generateSudokuBook(SAMPLE_SUDOKU_COUNT, difficulty);
+      const puzzles = await generateSudokuBookAsync(SAMPLE_SUDOKU_COUNT, difficulty, (curr, tot) => {
+        setExportProgressPercent(10 + Math.round((curr / tot) * 35));
+        setExportProgressText(`Generating sample puzzles (${curr}/${tot})...`);
+      });
       const { downloadSudokuPdf } = await import('../../lib/sudoku-pdf');
       await downloadSudokuPdf(
         {
@@ -333,11 +365,17 @@ export default function SudokuClient() {
           includeCover: false,
           coverState: null,
           isPremium: effectiveIsPro,
+          onProgress: (info) => {
+            setExportProgressPercent(50 + Math.round((info.percent / 100) * 50));
+            setExportProgressText(info.message);
+          },
         },
         `sudoku-${difficulty}-sample.pdf`
       );
     } finally {
       setIsDownloading(false);
+      setExportProgressText("");
+      setExportProgressPercent(0);
     }
   };
 
@@ -657,7 +695,7 @@ export default function SudokuClient() {
                   onClick={() => setIsExportModalOpen(true)}
                   label={
                     isDownloading
-                      ? "Compiling PDF..."
+                      ? (exportProgressText || "Compiling PDF...")
                       : `Download ${bookCount} Puzzle${bookCount !== 1 ? "s" : ""} PDF`
                   }
                 />
@@ -677,7 +715,7 @@ export default function SudokuClient() {
                 className="w-full bg-slate-900/80 hover:bg-slate-900 text-amber-400 font-bold py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-500/60 transition text-xs flex items-center justify-center gap-2"
               >
                 <Download className="w-3.5 h-3.5" />
-                Download 10 Sample Puzzles PDF (Vector 300 DPI)
+                {isDownloading && exportProgressText ? exportProgressText : "Download 10 Sample Puzzles PDF (Vector 300 DPI)"}
               </button>
 
               {/* Summary badge */}
@@ -830,6 +868,8 @@ export default function SudokuClient() {
         defaultTrimSize={trimSize}
         onExport={handleDownloadPdf}
         allowFreeWatermarkedExport={true}
+        progressText={exportProgressText}
+        progressPercent={exportProgressPercent}
       />
     </div>
   );

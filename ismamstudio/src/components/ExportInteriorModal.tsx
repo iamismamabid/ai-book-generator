@@ -55,6 +55,10 @@ interface ExportInteriorModalProps<T extends string = "6x9" | "8.5x11" | "5x8"> 
   showBorderThemePicker?: boolean;
   /** When true, allows free tier users to download a watermarked sample export. */
   allowFreeWatermarkedExport?: boolean;
+  /** Optional live progress status text during long-running async export (e.g. "Generating puzzles (45/100)...") */
+  progressText?: string;
+  /** Optional progress percentage (0-100) to render a progress bar during export */
+  progressPercent?: number;
 }
 
 export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" | "5x8">({
@@ -66,6 +70,8 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
   trimSizeOptions,
   showBorderThemePicker = true,
   allowFreeWatermarkedExport = false,
+  progressText,
+  progressPercent,
 }: ExportInteriorModalProps<T>) {
   const trimOptions = (trimSizeOptions ?? DEFAULT_TRIM_OPTIONS) as unknown as TrimSizeOption<T>[];
   const { userId, isLoaded, isSignedIn } = useAuth();
@@ -704,18 +710,28 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 <button
                   onClick={handleActionExport}
                   disabled={isExporting || (includeCover && !hasSavedCover)}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white py-4 rounded-2xl text-xs font-black shadow-lg shadow-indigo-600/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex flex-col items-center justify-center gap-1.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white py-3.5 px-4 rounded-2xl text-xs font-black shadow-lg shadow-indigo-600/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isExporting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Compiling 300 DPI Vector PDF...
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-indigo-200" />
+                        <span>{progressText || "Compiling 300 DPI Vector PDF..."}</span>
+                      </div>
+                      {typeof progressPercent === "number" && progressPercent >= 0 && (
+                        <div className="w-full max-w-xs bg-indigo-950/60 rounded-full h-1.5 overflow-hidden border border-indigo-400/30">
+                          <div
+                            className="bg-indigo-300 h-full rounded-full transition-all duration-200"
+                            style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
+                          />
+                        </div>
+                      )}
                     </>
                   ) : (
-                    <>
+                    <div className="flex items-center justify-center gap-2">
                       <FileDown className="w-4 h-4" />
                       Export 300 DPI Print-Ready PDF
-                    </>
+                    </div>
                   )}
                 </button>
               ) : allowFreeWatermarkedExport ? (
@@ -732,18 +748,28 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                     type="button"
                     onClick={handleActionExport}
                     disabled={isExporting || (includeCover && !hasSavedCover)}
-                    className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white py-3 rounded-2xl text-xs font-bold border border-slate-700 transition cursor-pointer disabled:opacity-50"
+                    className="w-full flex flex-col items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white py-3 px-4 rounded-2xl text-xs font-bold border border-slate-700 transition cursor-pointer disabled:opacity-50"
                   >
                     {isExporting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Compiling Watermarked PDF...
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                          <span>{progressText || "Compiling Watermarked PDF..."}</span>
+                        </div>
+                        {typeof progressPercent === "number" && progressPercent >= 0 && (
+                          <div className="w-full max-w-xs bg-slate-900 rounded-full h-1.5 overflow-hidden border border-slate-600">
+                            <div
+                              className="bg-amber-400 h-full rounded-full transition-all duration-200"
+                              style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
+                            />
+                          </div>
+                        )}
                       </>
                     ) : (
-                      <>
+                      <div className="flex items-center justify-center gap-2">
                         <FileDown className="w-4 h-4 text-amber-400" />
                         Download Free PDF (With Sample Watermark)
-                      </>
+                      </div>
                     )}
                   </button>
                 </div>

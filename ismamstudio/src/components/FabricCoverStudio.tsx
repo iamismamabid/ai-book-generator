@@ -182,6 +182,20 @@ const CLIPARTS = [
   { name: "FAA Flight Orbit", src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=300&q=80" }
 ];
 
+export const PUZZLE_COVER_SNIPPETS = [
+  { name: "3D Fan Mockup (Book Pages)", src: "/puzzle_previews/3d_puzzle_fan_mockup.png", tag: "Front Feature" },
+  { name: "4-in-1 Puzzle Grid (Look Inside)", src: "/puzzle_previews/all_puzzles_grid.png", tag: "Back Cover" },
+  { name: "Maze Card Snippet", src: "/puzzle_previews/maze_snippet_card.png", tag: "Maze" },
+  { name: "Word Search Snippet", src: "/puzzle_previews/word_search_snippet_card.png", tag: "Word Search" },
+  { name: "Sudoku Grid Snippet", src: "/puzzle_previews/sudoku_snippet_card.png", tag: "Sudoku" },
+  { name: "Crossword Grid Snippet", src: "/puzzle_previews/crossword_snippet_card.png", tag: "Crossword" },
+  { name: "Maze Adventure Badge", src: "/puzzle_previews/badge_maze_adventure.png", tag: "Sticker" },
+  { name: "Word Finder Badge", src: "/puzzle_previews/badge_word_finder.png", tag: "Sticker" },
+  { name: "Sudoku Fun Badge", src: "/puzzle_previews/badge_sudoku_fun.png", tag: "Sticker" },
+  { name: "Crossword Quest Badge", src: "/puzzle_previews/badge_crossword.png", tag: "Sticker" },
+  { name: "Circular Badges Set", src: "/puzzle_previews/all_circular_badges.png", tag: "Badge Set" },
+];
+
 const KDP_ICONS_LIBRARY = [
   {
     category: "Planners & Trackers",
@@ -1212,7 +1226,7 @@ export default function FabricCoverStudio({
     applyBrushSettings(brushType, drawingColor, width);
   };
   const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
-  const [graphicsSubTab, setGraphicsSubTab] = useState<'kdp-icons' | 'unsplash'>('kdp-icons');
+  const [graphicsSubTab, setGraphicsSubTab] = useState<'puzzle-snippets' | 'kdp-icons' | 'unsplash'>('puzzle-snippets');
 
   // 3D Mockup Preview states
   const [isMockupOpen, setIsMockupOpen] = useState(false);
@@ -4358,7 +4372,7 @@ export default function FabricCoverStudio({
     canvas.requestRenderAll();
   };
 
-  const addClipart = (src: string) => {
+  const addClipart = (src: string, targetCover: 'front' | 'back' | 'center' = 'front') => {
     if (!canvas) return;
     // Add unique cache buster query parameter to bypass browser CORS cache issue.
     // Skip for data: URLs (local uploads) — appending a query string corrupts them.
@@ -4372,13 +4386,20 @@ export default function FabricCoverStudio({
       const imgW = img.width || 150;
       const imgH = img.height || 150;
       
-      // Scale image to fit within a 200x200 bounding box proportionally
-      const maxW = 200;
-      const maxH = 200;
+      // Scale image to fit within a 220x220 bounding box proportionally
+      const maxW = 220;
+      const maxH = 220;
       const scale = Math.min(maxW / imgW, maxH / imgH);
       
+      let left = layout.frontCoverCenterPx - (imgW * scale) / 2;
+      if (targetCover === 'back') {
+        left = layout.backCoverCenterPx - (imgW * scale) / 2;
+      } else if (targetCover === 'center') {
+        left = layout.canvasWidth / 2 - (imgW * scale) / 2;
+      }
+
       img.set({
-        left: layout.frontCoverCenterPx - (imgW * scale) / 2,
+        left,
         top: layout.canvasHeight / 2 - (imgH * scale) / 2,
         scaleX: scale,
         scaleY: scale
@@ -7559,26 +7580,29 @@ export default function FabricCoverStudio({
 
         {activeToolTab === 'graphics' && (
           <div className="space-y-4">
-            {/* Sub-tabs for KDP Icons & Unsplash Photos */}
+            {/* Sub-tabs for Puzzle Snippets, KDP Icons & Unsplash Photos */}
             <div className="flex bg-slate-200/60 p-0.5 rounded-lg border border-slate-300/40 text-[10px] font-black uppercase">
               <button 
+                onClick={() => setGraphicsSubTab('puzzle-snippets')}
+                className={`flex-1 py-1 rounded-md text-center transition-all cursor-pointer ${graphicsSubTab === 'puzzle-snippets' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:text-slate-900'}`}
+              >
+                🧩 Puzzles
+              </button>
+              <button 
                 onClick={() => setGraphicsSubTab('kdp-icons')}
-                className={`flex-1 py-1 rounded-md text-center transition-all ${graphicsSubTab === 'kdp-icons' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}
+                className={`flex-1 py-1 rounded-md text-center transition-all cursor-pointer ${graphicsSubTab === 'kdp-icons' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}
               >
                 KDP Icons
               </button>
               <button 
                 onClick={() => setGraphicsSubTab('unsplash')}
-                className={`flex-1 py-1 rounded-md text-center transition-all ${graphicsSubTab === 'unsplash' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}
+                className={`flex-1 py-1 rounded-md text-center transition-all cursor-pointer ${graphicsSubTab === 'unsplash' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}
               >
                 Search Photos
               </button>
             </div>
 
-            {/* Active background quick-remove -- surfaced here too (not just
-                in Settings) since this is where a background photo actually
-                gets applied, so removing one is discoverable right where it
-                was added. */}
+            {/* Active background quick-remove */}
             {(backCoverImage || frontCoverImage || fullCoverImage) && (
               <div className="space-y-1.5 bg-amber-50/60 p-2.5 rounded-xl border border-amber-200/50">
                 <label className="text-[10px] font-black text-amber-800 uppercase tracking-wider block">Active Background Photos</label>
@@ -7603,7 +7627,60 @@ export default function FabricCoverStudio({
               </div>
             )}
 
-            {graphicsSubTab === 'kdp-icons' ? (
+            {graphicsSubTab === 'puzzle-snippets' ? (
+              <div className="space-y-3">
+                <div className="bg-indigo-50/70 border border-indigo-200/80 p-3 rounded-2xl">
+                  <span className="text-[10px] font-black text-indigo-900 uppercase tracking-wider block mb-0.5">
+                    Cover Puzzle Previews
+                  </span>
+                  <p className="text-[10px] font-semibold text-indigo-700 leading-snug">
+                    Click any sample to place it on your front or back cover to show buyers what is inside.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 max-h-[500px] overflow-y-auto pr-1">
+                  {PUZZLE_COVER_SNIPPETS.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="group relative rounded-2xl border border-slate-200 bg-white overflow-hidden hover:border-indigo-500 hover:shadow-md transition-all p-2 flex flex-col justify-between"
+                    >
+                      <div className="aspect-square rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden mb-2 border border-slate-100">
+                        <img
+                          src={item.src}
+                          alt={item.name}
+                          crossOrigin="anonymous"
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[8px] font-black uppercase text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-full inline-block">
+                          {item.tag}
+                        </span>
+                        <p className="text-[10px] font-black text-slate-800 truncate leading-tight">
+                          {item.name}
+                        </p>
+                      </div>
+
+                      {/* Hover Action Overlay */}
+                      <div className="absolute inset-0 bg-slate-950/85 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1.5 p-2.5 z-10">
+                        <button
+                          onClick={() => addClipart(item.src, 'front')}
+                          className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer shadow-sm transition-all active:scale-95"
+                        >
+                          + Front Cover
+                        </button>
+                        <button
+                          onClick={() => addClipart(item.src, 'back')}
+                          className="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer shadow-sm transition-all active:scale-95"
+                        >
+                          + Back Cover
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : graphicsSubTab === 'kdp-icons' ? (
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                 {KDP_ICONS_LIBRARY.map((category, catIdx) => (
                   <details 

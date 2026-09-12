@@ -46,13 +46,6 @@ export default function JsonLdSchema() {
             "price": "329.00",
             "priceCurrency": "USD",
             "url": "https://www.kdpage.com/pricing"
-          },
-          {
-            "@type": "Offer",
-            "name": "Lifetime Deal",
-            "price": "69.00",
-            "priceCurrency": "USD",
-            "url": "https://www.kdpage.com/pricing"
           }
         ],
         "aggregateRating": {
@@ -127,7 +120,7 @@ export default function JsonLdSchema() {
             "name": "Do I own full commercial rights to sell books created with KDPage?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. All paid subscribers (Starter, Pro, Agency) and Lifetime Deal license holders receive 100% commercial-use rights and a royalty-free license to publish and sell generated books, covers, and puzzle interiors on Amazon KDP, Etsy, IngramSpark, or personal online stores. You keep 100% of your royalties."
+              "text": "Yes. All active subscribers (Starter, Pro, Agency) receive 100% commercial-use rights and a royalty-free license to publish and sell generated books, covers, and puzzle interiors on Amazon KDP, Etsy, IngramSpark, or personal online stores. You keep 100% of your royalties."
             }
           },
           {

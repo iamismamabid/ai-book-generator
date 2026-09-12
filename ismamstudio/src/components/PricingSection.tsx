@@ -14,7 +14,7 @@ import { visibleFeatures } from "@/lib/features";
 import { confirmPaddleCheckoutSuccess, syncMySubscription } from "@/app/actions";
 
 function PricingSectionInner() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual' | 'lifetime'>('monthly');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { userId } = useAuth();
   const { user } = useUser();
@@ -440,67 +440,7 @@ function PricingSectionInner() {
     },
   ];
 
-  const ltdPlan = {
-    name: "KDPage Pro Lifetime",
-    description: "Pay once, own forever. Unlimited 300 DPI vector PDF exports, full puzzle engines & commercial rights.",
-    price: 69,
-    originalPrice: 199,
-    popular: true,
-    features: [
-      "Instant 300 DPI Vector PDF Downloads",
-      "100% Commercial-Use Rights (Keep all royalties)",
-      "Zero Monthly Fees Forever (One-Time Payment)",
-      "Full BYOK AI Magic Studio (DALL-E 3, Gemini & Stability with 0% markup)",
-      "Full Sudoku, Maze, Word Search, Cryptogram & Crossword Engines",
-      "Automated Solution Keys Appended to PDFs",
-      "Full Cover & Interior Canvas Studio",
-      "Standard & Custom Trim Sizes (6x9, 8.5x11, etc.)",
-      "KDP Bulk Book Batch Studio & CSV mass import",
-      "Up to 10 Pen-Name & Brand Profiles",
-      "Zero Amazon KDP Rejection Guarantee",
-      "Priority Customer Support (< 12 hours)",
-    ],
-    ctaText: "Claim $69 Lifetime Deal Now →",
-    colorClass: "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-[0_20px_50px_rgba(245,158,11,0.25),_0_0_40px_rgba(245,158,11,0.15)]",
-    borderClass: "border-amber-400 border-2",
-    icon: <Zap className="w-6 h-6 text-amber-500 animate-bounce" />,
-    accentIconBg: "bg-amber-500/10 border-amber-500/20",
-    accentBadge: "text-black font-black bg-amber-400 border-amber-300",
-    badge: "Pro Lifetime",
-    ctaLink: "https://www.dealfuel.com/seller/kdpage-kdp-book-creator/",
-    planKey: "pro"
-  };
 
-  const ltdAgencyPlan = {
-    name: "Publisher Agency Lifetime",
-    description: "For high-output publishers & scaling agencies. 3 team member seats, mass CSV batch imports, and VIP support.",
-    price: 98,
-    originalPrice: 399,
-    popular: false,
-    features: [
-      "Instant 300 DPI Vector PDF Downloads",
-      "Everything in Pro Lifetime plan",
-      "One-Time Payment Forever (Never pay $39/mo or $329/yr)",
-      "Up to 3 Team Member Account Seats",
-      "Up to 25 Brand & Pen-Name Profiles",
-      "Bulk Batch Generation & Mass CSV Importer",
-      "Enterprise BYOK AI Studio (DALL-E 3, Gemini, SDXL)",
-      "Vector SVG & Source File Exports",
-      "Advanced Custom Shapes & Puzzle Masking",
-      "KDP Niche Hunter & Keyword Spy",
-      "Priority High-Speed Generation Queues",
-      "Dedicated Customer Support Manager",
-    ],
-    ctaText: "Claim $98 Agency Deal Now →",
-    colorClass: "bg-slate-50 dark:bg-slate-950/60 text-slate-900 dark:text-white hover:border-emerald-400 dark:hover:border-emerald-400 shadow-xl shadow-emerald-500/5",
-    borderClass: "border-emerald-500/40 border-2",
-    icon: <Award className="w-6 h-6 text-emerald-500" />,
-    accentIconBg: "bg-emerald-500/10 border-emerald-500/20",
-    accentBadge: "text-emerald-400 font-black bg-emerald-500/10 border-emerald-500/30",
-    badge: "Agency Lifetime",
-    ctaLink: "https://www.dealfuel.com/seller/kdpage-kdp-book-creator/",
-    planKey: "agency"
-  };
 
 
 
@@ -526,8 +466,8 @@ function PricingSectionInner() {
       a: "Yes, you can manage your recurring SaaS subscription easily from your dashboard's Manage Billing link. You can upgrade, downgrade, or cancel at any time, and you will retain access to your plan features until the end of your active billing cycle.",
     },
     {
-      q: "Is there a money-back guarantee?",
-      a: "We offer a 14-day money-back guarantee for direct SaaS subscription plans. For purchases made via DealFuel or lifetime deal partners, refunds are governed by the platform's standard refund policy via your partner portal.",
+      q: "Can I get a refund if I'm not satisfied?",
+      a: "We offer a 14-day money-back guarantee for all subscription plans. If you are not completely satisfied, simply reach out to support within 14 days for a full refund.",
     },
     {
       q: "Do the puzzle books include solution keys?",
@@ -859,54 +799,6 @@ function PricingSectionInner() {
               🎁 2 Months Free
             </span>
           </button>
-          <button
-            onClick={() => setBillingCycle('lifetime')}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all relative flex items-center gap-2 cursor-pointer ${billingCycle === 'lifetime'
-                ? "bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-lg shadow-amber-500/25"
-                : "text-amber-400 hover:text-amber-300"
-              }`}
-          >
-            <span>🎁 Lifetime Deals</span>
-            <span className={`font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-sm ${billingCycle === 'lifetime'
-                ? "bg-slate-950 text-amber-300"
-                : "bg-amber-400/20 text-amber-400 border border-amber-400/30"
-              }`}>
-              From $69
-            </span>
-          </button>
-        </div>
-
-        {/* 🔥 Special Lifetime Launch Banner */}
-        <div className="mt-8 max-w-3xl mx-auto p-6 md:p-7 rounded-3xl bg-slate-950 border-2 border-amber-400 shadow-2xl shadow-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-left relative overflow-hidden">
-          {/* Subtle warm ambient lighting on solid dark background */}
-          <div className="absolute -top-20 -left-20 w-52 h-52 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-20 -right-20 w-52 h-52 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="space-y-2 relative z-10">
-            <div className="flex items-center gap-2.5">
-              <span className="px-3 py-1 rounded-full bg-amber-400 text-black text-[10px] font-black uppercase tracking-wider shadow-sm border border-amber-300">
-                ⚡ Limited Launch Deal
-              </span>
-              <span className="text-amber-400 text-xs font-black uppercase tracking-wider">
-                Expires in a few days!
-              </span>
-            </div>
-            <h3 className="text-xl md:text-2xl font-black text-white tracking-tight leading-snug">
-              Prefer to pay once? Get Lifetime Access from <span className="text-amber-400 font-black">$69</span> (Pro) or <span className="text-emerald-400 font-black">$98</span> (Agency)
-            </h3>
-            <p className="text-slate-300 text-xs md:text-sm font-medium leading-relaxed max-w-lg">
-              Never pay monthly recurring fees. Includes unlimited 300 DPI vector PDF exports, full puzzle generators, auto-generated answer keys, team seats, and commercial rights.
-            </p>
-          </div>
-          <a
-            href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs uppercase tracking-wider shadow-xl shadow-amber-500/25 hover:scale-[1.03] active:scale-95 transition-all shrink-0 whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer border border-amber-300 relative z-10"
-          >
-            <span>Claim Lifetime Deals →</span>
-            <ArrowRight className="w-4 h-4 text-black" />
-          </a>
         </div>
 
         {/* 🌟 Subscription Sync & Active Plan Banner on Pricing Section */}
@@ -920,7 +812,7 @@ function PricingSectionInner() {
                   </div>
                   <div>
                     <p className="text-xs font-black text-slate-200">
-                      Already purchased a plan or lifetime deal?
+                      Already purchased a plan?
                     </p>
                     <p className="text-[11px] text-slate-400 font-semibold">
                       Click sync to instantly verify and unlock Pro features on this account.
@@ -1040,7 +932,7 @@ function PricingSectionInner() {
                 </div>
                 <div>
                   <p className="text-xs font-black text-slate-200">
-                    Already purchased a plan or lifetime deal?
+                    Already purchased a plan?
                   </p>
                   <p className="text-[11px] text-slate-400 font-semibold">
                     Click sync to instantly verify and unlock Pro features on this account.
@@ -1110,15 +1002,7 @@ function PricingSectionInner() {
         {plans.map((plan) => renderPricingCard(plan, false))}
       </div>
 
-      {/* Lifetime Grid */}
-      <div 
-        style={{ display: billingCycle === 'lifetime' ? 'grid' : 'none' }}
-        className="grid grid-cols-1 items-stretch mb-24 relative md:grid-cols-3 max-w-6xl mx-auto gap-8"
-      >
-        {renderPricingCard(plans[0], false)}
-        {renderPricingCard(ltdPlan, true)}
-        {renderPricingCard(ltdAgencyPlan, true)}
-      </div>
+
 
       {/* 🛡️ Value Proposition Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">

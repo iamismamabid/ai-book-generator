@@ -1338,11 +1338,11 @@ export default function BookBuilder({
 
     {mounted && isExportModalOpen && createPortal(
       <div
-        className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        className="fixed inset-0 z-[99999] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
         onClick={() => setIsExportModalOpen(false)}
       >
         <div
-          className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200"
+          className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-3xl w-full p-6 sm:p-7 relative animate-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col my-auto shadow-2xl"
           style={{ boxShadow: "var(--shadow-soft-lg)" }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -1353,177 +1353,190 @@ export default function BookBuilder({
             <X className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-indigo-600/10 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400"><Settings2 className="w-5 h-5" /></div>
+          <div className="flex items-center gap-3 mb-5 shrink-0">
+            <div className="w-10 h-10 bg-indigo-600/10 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <Settings2 className="w-5 h-5" />
+            </div>
             <div>
               <h3 className="text-lg font-black text-slate-900 dark:text-slate-50 uppercase">Export Book interior</h3>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Configure layouts and covers</p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            {/* Cover Integration */}
-            <div className="space-y-2 p-3.5 surface-panel">
-              <div className="flex justify-between items-center">
-                <div>
-                  <label className="text-xs font-black text-slate-800 dark:text-slate-100 block">Include Front & Back Cover</label>
-                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Compile designs from Cover Studio</span>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={includeCover}
-                  disabled={!coverState || coverState.coverElements?.length === 0}
-                  onChange={(e) => setIncludeCover(e.target.checked)}
-                  className="w-4 h-4 accent-indigo-600 cursor-pointer disabled:opacity-50"
-                />
-              </div>
-              {includeCover && (
-                <div className="flex gap-2 items-start bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 text-indigo-800 dark:text-indigo-300 p-2.5 rounded-xl text-[10px] font-semibold leading-normal mt-2">
-                  <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
-                  <span>
-                    <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the All-In-One Studio.
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Page Numbers */}
-            <div className="flex justify-between items-center p-3.5 surface-panel">
-              <div>
-                <label className="text-xs font-black text-slate-800 dark:text-slate-100 block">Include Page Numbers</label>
-                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Add index footers to puzzle pages</span>
-              </div>
-              <input
-                type="checkbox"
-                checked={includePageNumbers}
-                onChange={(e) => setIncludePageNumbers(e.target.checked)}
-                className="w-4 h-4 accent-indigo-600 cursor-pointer"
-              />
-            </div>
-
-            {/* Double-Sided Gutter margin */}
-            <div className="flex justify-between items-center p-3.5 surface-panel">
-              <div>
-                <label className="text-xs font-black text-slate-800 dark:text-slate-100 block">Double-Sided Gutter Margin</label>
-                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Adds extra padding for binding</span>
-              </div>
-              <input
-                type="checkbox"
-                checked={gutterMargin}
-                onChange={(e) => setGutterMargin(e.target.checked)}
-                className="w-4 h-4 accent-indigo-600 cursor-pointer"
-              />
-            </div>
-
-            {/* KDP Trim Size */}
-            <div className="p-3.5 surface-panel flex justify-between items-center">
-              <div>
-                <label className="text-xs font-black text-slate-800 dark:text-slate-100 block">KDP Book Trim Size</label>
-                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Target paperback print size</span>
-              </div>
-              <select
-                value={selectedTrim.label}
-                onChange={(e) => {
-                  const found = TRIM_SIZES.find(t => t.label === e.target.value);
-                  if (found) setSelectedTrim(found);
-                }}
-                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none"
-              >
-                {TRIM_SIZES.map((t, idx) => (
-                  <option key={idx} value={t.label}>{t.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Decorative Page Border Theme */}
-            <div className="p-3.5 surface-panel">
-              <label className="text-xs font-black text-slate-800 dark:text-slate-100 block mb-1">Page Border Theme</label>
-              <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase mb-2.5">Decorative frame on every page, content stays untouched</span>
-              <div className="grid grid-cols-5 gap-2">
-                {BORDER_THEMES.map((theme) => (
-                  <button
-                    key={theme.id}
-                    type="button"
-                    onClick={() => setBorderTheme(theme.id)}
-                    title={theme.name}
-                    className={`aspect-square rounded-xl border-2 flex items-center justify-center transition cursor-pointer ${
-                      borderTheme === theme.id ? "border-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900" : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                    }`}
-                    style={theme.id === "none" ? { background: "#fff" } : { background: theme.swatch }}
-                  >
-                    {theme.id === "none" && <span className="text-[9px] font-black text-slate-400 uppercase">None</span>}
-                  </button>
-                ))}
-              </div>
-              <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block mt-2">
-                {BORDER_THEMES.find((t) => t.id === borderTheme)?.name}
-              </span>
-            </div>
-
-            {/* Book Validation Checklist */}
-            {errors.length > 0 && (
-              <div className="p-4 surface-panel space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar">
-                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">KDP Requirements Checklist</span>
-                <div className="space-y-1.5">
-                  {errors.map((err, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex gap-2 items-center p-2 rounded-lg text-[9px] font-semibold ${
-                        err.type === 'error'
-                          ? 'bg-rose-50/50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900 text-rose-700 dark:text-rose-400'
-                          : 'bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400'
-                      }`}
-                    >
-                      {err.type === 'error' ? (
-                        <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
-                      ) : (
-                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-                      )}
-                      <span>{err.message}</span>
+          <div className="overflow-y-auto flex-1 pr-1 space-y-4 custom-scrollbar">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Left Column: Layout & Page Settings */}
+              <div className="space-y-3">
+                {/* Cover Integration */}
+                <div className="space-y-2 p-3.5 surface-panel">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <label className="text-xs font-black text-slate-800 dark:text-slate-100 block">Include Front & Back Cover</label>
+                      <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Compile designs from Cover Studio</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* KDP Cover Image Resolution Check (auto-runs when a cover is included) */}
-            {includeCover && coverDpiChecks.length > 0 && (
-              <div className="p-4 surface-panel space-y-2">
-                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Cover Print Resolution</span>
-                <div className="space-y-1.5">
-                  {coverDpiChecks.map((check, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex gap-2 items-center p-2 rounded-lg text-[9px] font-semibold ${
-                        check.isLowRes
-                          ? 'bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400'
-                          : 'bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400'
-                      }`}
-                    >
-                      {check.isLowRes ? (
-                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-                      ) : (
-                        <Info className="w-4 h-4 text-emerald-500 shrink-0" />
-                      )}
+                    <input
+                      type="checkbox"
+                      checked={includeCover}
+                      disabled={!coverState || coverState.coverElements?.length === 0}
+                      onChange={(e) => setIncludeCover(e.target.checked)}
+                      className="w-4 h-4 accent-indigo-600 cursor-pointer disabled:opacity-50"
+                    />
+                  </div>
+                  {includeCover && (
+                    <div className="flex gap-2 items-start bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 text-indigo-800 dark:text-indigo-300 p-2.5 rounded-xl text-[10px] font-semibold leading-normal mt-2">
+                      <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
                       <span>
-                        {check.label}: ~{check.effectiveDpi} DPI
-                        {check.isLowRes ? ' — below KDP\'s 300 DPI minimum, may print blurry. Use a higher-resolution image.' : ' — meets KDP\'s 300 DPI minimum.'}
+                        <strong>KDP Notice:</strong> Amazon KDP requires uploading the <strong>Interior</strong> and <strong>Cover</strong> as two separate PDF files. Including the cover here is only for digital reading/e-book layout. For KDP paperback publishing, export your cover separately from the All-In-One Studio.
                       </span>
                     </div>
-                  ))}
+                  )}
+                </div>
+
+                {/* Page Numbers */}
+                <div className="flex justify-between items-center p-3.5 surface-panel">
+                  <div>
+                    <label className="text-xs font-black text-slate-800 dark:text-slate-100 block">Include Page Numbers</label>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Add index footers to puzzle pages</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={includePageNumbers}
+                    onChange={(e) => setIncludePageNumbers(e.target.checked)}
+                    className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                  />
+                </div>
+
+                {/* Double-Sided Gutter margin */}
+                <div className="flex justify-between items-center p-3.5 surface-panel">
+                  <div>
+                    <label className="text-xs font-black text-slate-800 dark:text-slate-100 block">Double-Sided Gutter Margin</label>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Adds extra padding for binding</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={gutterMargin}
+                    onChange={(e) => setGutterMargin(e.target.checked)}
+                    className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                  />
+                </div>
+
+                {/* KDP Trim Size */}
+                <div className="p-3.5 surface-panel flex justify-between items-center">
+                  <div>
+                    <label className="text-xs font-black text-slate-800 dark:text-slate-100 block">KDP Book Trim Size</label>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Target paperback print size</span>
+                  </div>
+                  <select
+                    value={selectedTrim.label}
+                    onChange={(e) => {
+                      const found = TRIM_SIZES.find(t => t.label === e.target.value);
+                      if (found) setSelectedTrim(found);
+                    }}
+                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
+                  >
+                    {TRIM_SIZES.map((t, idx) => (
+                      <option key={idx} value={t.label}>{t.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            )}
-            {/* Zero-Blank Guarantee Callout */}
-            <div className="p-3 surface-panel flex items-center gap-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 text-[10px] text-emerald-900 dark:text-emerald-300">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>
-                <strong>Zero-Blank Guarantee:</strong> All puzzles and duplicated pages are pre-verified. Any ungenerated pages are automatically populated before PDF creation so your book prints 100% complete.
-              </span>
+
+              {/* Right Column: Theme, Validation & Quality */}
+              <div className="space-y-3">
+                {/* Decorative Page Border Theme */}
+                <div className="p-3.5 surface-panel">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-black text-slate-800 dark:text-slate-100 block">Page Border Theme</label>
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                      {BORDER_THEMES.find((t) => t.id === borderTheme)?.name}
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase mb-2">Decorative frame on every page</span>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {BORDER_THEMES.map((theme) => (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        onClick={() => setBorderTheme(theme.id)}
+                        title={theme.name}
+                        className={`aspect-square rounded-xl border-2 flex items-center justify-center transition cursor-pointer ${
+                          borderTheme === theme.id ? "border-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900" : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                        }`}
+                        style={theme.id === "none" ? { background: "#fff" } : { background: theme.swatch }}
+                      >
+                        {theme.id === "none" && <span className="text-[9px] font-black text-slate-400 uppercase">None</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Book Validation Checklist */}
+                {errors.length > 0 && (
+                  <div className="p-3.5 surface-panel space-y-2 max-h-[140px] overflow-y-auto custom-scrollbar">
+                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">KDP Requirements Checklist</span>
+                    <div className="space-y-1.5">
+                      {errors.map((err, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex gap-2 items-center p-2 rounded-lg text-[9px] font-semibold ${
+                            err.type === 'error'
+                              ? 'bg-rose-50/50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900 text-rose-700 dark:text-rose-400'
+                              : 'bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400'
+                          }`}
+                        >
+                          {err.type === 'error' ? (
+                            <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                          ) : (
+                            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                          )}
+                          <span>{err.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* KDP Cover Image Resolution Check */}
+                {includeCover && coverDpiChecks.length > 0 && (
+                  <div className="p-3.5 surface-panel space-y-2">
+                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Cover Print Resolution</span>
+                    <div className="space-y-1.5">
+                      {coverDpiChecks.map((check, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex gap-2 items-center p-2 rounded-lg text-[9px] font-semibold ${
+                            check.isLowRes
+                              ? 'bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400'
+                              : 'bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400'
+                          }`}
+                        >
+                          {check.isLowRes ? (
+                            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                          ) : (
+                            <Info className="w-4 h-4 text-emerald-500 shrink-0" />
+                          )}
+                          <span>
+                            {check.label}: ~{check.effectiveDpi} DPI
+                            {check.isLowRes ? ' — below 300 DPI' : ' — meets 300 DPI'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Zero-Blank Guarantee Callout */}
+                <div className="p-3 surface-panel flex items-center gap-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 text-[10px] text-emerald-900 dark:text-emerald-300">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>
+                    <strong>Zero-Blank Guarantee:</strong> All puzzles are pre-verified and populated before PDF creation so your book prints 100% complete.
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3 shrink-0">
             <button
               onClick={() => setIsExportModalOpen(false)}
               className="btn-premium flex-1 border border-slate-200 dark:border-slate-700 hover:bg-slate-55 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 normal-case"
@@ -1545,7 +1558,6 @@ export default function BookBuilder({
               )}
             </button>
           </div>
-
         </div>
       </div>,
       document.body

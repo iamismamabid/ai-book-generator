@@ -14,8 +14,14 @@ import {
   AlignHorizontalSpaceAround, AlignVerticalSpaceAround, History, Share2, Pencil, Pause,
   Image as ImageIcon, ZoomIn, ZoomOut, Group as GroupIcon, Ungroup as UngroupIcon, Store,
   Paintbrush, ClipboardPaste, ImageOff, RefreshCw, FlipHorizontal, FlipVertical, SlidersHorizontal, Pipette,
-  Keyboard, X as XIcon, ShieldCheck, AlertTriangle, AlertOctagon
+  Keyboard, X as XIcon, ShieldCheck, AlertTriangle, AlertOctagon,
+  CheckCircle2, AlertCircle, PackageCheck, FileDown
 } from "lucide-react";
+import JSZip from "jszip";
+import confetti from "canvas-confetti";
+import { generateFullKdpCover } from "@/app/utils/autoCoverGenerator";
+import { generateKdpMetadata } from "@/app/utils/bookMetadataGenerator";
+import { exportBookToPDF } from "@/app/utils/pdfExportService";
 import { calculateKdpLayout, KdpSpecs, KdpLayoutResult } from "@/app/utils/kdpLayout";
 import KdpPreflightModal, { runKdpPreflightChecks } from "@/components/KdpPreflightModal";
 import { initFabricSnapping } from "@/hooks/useFabricSnap";
@@ -43,7 +49,7 @@ import CoverExportPaywallModal from "@/components/CoverExportPaywallModal";
 import { BookCoverSyncData } from "@/components/FullBookPackagerModal";
 import { COVER_THEMES, CoverThemeId } from "@/app/utils/autoCoverGenerator";
 import { checkPremiumStatus, saveAccountUploadedAsset, getAccountUploadedAssets, deleteAccountUploadedAsset } from "@/app/actions";
-import { saveUserUploadsToIndexedDB, loadUserUploadsFromIndexedDB } from "@/lib/indexedDbStorage";
+import { saveUserUploadsToIndexedDB, loadUserUploadsFromIndexedDB, loadBookDraftFromIndexedDB } from "@/lib/indexedDbStorage";
 
 // Patch Fabric.Text prototype to support modern rounded text backgrounds with custom radius, padding & opacity
 function ensureFabricRoundedTextBg() {
@@ -687,6 +693,9 @@ interface FabricCoverStudioProps {
   bookMeta?: BookCoverSyncData;
   pendingAutoAlign?: BookCoverSyncData | null;
   onClearAutoAlign?: () => void;
+  getBookPages?: () => any[];
+  getBorderTheme?: () => any;
+  isPremium?: boolean;
 }
 
 const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
@@ -887,7 +896,10 @@ export default function FabricCoverStudio({
   onSaveWorkspace,
   bookMeta,
   pendingAutoAlign,
-  onClearAutoAlign
+  onClearAutoAlign,
+  getBookPages,
+  getBorderTheme,
+  isPremium
 }: FabricCoverStudioProps) {
   // Safe defaults for incoming props to prevent any undefined access during hydration or corrupted draft loads
   const safeCoverBackground = coverBackground || {
@@ -1160,6 +1172,11 @@ export default function FabricCoverStudio({
   }, [canvas, refreshCanvasTextObjects]);
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isPackagingFullBook, setIsPackagingFullBook] = useState(false);
+  const [packagingStep, setPackagingStep] = useState<
+    "idle" | "preflight" | "cover" | "interior" | "metadata" | "zipping" | "done" | "error"
+  >("idle");
+  const [packagingError, setPackagingError] = useState<string | null>(null);
   const [activeObject, setActiveObject] = useState<fabric.Object | null>(null);
   const [clipboard, setClipboard] = useState<any>(null);
   const clipboardRef = useRef<any>(null);
@@ -5696,6 +5713,224 @@ export default function FabricCoverStudio({
     handleGenerateCoverDirect();
   };
 
+  const handlePackageFullKdpBook = async () => {
+    if (!canvas || !isCanvasAlive(canvas)) return;
+
+    // 1. Premium Paywall Check
+    try {
+      const status = await checkPremiumStatus();
+      if (!status.isPremium) {
+        setIsExportPaywallOpen(true);
+        return;
+      }
+    } catch (e) {
+      console.error("Premium check error:", e);
+      setIsExportPaywallOpen(true);
+      return;
+    }
+
+    // 2. Pre-Flight POD Inspection
+    setPackagingError(null);
+    setPackagingStep("preflight");
+    setIsPackagingFullBook(true);
+
+    const findings = runKdpPreflightChecks(canvas, layout, {
+      trimWidth: trimSize.w,
+      trimHeight: trimSize.h,
+      pageCount: pageCount,
+      paperType: paperType,
+    });
+
+    const hasCritical = findings.some((f) => f.severity === "critical");
+    if (hasCritical) {
+      setIsPackagingFullBook(false);
+      setPackagingStep("idle");
+      setIsPreflightOpen(true);
+      return;
+    }
+
+    try {
+      // 3. Extract active title, subtitle & author from canvas text objects or bookMeta
+      const objs = canvas.getObjects();
+      const titleObj = objs.find(
+        (o: any) =>
+          o.id === "cover-book-title" ||
+          ((o.type === "textbox" || o.type === "i-text") &&
+            o.top < layout.canvasHeight * 0.35 &&
+            o.left > layout.spineRightPx &&
+            o.id !== "cover-book-subtitle")
+      );
+      const subtitleObj = objs.find((o: any) => o.id === "cover-book-subtitle");
+      const authorObj = objs.find(
+        (o: any) =>
+          o.id === "cover-book-author" ||
+          ((o.type === "textbox" || o.type === "i-text") &&
+            o.top > layout.canvasHeight * 0.75 &&
+            o.left > layout.spineRightPx &&
+            o.id !== "cover-book-title")
+      );
+
+      const effectiveTitle =
+        (titleObj as any)?.text?.trim() ||
+        bookMeta?.title ||
+        "The Ultimate Variety Puzzle Book for Adults";
+      const effectiveSubtitle =
+        (subtitleObj as any)?.text?.trim() ||
+        bookMeta?.subtitle ||
+        "Large Print Brain Games with Complete Solutions Included";
+      const effectiveAuthor =
+        (authorObj as any)?.text?.trim() ||
+        bookMeta?.author ||
+        "KDPage Publishing";
+
+      // 4. Render 300 DPI Cover Data URL from Fabric Canvas
+      setPackagingStep("cover");
+      canvas.discardActiveObject();
+      canvas.requestRenderAll();
+      await new Promise((r) => setTimeout(r, 120));
+
+      const coverDataUrl = await exportCanvasWithBackground(canvas, 3);
+      if (!coverDataUrl) {
+        throw new Error("Failed to render 300 DPI Cover from canvas.");
+      }
+
+      // 5. Gather Interior Pages
+      setPackagingStep("interior");
+      let pagesToPackage: any[] = [];
+      if (getBookPages) {
+        const live = getBookPages();
+        if (Array.isArray(live) && live.length > 0) {
+          pagesToPackage = live;
+        }
+      }
+      if (pagesToPackage.length === 0) {
+        try {
+          const idbPages = await loadBookDraftFromIndexedDB();
+          if (Array.isArray(idbPages) && idbPages.length > 0) {
+            pagesToPackage = idbPages;
+          }
+        } catch (e) {
+          console.warn("Could not load book pages from IndexedDB:", e);
+        }
+      }
+      if (pagesToPackage.length === 0) {
+        try {
+          const saved = localStorage.getItem("kdp-book-draft");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              pagesToPackage = parsed;
+            }
+          }
+        } catch (e) {
+          console.warn("Could not load book pages from localStorage:", e);
+        }
+      }
+
+      if (pagesToPackage.length === 0) {
+        throw new Error(
+          "No interior pages found in Book Builder. Please create or save pages in the Interior tab first!"
+        );
+      }
+
+      // Compile Interior PDF
+      const activeBorderTheme = getBorderTheme ? getBorderTheme() : undefined;
+      const interiorBlob = (await exportBookToPDF(pagesToPackage, {
+        returnBlob: true,
+        includeCover: false,
+        includePageNumbers: true,
+        gutterMargin: true,
+        trimSize: trimSize,
+        borderTheme: activeBorderTheme,
+        isPremium: isPremium ?? true,
+      })) as Blob;
+
+      if (!interiorBlob) {
+        throw new Error("Failed to compile print-ready Interior PDF.");
+      }
+
+      // 6. Generate 300 DPI Cover PDF Blob & 3D Mockup PNG
+      setPackagingStep("metadata");
+      const coverPackage = await generateFullKdpCover({
+        title: effectiveTitle,
+        subtitle: effectiveSubtitle,
+        author: effectiveAuthor,
+        pageCount: Math.max(24, pagesToPackage.length),
+        trimWidth: trimSize.w,
+        trimHeight: trimSize.h,
+        dpi: 300,
+        customFullCoverDataUrl: coverDataUrl,
+      });
+
+      // Formulate KDP Metadata Cheatsheet
+      const meta = generateKdpMetadata({
+        bookPages: pagesToPackage,
+        title: effectiveTitle,
+        subtitle: effectiveSubtitle,
+        author: effectiveAuthor,
+        trimSize: trimSize,
+      });
+
+      // 7. Zip everything into 1 package
+      setPackagingStep("zipping");
+      await new Promise((r) => setTimeout(r, 150));
+
+      const zip = new JSZip();
+      const safeTitle =
+        effectiveTitle.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 32) || "KDP_Book";
+
+      zip.file(
+        `Cover_Print_Ready_300DPI_${trimSize.w}x${trimSize.h}.pdf`,
+        coverPackage.coverPdfBlob
+      );
+      zip.file(
+        `Interior_Print_Ready_${trimSize.w}x${trimSize.h}.pdf`,
+        interiorBlob
+      );
+      zip.file(`Amazon_KDP_Metadata_Cheatsheet.txt`, meta.cheatsheetText);
+      zip.file(`3D_Marketing_Mockup.png`, coverPackage.mockupPngBlob);
+
+      const zipBlob = await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: { level: 6 },
+      });
+
+      const downloadUrl = URL.createObjectURL(zipBlob);
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.href = downloadUrl;
+      downloadAnchor.download = `${safeTitle}_Complete_Package.zip`;
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      document.body.removeChild(downloadAnchor);
+      URL.revokeObjectURL(downloadUrl);
+
+      setPackagingStep("done");
+      try {
+        confetti({
+          particleCount: 90,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+      } catch {
+        // decorative
+      }
+
+      // Auto close progress dialog after 3.5 seconds
+      setTimeout(() => {
+        setPackagingStep("idle");
+        setIsPackagingFullBook(false);
+      }, 3500);
+    } catch (err: any) {
+      console.error("1-Click Packaging Failed:", err);
+      setPackagingError(
+        err?.message || "An unexpected error occurred during book packaging."
+      );
+      setPackagingStep("error");
+      setIsPackagingFullBook(false);
+    }
+  };
+
   // Dedicated snapshot getter for SaveToNotebookButton so cover elements, background,
   // trim size, and page count are permanently preserved in My Notebook
   const getCoverNotebookData = useCallback(() => {
@@ -9172,6 +9407,20 @@ export default function FabricCoverStudio({
               <Sparkles className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
               <span>Auto-Align from Interior</span>
             </button>
+
+            <button
+              onClick={handlePackageFullKdpBook}
+              disabled={isPackagingFullBook}
+              title="Package Full KDP Book (.ZIP): 300 DPI Cover PDF, Interior PDF, KDP Metadata & 3D Mockup"
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 text-[10px] sm:text-xs font-black uppercase tracking-wider shadow-md hover:shadow-amber-500/30 active:scale-95 transition flex items-center gap-1.5 cursor-pointer border border-amber-400/40"
+            >
+              {isPackagingFullBook ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-950" />
+              ) : (
+                <PackageCheck className="w-3.5 h-3.5 text-slate-950" />
+              )}
+              <span>Package Full KDP Book (.ZIP)</span>
+            </button>
           </div>
 
           {/* Global Canvas Control Bar */}
@@ -9259,10 +9508,26 @@ export default function FabricCoverStudio({
               onClick={handleGenerateCover}
               disabled={isGenerating}
               title="Compile & Download PDF Cover"
-              className="p-2 pl-3 pr-4 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5 shadow-sm shadow-indigo-600/30"
+              className="p-2 pl-3 pr-4 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5 shadow-sm shadow-indigo-600/30 cursor-pointer"
             >
               {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
               <span className="text-[10px] font-black uppercase tracking-wider">{isGenerating ? "Compiling..." : "Download PDF"}</span>
+            </button>
+
+            <button
+              onClick={handlePackageFullKdpBook}
+              disabled={isPackagingFullBook}
+              title="Package Full KDP Book (.ZIP): 300 DPI Cover PDF + Interior PDF + 3D Mockup + KDP Metadata in 1 ZIP"
+              className="p-2 pl-3.5 pr-4 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-black transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5 shadow-sm shadow-amber-500/20 cursor-pointer border border-amber-400/30"
+            >
+              {isPackagingFullBook ? (
+                <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+              ) : (
+                <Sparkles className="w-4 h-4 fill-slate-950 text-slate-950" />
+              )}
+              <span className="text-[10px] font-black uppercase tracking-wider">
+                {isPackagingFullBook ? "Packaging..." : "Package Full Book (.ZIP)"}
+              </span>
             </button>
 
             <button
@@ -9892,6 +10157,83 @@ export default function FabricCoverStudio({
           handleGenerateCoverDirect();
         }}
       />
+
+      {/* Full Book Packaging Progress Modal */}
+      {packagingStep !== "idle" && (
+        <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95 duration-200 text-slate-900 dark:text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-500 flex items-center justify-center text-slate-950 shadow-md shadow-amber-500/20 shrink-0">
+                <Sparkles className="w-6 h-6 fill-slate-950" />
+              </div>
+              <div>
+                <h3 className="text-base font-black uppercase tracking-tight">
+                  Full KDP Book Packager
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Bundling 300 DPI Cover, Interior PDF &amp; Metadata into 1 ZIP
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-3">
+              <div className="flex items-center justify-between text-xs font-bold">
+                <span className="flex items-center gap-2.5">
+                  {packagingStep === "done" ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                  ) : packagingStep === "error" ? (
+                    <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
+                  ) : (
+                    <Loader2 className="w-5 h-5 text-amber-500 animate-spin shrink-0" />
+                  )}
+                  <span>
+                    {packagingStep === "preflight" && "Step 1/5: Checking KDP POD guidelines & specs..."}
+                    {packagingStep === "cover" && "Step 2/5: Rendering 300 DPI wraparound cover..."}
+                    {packagingStep === "interior" && "Step 3/5: Compiling print-ready interior PDF..."}
+                    {packagingStep === "metadata" && "Step 4/5: Generating 7 SEO keywords & 3D mockup..."}
+                    {packagingStep === "zipping" && "Step 5/5: Compressing package into ZIP file..."}
+                    {packagingStep === "done" && "Package Downloaded Successfully! 🎉"}
+                    {packagingStep === "error" && "Packaging Error"}
+                  </span>
+                </span>
+                {packagingStep === "done" && (
+                  <span className="text-[10px] font-black uppercase text-emerald-500">100%</span>
+                )}
+              </div>
+
+              {packagingError && (
+                <p className="text-xs text-rose-500 font-semibold bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20">
+                  {packagingError}
+                </p>
+              )}
+            </div>
+
+            {packagingStep === "done" && (
+              <button
+                onClick={() => {
+                  setPackagingStep("idle");
+                  setIsPackagingFullBook(false);
+                }}
+                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-md"
+              >
+                Done
+              </button>
+            )}
+
+            {packagingStep === "error" && (
+              <button
+                onClick={() => {
+                  setPackagingStep("idle");
+                  setIsPackagingFullBook(false);
+                }}
+                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
+              >
+                Close
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

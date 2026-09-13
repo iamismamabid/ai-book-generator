@@ -205,11 +205,13 @@ export default function BookBuilder({
   initialPages,
   onOpenCoverStudio,
   onInteriorChange,
+  onSyncPages,
 }: {
   coverState?: any;
   initialPages?: any[];
   onOpenCoverStudio?: (syncData?: any) => void;
-  onInteriorChange?: (info: { pageCount: number; trimSize: any }) => void;
+  onInteriorChange?: (info: { pageCount: number; trimSize: any; bookPages?: any[]; borderTheme?: any }) => void;
+  onSyncPages?: (pages: any[], borderTheme?: any) => void;
 }) {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
@@ -236,12 +238,7 @@ export default function BookBuilder({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addModalCategory, setAddModalCategory] = useState<'all' | 'interior' | 'puzzle' | 'structure'>('all');
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
-
-
-  // Premium Export Modal States
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [isPackagerModalOpen, setIsPackagerModalOpen] = useState(false);
-  const [includeCover, setIncludeCover] = useState(false);
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [gutterMargin, setGutterMargin] = useState(true);
   const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);
@@ -275,6 +272,12 @@ export default function BookBuilder({
     }
   }, []);
 
+  useEffect(() => {
+    if (onSyncPages) {
+      onSyncPages(bookPages, borderTheme);
+    }
+  }, [bookPages, borderTheme, onSyncPages]);
+
   const lastEmittedInteriorRef = useRef<{ pages: number; trimW: number; trimH: number } | null>(null);
 
   useEffect(() => {
@@ -294,8 +297,10 @@ export default function BookBuilder({
     onInteriorChange({
       pageCount: curPages,
       trimSize: selectedTrim,
+      bookPages: bookPages,
+      borderTheme: borderTheme,
     });
-  }, [bookPages.length, selectedTrim, onInteriorChange]);
+  }, [bookPages, selectedTrim, borderTheme, onInteriorChange]);
 
   const getBookSnapshot = () => ({
     pageCount: bookPages.length,

@@ -125,7 +125,33 @@ export default function MasterStudioApp() {
     handleTabChange('cover');
   };
 
-  const handleInteriorChange = useCallback(({ pageCount: newPages, trimSize: newTrim }: { pageCount: number; trimSize: any }) => {
+  const interiorPagesRef = useRef<any[]>([]);
+  const interiorBorderThemeRef = useRef<any>(undefined);
+
+  const handleSyncInteriorPages = useCallback((pages: any[], borderTheme?: any) => {
+    if (pages && Array.isArray(pages)) {
+      interiorPagesRef.current = pages;
+    }
+    if (borderTheme !== undefined) {
+      interiorBorderThemeRef.current = borderTheme;
+    }
+  }, []);
+
+  const getBookPages = useCallback(() => {
+    return interiorPagesRef.current;
+  }, []);
+
+  const getBorderTheme = useCallback(() => {
+    return interiorBorderThemeRef.current;
+  }, []);
+
+  const handleInteriorChange = useCallback(({ pageCount: newPages, trimSize: newTrim, bookPages, borderTheme }: { pageCount: number; trimSize: any; bookPages?: any[]; borderTheme?: any }) => {
+    if (bookPages && Array.isArray(bookPages)) {
+      interiorPagesRef.current = bookPages;
+    }
+    if (borderTheme !== undefined) {
+      interiorBorderThemeRef.current = borderTheme;
+    }
     setBookMeta(prev => {
       const pageMatch = !newPages || prev.pageCount === newPages;
       const trimMatch = !newTrim || (prev.trimSize?.w === newTrim.w && prev.trimSize?.h === newTrim.h);
@@ -547,6 +573,7 @@ export default function MasterStudioApp() {
               initialPages={notebookInitialPages ?? undefined}
               onOpenCoverStudio={(syncData) => handleOpenCoverStudio(syncData)}
               onInteriorChange={(info) => handleInteriorChange(info)}
+              onSyncPages={handleSyncInteriorPages}
             />
           </InteriorErrorBoundary>
         </div>
@@ -586,6 +613,9 @@ export default function MasterStudioApp() {
                 bookMeta={bookMeta}
                 pendingAutoAlign={pendingAutoAlign}
                 onClearAutoAlign={() => setPendingAutoAlign(null)}
+                getBookPages={getBookPages}
+                getBorderTheme={getBorderTheme}
+                isPremium={premiumStatus.isPremium}
               />
             </CoverStudioErrorBoundary>
           )}

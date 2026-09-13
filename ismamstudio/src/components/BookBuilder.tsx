@@ -203,11 +203,13 @@ const TRIM_SIZES = [
 export default function BookBuilder({
   coverState,
   initialPages,
-  onOpenCoverStudio
+  onOpenCoverStudio,
+  onInteriorChange,
 }: {
   coverState?: any;
   initialPages?: any[];
-  onOpenCoverStudio?: () => void;
+  onOpenCoverStudio?: (syncData?: any) => void;
+  onInteriorChange?: (info: { pageCount: number; trimSize: any }) => void;
 }) {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
@@ -272,6 +274,15 @@ export default function BookBuilder({
       setRightOpen(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (onInteriorChange) {
+      onInteriorChange({
+        pageCount: Math.max(24, bookPages.length),
+        trimSize: selectedTrim,
+      });
+    }
+  }, [bookPages.length, selectedTrim, onInteriorChange]);
 
   const getBookSnapshot = () => ({
     pageCount: bookPages.length,
@@ -1569,7 +1580,10 @@ export default function BookBuilder({
         bookPages={bookPages}
         selectedTrim={selectedTrim}
         borderTheme={borderTheme}
-        onOpenCoverStudio={onOpenCoverStudio}
+        onOpenCoverStudio={(syncData) => {
+          setIsPackagerModalOpen(false);
+          onOpenCoverStudio?.(syncData);
+        }}
       />
     )}
     {isVersionHistoryOpen && (

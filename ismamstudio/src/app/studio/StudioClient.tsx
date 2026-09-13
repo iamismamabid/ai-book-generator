@@ -14,10 +14,12 @@ const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio")
 const BookBuilder = dynamic(() => import("@/components/BookBuilder"), { ssr: false });
 import CoverStudioErrorBoundary from "@/components/CoverStudioErrorBoundary";
 import InteriorErrorBoundary from "@/components/InteriorErrorBoundary";
+import { BookCoverSyncData } from "@/components/FullBookPackagerModal";
+import { COVER_THEMES, CoverThemeId } from "@/app/utils/autoCoverGenerator";
 
 const TRIM_SIZES = [
-  { label: '6" x 9" (Novel)', w: 6, h: 9 },
   { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
+  { label: '6" x 9" (Novel)', w: 6, h: 9 },
   { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
 ];
 
@@ -36,6 +38,14 @@ export default function MasterStudioApp() {
   // Studio then reloading always landed back on Book Builder. Keeping the URL
   // in sync fixes that without touching browser history on every click.
   const handleTabChange = (tab: 'interior' | 'cover') => {
+    if (tab === 'cover') {
+      if (bookMeta.trimSize && (trimSize.w !== bookMeta.trimSize.w || trimSize.h !== bookMeta.trimSize.h)) {
+        setTrimSize(bookMeta.trimSize);
+      }
+      if (bookMeta.pageCount && pageCount !== bookMeta.pageCount) {
+        setPageCount(bookMeta.pageCount);
+      }
+    }
     setActiveTab(tab);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
@@ -75,7 +85,53 @@ export default function MasterStudioApp() {
     loadPremium();
   }, []);
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
-  const [pageCount, setPageCount] = useState(100);
+  const [pageCount, setPageCount] = useState(24);
+
+  // Active book interior metadata & auto-align bridge
+  const [bookMeta, setBookMeta] = useState<BookCoverSyncData>({
+    title: "The Ultimate Variety Puzzle Book for Adults",
+    subtitle: "Large Print Brain Games with Complete Solutions Included",
+    author: "KDPage Publishing",
+    trimSize: TRIM_SIZES[0],
+    pageCount: 24,
+    themeId: "midnight_gold"
+  });
+  const [pendingAutoAlign, setPendingAutoAlign] = useState<BookCoverSyncData | null>(null);
+
+  const handleOpenCoverStudio = (syncData?: BookCoverSyncData) => {
+    const dataToApply = syncData || bookMeta;
+    if (dataToApply.trimSize) {
+      setTrimSize(dataToApply.trimSize);
+    }
+    if (dataToApply.pageCount) {
+      setPageCount(dataToApply.pageCount);
+    }
+    if (dataToApply.themeId && COVER_THEMES[dataToApply.themeId as CoverThemeId]) {
+      const theme = COVER_THEMES[dataToApply.themeId as CoverThemeId];
+      setCoverBackground(prev => ({
+        ...prev,
+        frontCoverColor: theme.bgGradStart,
+        frontCoverType: 'gradient',
+        frontCoverGradientStart: theme.bgGradStart,
+        frontCoverGradientEnd: theme.bgGradEnd,
+        backCoverColor: theme.bgGradStart,
+        backCoverType: 'gradient',
+        backCoverGradientStart: theme.bgGradStart,
+        backCoverGradientEnd: theme.bgGradEnd,
+      }));
+    }
+    setBookMeta(dataToApply);
+    setPendingAutoAlign(dataToApply);
+    handleTabChange('cover');
+  };
+
+  const handleInteriorChange = ({ pageCount: newPages, trimSize: newTrim }: { pageCount: number; trimSize: any }) => {
+    setBookMeta(prev => ({
+      ...prev,
+      pageCount: newPages || prev.pageCount,
+      trimSize: newTrim || prev.trimSize
+    }));
+  };
 
   const [coverBackground, setCoverBackground] = useState({
     backCoverColor: '#0F172A',
@@ -484,7 +540,8 @@ export default function MasterStudioApp() {
                 ...coverBackground
               }}
               initialPages={notebookInitialPages ?? undefined}
-              onOpenCoverStudio={() => handleTabChange('cover')}
+              onOpenCoverStudio={(syncData) => handleOpenCoverStudio(syncData)}
+              onInteriorChange={(info) => handleInteriorChange(info)}
             />
           </InteriorErrorBoundary>
         </div>
@@ -521,6 +578,9 @@ export default function MasterStudioApp() {
                 onSaveWorkspace={(elements) => {
                   setCoverElements(elements);
                 }}
+                bookMeta={bookMeta}
+                pendingAutoAlign={pendingAutoAlign}
+                onClearAutoAlign={() => setPendingAutoAlign(null)}
               />
             </CoverStudioErrorBoundary>
           )}

@@ -38,6 +38,15 @@ import {
   KdpMetadataResult
 } from "@/app/utils/bookMetadataGenerator";
 
+export interface BookCoverSyncData {
+  title: string;
+  subtitle: string;
+  author: string;
+  trimSize: { label: string; w: number; h: number };
+  pageCount: number;
+  themeId?: CoverThemeId;
+}
+
 interface FullBookPackagerModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -45,7 +54,7 @@ interface FullBookPackagerModalProps {
   selectedTrim: { label: string; w: number; h: number };
   borderTheme?: BorderThemeId;
   isPremium?: boolean;
-  onOpenCoverStudio?: () => void;
+  onOpenCoverStudio?: (syncData?: BookCoverSyncData) => void;
   coverStudioCanvasDataUrl?: string;
 }
 
@@ -701,7 +710,14 @@ export default function FullBookPackagerModal({
                         type="button"
                         onClick={() => {
                           onClose();
-                          onOpenCoverStudio();
+                          onOpenCoverStudio({
+                            title,
+                            subtitle,
+                            author,
+                            trimSize: selectedTrim,
+                            pageCount: Math.max(24, bookPages.length),
+                            themeId: selectedTheme,
+                          });
                         }}
                         className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                       >

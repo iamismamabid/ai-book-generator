@@ -40,6 +40,8 @@ import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
 import ByokNewsBanner from "@/components/ByokNewsBanner";
 import ByokStudioPanel from "@/components/ByokStudioPanel";
 import CoverExportPaywallModal from "@/components/CoverExportPaywallModal";
+import { BookCoverSyncData } from "@/components/FullBookPackagerModal";
+import { COVER_THEMES, CoverThemeId } from "@/app/utils/autoCoverGenerator";
 import { checkPremiumStatus, saveAccountUploadedAsset, getAccountUploadedAssets, deleteAccountUploadedAsset } from "@/app/actions";
 import { saveUserUploadsToIndexedDB, loadUserUploadsFromIndexedDB } from "@/lib/indexedDbStorage";
 
@@ -682,6 +684,9 @@ interface FabricCoverStudioProps {
   setSnapToGrid: (snap: boolean) => void;
   initialElements: any[];
   onSaveWorkspace: (serializedJson: any) => void;
+  bookMeta?: BookCoverSyncData;
+  pendingAutoAlign?: BookCoverSyncData | null;
+  onClearAutoAlign?: () => void;
 }
 
 const serializeToLegacyElements = (fCanvas: fabric.Canvas): any[] => {
@@ -879,7 +884,10 @@ export default function FabricCoverStudio({
   snapToGrid,
   setSnapToGrid,
   initialElements,
-  onSaveWorkspace
+  onSaveWorkspace,
+  bookMeta,
+  pendingAutoAlign,
+  onClearAutoAlign
 }: FabricCoverStudioProps) {
   // Safe defaults for incoming props to prevent any undefined access during hydration or corrupted draft loads
   const safeCoverBackground = coverBackground || {
@@ -4941,6 +4949,227 @@ export default function FabricCoverStudio({
 
   refitSpineTextRef.current = () => alignTextToSpine();
 
+  // Toast notification state for auto-alignment feedback
+  const [autoAlignToast, setAutoAlignToast] = useState<string | null>(null);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const showAutoAlignToast = useCallback((msg: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setAutoAlignToast(msg);
+    toastTimerRef.current = setTimeout(() => setAutoAlignToast(null), 4500);
+  }, []);
+
+  // Auto-align Book Title, Subtitle, Author, and Dimensions from interior metadata
+  const handleAutoAlignBookDetails = useCallback((customMeta?: Partial<BookCoverSyncData>) => {
+    if (!canvas || !isCanvasAlive(canvas)) return;
+
+    const activeMeta = {
+      title: customMeta?.title || bookMeta?.title || "The Ultimate Variety Puzzle Book for Adults",
+      subtitle: customMeta?.subtitle || bookMeta?.subtitle || "Large Print Brain Games with Complete Solutions Included",
+      author: customMeta?.author || bookMeta?.author || "KDPage Publishing",
+      pageCount: customMeta?.pageCount || bookMeta?.pageCount || pageCount,
+      trimSize: customMeta?.trimSize || bookMeta?.trimSize || trimSize,
+      themeId: customMeta?.themeId || bookMeta?.themeId,
+    };
+
+    // 1. Synchronize Trim Size & Page Count
+    if (activeMeta.trimSize && (trimSize.w !== activeMeta.trimSize.w || trimSize.h !== activeMeta.trimSize.h)) {
+      setTrimSize(activeMeta.trimSize);
+    }
+    if (activeMeta.pageCount && pageCount !== activeMeta.pageCount) {
+      setPageCount(activeMeta.pageCount);
+    }
+
+    const frontWidth = layout.frontLiveRightPx - layout.frontLiveLeftPx;
+    const frontHeight = layout.frontLiveBottomPx - layout.frontLiveTopPx;
+    const centerX = layout.frontCoverCenterPx;
+
+    const theme = activeMeta.themeId && COVER_THEMES[activeMeta.themeId as CoverThemeId]
+      ? COVER_THEMES[activeMeta.themeId as CoverThemeId]
+      : null;
+
+    const titleColor = theme?.textColor || "#FFFFFF";
+    const subtitleColor = theme?.subtitleColor || "#CBD5E1";
+    const authorColor = theme?.accentColor || "#F59E0B";
+
+    loadGoogleFontFamilies(["Montserrat", "Outfit", "Lora", "Bebas Neue"]);
+
+    const objs = canvas.getObjects();
+    const existingTitle = objs.find((o: any) => o.id === "cover-book-title" || ((o.type === 'textbox' || o.type === 'i-text') && o.top < layout.canvasHeight * 0.35 && o.left > layout.spineRightPx && o.id !== "cover-book-subtitle"));
+    const existingSubtitle = objs.find((o: any) => o.id === "cover-book-subtitle");
+    const existingAuthor = objs.find((o: any) => o.id === "cover-book-author" || ((o.type === 'textbox' || o.type === 'i-text') && o.top > layout.canvasHeight * 0.75 && o.left > layout.spineRightPx && o.id !== "cover-book-title"));
+    const existingSpine = objs.find((o: any) => o.id === "cover-spine-text" || (typeof o.id === 'string' && o.id.startsWith("spine-text")));
+
+    const titleLen = activeMeta.title.length;
+    const titleFontSize = Math.min(48, Math.max(24, Math.round(frontWidth / (titleLen > 30 ? 18 : titleLen > 18 ? 14 : 10))));
+
+    // 2. Align or Create Book Title
+    if (existingTitle) {
+      existingTitle.set({
+        text: activeMeta.title,
+        left: centerX,
+        top: Math.round(layout.frontLiveTopPx + frontHeight * 0.16),
+        originX: "center",
+        originY: "center",
+        textAlign: "center",
+        width: Math.round(frontWidth * 0.88),
+        dirty: true,
+      } as any);
+      (existingTitle as any).id = "cover-book-title";
+    } else {
+      const titleObj = new fabric.Textbox(activeMeta.title, {
+        id: "cover-book-title",
+        left: centerX,
+        top: Math.round(layout.frontLiveTopPx + frontHeight * 0.16),
+        originX: "center",
+        originY: "center",
+        width: Math.round(frontWidth * 0.88),
+        fontSize: titleFontSize,
+        fontFamily: "Montserrat",
+        fontWeight: "bold",
+        fill: titleColor,
+        textAlign: "center",
+        lineHeight: 1.15,
+        shadow: new fabric.Shadow({
+          color: "rgba(0,0,0,0.5)",
+          blur: 10,
+          offsetX: 0,
+          offsetY: 2
+        })
+      } as any);
+      canvas.add(titleObj);
+    }
+
+    // 3. Align or Create Subtitle
+    if (activeMeta.subtitle) {
+      const subFontSize = Math.min(22, Math.max(13, Math.round(frontWidth / 28)));
+      if (existingSubtitle) {
+        existingSubtitle.set({
+          text: activeMeta.subtitle,
+          left: centerX,
+          top: Math.round(layout.frontLiveTopPx + frontHeight * 0.32),
+          originX: "center",
+          originY: "center",
+          textAlign: "center",
+          width: Math.round(frontWidth * 0.84),
+          dirty: true,
+        } as any);
+        (existingSubtitle as any).id = "cover-book-subtitle";
+      } else {
+        const subObj = new fabric.Textbox(activeMeta.subtitle, {
+          id: "cover-book-subtitle",
+          left: centerX,
+          top: Math.round(layout.frontLiveTopPx + frontHeight * 0.32),
+          originX: "center",
+          originY: "center",
+          width: Math.round(frontWidth * 0.84),
+          fontSize: subFontSize,
+          fontFamily: "Outfit",
+          fill: subtitleColor,
+          textAlign: "center",
+          lineHeight: 1.25,
+          shadow: new fabric.Shadow({
+            color: "rgba(0,0,0,0.35)",
+            blur: 6,
+            offsetX: 0,
+            offsetY: 2
+          })
+        } as any);
+        canvas.add(subObj);
+      }
+    }
+
+    // 4. Align or Create Author Name
+    if (activeMeta.author) {
+      const authorFontSize = Math.min(24, Math.max(15, Math.round(frontWidth / 24)));
+      if (existingAuthor) {
+        existingAuthor.set({
+          text: activeMeta.author,
+          left: centerX,
+          top: Math.round(layout.frontLiveBottomPx - frontHeight * 0.08),
+          originX: "center",
+          originY: "center",
+          textAlign: "center",
+          width: Math.round(frontWidth * 0.8),
+          dirty: true,
+        } as any);
+        (existingAuthor as any).id = "cover-book-author";
+      } else {
+        const authorObj = new fabric.Textbox(activeMeta.author, {
+          id: "cover-book-author",
+          left: centerX,
+          top: Math.round(layout.frontLiveBottomPx - frontHeight * 0.08),
+          originX: "center",
+          originY: "center",
+          width: Math.round(frontWidth * 0.8),
+          fontSize: authorFontSize,
+          fontFamily: "Montserrat",
+          fontWeight: "bold",
+          fill: authorColor,
+          textAlign: "center",
+          shadow: new fabric.Shadow({
+            color: "rgba(0,0,0,0.35)",
+            blur: 6,
+            offsetX: 0,
+            offsetY: 2
+          })
+        } as any);
+        canvas.add(authorObj);
+      }
+    }
+
+    // 5. Spine Text (KDP Rule: <80 pages has no spine text because spine is too thin <0.13" / 0.054")
+    if (activeMeta.pageCount < 80) {
+      if (existingSpine) {
+        canvas.remove(existingSpine);
+      }
+    } else if (layout.spineWidthPx >= 20) {
+      const spineLabel = `${activeMeta.title}  •  ${activeMeta.author}`;
+      if (existingSpine) {
+        existingSpine.set({
+          text: spineLabel,
+          left: layout.spineCenterPx,
+          top: layout.canvasHeight / 2,
+          angle: 90,
+          originX: "center",
+          originY: "center",
+          dirty: true,
+        } as any);
+        fitSpineTextObject(existingSpine as any);
+      } else {
+        const spineObj = new fabric.IText(spineLabel, {
+          id: "cover-spine-text",
+          left: layout.spineCenterPx,
+          top: layout.canvasHeight / 2,
+          angle: 90,
+          originX: "center",
+          originY: "center",
+          fontFamily: "Arial",
+          fontSize: 24,
+          fontWeight: "bold",
+          fill: "#FFFFFF",
+          textAlign: "center",
+        } as any);
+        canvas.add(spineObj);
+        fitSpineTextObject(spineObj);
+      }
+    }
+
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
+    saveStateRef.current?.();
+
+    showAutoAlignToast(`✓ Auto-aligned: ${activeMeta.trimSize.label} • ${activeMeta.pageCount} Pages • Spine: ${layout.spineWidth.toFixed(3)}" • Titles Synced`);
+  }, [canvas, bookMeta, pageCount, trimSize, layout, showAutoAlignToast]);
+
+  // Watch for incoming pendingAutoAlign trigger
+  useEffect(() => {
+    if (pendingAutoAlign && canvas && isCanvasAlive(canvas)) {
+      handleAutoAlignBookDetails(pendingAutoAlign);
+      onClearAutoAlign?.();
+    }
+  }, [pendingAutoAlign, canvas, handleAutoAlignBookDetails, onClearAutoAlign]);
+
   const addBarcodePlaceholder = () => {
     if (!canvas) return;
     
@@ -7312,6 +7541,28 @@ export default function FabricCoverStudio({
             </div>
 
             <div className="space-y-4">
+              {/* Auto-Align Quick Card */}
+              <div className="p-3.5 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-slate-50 border border-amber-500/30 rounded-2xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 fill-amber-500 text-amber-500" /> Book Interior Sync
+                  </span>
+                  <span className="text-[9px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200">
+                    {pageCount}p • {trimSize.w}"x{trimSize.h}"
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium leading-snug">
+                  Auto-align Title, Subtitle &amp; Author centered on cover with exact Amazon KDP margins.
+                </p>
+                <button
+                  onClick={() => handleAutoAlignBookDetails()}
+                  className="w-full py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+                  <span>Auto-Align Book Details</span>
+                </button>
+              </div>
+
               {/* Text Layer */}
               <div>
                 <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">Text Styles</span>
@@ -8843,20 +9094,39 @@ export default function FabricCoverStudio({
 
       {/* 3. FABRIC WORKSPACE */}
       <div className="flex-1 bg-slate-100 flex flex-col items-center justify-start p-3 sm:p-6 md:p-8 relative overflow-auto min-w-0">
+        {/* Floating Toast for Auto-Align confirmation */}
+        {autoAlignToast && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[99999] bg-slate-900/95 backdrop-blur-md text-white border border-amber-500/60 shadow-2xl rounded-2xl px-5 py-3 text-xs font-black tracking-wide flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200">
+            <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
+            <span>{autoAlignToast}</span>
+          </div>
+        )}
+
         {/* Top Header Controls: Trim Badge & Action Toolbar with clean vertical spacing */}
         <div className="flex flex-col items-center gap-2.5 mb-4 z-20 shrink-0 select-none max-w-full min-h-[86px]">
-          {/* Spine details helper with direct click to open Settings */}
-          <button
-            onClick={() => setActiveToolTab('settings')}
-            title="Click to edit Page Count, Trim Size or Paper Type"
-            className="bg-slate-950/90 hover:bg-slate-900 px-4 py-2 rounded-full border border-slate-800 hover:border-amber-500/50 text-[10px] sm:text-xs font-black uppercase text-amber-400 tracking-widest shadow-md text-center truncate transition-all cursor-pointer flex items-center gap-2"
-          >
-            <span>Trim Size: {trimSize.w}" x {trimSize.h}"</span>
-            <span className="text-slate-600">•</span>
-            <span className="text-white bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">📄 {pageCount} Pages</span>
-            <span className="text-slate-600">•</span>
-            <span>Spine: {layout.spineWidth.toFixed(3)}"</span>
-          </button>
+          {/* Spine details helper with direct click to open Settings and Auto-Align button */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button
+              onClick={() => setActiveToolTab('settings')}
+              title="Click to edit Page Count, Trim Size or Paper Type"
+              className="bg-slate-950/90 hover:bg-slate-900 px-4 py-2 rounded-full border border-slate-800 hover:border-amber-500/50 text-[10px] sm:text-xs font-black uppercase text-amber-400 tracking-widest shadow-md text-center truncate transition-all cursor-pointer flex items-center gap-2"
+            >
+              <span>Trim: {trimSize.w}" x {trimSize.h}"</span>
+              <span className="text-slate-600">•</span>
+              <span className="text-white bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">📄 {pageCount} Pages</span>
+              <span className="text-slate-600">•</span>
+              <span>Spine: {layout.spineWidth.toFixed(3)}" {pageCount < 80 ? '(No Text)' : ''}</span>
+            </button>
+
+            <button
+              onClick={() => handleAutoAlignBookDetails()}
+              title="Auto-align canvas with current Book Title, Subtitle, Author, and Dimensions"
+              className="px-3.5 py-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-[10px] sm:text-xs font-black uppercase tracking-wider shadow-md hover:shadow-amber-500/20 active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+              <span>Auto-Align from Interior</span>
+            </button>
+          </div>
 
           {/* Global Canvas Control Bar */}
           <div className="flex items-center gap-2 sm:gap-3 bg-white py-2 px-4 rounded-full border border-slate-200/80 shadow-md max-w-full overflow-x-auto">

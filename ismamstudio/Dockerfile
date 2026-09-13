@@ -18,6 +18,8 @@ ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 ENV DIRECT_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_dummy"
 ENV CLERK_SECRET_KEY="sk_test_dummy"
+ENV SKIP_ENV_VALIDATION="true"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npx prisma generate
 

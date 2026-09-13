@@ -18,7 +18,11 @@ import {
   Palette,
   ExternalLink,
   Tag,
-  DollarSign
+  Upload,
+  Image as ImageIcon,
+  Brush,
+  Trash2,
+  ArrowRight
 } from "lucide-react";
 import JSZip from "jszip";
 import confetti from "canvas-confetti";
@@ -41,6 +45,8 @@ interface FullBookPackagerModalProps {
   selectedTrim: { label: string; w: number; h: number };
   borderTheme?: BorderThemeId;
   isPremium?: boolean;
+  onOpenCoverStudio?: () => void;
+  coverStudioCanvasDataUrl?: string;
 }
 
 type PackagingStep =
@@ -54,16 +60,27 @@ type PackagingStep =
   | "done"
   | "error";
 
+type CoverMode = "theme" | "upload" | "coverstudio";
+
 export default function FullBookPackagerModal({
   isOpen,
   onClose,
   bookPages,
   selectedTrim,
   borderTheme,
-  isPremium = true
+  isPremium = true,
+  onOpenCoverStudio,
+  coverStudioCanvasDataUrl
 }: FullBookPackagerModalProps) {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"preview" | "cover" | "metadata">("preview");
+
+  // Cover design mode: theme, upload, or coverstudio
+  const [coverMode, setCoverMode] = useState<CoverMode>(
+    coverStudioCanvasDataUrl ? "coverstudio" : "theme"
+  );
+  const [uploadedCoverImage, setUploadedCoverImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Book Customization State
   const initialMetadata = useMemo(() => {
@@ -91,7 +108,7 @@ export default function FullBookPackagerModal({
     setMounted(true);
   }, []);
 
-  // Update initial title/subtitle if bookPages changes
+  // Sync initial metadata when pages change
   useEffect(() => {
     const meta = generateKdpMetadata({
       bookPages,
@@ -101,6 +118,20 @@ export default function FullBookPackagerModal({
     setSubtitle(meta.subtitle);
     setAuthor(meta.author);
   }, [bookPages, selectedTrim]);
+
+  // Handle image upload
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setUploadedCoverImage(dataUrl);
+      setCoverMode("upload");
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Compute live metadata based on current title/subtitle/author
   const currentMetadata: KdpMetadataResult = useMemo(() => {
@@ -113,7 +144,7 @@ export default function FullBookPackagerModal({
     });
   }, [bookPages, title, subtitle, author, selectedTrim]);
 
-  // Generate real-time preview of cover and 3D mockup whenever title, theme, or author changes
+  // Generate real-time preview of cover and 3D mockup
   useEffect(() => {
     let cancelled = false;
 
@@ -129,7 +160,9 @@ export default function FullBookPackagerModal({
           trimWidth: selectedTrim.w,
           trimHeight: selectedTrim.h,
           themeId: selectedTheme,
-          dpi: 150 // Faster preview rendering
+          dpi: 150, // Faster preview
+          frontCoverImageUrl: coverMode === "upload" ? (uploadedCoverImage || undefined) : undefined,
+          customFullCoverDataUrl: coverMode === "coverstudio" ? (coverStudioCanvasDataUrl || undefined) : undefined,
         });
         if (!cancelled) {
           setCoverPackage(pkg);
@@ -141,12 +174,23 @@ export default function FullBookPackagerModal({
       }
     }
 
-    const timer = setTimeout(updatePreview, 350);
+    const timer = setTimeout(updatePreview, 300);
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [isOpen, title, subtitle, author, selectedTheme, selectedTrim, bookPages.length]);
+  }, [
+    isOpen,
+    title,
+    subtitle,
+    author,
+    selectedTheme,
+    selectedTrim,
+    bookPages.length,
+    coverMode,
+    uploadedCoverImage,
+    coverStudioCanvasDataUrl
+  ]);
 
   if (!isOpen || !mounted) return null;
 
@@ -167,12 +211,11 @@ export default function FullBookPackagerModal({
     setStep("specs");
 
     try {
-      // 1. Calculate KDP Specs
       await new Promise((r) => setTimeout(r, 200));
 
       // 2. Compile Interior PDF
       setStep("interior");
-      let activeIsPremium = true;
+      let activeIsPremium = isPremium ?? true;
       try {
         const { checkPremiumStatus } = await import("@/app/actions");
         const res = await checkPremiumStatus();
@@ -206,7 +249,9 @@ export default function FullBookPackagerModal({
         trimWidth: selectedTrim.w,
         trimHeight: selectedTrim.h,
         themeId: selectedTheme,
-        dpi: 300 // Full 300 DPI for Amazon KDP
+        dpi: 300,
+        frontCoverImageUrl: coverMode === "upload" ? (uploadedCoverImage || undefined) : undefined,
+        customFullCoverDataUrl: coverMode === "coverstudio" ? (coverStudioCanvasDataUrl || undefined) : undefined,
       });
 
       // 4. Generate Metadata Cheatsheet
@@ -226,24 +271,19 @@ export default function FullBookPackagerModal({
       // 6. Zip into single package
       setStep("zipping");
       const zip = new JSZip();
-
-      // Clean file naming
       const safeTitle = title.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 30);
 
-      // Add the 4 core deliverables
       zip.file(`Interior_Print_Ready_${selectedTrim.w}x${selectedTrim.h}.pdf`, interiorBlob);
       zip.file(`Cover_Print_Ready_300DPI_${selectedTrim.w}x${selectedTrim.h}.pdf`, fullCoverResult.coverPdfBlob);
       zip.file(`Amazon_KDP_Metadata_Cheatsheet.txt`, meta.cheatsheetText);
       zip.file(`3D_Marketing_Mockup.png`, fullCoverResult.mockupPngBlob);
 
-      // Generate the final ZIP blob
       const zipBlob = await zip.generateAsync({
         type: "blob",
         compression: "DEFLATE",
         compressionOptions: { level: 6 }
       });
 
-      // Trigger automatic download
       const downloadUrl = URL.createObjectURL(zipBlob);
       const downloadAnchor = document.createElement("a");
       downloadAnchor.href = downloadUrl;
@@ -253,7 +293,6 @@ export default function FullBookPackagerModal({
       document.body.removeChild(downloadAnchor);
       URL.revokeObjectURL(downloadUrl);
 
-      // Finish & Celebrate
       setStep("done");
       try {
         confetti({
@@ -262,7 +301,7 @@ export default function FullBookPackagerModal({
           origin: { y: 0.6 }
         });
       } catch {
-        // Confetti is purely decorative
+        // decorative
       }
     } catch (err: any) {
       console.error("1-Click Packaging Failed:", err);
@@ -279,7 +318,7 @@ export default function FullBookPackagerModal({
       <div
         className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-5xl w-full my-auto overflow-hidden shadow-2xl flex flex-col relative animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxHeight: "92vh" }}
+        style={{ maxHeight: "94vh" }}
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
@@ -304,7 +343,7 @@ export default function FullBookPackagerModal({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -318,7 +357,7 @@ export default function FullBookPackagerModal({
             <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800 self-start">
               <button
                 onClick={() => setActiveTab("preview")}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition ${
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer ${
                   activeTab === "preview"
                     ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -328,7 +367,7 @@ export default function FullBookPackagerModal({
               </button>
               <button
                 onClick={() => setActiveTab("cover")}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition ${
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer ${
                   activeTab === "cover"
                     ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -338,7 +377,7 @@ export default function FullBookPackagerModal({
               </button>
               <button
                 onClick={() => setActiveTab("metadata")}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition ${
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer ${
                   activeTab === "metadata"
                     ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -405,7 +444,6 @@ export default function FullBookPackagerModal({
             {/* Tab Content 3: Metadata Preview */}
             {activeTab === "metadata" && (
               <div className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 flex flex-col space-y-3 overflow-y-auto max-h-[360px]">
-                {/* 7 Keywords Grid */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
@@ -415,7 +453,7 @@ export default function FullBookPackagerModal({
                       onClick={() =>
                         copyToClipboard(currentMetadata.keywords.join(", "), "all_kw")
                       }
-                      className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                      className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       {copiedKey === "all_kw" ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                       Copy All
@@ -433,7 +471,7 @@ export default function FullBookPackagerModal({
                         </span>
                         <button
                           onClick={() => copyToClipboard(kw, `kw_${i}`)}
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition"
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition cursor-pointer"
                           title="Copy keyword"
                         >
                           {copiedKey === `kw_${i}` ? (
@@ -447,7 +485,6 @@ export default function FullBookPackagerModal({
                   </div>
                 </div>
 
-                {/* Categories & Pricing */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800">
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 rounded-xl">
                     <span className="text-[9px] font-black uppercase text-slate-400 block mb-1">
@@ -493,94 +530,245 @@ export default function FullBookPackagerModal({
             </div>
           </div>
 
-          {/* Right Column: Customization & 1-Click Action (5 cols) */}
+          {/* Right Column: Cover Design Source & Settings (5 cols) */}
           <div className="lg:col-span-5 flex flex-col space-y-4">
+            {/* Cover Source Selector (Hybrid Solution) */}
+            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-3.5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                  Choose Cover Source
+                </span>
+                <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                  3 Design Modes
+                </span>
+              </div>
+
+              {/* 3 Mode Pills */}
+              <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-200/60 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setCoverMode("theme")}
+                  className={`py-2 px-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex flex-col items-center gap-1 transition cursor-pointer ${
+                    coverMode === "theme"
+                      ? "bg-white dark:bg-slate-800 text-amber-500 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <Palette className="w-3.5 h-3.5" />
+                  <span>10 Themes</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCoverMode("upload")}
+                  className={`py-2 px-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex flex-col items-center gap-1 transition cursor-pointer ${
+                    coverMode === "upload"
+                      ? "bg-white dark:bg-slate-800 text-amber-500 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload Art</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCoverMode("coverstudio")}
+                  className={`py-2 px-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex flex-col items-center gap-1 transition cursor-pointer ${
+                    coverMode === "coverstudio"
+                      ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <Brush className="w-3.5 h-3.5" />
+                  <span>Cover Studio</span>
+                </button>
+              </div>
+
+              {/* Cover Mode A: 10 Designer Themes */}
+              {coverMode === "theme" && (
+                <div className="space-y-2 pt-1 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
+                    <span>Select Designer Palette</span>
+                    <span className="text-amber-500 font-semibold">{COVER_THEMES[selectedTheme]?.name} ({COVER_THEMES[selectedTheme]?.badge})</span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-1.5 max-h-[140px] overflow-y-auto p-1">
+                    {(Object.keys(COVER_THEMES) as CoverThemeId[]).map((themeKey) => {
+                      const t = COVER_THEMES[themeKey];
+                      const isSelected = selectedTheme === themeKey;
+                      return (
+                        <button
+                          key={themeKey}
+                          type="button"
+                          onClick={() => setSelectedTheme(themeKey)}
+                          className={`flex flex-col items-center p-1.5 rounded-xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? "border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/10 scale-105"
+                              : "border-slate-200 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-600 bg-white dark:bg-slate-900"
+                          }`}
+                          title={`${t.name} - ${t.badge}`}
+                        >
+                          <div
+                            className="w-5 h-5 rounded-full shadow-sm mb-1 border border-white/20"
+                            style={{
+                              background: `linear-gradient(135deg, ${t.bgGradStart}, ${t.accentColor})`
+                            }}
+                          />
+                          <span className="text-[7.5px] font-black uppercase tracking-tighter truncate w-full text-center text-slate-600 dark:text-slate-400">
+                            {t.name.split(" ")[0]}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Cover Mode B: Upload Image / AI Art */}
+              {coverMode === "upload" && (
+                <div className="space-y-2 pt-1 animate-in fade-in duration-150">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png, image/jpeg, image/webp"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+
+                  {uploadedCoverImage ? (
+                    <div className="flex items-center gap-3 p-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                      <img
+                        src={uploadedCoverImage}
+                        alt="Front Cover"
+                        className="w-12 h-14 object-cover rounded-lg shadow-sm border border-slate-200 dark:border-slate-700"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block truncate">
+                          Custom Artwork Loaded
+                        </span>
+                        <span className="text-[10px] text-emerald-500 font-semibold block">
+                          ✓ Auto-wraps to 300 DPI Front Cover
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-amber-500 transition cursor-pointer"
+                        title="Change image"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUploadedCoverImage(null)}
+                        className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-500 hover:bg-rose-100 transition cursor-pointer"
+                        title="Remove image"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full py-4 px-4 border-2 border-dashed border-amber-500/40 hover:border-amber-500 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 flex flex-col items-center justify-center gap-1.5 transition cursor-pointer text-center group"
+                    >
+                      <Upload className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Upload Front Cover / AI Artwork
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-semibold">
+                        PNG, JPG or WebP (Midjourney, KDPage AI, or Canva Art)
+                      </span>
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Cover Mode C: Cover Studio Direct Integration */}
+              {coverMode === "coverstudio" && (
+                <div className="space-y-2.5 pt-1 animate-in fade-in duration-150">
+                  <div className="p-3 bg-indigo-950/40 border border-indigo-800/60 rounded-2xl text-xs space-y-2">
+                    <div className="flex items-center gap-2 text-indigo-400 font-bold">
+                      <Brush className="w-4 h-4" />
+                      <span>Fabric Canvas Studio Integration</span>
+                    </div>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">
+                      Design your front, spine, and back cover using Fabric Canvas tools (freeform text, layers, stickers, custom fonts, and photos).
+                    </p>
+                    {onOpenCoverStudio ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          onOpenCoverStudio();
+                        }}
+                        className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                      >
+                        <span>Open &amp; Edit in Cover Studio</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <p className="text-[10px] text-amber-400 font-semibold">
+                        Switch to the &quot;Cover Studio&quot; tab in the top navigation anytime to visually edit.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Book Info Form */}
-            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 space-y-3">
+            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-3.5 space-y-2.5">
               <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Palette className="w-3.5 h-3.5 text-amber-500" /> Book &amp; Cover Settings
+                <Palette className="w-3.5 h-3.5 text-amber-500" /> Book Titles &amp; Author
               </h3>
 
               {/* Title */}
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">
+                <label className="block text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">
                   Book Title
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 shadow-sm"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 shadow-sm"
                   placeholder="The Ultimate Puzzle Book..."
                 />
               </div>
 
               {/* Subtitle */}
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">
+                <label className="block text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">
                   Subtitle
                 </label>
                 <input
                   type="text"
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-amber-500 shadow-sm"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:border-amber-500 shadow-sm"
                   placeholder="Large Print Brain Games with Complete Solutions..."
                 />
               </div>
 
               {/* Author */}
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">
+                <label className="block text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">
                   Author / Pen Name
                 </label>
                 <input
                   type="text"
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 shadow-sm"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 shadow-sm"
                   placeholder="KDPage Press"
                 />
-              </div>
-
-              {/* Theme Palette Selector */}
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                  Designer Cover Palette
-                </label>
-                <div className="grid grid-cols-5 gap-2">
-                  {(Object.keys(COVER_THEMES) as CoverThemeId[]).map((themeKey) => {
-                    const t = COVER_THEMES[themeKey];
-                    const isSelected = selectedTheme === themeKey;
-                    return (
-                      <button
-                        key={themeKey}
-                        onClick={() => setSelectedTheme(themeKey)}
-                        className={`flex flex-col items-center p-2 rounded-xl border transition-all cursor-pointer ${
-                          isSelected
-                            ? "border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/10 scale-105"
-                            : "border-slate-200 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-600 bg-white dark:bg-slate-900"
-                        }`}
-                        title={t.name}
-                      >
-                        <div
-                          className="w-6 h-6 rounded-full shadow-md mb-1 border border-white/20"
-                          style={{
-                            background: `linear-gradient(135deg, ${t.bgGradStart}, ${t.accentColor})`
-                          }}
-                        />
-                        <span className="text-[8px] font-black uppercase tracking-tighter truncate w-full text-center text-slate-600 dark:text-slate-400">
-                          {t.name.split(" ")[0]}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
               </div>
             </div>
 
             {/* KDP Specifications Calculator Card */}
-            <div className="bg-slate-900 text-white rounded-2xl p-4 border border-slate-800 space-y-2.5 shadow-lg">
+            <div className="bg-slate-900 text-white rounded-2xl p-3.5 border border-slate-800 space-y-2 shadow-lg">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> KDP Exact Calculations
@@ -608,13 +796,6 @@ export default function FullBookPackagerModal({
                   <span className="font-black text-emerald-300">{fullCoverWidth}&quot; × {fullCoverHeight}&quot;</span>
                 </div>
               </div>
-
-              {bookPages.length < 24 && (
-                <div className="flex items-center gap-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[10px] text-amber-400 font-semibold">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>KDP requires 24+ pages for paperback. We will output 24-page spine sizing.</span>
-                </div>
-              )}
             </div>
 
             {/* Packaging Progress Status */}
@@ -659,7 +840,6 @@ export default function FullBookPackagerModal({
                 boxShadow: "0 10px 30px -5px rgba(245, 158, 11, 0.4)"
               }}
             >
-              {/* Glossy light effect */}
               <div className="absolute inset-0 w-1/2 h-full bg-white/30 transform -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 pointer-events-none" />
 
               {step !== "idle" && step !== "done" && step !== "error" ? (

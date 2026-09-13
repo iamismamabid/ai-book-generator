@@ -484,6 +484,7 @@ export default function MasterStudioApp() {
                 ...coverBackground
               }}
               initialPages={notebookInitialPages ?? undefined}
+              onOpenCoverStudio={() => handleTabChange('cover')}
             />
           </InteriorErrorBoundary>
         </div>

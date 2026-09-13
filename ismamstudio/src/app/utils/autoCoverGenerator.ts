@@ -6,7 +6,12 @@ export type CoverThemeId =
   | "cyber_indigo"
   | "royal_emerald"
   | "crimson_sunset"
-  | "clean_slate";
+  | "clean_slate"
+  | "vintage_kraft"
+  | "botanical_sage"
+  | "bold_bestseller"
+  | "playful_family"
+  | "dark_mystery";
 
 export interface CoverThemeConfig {
   id: CoverThemeId;
@@ -21,13 +26,14 @@ export interface CoverThemeConfig {
   borderColor: string;
   pillBg: string;
   pillText: string;
+  patternType?: "diamonds" | "stripes" | "dots" | "circles" | "vintage";
 }
 
 export const COVER_THEMES: Record<CoverThemeId, CoverThemeConfig> = {
   midnight_gold: {
     id: "midnight_gold",
     name: "Midnight Gold",
-    badge: "Most Popular",
+    badge: "Luxury",
     bgGradStart: "#090d16",
     bgGradEnd: "#1e293b",
     accentColor: "#f59e0b",
@@ -37,11 +43,12 @@ export const COVER_THEMES: Record<CoverThemeId, CoverThemeConfig> = {
     borderColor: "#d97706",
     pillBg: "rgba(245, 158, 11, 0.15)",
     pillText: "#fbbf24",
+    patternType: "diamonds",
   },
   cyber_indigo: {
     id: "cyber_indigo",
     name: "Cyber Indigo",
-    badge: "Modern Tech",
+    badge: "Brain Games",
     bgGradStart: "#09090b",
     bgGradEnd: "#312e81",
     accentColor: "#6366f1",
@@ -51,6 +58,7 @@ export const COVER_THEMES: Record<CoverThemeId, CoverThemeConfig> = {
     borderColor: "#4f46e5",
     pillBg: "rgba(99, 102, 241, 0.2)",
     pillText: "#818cf8",
+    patternType: "diamonds",
   },
   royal_emerald: {
     id: "royal_emerald",
@@ -65,6 +73,7 @@ export const COVER_THEMES: Record<CoverThemeId, CoverThemeConfig> = {
     borderColor: "#059669",
     pillBg: "rgba(16, 185, 129, 0.2)",
     pillText: "#34d399",
+    patternType: "dots",
   },
   crimson_sunset: {
     id: "crimson_sunset",
@@ -79,6 +88,7 @@ export const COVER_THEMES: Record<CoverThemeId, CoverThemeConfig> = {
     borderColor: "#ea580c",
     pillBg: "rgba(249, 115, 22, 0.2)",
     pillText: "#fb923c",
+    patternType: "stripes",
   },
   clean_slate: {
     id: "clean_slate",
@@ -93,6 +103,82 @@ export const COVER_THEMES: Record<CoverThemeId, CoverThemeConfig> = {
     borderColor: "#52525b",
     pillBg: "rgba(56, 189, 248, 0.15)",
     pillText: "#7dd3fc",
+    patternType: "dots",
+  },
+  vintage_kraft: {
+    id: "vintage_kraft",
+    name: "Vintage Kraft",
+    badge: "Classic Paper",
+    bgGradStart: "#292524",
+    bgGradEnd: "#44403c",
+    accentColor: "#d97706",
+    accentLight: "#fef3c7",
+    textColor: "#fafaf9",
+    subtitleColor: "#e7e5e4",
+    borderColor: "#b45309",
+    pillBg: "rgba(217, 119, 6, 0.18)",
+    pillText: "#fcd34d",
+    patternType: "vintage",
+  },
+  botanical_sage: {
+    id: "botanical_sage",
+    name: "Botanical Sage",
+    badge: "Nature Calm",
+    bgGradStart: "#064e3b",
+    bgGradEnd: "#14532d",
+    accentColor: "#86efac",
+    accentLight: "#f0fdf4",
+    textColor: "#ffffff",
+    subtitleColor: "#bbf7d0",
+    borderColor: "#22c55e",
+    pillBg: "rgba(134, 239, 172, 0.18)",
+    pillText: "#86efac",
+    patternType: "dots",
+  },
+  bold_bestseller: {
+    id: "bold_bestseller",
+    name: "Bold Bestseller",
+    badge: "Top Seller",
+    bgGradStart: "#000000",
+    bgGradEnd: "#171717",
+    accentColor: "#facc15",
+    accentLight: "#fef08a",
+    textColor: "#ffffff",
+    subtitleColor: "#fde047",
+    borderColor: "#eab308",
+    pillBg: "rgba(250, 204, 21, 0.22)",
+    pillText: "#fde047",
+    patternType: "stripes",
+  },
+  playful_family: {
+    id: "playful_family",
+    name: "Playful Activity",
+    badge: "Kids & Family",
+    bgGradStart: "#0369a1",
+    bgGradEnd: "#0284c7",
+    accentColor: "#facc15",
+    accentLight: "#ffffff",
+    textColor: "#ffffff",
+    subtitleColor: "#e0f2fe",
+    borderColor: "#38bdf8",
+    pillBg: "rgba(250, 204, 21, 0.25)",
+    pillText: "#fef08a",
+    patternType: "circles",
+  },
+  dark_mystery: {
+    id: "dark_mystery",
+    name: "Dark Academia",
+    badge: "Crosswords",
+    bgGradStart: "#1c1917",
+    bgGradEnd: "#292524",
+    accentColor: "#fbbf24",
+    accentLight: "#fef3c7",
+    textColor: "#ffffff",
+    subtitleColor: "#d6d3d1",
+    borderColor: "#d97706",
+    pillBg: "rgba(251, 191, 36, 0.15)",
+    pillText: "#fcd34d",
+    patternType: "vintage",
   },
 };
 
@@ -106,6 +192,8 @@ export interface AutoCoverOptions {
   themeId?: CoverThemeId;
   paperType?: "white" | "cream" | "color";
   dpi?: number;
+  frontCoverImageUrl?: string; // Optional uploaded image or AI artwork for front cover
+  customFullCoverDataUrl?: string; // Optional full wraparound cover exported from Fabric Cover Studio
 }
 
 export interface GeneratedCoverPackage {
@@ -122,6 +210,16 @@ export interface GeneratedCoverPackage {
     bleedInches: number;
     pageCount: number;
   };
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = (e) => reject(e);
+    img.src = src;
+  });
 }
 
 /**
@@ -172,6 +270,8 @@ export async function generateFullKdpCover(
     themeId = "midnight_gold",
     paperType = "white",
     dpi = 300,
+    frontCoverImageUrl,
+    customFullCoverDataUrl,
   } = options;
 
   const theme = COVER_THEMES[themeId] || COVER_THEMES.midnight_gold;
@@ -216,361 +316,444 @@ export async function generateFullKdpCover(
   const frontCoverWidth = trimWidth * scale;
   const frontCoverRight = frontCoverLeft + frontCoverWidth;
 
-  // 1. Draw Background Gradient across the entire wraparound sheet
-  const bgGrad = ctx.createLinearGradient(0, 0, canvasWidth, canvasHeight);
-  bgGrad.addColorStop(0, theme.bgGradStart);
-  bgGrad.addColorStop(0.5, theme.bgGradEnd);
-  bgGrad.addColorStop(1, theme.bgGradStart);
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-  // Subtle geometric background texture pattern (diamonds)
-  ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
-  ctx.lineWidth = 2;
-  const step = 80;
-  for (let x = -canvasHeight; x < canvasWidth + canvasHeight; x += step) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x + canvasHeight, canvasHeight);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x + canvasHeight, 0);
-    ctx.lineTo(x, canvasHeight);
-    ctx.stroke();
-  }
-  ctx.restore();
-
   // -------------------------------------------------------------
-  // BACK COVER (Left Page)
+  // BRANCH A: CUSTOM COVER FROM COVER STUDIO
   // -------------------------------------------------------------
-  const backCenter = backCoverLeft + backCoverWidth / 2;
-  const backLiveLeft = backCoverLeft + 0.375 * scale;
-  const backLiveRight = backCoverRight - 0.375 * scale;
-  const backLiveWidth = backLiveRight - backLiveLeft;
+  if (customFullCoverDataUrl) {
+    try {
+      const fullImg = await loadImage(customFullCoverDataUrl);
+      ctx.drawImage(fullImg, 0, 0, canvasWidth, canvasHeight);
+    } catch (e) {
+      console.warn("Failed to load custom full cover image, falling back to generator:", e);
+    }
+  } else {
+    // -------------------------------------------------------------
+    // BRANCH B: PROCEDURAL DESIGNER COVER (with optional front image)
+    // -------------------------------------------------------------
+    // 1. Draw Background Gradient across the entire wraparound sheet
+    const bgGrad = ctx.createLinearGradient(0, 0, canvasWidth, canvasHeight);
+    bgGrad.addColorStop(0, theme.bgGradStart);
+    bgGrad.addColorStop(0.5, theme.bgGradEnd);
+    bgGrad.addColorStop(1, theme.bgGradStart);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-  // Back decorative border
-  ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(
-    backLiveLeft,
-    trimTopPx + 0.375 * scale,
-    backLiveWidth,
-    trimHeight * scale - 0.75 * scale
-  );
-  ctx.restore();
-
-  // Back Header Tag
-  ctx.font = `bold ${Math.round(28 * (scale / 300))}px sans-serif`;
-  ctx.fillStyle = theme.accentColor;
-  ctx.textAlign = "center";
-  ctx.fillText(
-    "WHY YOU WILL LOVE THIS BOOK",
-    backCenter,
-    trimTopPx + 1.2 * scale
-  );
-
-  // Back Subtitle
-  ctx.font = `${Math.round(20 * (scale / 300))}px sans-serif`;
-  ctx.fillStyle = theme.subtitleColor;
-  ctx.fillText(
-    "Designed for Hours of Screen-Free Entertainment & Brain Agility",
-    backCenter,
-    trimTopPx + 1.5 * scale
-  );
-
-  // Bullet points
-  const bullets = [
-    "Large Print Format: Easy on the eyes, perfect for adults and seniors",
-    "Handcrafted Layout: Clear grids with ample margin room to solve comfortably",
-    "Complete Solutions Included: Full answer keys provided at the back",
-    "Mind Sharpening: Boosts memory, deductive logic, and cognitive focus",
-    "Thoughtful Gift: Ideal for daily relaxation, vacations, and travel",
-  ];
-
-  ctx.textAlign = "left";
-  let bulletY = trimTopPx + 2.2 * scale;
-  const bulletStartX = backLiveLeft + 0.5 * scale;
-  const bulletMaxWidth = backLiveWidth - 1.0 * scale;
-
-  bullets.forEach((b) => {
-    // Bullet check badge
-    ctx.beginPath();
-    ctx.arc(bulletStartX, bulletY - 6, 12, 0, Math.PI * 2);
-    ctx.fillStyle = theme.accentColor;
-    ctx.fill();
-
-    ctx.font = `bold ${Math.round(14 * (scale / 300))}px sans-serif`;
-    ctx.fillStyle = "#000000";
-    ctx.textAlign = "center";
-    ctx.fillText("✓", bulletStartX, bulletY - 2);
-
-    // Bullet text
-    ctx.font = `${Math.round(20 * (scale / 300))}px sans-serif`;
-    ctx.fillStyle = "#f8fafc";
-    ctx.textAlign = "left";
-    const lines = wrapText(ctx, b, bulletMaxWidth);
-    lines.forEach((line, idx) => {
-      ctx.fillText(line, bulletStartX + 26, bulletY + idx * 30);
-    });
-    bulletY += lines.length * 30 + 35;
-  });
-
-  // Amazon KDP Barcode Box on Back Cover (Bottom Right)
-  // Standard KDP barcode reserve area: 2.0" wide by 1.2" tall
-  const barcodeW = 2.0 * scale;
-  const barcodeH = 1.2 * scale;
-  const barcodeX = backCoverRight - 0.4 * scale - barcodeW;
-  const barcodeY = trimBottomPx - 0.4 * scale - barcodeH;
-
-  ctx.save();
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(barcodeX, barcodeY, barcodeW, barcodeH);
-  ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(barcodeX, barcodeY, barcodeW, barcodeH);
-
-  // Barcode mock stripes
-  ctx.fillStyle = "#1e293b";
-  const numStripes = 28;
-  const stripeStep = barcodeW / numStripes;
-  for (let s = 2; s < numStripes - 2; s += 2) {
-    const sWidth = (s % 3 === 0 ? 4 : 2) * (scale / 300);
-    ctx.fillRect(barcodeX + s * stripeStep, barcodeY + 16, sWidth, barcodeH - 45);
-  }
-  ctx.font = `bold ${Math.round(12 * (scale / 300))}px monospace`;
-  ctx.textAlign = "center";
-  ctx.fillText("AMAZON KDP BARCODE ZONE", barcodeX + barcodeW / 2, barcodeY + barcodeH - 12);
-  ctx.restore();
-
-  // Publisher Branding (Bottom Left)
-  ctx.font = `bold ${Math.round(15 * (scale / 300))}px sans-serif`;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-  ctx.textAlign = "left";
-  ctx.fillText("PUBLISHED BY KDPAGE STUDIO", backLiveLeft + 0.5 * scale, trimBottomPx - 0.8 * scale);
-
-  // -------------------------------------------------------------
-  // SPINE (Center Strip)
-  // -------------------------------------------------------------
-  // Spine fold shadows
-  ctx.save();
-  ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(spineLeft, 0);
-  ctx.lineTo(spineLeft, canvasHeight);
-  ctx.moveTo(spineRight, 0);
-  ctx.lineTo(spineRight, canvasHeight);
-  ctx.stroke();
-
-  // Subtle spine inner shadow
-  const spineShade = ctx.createLinearGradient(spineLeft, 0, spineRight, 0);
-  spineShade.addColorStop(0, "rgba(0,0,0,0.35)");
-  spineShade.addColorStop(0.5, "rgba(255,255,255,0.05)");
-  spineShade.addColorStop(1, "rgba(0,0,0,0.35)");
-  ctx.fillStyle = spineShade;
-  ctx.fillRect(spineLeft, 0, spineWidth, canvasHeight);
-
-  // Vertical spine text if spine is wide enough (>= 0.15" or >= 70 pages)
-  if (spineWidthInches >= 0.14) {
+    // Decorative texture pattern
     ctx.save();
-    ctx.translate(spineCenter, canvasHeight / 2);
-    ctx.rotate(Math.PI / 2); // KDP spine text reads top to bottom
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.035)";
+    ctx.lineWidth = 2;
 
-    const spineFontSize = Math.min(
-      Math.max(12, Math.round(spineWidth * 0.45)),
-      Math.round(24 * (scale / 300))
-    );
-    ctx.font = `bold ${spineFontSize}px sans-serif`;
-    ctx.fillStyle = theme.textColor;
-    ctx.textAlign = "center";
-
-    const spineText = `${title.toUpperCase()}  —  ${author.toUpperCase()}`;
-    ctx.fillText(spineText, 0, spineFontSize * 0.35);
+    if (theme.patternType === "dots") {
+      const step = 60;
+      for (let x = 0; x < canvasWidth; x += step) {
+        for (let y = 0; y < canvasHeight; y += step) {
+          ctx.beginPath();
+          ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+          ctx.fill();
+        }
+      }
+    } else if (theme.patternType === "stripes") {
+      const step = 80;
+      for (let x = -canvasHeight; x < canvasWidth; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + canvasHeight, canvasHeight);
+        ctx.stroke();
+      }
+    } else if (theme.patternType === "circles") {
+      for (let i = 0; i < 15; i++) {
+        const cx = (i * 270) % canvasWidth;
+        const cy = (i * 350) % canvasHeight;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 90 + (i % 3) * 40, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    } else {
+      // Default: Diamond trellis
+      const step = 80;
+      for (let x = -canvasHeight; x < canvasWidth + canvasHeight; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + canvasHeight, canvasHeight);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + canvasHeight, 0);
+        ctx.lineTo(x, canvasHeight);
+        ctx.stroke();
+      }
+    }
     ctx.restore();
-  }
-  ctx.restore();
 
-  // -------------------------------------------------------------
-  // FRONT COVER (Right Page)
-  // -------------------------------------------------------------
-  const frontCenter = frontCoverLeft + frontCoverWidth / 2;
-  const frontLiveLeft = frontCoverLeft + 0.375 * scale;
-  const frontLiveRight = frontCoverRight - 0.375 * scale;
-  const frontLiveWidth = frontLiveRight - frontLiveLeft;
+    // -------------------------------------------------------------
+    // BACK COVER (Left Page)
+    // -------------------------------------------------------------
+    const backCenter = backCoverLeft + backCoverWidth / 2;
+    const backLiveLeft = backCoverLeft + 0.375 * scale;
+    const backLiveRight = backCoverRight - 0.375 * scale;
+    const backLiveWidth = backLiveRight - backLiveLeft;
 
-  // Front Double Gold/Accent Border
-  ctx.save();
-  ctx.strokeStyle = theme.borderColor;
-  ctx.lineWidth = 6;
-  ctx.strokeRect(
-    frontLiveLeft,
-    trimTopPx + 0.375 * scale,
-    frontLiveWidth,
-    trimHeight * scale - 0.75 * scale
-  );
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(
-    frontLiveLeft + 16,
-    trimTopPx + 0.375 * scale + 16,
-    frontLiveWidth - 32,
-    trimHeight * scale - 0.75 * scale - 32
-  );
-  ctx.restore();
-
-  // Top Badge (e.g. "★ LARGE PRINT EDITION ★")
-  const badgeY = trimTopPx + 1.2 * scale;
-  ctx.save();
-  ctx.font = `bold ${Math.round(20 * (scale / 300))}px sans-serif`;
-  const badgeText = "★ ALL-IN-ONE LARGE PRINT EDITION ★";
-  const badgeW = ctx.measureText(badgeText).width + 50;
-  const badgeH = 44;
-  ctx.fillStyle = theme.pillBg;
-  ctx.fillRect(frontCenter - badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH);
-  ctx.strokeStyle = theme.accentColor;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(frontCenter - badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH);
-
-  ctx.fillStyle = theme.pillText;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(badgeText, frontCenter, badgeY);
-  ctx.restore();
-
-  // Main Book Title (Large, Eye-catching)
-  ctx.save();
-  let titleFontSize = Math.round(62 * (scale / 300));
-  ctx.font = `900 ${titleFontSize}px sans-serif`;
-  ctx.fillStyle = theme.textColor;
-  ctx.textAlign = "center";
-
-  // Wrap title lines
-  const titleMaxWidth = frontLiveWidth - 1.2 * scale;
-  let titleLines = wrapText(ctx, title.toUpperCase(), titleMaxWidth);
-  if (titleLines.length > 3) {
-    titleFontSize = Math.round(48 * (scale / 300));
-    ctx.font = `900 ${titleFontSize}px sans-serif`;
-    titleLines = wrapText(ctx, title.toUpperCase(), titleMaxWidth);
-  }
-
-  const titleStartY = trimTopPx + 2.5 * scale;
-  const titleLineHeight = titleFontSize * 1.15;
-
-  titleLines.forEach((line, idx) => {
-    // Elegant drop shadow
-    ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 4;
-    ctx.shadowOffsetY = 4;
-    ctx.fillText(line, frontCenter, titleStartY + idx * titleLineHeight);
-  });
-  ctx.restore();
-
-  // Decorative Golden Divider Line
-  const dividerY = titleStartY + titleLines.length * titleLineHeight + 20;
-  ctx.save();
-  ctx.strokeStyle = theme.accentColor;
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(frontCenter - 140, dividerY);
-  ctx.lineTo(frontCenter + 140, dividerY);
-  ctx.stroke();
-
-  // Diamond center ornament
-  ctx.fillStyle = theme.accentColor;
-  ctx.beginPath();
-  ctx.moveTo(frontCenter, dividerY - 10);
-  ctx.lineTo(frontCenter + 10, dividerY);
-  ctx.lineTo(frontCenter, dividerY + 10);
-  ctx.lineTo(frontCenter - 10, dividerY);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-
-  // Subtitle
-  ctx.save();
-  const subtitleFontSize = Math.round(24 * (scale / 300));
-  ctx.font = `bold ${subtitleFontSize}px sans-serif`;
-  ctx.fillStyle = theme.subtitleColor;
-  ctx.textAlign = "center";
-  const subtitleLines = wrapText(ctx, subtitle, frontLiveWidth - 1.4 * scale);
-  const subtitleStartY = dividerY + 55;
-  subtitleLines.forEach((line, idx) => {
-    ctx.fillText(line, frontCenter, subtitleStartY + idx * (subtitleFontSize * 1.3));
-  });
-  ctx.restore();
-
-  // Central Visual Puzzle Motif / Artwork Graphic
-  const motifCenterY = (trimTopPx + trimHeight * scale) * 0.65;
-  ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(frontCenter - 160, motifCenterY - 110, 320, 220);
-
-  // Mini decorative grid preview inside motif
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-  ctx.lineWidth = 1;
-  const gridSize = 32;
-  for (let gx = frontCenter - 160; gx <= frontCenter + 160; gx += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(gx, motifCenterY - 110);
-    ctx.lineTo(gx, motifCenterY + 110);
-    ctx.stroke();
-  }
-  for (let gy = motifCenterY - 110; gy <= motifCenterY + 110; gy += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(frontCenter - 160, gy);
-    ctx.lineTo(frontCenter + 160, gy);
-    ctx.stroke();
-  }
-
-  // Highlight badge in center of motif
-  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-  ctx.fillRect(frontCenter - 120, motifCenterY - 35, 240, 70);
-  ctx.strokeStyle = theme.accentColor;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(frontCenter - 120, motifCenterY - 35, 240, 70);
-
-  ctx.font = `900 ${Math.round(28 * (scale / 300))}px sans-serif`;
-  ctx.fillStyle = theme.accentLight;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(`${actualPages} PAGES`, frontCenter, motifCenterY);
-  ctx.restore();
-
-  // Feature Badges at Bottom
-  const badgesY = trimBottomPx - 1.8 * scale;
-  const featureBadges = ["SOLUTIONS INCLUDED", "300 DPI VECTOR HD", "PREMIUM PAPER"];
-  const totalBadgesW = 3 * 180 + 2 * 20;
-  let currentBadgeX = frontCenter - totalBadgesW / 2 + 90;
-
-  featureBadges.forEach((b) => {
+    // Back decorative border
     ctx.save();
-    ctx.fillStyle = theme.pillBg;
-    ctx.fillRect(currentBadgeX - 85, badgesY - 20, 170, 40);
-    ctx.strokeStyle = theme.accentColor;
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(currentBadgeX - 85, badgesY - 20, 170, 40);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(
+      backLiveLeft,
+      trimTopPx + 0.375 * scale,
+      backLiveWidth,
+      trimHeight * scale - 0.75 * scale
+    );
+    ctx.restore();
 
-    ctx.font = `bold ${Math.round(12 * (scale / 300))}px sans-serif`;
+    // Back Header Tag
+    ctx.font = `bold ${Math.round(28 * (scale / 300))}px sans-serif`;
+    ctx.fillStyle = theme.accentColor;
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "WHY YOU WILL LOVE THIS BOOK",
+      backCenter,
+      trimTopPx + 1.2 * scale
+    );
+
+    // Back Subtitle
+    ctx.font = `${Math.round(20 * (scale / 300))}px sans-serif`;
+    ctx.fillStyle = theme.subtitleColor;
+    ctx.fillText(
+      "Designed for Hours of Screen-Free Entertainment & Brain Agility",
+      backCenter,
+      trimTopPx + 1.5 * scale
+    );
+
+    // Bullet points
+    const bullets = [
+      "Large Print Format: Easy on the eyes, perfect for adults and seniors",
+      "Handcrafted Layout: Clear grids with ample margin room to solve comfortably",
+      "Complete Solutions Included: Full answer keys provided at the back",
+      "Mind Sharpening: Boosts memory, deductive logic, and cognitive focus",
+      "Thoughtful Gift: Ideal for daily relaxation, vacations, and travel",
+    ];
+
+    ctx.textAlign = "left";
+    let bulletY = trimTopPx + 2.2 * scale;
+    const bulletStartX = backLiveLeft + 0.5 * scale;
+    const bulletMaxWidth = backLiveWidth - 1.0 * scale;
+
+    bullets.forEach((b) => {
+      // Bullet check badge
+      ctx.beginPath();
+      ctx.arc(bulletStartX, bulletY - 6, 12, 0, Math.PI * 2);
+      ctx.fillStyle = theme.accentColor;
+      ctx.fill();
+
+      ctx.font = `bold ${Math.round(14 * (scale / 300))}px sans-serif`;
+      ctx.fillStyle = "#000000";
+      ctx.textAlign = "center";
+      ctx.fillText("✓", bulletStartX, bulletY - 2);
+
+      // Bullet text
+      ctx.font = `${Math.round(20 * (scale / 300))}px sans-serif`;
+      ctx.fillStyle = "#f8fafc";
+      ctx.textAlign = "left";
+      const lines = wrapText(ctx, b, bulletMaxWidth);
+      lines.forEach((line, idx) => {
+        ctx.fillText(line, bulletStartX + 26, bulletY + idx * 30);
+      });
+      bulletY += lines.length * 30 + 35;
+    });
+
+    // Amazon KDP Barcode Box on Back Cover (Bottom Right)
+    const barcodeW = 2.0 * scale;
+    const barcodeH = 1.2 * scale;
+    const barcodeX = backCoverRight - 0.4 * scale - barcodeW;
+    const barcodeY = trimBottomPx - 0.4 * scale - barcodeH;
+
+    ctx.save();
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(barcodeX, barcodeY, barcodeW, barcodeH);
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(barcodeX, barcodeY, barcodeW, barcodeH);
+
+    // Barcode mock stripes
+    ctx.fillStyle = "#1e293b";
+    const numStripes = 28;
+    const stripeStep = barcodeW / numStripes;
+    for (let s = 2; s < numStripes - 2; s += 2) {
+      const sWidth = (s % 3 === 0 ? 4 : 2) * (scale / 300);
+      ctx.fillRect(barcodeX + s * stripeStep, barcodeY + 16, sWidth, barcodeH - 45);
+    }
+    ctx.font = `bold ${Math.round(12 * (scale / 300))}px monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText("AMAZON KDP BARCODE ZONE", barcodeX + barcodeW / 2, barcodeY + barcodeH - 12);
+    ctx.restore();
+
+    // Publisher Branding (Bottom Left)
+    ctx.font = `bold ${Math.round(15 * (scale / 300))}px sans-serif`;
+    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.textAlign = "left";
+    ctx.fillText("PUBLISHED BY KDPAGE STUDIO", backLiveLeft + 0.5 * scale, trimBottomPx - 0.8 * scale);
+
+    // -------------------------------------------------------------
+    // SPINE (Center Strip)
+    // -------------------------------------------------------------
+    ctx.save();
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(spineLeft, 0);
+    ctx.lineTo(spineLeft, canvasHeight);
+    ctx.moveTo(spineRight, 0);
+    ctx.lineTo(spineRight, canvasHeight);
+    ctx.stroke();
+
+    // Spine shading
+    const spineShade = ctx.createLinearGradient(spineLeft, 0, spineRight, 0);
+    spineShade.addColorStop(0, "rgba(0,0,0,0.35)");
+    spineShade.addColorStop(0.5, "rgba(255,255,255,0.05)");
+    spineShade.addColorStop(1, "rgba(0,0,0,0.35)");
+    ctx.fillStyle = spineShade;
+    ctx.fillRect(spineLeft, 0, spineWidth, canvasHeight);
+
+    // Vertical spine text
+    if (spineWidthInches >= 0.14) {
+      ctx.save();
+      ctx.translate(spineCenter, canvasHeight / 2);
+      ctx.rotate(Math.PI / 2);
+
+      const spineFontSize = Math.min(
+        Math.max(12, Math.round(spineWidth * 0.45)),
+        Math.round(24 * (scale / 300))
+      );
+      ctx.font = `bold ${spineFontSize}px sans-serif`;
+      ctx.fillStyle = theme.textColor;
+      ctx.textAlign = "center";
+
+      const spineText = `${title.toUpperCase()}  —  ${author.toUpperCase()}`;
+      ctx.fillText(spineText, 0, spineFontSize * 0.35);
+      ctx.restore();
+    }
+    ctx.restore();
+
+    // -------------------------------------------------------------
+    // FRONT COVER (Right Page)
+    // -------------------------------------------------------------
+    const frontCenter = frontCoverLeft + frontCoverWidth / 2;
+    const frontLiveLeft = frontCoverLeft + 0.375 * scale;
+    const frontLiveRight = frontCoverRight - 0.375 * scale;
+    const frontLiveWidth = frontLiveRight - frontLiveLeft;
+
+    // Optional Uploaded Front Cover Image / AI Art
+    if (frontCoverImageUrl) {
+      try {
+        const frontImg = await loadImage(frontCoverImageUrl);
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(frontCoverLeft, 0, canvasWidth - frontCoverLeft, canvasHeight);
+        ctx.clip();
+
+        // Aspect-fill
+        const imgAspect = frontImg.width / frontImg.height;
+        const targetW = canvasWidth - frontCoverLeft;
+        const targetH = canvasHeight;
+        const targetAspect = targetW / targetH;
+        let drawW = targetW;
+        let drawH = targetH;
+        let drawX = frontCoverLeft;
+        let drawY = 0;
+
+        if (imgAspect > targetAspect) {
+          drawW = targetH * imgAspect;
+          drawX = frontCoverLeft - (drawW - targetW) / 2;
+        } else {
+          drawH = targetW / imgAspect;
+          drawY = -(drawH - targetH) / 2;
+        }
+
+        ctx.drawImage(frontImg, drawX, drawY, drawW, drawH);
+
+        // Readability gradient scrim
+        const overlayGrad = ctx.createLinearGradient(frontCoverLeft, 0, frontCoverLeft, canvasHeight);
+        overlayGrad.addColorStop(0, "rgba(0,0,0,0.72)");
+        overlayGrad.addColorStop(0.3, "rgba(0,0,0,0.1)");
+        overlayGrad.addColorStop(0.7, "rgba(0,0,0,0.2)");
+        overlayGrad.addColorStop(1, "rgba(0,0,0,0.85)");
+        ctx.fillStyle = overlayGrad;
+        ctx.fillRect(frontCoverLeft, 0, canvasWidth - frontCoverLeft, canvasHeight);
+        ctx.restore();
+      } catch (err) {
+        console.warn("Failed to draw uploaded front cover image:", err);
+      }
+    }
+
+    // Front Double Accent Border
+    ctx.save();
+    ctx.strokeStyle = theme.borderColor;
+    ctx.lineWidth = 6;
+    ctx.strokeRect(
+      frontLiveLeft,
+      trimTopPx + 0.375 * scale,
+      frontLiveWidth,
+      trimHeight * scale - 0.75 * scale
+    );
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(
+      frontLiveLeft + 16,
+      trimTopPx + 0.375 * scale + 16,
+      frontLiveWidth - 32,
+      trimHeight * scale - 0.75 * scale - 32
+    );
+    ctx.restore();
+
+    // Top Badge
+    const badgeY = trimTopPx + 1.2 * scale;
+    ctx.save();
+    ctx.font = `bold ${Math.round(20 * (scale / 300))}px sans-serif`;
+    const badgeText = "★ ALL-IN-ONE LARGE PRINT EDITION ★";
+    const badgeW = ctx.measureText(badgeText).width + 50;
+    const badgeH = 44;
+    ctx.fillStyle = theme.pillBg;
+    ctx.fillRect(frontCenter - badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH);
+    ctx.strokeStyle = theme.accentColor;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(frontCenter - badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH);
+
     ctx.fillStyle = theme.pillText;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(b, currentBadgeX, badgesY);
+    ctx.fillText(badgeText, frontCenter, badgeY);
     ctx.restore();
-    currentBadgeX += 190;
-  });
 
-  // Author Name (Bottom)
-  ctx.save();
-  ctx.font = `bold ${Math.round(22 * (scale / 300))}px sans-serif`;
-  ctx.fillStyle = "#ffffff";
-  ctx.textAlign = "center";
-  ctx.fillText(author.toUpperCase(), frontCenter, trimBottomPx - 0.8 * scale);
-  ctx.restore();
+    // Main Book Title
+    ctx.save();
+    let titleFontSize = Math.round(62 * (scale / 300));
+    ctx.font = `900 ${titleFontSize}px sans-serif`;
+    ctx.fillStyle = theme.textColor;
+    ctx.textAlign = "center";
+
+    const titleMaxWidth = frontLiveWidth - 1.2 * scale;
+    let titleLines = wrapText(ctx, title.toUpperCase(), titleMaxWidth);
+    if (titleLines.length > 3) {
+      titleFontSize = Math.round(48 * (scale / 300));
+      ctx.font = `900 ${titleFontSize}px sans-serif`;
+      titleLines = wrapText(ctx, title.toUpperCase(), titleMaxWidth);
+    }
+
+    const titleStartY = trimTopPx + 2.5 * scale;
+    const titleLineHeight = titleFontSize * 1.15;
+
+    titleLines.forEach((line, idx) => {
+      ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetX = 4;
+      ctx.shadowOffsetY = 4;
+      ctx.fillText(line, frontCenter, titleStartY + idx * titleLineHeight);
+    });
+    ctx.restore();
+
+    // Divider Line
+    const dividerY = titleStartY + titleLines.length * titleLineHeight + 20;
+    ctx.save();
+    ctx.strokeStyle = theme.accentColor;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(frontCenter - 140, dividerY);
+    ctx.lineTo(frontCenter + 140, dividerY);
+    ctx.stroke();
+
+    ctx.fillStyle = theme.accentColor;
+    ctx.beginPath();
+    ctx.moveTo(frontCenter, dividerY - 10);
+    ctx.lineTo(frontCenter + 10, dividerY);
+    ctx.lineTo(frontCenter, dividerY + 10);
+    ctx.lineTo(frontCenter - 10, dividerY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // Subtitle
+    ctx.save();
+    const subtitleFontSize = Math.round(24 * (scale / 300));
+    ctx.font = `bold ${subtitleFontSize}px sans-serif`;
+    ctx.fillStyle = theme.subtitleColor;
+    ctx.textAlign = "center";
+    const subtitleLines = wrapText(ctx, subtitle, frontLiveWidth - 1.4 * scale);
+    const subtitleStartY = dividerY + 55;
+    subtitleLines.forEach((line, idx) => {
+      ctx.fillText(line, frontCenter, subtitleStartY + idx * (subtitleFontSize * 1.3));
+    });
+    ctx.restore();
+
+    // Central Visual Puzzle Motif (only if no front image is uploaded)
+    if (!frontCoverImageUrl) {
+      const motifCenterY = (trimTopPx + trimHeight * scale) * 0.65;
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(frontCenter - 160, motifCenterY - 110, 320, 220);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 1;
+      const gridSize = 32;
+      for (let gx = frontCenter - 160; gx <= frontCenter + 160; gx += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(gx, motifCenterY - 110);
+        ctx.lineTo(gx, motifCenterY + 110);
+        ctx.stroke();
+      }
+      for (let gy = motifCenterY - 110; gy <= motifCenterY + 110; gy += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(frontCenter - 160, gy);
+        ctx.lineTo(frontCenter + 160, gy);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+      ctx.fillRect(frontCenter - 120, motifCenterY - 35, 240, 70);
+      ctx.strokeStyle = theme.accentColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(frontCenter - 120, motifCenterY - 35, 240, 70);
+
+      ctx.font = `900 ${Math.round(28 * (scale / 300))}px sans-serif`;
+      ctx.fillStyle = theme.accentLight;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${actualPages} PAGES`, frontCenter, motifCenterY);
+      ctx.restore();
+    }
+
+    // Feature Badges at Bottom
+    const badgesY = trimBottomPx - 1.8 * scale;
+    const featureBadges = ["SOLUTIONS INCLUDED", "300 DPI VECTOR HD", "PREMIUM PAPER"];
+    const totalBadgesW = 3 * 180 + 2 * 20;
+    let currentBadgeX = frontCenter - totalBadgesW / 2 + 90;
+
+    featureBadges.forEach((b) => {
+      ctx.save();
+      ctx.fillStyle = theme.pillBg;
+      ctx.fillRect(currentBadgeX - 85, badgesY - 20, 170, 40);
+      ctx.strokeStyle = theme.accentColor;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(currentBadgeX - 85, badgesY - 20, 170, 40);
+
+      ctx.font = `bold ${Math.round(12 * (scale / 300))}px sans-serif`;
+      ctx.fillStyle = theme.pillText;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(b, currentBadgeX, badgesY);
+      ctx.restore();
+      currentBadgeX += 190;
+    });
+
+    // Author Name (Bottom)
+    ctx.save();
+    ctx.font = `bold ${Math.round(22 * (scale / 300))}px sans-serif`;
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.fillText(author.toUpperCase(), frontCenter, trimBottomPx - 0.8 * scale);
+    ctx.restore();
+  }
 
   // -------------------------------------------------------------
   // Extract Front Cover and Spine for 3D Mockup
@@ -644,10 +827,9 @@ export async function generateFullKdpCover(
   mockupCanvas.height = mHeight;
   const mctx = mockupCanvas.getContext("2d")!;
 
-  // Smooth transparent or dark studio backdrop
   mctx.clearRect(0, 0, mWidth, mHeight);
 
-  // Soft Elliptical Ground Drop Shadow
+  // Ground Drop Shadow
   mctx.save();
   mctx.beginPath();
   mctx.ellipse(mWidth * 0.52, mHeight * 0.88, 380, 55, -0.05, 0, Math.PI * 2);
@@ -666,8 +848,7 @@ export async function generateFullKdpCover(
   mctx.fill();
   mctx.restore();
 
-  // Book Coordinates for 3D Isometric / Angled Perspective
-  // Spine Face (Left Angled Quad)
+  // Book Coordinates for 3D Angled Perspective
   const bookH = 680;
   const spineW = Math.max(35, Math.min(85, spineWidthInches * 150));
   const frontW = 460;
@@ -677,7 +858,6 @@ export async function generateFullKdpCover(
   const spineBottomLeft = { x: 340, y: 220 + bookH };
   const spineBottomRight = { x: 340 + spineW, y: 190 + bookH };
 
-  // Front Cover Face (Right Angled Quad)
   const frontTopLeft = spineTopRight;
   const frontTopRight = { x: frontTopLeft.x + frontW, y: 270 };
   const frontBottomLeft = spineBottomRight;
@@ -694,7 +874,6 @@ export async function generateFullKdpCover(
   mctx.closePath();
   mctx.fill();
 
-  // Paper lines on edge
   mctx.strokeStyle = "rgba(100, 116, 139, 0.25)";
   mctx.lineWidth = 1;
   for (let py = frontTopRight.y - 10; py < frontBottomRight.y - 12; py += 4) {
@@ -715,7 +894,6 @@ export async function generateFullKdpCover(
   mctx.closePath();
   mctx.clip();
 
-  // Draw Spine Image stretched into angled box
   mctx.drawImage(
     spineCanvas,
     spineTopLeft.x,
@@ -724,7 +902,6 @@ export async function generateFullKdpCover(
     bookH + 40
   );
 
-  // Spine Shading Overlay
   const spineGrad = mctx.createLinearGradient(
     spineTopLeft.x,
     0,
@@ -748,7 +925,6 @@ export async function generateFullKdpCover(
   mctx.closePath();
   mctx.clip();
 
-  // Draw Front Cover Canvas
   mctx.drawImage(
     frontCanvas,
     frontTopLeft.x - 20,
@@ -757,7 +933,6 @@ export async function generateFullKdpCover(
     bookH + 90
   );
 
-  // Gloss Sheen & Depth Lighting Overlay
   const glossGrad = mctx.createLinearGradient(
     frontTopLeft.x,
     frontTopLeft.y,
@@ -771,7 +946,6 @@ export async function generateFullKdpCover(
   mctx.fillStyle = glossGrad;
   mctx.fillRect(frontTopLeft.x - 20, frontTopLeft.y, frontW + 40, bookH + 90);
 
-  // Soft spine crease line
   const creaseGrad = mctx.createLinearGradient(
     frontTopLeft.x,
     0,
@@ -784,7 +958,6 @@ export async function generateFullKdpCover(
   mctx.fillRect(frontTopLeft.x, frontTopLeft.y, 18, bookH + 90);
   mctx.restore();
 
-  // Convert Mockup Canvas to Blob and DataUrl
   const mockupDataUrl = mockupCanvas.toDataURL("image/png");
   const mockupPngBlob = await new Promise<Blob>((resolve) => {
     mockupCanvas.toBlob((blob) => {

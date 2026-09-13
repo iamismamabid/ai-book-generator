@@ -200,7 +200,15 @@ const TRIM_SIZES = [
   { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
 ];
 
-export default function BookBuilder({ coverState, initialPages }: { coverState?: any; initialPages?: any[] }) {
+export default function BookBuilder({
+  coverState,
+  initialPages,
+  onOpenCoverStudio
+}: {
+  coverState?: any;
+  initialPages?: any[];
+  onOpenCoverStudio?: () => void;
+}) {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
@@ -1549,6 +1557,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         bookPages={bookPages}
         selectedTrim={selectedTrim}
         borderTheme={borderTheme}
+        onOpenCoverStudio={onOpenCoverStudio}
       />
     )}
     {isVersionHistoryOpen && (

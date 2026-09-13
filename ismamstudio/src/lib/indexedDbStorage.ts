@@ -172,3 +172,25 @@ export async function loadBookDraftFromIndexedDB(): Promise<any[] | null> {
     return null;
   }
 }
+
+export async function clearBookDraftFromIndexedDB(): Promise<boolean> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(BOOK_STORE, "readwrite");
+      const store = tx.objectStore(BOOK_STORE);
+      const request = store.delete("current-book-draft");
+      request.onsuccess = () => {
+        db.close();
+        resolve(true);
+      };
+      request.onerror = () => {
+        db.close();
+        resolve(false);
+      };
+    });
+  } catch (e) {
+    console.warn("IndexedDB clear book failed:", e);
+    return false;
+  }
+}

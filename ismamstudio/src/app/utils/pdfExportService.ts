@@ -1214,6 +1214,10 @@ export const drawFullWidescreenCover = async (doc: any, coverState: any, pageWid
     }
     ctx.fillRect(spineLeft, 0, frontTotalWidth, height);
 
+    // Front cover boundaries (to the right of the spine)
+    const frontLeft = Math.floor(spineRightPx * scaleX);
+    const frontWidth = width - frontLeft;
+
     // 3. Draw Back Cover Background (with 1px overlap to guarantee solid contact)
     const backLeft = 0;
     const backWidth = Math.ceil(spineLeftPx * scaleX);

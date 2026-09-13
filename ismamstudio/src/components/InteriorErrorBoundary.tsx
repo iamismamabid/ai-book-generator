@@ -34,10 +34,16 @@ export default class InteriorErrorBoundary extends Component<Props, State> {
     }
   };
 
-  handleClearCorruptCacheAndReload = () => {
+  handleClearCorruptCacheAndReload = async () => {
     try {
       if (typeof window !== "undefined") {
         localStorage.removeItem("kdp-book-draft");
+        try {
+          const { clearBookDraftFromIndexedDB } = await import("@/lib/indexedDbStorage");
+          await clearBookDraftFromIndexedDB();
+        } catch (e) {
+          console.warn("Failed to clear IndexedDB draft:", e);
+        }
         window.location.reload();
       }
     } catch {

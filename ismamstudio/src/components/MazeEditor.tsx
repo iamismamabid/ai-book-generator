@@ -237,7 +237,7 @@ export function MazeEditor({ page, updatePage }: any) {
         </button>
 
         <button 
-          onClick={handleGenerate} 
+          onClick={() => handleGenerate()} 
           className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
         >
           <RefreshCw className="w-4 h-4"/> Generate Maze

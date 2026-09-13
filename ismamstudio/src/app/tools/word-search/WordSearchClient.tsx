@@ -687,7 +687,7 @@ export default function WordSearchStudio() {
                                                         setThemeLangFilter(lang.code);
                                                         if (selectedThemeId) {
                                                             const theme = WORD_SEARCH_THEMES.find(t => t.id === selectedThemeId);
-                                                            if (theme && lang.code !== "all" && (theme.language || "en") !== lang.code) {
+                                                            if (theme && (theme.language || "en") !== lang.code) {
                                                                 setSelectedThemeId("");
                                                             }
                                                         }

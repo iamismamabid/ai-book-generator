@@ -1560,9 +1560,18 @@ export async function deleteNotebookFolder(folderName: string) {
   }
 }
 
-// 📖 Fetch a single Notebook entry's saved data (used to restore it back into
-// the editor it was saved from — e.g. Book Builder reloading a saved bookPages array).
-export async function getNotebookEntryData(id: string) {
+export type NotebookEntryDataResult = {
+  success: boolean;
+  entry?: any;
+  title?: any;
+  subtitle?: any;
+  category?: any;
+  content?: any;
+  data?: any;
+  error?: string;
+};
+
+export async function getNotebookEntryData(id: string): Promise<NotebookEntryDataResult> {
   const { userId } = await auth();
   if (!userId) {
     return { success: false, error: "Unauthorized. Please sign in." };

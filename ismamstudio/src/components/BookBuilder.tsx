@@ -205,11 +205,10 @@ export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forc
           }
         }
         if (!targetQuote) {
-          const quotes = getBulkCryptogramQuotes(language, 12);
+          const quotes = getBulkCryptogramQuotes(12, [], (language as any) || "en");
           if (quotes.length > 0) {
             const item = quotes[Math.floor(Math.random() * quotes.length)];
-            targetQuote = item.quote.toUpperCase();
-            cfg.author = item.author;
+            targetQuote = item.toUpperCase();
           } else {
             targetQuote = DEFAULT_CRYPTOGRAM_QUOTES[Math.floor(Math.random() * DEFAULT_CRYPTOGRAM_QUOTES.length)];
           }
@@ -293,6 +292,7 @@ export default function BookBuilder({
   const [addModalCategory, setAddModalCategory] = useState<'all' | 'interior' | 'puzzle' | 'structure'>('all');
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isPackagerModalOpen, setIsPackagerModalOpen] = useState(false);
   const [includeCover, setIncludeCover] = useState(false);
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [gutterMargin, setGutterMargin] = useState(true);

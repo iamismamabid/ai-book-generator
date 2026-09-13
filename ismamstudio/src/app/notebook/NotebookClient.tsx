@@ -569,7 +569,7 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
                 </div>
 
                 <button
-                  onClick={() => handleCopyContent(selectedItem.content)}
+                  onClick={() => handleCopyContent(selectedItem.content || "")}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow-sm transition-all cursor-pointer"
                 >
                   {copied ? (

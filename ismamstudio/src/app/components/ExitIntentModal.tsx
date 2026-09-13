@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Sparkles, X, Copy, Check, ArrowRight, ShieldCheck, Tag, Gift } from "lucide-react";
 
+const STORAGE_KEY = "kdpage_exit_intent_seen_forever";
+
 export default function ExitIntentModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasCopied, setHasCopied] = useState(false);
@@ -12,7 +14,8 @@ export default function ExitIntentModal() {
   const closeModal = useCallback(() => {
     setIsOpen(false);
     try {
-      sessionStorage.setItem("kdpage_exit_intent_dismissed", "true");
+      localStorage.setItem(STORAGE_KEY, "true");
+      sessionStorage.setItem(STORAGE_KEY, "true");
     } catch {
       // Ignore storage errors
     }
@@ -30,9 +33,12 @@ export default function ExitIntentModal() {
   };
 
   useEffect(() => {
-    // Check if already dismissed this session
+    // Check if the user has EVER seen or dismissed this modal on this browser
     try {
-      if (sessionStorage.getItem("kdpage_exit_intent_dismissed") === "true") {
+      if (
+        localStorage.getItem(STORAGE_KEY) === "true" ||
+        sessionStorage.getItem(STORAGE_KEY) === "true"
+      ) {
         return;
       }
     } catch {
@@ -40,17 +46,23 @@ export default function ExitIntentModal() {
     }
 
     let minTimeElapsed = false;
-    // Don't trigger until user has spent at least 12 seconds on the site
+    // Don't trigger until user has spent at least 15 seconds on the site
     const timer = setTimeout(() => {
       minTimeElapsed = true;
-    }, 12000);
+    }, 15000);
 
     const handleMouseLeave = (e: MouseEvent) => {
+      try {
+        if (localStorage.getItem(STORAGE_KEY) === "true") return;
+      } catch {}
+
       // Trigger when cursor moves toward top browser bar (leaving the page)
-      if (minTimeElapsed && e.clientY <= 15) {
+      if (minTimeElapsed && e.clientY <= 10) {
         setIsOpen(true);
+        // Mark as permanently seen right when it opens so it NEVER appears again
         try {
-          sessionStorage.setItem("kdpage_exit_intent_dismissed", "true");
+          localStorage.setItem(STORAGE_KEY, "true");
+          sessionStorage.setItem(STORAGE_KEY, "true");
         } catch {}
       }
     };

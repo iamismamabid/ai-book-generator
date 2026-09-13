@@ -130,7 +130,7 @@ export default function ComparePage() {
               </p>
 
               {/* Dedicated Comparison Hub Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-4">
                 <Link
                   href="/compare/book-bolt"
                   className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 transition-all flex flex-col justify-between group"
@@ -138,6 +138,15 @@ export default function ComparePage() {
                   <span className="text-xs font-black text-indigo-400 uppercase tracking-wider">Alternative Guide</span>
                   <span className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors mt-1">KDPage vs Book Bolt →</span>
                   <span className="text-[11px] text-slate-400 mt-2 font-medium">Algorithmic uniqueness, spine calc &amp; pricing</span>
+                </Link>
+
+                <Link
+                  href="/compare/puzzle-publishers"
+                  className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-purple-500/50 transition-all flex flex-col justify-between group"
+                >
+                  <span className="text-xs font-black text-purple-400 uppercase tracking-wider">Modern Upgrade</span>
+                  <span className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors mt-1">KDPage vs Puzzle Pub →</span>
+                  <span className="text-[11px] text-slate-400 mt-2 font-medium">Cloud studio vs legacy desktop software</span>
                 </Link>
 
                 <Link
@@ -153,8 +162,8 @@ export default function ComparePage() {
                   href="/compare/tangent-templates"
                   className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-amber-500/50 transition-all flex flex-col justify-between group"
                 >
-                  <span className="text-xs font-black text-amber-400 uppercase tracking-wider">Modern Upgrade</span>
-                  <span className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors mt-1">Tangent Templates vs KDPage →</span>
+                  <span className="text-xs font-black text-amber-400 uppercase tracking-wider">Template Analysis</span>
+                  <span className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors mt-1">Tangent vs KDPage →</span>
                   <span className="text-[11px] text-slate-400 mt-2 font-medium">Interactive studios vs static templates</span>
                 </Link>
               </div>

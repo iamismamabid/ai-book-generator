@@ -73,6 +73,38 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.6,
         },
 
+        // ── Software Comparisons & Alternatives ─────────────────
+        {
+            url: `${baseUrl}/compare`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/compare/book-bolt`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/compare/puzzle-publishers`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/compare/canva`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.85,
+        },
+        {
+            url: `${baseUrl}/compare/tangent-templates`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.85,
+        },
+
         // ── Creation Studios ────────────────────────────────────
         {
             url: `${baseUrl}/studio`,

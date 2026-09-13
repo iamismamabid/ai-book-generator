@@ -15,6 +15,7 @@ import GeminiSupportAssistant from '@/components/GeminiSupportAssistant';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import JsonLdSchema from '@/components/JsonLdSchema';
 import InstantNavPrefetcher from '@/app/components/InstantNavPrefetcher';
+import ExitIntentModal from '@/app/components/ExitIntentModal';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
@@ -289,6 +290,7 @@ export default function RootLayout({
           <GeminiSupportAssistant />
           <TawkToChat />
           <CookieConsentBanner />
+          <ExitIntentModal />
           </ThemeProvider>
         </body>
       </html>

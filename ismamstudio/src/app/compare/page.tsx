@@ -130,7 +130,7 @@ export default function ComparePage() {
               </p>
 
               {/* Dedicated Comparison Hub Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-4">
                 <Link
                   href="/compare/book-bolt"
                   className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 transition-all flex flex-col justify-between group"
@@ -141,12 +141,30 @@ export default function ComparePage() {
                 </Link>
 
                 <Link
+                  href="/compare/publisher-rocket"
+                  className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-blue-500/50 transition-all flex flex-col justify-between group"
+                >
+                  <span className="text-xs font-black text-blue-400 uppercase tracking-wider">Creation vs Keywords</span>
+                  <span className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors mt-1">KDPage vs Publisher Rocket →</span>
+                  <span className="text-[11px] text-slate-400 mt-2 font-medium">All-in-one studio vs $199 keyword-only tool</span>
+                </Link>
+
+                <Link
+                  href="/compare/creative-fabrica"
+                  className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-rose-500/50 transition-all flex flex-col justify-between group"
+                >
+                  <span className="text-xs font-black text-rose-400 uppercase tracking-wider">Safety &amp; Uniqueness</span>
+                  <span className="text-sm font-bold text-white group-hover:text-rose-300 transition-colors mt-1">KDPage vs Creative Fabrica →</span>
+                  <span className="text-[11px] text-slate-400 mt-2 font-medium">0% duplicate content risk vs risky stock PDFs</span>
+                </Link>
+
+                <Link
                   href="/compare/puzzle-publishers"
                   className="p-4 rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-purple-500/50 transition-all flex flex-col justify-between group"
                 >
                   <span className="text-xs font-black text-purple-400 uppercase tracking-wider">Modern Upgrade</span>
                   <span className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors mt-1">KDPage vs Puzzle Pub →</span>
-                  <span className="text-[11px] text-slate-400 mt-2 font-medium">Cloud studio vs legacy desktop software</span>
+                  <span className="text-[11px] text-slate-400 mt-2 font-medium">Cloud studio vs $27/mo legacy desktop software</span>
                 </Link>
 
                 <Link

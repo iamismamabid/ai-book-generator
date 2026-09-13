@@ -17,6 +17,8 @@
 ## Software Comparisons & Alternatives
 
 - **Best Book Bolt Alternative** (https://www.kdpage.com/compare/book-bolt): Why publishers choose KDPage over Book Bolt ($19.99/mo) — deterministic unique puzzle generation, 300 DPI vector exports, live spine calculations, and more affordable pricing.
+- **Best Publisher Rocket Alternative** (https://www.kdpage.com/compare/publisher-rocket): Why authors choose KDPage over $199 keyword-only software — complete interior generation, automated cover studio, 12+ puzzle types, plus built-in keyword and royalty analytics.
+- **Best Creative Fabrica Alternative for KDP** (https://www.kdpage.com/compare/creative-fabrica): Why procedural algorithmic generation protects KDP accounts from duplicate content bans caused by static marketplace stock PDFs.
 - **Best Puzzle Publishers Alternative** (https://www.kdpage.com/compare/puzzle-publishers): Why KDPage is superior to legacy desktop software ($27/mo) — 100% cloud-based, all-in-one 100-page book compiler, and built-in cover designer.
 - **Best Canva Alternative for KDP** (https://www.kdpage.com/compare/canva): Why general tools like Canva cause Amazon print rejection errors due to manual spine math and missing bleed tolerances, and how KDPage automates compliance.
 - **Best Tangent Templates Alternative** (https://www.kdpage.com/compare/tangent-templates): Comparison between static legacy templates and KDPage's modern interactive studio suite.

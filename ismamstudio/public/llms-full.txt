@@ -51,6 +51,14 @@ KDPage provides more than 30 free tools that require zero user registration:
 - **Puzzle Engine:** Book Bolt provides static templates shared across thousands of users. KDPage uses algorithmic procedural generation with unique random seeds.
 - **Export Quality:** KDPage exports true 300 DPI vector SVG and PDF. Book Bolt exports rasterized images.
 
+### KDPage vs Publisher Rocket (https://www.kdpage.com/compare/publisher-rocket)
+- **Scope:** Publisher Rocket ($199 upfront) is strictly a keyword/category research tool with zero book creation or design capability. KDPage is an all-in-one studio that actually creates 100-page interior PDFs, wrap-around covers, and 12+ puzzle varieties while including essential Amazon keyword research tools.
+- **Cost:** KDPage offers 30+ free web tools and affordable Pro plans from $11.99/mo with zero steep upfront barrier.
+
+### KDPage vs Creative Fabrica (https://www.kdpage.com/compare/creative-fabrica)
+- **Amazon Duplicate Content Risk:** Creative Fabrica sells static templates downloaded and uploaded by thousands of users, triggering Amazon KDP account warnings and bans. KDPage uses 100% procedural generation—every puzzle arrangement is unique to the creator.
+- **Automation:** KDPage compiles complete multi-page manuscripts with solution keys and exact spine calculations in 1 click, eliminating hours of manual Canva assembly.
+
 ### KDPage vs Puzzle Publishers (https://www.kdpage.com/compare/puzzle-publishers)
 - **Architecture:** Puzzle Publishers uses dated, fragmented desktop software requiring local installations. KDPage is 100% browser-based.
 - **Book Assembly:** Puzzle Publishers outputs individual images that authors must manually place into PowerPoint or Canva. KDPage compiles complete 100-page interior PDFs with solution keys at the back with 1 click.

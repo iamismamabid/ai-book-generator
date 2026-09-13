@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import BookVersionHistoryModal from "./BookVersionHistoryModal";
+import FullBookPackagerModal from "./FullBookPackagerModal";
 import { BookVersion } from "@/lib/bookVersions";
 import { History, Plus, Trash2, FileDown, Copy, BookOpen, Settings2, Sparkles, X, Loader2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, AlertCircle, AlertTriangle, GripVertical, Info, Undo2, Redo2, Clipboard, ClipboardPaste, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -229,6 +230,7 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
 
   // Premium Export Modal States
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isPackagerModalOpen, setIsPackagerModalOpen] = useState(false);
   const [includeCover, setIncludeCover] = useState(false);
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [gutterMargin, setGutterMargin] = useState(true);
@@ -955,6 +957,25 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
             <span className="md:hidden text-[10px] font-black uppercase text-slate-700 dark:text-slate-300">Tools</span>
           </button>
 
+          {/* Golden Package Full KDP Book Action Button in Top Center/Right */}
+          {bookPages.length > 0 && (
+            <button
+              onClick={() => setIsPackagerModalOpen(true)}
+              className="pointer-events-auto hidden sm:flex items-center gap-2 px-4 py-2 rounded-full font-black text-xs uppercase tracking-wider text-slate-950 shadow-xl border border-yellow-300/80 transition-all duration-300 active:scale-95 cursor-pointer hover:brightness-105"
+              style={{
+                background: "linear-gradient(135deg, #f59e0b 0%, #fef08a 50%, #d97706 100%)",
+                boxShadow: "0 6px 20px -2px rgba(245, 158, 11, 0.45)",
+              }}
+              title="1-Click Full KDP Book Packager (Interior PDF + 300 DPI Cover + Metadata + 3D Mockup)"
+            >
+              <Sparkles className="w-4 h-4 fill-slate-950 animate-pulse" />
+              <span>Package Full KDP Book</span>
+              <span className="bg-slate-950 text-amber-400 text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase ml-0.5">
+                ZIP
+              </span>
+            </button>
+          )}
+
           {/* Mobile Quick Add Page Button in Header */}
           <button
             onClick={() => setIsAddModalOpen(true)}
@@ -1150,12 +1171,26 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
           {/* PDF Export Button (Step 3 Tour Target) */}
           <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800" data-tour="quick-export-pdf">
             {bookPages.length > 0 ? (
-              <button
-                onClick={() => setIsExportModalOpen(true)}
-                className="btn-premium-primary w-full py-3.5 normal-case text-sm"
-              >
-                <FileDown className="w-4 h-4" /> Configure &amp; Export PDF →
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setIsPackagerModalOpen(true)}
+                  className="w-full py-3 px-4 rounded-2xl font-black text-xs uppercase tracking-wider text-slate-950 transition-all duration-300 active:scale-[0.98] cursor-pointer shadow-lg flex items-center justify-center gap-2 border border-yellow-300/70 relative overflow-hidden group hover:brightness-105"
+                  style={{
+                    background: "linear-gradient(135deg, #f59e0b 0%, #fef08a 50%, #d97706 100%)",
+                    boxShadow: "0 4px 15px rgba(245, 158, 11, 0.35)",
+                  }}
+                >
+                  <Sparkles className="w-4 h-4 fill-slate-950 shrink-0" />
+                  <span>Package Full KDP Book (.ZIP)</span>
+                </button>
+
+                <button
+                  onClick={() => setIsExportModalOpen(true)}
+                  className="btn-premium-primary w-full py-2.5 normal-case text-xs"
+                >
+                  <FileDown className="w-3.5 h-3.5" /> Configure &amp; Export PDF →
+                </button>
+              </div>
             ) : (
               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 text-center py-2">
                 Add a page to unlock PDF export
@@ -1506,6 +1541,15 @@ export default function BookBuilder({ coverState, initialPages }: { coverState?:
         </div>
       </div>,
       document.body
+    )}
+    {mounted && isPackagerModalOpen && (
+      <FullBookPackagerModal
+        isOpen={isPackagerModalOpen}
+        onClose={() => setIsPackagerModalOpen(false)}
+        bookPages={bookPages}
+        selectedTrim={selectedTrim}
+        borderTheme={borderTheme}
+      />
     )}
     {isVersionHistoryOpen && (
       <BookVersionHistoryModal

@@ -17,9 +17,10 @@ export interface ExportOptions {
   trimSize?: { label: string; w: number; h: number };
   isPremium?: boolean;
   borderTheme?: BorderThemeId;
+  returnBlob?: boolean;
 }
 
-export const exportBookToPDF = async (bookPages: any[], options: ExportOptions = {}) => {
+export const exportBookToPDF = async (bookPages: any[], options: ExportOptions = {}): Promise<Blob | void> => {
   const {
     includeCover = false,
     coverState = null,
@@ -217,6 +218,10 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
   if (includeCover && coverState) {
     doc.addPage([w, h], "portrait");
     await drawCoverPagePart(doc, coverState, 'back', w, h);
+  }
+
+  if (options.returnBlob) {
+    return doc.output("blob");
   }
 
   doc.save("My_KDP_Puzzle_Book.pdf");

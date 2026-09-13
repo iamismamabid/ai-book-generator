@@ -143,6 +143,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.95,
         },
         {
+            url: `${baseUrl}/tools/kdp-puzzle-generator`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.95,
+        },
+        {
             url: `${baseUrl}/tools/spine-calculator`,
             lastModified: new Date(),
             changeFrequency: 'weekly',

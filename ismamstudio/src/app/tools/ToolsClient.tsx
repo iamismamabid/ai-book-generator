@@ -322,6 +322,16 @@ export default function FreeToolsHub() {
       link: "/tools/kdp-cover-creator"
     },
     {
+      id: "kdp-puzzle-generator",
+      name: "Free KDP Puzzle Generator",
+      badge: "Must-Have",
+      category: "Design",
+      description: "Generate mathematically unique Word Searches, Sudokus, Mazes & Cryptograms with automated solution keys.",
+      features: ["Algorithmic validation", "Automated solution keys", "300 DPI vector PDF export"],
+      keywords: ["kdp puzzle generator", "puzzle generator", "word search generator", "sudoku generator", "maze generator", "puzzle maker", "activity book"],
+      link: "/tools/kdp-puzzle-generator"
+    },
+    {
       id: "spine-calculator",
       name: "Free Spine Width & Cover Calculator",
       badge: "Essential",

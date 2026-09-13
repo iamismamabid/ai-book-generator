@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     "automated kdp cover creator",
     "automated kdp cover generator",
     "kdp cover creator free",
+    "kdp puzzle generator",
+    "amazon kdp puzzle generator",
+    "kdp puzzle book generator",
   ],
   alternates: {
     canonical: `${SITE_URL}/tools`,
@@ -56,7 +59,7 @@ export const metadata: Metadata = {
 // not just a wall of cards. (Duplicate spine-calculator entry deliberately
 // collapsed to one canonical URL.)
 const TOOL_ITEMS: { name: string; path: string }[] = [
-  { name: "Free Puzzle Book Generator", path: "/studio" },
+  { name: "Free KDP Puzzle Generator", path: "/tools/kdp-puzzle-generator" },
   { name: "Automated KDP Cover Creator", path: "/tools/kdp-cover-creator" },
   { name: "Free KDP Spine & Cover Calculator", path: "/tools/spine-calculator" },
   { name: "KDP Royalty & Market Viability Estimator", path: "/tools/royalty-estimator" },

@@ -47,6 +47,9 @@ export const metadata: Metadata = {
     "kdp low content software",
     "automated kdp cover creator",
     "automated kdp cover generator",
+    "kdp puzzle generator",
+    "amazon kdp puzzle generator",
+    "free kdp puzzle generator",
   ],
   alternates: {
     canonical: "https://www.kdpage.com",
@@ -378,7 +381,9 @@ export default function HomePage() {
               </p>
             </div>
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Sudoku &amp; Logic</span>
+              <Link href="/tools/kdp-puzzle-generator" className="text-[10px] font-black text-purple-700 hover:underline uppercase tracking-wider">
+                KDP Puzzle Generator →
+              </Link>
               <span className="text-[9px] font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">Mathematically Verified</span>
             </div>
           </div>

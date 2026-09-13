@@ -280,8 +280,19 @@ export default function Footer() {
         <div className="h-px bg-slate-900 my-8" />
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-500 text-xs font-bold uppercase tracking-wider text-center">
-          <div>
-            © {new Date().getFullYear()} KDPage. All rights reserved.
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+            <span>© {new Date().getFullYear()} KDPage. All rights reserved.</span>
+            <span className="hidden sm:inline text-slate-800">•</span>
+            <a
+              href="https://dang.ai/"
+              target="_blank"
+              rel="noopener"
+              title="Featured on Dang.ai - Discover the Best AI Tools"
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-indigo-400 hover:border-indigo-500/30 transition-colors normal-case font-medium text-[11px]"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Featured on Dang.ai
+            </a>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <GlowSettingToggle />

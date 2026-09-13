@@ -378,13 +378,33 @@ export default function ColoringBookClient() {
   const initialNotebookData = getInitialNotebookCache();
 
   // Config state
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedPresetId = localStorage.getItem("kdpage_coloring_active_preset_id");
+        if (savedPresetId) {
+          const found = PRESETS.find((p) => p.id === savedPresetId);
+          if (found?.category) return found.category;
+        }
+      } catch {}
+    }
+    return "All";
+  });
   const [activePreset, setActivePreset] = useState<PresetItem>(() => {
     if (initialNotebookData?.activePreset) {
       const targetId = typeof initialNotebookData.activePreset === "string" ? initialNotebookData.activePreset : initialNotebookData.activePreset.id;
       const targetName = typeof initialNotebookData.activePreset === "object" ? initialNotebookData.activePreset.name : undefined;
       const found = PRESETS.find((p) => p.id === targetId || (targetName && p.name.toLowerCase() === targetName.toLowerCase()));
       if (found) return found;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const savedPresetId = localStorage.getItem("kdpage_coloring_active_preset_id");
+        if (savedPresetId) {
+          const found = PRESETS.find((p) => p.id === savedPresetId);
+          if (found) return found;
+        }
+      } catch {}
     }
     return PRESETS.find((p) => p.id === "tropical_palms") || PRESETS[1] || PRESETS[0];
   });
@@ -471,6 +491,7 @@ export default function ColoringBookClient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const colorCanvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
+  const userHasDrawnRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const lineStartRef = useRef<{ x: number; y: number } | null>(null);
   const snapshotLoadTokenRef = useRef(0);
@@ -570,6 +591,7 @@ export default function ColoringBookClient() {
       const lineImg = new window.Image();
       lineImg.onload = () => {
         if (snapshotLoadTokenRef.current !== token) return;
+        if (isDrawingRef.current) return;
         const curLineCanvas = canvasRef.current;
         const curLineCtx = curLineCanvas?.getContext("2d");
         if (curLineCanvas && curLineCtx) {
@@ -584,6 +606,7 @@ export default function ColoringBookClient() {
       const colorImg = new window.Image();
       colorImg.onload = () => {
         if (snapshotLoadTokenRef.current !== token) return;
+        if (isDrawingRef.current) return;
         const curColorCanvas = colorCanvasRef.current;
         const curColorCtx = curColorCanvas?.getContext("2d");
         if (curColorCanvas && curColorCtx) {
@@ -593,7 +616,9 @@ export default function ColoringBookClient() {
       };
       colorImg.src = snapshot.color;
     } else {
-      colorCtx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+      if (!userHasDrawnRef.current && !isDrawingRef.current) {
+        colorCtx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+      }
     }
   }, []);
 
@@ -722,20 +747,6 @@ export default function ColoringBookClient() {
         return;
       }
     }
-
-    // Restore previously active preset on page reload
-    try {
-      const savedPresetId = localStorage.getItem("kdpage_coloring_active_preset_id");
-      if (savedPresetId) {
-        const found = PRESETS.find((p) => p.id === savedPresetId);
-        if (found) {
-          setActivePreset(found);
-          if (found.category) setSelectedCategory(found.category);
-        }
-      }
-    } catch {
-      // ignore
-    }
   }, []);
 
   // Persist active preset id to localStorage
@@ -806,6 +817,7 @@ export default function ColoringBookClient() {
   const handleCreateBlankPage = () => {
     isNotebookModeRef.current = false;
     notebookDrawingRef.current = null;
+    userHasDrawnRef.current = false;
     setActivePreset(PRESETS[0]); // blank_canvas
     setCustomLineArt(null);
     setCustomImageName(null);
@@ -864,7 +876,7 @@ export default function ColoringBookClient() {
         lineArtOffsetY,
       });
     }
-  }, [activePreset, complexity, frameStyle, isColorByNumber, isMidnightMode, lineWidth, seed, customLineArt, lineArtScale, lineArtOffsetX, lineArtOffsetY]);
+  }, [activePreset.id, complexity, frameStyle, isColorByNumber, isMidnightMode, lineWidth, seed, customLineArt, lineArtScale, lineArtOffsetX, lineArtOffsetY, trimSize.id, useBleed]);
 
   useEffect(() => {
     drawPattern();
@@ -881,16 +893,19 @@ export default function ColoringBookClient() {
     if (isNotebookModeRef.current) return;
     if (restoredCustomArtForPresetRef.current === activePreset.id) return;
     restoredCustomArtForPresetRef.current = activePreset.id;
+    if (userHasDrawnRef.current) return;
     try {
       const autosave = localStorage.getItem(`kdpage_coloring_autosave_${activePreset.id}`) || localStorage.getItem(`kdpage_coloring_progress_${activePreset.id}`);
       if (!autosave) {
         // Clear color layer when switching to a preset without existing autosave
-        const colorCanvas = colorCanvasRef.current;
-        if (colorCanvas) {
-          const cCtx = colorCanvas.getContext("2d");
-          cCtx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+        if (!userHasDrawnRef.current) {
+          const colorCanvas = colorCanvasRef.current;
+          if (colorCanvas) {
+            const cCtx = colorCanvas.getContext("2d");
+            cCtx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+          }
+          setHistory({ stack: [], index: -1 });
         }
-        setHistory({ stack: [], index: -1 });
         return;
       }
       const parsed = JSON.parse(autosave);
@@ -919,6 +934,8 @@ export default function ColoringBookClient() {
       try {
         const res = await loadColoringProject(activePreset.id);
         if (!res.success || !res.data) return;
+        // Never overwrite if user is actively drawing or has drawn during this session
+        if (userHasDrawnRef.current || isDrawingRef.current) return;
         const parsed = res.data as any;
         if (typeof parsed.color !== "string") return;
         loadSnapshot(parsed, activePreset.id === "blank_canvas");
@@ -936,6 +953,7 @@ export default function ColoringBookClient() {
 
     const img = new window.Image();
     img.onload = () => {
+      userHasDrawnRef.current = false;
       const lineArtData = convertImageToLineArt(img, 850, 1100);
       const colorCanvas = colorCanvasRef.current;
       if (colorCanvas) {
@@ -957,6 +975,7 @@ export default function ColoringBookClient() {
   };
 
   const clearCustomUpload = () => {
+    userHasDrawnRef.current = false;
     const colorCanvas = colorCanvasRef.current;
     if (colorCanvas) {
       const cctx = colorCanvas.getContext("2d");
@@ -974,6 +993,7 @@ export default function ColoringBookClient() {
     const img = new window.Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
+      userHasDrawnRef.current = false;
       const lineArtData = convertImageToLineArt(img, 850, 1100);
       
       // 1. Clear old color canvas fills and brush strokes
@@ -1022,6 +1042,7 @@ export default function ColoringBookClient() {
   };
 
   const pushHistory = useCallback(() => {
+    userHasDrawnRef.current = true;
     if (pushHistoryTimerRef.current) clearTimeout(pushHistoryTimerRef.current);
     pushHistoryTimerRef.current = setTimeout(() => {
       const lineCanvas = canvasRef.current;
@@ -1053,7 +1074,11 @@ export default function ColoringBookClient() {
           autosavePayload.lineArtOffsetX = lineArtOffsetX;
           autosavePayload.lineArtOffsetY = lineArtOffsetY;
         }
-        localStorage.setItem(`kdpage_coloring_autosave_${activePreset.id}`, JSON.stringify(autosavePayload));
+        try {
+          localStorage.setItem(`kdpage_coloring_autosave_${activePreset.id}`, JSON.stringify(autosavePayload));
+        } catch (storageErr) {
+          console.warn("Local storage quota exceeded for coloring autosave:", storageErr);
+        }
 
         // Debounced separately (and longer) than the localStorage write above
         // -- that one stays fast so undo/redo and reload-recovery don't lag,
@@ -1071,12 +1096,12 @@ export default function ColoringBookClient() {
               console.error("Failed to save coloring project to cloud:", err);
               setCloudSyncStatus("error");
             }
-          }, 1500);
+          }, 2000);
         }
       } catch {
         // ignore
       }
-    }, 15);
+    }, 250);
   }, [activePreset.id, customLineArt, customImageName, lineArtScale, lineArtOffsetX, lineArtOffsetY, isSignedIn]);
 
 
@@ -1358,6 +1383,7 @@ export default function ColoringBookClient() {
 
   // High-Speed 32-Bit Scanline Flood Fill (<5ms execution)
   const floodFill = (startX: number, startY: number) => {
+    userHasDrawnRef.current = true;
     const lineCanvas = canvasRef.current;
     const colorCanvas = colorCanvasRef.current;
     if (!lineCanvas || !colorCanvas) return;
@@ -1391,7 +1417,7 @@ export default function ColoringBookClient() {
     if (targetColor32 === fill32) return;
 
     // Scanline flood fill algorithm with pre-allocated coordinate stack
-    const maxStack = Math.max(w * 4, 16384);
+    const maxStack = Math.max(w * 8, 131072);
     const stackX = new Int32Array(maxStack);
     const stackY = new Int32Array(maxStack);
     let stackPtr = 0;
@@ -1492,7 +1518,9 @@ export default function ColoringBookClient() {
     const canvas = colorCanvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
-    canvas.setPointerCapture(e.pointerId);
+    try {
+      canvas.setPointerCapture(e.pointerId);
+    } catch {}
     const pt = getCanvasPoint(e);
 
     if (activeTool === "select") {
@@ -1504,6 +1532,8 @@ export default function ColoringBookClient() {
       sampleColorAt(pt.x, pt.y);
       return;
     }
+
+    userHasDrawnRef.current = true;
 
     if (activeTool === "text") {
       drawTextAt(pt.x, pt.y);
@@ -1663,6 +1693,13 @@ export default function ColoringBookClient() {
   };
 
   const handlePointerUp = (e?: React.PointerEvent<HTMLCanvasElement>) => {
+    if (e && colorCanvasRef.current) {
+      try {
+        if (colorCanvasRef.current.hasPointerCapture(e.pointerId)) {
+          colorCanvasRef.current.releasePointerCapture(e.pointerId);
+        }
+      } catch {}
+    }
     if (!isColoringMode || !isDrawingRef.current) return;
 
     if (activeTool === "line" && lineStartRef.current && e) {
@@ -2216,6 +2253,7 @@ export default function ColoringBookClient() {
                       onClick={() => {
                         isNotebookModeRef.current = false;
                         notebookDrawingRef.current = null;
+                        userHasDrawnRef.current = false;
                         setCustomLineArt(null);
                         setCustomImageName(null);
                         setLineArtScale(1.0);
@@ -3055,7 +3093,7 @@ export default function ColoringBookClient() {
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
-                onPointerLeave={handlePointerUp}
+                onPointerCancel={handlePointerUp}
               />
               <canvas
                 ref={canvasRef}

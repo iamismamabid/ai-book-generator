@@ -275,13 +275,26 @@ export default function BookBuilder({
     }
   }, []);
 
+  const lastEmittedInteriorRef = useRef<{ pages: number; trimW: number; trimH: number } | null>(null);
+
   useEffect(() => {
-    if (onInteriorChange) {
-      onInteriorChange({
-        pageCount: Math.max(24, bookPages.length),
-        trimSize: selectedTrim,
-      });
+    if (!onInteriorChange) return;
+    const curPages = Math.max(24, bookPages.length);
+    const curW = selectedTrim?.w || 0;
+    const curH = selectedTrim?.h || 0;
+    if (
+      lastEmittedInteriorRef.current &&
+      lastEmittedInteriorRef.current.pages === curPages &&
+      lastEmittedInteriorRef.current.trimW === curW &&
+      lastEmittedInteriorRef.current.trimH === curH
+    ) {
+      return;
     }
+    lastEmittedInteriorRef.current = { pages: curPages, trimW: curW, trimH: curH };
+    onInteriorChange({
+      pageCount: curPages,
+      trimSize: selectedTrim,
+    });
   }, [bookPages.length, selectedTrim, onInteriorChange]);
 
   const getBookSnapshot = () => ({

@@ -5002,28 +5002,38 @@ export default function FabricCoverStudio({
 
     const titleLen = activeMeta.title.length;
     const titleFontSize = Math.min(48, Math.max(24, Math.round(frontWidth / (titleLen > 30 ? 18 : titleLen > 18 ? 14 : 10))));
+    let hasCanvasChanges = false;
 
-    // 2. Align or Create Book Title
+    // 2. Align or Create Book Title (flicker-free diff check)
+    const targetTitleTop = Math.round(layout.frontLiveTopPx + frontHeight * 0.16);
+    const targetTitleWidth = Math.round(frontWidth * 0.88);
+
     if (existingTitle) {
-      existingTitle.set({
-        text: activeMeta.title,
-        left: centerX,
-        top: Math.round(layout.frontLiveTopPx + frontHeight * 0.16),
-        originX: "center",
-        originY: "center",
-        textAlign: "center",
-        width: Math.round(frontWidth * 0.88),
-        dirty: true,
-      } as any);
+      const curText = (existingTitle as any).text;
+      const curLeft = (existingTitle as any).left;
+      const curTop = (existingTitle as any).top;
+      if (curText !== activeMeta.title || Math.abs(curLeft - centerX) > 1 || Math.abs(curTop - targetTitleTop) > 1) {
+        existingTitle.set({
+          text: activeMeta.title,
+          left: centerX,
+          top: targetTitleTop,
+          originX: "center",
+          originY: "center",
+          textAlign: "center",
+          width: targetTitleWidth,
+          dirty: true,
+        } as any);
+        hasCanvasChanges = true;
+      }
       (existingTitle as any).id = "cover-book-title";
     } else {
       const titleObj = new fabric.Textbox(activeMeta.title, {
         id: "cover-book-title",
         left: centerX,
-        top: Math.round(layout.frontLiveTopPx + frontHeight * 0.16),
+        top: targetTitleTop,
         originX: "center",
         originY: "center",
-        width: Math.round(frontWidth * 0.88),
+        width: targetTitleWidth,
         fontSize: titleFontSize,
         fontFamily: "Montserrat",
         fontWeight: "bold",
@@ -5038,31 +5048,41 @@ export default function FabricCoverStudio({
         })
       } as any);
       canvas.add(titleObj);
+      hasCanvasChanges = true;
     }
 
-    // 3. Align or Create Subtitle
+    // 3. Align or Create Subtitle (flicker-free diff check)
     if (activeMeta.subtitle) {
       const subFontSize = Math.min(22, Math.max(13, Math.round(frontWidth / 28)));
+      const targetSubTop = Math.round(layout.frontLiveTopPx + frontHeight * 0.32);
+      const targetSubWidth = Math.round(frontWidth * 0.84);
+
       if (existingSubtitle) {
-        existingSubtitle.set({
-          text: activeMeta.subtitle,
-          left: centerX,
-          top: Math.round(layout.frontLiveTopPx + frontHeight * 0.32),
-          originX: "center",
-          originY: "center",
-          textAlign: "center",
-          width: Math.round(frontWidth * 0.84),
-          dirty: true,
-        } as any);
+        const curText = (existingSubtitle as any).text;
+        const curLeft = (existingSubtitle as any).left;
+        const curTop = (existingSubtitle as any).top;
+        if (curText !== activeMeta.subtitle || Math.abs(curLeft - centerX) > 1 || Math.abs(curTop - targetSubTop) > 1) {
+          existingSubtitle.set({
+            text: activeMeta.subtitle,
+            left: centerX,
+            top: targetSubTop,
+            originX: "center",
+            originY: "center",
+            textAlign: "center",
+            width: targetSubWidth,
+            dirty: true,
+          } as any);
+          hasCanvasChanges = true;
+        }
         (existingSubtitle as any).id = "cover-book-subtitle";
       } else {
         const subObj = new fabric.Textbox(activeMeta.subtitle, {
           id: "cover-book-subtitle",
           left: centerX,
-          top: Math.round(layout.frontLiveTopPx + frontHeight * 0.32),
+          top: targetSubTop,
           originX: "center",
           originY: "center",
-          width: Math.round(frontWidth * 0.84),
+          width: targetSubWidth,
           fontSize: subFontSize,
           fontFamily: "Outfit",
           fill: subtitleColor,
@@ -5076,32 +5096,42 @@ export default function FabricCoverStudio({
           })
         } as any);
         canvas.add(subObj);
+        hasCanvasChanges = true;
       }
     }
 
-    // 4. Align or Create Author Name
+    // 4. Align or Create Author Name (flicker-free diff check)
     if (activeMeta.author) {
       const authorFontSize = Math.min(24, Math.max(15, Math.round(frontWidth / 24)));
+      const targetAuthorTop = Math.round(layout.frontLiveBottomPx - frontHeight * 0.08);
+      const targetAuthorWidth = Math.round(frontWidth * 0.8);
+
       if (existingAuthor) {
-        existingAuthor.set({
-          text: activeMeta.author,
-          left: centerX,
-          top: Math.round(layout.frontLiveBottomPx - frontHeight * 0.08),
-          originX: "center",
-          originY: "center",
-          textAlign: "center",
-          width: Math.round(frontWidth * 0.8),
-          dirty: true,
-        } as any);
+        const curText = (existingAuthor as any).text;
+        const curLeft = (existingAuthor as any).left;
+        const curTop = (existingAuthor as any).top;
+        if (curText !== activeMeta.author || Math.abs(curLeft - centerX) > 1 || Math.abs(curTop - targetAuthorTop) > 1) {
+          existingAuthor.set({
+            text: activeMeta.author,
+            left: centerX,
+            top: targetAuthorTop,
+            originX: "center",
+            originY: "center",
+            textAlign: "center",
+            width: targetAuthorWidth,
+            dirty: true,
+          } as any);
+          hasCanvasChanges = true;
+        }
         (existingAuthor as any).id = "cover-book-author";
       } else {
         const authorObj = new fabric.Textbox(activeMeta.author, {
           id: "cover-book-author",
           left: centerX,
-          top: Math.round(layout.frontLiveBottomPx - frontHeight * 0.08),
+          top: targetAuthorTop,
           originX: "center",
           originY: "center",
-          width: Math.round(frontWidth * 0.8),
+          width: targetAuthorWidth,
           fontSize: authorFontSize,
           fontFamily: "Montserrat",
           fontWeight: "bold",
@@ -5115,6 +5145,7 @@ export default function FabricCoverStudio({
           })
         } as any);
         canvas.add(authorObj);
+        hasCanvasChanges = true;
       }
     }
 
@@ -5122,20 +5153,25 @@ export default function FabricCoverStudio({
     if (activeMeta.pageCount < 80) {
       if (existingSpine) {
         canvas.remove(existingSpine);
+        hasCanvasChanges = true;
       }
     } else if (layout.spineWidthPx >= 20) {
       const spineLabel = `${activeMeta.title}  •  ${activeMeta.author}`;
       if (existingSpine) {
-        existingSpine.set({
-          text: spineLabel,
-          left: layout.spineCenterPx,
-          top: layout.canvasHeight / 2,
-          angle: 90,
-          originX: "center",
-          originY: "center",
-          dirty: true,
-        } as any);
-        fitSpineTextObject(existingSpine as any);
+        const curText = (existingSpine as any).text;
+        if (curText !== spineLabel) {
+          existingSpine.set({
+            text: spineLabel,
+            left: layout.spineCenterPx,
+            top: layout.canvasHeight / 2,
+            angle: 90,
+            originX: "center",
+            originY: "center",
+            dirty: true,
+          } as any);
+          fitSpineTextObject(existingSpine as any);
+          hasCanvasChanges = true;
+        }
       } else {
         const spineObj = new fabric.IText(spineLabel, {
           id: "cover-spine-text",
@@ -5152,19 +5188,29 @@ export default function FabricCoverStudio({
         } as any);
         canvas.add(spineObj);
         fitSpineTextObject(spineObj);
+        hasCanvasChanges = true;
       }
     }
 
-    canvas.discardActiveObject();
-    canvas.requestRenderAll();
-    saveStateRef.current?.();
+    if (hasCanvasChanges) {
+      canvas.discardActiveObject();
+      canvas.requestRenderAll();
+    }
 
     showAutoAlignToast(`✓ Auto-aligned: ${activeMeta.trimSize.label} • ${activeMeta.pageCount} Pages • Spine: ${layout.spineWidth.toFixed(3)}" • Titles Synced`);
   }, [canvas, bookMeta, pageCount, trimSize, layout, showAutoAlignToast]);
 
-  // Watch for incoming pendingAutoAlign trigger
+  const lastHandledSyncKeyRef = useRef<string | null>(null);
+
+  // Watch for incoming pendingAutoAlign trigger (gated so it runs strictly once per payload)
   useEffect(() => {
     if (pendingAutoAlign && canvas && isCanvasAlive(canvas)) {
+      const syncKey = `${pendingAutoAlign.title}-${pendingAutoAlign.subtitle}-${pendingAutoAlign.author}-${pendingAutoAlign.pageCount}-${pendingAutoAlign.trimSize?.w}x${pendingAutoAlign.trimSize?.h}-${pendingAutoAlign.themeId}`;
+      if (lastHandledSyncKeyRef.current === syncKey) {
+        onClearAutoAlign?.();
+        return;
+      }
+      lastHandledSyncKeyRef.current = syncKey;
       handleAutoAlignBookDetails(pendingAutoAlign);
       onClearAutoAlign?.();
     }

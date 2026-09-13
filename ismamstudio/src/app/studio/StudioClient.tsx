@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Grid3x3, Palette, Loader2, Sparkles, Lock, Cloud, CloudOff, Check } from "lucide-react";
 import dynamic from 'next/dynamic';
 import { motion } from "framer-motion";
@@ -125,13 +125,18 @@ export default function MasterStudioApp() {
     handleTabChange('cover');
   };
 
-  const handleInteriorChange = ({ pageCount: newPages, trimSize: newTrim }: { pageCount: number; trimSize: any }) => {
-    setBookMeta(prev => ({
-      ...prev,
-      pageCount: newPages || prev.pageCount,
-      trimSize: newTrim || prev.trimSize
-    }));
-  };
+  const handleInteriorChange = useCallback(({ pageCount: newPages, trimSize: newTrim }: { pageCount: number; trimSize: any }) => {
+    setBookMeta(prev => {
+      const pageMatch = !newPages || prev.pageCount === newPages;
+      const trimMatch = !newTrim || (prev.trimSize?.w === newTrim.w && prev.trimSize?.h === newTrim.h);
+      if (pageMatch && trimMatch) return prev;
+      return {
+        ...prev,
+        pageCount: newPages || prev.pageCount,
+        trimSize: newTrim || prev.trimSize
+      };
+    });
+  }, []);
 
   const [coverBackground, setCoverBackground] = useState({
     backCoverColor: '#0F172A',

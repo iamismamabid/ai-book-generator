@@ -868,8 +868,14 @@ export default function KdpCoverCreatorClient() {
                 <ArrowRight className="w-4 h-4 text-black" />
               </Link>
               <Link
+                href="/tools/kdp-puzzle-generator"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-sm transition flex items-center justify-center gap-2 border border-slate-700 hover:border-amber-400/50"
+              >
+                Free KDP Puzzle Generator →
+              </Link>
+              <Link
                 href="/tools"
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm transition flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 font-semibold text-sm transition flex items-center justify-center gap-2 border border-slate-800"
               >
                 Explore 30+ Free KDP Tools
               </Link>

@@ -375,14 +375,14 @@ export default function HomePage() {
               <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 text-purple-700 flex items-center justify-center text-xl font-black">
                 🔢
               </div>
-              <h3 className="text-lg font-black text-slate-900 tracking-tight">Single-Solution Uniqueness</h3>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">KDP Puzzle Generator</h3>
               <p className="text-slate-600 text-sm font-semibold leading-relaxed">
                 Our backtracking solver evaluates <code className="text-xs font-bold bg-purple-50 text-purple-800 px-1 py-0.5 rounded">countSolutions(grid, 2)</code> to mathematically guarantee exactly 1 unique solution per grid.
               </p>
             </div>
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
               <Link href="/tools/kdp-puzzle-generator" className="text-[10px] font-black text-purple-700 hover:underline uppercase tracking-wider">
-                KDP Puzzle Generator →
+                Free KDP Puzzle Generator →
               </Link>
               <span className="text-[9px] font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">Mathematically Verified</span>
             </div>

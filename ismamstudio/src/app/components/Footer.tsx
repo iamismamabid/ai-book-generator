@@ -178,6 +178,12 @@ export default function Footer() {
                 <Link href="/tools" className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Browse 30+ Free Tools</Link>
               </li>
               <li>
+                <Link href="/tools/kdp-puzzle-generator" className="text-amber-400 hover:text-amber-300 font-bold transition-colors">KDP Puzzle Generator</Link>
+              </li>
+              <li>
+                <Link href="/tools/kdp-cover-creator" className="text-amber-400 hover:text-amber-300 font-bold transition-colors">Automated KDP Cover Creator</Link>
+              </li>
+              <li>
                 <Link href="/tools/spine-calculator" className="text-slate-400 hover:text-indigo-400 transition-colors">KDP Spine Calculator</Link>
               </li>
               <li>

@@ -846,33 +846,6 @@ export default function FullBookPackagerModal({
               </div>
             )}
 
-            {/* Golden 1-Click Package & Download Button (Hidden when Cover Studio is active) */}
-            {coverMode !== "coverstudio" && (
-              <button
-                onClick={handlePackageAndDownload}
-                disabled={step !== "idle" && step !== "done" && step !== "error"}
-                className="w-full py-4 px-6 rounded-2xl font-black text-sm uppercase tracking-wider text-slate-950 transition-all duration-300 active:scale-[0.98] cursor-pointer shadow-xl flex items-center justify-center gap-3 relative overflow-hidden group border border-yellow-200/50 disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{
-                  background: "linear-gradient(135deg, #f59e0b 0%, #fef08a 50%, #d97706 100%)",
-                  boxShadow: "0 10px 30px -5px rgba(245, 158, 11, 0.4)"
-                }}
-              >
-                <div className="absolute inset-0 w-1/2 h-full bg-white/30 transform -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 pointer-events-none" />
-
-                {step !== "idle" && step !== "done" && step !== "error" ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
-                    <span>Packaging Your Book...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-5 h-5 fill-slate-950 shrink-0" />
-                    <span>Package Full KDP Book (.ZIP)</span>
-                    <FileDown className="w-5 h-5 shrink-0 ml-auto opacity-80" />
-                  </>
-                )}
-              </button>
-            )}
           </div>
         </div>
       </div>

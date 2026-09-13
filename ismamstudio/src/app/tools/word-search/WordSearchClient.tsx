@@ -5,7 +5,7 @@ import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, T
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { generatePuzzleGrid, WordSearchShape } from "../../utils/puzzleEngine";
-import { WORD_SEARCH_THEMES, WORD_SEARCH_THEME_CATEGORIES } from "@/lib/wordSearchThemes";
+import { WORD_SEARCH_THEMES, WORD_SEARCH_THEME_CATEGORIES, SUPPORTED_PUZZLE_LANGUAGES } from "@/lib/wordSearchThemes";
 import ExportInteriorModal from "@/components/ExportInteriorModal";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { useRouter } from "next/navigation";
@@ -83,10 +83,16 @@ export default function WordSearchStudio() {
 
     // 🚨 SHAPE / THEME / HIDDEN MESSAGE STATES 🚨
     const [puzzleShape, setPuzzleShape] = useState<WordSearchShape>("square");
+    const [themeLangFilter, setThemeLangFilter] = useState<string>("all");
     const [selectedThemeId, setSelectedThemeId] = useState<string>("");
     const [hiddenMessage, setHiddenMessage] = useState<string>("");
     const [previewActive, setPreviewActive] = useState<boolean[][] | null>(null);
     const [previewHiddenMessageCells, setPreviewHiddenMessageCells] = useState<{ r: number; c: number }[] | null>(null);
+
+    const filteredThemes = themeLangFilter === "all"
+        ? WORD_SEARCH_THEMES
+        : WORD_SEARCH_THEMES.filter(t => (t.language || "en") === themeLangFilter);
+    const availableCategories = Array.from(new Set(filteredThemes.map(t => t.category)));
 
     const handleThemeSelect = (themeId: string) => {
         setSelectedThemeId(themeId);
@@ -667,17 +673,46 @@ export default function WordSearchStudio() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-semibold text-slate-600">Themed Word List</label>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <label className="text-xs font-semibold text-slate-600">Themed Word List</label>
+                                            <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">Multilingual</span>
+                                        </div>
+                                        {/* Multilingual Filter Pills */}
+                                        <div className="flex items-center gap-1 mb-2 overflow-x-auto pb-1 no-scrollbar">
+                                            {SUPPORTED_PUZZLE_LANGUAGES.map((lang) => (
+                                                <button
+                                                    key={lang.code}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setThemeLangFilter(lang.code);
+                                                        if (selectedThemeId) {
+                                                            const theme = WORD_SEARCH_THEMES.find(t => t.id === selectedThemeId);
+                                                            if (theme && lang.code !== "all" && (theme.language || "en") !== lang.code) {
+                                                                setSelectedThemeId("");
+                                                            }
+                                                        }
+                                                    }}
+                                                    className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 transition-all border cursor-pointer ${
+                                                        themeLangFilter === lang.code
+                                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                                                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                                                    }`}
+                                                    title={lang.label}
+                                                >
+                                                    <span>{lang.flag}</span> <span className="ml-0.5">{lang.code.toUpperCase()}</span>
+                                                </button>
+                                            ))}
+                                        </div>
                                         <select
                                             value={selectedThemeId}
                                             onChange={(e) => handleThemeSelect(e.target.value)}
-                                            className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"
+                                            className="w-full border border-slate-200 rounded p-1.5 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                                         >
                                             <option value="">— Custom (edit below) —</option>
-                                            {WORD_SEARCH_THEME_CATEGORIES.map(category => (
+                                            {availableCategories.map(category => (
                                                 <optgroup key={category} label={category}>
-                                                    {WORD_SEARCH_THEMES.filter(t => t.category === category).map(t => (
-                                                        <option key={t.id} value={t.id}>{t.name}</option>
+                                                    {filteredThemes.filter(t => t.category === category).map(t => (
+                                                        <option key={t.id} value={t.id}>{t.name} ({t.words.length} words)</option>
                                                     ))}
                                                 </optgroup>
                                             ))}

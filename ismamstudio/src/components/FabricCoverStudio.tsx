@@ -5869,6 +5869,7 @@ export default function FabricCoverStudio({
         subtitle: effectiveSubtitle,
         author: effectiveAuthor,
         trimSize: trimSize,
+        language: bookMeta?.language || "en",
       });
 
       // 7. Zip everything into 1 package

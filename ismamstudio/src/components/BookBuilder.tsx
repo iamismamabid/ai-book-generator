@@ -30,6 +30,9 @@ import { generatePuzzleGrid } from "@/app/utils/puzzleEngine";
 import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
 import { generateKakuro } from "@/lib/kakuro";
 import { createPortal } from "react-dom";
+import { KdpBookLanguage } from "@/app/utils/bookMetadataGenerator";
+import { getThemesByLanguage } from "@/lib/wordSearchThemes";
+import { getBulkCryptogramQuotes } from "@/lib/cryptogramQuotes";
 import {
   DndContext,
   closestCenter,
@@ -68,6 +71,25 @@ const DEFAULT_CROSSWORD_POOLS = [
   [{ word: "GUITAR", clue: "String instrument" }, { word: "PIANO", clue: "Keyed instrument" }, { word: "DRUMS", clue: "Percussion instrument" }, { word: "VIOLIN", clue: "Bowed string instrument" }]
 ];
 
+const DEFAULT_CROSSWORD_POOLS_ES = [
+  [{ word: "SOL", clue: "Estrella luminosa centro del sistema solar" }, { word: "LUNA", clue: "Satélite natural que orbita la Tierra" }, { word: "TIERRA", clue: "Planeta donde vivimos" }, { word: "MARTE", clue: "El planeta rojo del sistema" }],
+  [{ word: "GATO", clue: "Felino doméstico de bigotes" }, { word: "PERRO", clue: "El amigo más fiel del ser humano" }, { word: "LEON", clue: "El majestuoso rey de la selva" }, { word: "AGUILA", clue: "Ave rapaz de vuelo imponente" }],
+  [{ word: "LIBRO", clue: "Obra impresa de páginas encuadernadas" }, { word: "MUSICA", clue: "Arte de organizar los sonidos" }, { word: "PINTURA", clue: "Expresión visual mediante pigmentos" }, { word: "POESIA", clue: "Composición de versos y belleza" }],
+  [{ word: "PLAYA", clue: "Ribera del mar formada de arena" }, { word: "BOSQUE", clue: "Sitio poblado de árboles y vegetación" }, { word: "VOLCAN", clue: "Abertura terrestre que arroja lava" }, { word: "RIO", clue: "Corriente continua y caudalosa de agua" }]
+];
+
+const DEFAULT_CROSSWORD_POOLS_DE = [
+  [{ word: "SONNE", clue: "Stern im Zentrum unseres Sonnensystems" }, { word: "MOND", clue: "Natürlicher Trabant der Erde" }, { word: "ERDE", clue: "Unser Heimatplanet im All" }, { word: "STERN", clue: "Leuchtender Himmelskörper in der Nacht" }],
+  [{ word: "KATZE", clue: "Beliebtes schnurrendes Haustier" }, { word: "HUND", clue: "Der treueste Begleiter des Menschen" }, { word: "LOEWE", clue: "König der afrikanischen Savanne" }, { word: "ADLER", clue: "Majestätischer Greifvogel der Lüfte" }],
+  [{ word: "BUCH", clue: "Gedrucktes Werk mit vielen Seiten" }, { word: "MUSIK", clue: "Klangkunst aus Tönen und Rhythmen" }, { word: "KUNST", clue: "Kreatives Schaffen und Gestalten" }, { word: "BLUME", clue: "Duftende Pflanze im Frühlingsgarten" }]
+];
+
+const DEFAULT_CROSSWORD_POOLS_FR = [
+  [{ word: "SOLEIL", clue: "Étoile au centre du système solaire" }, { word: "LUNE", clue: "Satellite naturel de notre Terre" }, { word: "TERRE", clue: "Notre planète bleue dans l'espace" }, { word: "ETOILE", clue: "Astre lumineux dans le ciel nocturne" }],
+  [{ word: "CHAT", clue: "Félin domestique affectueux" }, { word: "CHIEN", clue: "Le fidèle compagnon de l'homme" }, { word: "LION", clue: "Le majestueux roi des animaux" }, { word: "AIGLE", clue: "Oiseau rapace aux serres acérées" }],
+  [{ word: "LIVRE", clue: "Ouvrage relié comprenant des pages écrites" }, { word: "MUSIQUE", clue: "Art des sons harmonieux et rythmes" }, { word: "FLEUR", clue: "Végétal ornemental et parfumé" }, { word: "OCEAN", clue: "Vaste étendue d'eau salée sur Terre" }]
+];
+
 const DEFAULT_CRYPTOGRAM_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
   "SUCCESS IS NOT FINAL, FAILURE IS NOT FATAL: IT IS THE COURAGE TO CONTINUE THAT COUNTS.",
@@ -79,7 +101,7 @@ const DEFAULT_CRYPTOGRAM_QUOTES = [
   "THE ONLY WAY TO DO GREAT WORK IS TO LOVE WHAT YOU DO."
 ];
 
-export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forceRegenerate = false) {
+export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forceRegenerate = false, language: KdpBookLanguage = "en") {
   const cfg = JSON.parse(JSON.stringify(config || {}));
   try {
     if (type === 'maze') {
@@ -97,8 +119,18 @@ export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forc
           words = cfg.rawText.split(',').map((w: string) => w.trim()).filter((w: string) => w.length > 0);
         }
         if (words.length === 0) {
-          words = DEFAULT_WORD_SEARCH_POOLS[Math.floor(Math.random() * DEFAULT_WORD_SEARCH_POOLS.length)];
-          cfg.rawText = words.join(', ');
+          const langThemes = getThemesByLanguage(language);
+          const chosenTheme = langThemes.length > 0
+            ? langThemes[Math.floor(Math.random() * langThemes.length)]
+            : null;
+          if (chosenTheme) {
+            words = chosenTheme.words.slice(0, 10);
+            cfg.rawText = words.join(', ');
+            cfg.title = chosenTheme.name;
+          } else {
+            words = DEFAULT_WORD_SEARCH_POOLS[Math.floor(Math.random() * DEFAULT_WORD_SEARCH_POOLS.length)];
+            cfg.rawText = words.join(', ');
+          }
         }
         cfg.gridData = generatePuzzleGrid(words, 12, 'uppercase');
       }
@@ -112,7 +144,14 @@ export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forc
           }).filter((x: any) => x.word.length > 0);
         }
         if (items.length === 0) {
-          items = DEFAULT_CROSSWORD_POOLS[Math.floor(Math.random() * DEFAULT_CROSSWORD_POOLS.length)];
+          const pool = language === 'es'
+            ? DEFAULT_CROSSWORD_POOLS_ES
+            : language === 'de'
+            ? DEFAULT_CROSSWORD_POOLS_DE
+            : language === 'fr'
+            ? DEFAULT_CROSSWORD_POOLS_FR
+            : DEFAULT_CROSSWORD_POOLS;
+          items = pool[Math.floor(Math.random() * pool.length)];
           cfg.rawText = items.map(w => `${w.word}, ${w.clue}`).join('\n');
         }
         cfg.gridData = generateCrosswordGrid(items, 15);
@@ -155,13 +194,27 @@ export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forc
       }
     } else if (type === 'cryptogram') {
       if (forceRegenerate || !cfg.cryptogramData) {
-        const rawQuotes = (cfg.rawText || DEFAULT_CRYPTOGRAM_QUOTES.join('\n'))
-          .split('\n')
-          .map((q: string) => q.trim().toUpperCase())
-          .filter((q: string) => q.length > 0);
-        const targetQuote = rawQuotes.length > 0
-          ? rawQuotes[Math.floor(Math.random() * rawQuotes.length)]
-          : DEFAULT_CRYPTOGRAM_QUOTES[0];
+        let targetQuote = "";
+        if (cfg.rawText) {
+          const rawQuotes = cfg.rawText
+            .split('\n')
+            .map((q: string) => q.trim().toUpperCase())
+            .filter((q: string) => q.length > 0);
+          if (rawQuotes.length > 0) {
+            targetQuote = rawQuotes[Math.floor(Math.random() * rawQuotes.length)];
+          }
+        }
+        if (!targetQuote) {
+          const quotes = getBulkCryptogramQuotes(language, 12);
+          if (quotes.length > 0) {
+            const item = quotes[Math.floor(Math.random() * quotes.length)];
+            targetQuote = item.quote.toUpperCase();
+            cfg.author = item.author;
+          } else {
+            targetQuote = DEFAULT_CRYPTOGRAM_QUOTES[Math.floor(Math.random() * DEFAULT_CRYPTOGRAM_QUOTES.length)];
+          }
+          cfg.rawText = targetQuote;
+        }
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         let shuffled = [...alphabet];
         for (let i = shuffled.length - 1; i > 0; i--) {
@@ -210,11 +263,12 @@ export default function BookBuilder({
   coverState?: any;
   initialPages?: any[];
   onOpenCoverStudio?: (syncData?: any) => void;
-  onInteriorChange?: (info: { pageCount: number; trimSize: any; bookPages?: any[]; borderTheme?: any }) => void;
+  onInteriorChange?: (info: { pageCount: number; trimSize: any; bookPages?: any[]; borderTheme?: any; language?: KdpBookLanguage }) => void;
   onSyncPages?: (pages: any[], borderTheme?: any) => void;
 }) {
   const [bookPages, setBookPages] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [bookLanguage, setBookLanguage] = useState<KdpBookLanguage>("en");
 
   // Undo/redo history (page-list level: add/remove/duplicate/reorder/paste/
   // edit-settings all flow through setBookPages, so watching that one state
@@ -278,7 +332,7 @@ export default function BookBuilder({
     }
   }, [bookPages, borderTheme, onSyncPages]);
 
-  const lastEmittedInteriorRef = useRef<{ pages: number; trimW: number; trimH: number } | null>(null);
+  const lastEmittedInteriorRef = useRef<{ pages: number; trimW: number; trimH: number; lang?: string } | null>(null);
 
   useEffect(() => {
     if (!onInteriorChange) return;
@@ -289,18 +343,20 @@ export default function BookBuilder({
       lastEmittedInteriorRef.current &&
       lastEmittedInteriorRef.current.pages === curPages &&
       lastEmittedInteriorRef.current.trimW === curW &&
-      lastEmittedInteriorRef.current.trimH === curH
+      lastEmittedInteriorRef.current.trimH === curH &&
+      lastEmittedInteriorRef.current.lang === bookLanguage
     ) {
       return;
     }
-    lastEmittedInteriorRef.current = { pages: curPages, trimW: curW, trimH: curH };
+    lastEmittedInteriorRef.current = { pages: curPages, trimW: curW, trimH: curH, lang: bookLanguage };
     onInteriorChange({
       pageCount: curPages,
       trimSize: selectedTrim,
       bookPages: bookPages,
       borderTheme: borderTheme,
+      language: bookLanguage,
     });
-  }, [bookPages, selectedTrim, borderTheme, onInteriorChange]);
+  }, [bookPages, selectedTrim, borderTheme, bookLanguage, onInteriorChange]);
 
   const getBookSnapshot = () => ({
     pageCount: bookPages.length,
@@ -461,7 +517,7 @@ export default function BookBuilder({
   };
 
   const addPage = (type: string, initialConfig: any = {}) => {
-    const clonedConfig = hydrateOrGeneratePuzzleData(type, initialConfig, true);
+    const clonedConfig = hydrateOrGeneratePuzzleData(type, initialConfig, true, bookLanguage);
     setBookPages(prev => [...prev, { id: Date.now() + Math.random(), type, config: clonedConfig }]);
     setActiveIndex(bookPages.length);
   };
@@ -501,7 +557,7 @@ export default function BookBuilder({
 
     // Immediately generate fresh, unique puzzle data so the duplicated page
     // NEVER has missing or undefined data. If generator is unavailable, preserves existing.
-    clonedConfig = hydrateOrGeneratePuzzleData(target.type, clonedConfig, true);
+    clonedConfig = hydrateOrGeneratePuzzleData(target.type, clonedConfig, true, bookLanguage);
 
     const newPage = {
       id: Date.now() + Math.random(),
@@ -867,6 +923,24 @@ export default function BookBuilder({
                   {TRIM_SIZES.map((t, idx) => (
                     <option key={idx} value={t.label}>{t.label}</option>
                   ))}
+                </select>
+              </div>
+
+              {/* Multilingual Market Selector */}
+              <div className="mb-3.5 bg-slate-800/40 p-2.5 rounded-2xl border border-slate-800/80">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider">Language / Mercado</span>
+                  <span className="text-[9px] font-bold text-amber-400 bg-amber-950/80 border border-amber-800/60 px-1.5 py-0.5 rounded-md">KDP Market</span>
+                </div>
+                <select
+                  value={bookLanguage}
+                  onChange={(e) => setBookLanguage(e.target.value as KdpBookLanguage)}
+                  className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-100 outline-none focus:border-amber-500 cursor-pointer shadow-xs transition"
+                >
+                  <option value="en">🇺🇸 English (Amazon.com / UK)</option>
+                  <option value="es">🇪🇸 Español (Amazon.es / LatAm)</option>
+                  <option value="de">🇩🇪 Deutsch (Amazon.de)</option>
+                  <option value="fr">🇫🇷 Français (Amazon.fr)</option>
                 </select>
               </div>
 
@@ -1598,6 +1672,7 @@ export default function BookBuilder({
         bookPages={bookPages}
         selectedTrim={selectedTrim}
         borderTheme={borderTheme}
+        language={bookLanguage}
         onOpenCoverStudio={(syncData) => {
           setIsPackagerModalOpen(false);
           onOpenCoverStudio?.(syncData);

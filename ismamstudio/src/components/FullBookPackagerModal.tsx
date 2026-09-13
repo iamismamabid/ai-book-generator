@@ -35,7 +35,8 @@ import {
 } from "@/app/utils/autoCoverGenerator";
 import {
   generateKdpMetadata,
-  KdpMetadataResult
+  KdpMetadataResult,
+  KdpBookLanguage
 } from "@/app/utils/bookMetadataGenerator";
 
 export interface BookCoverSyncData {
@@ -45,6 +46,7 @@ export interface BookCoverSyncData {
   trimSize: { label: string; w: number; h: number };
   pageCount: number;
   themeId?: CoverThemeId;
+  language?: KdpBookLanguage;
 }
 
 interface FullBookPackagerModalProps {
@@ -56,6 +58,7 @@ interface FullBookPackagerModalProps {
   isPremium?: boolean;
   onOpenCoverStudio?: (syncData?: BookCoverSyncData) => void;
   coverStudioCanvasDataUrl?: string;
+  language?: KdpBookLanguage;
 }
 
 type PackagingStep =
@@ -79,10 +82,12 @@ export default function FullBookPackagerModal({
   borderTheme,
   isPremium = true,
   onOpenCoverStudio,
-  coverStudioCanvasDataUrl
+  coverStudioCanvasDataUrl,
+  language: initialLanguage = "en"
 }: FullBookPackagerModalProps) {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"preview" | "cover" | "metadata">("preview");
+  const [bookLanguage, setBookLanguage] = useState<KdpBookLanguage>(initialLanguage || "en");
 
   // Cover design mode: theme, upload, or coverstudio
   const [coverMode, setCoverMode] = useState<CoverMode>(
@@ -95,9 +100,10 @@ export default function FullBookPackagerModal({
   const initialMetadata = useMemo(() => {
     return generateKdpMetadata({
       bookPages,
-      trimSize: selectedTrim
+      trimSize: selectedTrim,
+      language: bookLanguage
     });
-  }, [bookPages, selectedTrim]);
+  }, [bookPages, selectedTrim, bookLanguage]);
 
   const [title, setTitle] = useState(initialMetadata.title);
   const [subtitle, setSubtitle] = useState(initialMetadata.subtitle);
@@ -117,16 +123,17 @@ export default function FullBookPackagerModal({
     setMounted(true);
   }, []);
 
-  // Sync initial metadata when pages change
+  // Sync initial metadata when pages or language change
   useEffect(() => {
     const meta = generateKdpMetadata({
       bookPages,
-      trimSize: selectedTrim
+      trimSize: selectedTrim,
+      language: bookLanguage
     });
     setTitle(meta.title);
     setSubtitle(meta.subtitle);
     setAuthor(meta.author);
-  }, [bookPages, selectedTrim]);
+  }, [bookPages, selectedTrim, bookLanguage]);
 
   // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,9 +156,10 @@ export default function FullBookPackagerModal({
       title,
       subtitle,
       author,
-      trimSize: selectedTrim
+      trimSize: selectedTrim,
+      language: bookLanguage
     });
-  }, [bookPages, title, subtitle, author, selectedTrim]);
+  }, [bookPages, title, subtitle, author, selectedTrim, bookLanguage]);
 
   // Generate real-time preview of cover and 3D mockup
   useEffect(() => {
@@ -270,7 +278,8 @@ export default function FullBookPackagerModal({
         title,
         subtitle,
         author,
-        trimSize: selectedTrim
+        trimSize: selectedTrim,
+        language: bookLanguage,
       });
 
       // 5. Render 3D Mockup
@@ -717,6 +726,7 @@ export default function FullBookPackagerModal({
                             trimSize: selectedTrim,
                             pageCount: Math.max(24, bookPages.length),
                             themeId: selectedTheme,
+                            language: bookLanguage,
                           });
                         }}
                         className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
@@ -736,9 +746,49 @@ export default function FullBookPackagerModal({
 
             {/* Book Info Form */}
             <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-3.5 space-y-2.5">
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Palette className="w-3.5 h-3.5 text-amber-500" /> Book Titles &amp; Author
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Palette className="w-3.5 h-3.5 text-amber-500" /> Book Details &amp; Language
+                </h3>
+                <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                  KDP Marketplace
+                </span>
+              </div>
+
+              {/* Language / Market Selector */}
+              <div>
+                <label className="block text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                  Book Language / Mercado
+                </label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[
+                    { code: "en", flag: "🇺🇸", label: "English" },
+                    { code: "es", flag: "🇪🇸", label: "Español" },
+                    { code: "de", flag: "🇩🇪", label: "Deutsch" },
+                    { code: "fr", flag: "🇫🇷", label: "Français" },
+                  ].map((langItem) => {
+                    const isSelected = bookLanguage === langItem.code;
+                    return (
+                      <button
+                        key={langItem.code}
+                        type="button"
+                        onClick={() => {
+                          const newLang = langItem.code as KdpBookLanguage;
+                          setBookLanguage(newLang);
+                        }}
+                        className={`py-1.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition cursor-pointer border ${
+                          isSelected
+                            ? "bg-amber-500 text-slate-950 border-amber-500 font-black shadow-xs"
+                            : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700/80 hover:border-amber-400"
+                        }`}
+                      >
+                        <span>{langItem.flag}</span>
+                        <span className="text-[10px] uppercase tracking-tight">{langItem.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               {/* Title */}
               <div>

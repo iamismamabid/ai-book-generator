@@ -94,7 +94,8 @@ export default function MasterStudioApp() {
     author: "KDPage Publishing",
     trimSize: TRIM_SIZES[0],
     pageCount: 24,
-    themeId: "midnight_gold"
+    themeId: "midnight_gold",
+    language: "en"
   });
   const [pendingAutoAlign, setPendingAutoAlign] = useState<BookCoverSyncData | null>(null);
 
@@ -145,7 +146,7 @@ export default function MasterStudioApp() {
     return interiorBorderThemeRef.current;
   }, []);
 
-  const handleInteriorChange = useCallback(({ pageCount: newPages, trimSize: newTrim, bookPages, borderTheme }: { pageCount: number; trimSize: any; bookPages?: any[]; borderTheme?: any }) => {
+  const handleInteriorChange = useCallback(({ pageCount: newPages, trimSize: newTrim, bookPages, borderTheme, language }: { pageCount: number; trimSize: any; bookPages?: any[]; borderTheme?: any; language?: any }) => {
     if (bookPages && Array.isArray(bookPages)) {
       interiorPagesRef.current = bookPages;
     }
@@ -155,11 +156,13 @@ export default function MasterStudioApp() {
     setBookMeta(prev => {
       const pageMatch = !newPages || prev.pageCount === newPages;
       const trimMatch = !newTrim || (prev.trimSize?.w === newTrim.w && prev.trimSize?.h === newTrim.h);
-      if (pageMatch && trimMatch) return prev;
+      const langMatch = !language || prev.language === language;
+      if (pageMatch && trimMatch && langMatch) return prev;
       return {
         ...prev,
         pageCount: newPages || prev.pageCount,
-        trimSize: newTrim || prev.trimSize
+        trimSize: newTrim || prev.trimSize,
+        language: language || prev.language || "en",
       };
     });
   }, []);

@@ -105,14 +105,54 @@ export const CRYPTOGRAM_QUOTES: string[] = [
   "PATIENCE IS A BITTER PLANT, BUT ITS FRUIT IS SWEET."
 ];
 
+export const CRYPTOGRAM_QUOTES_ES: string[] = [
+  "DONDE UNA PUERTA SE CIERRA, OTRA SE ABRE.",
+  "EL QUE LEE MUCHO Y ANDA MUCHO, VE MUCHO Y SABE MUCHO.",
+  "LA PACIENCIA ES UN ARBOL DE RAIZ AMARGA PERO DE FRUTOS MUY DULCES.",
+  "CAMINANTE, NO HAY CAMINO, SE HACE CAMINO AL ANDAR.",
+  "LA ESPERANZA ES EL SUENO DEL HOMBRE DESPIERTO.",
+  "EL SABIO NO DICE TODO LO QUE PIENSA, PERO SIEMPRE PIENSA TODO LO QUE DICE.",
+  "LA IMAGINACION ES EL COMIENZO DE LA CREACION.",
+  "VIVE COMO SI FUERAS A MORIR MANANA. APRENDE COMO SI FUERAS A VIVIR SIEMPRE.",
+  "CADA DIA ES UNA NUEVA OPORTUNIDAD PARA CAMBIAR TU VIDA.",
+  "LA SONRISA ES EL IDIOMA UNIVERSAL DE LOS HOMBRES INTELIGENTES.",
+  "NO HAY BARRERA, CERRADURA NI CERROJO QUE PUEDAS IMPONER A LA LIBERTAD DE MI MENTE.",
+  "EL EXITO ES LA SUMA DE PEQUENOS ESFUERZOS REPETIDOS DIA TRAS DIA."
+];
+
+export const CRYPTOGRAM_QUOTES_FR: string[] = [
+  "LE PLUS GRAND SECRET DU BONHEUR EST D ETRE BIEN AVEC SOI MEME.",
+  "PETIT A PETIT, L OISEAU FAIT SON NID.",
+  "IL N EST JAMAIS TROP TARD POUR DEVENIR CE QUE L ON AURAIT PU ETRE.",
+  "LA SIMPLICITE EST LA CLE DE TOUTE VERITABLE ELEGANCE.",
+  "TOUT CE QUE L ESPRIT PEUT CONCEVOIR ET CROIRE, IL PEUT L ACCOMPLIR."
+];
+
+export const CRYPTOGRAM_QUOTES_DE: string[] = [
+  "AUCH AUS STEINEN, DIE EINEM IN DEN WEG GELEGT WERDEN, KANN MAN SCHOENES BAUEN.",
+  "WER NICHT WAGT, DER NICHT GEWINNT.",
+  "DIE BESTE ZEIT FUER EINEN NEUANFANG IST JETZT.",
+  "IN DER RUHE LIEGT DIE KRAFT.",
+  "GEDULD IST DAS GEHEIMNIS ALLER ERFOLGE."
+];
+
 /**
  * Generate a target number of quotes for cryptogram puzzle books.
  * Cycles smoothly through the rich curated quotes pool, guaranteeing
  * clean authentic quotes without repeating identical back-to-back entries.
  */
-export function getBulkCryptogramQuotes(targetCount: number, userQuotes: string[] = []): string[] {
+export function getBulkCryptogramQuotes(
+  targetCount: number,
+  userQuotes: string[] = [],
+  language: "en" | "es" | "fr" | "de" = "en"
+): string[] {
   const cleanUser = userQuotes.map(q => q.trim()).filter(q => q.length > 5);
-  const pool = cleanUser.length > 0 ? cleanUser : CRYPTOGRAM_QUOTES;
+  let defaultPool = CRYPTOGRAM_QUOTES;
+  if (language === "es") defaultPool = CRYPTOGRAM_QUOTES_ES;
+  else if (language === "fr") defaultPool = CRYPTOGRAM_QUOTES_FR;
+  else if (language === "de") defaultPool = CRYPTOGRAM_QUOTES_DE;
+
+  const pool = cleanUser.length > 0 ? cleanUser : defaultPool;
   const result: string[] = [];
 
   for (let i = 0; i < targetCount; i++) {

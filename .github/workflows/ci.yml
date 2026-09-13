@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: ismamstudio/package-lock.json
 
@@ -30,10 +30,18 @@ jobs:
         run: npx tsc --noEmit -p tsconfig.json
 
       - name: Run build
-        run: npm run build
+        run: |
+          npm run build 2>&1 | tee build_output.log || {
+            echo "### Build Output on Failure" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 150 build_output.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }
         env:
           SKIP_ENV_VALIDATION: "true"
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
           DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy"
           CLERK_SECRET_KEY: "sk_test_dummy"
+          NODE_OPTIONS: "--max-old-space-size=4096"

@@ -946,7 +946,7 @@ export default function SpineCalculator() {
               {/* Eye-catching badge with bold BLACK text */}
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-400 text-black text-xs font-black uppercase tracking-wider shadow-xl shadow-amber-500/40 border border-amber-300">
                 <span className="w-2.5 h-2.5 rounded-full bg-black animate-ping" />
-                <span>🔥 Limited Launch Offer: $69 Lifetime Deal — Expires in a few days!</span>
+                <span>🚀 Need a Complete Full-Wrap Cover? Use Our Automated Cover Creator!</span>
               </div>
               
               <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
@@ -976,15 +976,13 @@ export default function SpineCalculator() {
 
             {/* High-converting action buttons */}
             <div className="flex flex-col sm:flex-row lg:flex-col gap-3.5 w-full lg:w-auto shrink-0">
-              <a
-                href="https://www.dealfuel.com/seller/kdpage-kdp-book-creator/"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/tools/kdp-cover-creator"
                 className="w-full text-center px-9 py-4.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-sm uppercase tracking-wider shadow-2xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 border border-amber-300 cursor-pointer"
               >
-                <span>🎁 Claim $69 Lifetime Deal</span>
+                <span>Automated Cover Creator →</span>
                 <ArrowRight className="w-4 h-4 text-black" />
-              </a>
+              </Link>
               
               <Link
                 href="/studio"

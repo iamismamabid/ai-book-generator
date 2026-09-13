@@ -44,7 +44,9 @@ export const metadata: Metadata = {
     "kdp spine calculator",
     "book bolt alternative",
     "canva alternative for kdp",
-    "kdp low content software"
+    "kdp low content software",
+    "automated kdp cover creator",
+    "automated kdp cover generator",
   ],
   alternates: {
     canonical: "https://www.kdpage.com",
@@ -387,13 +389,15 @@ export default function HomePage() {
               <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 text-amber-700 flex items-center justify-center text-xl font-black">
                 🎨
               </div>
-              <h3 className="text-lg font-black text-slate-900 tracking-tight">Fabric.js Cover Math</h3>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">Automated KDP Cover Creator</h3>
               <p className="text-slate-600 text-sm font-semibold leading-relaxed">
-                Calculates exact spine thickness <code className="text-xs font-bold bg-amber-50 text-amber-800 px-1 py-0.5 rounded">pageCount * 0.002252"</code> for crisp, professional wrap-around covers.
+                Calculates exact spine thickness <code className="text-xs font-bold bg-amber-50 text-amber-800 px-1 py-0.5 rounded">pageCount * 0.002252"</code> and bleed margins for crisp, professional wrap-around covers.
               </p>
             </div>
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Cover Studio</span>
+              <Link href="/tools/kdp-cover-creator" className="text-[10px] font-black text-amber-700 hover:underline uppercase tracking-wider">
+                Automated Cover Creator →
+              </Link>
               <span className="text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Zero Trim Shift</span>
             </div>
           </div>

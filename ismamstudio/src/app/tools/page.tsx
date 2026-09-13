@@ -27,6 +27,9 @@ export const metadata: Metadata = {
     "self publishing tools free",
     "amazon kdp free tools",
     "kdp pdf validator",
+    "automated kdp cover creator",
+    "automated kdp cover generator",
+    "kdp cover creator free",
   ],
   alternates: {
     canonical: `${SITE_URL}/tools`,
@@ -54,6 +57,7 @@ export const metadata: Metadata = {
 // collapsed to one canonical URL.)
 const TOOL_ITEMS: { name: string; path: string }[] = [
   { name: "Free Puzzle Book Generator", path: "/studio" },
+  { name: "Automated KDP Cover Creator", path: "/tools/kdp-cover-creator" },
   { name: "Free KDP Spine & Cover Calculator", path: "/tools/spine-calculator" },
   { name: "KDP Royalty & Market Viability Estimator", path: "/tools/royalty-estimator" },
   { name: "Free KDP Keyword Research", path: "/tools/keyword-research" },

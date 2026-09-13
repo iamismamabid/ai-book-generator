@@ -312,6 +312,16 @@ export default function FreeToolsHub() {
   const toolsList: ToolItem[] = [
     // 1. Cover & Spine Tools
     {
+      id: "kdp-cover-creator",
+      name: "Automated KDP Cover Creator",
+      badge: "Must-Have",
+      category: "Design",
+      description: "Auto-calculate spine thickness, trim size, bleed margins, and export 300 DPI wrap-around KDP covers.",
+      features: ["Live spine & bleed math", "300 DPI vector PDF export", "Paperback & Hardcover presets"],
+      keywords: ["automated kdp cover creator", "kdp cover creator", "cover generator", "automated cover maker", "wrap around cover", "book cover generator", "spine calculator"],
+      link: "/tools/kdp-cover-creator"
+    },
+    {
       id: "spine-calculator",
       name: "Free Spine Width & Cover Calculator",
       badge: "Essential",

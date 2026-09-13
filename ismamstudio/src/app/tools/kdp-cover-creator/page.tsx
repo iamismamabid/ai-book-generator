@@ -58,19 +58,17 @@ export default function KdpCoverCreatorPage() {
       "priceCurrency": "USD",
       "availability": "https://schema.org/InStock"
     },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "ratingCount": "184",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
     "description": "Cloud-based automated KDP cover creator that dynamically computes spine width, bleed margins, and full wrap-around dimensions for Amazon paperback and hardcover book printing.",
     "url": `${SITE_URL}/tools/kdp-cover-creator`,
     "author": {
       "@type": "Organization",
       "name": "KDPage",
       "url": SITE_URL
+    },
+    "isPartOf": {
+      "@type": "SoftwareApplication",
+      "@id": "https://www.kdpage.com/#software",
+      "name": "KDPage"
     }
   };
 

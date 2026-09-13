@@ -51,9 +51,10 @@ export default function JsonLdSchema() {
         "aggregateRating": {
           "@type": "AggregateRating",
           "ratingValue": "4.9",
-          "reviewCount": "128",
           "bestRating": "5",
-          "worstRating": "1"
+          "worstRating": "1",
+          "ratingCount": "128",
+          "reviewCount": "128"
         },
         "featureList": [
           "Mathematical Sudoku Generator with Backtracking Single-Solution Solver",

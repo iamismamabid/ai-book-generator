@@ -56,19 +56,17 @@ export default function KdpPuzzleGeneratorPage() {
       "priceCurrency": "USD",
       "availability": "https://schema.org/InStock"
     },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "ratingCount": "210",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
     "description": "Algorithmic KDP puzzle generator for creating mathematically verified Word Searches, Sudokus, Mazes, Cryptograms, and complete 300 DPI interior book PDFs with automated solution keys.",
     "url": `${SITE_URL}/tools/kdp-puzzle-generator`,
     "author": {
       "@type": "Organization",
       "name": "KDPage",
       "url": SITE_URL
+    },
+    "isPartOf": {
+      "@type": "SoftwareApplication",
+      "@id": "https://www.kdpage.com/#software",
+      "name": "KDPage"
     }
   };
 

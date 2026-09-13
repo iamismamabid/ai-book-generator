@@ -53,19 +53,17 @@ export default function KdpBookDescriptionGeneratorPage() {
       "priceCurrency": "USD",
       "availability": "https://schema.org/InStock"
     },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "ratingCount": "320",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
     "description": "Interactive Amazon KDP book description HTML generator and live product page preview tool. Automatically formats clean, compliant HTML headers, bullet lists, and bold text with a 4,000-character safeguard counter.",
     "url": `${SITE_URL}/tools/kdp-book-description-generator`,
     "author": {
       "@type": "Organization",
       "name": "KDPage",
       "url": SITE_URL
+    },
+    "isPartOf": {
+      "@type": "SoftwareApplication",
+      "@id": "https://www.kdpage.com/#software",
+      "name": "KDPage"
     }
   };
 

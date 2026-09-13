@@ -31,6 +31,7 @@ import {
   Heading2,
   Heading3
 } from "lucide-react";
+import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
 
 interface DescriptionTemplate {
   id: string;
@@ -619,6 +620,9 @@ export default function KdpBookDescriptionGeneratorClient() {
             </div>
           </div>
         </div>
+
+        {/* ── Contextual Next Step Publishing Loop ── */}
+        <NextStepWorkflowLoop category="listing" />
 
         {/* Section 1: Official Amazon KDP HTML Rules */}
         <section className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 sm:p-10 space-y-6">

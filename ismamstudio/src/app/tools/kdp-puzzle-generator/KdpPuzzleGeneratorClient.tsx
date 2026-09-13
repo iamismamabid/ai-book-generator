@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   FileText
 } from "lucide-react";
+import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
 
 type PuzzleType = "wordsearch" | "sudoku" | "maze" | "cryptogram" | "scramble";
 type Difficulty = "easy" | "medium" | "hard";
@@ -39,6 +40,7 @@ export default function KdpPuzzleGeneratorClient() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [seed, setSeed] = useState<number>(1);
   const [copiedNotification, setCopiedNotification] = useState<boolean>(false);
+  const [hasDownloaded, setHasDownloaded] = useState<boolean>(false);
 
   // Custom Word Search Inputs
   const [customWordBank, setCustomWordBank] = useState<string>(
@@ -242,6 +244,7 @@ export default function KdpPuzzleGeneratorClient() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setHasDownloaded(true);
   };
 
   const faqs = [
@@ -639,6 +642,15 @@ export default function KdpPuzzleGeneratorClient() {
           </div>
 
         </div>
+      </div>
+
+      {/* ── Contextual Next Step Publishing Loop ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-10">
+        <NextStepWorkflowLoop
+          category="interior"
+          justDownloaded={hasDownloaded}
+          onDismissCelebration={() => setHasDownloaded(false)}
+        />
       </div>
 
       {/* ── Deep Educational & SEO Authority Section ── */}

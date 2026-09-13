@@ -10,6 +10,7 @@ import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { Lock, Download } from "lucide-react";
 import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
+import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
 
 function MazePreview({ 
   grid, 
@@ -674,6 +675,10 @@ export default function MazeGeneratorPage() {
 
         </div>
       )}
+
+      <div className="mt-12">
+        <NextStepWorkflowLoop category="interior" />
+      </div>
 
       <ExportInteriorModal
         isOpen={isExportModalOpen}

@@ -14,6 +14,7 @@ import GenericStudioTour from "@/components/GenericStudioTour";
 import { checkPremiumStatus, getNotebookEntryData, syncMySubscription } from "../actions";
 import { exportSudokuToSvg, downloadSvgFile } from "@/lib/svgExporter";
 import { loadHeaderFooterPresets, HeaderFooterPreset } from "@/lib/headerFooterPresets";
+import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
 
 // Live preview — puzzle grid
 function SudokuPreview({
@@ -860,6 +861,10 @@ export default function SudokuClient() {
 
           </div>
         )}
+
+        <div className="mt-12">
+          <NextStepWorkflowLoop category="interior" />
+        </div>
       </div>
 
       <ExportInteriorModal

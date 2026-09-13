@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   AlertTriangle
 } from "lucide-react";
+import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
 
 type PaperType = "white" | "cream" | "color";
 type CoverType = "paperback" | "hardcover";
@@ -50,6 +51,7 @@ export default function KdpCoverCreatorClient() {
   const [authorName, setAuthorName] = useState<string>("AUTHOR NAME");
   const [coverTheme, setCoverTheme] = useState<string>("navy");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [hasDownloaded, setHasDownloaded] = useState<boolean>(false);
 
   // Copy feedback
   const [copiedWidth, setCopiedWidth] = useState(false);
@@ -163,6 +165,7 @@ export default function KdpCoverCreatorClient() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setHasDownloaded(true);
   };
 
   // Color theme palettes for live preview
@@ -646,6 +649,15 @@ export default function KdpCoverCreatorClient() {
           </div>
 
         </div>
+      </div>
+
+      {/* ── Contextual Next Step Publishing Loop ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-10">
+        <NextStepWorkflowLoop
+          category="cover"
+          justDownloaded={hasDownloaded}
+          onDismissCelebration={() => setHasDownloaded(false)}
+        />
       </div>
 
       {/* ── Deep Educational & SEO Authority Section ── */}

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import ToolShell from "@/components/tools/ToolShell";
-import { LayoutTemplate, Download, Info, Loader2 } from "lucide-react";
+import { LayoutTemplate, Download, Info, Loader2, Sparkles } from "lucide-react";
 
 type TemplateKey =
   | "lined" | "dot-grid" | "graph" | "blank" | "cornell"
@@ -353,10 +354,11 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
 export default function InteriorTemplates() {
   const [template, setTemplate] = useState<TemplateKey>("lined");
   const [trimIdx, setTrimIdx] = useState(0);
-  const [pageCount, setPageCount] = useState(100);
+  const [pageCount, setPageCount] = useState(120);
   const [working, setWorking] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
 
-  const trim = TRIMS[trimIdx];
+  const trim = TRIMS[trimIdx] ?? TRIMS[0]!;
 
   const faqs = [
     {
@@ -377,6 +379,7 @@ export default function InteriorTemplates() {
     setWorking(true);
     try {
       await generatePdf(template, trim.w, trim.h, pageCount);
+      setDownloaded(true);
     } finally {
       setWorking(false);
     }
@@ -464,6 +467,24 @@ export default function InteriorTemplates() {
             <p className="text-[10px] font-bold text-slate-500 text-center">
               {TEMPLATES.find((t) => t.key === template)?.label} · {trim.label} · {pageCount} pages
             </p>
+
+            {downloaded && (
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2 animate-in fade-in duration-300">
+                <div className="flex items-center gap-1.5 text-amber-400 text-xs font-black">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Next Step for Your Book:</span>
+                </div>
+                <p className="text-[11px] text-slate-300 font-medium leading-relaxed">
+                  Now design the matching wrap-around cover with exact spine thickness ({pageCount} pages) and 0.125" bleed.
+                </p>
+                <Link
+                  href="/tools/kdp-cover-creator"
+                  className="w-full py-2.5 px-3 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition mt-2 shadow-md"
+                >
+                  <span>Design Cover Blueprint →</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

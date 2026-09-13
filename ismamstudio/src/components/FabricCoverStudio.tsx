@@ -9515,21 +9515,6 @@ export default function FabricCoverStudio({
               <span className="text-[10px] font-black uppercase tracking-wider">{isGenerating ? "Compiling..." : "Download PDF"}</span>
             </button>
 
-            <button
-              onClick={handlePackageFullKdpBook}
-              disabled={isPackagingFullBook}
-              title="Package Full KDP Book (.ZIP): 300 DPI Cover PDF + Interior PDF + 3D Mockup + KDP Metadata in 1 ZIP"
-              className="p-2 pl-3.5 pr-4 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-black transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5 shadow-sm shadow-amber-500/20 cursor-pointer border border-amber-400/30"
-            >
-              {isPackagingFullBook ? (
-                <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-              ) : (
-                <Sparkles className="w-4 h-4 fill-slate-950 text-slate-950" />
-              )}
-              <span className="text-[10px] font-black uppercase tracking-wider">
-                {isPackagingFullBook ? "Packaging..." : "Package Full Book (.ZIP)"}
-              </span>
-            </button>
 
             <button
               onClick={() => setIsShareOpen(true)}

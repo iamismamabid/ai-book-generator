@@ -293,6 +293,7 @@ export default function BookBuilder({
   const [addModalCategory, setAddModalCategory] = useState<'all' | 'interior' | 'puzzle' | 'structure'>('all');
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [includeCover, setIncludeCover] = useState(false);
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [gutterMargin, setGutterMargin] = useState(true);
   const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);

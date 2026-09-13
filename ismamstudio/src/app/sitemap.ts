@@ -149,6 +149,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.95,
         },
         {
+            url: `${baseUrl}/tools/kdp-book-description-generator`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.95,
+        },
+        {
             url: `${baseUrl}/tools/spine-calculator`,
             lastModified: new Date(),
             changeFrequency: 'weekly',

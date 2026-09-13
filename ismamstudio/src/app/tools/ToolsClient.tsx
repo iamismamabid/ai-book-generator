@@ -332,6 +332,16 @@ export default function FreeToolsHub() {
       link: "/tools/kdp-puzzle-generator"
     },
     {
+      id: "kdp-book-description-generator",
+      name: "Free KDP Book Description Generator",
+      badge: "Essential",
+      category: "Marketing",
+      description: "Format clean Amazon-compliant HTML with bolding, headlines, bullet points, 4,000-character counter & live Amazon preview.",
+      features: ["Live Amazon mockup", "Amazon-compliant HTML", "4,000-char counter & alert", "1-click copy"],
+      keywords: ["kdp book description generator", "amazon book description generator", "kdp html description generator", "amazon book description editor", "kdp description formatter", "book blurb generator"],
+      link: "/tools/kdp-book-description-generator"
+    },
+    {
       id: "spine-calculator",
       name: "Free Spine Width & Cover Calculator",
       badge: "Essential",

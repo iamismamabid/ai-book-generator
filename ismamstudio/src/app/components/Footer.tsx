@@ -184,6 +184,9 @@ export default function Footer() {
                 <Link href="/tools/kdp-cover-creator" className="text-amber-400 hover:text-amber-300 font-bold transition-colors">Automated KDP Cover Creator</Link>
               </li>
               <li>
+                <Link href="/tools/kdp-book-description-generator" className="text-amber-400 hover:text-amber-300 font-bold transition-colors">KDP Book Description Generator</Link>
+              </li>
+              <li>
                 <Link href="/tools/spine-calculator" className="text-slate-400 hover:text-indigo-400 transition-colors">KDP Spine Calculator</Link>
               </li>
               <li>

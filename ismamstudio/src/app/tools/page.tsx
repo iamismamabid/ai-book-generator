@@ -61,6 +61,7 @@ export const metadata: Metadata = {
 const TOOL_ITEMS: { name: string; path: string }[] = [
   { name: "Free KDP Puzzle Generator", path: "/tools/kdp-puzzle-generator" },
   { name: "Automated KDP Cover Creator", path: "/tools/kdp-cover-creator" },
+  { name: "Free KDP Book Description Generator", path: "/tools/kdp-book-description-generator" },
   { name: "Free KDP Spine & Cover Calculator", path: "/tools/spine-calculator" },
   { name: "KDP Royalty & Market Viability Estimator", path: "/tools/royalty-estimator" },
   { name: "Free KDP Keyword Research", path: "/tools/keyword-research" },

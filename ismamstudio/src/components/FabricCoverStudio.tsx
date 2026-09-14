@@ -5678,6 +5678,13 @@ export default function FabricCoverStudio({
       doc.addImage(dataURL, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
       doc.save(`KDP_Premium_Cover_${trimSize.w}x${trimSize.h}.pdf`);
       setIsGenerating(false);
+
+      // 🎁 Record trial download if on trial
+      checkPremiumStatus().then((st: any) => {
+        if (st?.isTrial) {
+          import("@/app/actions").then(({ recordTrialDownload }) => recordTrialDownload()).catch(() => {});
+        }
+      }).catch(() => {});
     }, 300);
   };
 

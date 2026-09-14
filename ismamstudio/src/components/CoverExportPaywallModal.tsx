@@ -101,10 +101,10 @@ export default function CoverExportPaywallModal({
           </div>
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-wider mb-1">
-              <Lock className="w-3 h-3" /> {trialStatus.isExpired ? "7-Day Free Trial Expired" : trialStatus.isTrial ? "7-Day Free Trial Active" : "Pro Export Feature"}
+              <Lock className="w-3 h-3" /> {trialStatus.isExpired ? "7-Day Free Trial Expired" : trialStatus.isTrial ? "Trial Export Limit Reached (2/2 Used)" : "Pro Export Feature"}
             </div>
             <h3 className="text-xl font-black text-white tracking-tight">
-              {trialStatus.isExpired ? "Trial Expired • Activate Paid Plan" : trialStatus.isTrial ? "Activate Paid Plan to Export" : "Unlock 300 DPI Cover Export with KDPage Pro"}
+              {trialStatus.isExpired ? "Trial Expired • Activate Paid Plan" : trialStatus.isTrial ? "Activate Paid Plan for Unlimited Covers" : "Unlock 300 DPI Cover Export with KDPage Pro"}
             </h3>
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function CoverExportPaywallModal({
           {trialStatus.isExpired
             ? "Your 7-day trial has finished and recurring payment could not be charged to your card. Activate your paid subscription or update your billing details to download 300 DPI vector PDF covers for Amazon KDP."
             : trialStatus.isTrial
-            ? "You have full access to design covers in the studio. To download high-resolution watermark-free 300 DPI vector PDF covers for Amazon KDP, please activate your paid plan."
+            ? "You have used your 2 free 300 DPI trial exports. To download unlimited high-resolution watermark-free vector PDF covers for Amazon KDP, please activate your paid plan."
             : "Designing covers in KDPage Studio is 100% free. Unlock instant high-resolution 300 DPI vector PDF export formatted for immediate Amazon KDP upload."}
         </p>
 
@@ -172,7 +172,7 @@ export default function CoverExportPaywallModal({
             href="/pricing"
             className="flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02] active:scale-95"
           >
-            <span>{trialStatus.isExpired ? "⚡ Activate Subscription ($21/mo)" : trialStatus.isTrial ? "⚡ Activate Plan to Download Now" : "⚡ Unlock Pro ($21/mo)"}</span>
+            <span>{trialStatus.isExpired ? "⚡ Activate Subscription ($21/mo)" : trialStatus.isTrial ? "⚡ Activate Plan for Unlimited Downloads" : "⚡ Unlock Pro ($21/mo)"}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link

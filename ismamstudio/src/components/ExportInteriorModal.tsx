@@ -98,6 +98,8 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
     isTrial?: boolean;
     trialExpired?: boolean;
     daysRemaining?: number;
+    trialDownloadsRemaining?: number;
+    trialDownloadsLimit?: number;
     reason?: string;
   }>({
     checked: false,
@@ -122,6 +124,8 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
         isTrial: (res as any).isTrial || false,
         trialExpired: (res as any).trialExpired || (res as any).reason === "trial_expired_unpaid",
         daysRemaining: (res as any).daysRemaining,
+        trialDownloadsRemaining: (res as any).trialDownloadsRemaining,
+        trialDownloadsLimit: (res as any).trialDownloadsLimit,
         reason: (res as any).reason,
       });
     } catch (e) {
@@ -230,6 +234,11 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
         isPremium: premiumStatus.isPremium,
         borderTheme,
       });
+      // 🎁 Record trial download if on trial
+      if (premiumStatus.isTrial) {
+        const { recordTrialDownload } = await import("@/app/actions");
+        await recordTrialDownload();
+      }
       onClose();
     } catch (err) {
       console.error(err);
@@ -353,7 +362,31 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
               </div>
             )}
 
-            {/* 7-Day Trial Mode Paywall Banner */}
+            {/* 7-Day Active Trial with Remaining Free Downloads */}
+            {premiumStatus.isTrial && premiumStatus.isPremium && !premiumStatus.trialExpired && (
+              <div className="p-3.5 bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 border border-emerald-500/40 rounded-2xl text-white flex items-center justify-between gap-3 mb-4 shadow-md">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                    <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-emerald-400 text-xs uppercase tracking-wide">
+                        7-Day Free Trial Active
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-black uppercase">
+                        {premiumStatus.trialDownloadsRemaining ?? 2} of {premiumStatus.trialDownloadsLimit ?? 2} Free Exports Left
+                      </span>
+                    </div>
+                    <p className="text-slate-300 text-[11px] font-medium leading-relaxed mt-0.5">
+                      300 DPI watermark-free vector PDF exports unlocked during your trial for Amazon KDP testing!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 7-Day Trial Mode Paywall Banner (Limit Reached) */}
             {!premiumStatus.isPremium && premiumStatus.isTrial && !premiumStatus.trialExpired && premiumStatus.reason !== "trial_expired_unpaid" && (
               <div className="p-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl border border-amber-500/40 shadow-lg shadow-amber-950/30 space-y-3 mb-4">
                 <div className="flex items-start gap-3">
@@ -363,16 +396,16 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-black text-amber-400 text-xs uppercase tracking-wide">
-                        7-Day Free Trial Active
+                        Trial Export Limit Reached (2/2 Used)
                       </span>
                       {premiumStatus.daysRemaining !== undefined && (
                         <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px] font-extrabold">
-                          {premiumStatus.daysRemaining} Days Left
+                          {premiumStatus.daysRemaining} Days Left in Trial
                         </span>
                       )}
                     </div>
                     <p className="text-slate-300 text-[11px] font-medium leading-relaxed mt-1">
-                      You have full access to test all studio features. To export and download watermark-free 300 DPI print-ready vector PDFs, please activate your paid plan.
+                      You have used your 2 free 300 DPI trial exports. To unlock unlimited print-ready vector PDF downloads, please activate your paid plan.
                     </p>
                   </div>
                 </div>
@@ -382,7 +415,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                     href="/pricing"
                     className="flex-1 text-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-[11px] font-black uppercase tracking-wider shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
                   >
-                    ⚡ Activate Paid Plan to Download Now →
+                    ⚡ Activate Paid Plan for Unlimited Downloads →
                   </Link>
                 </div>
               </div>

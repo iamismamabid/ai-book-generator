@@ -451,14 +451,23 @@ export async function checkPremiumStatus() {
           daysRemaining = Math.max(1, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
         }
 
+        // 🎁 Trial Quota: Allow up to 2 full 300 DPI print-ready exports during the 7-day trial
+        const TRIAL_DOWNLOAD_LIMIT = 2;
+        const trialDownloadsUsed = Number(publicMetadata.trialDownloadsCount || 0);
+        const trialDownloadsRemaining = Math.max(0, TRIAL_DOWNLOAD_LIMIT - trialDownloadsUsed);
+        const canExportDuringTrial = trialDownloadsRemaining > 0;
+
         return {
           checked: true,
-          isPremium: false, // 🔒 Strictly false during trial to block 300 DPI watermark-free exports
+          isPremium: canExportDuringTrial, // ✅ Unlocked for trial users who have remaining downloads
           isTrial: true,
           plan: userPlan,
           daysRemaining,
+          trialDownloadsUsed,
+          trialDownloadsLimit: TRIAL_DOWNLOAD_LIMIT,
+          trialDownloadsRemaining,
           limits,
-          reason: "trial_unpaid",
+          reason: canExportDuringTrial ? "trial_active" : "trial_limit_reached",
         };
       }
 
@@ -558,6 +567,47 @@ export async function checkPremiumStatus() {
   // Unreachable -- the loop above always returns -- but keeps TS satisfied
   // that every path returns a value.
   return { checked: true, isPremium: false, reason: "status_check_failed", plan: "free", limits: defaultFreeLimits };
+}
+
+/**
+ * 🎁 Records a 300 DPI export used by an active trial user.
+ * Increments trialDownloadsCount in Clerk publicMetadata.
+ */
+export async function recordTrialDownload(): Promise<{ success: boolean; count: number; remaining: number }> {
+  try {
+    const { userId } = await auth();
+    if (!userId) return { success: false, count: 0, remaining: 0 };
+
+    const user = await currentUser();
+    if (!user) return { success: false, count: 0, remaining: 0 };
+
+    const publicMetadata = (user.publicMetadata || {}) as any;
+    // Only record for trial users who do not have a confirmed paid transaction
+    const trialEndsAtMs = publicMetadata.trialEndsAt ? new Date(publicMetadata.trialEndsAt).getTime() : 0;
+    const isTrialUser = (trialEndsAtMs > 0 || publicMetadata.isTrial === true || publicMetadata.subscriptionStatus === "trialing") && publicMetadata.hasPaidTransaction !== true;
+
+    if (!isTrialUser) {
+      return { success: true, count: 0, remaining: 999 };
+    }
+
+    const currentCount = Number(publicMetadata.trialDownloadsCount || 0);
+    const newCount = currentCount + 1;
+    const TRIAL_DOWNLOAD_LIMIT = 2;
+    const remaining = Math.max(0, TRIAL_DOWNLOAD_LIMIT - newCount);
+
+    const clerk = await clerkClient();
+    await clerk.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        ...publicMetadata,
+        trialDownloadsCount: newCount,
+      },
+    });
+
+    return { success: true, count: newCount, remaining };
+  } catch (err) {
+    console.error("Failed to record trial download:", err);
+    return { success: false, count: 0, remaining: 0 };
+  }
 }
 
 // 🎯 Instant client-side upgrade verification right after Paddle checkout completes

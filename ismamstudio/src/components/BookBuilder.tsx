@@ -833,6 +833,12 @@ export default function BookBuilder({
         borderTheme,
         isPremium: currentIsPremium,
       });
+
+      // 🎁 Record trial download if on trial
+      if (res?.isTrial) {
+        const { recordTrialDownload } = await import("@/app/actions");
+        await recordTrialDownload();
+      }
     } catch (e) {
       console.error("Failed to export PDF", e);
       alert("Error compiling PDF: " + (e instanceof Error ? e.message : String(e)));

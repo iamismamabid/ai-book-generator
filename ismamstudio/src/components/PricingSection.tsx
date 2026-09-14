@@ -467,7 +467,7 @@ function PricingSectionInner() {
     },
     {
       q: "Can I get a refund if I'm not satisfied?",
-      a: "We offer a 14-day money-back guarantee for all subscription plans. If you are not completely satisfied, simply reach out to support within 14 days for a full refund.",
+      a: "We offer a 3-day 100% money-back guarantee for all subscription plans. If you are not delighted, simply reach out to support within 3 days for an instant full refund.",
     },
     {
       q: "Do the puzzle books include solution keys?",
@@ -773,7 +773,7 @@ function PricingSectionInner() {
           Publish More. Rank Faster. <span className="bg-gradient-to-r from-amber-300 via-rose-400 to-sky-300 bg-clip-text text-transparent">Zero Rejections.</span>
         </h1>
         <p className="text-slate-650 dark:text-slate-400 text-base md:text-lg max-w-2xl mx-auto font-medium leading-relaxed">
-          Start your 7-day trial with 2 free 300 DPI exports to verify on Amazon KDP. Zero risk, cancel anytime with our 14-day 100% money-back guarantee.
+          Start your 7-day trial with 2 free 300 DPI exports to verify on Amazon KDP. Zero risk, cancel anytime with our 3-day 100% money-back guarantee.
         </p>
 
         {/* Toggle Switch */}
@@ -1049,7 +1049,7 @@ function PricingSectionInner() {
           <div>
             <h4 className="text-white font-black text-base mb-1.5 tracking-tight">100% Money-Back Guarantee</h4>
             <p className="text-slate-300 text-xs font-medium leading-relaxed">
-              14-day zero-risk guarantee. If you're not delighted, get an instant full refund.
+              3-day zero-risk guarantee. If you're not delighted, get an instant full refund.
             </p>
           </div>
         </div>

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Refund Policy | KDPage Help Center",
-  description: "Read the comprehensive Refund Policy of KDPage. Learn about our 14-day money-back guarantee, fair usage terms, Lifetime Deal marketplace policy, and Paddle Merchant of Record terms.",
+  description: "Read the comprehensive Refund Policy of KDPage. Learn about our 3-day money-back guarantee, fair usage terms, Lifetime Deal marketplace policy, and Paddle Merchant of Record terms.",
 };
 
 export default function RefundPolicyPage() {
@@ -39,16 +39,16 @@ export default function RefundPolicyPage() {
 
           <div className="space-y-8 text-slate-300 text-sm font-semibold leading-relaxed">
             <section className="space-y-3">
-              <h2 className="text-xl font-black text-white">1. Overview & 14-Day Money-Back Guarantee</h2>
+              <h2 className="text-xl font-black text-white">1. Overview & 3-Day Money-Back Guarantee</h2>
               <p>
-                We stand behind the quality of KDPage and want you to feel confident in your purchase. We offer a **14-day conditional money-back guarantee** for all direct SaaS subscription plans purchased via our platform.
+                We stand behind the quality of KDPage and want you to feel confident in your purchase. We offer a **3-day conditional money-back guarantee** for all direct SaaS subscription plans purchased via our platform. If you're not delighted, get an instant full refund within 3 days.
               </p>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-xl font-black text-white">2. Eligibility & Usage-Based Limitations</h2>
               <p>
-                Refunds under the 14-day guarantee apply to **first-time purchases only**. Subscription renewals, repeat purchases of a previously refunded plan, and plan upgrades from an existing paid plan are non-refundable.
+                Refunds under the 3-day guarantee apply to **first-time purchases only**. Subscription renewals, repeat purchases of a previously refunded plan, and plan upgrades from an existing paid plan are non-refundable.
               </p>
               <p className="p-4 bg-slate-950/60 rounded-xl border border-slate-800 text-slate-300 text-xs leading-relaxed">
                 <strong className="text-amber-400 block mb-1">Usage-Based Credit Limitation:</strong>
@@ -59,7 +59,7 @@ export default function RefundPolicyPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-black text-white">3. Annual Subscription Plans</h2>
               <p>
-                Annual plans are covered by the same **14-day money-back guarantee** from the date of purchase. After 14 days, annual plans are non-refundable, but you may cancel auto-renewal at any time to prevent future billing cycles.
+                Annual plans are covered by the same **3-day money-back guarantee** from the date of purchase. After 3 days, annual plans are non-refundable, but you may cancel auto-renewal at any time to prevent future billing cycles.
               </p>
             </section>
 

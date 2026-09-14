@@ -1,0 +1,838 @@
+export type SupportedLocale = "de" | "es" | "fr" | "it" | "pt";
+
+export interface LocaleInfo {
+  code: SupportedLocale;
+  name: string;
+  nativeName: string;
+  flag: string;
+}
+
+export const SUPPORTED_LOCALES: LocaleInfo[] = [
+  { code: "de", name: "German", nativeName: "Deutsch", flag: "🇩🇪" },
+  { code: "es", name: "Spanish", nativeName: "Español", flag: "🇪🇸" },
+  { code: "fr", name: "French", nativeName: "Français", flag: "🇫🇷" },
+  { code: "it", name: "Italian", nativeName: "Italiano", flag: "🇮🇹" },
+  { code: "pt", name: "Portuguese", nativeName: "Português", flag: "🇵🇹" },
+];
+
+export interface ToolI18nData {
+  slug: string;
+  title: string;
+  description: string;
+  h1: string;
+  subtitle: string;
+  badge: string;
+  keywords: string[];
+  features: string[];
+  faqs: { q: string; a: string }[];
+}
+
+export const TOOLS_I18N: Record<SupportedLocale, Record<string, ToolI18nData>> = {
+  // ── DEUTSCH (GERMAN) ──────────────────────────────────────────────────────────
+  de: {
+    "spine-calculator": {
+      slug: "spine-calculator",
+      title: "Kostenloser KDP Buchrücken Rechner (2026) — Buchcover Maße | KDPage",
+      description: "Berechnen Sie die exakte Buchrückenbreite und Gesamtcover-Maße für Amazon KDP Taschenbücher & Hardcover. Offizielle Amazon Formeln für Weiß-, Creme- & Farbpapier.",
+      h1: "Amazon KDP Buchrücken & Cover Rechner",
+      subtitle: "Berechnen Sie in Sekundenschnelle die exakte Buchrückenstärke und Beschnittzugaben (0.125\") für Amazon KDP ohne Ablehnungen.",
+      badge: "100% Kostenloses KDP Tool",
+      keywords: ["kdp buchrücken rechner", "amazon kdp cover maße", "buchrücken berechnen kdp", "kdp spine calculator deutsch", "kdp taschenbuch rückenstärke", "kdp beschnittzugabe"],
+      features: [
+        "Exakte Formeln für Weißes Papier (0,0572 mm/S.), Cremepapier & Farbe",
+        "Automatische Berechnung des 0,125\" (3,175 mm) KDP-Anschnitts",
+        "Prüfung der Mindestseitenzahl für Buchrückentext (mind. 79 Seiten)",
+        "Druckfertige Pixelmaße bei 300 DPI für Photoshop & Canva",
+      ],
+      faqs: [
+        {
+          q: "Wie berechne ich die Buchrückenbreite für Amazon KDP?",
+          a: "Multiplizieren Sie die Gesamtseitenzahl mit dem Papiermultiplikator: Weißes Papier = 0,002252 Zoll/Seite (0,0572 mm), Cremepapier = 0,0025 Zoll/Seite (0,0635 mm), Farbpapier = 0,002347 Zoll/Seite. Ein 200-Seiten-Buch auf weißem Papier hat z.B. einen Buchrücken von 200 × 0,002252 = 0,45 Zoll.",
+        },
+        {
+          q: "Ab wie vielen Seiten darf Text auf dem KDP-Buchrücken stehen?",
+          a: "Amazon KDP erlaubt Text auf dem Buchrücken erst ab mindestens 79 Seiten. Bei Büchern mit weniger Seiten ist der Buchrücken zu schmal, um Text fehlerfrei zu drucken.",
+        },
+        {
+          q: "Wie berechnet sich die Gesamtbreite des Buchumschlags?",
+          a: "Gesamtbreite = (Buchbreite × 2) + Buchrückenbreite + 0,25 Zoll (0,125 Zoll Anschnitt links und rechts).",
+        },
+      ],
+    },
+    "kdp-cover-creator": {
+      slug: "kdp-cover-creator",
+      title: "KDP Cover Creator Kostenlos — Buchumschlag Generator 300 DPI | KDPage",
+      description: "Erstellen Sie druckfertige Amazon KDP Buchcover mit exakter Buchrückenbreite, Barcode-Zone und 300 DPI PDF-Export. Keine Ablehnung durch Amazon.",
+      h1: "Kostenloser KDP Buchcover Generator",
+      subtitle: "Gestalten Sie professionelle Vollumschlag-Cover für Taschenbücher & Hardcover mit automatischem Beschnitt und Barcode-Platzierung.",
+      badge: "300 DPI Vektor-Export",
+      keywords: ["kdp cover creator", "kdp cover generator kostenlos", "amazon kdp buchcover erstellen", "buchumschlag generator kdp", "kdp cover vorlage"],
+      features: [
+        "Automatische Vorlagen nach offiziellen Amazon KDP Vorgaben",
+        "Schutzzone für Barcode & ISBN integriert",
+        "Keine Verzerrung: Reiner 300 DPI PDF-Druckexport",
+        "Funktioniert für alle Standardformate (6x9, 8.5x11, 5x8)",
+      ],
+      faqs: [
+        {
+          q: "Warum werden Canva-Cover oft von Amazon KDP abgelehnt?",
+          a: "Canva berechnet standardmäßig nicht die exakte KDP-Buchrückenstärke oder die 0,125 Zoll Anschnittzugabe. KDPage berechnet diese Maße mathematisch exakt auf den Millimeter.",
+        },
+        {
+          q: "In welchem Format muss das KDP Cover hochgeladen werden?",
+          a: "Amazon KDP verlangt eine druckfertige PDF-Datei mit mindestens 300 DPI und eingebetteten Schriftarten.",
+        },
+      ],
+    },
+    "kdp-file-validator": {
+      slug: "kdp-file-validator",
+      title: "KDP PDF Datei-Prüfer — Drucktauglichkeit Vorabprüfung | KDPage",
+      description: "Überprüfen Sie Ihr KDP Buch-PDF vor dem Upload auf Amazon: Beschnitt, exakte Seitengröße, Schrifteinbettung und Dateigröße. 100% kostenlos im Browser.",
+      h1: "Amazon KDP Datei-Prüfer & Pre-Flight Check",
+      subtitle: "Vermeiden Sie frustrierende Upload-Fehler auf Amazon KDP. Testen Sie Ihre PDF-Datei vorab auf Konformität.",
+      badge: "Lokale Browser-Prüfung",
+      keywords: ["kdp datei prüfen", "kdp pdf validator", "amazon kdp upload fehler", "kdp seitengröße prüfen", "kdp pre flight check"],
+      features: [
+        "Prüfung der exakten Seitenmaße und Beschnittzugaben",
+        "Erkennung nicht eingebetteter Schriftarten",
+        "Vollständige Privatsphäre: Datei verlässt nie Ihren Browser",
+        "Detaillierter Fehlerbericht mit Korrekturhinweisen",
+      ],
+      faqs: [
+        {
+          q: "Welche Kriterien prüft der KDP File Validator?",
+          a: "Der Validator prüft, ob alle Seiten identische Abmessungen haben, ob die Beschnittgrenzen für Amazon KDP stimmen und ob Schriften korrekt eingebettet sind.",
+        },
+      ],
+    },
+    "print-cost-calculator": {
+      slug: "print-cost-calculator",
+      title: "KDP Druckkosten Rechner (2026) — Tantiemen & Mindestpreis | KDPage",
+      description: "Berechnen Sie die genauen KDP Druckkosten und Autoren-Tantiemen für Amazon.de, Amazon.com und weltweite Marktplätze. Offizielle 2026 Formeln.",
+      h1: "Amazon KDP Druckkosten & Tantiemen Rechner",
+      subtitle: "Ermitteln Sie Druckkosten, Mindestverkaufspreis und Ihren Nettogewinn pro verkauftem Buch auf Amazon KDP.",
+      badge: "Aktualisiert für 2026",
+      keywords: ["kdp druckkosten rechner", "amazon kdp tantiemen berechnen", "kdp gewinn rechner", "kdp taschenbuch kosten amazon de", "kdp mindestpreis"],
+      features: [
+        "Unterstützung für Amazon.de (EUR), Amazon.com (USD), UK (GBP)",
+        "Aufschlüsselung der 60% KDP-Tantiemen und Druckpauschalen",
+        "Echtzeit-Berechnung des optimalen Verkaufspreises",
+        "Vergleich zwischen Schwarz-Weiß- und Farbdruck",
+      ],
+      faqs: [
+        {
+          q: "Wie berechnen sich die KDP Druckkosten in Deutschland (EUR)?",
+          a: "Für ein reguläres Schwarz-Weiß-Taschenbuch auf Amazon.de gilt: Fixkosten ca. 0,75 € + (Seitenzahl × 0,012 €). Bei 200 Seiten betragen die Druckkosten 3,15 €.",
+        },
+      ],
+    },
+    "isbn-generator": {
+      slug: "isbn-generator",
+      title: "Kostenloser ISBN Barcode Generator für KDP Cover (300 DPI) | KDPage",
+      description: "Erstellen Sie druckfertige ISBN-13 Strichcodes mit EAN-5 Preiserweiterung für Ihre KDP Buchrückseite. Kostenloser SVG- & PNG-Download mit 300 DPI.",
+      h1: "ISBN-13 Barcode Generator für Buchumschläge",
+      subtitle: "Generieren Sie verifizierte, scannbare Barcodes für die Rückseite Ihres Amazon KDP Buches.",
+      badge: "Vektorgrafik & 300 DPI",
+      keywords: ["isbn barcode generator", "kdp barcode erstellen", "isbn strichcode kostenlos", "buchcover barcode kdp", "ean 13 generator"],
+      features: [
+        "Erstellt offizielle EAN-13 / ISBN-13 Barcodes",
+        "Automatische Berechnung der Prüfziffer (Check Digit)",
+        "Optionaler 5-stelliger Preis-Zusatzcode (EAN-5)",
+        "Scharfer Vektor- (SVG) & hochauflösender PNG-Export",
+      ],
+      faqs: [
+        {
+          q: "Muss ich selbst einen Barcode auf mein KDP Cover setzen?",
+          a: "Wenn Sie Amazon KDPs kostenlose ISBN nutzen, kann Amazon den Barcode automatisch einfügen. Wenn Sie jedoch eine eigene ISBN verwenden oder die genaue Platzierung kontrollieren wollen, ist dieser Generator ideal.",
+        },
+      ],
+    },
+    "kdp-puzzle-generator": {
+      slug: "kdp-puzzle-generator",
+      title: "KDP Rätselbuch Generator — Sudoku, Wortsuche & Labyrinthe | KDPage",
+      description: "Erstellen Sie druckfertige Rätselbücher für Amazon KDP: Sudoku, Wortgitter, Labyrinthe und Kreuzworträtsel mit automatischen Lösungsseiten. 300 DPI PDF.",
+      h1: "Rätselbuch Generator für Amazon KDP",
+      subtitle: "Generieren Sie komplette Rätselbücher mit Lösungen in wenigen Minuten – fertig formatiert für KDP.",
+      badge: "Kommerzielle Lizenz Inklusive",
+      keywords: ["kdp rätselbuch generator", "sudoku buch erstellen kdp", "wortsuchrätsel generator kdp", "rätsel erstellen amazon", "kdp low content rätsel"],
+      features: [
+        "Mathematisch verifizierte, eindeutig lösbare Rätsel",
+        "Automatische Nummerierung und Lösungsseiten am Buchende",
+        "Individuelle Schwierigkeitsstufen (Leicht bis Experte)",
+        "Direkter Vektor-PDF-Export ohne Qualitätsverlust",
+      ],
+      faqs: [
+        {
+          q: "Sind die generierten Rätsel für den kommerziellen Verkauf auf Amazon erlaubt?",
+          a: "Ja, alle mit KDPage erstellten Rätsel und Bücher sind zu 100% kommerziell nutzbar und für den Verkauf auf Amazon KDP freigegeben.",
+        },
+      ],
+    },
+    "word-search": {
+      slug: "word-search",
+      title: "Kostenloser KDP Wortsuchrätsel Generator — 300 DPI PDF | KDPage",
+      description: "Erstellen Sie thematische Wortsuchrätselbücher für Amazon KDP. Eigene Wortlisten hochladen, Lösungsseiten automatisch erstellen und als 300 DPI PDF exportieren.",
+      h1: "Wortsuchrätsel Generator für Amazon KDP",
+      subtitle: "Verwandeln Sie Wortlisten in druckfertige Suchsel-Rätselseiten mit automatischer Platzierung und Lösungen.",
+      badge: "Buch-Paketierung",
+      keywords: ["kdp wortsuchrätsel generator", "suchsel generator buch", "word search kdp deutsch", "rätselbuch wortsuche erstellen", "kdp puzzle book"],
+      features: [
+        "Unterstützung deutscher Umlaute (Ä, Ö, Ü, ß)",
+        "Horizontale, vertikale und diagonale Wortplatzierung",
+        "Automatische Generierung von Lösungsseiten",
+        "CSV-Massenimport von Wortlisten",
+      ],
+      faqs: [
+        {
+          q: "Unterstützt der Wortsuch-Generator deutsche Umlaute?",
+          a: "Ja, der Generator unterstützt Umlaute und Sonderzeichen vollständig.",
+        },
+      ],
+    },
+    "coloring-book-generator": {
+      slug: "coloring-book-generator",
+      title: "KDP Malbuch Generator — Mandalas, Muster & Vorlagen | KDPage",
+      description: "Generieren Sie druckfertige Malbücher für Amazon KDP: Mandalas, florale Muster, Malen nach Zahlen und geometrische Designs. 300 DPI Vektor-Export.",
+      h1: "Amazon KDP Malbuch & Pattern Generator",
+      subtitle: "Erstellen Sie entspannende Malbuchseiten für Erwachsene und Kinder mit messerscharfen Vektorkonturen.",
+      badge: "Messerscharfe Linien",
+      keywords: ["kdp malbuch generator", "ausmalbilder erstellen kdp", "mandala generator buch", "kdp coloring book generator", "malbuch vorlagen amazon"],
+      features: [
+        "100% reine Vektorlinien für perfekten 300 DPI Druck",
+        "Vermeidung von Graustufen-Artefakten",
+        "Automatische Einzelseiten-Layouts mit weißer Rückseite",
+        "Verschiedene Schwierigkeitsgrade für Kinder & Erwachsene",
+      ],
+      faqs: [
+        {
+          q: "Warum ist Vektorqualität bei Malbüchern so wichtig?",
+          a: "Amazon KDP druckt mit 300 bis 600 DPI. Pixelige Bilder führen zu verschwommenen Linien und schlechten Kundenbewertungen. Unsere Vektorgrafiken bleiben immer gestochen scharf.",
+        },
+      ],
+    },
+    "interior-templates": {
+      slug: "interior-templates",
+      title: "Kostenlose KDP Buchvorlagen (PDF) — Notizbücher & Planer | KDPage",
+      description: "Laden Sie druckfertige Buchinnenleben für Amazon KDP herunter: Linierte Notizbücher, Punktraster, Kalender, Wochenplaner und Logbücher. Sofortiger Download.",
+      h1: "Kostenlose KDP Buch-Innenleben Vorlagen (PDF)",
+      subtitle: "Professionell formatierte KDP-Interieurs mit und ohne Beschnitt (Bleed) für 6x9, 8.5x11 und alle Standardmaße.",
+      badge: "Sofort-Download PDF",
+      keywords: ["kdp vorlagen kostenlos", "kdp buchinnenleben pdf", "kdp interior templates", "notizbuch vorlage amazon kdp", "kalender vorlage kdp"],
+      features: [
+        "Verfügbar in den Standardformaten 6x9 und 8.5x11 Zoll",
+        "Optionen mit und ohne Beschnittzugabe (Bleed)",
+        "Inklusive Bundsteg-Sicherheitsabstand (Gutter Margin)",
+        "100–120 Seiten fertige PDFs zum direkten Upload",
+      ],
+      faqs: [
+        {
+          q: "Kann ich diese Vorlagen direkt bei Amazon KDP hochladen?",
+          a: "Ja, alle PDF-Vorlagen sind exakt auf die KDP-Spezifikationen abgestimmt und können sofort als Manuskript hochgeladen werden.",
+        },
+      ],
+    },
+    "keyword-research": {
+      slug: "keyword-research",
+      title: "Kostenloses KDP Keyword Recherche Tool & Nischen-Finder | KDPage",
+      description: "Finden Sie rentable KDP Keywords und unentdeckte Nischen auf Amazon.de und Amazon.com. BSR-Verkaufsrechner und Wettbewerbsanalyse.",
+      h1: "Amazon KDP Keyword Recherche & Nischen-Finder",
+      subtitle: "Entdecken Sie Suchbegriffe mit hoher Nachfrage und geringer Konkurrenz, um Ihre KDP-Verkäufe zu maximieren.",
+      badge: "Echtzeit Amazon-Daten",
+      keywords: ["kdp keyword recherche kostenlos", "amazon kdp nischen finden", "kdp bsr rechner", "kdp suchvolumen", "kdp seo tool"],
+      features: [
+        "Live-Abfrage der Amazon-Autovervollständigung",
+        "BSR-zu-Verkaufszahlen-Rechner für realistische Umsatzschätzungen",
+        "Wettbewerbsanalyse der Top-10 Buchtitel",
+        "Export von 7 Keyword-Feldern für das KDP-Backend",
+      ],
+      faqs: [
+        {
+          q: "Wie wähle ich die 7 KDP Keywords auf Amazon am besten aus?",
+          a: "Nutzen Sie Long-Tail-Keywords mit spezifischer Kaufabsicht (z.B. 'sudoku für senioren große schrift') anstelle von generischen Einzelwörtern.",
+        },
+      ],
+    },
+  },
+
+  // ── ESPAÑOL (SPANISH) ─────────────────────────────────────────────────────────
+  es: {
+    "spine-calculator": {
+      slug: "spine-calculator",
+      title: "Calculadora de Lomo KDP Gratis (2026) — Medidas de Portada | KDPage",
+      description: "Calcula el ancho exacto del lomo y las dimensiones de cubierta para libros de Amazon KDP tapa blanda y tapa dura. Fórmulas oficiales para papel blanco, crema y color.",
+      h1: "Calculadora de Lomo y Portada Amazon KDP",
+      subtitle: "Calcula en segundos el grosor exacto del lomo y los márgenes de sangría (0.125\") para evitar rechazos en Amazon.",
+      badge: "Herramienta KDP 100% Gratis",
+      keywords: ["calculadora de lomo kdp", "medidas portada kdp", "calcular lomo libro amazon", "kdp spine calculator español", "dimensiones tapa blanda kdp"],
+      features: [
+        "Fórmulas oficiales para papel blanco, crema y color",
+        "Cálculo automático de la sangría de 0.125\" (3.175 mm)",
+        "Validación de páginas mínimas para texto en el lomo (mínimo 79 págs.)",
+        "Dimensiones exactas en píxeles a 300 DPI para Canva y Photoshop",
+      ],
+      faqs: [
+        {
+          q: "¿Cómo se calcula el lomo de un libro en Amazon KDP?",
+          a: "Multiplica el número de páginas por el grosor del papel: Papel blanco = 0.002252 pulgadas/página, Papel crema = 0.0025 pulgadas/página, Color = 0.002347 pulgadas/página. Un libro de 200 páginas en papel blanco tiene un lomo de 0.45 pulgadas.",
+        },
+        {
+          q: "¿Cuántas páginas se necesitan para poner texto en el lomo?",
+          a: "Amazon KDP requiere un mínimo de 79 páginas para permitir texto en el lomo del libro.",
+        },
+      ],
+    },
+    "kdp-cover-creator": {
+      slug: "kdp-cover-creator",
+      title: "Creador de Portadas KDP Gratis — Generador 300 DPI | KDPage",
+      description: "Crea portadas completas para Amazon KDP con lomo automático, zona de código de barras y exportación PDF lista para imprimir a 300 DPI. Cero rechazos.",
+      h1: "Creador de Portadas Amazon KDP Gratis",
+      subtitle: "Diseña portadas envolventes profesionales para tapa blanda y tapa dura con sangría y código de barras exactos.",
+      badge: "Exportación 300 DPI",
+      keywords: ["creador de portadas kdp", "generador de portadas kdp gratis", "crear portada libro amazon kdp", "plantilla portada kdp"],
+      features: [
+        "Plantillas automáticas según normas oficiales de Amazon KDP",
+        "Zona de seguridad para código de barras e ISBN",
+        "Exportación en PDF vectorial puro a 300 DPI",
+        "Compatible con formatos 6x9, 8.5x11 y personalizados",
+      ],
+      faqs: [
+        {
+          q: "¿Por qué Amazon KDP rechaza las portadas hechas en Canva?",
+          a: "Canva no calcula automáticamente el lomo en función del número de páginas ni añade la sangría de 0.125\" con precisión. KDPage calcula todo al milímetro.",
+        },
+      ],
+    },
+    "kdp-file-validator": {
+      slug: "kdp-file-validator",
+      title: "Validador de Archivos PDF KDP — Verificador Pre-Flight | KDPage",
+      description: "Revisa tu PDF antes de subirlo a Amazon KDP: tamaño de página exacto, sangría, fuentes incrustadas y límites de archivo. 100% gratis en el navegador.",
+      h1: "Validador de Archivos PDF para Amazon KDP",
+      subtitle: "Evita rechazos y errores de subida en KDP comprobando la conformidad de tu manuscrito con antelación.",
+      badge: "Privacidad Total en Navegador",
+      keywords: ["validador kdp pdf", "comprobar archivo kdp", "errores subir libro amazon kdp", "verificador tamaño pagina kdp"],
+      features: [
+        "Comprobación de dimensiones uniformes de página",
+        "Detección de fuentes no incrustadas",
+        "Procesamiento 100% privado en tu ordenador",
+        "Informe claro con soluciones para corregir fallos",
+      ],
+      faqs: [
+        {
+          q: "¿Qué comprueba el validador de archivos KDP?",
+          a: "Verifica que todas las páginas tengan el tamaño exacto, que los márgenes de sangría cumplan las normas de KDP y que el PDF no tenga capas bloqueadas.",
+        },
+      ],
+    },
+    "print-cost-calculator": {
+      slug: "print-cost-calculator",
+      title: "Calculadora de Costos de Impresión KDP (2026) — Regalías | KDPage",
+      description: "Calcula los costes de impresión y regalías de autor en Amazon España (EUR), EE.UU. (USD) y mercados mundiales. Fórmulas actualizadas para 2026.",
+      h1: "Calculadora de Costos de Impresión y Regalías KDP",
+      subtitle: "Conoce tu margen de beneficio, precio mínimo de venta y coste exacto por cada copia vendida en Amazon.",
+      badge: "Actualizado 2026",
+      keywords: ["coste impresion kdp", "calculadora regalias amazon kdp", "precio minimo libro kdp", "cuanto gana autor kdp españa"],
+      features: [
+        "Compatible con Amazon.es (EUR), Amazon.com (USD) y México",
+        "Cálculo automático de la comisión del 60% y gastos fijos",
+        "Comparativa entre tinta negra y color estándar/premium",
+      ],
+      faqs: [
+        {
+          q: "¿Cómo se calculan las regalías en Amazon KDP?",
+          a: "Regalías = (Precio de lista × 60%) − Coste de impresión. Por ejemplo, un libro vendido a 10 € con 2.50 € de coste de impresión deja 3.50 € de regalía neta.",
+        },
+      ],
+    },
+    "isbn-generator": {
+      slug: "isbn-generator",
+      title: "Generador de Código de Barras ISBN Gratis para KDP (300 DPI) | KDPage",
+      description: "Crea códigos de barras ISBN-13 listos para imprimir con extensión de precio EAN-5 para la contraportada de tu libro KDP. Descarga PNG y SVG en 300 DPI.",
+      h1: "Generador de Código de Barras ISBN-13 para Libros",
+      subtitle: "Genera códigos de barras verificados y legibles para la contraportada de tus libros en Amazon KDP.",
+      badge: "Descarga SVG y PNG",
+      keywords: ["generador codigo de barras isbn", "crear codigo barras kdp", "isbn 13 gratis libro", "codigo barras contraportada kdp"],
+      features: [
+        "Genera códigos oficiales ISBN-13 y EAN-13",
+        "Cálculo automático del dígito de control",
+        "Código suplementario de 5 dígitos para precio (opcional)",
+        "Formato vectorial SVG nítido y PNG de alta resolución",
+      ],
+      faqs: [
+        {
+          q: "¿Puedo usar mi propio código de barras en KDP?",
+          a: "Sí, si compraste tu propio ISBN puedes colocar el código de barras generado directamente en tu portada en la esquina inferior derecha.",
+        },
+      ],
+    },
+    "kdp-puzzle-generator": {
+      slug: "kdp-puzzle-generator",
+      title: "Generador de Libros de Pasatiempos KDP — Sudokus y Crucigramas | KDPage",
+      description: "Crea libros de actividades para Amazon KDP: Sudokus, Sopas de Letras, Laberintos y Criptogramas con páginas de soluciones automáticas. PDF 300 DPI.",
+      h1: "Generador de Libros de Pasatiempos para Amazon KDP",
+      subtitle: "Genera interiores completos de pasatiempos con soluciones automáticas en minutos, listos para publicar.",
+      badge: "Uso Comercial Permitido",
+      keywords: ["generador pasatiempos kdp", "crear libro sudoku kdp", "generador sopa de letras kdp", "libros bajo contenido amazon"],
+      features: [
+        "Pasatiempos matemáticamente verificados con solución única",
+        "Generación automática de soluciones al final del libro",
+        "Niveles de dificultad regulables de fácil a experto",
+        "Exportación directa en PDF vectorial a 300 DPI",
+      ],
+      faqs: [
+        {
+          q: "¿Los pasatiempos generados son válidos para vender en Amazon?",
+          a: "Sí, todos los pasatiempos incluyen licencia comercial completa para su publicación y venta en Amazon KDP.",
+        },
+      ],
+    },
+    "word-search": {
+      slug: "word-search",
+      title: "Generador de Sopas de Letras KDP Gratis — PDF 300 DPI | KDPage",
+      description: "Crea libros temáticos de sopa de letras para Amazon KDP. Sube tus listas de palabras en español, genera soluciones automáticas y exporta en PDF.",
+      h1: "Generador de Sopa de Letras para Amazon KDP",
+      subtitle: "Convierte listas de palabras temáticas en libros de sopa de letras con soluciones automáticas.",
+      badge: "Compatible con Ñ y Tildes",
+      keywords: ["generador sopa de letras kdp", "crear sopa de letras para libro", "generador crucigramas kdp", "sopa de letras amazon kdp"],
+      features: [
+        "Soporte completo para caracteres en español (Ñ, tildes)",
+        "Direcciones múltiples (horizontal, vertical, diagonal e invertida)",
+        "Soluciones agrupadas automáticamente al final",
+        "Importación masiva de listas en formato CSV",
+      ],
+      faqs: [
+        {
+          q: "¿Soporta palabras con letra Ñ y tildes?",
+          a: "Sí, el generador admite caracteres en español como la letra Ñ sin errores.",
+        },
+      ],
+    },
+    "coloring-book-generator": {
+      slug: "coloring-book-generator",
+      title: "Generador de Libros para Colorear KDP — Mandalas y Patrones | KDPage",
+      description: "Genera páginas para colorear de alta calidad para Amazon KDP: Mandalas, motivos florales y geométricos. Exportación vectorial 300 DPI sin pixelación.",
+      h1: "Generador de Libros para Colorear Amazon KDP",
+      subtitle: "Crea páginas para colorear para adultos y niños con trazos vectoriales nítidos para impresión profesional.",
+      badge: "Líneas Vectoriales Puras",
+      keywords: ["generador libros colorear kdp", "crear libro mandalas kdp", "coloring book generator español", "dibujos para colorear amazon"],
+      features: [
+        "Trazos nítidos a 300 DPI sin artefactos ni degradados",
+        "Formato a página impar con reverso en blanco para evitar traspasos",
+        "Diseños variados para principiantes y avanzados",
+      ],
+      faqs: [
+        {
+          q: "¿Por qué los libros para colorear deben ser vectoriales?",
+          a: "Las imágenes con píxeles quedan borrosas al imprimirse en Amazon. Los vectores garantizan que cada línea negra sea 100% nítida.",
+        },
+      ],
+    },
+    "interior-templates": {
+      slug: "interior-templates",
+      title: "Plantillas de Interior KDP Gratis (PDF) — Cuadernos y Agendas | KDPage",
+      description: "Descarga interiores listos para publicar en Amazon KDP: Cuadernos de líneas, papel punteado, agendas y planificadores semanales. Descarga gratis.",
+      h1: "Plantillas de Interior para Libros KDP (PDF)",
+      subtitle: "Interiores profesionales formateados con y sin sangría (Bleed) para formatos 6x9, 8.5x11 y más.",
+      badge: "Descarga Inmediata",
+      keywords: ["plantillas interior kdp gratis", "cuaderno de notas plantilla kdp", "interior libro amazon kdp pdf", "kdp interior templates español"],
+      features: [
+        "Tamaños estándar 6x9 y 8.5x11 pulgadas",
+        "Versiones con sangría y sin sangría",
+        "Márgenes de seguridad para el encuadernado (Gutter Margin)",
+        "PDFs de 100 a 120 páginas listos para subir",
+      ],
+      faqs: [
+        {
+          q: "¿Puedo subir estas plantillas directamente a Amazon?",
+          a: "Sí, están calculadas exactamente con las especificaciones de Amazon KDP para subirse sin modificaciones.",
+        },
+      ],
+    },
+    "keyword-research": {
+      slug: "keyword-research",
+      title: "Herramienta de Palabras Clave KDP Gratis — Búsqueda de Nichos | KDPage",
+      description: "Encuentra palabras clave de baja competencia y alta demanda en Amazon.es y Amazon.com. Calculadora de ventas BSR y validador de nichos rentables.",
+      h1: "Buscador de Palabras Clave y Nichos KDP",
+      subtitle: "Descubre términos rentables para posicionar tus libros en los primeros puestos de búsqueda en Amazon.",
+      badge: "Datos de Amazon en Vivo",
+      keywords: ["palabras clave kdp gratis", "investigacion nichos kdp", "encontrar nichos rentables amazon", "kdp seo español"],
+      features: [
+        "Sugerencias de búsqueda en tiempo real de Amazon",
+        "Calculadora de BSR a ventas mensuales estimadas",
+        "Optimización de los 7 campos de palabras clave de KDP",
+      ],
+      faqs: [
+        {
+          q: "¿Cómo elegir las 7 palabras clave en KDP?",
+          a: "Elige frases de búsqueda largas (long-tail) con intención de compra real en lugar de palabras sueltas genéricas.",
+        },
+      ],
+    },
+  },
+
+  // ── FRANÇAIS (FRENCH) ─────────────────────────────────────────────────────────
+  fr: {
+    "spine-calculator": {
+      slug: "spine-calculator",
+      title: "Calculateur de Tranche KDP Gratuit (2026) — Dimensions Couverture | KDPage",
+      description: "Calculez l'épaisseur exacte du dos et les dimensions de couverture pour livres Amazon KDP broché et relié. Formules officielles papier blanc, crème et couleur.",
+      h1: "Calculateur de Tranche & Couverture Amazon KDP",
+      subtitle: "Calculez en quelques secondes l'épaisseur exacte du dos et les fonds perdus (0,125\") sans risque de rejet par Amazon.",
+      badge: "Outil KDP 100% Gratuit",
+      keywords: ["calculateur tranche kdp", "dimensions couverture kdp", "calcul dos livre amazon", "kdp spine calculator francais"],
+      features: [
+        "Formules officielles Amazon pour papier blanc, crème et couleur",
+        "Calcul automatique du fond perdu de 0,125\" (3,175 mm)",
+        "Contrôle du nombre de pages minimal pour texte sur la tranche (min. 79 pages)",
+        "Dimensions précises en pixels à 300 DPI pour Canva et Photoshop",
+      ],
+      faqs: [
+        {
+          q: "Comment calculer l'épaisseur du dos d'un livre KDP ?",
+          a: "Multipliez le nombre de pages par le multiplicateur de papier : Papier blanc = 0,002252 pouce/page, Papier crème = 0,0025 pouce/page, Couleur = 0,002347 pouce/page.",
+        },
+      ],
+    },
+    "kdp-cover-creator": {
+      slug: "kdp-cover-creator",
+      title: "Créateur de Couverture KDP Gratuit — Générateur 300 DPI | KDPage",
+      description: "Créez des couvertures complètes pour Amazon KDP avec tranche calculée, zone code-barres et export PDF 300 DPI haute résolution. Zéro rejet.",
+      h1: "Générateur de Couverture Amazon KDP Gratuit",
+      subtitle: "Concevez des couvertures professionnelles pour livres brochés et reliés avec marges de découpe parfaites.",
+      badge: "Export PDF 300 DPI",
+      keywords: ["createur couverture kdp", "generateur couverture kdp gratuit", "creer couverture livre amazon kdp"],
+      features: [
+        "Modèles conformes aux normes strictes d'Amazon KDP",
+        "Zone de réserve intégrée pour code-barres et ISBN",
+        "Export vectoriel net sans perte de qualité",
+      ],
+      faqs: [
+        {
+          q: "Pourquoi mes couvertures Canva sont-elles rejetées par Amazon ?",
+          a: "Canva n'ajoute pas les marges de fond perdu de 0,125\" avec précision et ne calcule pas la tranche exacte selon le nombre de pages.",
+        },
+      ],
+    },
+    "kdp-file-validator": {
+      slug: "kdp-file-validator",
+      title: "Vérificateur de Fichier PDF KDP — Contrôle Pré-Publication | KDPage",
+      description: "Validez votre manuscrit PDF avant l'upload Amazon KDP : dimensions de page, fonds perdus, polices incorporées. 100% gratuit dans le navigateur.",
+      h1: "Vérificateur de Fichier PDF Amazon KDP",
+      subtitle: "Évitez les rejets lors du téléversement en vérifiant la conformité technique de votre fichier PDF.",
+      badge: "Traitement Sécurisé Local",
+      keywords: ["verificateur pdf kdp", "preflight kdp gratuit", "erreur upload kdp amazon", "dimensions page kdp"],
+      features: ["Vérification des dimensions de page uniformes", "Détection des polices non incorporées", "Sécurité totale : le fichier ne quitte pas votre appareil"],
+      faqs: [{ q: "Que vérifie cet outil ?", a: "Il contrôle le respect des dimensions de coupe, l'incorporation des polices et l'absence de calques verrouillés." }],
+    },
+    "print-cost-calculator": {
+      slug: "print-cost-calculator",
+      title: "Calculateur de Coûts d'Impression KDP (2026) — Redevances | KDPage",
+      description: "Calculez les frais d'impression et redevances nettes sur Amazon.fr (EUR), Amazon.ca et les marchés mondiaux. Formules officielles 2026.",
+      h1: "Calculateur de Coûts d'Impression & Redevances KDP",
+      subtitle: "Déterminez votre bénéfice net et le prix de vente minimum recommandé pour vos livres Amazon KDP.",
+      badge: "Formules 2026",
+      keywords: ["cout impression kdp france", "calcul redevances kdp", "prix minimum livre amazon kdp", "combien gagne auteur kdp"],
+      features: ["Support des devises EUR, USD, CAD et GBP", "Calcul net des 60% de redevance KDP", "Comparatif noir & blanc vs couleur"],
+      faqs: [{ q: "Comment sont calculées les redevances KDP ?", a: "Redevance = (Prix de vente × 60%) − Coût d'impression." }],
+    },
+    "isbn-generator": {
+      slug: "isbn-generator",
+      title: "Générateur Code-Barres ISBN Gratuit pour KDP (300 DPI) | KDPage",
+      description: "Créez des codes-barres ISBN-13 haute définition pour la quatrième de couverture de votre livre KDP. Téléchargement vectoriel SVG et PNG 300 DPI.",
+      h1: "Générateur de Code-Barres ISBN-13",
+      subtitle: "Générez des codes-barres lisibles et vérifiés pour la quatrième de couverture de vos livres Amazon.",
+      badge: "Haute Définition 300 DPI",
+      keywords: ["generateur code barre isbn", "code barre livre kdp gratuit", "ean 13 isbn generateur"],
+      features: ["Calcul automatique du chiffre d'autocontrôle", "Export SVG vectoriel net et PNG haute résolution"],
+      faqs: [{ q: "Puis-je utiliser mon propre ISBN sur Amazon KDP ?", a: "Oui, vous pouvez renseigner votre ISBN propriétaire et placer le code-barres généré sur la couverture." }],
+    },
+    "kdp-puzzle-generator": {
+      slug: "kdp-puzzle-generator",
+      title: "Générateur de Livres de Jeux KDP — Sudokus & Mots Mêlés | KDPage",
+      description: "Créez des livres de jeux pour Amazon KDP : Sudokus, Mots Fléchés, Labyrinthes et Cryptogrammes avec solutions automatiques. PDF 300 DPI.",
+      h1: "Générateur de Livres de Jeux pour Amazon KDP",
+      subtitle: "Générez des cahiers d'activités complets avec solutions en quelques clics, prêts pour l'impression.",
+      badge: "Usage Commercial Inclus",
+      keywords: ["generateur puzzle kdp", "creer livre sudoku amazon", "generateur mots meles kdp"],
+      features: ["Grilles vérifiées mathématiquement", "Solutions automatiques insérées en fin de livre", "Niveaux de difficulté modulables"],
+      faqs: [{ q: "Puis-je vendre ces livres sur Amazon ?", a: "Oui, tous les contenus générés incluent une licence commerciale pour la vente sur KDP." }],
+    },
+    "word-search": {
+      slug: "word-search",
+      title: "Générateur de Mots Mêlés KDP Gratuit — PDF 300 DPI | KDPage",
+      description: "Créez des livres de mots mêlés thématiques pour Amazon KDP. Importez vos listes de mots en français et exportez en PDF haute définition.",
+      h1: "Générateur de Mots Mêlés pour Amazon KDP",
+      subtitle: "Transformez vos listes de vocabulaire en grilles de mots mêlés avec solutions automatiques.",
+      badge: "Support Caractères Français",
+      keywords: ["generateur mots meles kdp", "mots caches livre amazon", "generateur puzzle mots francais"],
+      features: ["Prise en charge complète des accents français (é, è, à, ç)", "Placement multidirectionnel des mots", "Solutions générées automatiquement"],
+      faqs: [{ q: "Les accents français sont-ils pris en charge ?", a: "Oui, toutes les lettres accentuées françaises sont parfaitement gérées." }],
+    },
+    "coloring-book-generator": {
+      slug: "coloring-book-generator",
+      title: "Générateur de Livres de Coloriage KDP — Mandalas & Motifs | KDPage",
+      description: "Créez des cahiers de coloriage pour Amazon KDP : Mandalas, motifs botaniques et géométriques. Tracé vectoriel net à 300 DPI sans pixellisation.",
+      h1: "Générateur de Livres de Coloriage KDP",
+      subtitle: "Générez des pages de coloriage pour adultes et enfants avec des contours vectoriels parfaits.",
+      badge: "Lignes Vectorielles Pures",
+      keywords: ["generateur livre coloriage kdp", "creer coloriage mandala kdp", "coloring book amazon"],
+      features: ["Lignes vectorielles nettes garantissant un rendu 300 DPI", "Mise en page recto avec verso blanc pour éviter les transferts"],
+      faqs: [{ q: "Pourquoi la qualité vectorielle est-elle cruciale ?", a: "Elle empêche les lignes floues ou pixellisées lors de l'impression sur Amazon." }],
+    },
+    "interior-templates": {
+      slug: "interior-templates",
+      title: "Modèles d'Intérieur KDP Gratuits (PDF) — Carnets & Agendas | KDPage",
+      description: "Téléchargez des intérieurs prêts à publier pour Amazon KDP : Carnets lignés, papier pointillé, agendas et planificateurs. Téléchargement gratuit.",
+      h1: "Modèles d'Intérieur de Livres KDP (PDF)",
+      subtitle: "Intérieurs professionnels avec et sans fond perdu (Bleed) pour formats 6x9 et 8.5x11 pouces.",
+      badge: "Téléchargement Immédiat",
+      keywords: ["templates interieur kdp gratuit", "carnet de notes pdf kdp", "modele livre amazon kdp"],
+      features: ["Formats standards 6x9 et 8.5x11 pouces", "Marges de reliure sécurisées (Gutter Margin)", "PDFs de 100 à 120 pages prêts à l'emploi"],
+      faqs: [{ q: "Puis-je téléverser ces fichiers directement sur KDP ?", a: "Oui, ils respectent scrupuleusement les exigences techniques d'Amazon KDP." }],
+    },
+    "keyword-research": {
+      slug: "keyword-research",
+      title: "Outil de Mots-Clés KDP Gratuit — Recherche de Niches | KDPage",
+      description: "Trouvez des mots-clés peu concurrentiels et rentables sur Amazon.fr et Amazon.com. Calculateur de ventes BSR et analyseur de niches.",
+      h1: "Recherche de Mots-Clés et Niches Amazon KDP",
+      subtitle: "Identifiez les requêtes les plus recherchées pour positionner vos livres en tête des résultats Amazon.",
+      badge: "Données Amazon en Direct",
+      keywords: ["mots cles kdp gratuit", "recherche de niche kdp", "bsr calculateur ventes amazon"],
+      features: ["Suggestions de recherche Amazon en direct", "Estimation des ventes mensuelles via le BSR", "Optimisation des 7 mots-clés du formulaire KDP"],
+      faqs: [{ q: "Comment renseigner les 7 mots-clés dans KDP ?", a: "Privilégiez les expressions de recherche précises (longue traîne) plutôt que des mots isolés." }],
+    },
+  },
+
+  // ── ITALIANO (ITALIAN) ────────────────────────────────────────────────────────
+  it: {
+    "spine-calculator": {
+      slug: "spine-calculator",
+      title: "Calcolatore Dorso KDP Gratis (2026) — Dimensioni Copertina | KDPage",
+      description: "Calcola lo spessore esatto del dorso e le dimensioni di copertina per libri Amazon KDP copertina flessibile e rigida. Formule ufficiali per carta bianca, crema e colore.",
+      h1: "Calcolatore Dorso e Copertina Amazon KDP",
+      subtitle: "Calcola in pochi secondi lo spessore del dorso e i margini di abbondanza (0.125\") per evitare rifiuti su Amazon.",
+      badge: "Strumento KDP 100% Gratis",
+      keywords: ["calcolatore dorso kdp", "dimensioni copertina kdp", "calcolo dorso libro amazon", "kdp spine calculator italiano"],
+      features: ["Formule ufficiali per carta bianca, crema e colore", "Calcolo automatico dell'abbondanza di 0.125\" (3,175 mm)", "Verifica del minimo di 79 pagine per testo sul dorso"],
+      faqs: [{ q: "Come si calcola il dorso di un libro KDP ?", a: "Moltiplica il numero di pagine per lo spessore della carta : Carta bianca = 0,002252 pollici/pagina, Carta crema = 0,0025 pollici/pagina." }],
+    },
+    "kdp-cover-creator": {
+      slug: "kdp-cover-creator",
+      title: "Creatore di Copertine KDP Gratis — Generatore 300 DPI | KDPage",
+      description: "Crea copertine complete per Amazon KDP con dorso automatico, zona codice a barre ed esportazione PDF a 300 DPI. Zero rifiuti.",
+      h1: "Generatore di Copertine Amazon KDP Gratis",
+      subtitle: "Disegna copertine professionali con abbondanza e codice a barre perfettamente allineati.",
+      badge: "Esportazione 300 DPI",
+      keywords: ["creatore copertine kdp", "generatore copertina kdp gratis", "creare copertina libro amazon kdp"],
+      features: ["Modelli conformi agli standard ufficiali di Amazon KDP", "Spazio riservato per codice a barre e ISBN", "PDF vettoriale puro a 300 DPI"],
+      faqs: [{ q: "Perché Amazon rifiuta le copertine fatte su Canva?", a: "Canva non calcola accuratamente lo spessore del dorso in base alle pagine e manca spesso dei margini di abbondanza corretti." }],
+    },
+    "kdp-file-validator": {
+      slug: "kdp-file-validator",
+      title: "Validatore File PDF KDP — Controllo Pre-Stampa | KDPage",
+      description: "Verifica il tuo PDF prima di caricarlo su Amazon KDP: dimensioni pagina, margini di abbondanza, incorporamento font. 100% gratis nel browser.",
+      h1: "Validatore di File PDF per Amazon KDP",
+      subtitle: "Evita errori di caricamento controllando la conformità tecnica del tuo manoscritto in anticipo.",
+      badge: "Verifica Privata Locale",
+      keywords: ["validatore pdf kdp", "controllo file amazon kdp", "errore caricamento kdp"],
+      features: ["Verifica delle dimensioni esatte delle pagine", "Controllo dei font incorporati", "Privacy totale: nessun file inviato al server"],
+      faqs: [{ q: "Cosa verifica questo strumento?", a: "Controlla le dimensioni di taglio, la coerenza delle pagine e la corretta incorporazione dei caratteri." }],
+    },
+    "print-cost-calculator": {
+      slug: "print-cost-calculator",
+      title: "Calcolatore Costi di Stampa KDP (2026) — Royalty | KDPage",
+      description: "Calcola i costi di stampa e le royalty nette per Amazon.it (EUR) e mercati internazionali. Formule ufficiali aggiornate al 2026.",
+      h1: "Calcolatore Costi di Stampa & Royalty KDP",
+      subtitle: "Scopri il tuo margine di guadagno netto e il prezzo minimo di vendita per i tuoi libri su Amazon KDP.",
+      badge: "Formule 2026",
+      keywords: ["costi stampa kdp italia", "calcolo royalty amazon kdp", "prezzo minimo libro kdp", "quanto guadagna autore kdp"],
+      features: ["Supporto completo per Amazon.it (EUR) e Amazon.com", "Calcolo netto della royalty al 60%", "Confronto tra stampa bianco e nero e a colori"],
+      faqs: [{ q: "Come si calcolano le royalty KDP?", a: "Royalty = (Prezzo di copertina × 60%) − Costo di stampa." }],
+    },
+    "isbn-generator": {
+      slug: "isbn-generator",
+      title: "Generatore Codice a Barre ISBN Gratis per KDP (300 DPI) | KDPage",
+      description: "Crea codici a barre ISBN-13 ad alta risoluzione con estensione prezzo per il retro del tuo libro KDP. Download in SVG vettoriale e PNG 300 DPI.",
+      h1: "Generatore di Codici a Barre ISBN-13",
+      subtitle: "Genera codici a barre scansionabili e verificati per la quarta di copertina dei tuoi libri Amazon.",
+      badge: "Download Vettoriale SVG",
+      keywords: ["generatore codice a barre isbn", "barcode libro kdp gratis", "isbn 13 generatore"],
+      features: ["Calcolo automatico della cifra di controllo", "Download in formato vettoriale SVG e PNG ad alta definizione"],
+      faqs: [{ q: "Posso inserire il mio ISBN su KDP?", a: "Sì, se possiedi un tuo codice ISBN puoi generare il codice a barre e inserirlo sulla copertina." }],
+    },
+    "kdp-puzzle-generator": {
+      slug: "kdp-puzzle-generator",
+      title: "Generatore Libri Enigmistica KDP — Sudoku e Crucipuzzle | KDPage",
+      description: "Crea libri di giochi per Amazon KDP: Sudoku, Crucipuzzle, Labirinti e Crittogrammi con soluzioni automatiche. PDF 300 DPI.",
+      h1: "Generatore di Libri Enigmistica per Amazon KDP",
+      subtitle: "Genera interi volumi di passatempi con soluzioni automatiche in pochi minuti, pronti per la pubblicazione.",
+      badge: "Licenza Commerciale Inclusa",
+      keywords: ["generatore enigmistica kdp", "creare libro sudoku kdp", "generatore crucipuzzle amazon"],
+      features: ["Schemi verificati con soluzione univoca", "Pagine di soluzione generate automaticamente a fine libro", "Livelli di difficoltà personalizzabili"],
+      faqs: [{ q: "Posso vendere i libri creati su Amazon?", a: "Sì, tutti i giochi generati includono licenza commerciale completa per la vendita su Amazon KDP." }],
+    },
+    "word-search": {
+      slug: "word-search",
+      title: "Generatore Crucipuzzle KDP Gratis — PDF 300 DPI | KDPage",
+      description: "Crea libri di crucipuzzle tematici per Amazon KDP. Carica le tue liste di parole in italiano e scarica il PDF pronto per la stampa.",
+      h1: "Generatore di Crucipuzzle per Amazon KDP",
+      subtitle: "Trasforma elenchi di parole in griglie di crucipuzzle con soluzioni automatiche.",
+      badge: "Supporto Lingua Italiana",
+      keywords: ["generatore crucipuzzle kdp", "creare parole crociate libro amazon", "puzzle book italiano"],
+      features: ["Supporto per accenti e caratteri italiani", "Inserimento parole in orizzontale, verticale e diagonale", "Soluzioni ordinate a fine libro"],
+      faqs: [{ q: "Supporta le lettere accentate italiane?", a: "Sì, supporta perfettamente tutti i caratteri e gli accenti della lingua italiana." }],
+    },
+    "coloring-book-generator": {
+      slug: "coloring-book-generator",
+      title: "Generatore Libri da Colorare KDP — Mandala e Disegni | KDPage",
+      description: "Genera pagine da colorare per Amazon KDP: Mandala, motivi floreali e geometrici. Grafica vettoriale a 300 DPI senza sgranature.",
+      h1: "Generatore di Libri da Colorare Amazon KDP",
+      subtitle: "Crea album da colorare per adulti e bambini con linee vettoriali nitide per una stampa impeccabile.",
+      badge: "Vettoriali Nitidi a 300 DPI",
+      keywords: ["generatore libri da colorare kdp", "creare mandala da colorare kdp", "coloring book amazon"],
+      features: ["Tracciati vettoriali nitidi per evitare sbavature di stampa", "Impaginazione su pagina singola con retro bianco"],
+      faqs: [{ q: "Perché è importante la qualità vettoriale?", a: "Garantisce che i contorni neri restino perfettamente nitidi anche su carta da stampa Amazon." }],
+    },
+    "interior-templates": {
+      slug: "interior-templates",
+      title: "Modelli Interni KDP Gratis (PDF) — Quaderni e Agende | KDPage",
+      description: "Scarica interni pronti per la pubblicazione su Amazon KDP: Quaderni a righe, puntinati, agende e planner settimanali. Download immediato.",
+      h1: "Modelli di Interni per Libri KDP (PDF)",
+      subtitle: "Interni professionali con e senza abbondanza (Bleed) per formati 6x9 e 8.5x11 pollici.",
+      badge: "Download Immediato",
+      keywords: ["template interni kdp gratis", "quaderno righe pdf kdp", "modelli libri amazon kdp"],
+      features: ["Formati standard 6x9 e 8.5x11 pollici", "Margine di cucitura sicuro per il dorso (Gutter)", "File PDF pronti da 100 a 120 pagine"],
+      faqs: [{ q: "Posso caricare questi PDF direttamente su KDP?", a: "Sì, sono conformi al 100% alle specifiche tecniche di Amazon KDP." }],
+    },
+    "keyword-research": {
+      slug: "keyword-research",
+      title: "Strumento Parole Chiave KDP Gratis — Ricerca Nicchie | KDPage",
+      description: "Trova parole chiave a bassa concorrenza e alta richiesta su Amazon.it e Amazon.com. Calcolatore vendite BSR e validatore di nicchie profittevoli.",
+      h1: "Ricerca Parole Chiave e Nicchie Amazon KDP",
+      subtitle: "Individua le ricerche più remunerative per posizionare i tuoi libri ai primi posti su Amazon.",
+      badge: "Dati Amazon in Tempo Reale",
+      keywords: ["parole chiave kdp gratis", "ricerca nicchie amazon kdp", "calcolatore vendite bsr kdp"],
+      features: ["Suggerimenti di ricerca Amazon in tempo reale", "Stima delle vendite mensili tramite BSR", "Ottimizzazione dei 7 campi parole chiave KDP"],
+      faqs: [{ q: "Come scegliere le 7 parole chiave su KDP?", a: "Usa frasi di ricerca specifiche (long-tail) ad alto intento di acquisto." }],
+    },
+  },
+
+  // ── PORTUGUÊS (PORTUGUESE) ───────────────────────────────────────────────────
+  pt: {
+    "spine-calculator": {
+      slug: "spine-calculator",
+      title: "Calculadora de Lombada KDP Grátis (2026) — Medidas de Capa | KDPage",
+      description: "Calcule a espessura exata da lombada e as dimensões da capa para livros Amazon KDP capa comum e capa dura. Fórmulas oficiais para papel branco, creme e colorido.",
+      h1: "Calculadora de Lombada e Capa Amazon KDP",
+      subtitle: "Calcule em segundos a largura da lombada e as margens de sangria (0.125\") para evitar rejeições na Amazon.",
+      badge: "Ferramenta KDP 100% Grátis",
+      keywords: ["calculadora de lombada kdp", "medidas capa kdp", "calcular lombada livro amazon", "kdp spine calculator portugues"],
+      features: ["Fórmulas oficiais para papel branco, creme e colorido", "Cálculo automático de sangria de 0.125\" (3,175 mm)", "Verificação mínima de 79 páginas para texto na lombada"],
+      faqs: [{ q: "Como calcular a lombada de um livro no KDP?", a: "Multiplique o número de páginas pela espessura do papel: Papel branco = 0.002252 polegadas/página, Papel creme = 0.0025 polegadas/página." }],
+    },
+    "kdp-cover-creator": {
+      slug: "kdp-cover-creator",
+      title: "Criador de Capas KDP Grátis — Gerador 300 DPI | KDPage",
+      description: "Crie capas completas para Amazon KDP com cálculo de lombada, área de código de barras e exportação em PDF de 300 DPI. Sem rejeições.",
+      h1: "Gerador de Capas Amazon KDP Gratuito",
+      subtitle: "Crie capas profissionais envolventes para capa comum e capa dura com margens de sangria perfeitas.",
+      badge: "Exportação 300 DPI",
+      keywords: ["criador de capas kdp", "gerador de capas kdp gratis", "fazer capa livro amazon kdp"],
+      features: ["Modelos de acordo com os padrões oficiais da Amazon KDP", "Área reservada para código de barras e ISBN", "Exportação em PDF vetorial de alta definição"],
+      faqs: [{ q: "Por que as capas do Canva são rejeitadas no KDP?", a: "O Canva não calcula a espessura da lombada com exatidão conforme o número de páginas e frequentemente erra a sangria." }],
+    },
+    "kdp-file-validator": {
+      slug: "kdp-file-validator",
+      title: "Validador de Arquivos PDF KDP — Verificador Pré-Impressão | KDPage",
+      description: "Verifique seu PDF antes de enviar para a Amazon KDP: dimensões de página, sangria, fontes incorporadas e limites de arquivo. 100% grátis no navegador.",
+      h1: "Validador de Arquivos PDF para Amazon KDP",
+      subtitle: "Evite erros e rejeições no upload do KDP verificando antecipadamente as especificações técnicas.",
+      badge: "Segurança Total no Navegador",
+      keywords: ["validador pdf kdp", "verificar arquivo amazon kdp", "erro upload kdp"],
+      features: ["Conferência das dimensões de corte", "Verificação de fontes incorporadas", "Processamento 100% seguro em seu próprio navegador"],
+      faqs: [{ q: "O que este validador verifica?", a: "Ele checa se todas as páginas têm o mesmo tamanho, se a sangria está correta e se não há fontes corrompidas." }],
+    },
+    "print-cost-calculator": {
+      slug: "print-cost-calculator",
+      title: "Calculadora de Custos de Impressão KDP (2026) — Royalties | KDPage",
+      description: "Calcule os custos de impressão e royalties de autor na Amazon Brasil (BRL), EUA (USD) e mercados mundiais. Fórmulas oficiais de 2026.",
+      h1: "Calculadora de Custos de Impressão & Royalties KDP",
+      subtitle: "Descubra seu lucro líquido por cópia e o preço mínimo de venda recomendado para seus livros na Amazon KDP.",
+      badge: "Fórmulas 2026",
+      keywords: ["custo de impressao kdp brasil", "calculadora royalties kdp", "quanto ganha autor amazon kdp", "preco minimo livro kdp"],
+      features: ["Suporte a BRL, USD, EUR e GBP", "Cálculo da taxa de 60% de royalties", "Comparativo entre preto & branco e colorido"],
+      faqs: [{ q: "Como os royalties são calculados no KDP?", a: "Royalties = (Preço de venda × 60%) − Custo de impressão." }],
+    },
+    "isbn-generator": {
+      slug: "isbn-generator",
+      title: "Gerador de Código de Barras ISBN Grátis para KDP (300 DPI) | KDPage",
+      description: "Crie códigos de barras ISBN-13 em alta resolução com extensão de preço para a contracapa do seu livro KDP. Download em SVG e PNG de 300 DPI.",
+      h1: "Gerador de Código de Barras ISBN-13",
+      subtitle: "Gere códigos de barras escaneáveis e verificados para a contracapa de seus livros no KDP.",
+      badge: "Download em SVG e PNG",
+      keywords: ["gerador codigo de barras isbn", "codigo de barras livro kdp gratis", "isbn 13 gerador"],
+      features: ["Cálculo automático do dígito verificador", "Download em formato vetorial SVG e PNG de 300 DPI"],
+      faqs: [{ q: "Posso usar meu próprio ISBN no KDP?", a: "Sim, ao registrar seu próprio ISBN, basta gerar o código de barras e inseri-lo na contracapa." }],
+    },
+    "kdp-puzzle-generator": {
+      slug: "kdp-puzzle-generator",
+      title: "Gerador de Livros de Passatempos KDP — Sudokus e Caça-Palavras | KDPage",
+      description: "Crie livros de atividades para Amazon KDP: Sudokus, Caça-Palavras, Labirintos e Criptogramas com gabarito automático. PDF 300 DPI.",
+      h1: "Gerador de Livros de Passatempos para Amazon KDP",
+      subtitle: "Gere interiores completos de passatempos com respostas automáticas em minutos.",
+      badge: "Uso Comercial Permitido",
+      keywords: ["gerador passatempos kdp", "criar livro sudoku kdp", "gerador caca palavras kdp", "livros baixo conteudo amazon"],
+      features: ["Puzzles matematicamente testados com solução única", "Gabaritos gerados automaticamente no final", "Níveis de dificuldade configuráveis"],
+      faqs: [{ q: "Posso vender estes livros na Amazon?", a: "Sim, todos os puzzles gerados possuem licença comercial irrestrita para venda no KDP." }],
+    },
+    "word-search": {
+      slug: "word-search",
+      title: "Gerador de Caça-Palavras KDP Grátis — PDF 300 DPI | KDPage",
+      description: "Crie livros temáticos de caça-palavras para Amazon KDP. Importe suas listas de palavras em português e baixe em PDF pronto para imprimir.",
+      h1: "Gerador de Caça-Palavras para Amazon KDP",
+      subtitle: "Transforme listas de palavras em páginas de caça-palavras com gabarito automático.",
+      badge: "Suporte a Acentos em Português",
+      keywords: ["gerador caca palavras kdp", "criar caca palavras livro amazon", "puzzle book portugues"],
+      features: ["Suporte total a acentos e cedilha (ç, ã, é, ó)", "Múltiplas direções de busca", "Gabarito de respostas integrado"],
+      faqs: [{ q: "Suporta palavras com acentos e cedilha?", a: "Sim, o gerador aceita perfeitamente caracteres em português como ç, ã e é." }],
+    },
+    "coloring-book-generator": {
+      slug: "coloring-book-generator",
+      title: "Gerador de Livros de Colorir KDP — Mandalas e Padrões | KDPage",
+      description: "Crie páginas de colorir de alta qualidade para Amazon KDP: Mandalas, florais e desenhos geométricos. Gráficos vetoriais a 300 DPI.",
+      h1: "Gerador de Livros de Colorir Amazon KDP",
+      subtitle: "Crie cadernos de colorir para adultos e crianças com linhas vetoriais nítidas.",
+      badge: "Linhas Vetoriais Nítidas",
+      keywords: ["gerador livros de colorir kdp", "criar livro mandalas kdp", "coloring book amazon"],
+      features: ["Traços vetoriais a 300 DPI sem pixelização", "Formatação em páginas ímpares com verso em branco"],
+      faqs: [{ q: "Por que a qualidade vetorial é importante?", a: "Garante que os contornos fiquem perfeitamente pretos e nítidos na impressão sob demanda da Amazon." }],
+    },
+    "interior-templates": {
+      slug: "interior-templates",
+      title: "Modelos de Miolo KDP Grátis (PDF) — Cadernos e Planners | KDPage",
+      description: "Baixe miolos prontos para publicar na Amazon KDP: Cadernos pautados, papel pontilhado, agendas e planners semanais. Download gratuito.",
+      h1: "Modelos de Miolo para Livros KDP (PDF)",
+      subtitle: "Interiores profissionais com e sem sangria (Bleed) para formatos 6x9 e 8.5x11 polegadas.",
+      badge: "Download Imediato",
+      keywords: ["miolo kdp gratis pdf", "caderno pautado kdp", "modelos livros amazon kdp", "interior templates portugues"],
+      features: ["Formatos populares 6x9 e 8.5x11 polegadas", "Margens de segurança para costura/lombada", "Arquivos PDF de 100 a 120 páginas prontos"],
+      faqs: [{ q: "Posso enviar estes arquivos direto para a Amazon?", a: "Sim, eles seguem exatamente as especificações exigidas pelo KDP." }],
+    },
+    "keyword-research": {
+      slug: "keyword-research",
+      title: "Pesquisa de Palavras-Chave KDP Grátis — Encontre Nichos | KDPage",
+      description: "Encontre palavras-chave de baixa concorrência e alta demanda na Amazon Brasil e Amazon.com. Calculadora de vendas BSR e validador de nichos.",
+      h1: "Pesquisa de Palavras-Chave e Nichos Amazon KDP",
+      subtitle: "Descubra termos lucrativos para posicionar seus livros nas primeiras páginas da Amazon.",
+      badge: "Dados da Amazon em Tempo Real",
+      keywords: ["palavras chave kdp gratis", "pesquisa de nichos amazon kdp", "calculadora bsr kdp"],
+      features: ["Sugestões de busca da Amazon em tempo real", "Estimativa de vendas mensais por BSR", "Otimização dos 7 campos de palavras-chave do KDP"],
+      faqs: [{ q: "Como escolher as 7 palavras-chave no KDP?", a: "Dê preferência a termos compostos (cauda longa) com clara intenção de compra." }],
+    },
+  },
+};
+
+export function getToolTranslation(locale: SupportedLocale, slug: string): ToolI18nData | null {
+  const localeData = TOOLS_I18N[locale];
+  if (!localeData) return null;
+  return localeData[slug] || null;
+}

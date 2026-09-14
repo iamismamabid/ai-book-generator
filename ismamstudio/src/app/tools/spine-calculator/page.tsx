@@ -1,4 +1,5 @@
 import SpineCalculator from "./SpineCalculator";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,6 +8,15 @@ export const metadata: Metadata = {
     "Calculate your exact Amazon KDP book spine width, wrap-around cover dimensions, and 0.125\" bleed margins instantly. Official KDP formulas for White, Cream, and Color paper (Paperback & Hardcover). 100% free tool.",
   alternates: {
     canonical: "https://www.kdpage.com/tools/spine-calculator",
+    languages: {
+      en: "https://www.kdpage.com/tools/spine-calculator",
+      de: "https://www.kdpage.com/de/tools/spine-calculator",
+      es: "https://www.kdpage.com/es/tools/spine-calculator",
+      fr: "https://www.kdpage.com/fr/tools/spine-calculator",
+      it: "https://www.kdpage.com/it/tools/spine-calculator",
+      pt: "https://www.kdpage.com/pt/tools/spine-calculator",
+      "x-default": "https://www.kdpage.com/tools/spine-calculator",
+    },
   },
   keywords: [
     "kdp spine calculator",
@@ -137,6 +147,9 @@ export default function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(appSchema) }}
       />
+      <div className="pt-6">
+        <LanguageSwitcher currentLocale="en" slug="spine-calculator" />
+      </div>
       <SpineCalculator />
     </>
   );

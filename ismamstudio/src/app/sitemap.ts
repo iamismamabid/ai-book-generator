@@ -274,6 +274,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.8,
         })),
 
+        // ── Internationalized Tools (5 Locales × 10 Top Tools = 50 URLs) ──
+        ...['de', 'es', 'fr', 'it', 'pt'].flatMap((locale) =>
+            [
+                'spine-calculator',
+                'kdp-cover-creator',
+                'kdp-file-validator',
+                'print-cost-calculator',
+                'isbn-generator',
+                'kdp-puzzle-generator',
+                'word-search',
+                'coloring-book-generator',
+                'interior-templates',
+                'keyword-research',
+            ].map((slug) => ({
+                url: `${baseUrl}/${locale}/tools/${slug}`,
+                lastModified: new Date(),
+                changeFrequency: 'weekly' as const,
+                priority: 0.85,
+            }))
+        ),
+
         // ── Utility & Marketing ─────────────────────────────────
         {
             url: `${baseUrl}/kdp-checklist`,

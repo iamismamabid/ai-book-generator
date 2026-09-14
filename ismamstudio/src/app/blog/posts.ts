@@ -1,3 +1,5 @@
+import { SEO_POSTS } from "./seoPosts";
+
 export interface Post {
   slug: string;
   title: string;
@@ -485,7 +487,8 @@ export const BLOG_POSTS: Post[] = [
       "### Launch Your First Puzzle Book Today",
       "You don't need expensive graphic design software or tedious spreadsheets. Test our free individual puzzle engines at kdpage.com/tools/word-search and kdpage.com/studio/kakuro, or compile a complete 100-page book in one go using the KDPage Creator Studio at kdpage.com/studio."
     ]
-  }
+  },
+  ...SEO_POSTS
 ];
 
 

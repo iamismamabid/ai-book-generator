@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { getPostHogClient } from "@/lib/posthog-server";
 import crypto from "crypto";
+import { addContactToLoops } from "@/lib/loops";
 
 // Helper to clean environment variables
 const cleanEnv = (val: string | undefined) => {
@@ -163,6 +164,19 @@ export async function POST(request: Request) {
           },
         });
 
+        // Sync paid customer status to Loops.so
+        clerk.users.getUser(userId).then((u) => {
+          const uEmail = u?.emailAddresses?.[0]?.emailAddress;
+          if (uEmail) {
+            addContactToLoops({
+              email: uEmail,
+              firstName: u.firstName || "",
+              lastName: u.lastName || "",
+              userGroup: "paid",
+            }).catch(() => {});
+          }
+        }).catch(() => {});
+
         posthog.capture({
           distinctId: userId,
           event: "server_paddle_subscription_activated",
@@ -189,6 +203,19 @@ export async function POST(request: Request) {
             ...(subscriptionId ? { paddleSubscriptionId: subscriptionId } : {}),
           },
         });
+
+        // Sync trialing status to Loops.so
+        clerk.users.getUser(userId).then((u) => {
+          const uEmail = u?.emailAddresses?.[0]?.emailAddress;
+          if (uEmail) {
+            addContactToLoops({
+              email: uEmail,
+              firstName: u.firstName || "",
+              lastName: u.lastName || "",
+              userGroup: "trial",
+            }).catch(() => {});
+          }
+        }).catch(() => {});
 
         posthog.capture({
           distinctId: userId,

@@ -8,6 +8,7 @@ import { randomUUID } from "crypto";
 import { getTeamOwnerIdForMember, getWorkspaceUserIds, seatLimitForPlan } from "@/lib/team";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { AI_FEATURES_ENABLED } from "@/lib/features";
+import { addContactToLoops } from "@/lib/loops";
 
 
 // ২. বই ডিলিট করার ফাংশন
@@ -211,6 +212,17 @@ export async function redeemAppSumoCode(code: string) {
       where: { clerkId: userId }
     });
 
+    // Sync LTD upgrade to Loops.so
+    if (email) {
+      addContactToLoops({
+        email,
+        firstName: user?.firstName || "",
+        lastName: user?.lastName || "",
+        source: "ltd_redemption",
+        userGroup: "paid",
+      }).catch((err) => console.error("Loops LTD sync error:", err));
+    }
+
     revalidatePath("/dashboard");
     return { success: true, count: newRedemptionsCount };
   } catch (error: any) {
@@ -290,6 +302,29 @@ export async function checkPremiumStatus() {
     const user = await currentUser();
     if (user) {
       const publicMetadata = (user.publicMetadata || {}) as any;
+
+      // 🔄 Auto-sync user to Loops.so audience once for onboarding campaign
+      const primaryEmail = user.emailAddresses?.[0]?.emailAddress;
+      if (primaryEmail && !publicMetadata.loopsSynced) {
+        addContactToLoops({
+          email: primaryEmail,
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          source: "clerk_signup",
+          userGroup: publicMetadata.isPremium ? "paid" : (publicMetadata.isTrial ? "trial" : "free"),
+        }).then((synced) => {
+          if (synced) {
+            clerkClient().then((client) => {
+              client.users.updateUserMetadata(userId, {
+                publicMetadata: {
+                  ...publicMetadata,
+                  loopsSynced: true,
+                },
+              }).catch(() => {});
+            }).catch(() => {});
+          }
+        }).catch((err) => console.error("Loops auto-sync error:", err));
+      }
 
       // 🛑 LIVE PADDLE GROUND TRUTH & STRICT BILLING VERIFICATION
       const apiKey = process.env.PADDLE_API_KEY;
@@ -1733,6 +1768,14 @@ export async function saveLeadEmail(email: string, source: string = "website"): 
     } catch (dbErr) {
       console.warn("Save lead email DB warning:", dbErr);
     }
+
+    // Sync lead to Loops.so audience for automated onboarding
+    addContactToLoops({
+      email: trimmedEmail,
+      source: `newsletter_${source}`,
+      userGroup: "lead",
+      subscribed: true,
+    }).catch((err) => console.error("Loops lead sync error:", err));
 
     return {
       success: true,

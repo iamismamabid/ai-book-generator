@@ -345,7 +345,6 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 <div className="pt-2 border-t border-rose-500/20 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
                   <Link
                     href="/pricing"
-                    target="_blank"
                     className="flex-1 text-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 text-white text-[11px] font-black uppercase tracking-wider shadow-md shadow-rose-500/20 transition-all hover:scale-[1.02]"
                   >
                     ⚡ Activate Paid Subscription ($11.99/mo) →
@@ -380,8 +379,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 
                 <div className="pt-2 border-t border-amber-500/20 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
                   <Link
-                    href={`/pricing?checkout=${premiumStatus.plan === 'agency' ? 'agency' : 'pro'}&skipTrial=true`}
-                    target="_blank"
+                    href="/pricing"
                     className="flex-1 text-center py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-[11px] font-black uppercase tracking-wider shadow-md shadow-orange-500/20 transition-all hover:scale-[1.02]"
                   >
                     ⚡ Activate Paid Plan to Download Now →
@@ -441,14 +439,12 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 <div className="pt-2 border-t border-indigo-500/20 flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
                   <Link
                     href="/pricing"
-                    target="_blank"
                     className="flex-1 text-center py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5"
                   >
                     ⚡ Unlock Pro ($11.99/mo) →
                   </Link>
                   <Link
                     href="/pricing"
-                    target="_blank"
                     className="sm:w-auto text-center py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 font-black text-xs transition border border-amber-500/40 hover:border-amber-400 shadow-md shadow-amber-500/10 whitespace-nowrap flex flex-col items-center justify-center leading-tight"
                   >
                     <span>🎁 Lifetime Deal ($69)</span>
@@ -490,7 +486,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   </div>
                 </div>
                 <div className="pt-2 border-t border-emerald-200/50 flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
-                  <Link href="/pricing" target="_blank" className="text-indigo-600 hover:text-indigo-600">
+                  <Link href="/pricing" className="text-indigo-600 hover:text-indigo-600">
                     Manage Plans &amp; Billing →
                   </Link>
                 </div>
@@ -737,8 +733,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
               ) : allowFreeWatermarkedExport ? (
                 <div className="space-y-2.5">
                   <Link
-                    href={premiumStatus.isTrial || premiumStatus.trialExpired ? `/pricing?checkout=${premiumStatus.plan === 'agency' ? 'agency' : 'pro'}&skipTrial=true` : "/pricing"}
-                    target="_blank"
+                    href="/pricing"
                     className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-3.5 rounded-2xl text-xs font-black shadow-lg shadow-orange-500/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 text-center uppercase tracking-wider"
                   >
                     <Sparkles className="w-4 h-4 text-amber-200" />
@@ -775,8 +770,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                 </div>
               ) : (
                 <Link
-                  href={premiumStatus.isTrial || premiumStatus.trialExpired ? `/pricing?checkout=${premiumStatus.plan === 'agency' ? 'agency' : 'pro'}&skipTrial=true` : "/pricing"}
-                  target="_blank"
+                  href="/pricing"
                   className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-4 rounded-2xl text-xs font-black shadow-lg shadow-orange-500/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 text-center uppercase tracking-wider"
                 >
                   <Lock className="w-4 h-4" />

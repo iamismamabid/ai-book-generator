@@ -85,25 +85,25 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto relative z-10">
           
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-indigo-700 text-xs font-black uppercase tracking-[0.2em] shadow-sm mb-6">
-            <Sparkles className="w-4 h-4 text-indigo-600" />
-            The Ultimate Publishing Suite for KDP Self-Publishers
+            <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+            Zero Bleed Errors • 100% Amazon KDP Print-Ready Guarantee
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-slate-900 tracking-tight leading-[1.1] max-w-4xl mx-auto">
-            Create 10 Unique <span className="bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent">KDP Puzzle Books</span> in 5 Minutes
+            Publish Amazon KDP Books in 5 Minutes — <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-amber-500 bg-clip-text text-transparent">Zero Bleed Errors.</span> Guaranteed.
           </h1>
 
           <p className="text-slate-700 text-lg sm:text-xl font-medium leading-relaxed max-w-3xl mx-auto mt-6">
-            The ultimate all-in-one publishing suite. Generate mathematically unique puzzles, custom shape-masked mazes, and print-ready covers designed for instant Amazon KDP upload.
+            The all-in-one automated publishing studio for self-publishers. Generate mathematically unique puzzle books, coloring pages, and full-wrap covers with auto-calculated spine bleeds. Export 300 DPI vector PDFs accepted by Amazon on your first try.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
             <Link
-              href="/studio"
-              className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-lg hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-orange-500/25 transition-all duration-300 ease-in-out hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
-              aria-label="Start creating KDP books now in Studio"
+              href="/pricing"
+              className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-lg hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/25 hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 ease-in-out hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
+              aria-label="Start Free Trial with 2 free 300 DPI downloads"
             >
-              Start Creating Now (Free)
+              Start Free Trial (2 Free 300 DPI Downloads)
               <ArrowRight className="w-5 h-5 text-white" />
             </Link>
             <Link
@@ -113,6 +113,14 @@ export default function HomePage() {
               Explore 30+ Free Tools
             </Link>
           </div>
+
+          <p className="text-xs font-bold text-slate-500 mt-3 flex items-center justify-center gap-2 flex-wrap">
+            <span>🛡️ Risk-Free 7-Day Trial</span>
+            <span>•</span>
+            <span>⚡ 2 Free 300 DPI PDF Exports</span>
+            <span>•</span>
+            <span>🎁 25% Off Code: <strong className="text-indigo-600 font-black">LAUNCH25</strong></span>
+          </p>
 
           {/* Value Proof Badges */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-8 border-t border-slate-200/80 max-w-4xl mx-auto mt-10">
@@ -448,13 +456,20 @@ export default function HomePage() {
               All PDF exports automatically include precise gutters, safety bleed buffers, standard book sizes (6"x9", 8.5"x11"), and optimized vector paths ready for printing.
             </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/pricing"
+              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black px-8 py-4 rounded-2xl transition-all duration-300 ease-in-out hover:-translate-y-1 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 flex items-center justify-center gap-2"
+              aria-label="Start Free Trial with 2 free 300 DPI exports"
+            >
+              Start Free Trial <ArrowRight className="w-4 h-4" />
+            </Link>
             <Link
               href="/studio"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-4 rounded-2xl transition-all duration-300 ease-in-out hover:-translate-y-1 shadow-md shadow-indigo-600/15 hover:shadow-lg hover:shadow-indigo-600/20 flex items-center gap-2"
-              aria-label="Create KDP books now"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-6 py-4 rounded-2xl transition-all flex items-center justify-center gap-2"
+              aria-label="Open Creator Studio Sandbox"
             >
-              Create Now <ArrowRight className="w-4 h-4" />
+              Open Studio
             </Link>
           </div>
         </div>

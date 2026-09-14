@@ -451,7 +451,7 @@ function PricingSectionInner() {
     },
     {
       q: "How does the 7-Day Free Trial work?",
-      a: "The 7-Day Free Trial gives you complete access to explore all studio generators, customize book parameters, and design covers with $0 charged today. To prevent downloading abuse, high-resolution 300 DPI vector PDF downloads unlock upon your first billing or whenever you choose to activate your paid plan early.",
+      a: "Your 7-Day Free Trial gives you complete access to all 30+ tools and generators with $0 charged today. To let you test the print quality directly on Amazon KDP without paying upfront, you get 2 free high-resolution 300 DPI vector PDF exports during your trial. Once your trial ends or you upgrade, you enjoy unlimited downloads and full commercial licenses.",
     },
     {
       q: "Are the generated interiors ready to upload directly to Amazon KDP?",
@@ -745,7 +745,7 @@ function PricingSectionInner() {
                   <Zap className="w-4 h-4 shrink-0 opacity-80" />
                 </button>
                 <p className="text-[11px] text-center font-semibold text-slate-400 mt-2.5">
-                  🔒 7 Days Free • $0 Charged Today • Full Studio Access
+                  🔒 7 Days Free • 2 Free 300 DPI Exports • $0 Charged Today
                 </p>
               </>
             );
@@ -770,10 +770,10 @@ function PricingSectionInner() {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-4">
-          Simple, <span className="bg-gradient-to-r from-amber-300 via-rose-400 to-sky-300 bg-clip-text text-transparent">Value-Packed</span> Pricing
+          Publish More. Rank Faster. <span className="bg-gradient-to-r from-amber-300 via-rose-400 to-sky-300 bg-clip-text text-transparent">Zero Rejections.</span>
         </h1>
-        <p className="text-slate-650 dark:text-slate-400 text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed">
-          Create profitable books with ease. Choose a plan that matches your publishing scale.
+        <p className="text-slate-650 dark:text-slate-400 text-base md:text-lg max-w-2xl mx-auto font-medium leading-relaxed">
+          Start your 7-day trial with 2 free 300 DPI exports to verify on Amazon KDP. Zero risk, cancel anytime with our 14-day 100% money-back guarantee.
         </p>
 
         {/* Toggle Switch */}
@@ -1047,9 +1047,9 @@ function PricingSectionInner() {
             <Award className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">Reconciled Guarantee</h4>
+            <h4 className="text-white font-black text-base mb-1.5 tracking-tight">100% Money-Back Guarantee</h4>
             <p className="text-slate-300 text-xs font-medium leading-relaxed">
-              7-day money-back guarantee for complete confidence.
+              14-day zero-risk guarantee. If you're not delighted, get an instant full refund.
             </p>
           </div>
         </div>

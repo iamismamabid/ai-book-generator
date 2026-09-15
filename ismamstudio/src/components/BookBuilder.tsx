@@ -252,6 +252,72 @@ const TRIM_SIZES = [
   { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
 ];
 
+export function createDefaultTitlePage(
+  title = "My Masterpiece Book",
+  subtitle = "A Collection of Puzzles",
+  author = "Independent Publisher"
+) {
+  return {
+    id: "page-title-frontmatter",
+    type: 'title',
+    config: {
+      title,
+      subtitle,
+      author,
+    }
+  };
+}
+
+export function createDefaultCopyrightPage(
+  title = "My Masterpiece Book",
+  author = "Independent Publisher"
+) {
+  return {
+    id: "page-copyright-frontmatter",
+    type: 'copyright',
+    config: {
+      title,
+      author,
+      year: new Date().getFullYear().toString(),
+      edition: "First Edition",
+      disclaimer:
+        "All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the publisher, except in the case of brief quotations embodied in critical reviews.",
+      printedIn: "Independently Published",
+    }
+  };
+}
+
+export function ensureMandatoryFrontMatter(pages: any[]): any[] {
+  if (!pages || !Array.isArray(pages) || pages.length === 0) {
+    return [createDefaultTitlePage(), createDefaultCopyrightPage()];
+  }
+
+  // Find existing title page (if any)
+  const existingTitleIndex = pages.findIndex((p) => p.type === 'title');
+  const existingTitlePage = existingTitleIndex !== -1
+    ? pages[existingTitleIndex]
+    : createDefaultTitlePage();
+
+  const titleForCopyright = existingTitlePage.config?.title || "My Masterpiece Book";
+  const authorForCopyright = existingTitlePage.config?.author || "Independent Publisher";
+
+  // Find existing copyright page (if any)
+  const existingCopyrightIndex = pages.findIndex((p) => p.type === 'copyright');
+  const existingCopyrightPage = existingCopyrightIndex !== -1
+    ? pages[existingCopyrightIndex]
+    : createDefaultCopyrightPage(titleForCopyright, authorForCopyright);
+
+  // Filter out all title and copyright pages from content pages
+  const contentPages = pages.filter((p, idx) => {
+    if (idx === existingTitleIndex) return false;
+    if (idx === existingCopyrightIndex) return false;
+    if (p.type === 'title' || p.type === 'copyright') return false;
+    return true;
+  });
+
+  return [existingTitlePage, existingCopyrightPage, ...contentPages];
+}
+
 export default function BookBuilder({
   coverState,
   initialPages,
@@ -265,7 +331,9 @@ export default function BookBuilder({
   onInteriorChange?: (info: { pageCount: number; trimSize: any; bookPages?: any[]; borderTheme?: any; language?: KdpBookLanguage }) => void;
   onSyncPages?: (pages: any[], borderTheme?: any) => void;
 }) {
-  const [bookPages, setBookPages] = useState<any[]>([]);
+  const [bookPages, setBookPages] = useState<any[]>(() =>
+    ensureMandatoryFrontMatter(initialPages || [])
+  );
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [bookLanguage, setBookLanguage] = useState<KdpBookLanguage>("en");
 
@@ -367,7 +435,7 @@ export default function BookBuilder({
 
   const handleRestoreBookVersion = (ver: BookVersion) => {
     if (ver.bookPages && ver.bookPages.length > 0) {
-      setBookPages(ver.bookPages);
+      setBookPages(ensureMandatoryFrontMatter(ver.bookPages));
       setActiveIndex(0);
     }
   };
@@ -405,7 +473,7 @@ export default function BookBuilder({
     // Restoring a saved My Notebook entry (via /studio?notebookId=...) takes
     // priority over whatever draft happens to be sitting in local storage.
     if (initialPages && initialPages.length > 0) {
-      setBookPages(initialPages);
+      setBookPages(ensureMandatoryFrontMatter(initialPages));
       return;
     }
 
@@ -413,7 +481,7 @@ export default function BookBuilder({
       try {
         const idbPages = await loadBookDraftFromIndexedDB();
         if (idbPages && idbPages.length > 0) {
-          setBookPages(idbPages);
+          setBookPages(ensureMandatoryFrontMatter(idbPages));
           return;
         }
       } catch (e) {
@@ -423,7 +491,10 @@ export default function BookBuilder({
       const saved = localStorage.getItem("kdp-book-draft");
       if (saved) {
         try {
-          setBookPages(JSON.parse(saved));
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setBookPages(ensureMandatoryFrontMatter(parsed));
+          }
         } catch (e) {
           console.error("Error parsing saved draft", e);
         }
@@ -538,6 +609,10 @@ export default function BookBuilder({
   };
 
   const removePage = (indexToRemove: number) => {
+    if (indexToRemove < 2) {
+      showToast("⚠️ Title Page (Page 1) and Copyright Page (Page 2) are mandatory for Amazon KDP and cannot be deleted.", "warning");
+      return;
+    }
     const updated = bookPages.filter((_, idx) => idx !== indexToRemove);
     setBookPages(updated);
     if (activeIndex >= updated.length && updated.length > 0) {
@@ -545,14 +620,35 @@ export default function BookBuilder({
     }
   };
 
-  const updatePageConfig = (id: number, newConfig: any) => {
-    setBookPages(prev => prev.map(page =>
-      page.id === id ? { ...page, config: newConfig } : page
-    ));
+  const updatePageConfig = (id: any, newConfig: any) => {
+    setBookPages(prev => {
+      const isTitlePage = prev[0]?.id === id;
+      return prev.map((page, idx) => {
+        if (page.id === id) {
+          return { ...page, config: newConfig };
+        }
+        // Keep Page 2 (Copyright Page) in sync when Title Page is updated
+        if (isTitlePage && idx === 1 && page.type === 'copyright') {
+          return {
+            ...page,
+            config: {
+              ...page.config,
+              title: newConfig.title || page.config.title,
+              author: newConfig.author || page.config.author,
+            }
+          };
+        }
+        return page;
+      });
+    });
   };
 
   const duplicatePage = (indexToDuplicate: number) => {
     if (indexToDuplicate < 0 || indexToDuplicate >= bookPages.length) return;
+    if (indexToDuplicate < 2) {
+      showToast("ℹ️ Front matter pages (Title & Copyright) are unique and cannot be duplicated.", "info");
+      return;
+    }
     const target = bookPages[indexToDuplicate];
     let clonedConfig = JSON.parse(JSON.stringify(target.config || {}));
 
@@ -574,7 +670,7 @@ export default function BookBuilder({
   };
 
   const movePageUp = (idx: number) => {
-    if (idx <= 0) return;
+    if (idx <= 2) return;
     const updated = [...bookPages];
     const temp = updated[idx];
     updated[idx] = updated[idx - 1];
@@ -585,7 +681,7 @@ export default function BookBuilder({
   };
 
   const movePageDown = (idx: number) => {
-    if (idx >= bookPages.length - 1) return;
+    if (idx < 2 || idx >= bookPages.length - 1) return;
     const updated = [...bookPages];
     const temp = updated[idx];
     updated[idx] = updated[idx + 1];
@@ -620,8 +716,7 @@ export default function BookBuilder({
         e.preventDefault();
         duplicatePage(activeIndex);
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        const activePage = bookPages[activeIndex];
-        if (activePage && !(activeIndex === 0 && activePage.type === 'title')) {
+        if (activeIndex >= 2) {
           e.preventDefault();
           removePage(activeIndex);
         }
@@ -668,6 +763,11 @@ export default function BookBuilder({
     if (active.id !== over.id) {
       const oldIndex = bookPages.findIndex((p) => p.id === active.id);
       const newIndex = bookPages.findIndex((p) => p.id === over.id);
+
+      if (oldIndex < 2 || newIndex < 2) {
+        showToast("ℹ️ Front matter pages (Title & Copyright) are locked at Page 1 & 2 per KDP standards.", "info");
+        return;
+      }
 
       const updated = arrayMove(bookPages, oldIndex, newIndex);
       setBookPages(updated);
@@ -1212,6 +1312,13 @@ export default function BookBuilder({
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
               />
             )}
+            {bookPages[activeIndex].type === 'copyright' && (
+              <CopyrightPageEditor
+                key={bookPages[activeIndex].id}
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+              />
+            )}
             {bookPages[activeIndex].type === 'blank' && (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 surface-card p-10 min-h-[500px]">
                 <h3 className="text-xl font-bold uppercase text-slate-500 dark:text-slate-400 mb-2">Blank Spacer Page</h3>
@@ -1386,7 +1493,8 @@ export default function BookBuilder({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[calc(100vh-320px)] overflow-y-auto pr-1 custom-scrollbar">
             {[
               // Structure First
-              { category: 'structure', type: 'title', config: {}, label: 'Title Page', desc: 'Starting title and author credits', icon: '📝', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
+              { category: 'structure', type: 'title', config: {}, label: 'Title Page (Page 1)', desc: 'Mandatory book title & author credits', icon: '📝', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
+              { category: 'structure', type: 'copyright', config: {}, label: 'Copyright Page (Page 2)', desc: 'Mandatory legal rights & disclaimer', icon: '⚖️', color: 'bg-indigo-50 border-indigo-200 text-indigo-600' },
               
               // Puzzles & Coloring Engines First
               { category: 'puzzle', type: 'crossword', config: {}, label: 'Crossword Puzzle', desc: 'Vocabulary grids with clues', icon: '🧩', color: 'bg-amber-50 border-amber-200 text-amber-600' },
@@ -1423,6 +1531,18 @@ export default function BookBuilder({
                 <button
                   key={idx}
                   onClick={() => {
+                    if (tmpl.type === 'title') {
+                      setActiveIndex(0);
+                      showToast("📍 Navigated to Page 1: Title Page (Mandatory Front Matter)", "info");
+                      setIsAddModalOpen(false);
+                      return;
+                    }
+                    if (tmpl.type === 'copyright') {
+                      setActiveIndex(1);
+                      showToast("📍 Navigated to Page 2: Copyright Page (Mandatory Front Matter)", "info");
+                      setIsAddModalOpen(false);
+                      return;
+                    }
                     addPage(tmpl.type, tmpl.config);
                     setIsAddModalOpen(false);
                   }}
@@ -1713,28 +1833,30 @@ export default function BookBuilder({
         >
           <ClipboardPaste className="w-3.5 h-3.5 text-slate-400" /> Paste <span className="ml-auto text-[10px] text-slate-400">Ctrl+V</span>
         </button>
-        <button
-          onClick={() => { duplicatePage(contextMenuPage.index); setContextMenuPage(null); }}
-          className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-left cursor-pointer"
-        >
-          <Copy className="w-3.5 h-3.5 text-slate-400" /> Duplicate <span className="ml-auto text-[10px] text-slate-400">Ctrl+D</span>
-        </button>
+        {contextMenuPage.index >= 2 && (
+          <button
+            onClick={() => { duplicatePage(contextMenuPage.index); setContextMenuPage(null); }}
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-left cursor-pointer"
+          >
+            <Copy className="w-3.5 h-3.5 text-slate-400" /> Duplicate <span className="ml-auto text-[10px] text-slate-400">Ctrl+D</span>
+          </button>
+        )}
         <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
         <button
           onClick={() => { movePageUp(contextMenuPage.index); setContextMenuPage(null); }}
-          disabled={contextMenuPage.index === 0}
+          disabled={contextMenuPage.index <= 2}
           className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-left cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> Move Up
         </button>
         <button
           onClick={() => { movePageDown(contextMenuPage.index); setContextMenuPage(null); }}
-          disabled={contextMenuPage.index === bookPages.length - 1}
+          disabled={contextMenuPage.index < 2 || contextMenuPage.index === bookPages.length - 1}
           className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-left cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> Move Down
         </button>
-        {!(contextMenuPage.index === 0 && bookPages[contextMenuPage.index]?.type === 'title') && (
+        {contextMenuPage.index >= 2 && (
           <>
             <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
             <button
@@ -1769,7 +1891,7 @@ export default function BookBuilder({
 function TitlePageEditor({ page, updatePage }: any) {
   const [title, setTitle] = useState(page.config.title || "My Masterpiece Book");
   const [subtitle, setSubtitle] = useState(page.config.subtitle || "A Collection of Puzzles");
-  const [author, setAuthor] = useState(page.config.author || "KDPage");
+  const [author, setAuthor] = useState(page.config.author || "Independent Publisher");
 
   const handleChange = (field: string, val: string) => {
     const newConfig = { ...page.config, [field]: val };
@@ -1782,7 +1904,10 @@ function TitlePageEditor({ page, updatePage }: any) {
   return (
     <div className="w-full flex gap-8 h-full p-4 overflow-y-auto">
       <div className="w-80 flex flex-col gap-4 surface-panel p-5">
-        <h3 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Title Page Editor</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Title Page Editor</h3>
+          <span className="text-[9px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">Page 1 • Mandatory</span>
+        </div>
         <div>
           <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Book Title</label>
           <input
@@ -1825,6 +1950,117 @@ function TitlePageEditor({ page, updatePage }: any) {
   );
 }
 
+// Copyright Page Configuration Component (Mandatory Page 2)
+function CopyrightPageEditor({ page, updatePage }: any) {
+  const [title, setTitle] = useState(page.config.title || "My Masterpiece Book");
+  const [author, setAuthor] = useState(page.config.author || "Independent Publisher");
+  const [year, setYear] = useState(page.config.year || new Date().getFullYear().toString());
+  const [edition, setEdition] = useState(page.config.edition || "First Edition");
+  const [printedIn, setPrintedIn] = useState(page.config.printedIn || "Independently Published");
+  const [disclaimer, setDisclaimer] = useState(
+    page.config.disclaimer ||
+    "All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the publisher, except in the case of brief quotations embodied in critical reviews."
+  );
+
+  const handleChange = (field: string, val: string) => {
+    const newConfig = { ...page.config, [field]: val };
+    if (field === 'title') setTitle(val);
+    if (field === 'author') setAuthor(val);
+    if (field === 'year') setYear(val);
+    if (field === 'edition') setEdition(val);
+    if (field === 'printedIn') setPrintedIn(val);
+    if (field === 'disclaimer') setDisclaimer(val);
+    updatePage(newConfig);
+  };
+
+  return (
+    <div className="w-full flex gap-8 h-full p-4 overflow-y-auto">
+      <div className="w-80 flex flex-col gap-4 surface-panel p-5 overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Copyright Editor</h3>
+          <span className="text-[9px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">Page 2 • Mandatory</span>
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Book Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => handleChange('title', e.target.value)}
+            className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:border-indigo-500 outline-none shadow-sm"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Author / Publisher</label>
+          <input
+            type="text"
+            value={author}
+            onChange={(e) => handleChange('author', e.target.value)}
+            className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:border-indigo-500 outline-none shadow-sm"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Year</label>
+            <input
+              type="text"
+              value={year}
+              onChange={(e) => handleChange('year', e.target.value)}
+              className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:border-indigo-500 outline-none shadow-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Edition</label>
+            <input
+              type="text"
+              value={edition}
+              onChange={(e) => handleChange('edition', e.target.value)}
+              className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:border-indigo-500 outline-none shadow-sm"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Print / Publisher Notice</label>
+          <input
+            type="text"
+            value={printedIn}
+            onChange={(e) => handleChange('printedIn', e.target.value)}
+            className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:border-indigo-500 outline-none shadow-sm"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Rights & Legal Disclaimer</label>
+          <textarea
+            rows={4}
+            value={disclaimer}
+            onChange={(e) => handleChange('disclaimer', e.target.value)}
+            className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:border-indigo-500 outline-none shadow-sm resize-none"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 surface-card p-10 min-h-[600px] flex flex-col justify-center items-start text-slate-800 dark:text-slate-100 max-w-xl mx-auto shadow-sm">
+        <div className="w-full max-w-md mx-auto space-y-3">
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-wide uppercase">{title}</h2>
+          <div className="w-16 h-0.5 bg-slate-300 dark:bg-slate-700" />
+          <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+            Copyright © {year} by {author}
+          </p>
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+            All rights reserved.
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pt-2">
+            {disclaimer}
+          </p>
+          <div className="pt-4 text-xs italic text-slate-400 dark:text-slate-500 space-y-1">
+            <p>{edition} • {year}</p>
+            <p>{printedIn}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface SortablePageItemProps {
   page: any;
   index: number;
@@ -1850,7 +2086,7 @@ function SortablePageItem({
   onRemove,
   onContextMenu,
 }: SortablePageItemProps) {
-  const isTitlePage = index === 0 && page.type === 'title';
+  const isMandatoryFrontMatter = (index === 0 && page.type === 'title') || (index === 1 && page.type === 'copyright');
 
   const {
     attributes,
@@ -1861,7 +2097,7 @@ function SortablePageItem({
     isDragging,
   } = useSortable({
     id: page.id,
-    disabled: isTitlePage,
+    disabled: isMandatoryFrontMatter,
   });
 
   const style = {
@@ -1888,16 +2124,26 @@ function SortablePageItem({
     >
       <div className="flex items-center gap-2">
         <div
-          {...attributes}
-          {...listeners}
-          className="p-1 -ml-1 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded cursor-grab active:cursor-grabbing flex items-center justify-center transition-colors duration-200"
-          title="Drag to reorder"
+          {...(!isMandatoryFrontMatter ? { ...attributes, ...listeners } : {})}
+          className={`p-1 -ml-1 rounded flex items-center justify-center transition-colors duration-200 ${
+            isMandatoryFrontMatter
+              ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'
+              : 'text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing'
+          }`}
+          title={isMandatoryFrontMatter ? "Mandatory Front Matter (Locked at Page 1 & 2)" : "Drag to reorder"}
         >
           <GripVertical className="w-3.5 h-3.5" />
         </div>
 
         <div className="flex flex-col">
-          <span className="text-xs font-black">Page {index + 1}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-black">Page {index + 1}</span>
+            {isMandatoryFrontMatter && (
+              <span className="text-[8px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-900 px-1.5 py-0.2 rounded">
+                Mandatory
+              </span>
+            )}
+          </div>
           <span className="text-[9px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider mt-0.5">
             {page.type === 'math_puzzle'
               ? (page.config?.puzzleType === 'number_fill'
@@ -1911,37 +2157,39 @@ function SortablePageItem({
       </div>
 
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-        <button
-          onClick={onMoveUp}
-          disabled={index === 0}
-          title="Move Page Up"
-          className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-20 disabled:pointer-events-none transition-colors duration-200 cursor-pointer"
-        >
-          <ChevronUp className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={onMoveDown}
-          disabled={index === totalCount - 1}
-          title="Move Page Down"
-          className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-20 disabled:pointer-events-none transition-colors duration-200 cursor-pointer"
-        >
-          <ChevronDown className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={onDuplicate}
-          title="Duplicate Page"
-          className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors duration-200 cursor-pointer"
-        >
-          <Copy className="w-3.5 h-3.5" />
-        </button>
-        {!isTitlePage && (
-          <button
-            onClick={onRemove}
-            title="Delete Page"
-            className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors duration-200 cursor-pointer"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+        {!isMandatoryFrontMatter && (
+          <>
+            <button
+              onClick={onMoveUp}
+              disabled={index <= 2}
+              title="Move Page Up"
+              className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-20 disabled:pointer-events-none transition-colors duration-200 cursor-pointer"
+            >
+              <ChevronUp className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={onMoveDown}
+              disabled={index === totalCount - 1}
+              title="Move Page Down"
+              className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-20 disabled:pointer-events-none transition-colors duration-200 cursor-pointer"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={onDuplicate}
+              title="Duplicate Page"
+              className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors duration-200 cursor-pointer"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={onRemove}
+              title="Delete Page"
+              className="p-1 rounded text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors duration-200 cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </>
         )}
       </div>
     </div>

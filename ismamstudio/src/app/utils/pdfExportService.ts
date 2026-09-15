@@ -61,9 +61,9 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       ? (index % 2 === 0 ? gutterShiftAmount : -gutterShiftAmount)
       : 0;
 
-    // Page Title (except for title/blank pages, and single word search which centers its title above the grid)
+    // Page Title (except for title/copyright/blank pages, and single word search which centers its title above the grid)
     const isSingleWordSearch = page.type === 'word_search' && !page.config.isMultiSolution;
-    if (page.type !== 'title' && page.type !== 'blank') {
+    if (page.type !== 'title' && page.type !== 'copyright' && page.type !== 'blank') {
       if (!isSingleWordSearch) {
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(18);
@@ -203,6 +203,8 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       const authorText = page.config.author ? `By ${page.config.author}` : "Author Name";
       const authorW = doc.getTextWidth(authorText);
       doc.text(authorText, (w - authorW) / 2 + leftMarginShift, h * 0.68);
+    } else if (page.type === 'copyright') {
+      drawCopyrightPage(doc, page, leftMarginShift, w, h);
     }
 
     // Apply the decorative border theme and the free-tier watermark
@@ -3359,5 +3361,62 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     }
   }
 
+  doc.setTextColor(0);
+};
+
+const drawCopyrightPage = (doc: any, page: any, xShift: number, w: number, h: number) => {
+  const cfg = page.config || {};
+  const title = cfg.title || "Book Title";
+  const author = cfg.author || "Independent Publisher";
+  const year = cfg.year || new Date().getFullYear().toString();
+  const edition = cfg.edition || "First Edition";
+  const printedIn = cfg.printedIn || "Independently Published";
+  const disclaimer = cfg.disclaimer ||
+    "All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the publisher, except in the case of brief quotations embodied in critical reviews and certain other noncommercial uses permitted by copyright law.";
+
+  const contentW = Math.min(w - 1.8, 5.5);
+  const startX = (w - contentW) / 2 + xShift;
+
+  let curY = h * 0.42;
+
+  // Book Title
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(30, 41, 59);
+  doc.text(title, startX, curY);
+  curY += 0.25;
+
+  // Divider line
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.012);
+  doc.line(startX, curY, startX + contentW, curY);
+  curY += 0.28;
+
+  // Copyright Line
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(51, 65, 85);
+  doc.text(`Copyright © ${year} by ${author}`, startX, curY);
+  curY += 0.22;
+
+  doc.setFont("Helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.text("All rights reserved.", startX, curY);
+  curY += 0.28;
+
+  // Disclaimer text
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  const disclaimerLines = doc.splitTextToSize(disclaimer, contentW);
+  doc.text(disclaimerLines, startX, curY);
+  curY += disclaimerLines.length * 0.15 + 0.3;
+
+  // Edition & Print Notice
+  doc.setFont("Helvetica", "italic");
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`${edition} • ${year}`, startX, curY);
+  curY += 0.18;
+  doc.text(printedIn, startX, curY);
   doc.setTextColor(0);
 };

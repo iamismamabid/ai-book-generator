@@ -48,22 +48,52 @@ export function useBookValidation() {
       });
     }
 
-    // ─── Rule 2: Title Page Rule ───────────────────────────────────────────
+    // ─── Rule 2: Title Page Rule (Mandatory Page 1) ─────────────────────────
     const titlePageIndices = pages
       .map((p, idx) => (p.type === 'title' ? idx : -1))
       .filter((idx) => idx !== -1);
 
-    if (titlePageIndices.length > 0) {
+    if (titlePageIndices.length === 0) {
+      errors.push({
+        type: 'error',
+        message: "A Title Page is mandatory for Amazon KDP and must be the first page (Page 1) of your book."
+      });
+    } else {
       if (titlePageIndices[0] !== 0) {
         errors.push({
           type: 'error',
-          message: "The Title Page must be the first page of your book."
+          message: "The Title Page must be the first page (Page 1) of your book."
         });
       }
       if (titlePageIndices.length > 1) {
         errors.push({
           type: 'warning',
           message: "Your book contains multiple Title Pages. Typically, only one title page is needed."
+        });
+      }
+    }
+
+    // ─── Rule 2b: Copyright Page Rule (Mandatory Page 2) ─────────────────────
+    const copyrightPageIndices = pages
+      .map((p, idx) => (p.type === 'copyright' ? idx : -1))
+      .filter((idx) => idx !== -1);
+
+    if (copyrightPageIndices.length === 0) {
+      errors.push({
+        type: 'error',
+        message: "A Copyright Page is mandatory for Amazon KDP and must be on Page 2 of your book."
+      });
+    } else {
+      if (copyrightPageIndices[0] !== 1) {
+        errors.push({
+          type: 'error',
+          message: "The Copyright Page must be the second page (Page 2) of your book."
+        });
+      }
+      if (copyrightPageIndices.length > 1) {
+        errors.push({
+          type: 'warning',
+          message: "Your book contains multiple Copyright Pages. Typically, only one copyright page is needed."
         });
       }
     }

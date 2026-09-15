@@ -238,6 +238,28 @@ export default function BookBoltAlternativePage() {
           </div>
         </div>
 
+        {/* 🔥 BookBolt Switcher Special Offer Banner */}
+        <div className="bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-indigo-500/15 border-2 border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 text-center md:text-left">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-black uppercase tracking-wider">
+              <Zap className="w-3.5 h-3.5 text-amber-400" /> Exclusive Switcher Deal
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Switching from Book Bolt? Get <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">50% OFF For Life</span>
+            </h3>
+            <p className="text-slate-300 text-xs sm:text-sm font-medium max-w-xl leading-relaxed">
+              Don't pay $19.99/mo for static templates. Upgrade to KDPage Pro for just <strong className="text-amber-300">$9.99/mo</strong> forever. Automatic bleed calculations, BYOK AI covers, and 100% unique algorithmic puzzles.
+            </p>
+          </div>
+          <Link
+            href="/pricing?coupon=SWITCH50&checkout=pro"
+            className="w-full md:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-sm uppercase tracking-wider shadow-xl shadow-amber-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shrink-0"
+          >
+            Claim 50% Switcher Deal (SWITCH50)
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
         {/* Detailed Comparison Table */}
         <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-[2.5rem] p-6 sm:p-10 shadow-2xl space-y-6">
           <div className="border-b border-slate-800 pb-4">

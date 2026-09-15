@@ -232,11 +232,14 @@ function PricingSectionInner() {
       }
     }
 
+    const couponParam = searchParams.get("coupon") || searchParams.get("discount");
+
     if (!userId) {
-      // Preserve affiliate tracking key and skipTrial parameter during signup redirect
+      // Preserve affiliate tracking key, coupon code, and skipTrial parameter during signup redirect
       const affParam = customerKey ? `&aff=${encodeURIComponent(customerKey)}` : "";
       const skipTrialParam = options?.skipTrial ? "&skipTrial=true" : "";
-      router.push(`/sign-up?redirect_url=${encodeURIComponent(`/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}${skipTrialParam}${affParam}`)}`);
+      const couponRedirect = couponParam ? `&coupon=${encodeURIComponent(couponParam.trim())}` : "";
+      router.push(`/sign-up?redirect_url=${encodeURIComponent(`/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}${skipTrialParam}${affParam}${couponRedirect}`)}`);
       return;
     }
 
@@ -253,6 +256,7 @@ function PricingSectionInner() {
             quantity: 1
           }
         ],
+        ...(couponParam ? { discountCode: couponParam.trim() } : {}),
         customData: {
           userId: userId,
           ...(customerKey ? {
@@ -800,6 +804,16 @@ function PricingSectionInner() {
             </span>
           </button>
         </div>
+
+        {/* 🎟️ Active Promo Code Notification Banner */}
+        {searchParams.get("coupon") && (
+          <div className="mt-6 max-w-xl mx-auto p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-indigo-500/20 border border-emerald-500/40 flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/5 animate-in fade-in">
+            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 animate-pulse" />
+            <p className="text-xs font-bold text-emerald-200">
+              Promo Code <span className="font-black bg-emerald-500/30 px-2 py-0.5 rounded text-white border border-emerald-400/40 uppercase">{searchParams.get("coupon")}</span> will be automatically applied at checkout!
+            </p>
+          </div>
+        )}
 
         {/* 🌟 Subscription Sync & Active Plan Banner on Pricing Section */}
         {(() => {

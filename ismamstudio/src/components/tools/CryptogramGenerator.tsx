@@ -231,10 +231,11 @@ export default function CryptogramGenerator() {
         const pageW = finalBleed ? finalW + bleed * 2 : finalW;
         const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
           import("jspdf"),
           import("@/app/utils/pdfExportService"),
           import("@/app/utils/borderThemeDrawing"),
+          import("@/lib/kdpBookEngine"),
         ]);
         const doc = new jsPDF({
           orientation: "portrait",
@@ -242,15 +243,18 @@ export default function CryptogramGenerator() {
           format: [pageW, pageH]
         });
 
-        const marginL = 0.75;
-        const marginR = 0.5;
         const marginT = 0.75;
         const marginB = 0.75;
 
-        const contentW = pageW - marginL - marginR;
-        
         // Calculate packaging
         const itemsPerPage = puzzlesPerPage;
+        const frontMatterPages = (!incCover) ? 2 : 0;
+        const estPuzPages = Math.ceil(puzzles.length / itemsPerPage);
+        const estSolPages = incSol ? Math.ceil(puzzles.length / 15) : 0;
+        const totalExpectedPages = frontMatterPages + estPuzPages + estSolPages;
+
+        let firstPageAdded = false;
+        let currentPage = 0;
 
         // Font sizing configuration
         const charBoxW = fontSizeType === "large" ? 0.28 : 0.22;
@@ -260,51 +264,78 @@ export default function CryptogramGenerator() {
         const lineStepY = fontSizeType === "large" ? 0.85 : 0.7;
 
         // 1. Draw Front Cover if integrated
-        let firstPageAdded = false;
         if (incCover && coverState) {
           await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
           firstPageAdded = true;
+          currentPage++;
         }
 
-        // 1. Draw Puzzles dynamically with height checks to prevent overlap/footer clipping
-        let pageIdx = 0;
-        const drawPageHeaderAndFooter = (idx: number) => {
+        // Standard KDP Front Matter
+        if (!incCover) {
+          drawKdpTitlePage(doc, {
+            title: "Cryptogram Puzzle Book",
+            subtitle: `${puzzles.length} Inspirational Cryptoquotes & Decryption Challenges`,
+            authorName: "Ismam Abid",
+            puzzleType: "cryptogram",
+            puzzleCount: puzzles.length,
+            width: pageW,
+            height: pageH,
+            totalPages: totalExpectedPages,
+          });
+          firstPageAdded = true;
+          currentPage = 1;
+
+          doc.addPage();
+          currentPage = 2;
+          drawKdpCopyrightAndInstructionsPage(doc, {
+            authorName: "Ismam Abid",
+            puzzleType: "cryptogram",
+            width: pageW,
+            height: pageH,
+            totalPages: totalExpectedPages,
+          });
+        }
+
+        const drawPageHeaderAndFooter = (pageNum: number, margins: ReturnType<typeof calculateKdpMargins>) => {
           // Header Title
           doc.setFont("helvetica", "bold");
           doc.setFontSize(22);
-          doc.setTextColor(30, 41, 59);
-          doc.text("Cryptogram Puzzles", marginL + contentW / 2, marginT + 0.3, { align: "center" });
+          doc.setTextColor(15, 23, 42);
+          doc.text("Cryptogram Puzzles", margins.contentCenterX, marginT + 0.3, { align: "center" });
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9.5);
           doc.setTextColor(100, 116, 139);
           doc.text(
             "Decode the cipher substitution. Each letter represents another letter of the alphabet.",
-            marginL + contentW / 2,
+            margins.contentCenterX,
             marginT + 0.55,
             { align: "center" }
           );
 
           doc.setLineWidth(0.015);
           doc.setDrawColor(226, 232, 240);
-          doc.line(marginL, marginT + 0.7, marginL + contentW, marginT + 0.7);
+          doc.line(margins.marginLeft, marginT + 0.7, margins.marginLeft + margins.contentW, marginT + 0.7);
 
           if (finalGuides) {
-            drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+            drawMarginGuides(doc, margins.marginLeft, margins.marginRight, marginT, marginB, pageW, pageH);
           }
 
           // Page Number Footer
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(8);
-          doc.setTextColor(148, 163, 184);
-          doc.text(`Page ${idx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+          doc.setFontSize(9);
+          doc.setTextColor(100, 116, 139);
+          doc.text(`Page ${pageNum}`, margins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
         };
 
         if (firstPageAdded) {
           doc.addPage();
         }
         firstPageAdded = true;
-        drawPageHeaderAndFooter(pageIdx);
+        currentPage++;
+
+        let currentMargins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
+        drawPageHeaderAndFooter(currentPage, currentMargins);
 
         let curY = marginT + 1.1;
         let puzzlesOnCurrentPage = 0;
@@ -320,15 +351,15 @@ export default function CryptogramGenerator() {
           }
 
           // Calculate the height this puzzle needs based on word wrap rows
-          let tempX = marginL;
+          let tempX = currentMargins.marginLeft;
           let rowsCount = 1;
           const wordsList = puzzle.encrypted.split(" ");
           
           wordsList.forEach((word) => {
             const wordLen = word.length;
             const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
-            if (tempX + wordWidthInches > marginL + contentW - 0.2) {
-              tempX = marginL;
+            if (tempX + wordWidthInches > currentMargins.marginLeft + currentMargins.contentW - 0.2) {
+              tempX = currentMargins.marginLeft;
               rowsCount++;
             }
             tempX += wordWidthInches + wordSpacing;
@@ -339,22 +370,23 @@ export default function CryptogramGenerator() {
           // Trigger page break if we exceed vertical height limits or exceed item count limit
           if (puzzlesOnCurrentPage > 0 && (curY + estimatedHeight > pageH - marginB || puzzlesOnCurrentPage >= itemsPerPage)) {
             doc.addPage();
-            pageIdx++;
-            drawPageHeaderAndFooter(pageIdx);
+            currentPage++;
+            currentMargins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
+            drawPageHeaderAndFooter(currentPage, currentMargins);
             curY = marginT + 1.1;
             puzzlesOnCurrentPage = 0;
           }
 
           const puzzleStartY = curY;
 
-          // Draw Puzzle Title
+          // Draw Puzzle Title in solid black
           doc.setFont("helvetica", "bold");
           doc.setFontSize(13);
-          doc.setTextColor(79, 70, 229);
-          doc.text(`Puzzle #${puzzle.index}`, marginL, puzzleStartY);
+          doc.setTextColor(15, 23, 42);
+          doc.text(`Puzzle #${puzzle.index}`, currentMargins.marginLeft, puzzleStartY);
 
           // Word-wrapped rendering of letters with boxes
-          let curX = marginL;
+          let curX = currentMargins.marginLeft;
           let curBoxY = puzzleStartY + 0.4;
 
           wordsList.forEach((word) => {
@@ -363,8 +395,8 @@ export default function CryptogramGenerator() {
             const wordWidthInches = wordLen * charBoxW + (wordLen - 1) * charSpacing;
 
             // Wrap to next line if word exceeds right boundary
-            if (curX + wordWidthInches > marginL + contentW - 0.2) {
-              curX = marginL;
+            if (curX + wordWidthInches > currentMargins.marginLeft + currentMargins.contentW - 0.2) {
+              curX = currentMargins.marginLeft;
               curBoxY += lineStepY;
             }
 
@@ -406,26 +438,27 @@ export default function CryptogramGenerator() {
         // 2. Renders Answers Key at the end
         if (incSol) {
           doc.addPage();
-          const ansPageIdx = pageIdx + 2;
+          currentPage++;
+          let ansMargins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(22);
-          doc.setTextColor(30, 41, 59);
-          doc.text("Answer Key", marginL + contentW / 2, marginT + 0.3, { align: "center" });
+          doc.setTextColor(15, 23, 42);
+          doc.text("Answer Key", ansMargins.contentCenterX, marginT + 0.3, { align: "center" });
 
           doc.setLineWidth(0.015);
           doc.setDrawColor(226, 232, 240);
-          doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
+          doc.line(ansMargins.marginLeft, marginT + 0.6, ansMargins.marginLeft + ansMargins.contentW, marginT + 0.6);
 
           if (finalGuides) {
-            drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+            drawMarginGuides(doc, ansMargins.marginLeft, ansMargins.marginRight, marginT, marginB, pageW, pageH);
           }
 
           // A. Print Cipher Key alphabet mapping
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
           doc.setTextColor(15, 23, 42);
-          doc.text("SUBSTITUTION KEY:", marginL, marginT + 1.0);
+          doc.text("SUBSTITUTION KEY:", ansMargins.marginLeft, marginT + 1.0);
 
           doc.setFont("courier", "bold");
           doc.setFontSize(9);
@@ -438,17 +471,17 @@ export default function CryptogramGenerator() {
             .map(l => cipherMap[l] || "_")
             .join(" ");
 
-          doc.text(`Original: ${alphaStr}`, marginL, marginT + 1.25);
-          doc.text(`Cipher:   ${cipherStr}`, marginL, marginT + 1.45);
+          doc.text(`Original: ${alphaStr}`, ansMargins.marginLeft, marginT + 1.25);
+          doc.text(`Cipher:   ${cipherStr}`, ansMargins.marginLeft, marginT + 1.45);
 
           doc.setDrawColor(226, 232, 240);
-          doc.line(marginL, marginT + 1.65, marginL + contentW, marginT + 1.65);
+          doc.line(ansMargins.marginLeft, marginT + 1.65, ansMargins.marginLeft + ansMargins.contentW, marginT + 1.65);
 
           // B. Print Decrypted Solutions List
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
           doc.setTextColor(15, 23, 42);
-          doc.text("DECRYPTED PUZZLES:", marginL, marginT + 1.95);
+          doc.text("DECRYPTED PUZZLES:", ansMargins.marginLeft, marginT + 1.95);
 
           let ansY = marginT + 2.25;
 
@@ -462,33 +495,40 @@ export default function CryptogramGenerator() {
             }
 
             if (ansY + 1.0 > pageH - marginB) {
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(9);
+              doc.setTextColor(100, 116, 139);
+              doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
+
               doc.addPage();
+              currentPage++;
+              ansMargins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
               ansY = marginT + 0.5;
               if (finalGuides) {
-                drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+                drawMarginGuides(doc, ansMargins.marginLeft, ansMargins.marginRight, marginT, marginB, pageW, pageH);
               }
             }
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
-            doc.setTextColor(51, 65, 85);
-            doc.text(`Puzzle #${puzzle.index}:`, marginL, ansY);
+            doc.setTextColor(15, 23, 42);
+            doc.text(`Puzzle #${puzzle.index}:`, ansMargins.marginLeft, ansY);
 
             doc.setFont("helvetica", "normal");
             doc.setFontSize(9.5);
-            doc.setTextColor(71, 85, 105);
+            doc.setTextColor(51, 65, 85);
 
             // Wrap solution string inside the margins
-            const wrappedSol = doc.splitTextToSize(puzzle.original, contentW - 0.2);
-            doc.text(wrappedSol, marginL + 0.2, ansY + 0.2);
+            const wrappedSol = doc.splitTextToSize(puzzle.original, ansMargins.contentW - 0.2);
+            doc.text(wrappedSol, ansMargins.marginLeft + 0.2, ansY + 0.2);
             ansY += 0.25 + wrappedSol.length * 0.18;
           }
 
           // Footer page index for answer page
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(8);
-          doc.setTextColor(148, 163, 184);
-          doc.text(`Page ${ansPageIdx}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+          doc.setFontSize(9);
+          doc.setTextColor(100, 116, 139);
+          doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
         }
 
         // 3. Draw Back Cover if integrated

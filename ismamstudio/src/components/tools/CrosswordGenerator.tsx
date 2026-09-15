@@ -52,6 +52,9 @@ export default function CrosswordGenerator() {
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
+  const [bookTitle, setBookTitle] = useState<string>("Crossword Puzzle Book");
+  const [bookSubtitle, setBookSubtitle] = useState<string>("");
+  const [authorName, setAuthorName] = useState<string>("Ismam Abid");
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   // Puzzle generation states
@@ -235,10 +238,11 @@ export default function CrosswordGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
+        import("@/lib/kdpBookEngine"),
       ]);
       const doc = new jsPDF({
         orientation: "portrait",
@@ -246,49 +250,81 @@ export default function CrosswordGenerator() {
         format: [pageW, pageH]
       });
 
-      const marginL = 0.75;
-      const marginR = 0.5;
       const marginT = 0.75;
       const marginB = 0.75;
-      const contentW = pageW - marginL - marginR;
-      const contentH = pageH - marginT - marginB;
+
+      const frontMatterPages = (!incCover) ? 2 : 0;
+      const solPages = incSol ? puzzles.length : 0;
+      const totalExpectedPages = frontMatterPages + puzzles.length + solPages;
 
       let firstPageAdded = false;
+      let currentPage = 0;
+
       if (incCover && coverState) {
         await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
         firstPageAdded = true;
+        currentPage++;
       }
 
-      const drawHeaderFooter = (titleText: string, pageNum: number) => {
+      if (!incCover) {
+        drawKdpTitlePage(doc, {
+          title: bookTitle || "Crossword Puzzle Book",
+          subtitle: bookSubtitle || `${puzzles.length} Large Print Themed Crosswords with Complete Solutions`,
+          authorName: authorName || "Ismam Abid",
+          puzzleType: "crossword",
+          puzzleCount: puzzles.length,
+          width: pageW,
+          height: pageH,
+          totalPages: totalExpectedPages,
+        });
+        firstPageAdded = true;
+        currentPage = 1;
+
+        doc.addPage();
+        currentPage = 2;
+        drawKdpCopyrightAndInstructionsPage(doc, {
+          authorName: authorName || "Ismam Abid",
+          puzzleType: "crossword",
+          width: pageW,
+          height: pageH,
+          totalPages: totalExpectedPages,
+        });
+      }
+
+      const drawHeaderFooter = (titleText: string, pageNum: number, margins: ReturnType<typeof calculateKdpMargins>) => {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(20);
-        doc.setTextColor(30, 41, 59);
-        doc.text(titleText, marginL + contentW / 2, marginT + 0.3, { align: "center" });
+        doc.setTextColor(15, 23, 42);
+        doc.text(titleText, margins.contentCenterX, marginT + 0.3, { align: "center" });
 
         if (finalGuides) {
-          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+          drawMarginGuides(doc, margins.marginLeft, margins.marginRight, marginT, marginB, pageW, pageH);
         }
 
         doc.setLineWidth(0.015);
         doc.setDrawColor(226, 232, 240);
-        doc.line(marginL, marginT + 0.5, marginL + contentW, marginT + 0.5);
+        doc.line(margins.marginLeft, marginT + 0.5, margins.marginLeft + margins.contentW, marginT + 0.5);
 
         // Footer page numbering
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text(`Page ${pageNum}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Page ${pageNum}`, margins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
       };
 
       // Draw Puzzles
       puzzles.forEach((puzzle, idx) => {
-        if (firstPageAdded || idx > 0) {
+        if (firstPageAdded) {
           doc.addPage();
         }
         firstPageAdded = true;
+        currentPage++;
         
-        const pageNum = idx + 1;
-        drawHeaderFooter(puzzle.title, pageNum);
+        const margins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
+        const marginL = margins.marginLeft;
+        const contentW = margins.contentW;
+
+        drawHeaderFooter(puzzle.title, currentPage, margins);
 
         // Draw Crossword Grid
         const gridOffsetTop = marginT + 0.8;
@@ -311,11 +347,11 @@ export default function CrosswordGenerator() {
               doc.setFillColor(255, 255, 255);
               doc.rect(cellX, cellY, cellSize, cellSize, 'FD');
 
-              // Draw small number if word starts here
+              // Draw small number
               const wordStart = puzzle.placedWords.find(w => w.r === r && w.c === c);
               if (wordStart) {
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(cellSize * 18); // scaled sizing
+                doc.setFontSize(cellSize * 18);
                 doc.setTextColor(30, 41, 59);
                 doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.35));
               }
@@ -323,14 +359,14 @@ export default function CrosswordGenerator() {
           });
         });
 
-        // Draw Clues (Across / Down columns)
-        const cluesStartY = gridOffsetTop + gridRenderW + 0.4;
-        const colW = contentW / 2 - 0.2;
+        // Draw Clues below grid in 2 columns (Across / Down)
+        const cluesStartY = gridOffsetTop + (gridSize * cellSize) + 0.4;
+        const colW = (contentW - 0.4) / 2;
 
         // Across
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(79, 70, 229);
+        doc.setTextColor(15, 23, 42);
         doc.text("ACROSS", marginL, cluesStartY);
 
         doc.setFont("helvetica", "normal");
@@ -348,7 +384,7 @@ export default function CrosswordGenerator() {
         // Down
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(79, 70, 229);
+        doc.setTextColor(15, 23, 42);
         doc.text("DOWN", marginL + colW + 0.4, cluesStartY);
 
         doc.setFont("helvetica", "normal");
@@ -368,8 +404,12 @@ export default function CrosswordGenerator() {
       if (incSol) {
         puzzles.forEach((puzzle, idx) => {
           doc.addPage();
-          const pageNum = puzzles.length + idx + 1;
-          drawHeaderFooter(`${puzzle.title} (Solution)`, pageNum);
+          currentPage++;
+          const margins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
+          const marginL = margins.marginLeft;
+          const contentW = margins.contentW;
+
+          drawHeaderFooter(`${puzzle.title} (Solution)`, currentPage, margins);
 
           // Draw Crossword Grid with solutions filled
           const gridOffsetTop = marginT + 0.8;
@@ -401,10 +441,10 @@ export default function CrosswordGenerator() {
                   doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.35));
                 }
 
-                // Draw solution letter
-                doc.setFont("helvetica", "black");
+                // Draw solution letter in solid black
+                doc.setFont("helvetica", "bold");
                 doc.setFontSize(cellSize * 25);
-                doc.setTextColor(79, 70, 229);
+                doc.setTextColor(15, 23, 42);
                 doc.text(cell, cellX + cellSize / 2, cellY + cellSize * 0.72, { align: "center" });
               }
             });
@@ -615,6 +655,41 @@ export default function CrosswordGenerator() {
               />
               Show Safe Margins Guide
             </label>
+
+            {/* KDP Book Details */}
+            <div className="space-y-2.5 pt-3 border-t border-slate-800/60">
+              <label className="text-[11px] font-black uppercase text-indigo-400 tracking-wider block">KDP Book Details</label>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Book Title</label>
+                <input
+                  type="text"
+                  value={bookTitle}
+                  onChange={(e) => setBookTitle(e.target.value)}
+                  placeholder="Crossword Puzzle Book"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Subtitle</label>
+                <input
+                  type="text"
+                  value={bookSubtitle}
+                  onChange={(e) => setBookSubtitle(e.target.value)}
+                  placeholder="Large Print Themed Crosswords"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Author Name</label>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="Ismam Abid"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
           </div>
         </div>
 

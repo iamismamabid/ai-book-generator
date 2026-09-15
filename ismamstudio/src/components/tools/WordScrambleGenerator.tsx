@@ -176,10 +176,11 @@ export default function WordScrambleGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
       
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
+        import("@/lib/kdpBookEngine"),
       ]);
       const doc = new jsPDF({
         orientation: "portrait",
@@ -187,29 +188,63 @@ export default function WordScrambleGenerator() {
         format: [pageW, pageH]
       });
 
-      // Safety Margins
-      const marginL = 0.75;
-      const marginR = 0.5;
+      const bookTitle = "";
+      const showClues = false;
       const marginT = 0.75;
       const marginB = 0.75;
-      
-      const contentW = pageW - marginL - marginR;
-      const contentH = pageH - marginT - marginB;
 
-      const totalSteps = puzzles.length + (incSol ? Math.ceil(puzzles.length / 8) : 0);
+      const frontMatterPages = (!incCover) ? 2 : 0;
+      const estSolPages = incSol ? Math.ceil(puzzles.length / 8) : 0;
+      const totalExpectedPages = frontMatterPages + puzzles.length + estSolPages;
+      const totalSteps = puzzles.length + estSolPages;
+
+      let firstPageAdded = false;
+      let currentPage = 0;
 
       // 1. Draw Front Cover if integrated
-      let firstPageAdded = false;
       if (incCover && coverState) {
         await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
         firstPageAdded = true;
+        currentPage++;
+      }
+
+      // Standard KDP Front Matter
+      if (!incCover) {
+        drawKdpTitlePage(doc, {
+          title: bookTitle || "Word Scramble Puzzle Book",
+          subtitle: `${puzzles.length} Brain-Teasing Anagram & Scramble Puzzles`,
+          authorName: "Ismam Abid",
+          puzzleType: "word_scramble",
+          puzzleCount: puzzles.length,
+          width: pageW,
+          height: pageH,
+          totalPages: totalExpectedPages,
+        });
+        firstPageAdded = true;
+        currentPage = 1;
+
+        doc.addPage();
+        currentPage = 2;
+        drawKdpCopyrightAndInstructionsPage(doc, {
+          authorName: "Ismam Abid",
+          puzzleType: "word_scramble",
+          width: pageW,
+          height: pageH,
+          totalPages: totalExpectedPages,
+        });
       }
       
       // 1. Draw Puzzles with periodic yielding
       for (let pIdx = 0; pIdx < puzzles.length; pIdx++) {
         const puzzle = puzzles[pIdx];
-        if (firstPageAdded || pIdx > 0) doc.addPage();
+        if (firstPageAdded) doc.addPage();
         firstPageAdded = true;
+        currentPage++;
+
+        const margins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
+        const marginL = margins.marginLeft;
+        const contentW = margins.contentW;
+        const contentH = pageH - marginT - marginB;
 
         if (pIdx % 20 === 0) {
           setDownloadProgress(Math.min(90, Math.round(((pIdx + 1) / totalSteps) * 100)));
@@ -219,11 +254,11 @@ export default function WordScrambleGenerator() {
         // Header Title
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
-        doc.setTextColor(30, 41, 59);
-        doc.text(`Word Scramble #${puzzle.index}`, marginL + contentW / 2, marginT + 0.3, { align: "center" });
+        doc.setTextColor(15, 23, 42);
+        doc.text(`Word Scramble #${puzzle.index}`, margins.contentCenterX, marginT + 0.3, { align: "center" });
 
         if (finalGuides) {
-          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+          drawMarginGuides(doc, margins.marginLeft, margins.marginRight, marginT, marginB, pageW, pageH);
         }
 
         // Subtitle instructions
@@ -232,7 +267,7 @@ export default function WordScrambleGenerator() {
         doc.setTextColor(100, 116, 139);
         doc.text(
           "Unscramble the letters below and write the correct word in the blank space.",
-          marginL + contentW / 2, 
+          margins.contentCenterX, 
           marginT + 0.6, 
           { align: "center" }
         );
@@ -241,32 +276,47 @@ export default function WordScrambleGenerator() {
         doc.setLineWidth(0.015);
         doc.setDrawColor(226, 232, 240);
         doc.line(marginL, marginT + 0.8, marginL + contentW, marginT + 0.8);
-        
-        // Draw Words list
-        const listStartY = marginT + 1.2;
-        const availableHeight = contentH - 2.2;
-        const stepY = Math.min(0.55, availableHeight / puzzle.scrambled.length);
-        
-        puzzle.scrambled.forEach((scrambled, wIdx) => {
-          const y = listStartY + wIdx * stepY;
+
+        // Render Scrambled Words
+        const words = puzzle.scrambled;
+        const count = words.length;
+        const availableH = contentH - 1.2 - (difficulty !== "hard" ? 1.4 : 0);
+        const itemSpacing = Math.min(0.65, availableH / (count + 1));
+        const startY = marginT + 1.2;
+
+        words.forEach((item: any, wIdx) => {
+          const y = startY + wIdx * itemSpacing;
           
           doc.setFont("helvetica", "bold");
           doc.setFontSize(12);
-          doc.setTextColor(148, 163, 184);
+          doc.setTextColor(100, 116, 139);
           doc.text(`${wIdx + 1}.`, marginL + 0.2, y);
-          
-          const displayScrambled = scrambled.split("").join(" ");
+
+          // Scrambled letters (bold & wide spacing)
           doc.setFont("courier", "bold");
-          doc.setFontSize(13);
-          doc.setTextColor(30, 41, 59);
-          doc.text(displayScrambled, marginL + 0.6, y);
-          
+          doc.setFontSize(16);
+          doc.setTextColor(15, 23, 42);
+          const scrambleStr = typeof item === "string" ? item : (item?.scramble || String(item));
+          const spacedLetters = scrambleStr.split("").join("  ");
+          doc.text(spacedLetters, marginL + 0.8, y);
+
+          // Write-in line
+          const lineStartX = marginL + contentW - 2.8;
+          const lineEndX = marginL + contentW - 0.2;
           doc.setDrawColor(148, 163, 184);
-          doc.setLineWidth(0.01);
-          doc.line(marginL + contentW - 2.5, y + 0.05, marginL + contentW - 0.2, y + 0.05);
+          doc.setLineWidth(0.012);
+          doc.line(lineStartX, y + 0.05, lineEndX, y + 0.05);
+
+          // Clue / Hint if enabled
+          if (showClues && typeof item !== "string" && item?.clue) {
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(8.5);
+            doc.setTextColor(148, 163, 184);
+            doc.text(`Hint: ${item.clue}`, marginL + 0.8, y + 0.22);
+          }
         });
-        
-        // Draw Word Bank if difficulty allows
+
+        // Optional Word Bank at bottom (Easy & Medium only)
         if (difficulty !== "hard") {
           const numWords = puzzle.wordBank.length;
           const numRows = Math.ceil(numWords / 3);
@@ -281,7 +331,7 @@ export default function WordScrambleGenerator() {
           
           doc.setFont("helvetica", "bold");
           doc.setFontSize(9);
-          doc.setTextColor(79, 70, 229);
+          doc.setTextColor(15, 23, 42);
           doc.text("WORD BANK", marginL + 0.3, bankStartY + 0.22);
           
           doc.setFont("helvetica", "normal");
@@ -306,32 +356,35 @@ export default function WordScrambleGenerator() {
         
         // Footer page numbering
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text(`Page ${pIdx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Page ${currentPage}`, margins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
       }
       
       // 2. Draw Answer Keys Page
       if (incSol) {
         doc.addPage();
+        currentPage++;
         
-        let ansPageCounter = puzzles.length + 1;
+        let ansMargins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
+        let ansMarginL = ansMargins.marginLeft;
+        let ansContentW = ansMargins.contentW;
         
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
-        doc.setTextColor(30, 41, 59);
-        doc.text("Answer Key", marginL + contentW / 2, marginT + 0.3, { align: "center" });
+        doc.setTextColor(15, 23, 42);
+        doc.text("Answer Key", ansMargins.contentCenterX, marginT + 0.3, { align: "center" });
 
         if (finalGuides) {
-          drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+          drawMarginGuides(doc, ansMargins.marginLeft, ansMargins.marginRight, marginT, marginB, pageW, pageH);
         }
 
         doc.setLineWidth(0.015);
         doc.setDrawColor(226, 232, 240);
-        doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
+        doc.line(ansMarginL, marginT + 0.6, ansMarginL + ansContentW, marginT + 0.6);
 
         const gridCols = 2;
-        const colW = contentW / gridCols;
+        const colW = ansContentW / gridCols;
         let itemsOnPage = 0;
 
         for (let pIdx = 0; pIdx < puzzles.length; pIdx++) {
@@ -343,35 +396,38 @@ export default function WordScrambleGenerator() {
 
           if (itemsOnPage > 0 && itemsOnPage % gridCols === 0 && testStartY + blockHeight > pageH - marginB - 0.3) {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(8);
-            doc.setTextColor(148, 163, 184);
-            doc.text(`Page ${ansPageCounter}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
-            ansPageCounter++;
+            doc.setFontSize(9);
+            doc.setTextColor(100, 116, 139);
+            doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
 
             doc.addPage();
+            currentPage++;
+            ansMargins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
+            ansMarginL = ansMargins.marginLeft;
+            ansContentW = ansMargins.contentW;
             itemsOnPage = 0;
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(22);
-            doc.setTextColor(30, 41, 59);
-            doc.text("Answer Key (Cont.)", marginL + contentW / 2, marginT + 0.3, { align: "center" });
+            doc.setTextColor(15, 23, 42);
+            doc.text("Answer Key (Cont.)", ansMargins.contentCenterX, marginT + 0.3, { align: "center" });
             doc.setLineWidth(0.015);
             doc.setDrawColor(226, 232, 240);
-            doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
+            doc.line(ansMarginL, marginT + 0.6, ansMarginL + ansContentW, marginT + 0.6);
             if (finalGuides) {
-              drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
+              drawMarginGuides(doc, ansMargins.marginLeft, ansMargins.marginRight, marginT, marginB, pageW, pageH);
             }
           }
 
           const activeRowIdx = Math.floor(itemsOnPage / gridCols);
           const activeColIdx = itemsOnPage % gridCols;
 
-          const startX = marginL + activeColIdx * colW + 0.2;
+          const startX = ansMarginL + activeColIdx * colW + 0.2;
           const startY = marginT + 0.8 + activeRowIdx * 2.2;
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
-          doc.setTextColor(79, 70, 229);
+          doc.setTextColor(15, 23, 42);
           doc.text(`Puzzle #${puzzle.index}`, startX, startY);
 
           doc.setFont("helvetica", "normal");
@@ -392,9 +448,9 @@ export default function WordScrambleGenerator() {
         }
 
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text(`Page ${ansPageCounter}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
       }
 
       // 3. Draw Back Cover if integrated

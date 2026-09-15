@@ -3,6 +3,7 @@ import { MazeGrid, Shape, solveMaze } from "./maze";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage } from "./kdpBookEngine";
 
 interface PdfOptions {
   mazes: {
@@ -12,10 +13,13 @@ interface PdfOptions {
   }[];
   shape: Shape;
   title?: string;
+  subtitle?: string;
+  authorName?: string;
   trimSize?: "6x9" | "8.5x11" | "5x8";
   includeSolutions?: boolean;
   includeCover?: boolean;
   coverState?: any;
+  includeFrontMatter?: boolean;
   isPremium?: boolean;
   hasBleed?: boolean;
   showGuides?: boolean;
@@ -63,40 +67,35 @@ function drawMaze(
     }
   }
 
-  // 2. Draw Start (S) and End (E) Markers
+  // 2. Draw Start (S) and End (E) Markers in bold high-contrast tones
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(Math.max(8, Math.floor(cellSize * 32))); // Scales dynamically with cell size
-  doc.setTextColor(37, 99, 235); // Blue-600 for start
+  doc.setFontSize(Math.max(8, Math.floor(cellSize * 32)));
+  doc.setTextColor(15, 23, 42);
 
   const startX = xOffset + start[1] * cellSize + cellSize / 2;
   const startY = yOffset + start[0] * cellSize + cellSize * 0.72;
   doc.text("S", startX, startY, { align: "center" });
 
-  doc.setTextColor(220, 38, 38); // Red-600 for end
   const endX = xOffset + end[1] * cellSize + cellSize / 2;
   const endY = yOffset + end[0] * cellSize + cellSize * 0.72;
   doc.text("E", endX, endY, { align: "center" });
 
-  // 3. Draw Solution Path (if provided for the solutions section)
+  // 3. Draw Solution Path if provided (Solid rich black line with circular endpoints)
   if (solutionPath && solutionPath.length > 0) {
-    doc.setDrawColor(245, 158, 11); // Amber-500 line
-    doc.setLineWidth(0.025);
-    
-    // Setting up dotted/dashed line for standard KDP print layouts
-    doc.setLineDashPattern([cellSize * 0.2, cellSize * 0.15], 0);
+    doc.setLineWidth(Math.max(0.02, cellSize * 0.28));
+    doc.setDrawColor(15, 23, 42);
 
     for (let i = 0; i < solutionPath.length - 1; i++) {
-      const current = solutionPath[i];
-      const next = solutionPath[i + 1];
+      const p1 = solutionPath[i];
+      const p2 = solutionPath[i + 1];
 
-      const x1 = xOffset + current[1] * cellSize + cellSize / 2;
-      const y1 = yOffset + current[0] * cellSize + cellSize / 2;
-      const x2 = xOffset + next[1] * cellSize + cellSize / 2;
-      const y2 = yOffset + next[0] * cellSize + cellSize / 2;
+      const x1 = xOffset + p1[1] * cellSize + cellSize / 2;
+      const y1 = yOffset + p1[0] * cellSize + cellSize / 2;
+      const x2 = xOffset + p2[1] * cellSize + cellSize / 2;
+      const y2 = yOffset + p2[0] * cellSize + cellSize / 2;
 
       doc.line(x1, y1, x2, y2);
     }
-    doc.setLineDashPattern([], 0); // Reset dash pattern
   }
 }
 
@@ -105,10 +104,13 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     mazes,
     shape,
     title = "Maze Puzzle Book",
+    subtitle,
+    authorName = "Ismam Abid",
     trimSize = "8.5x11",
     includeSolutions = true,
     includeCover = false,
     coverState = null,
+    includeFrontMatter = true,
     hasBleed = false,
     showGuides = false,
     scale = 100,
@@ -126,68 +128,70 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     format: [widthInches, heightInches],
   });
 
-  // Standard KDP Interior Dimensions & Sizing (with user scale control)
+  const frontMatterPages = (!includeCover && includeFrontMatter !== false) ? 2 : 0;
+  const solPages = includeSolutions && mazes.length > 0 ? 1 + Math.ceil(mazes.length / 4) : 0;
+  const totalExpectedPages = frontMatterPages + mazes.length + solPages;
+
   let standardBaseSize = 5.6;
-  let safeMarginX = 0.75;
-  if (trimSize === "6x9") {
-    standardBaseSize = 4.2;
-    safeMarginX = 0.65;
-  } else if (trimSize === "5x8") {
-    standardBaseSize = 3.5;
-    safeMarginX = 0.6;
-  }
+  if (trimSize === "6x9") standardBaseSize = 4.2;
+  else if (trimSize === "5x8") standardBaseSize = 3.5;
 
   const scaleFactor = Math.max(0.5, Math.min(1.4, (scale || 100) / 100));
   const targetSize = standardBaseSize * scaleFactor;
+  const safeH = heightInches - 1.6;
 
-  const safeW = widthInches - safeMarginX * 2;
-  const safeH = heightInches - 1.6; // clearance for header and footer
-  const mazeSize = Math.min(targetSize, safeW, safeH);
-
-  const mazeX = (widthInches - mazeSize) / 2;
-  const mazeY = (heightInches - mazeSize) / 2 - 0.1;
+  let firstPageAdded = false;
+  let currentPage = 0;
 
   // 1. Draw Front Cover if integrated
-  let firstPageAdded = false;
   if (includeCover && coverState) {
     await drawCoverPagePart(doc, coverState, 'front', widthInches, heightInches);
     firstPageAdded = true;
+    currentPage++;
   }
 
-  // --------------------------------------------------
-  // Welcome & Cover Title Page
-  // --------------------------------------------------
-  if (firstPageAdded) {
+  // 2. Standard KDP Front Matter (Title Page & Copyright/Instructions)
+  if (!includeCover && includeFrontMatter !== false) {
+    // Page 1: Title Page (Recto / Right page)
+    drawKdpTitlePage(doc, {
+      title,
+      subtitle: subtitle || `Featuring Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Shaped Mazes with Solutions`,
+      authorName,
+      puzzleType: "maze",
+      puzzleCount: mazes.length,
+      width: widthInches,
+      height: heightInches,
+      totalPages: totalExpectedPages,
+    });
+    firstPageAdded = true;
+    currentPage = 1;
+
+    // Page 2: Copyright & Rules Page (Verso / Left page)
     doc.addPage();
+    currentPage = 2;
+    drawKdpCopyrightAndInstructionsPage(doc, {
+      authorName,
+      puzzleType: "maze",
+      width: widthInches,
+      height: heightInches,
+      totalPages: totalExpectedPages,
+    });
   }
-  firstPageAdded = true;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(32);
-  doc.setTextColor(15, 23, 42); // Dark slate
-  doc.text(title, widthInches / 2, heightInches / 3, { align: "center" });
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(14);
-  doc.setTextColor(71, 85, 105);
-  doc.text(
-    `Featuring Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Shaped Mazes`,
-    widthInches / 2,
-    heightInches / 2.6,
-    { align: "center" }
-  );
-
-  doc.setFontSize(11);
-  doc.text(`Total Puzzles: ${mazes.length}`, widthInches / 2, heightInches / 2.2, {
-    align: "center",
-  });
 
   // --------------------------------------------------
-  // PAGES 2+: Interactive Puzzle Generation Loop
+  // PAGES 3+: Interactive Puzzle Generation Loop
   // --------------------------------------------------
   mazes.forEach((maze, index) => {
-    doc.addPage();
-    
+    if (firstPageAdded) doc.addPage();
+    firstPageAdded = true;
+    currentPage++;
+
+    // Alternating KDP Gutter Margins
+    const margins = calculateKdpMargins(currentPage, totalExpectedPages, widthInches);
+    const mazeSize = Math.min(targetSize, margins.contentW, safeH);
+    const mazeX = margins.marginLeft + (margins.contentW - mazeSize) / 2;
+    const mazeY = (heightInches - mazeSize) / 2 - 0.1;
+
     // Header Info (Framed to match maze width boundaries)
     const headerY = mazeY - 0.35;
     doc.setFont("helvetica", "bold");
@@ -209,14 +213,14 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     drawMaze(doc, maze.grid, maze.start, maze.end, mazeX, mazeY, mazeSize);
 
     if (showGuides) {
-      drawMarginGuides(doc, safeMarginX, safeMarginX, 0.75, 0.75, widthInches, heightInches);
+      drawMarginGuides(doc, margins.marginLeft, 0.75, margins.marginRight, 0.75, widthInches, heightInches);
     }
 
     // Footer info
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(148, 163, 184);
-    doc.text(`Page ${index + 2}`, widthInches / 2, heightInches - 0.5, { align: "center" });
+    doc.text(`Page ${currentPage}`, margins.contentCenterX, heightInches - 0.5, { align: "center" });
   });
 
   // --------------------------------------------------
@@ -224,43 +228,61 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
   // --------------------------------------------------
   if (includeSolutions && mazes.length > 0) {
     doc.addPage();
+    currentPage++;
+
+    const divMargins = calculateKdpMargins(currentPage, totalExpectedPages, widthInches);
 
     // Section Header Divider
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(26);
+    doc.setFontSize(28);
     doc.setTextColor(15, 23, 42);
-    doc.text("Solutions", widthInches / 2, heightInches / 2, { align: "center" });
-    
+    doc.text("SOLUTIONS", divMargins.contentCenterX, heightInches / 2 - 0.3, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Complete Answer Keys for Mazes #1 to #${mazes.length}`, divMargins.contentCenterX, heightInches / 2 + 0.2, { align: "center" });
+
     let currentSolutionCount = 0;
-    const solSafeMarginX = safeMarginX;
-    const solSafeW = widthInches - solSafeMarginX * 2;
     const solTopReserved = 1.0;
     const solBottomReserved = 0.7;
     const solSafeH = heightInches - solTopReserved - solBottomReserved;
-
     const gapX = 0.35;
     const gapY = 0.45;
-    const maxTileW = (solSafeW - gapX) / 2;
-    const maxTileH = (solSafeH - gapY) / 2;
-    const maxAllowedTileSize = trimSize === "5x8" ? 1.7 : trimSize === "6x9" ? 2.2 : 3.2;
-    const solutionMazeSize = Math.min(maxTileW, maxTileH, maxAllowedTileSize);
-
-    const totalGridW = solutionMazeSize * 2 + gapX;
-    const totalGridH = solutionMazeSize * 2 + gapY;
-    const solGridStartX = (widthInches - totalGridW) / 2;
-    const solGridStartY = solTopReserved + (solSafeH - totalGridH) / 2;
 
     mazes.forEach((maze, index) => {
       // Every 4 solutions require a clean new page break
       if (currentSolutionCount % 4 === 0) {
         doc.addPage();
+        currentPage++;
+      }
+
+      const solMargins = calculateKdpMargins(currentPage, totalExpectedPages, widthInches);
+      const solSafeW = solMargins.contentW;
+
+      const maxTileW = (solSafeW - gapX) / 2;
+      const maxTileH = (solSafeH - gapY) / 2;
+      const maxAllowedTileSize = trimSize === "5x8" ? 1.7 : trimSize === "6x9" ? 2.2 : 3.2;
+      const solutionMazeSize = Math.min(maxTileW, maxTileH, maxAllowedTileSize);
+
+      const totalGridW = solutionMazeSize * 2 + gapX;
+      const totalGridH = solutionMazeSize * 2 + gapY;
+      const solGridStartX = solMargins.marginLeft + (solSafeW - totalGridW) / 2;
+      const solGridStartY = solTopReserved + (solSafeH - totalGridH) / 2;
+
+      if (currentSolutionCount % 4 === 0) {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
         doc.setTextColor(15, 23, 42);
-        doc.text("Answer Keys", widthInches / 2, 0.8, { align: "center" });
+        doc.text("Answer Keys", solMargins.contentCenterX, 0.8, { align: "center" });
         if (showGuides) {
-          drawMarginGuides(doc, solSafeMarginX, solSafeMarginX, 0.75, 0.75, widthInches, heightInches);
+          drawMarginGuides(doc, solMargins.marginLeft, 0.75, solMargins.marginRight, 0.75, widthInches, heightInches);
         }
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`Page ${currentPage}`, solMargins.contentCenterX, heightInches - 0.4, { align: "center" });
       }
 
       // Compute row and column positions dynamically for the 2x2 grid
@@ -273,7 +295,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
       // Label indicator over the micro-solution preview grid
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
-      doc.setTextColor(51, 65, 85);
+      doc.setTextColor(15, 23, 42);
       doc.text(`Solution #${index + 1}`, x + solutionMazeSize / 2, y - 0.12, { align: "center" });
 
       // Execute optimal path calculations (BFS algorithm)

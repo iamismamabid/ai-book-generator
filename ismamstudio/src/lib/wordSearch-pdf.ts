@@ -8,14 +8,18 @@ import {
   drawWordSearchWordList,
   WordSearchStyle,
 } from "../app/utils/pdfExportService";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage } from "./kdpBookEngine";
 
 interface PdfOptions {
   puzzles: WordSearchGridData[];
   title: string;
+  subtitle?: string;
+  authorName?: string;
   trimSize: "6x9" | "8.5x11" | "5x8";
   includeSolutions?: boolean;
   includeCover?: boolean;
   coverState?: any;
+  includeFrontMatter?: boolean;
   isPremium?: boolean;
   style?: Partial<WordSearchStyle>;
 }
@@ -26,17 +30,22 @@ function drawWordSearchPage(
   width: number,
   height: number,
   isSolution: boolean,
-  puzzleNumber: number,
+  pageNumber: number,
+  puzzleIndex: number,
   title: string,
+  totalPages: number,
   style?: Partial<WordSearchStyle>
 ) {
+  // Alternating KDP Gutter Margins
+  const margins = calculateKdpMargins(pageNumber, totalPages, width);
+  const { marginLeft, contentW, contentCenterX } = margins;
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.setTextColor(20, 20, 30);
+  doc.setTextColor(15, 23, 42);
 
-  const margin = 0.35;
-  const safeW = width - (margin * 2);
-  const safeH = height - (margin * 2);
+  const marginTop = 0.6;
+  const safeH = height - (marginTop * 2);
 
   const titleBlockH = 0.45;
   const wordColumns = 3;
@@ -45,16 +54,16 @@ function drawWordSearchPage(
   const wordListSpace = isSolution ? 0 : 0.35 + (numWordRows * wordRowStep);
 
   const STANDARD_CELL_IN = 0.45;
-  const gridPx = Math.min(safeW, safeH - titleBlockH - wordListSpace, data.grid.length * STANDARD_CELL_IN);
+  const gridPx = Math.min(contentW, safeH - titleBlockH - wordListSpace, data.grid.length * STANDARD_CELL_IN);
 
   const totalContentH = titleBlockH + gridPx + wordListSpace;
   const verticalOffset = Math.max(0, (safeH - totalContentH) / 2);
-  const contentTop = margin + verticalOffset;
+  const contentTop = marginTop + verticalOffset;
 
-  const label = isSolution ? `${title} #${puzzleNumber} — Answer Key` : `${title} #${puzzleNumber}`;
-  doc.text(label, width / 2, contentTop + 0.22, { align: "center" });
+  const label = isSolution ? `${title} #${puzzleIndex} — Answer Key` : `${title} #${puzzleIndex}`;
+  doc.text(label, contentCenterX, contentTop + 0.22, { align: "center" });
 
-  const startX = (width - gridPx) / 2;
+  const startX = marginLeft + (contentW - gridPx) / 2;
   const startY = contentTop + titleBlockH;
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridPx }, isSolution, style);
@@ -67,20 +76,23 @@ function drawWordSearchPage(
   }
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(148, 163, 184);
-  doc.text(`Page ${puzzleNumber}`, width - 0.5, height - 0.35, { align: "right" });
+  doc.setFontSize(9);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Page ${pageNumber}`, contentCenterX, height - 0.4, { align: "center" });
   doc.setTextColor(0);
 }
 
 export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF> {
   const {
     puzzles,
-    title,
+    title = "Word Search Puzzle Book",
+    subtitle,
+    authorName = "Ismam Abid",
     trimSize,
     includeSolutions = true,
     includeCover = false,
     coverState = null,
+    includeFrontMatter = true,
     style,
   } = options;
 
@@ -91,22 +103,59 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
 
   const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [width, height] });
 
+  const frontMatterPages = (!includeCover && includeFrontMatter !== false) ? 2 : 0;
+  const solPages = includeSolutions ? puzzles.length : 0;
+  const totalExpectedPages = frontMatterPages + puzzles.length + solPages;
+
   let firstPageAdded = false;
+  let currentPage = 0;
+
   if (includeCover && coverState) {
     await drawCoverPagePart(doc, coverState, 'front', width, height);
     firstPageAdded = true;
+    currentPage++;
   }
 
-  puzzles.forEach((data, index) => {
-    if (firstPageAdded || index > 0) doc.addPage();
+  // Standard KDP Front Matter
+  if (!includeCover && includeFrontMatter !== false) {
+    drawKdpTitlePage(doc, {
+      title,
+      subtitle: subtitle || `${puzzles.length} Themed Word Searches with Solutions Included`,
+      authorName,
+      puzzleType: "word_search",
+      puzzleCount: puzzles.length,
+      width,
+      height,
+      totalPages: totalExpectedPages,
+    });
     firstPageAdded = true;
-    drawWordSearchPage(doc, data, width, height, false, index + 1, title, style);
+    currentPage = 1;
+
+    doc.addPage();
+    currentPage = 2;
+    drawKdpCopyrightAndInstructionsPage(doc, {
+      authorName,
+      puzzleType: "word_search",
+      width,
+      height,
+      totalPages: totalExpectedPages,
+    });
+  }
+
+  // Draw Puzzles
+  puzzles.forEach((data, index) => {
+    if (firstPageAdded) doc.addPage();
+    firstPageAdded = true;
+    currentPage++;
+    drawWordSearchPage(doc, data, width, height, false, currentPage, index + 1, title, totalExpectedPages, style);
   });
 
+  // Draw Solutions
   if (includeSolutions) {
     puzzles.forEach((data, index) => {
       doc.addPage();
-      drawWordSearchPage(doc, data, width, height, true, index + 1, title, style);
+      currentPage++;
+      drawWordSearchPage(doc, data, width, height, true, currentPage, index + 1, title, totalExpectedPages, style);
     });
   }
 
@@ -134,3 +183,4 @@ export async function downloadWordSearchPdf(options: PdfOptions, filename = "wor
   const doc = await generateWordSearchPdf(options);
   doc.save(filename);
 }
+

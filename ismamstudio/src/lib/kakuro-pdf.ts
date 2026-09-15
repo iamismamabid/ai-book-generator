@@ -3,15 +3,19 @@ import { KakuroGrid, KakuroPuzzle } from "./kakuro";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage } from "./kdpBookEngine";
 
 interface KakuroPdfOptions {
   puzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[];
   difficulty: string;
   trimSize: "6x9" | "8.5x11" | "5x8";
   title: string;
+  subtitle?: string;
+  authorName?: string;
   includeSolutions?: boolean;
   includeCover?: boolean;
   coverState?: any;
+  includeFrontMatter?: boolean;
   isPremium?: boolean;
   hasBleed?: boolean;
   showGuides?: boolean;
@@ -24,29 +28,32 @@ export function drawKakuroGridPDF(
   width: number,
   height: number,
   isSolution: boolean,
+  pageNumber: number,
   puzzleNumber: number,
   title: string,
+  totalPages: number,
   showGuides: boolean = false
 ) {
   const { grid, rows, cols } = puzzle;
+  const margins = calculateKdpMargins(pageNumber, totalPages, width);
+  const { marginLeft, contentW, contentCenterX } = margins;
 
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.setTextColor(20, 20, 30);
+  doc.setTextColor(15, 23, 42);
   const label = isSolution
     ? `${title} #${puzzleNumber} — Answer Key`
     : `${title} #${puzzleNumber}`;
-  doc.text(label, width / 2, 0.65, { align: "center" });
+  doc.text(label, contentCenterX, 0.65, { align: "center" });
 
   // Sizing and alignment
-  const marginX = 0.75;
   const marginY = 1.2;
-  const maxW = width - (marginX * 2);
+  const maxW = contentW;
   const maxH = height - (marginY * 2);
 
   if (showGuides) {
-    drawMarginGuides(doc, marginX, marginX, marginY, 0.5, width, height);
+    drawMarginGuides(doc, margins.marginLeft, margins.marginRight, marginY, 0.5, width, height);
   }
 
   // Calculate cell size that fits both width and height constraints
@@ -54,75 +61,88 @@ export function drawKakuroGridPDF(
   const gridW = cellSize * cols;
   const gridH = cellSize * rows;
 
-  const startX = (width - gridW) / 2;
+  const startX = marginLeft + (contentW - gridW) / 2;
   const startY = marginY + (maxH - gridH) / 2;
 
   // Render Grid cells
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const cell = grid[r][c];
-      const x = startX + c * cellSize;
-      const y = startY + r * cellSize;
+      const cellX = startX + c * cellSize;
+      const cellY = startY + r * cellSize;
 
       if (cell.type === "white") {
-        // Draw white playable cell
-        doc.setLineWidth(0.005);
-        doc.setDrawColor(180, 180, 190);
+        // Playable white cell
         doc.setFillColor(255, 255, 255);
-        doc.rect(x, y, cellSize, cellSize, "FD");
+        doc.rect(cellX, cellY, cellSize, cellSize, "F");
 
-        // Display numbers inside
-        if (isSolution) {
-          doc.setTextColor(79, 70, 229); // Solution in Indigo
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.005);
+        doc.rect(cellX, cellY, cellSize, cellSize, "S");
+
+        // Render solution value if in solution view
+        if (isSolution && cell.value !== undefined) {
+          doc.setFontSize(Math.max(8, Math.floor(cellSize * 24)));
+          doc.setTextColor(15, 23, 42); // Solid rich black for KDP
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(Math.floor(cellSize * 32));
-          doc.text(String(cell.value), x + cellSize / 2, y + cellSize * 0.65, { align: "center" });
+          doc.text(
+            cell.value.toString(),
+            cellX + cellSize / 2,
+            cellY + cellSize * 0.72,
+            { align: "center" }
+          );
         } else if (cell.displayValue) {
-          doc.setTextColor(51, 65, 85); // Clues/helpers in dark slate
+          doc.setFontSize(Math.max(7, Math.floor(cellSize * 22)));
+          doc.setTextColor(51, 65, 85);
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(Math.floor(cellSize * 30));
-          doc.text(cell.displayValue, x + cellSize / 2, y + cellSize * 0.65, { align: "center" });
+          doc.text(
+            cell.displayValue,
+            cellX + cellSize / 2,
+            cellY + cellSize * 0.72,
+            { align: "center" }
+          );
         }
       } else {
-        // Draw black / clue cell
-        doc.setLineWidth(0.005);
-        doc.setDrawColor(60, 60, 70);
-        doc.setFillColor(30, 30, 35); // Dark gray fill
-        doc.rect(x, y, cellSize, cellSize, "FD");
-
+        // Dark cell or Clue cell
         const hasRowClue = cell.rowClue !== undefined;
         const hasColClue = cell.colClue !== undefined;
 
         if (hasRowClue || hasColClue) {
-          // Draw diagonal line from top-left to bottom-right
+          // Clue cell with diagonal divider
+          doc.setFillColor(51, 65, 85);
+          doc.rect(cellX, cellY, cellSize, cellSize, "F");
+
+          doc.setDrawColor(148, 163, 184);
           doc.setLineWidth(0.008);
-          doc.setDrawColor(100, 100, 110);
-          doc.line(x, y, x + cellSize, y + cellSize);
+          doc.line(cellX, cellY, cellX + cellSize, cellY + cellSize);
 
-          // Clue text styling
+          doc.setFontSize(Math.max(6, Math.floor(cellSize * 14)));
+          doc.setTextColor(255, 255, 255);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(Math.floor(cellSize * 18));
-          doc.setTextColor(248, 250, 252); // White clue text
 
-          // 1. Row Clue (Top-Right triangle)
-          if (hasRowClue) {
-            doc.text(
-              String(cell.rowClue),
-              x + cellSize * 0.72,
-              y + cellSize * 0.38,
-              { align: "center" }
-            );
-          }
-
-          // 2. Col Clue (Bottom-Left triangle)
+          // Vertical down clue (bottom-left triangle)
           if (hasColClue) {
             doc.text(
               String(cell.colClue),
-              x + cellSize * 0.28,
-              y + cellSize * 0.8,
+              cellX + cellSize * 0.25,
+              cellY + cellSize * 0.78,
               { align: "center" }
             );
           }
+
+          // Horizontal right clue (top-right triangle)
+          if (hasRowClue) {
+            doc.text(
+              String(cell.rowClue),
+              cellX + cellSize * 0.75,
+              cellY + cellSize * 0.38,
+              { align: "center" }
+            );
+          }
+        } else {
+          // Unplayable solid black cell
+          doc.setFillColor(30, 41, 59);
+          doc.rect(cellX, cellY, cellSize, cellSize, "F");
         }
       }
     }
@@ -138,18 +158,28 @@ export function drawKakuroGridPDF(
 
   // Page number footer
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(148, 163, 184);
-  doc.text(
-    `Page ${puzzleNumber}`,
-    width - 0.5,
-    height - 0.35,
-    { align: "right" }
-  );
+  doc.setFontSize(9);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Page ${pageNumber}`, contentCenterX, height - 0.4, { align: "center" });
 }
 
 export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: string) {
-  const { puzzles, title, trimSize, includeSolutions = true, includeCover = false, coverState = null, isPremium, hasBleed = false, showGuides = false, borderTheme } = options;
+  const {
+    puzzles,
+    title = "Kakuro Cross Sums",
+    subtitle,
+    authorName = "Ismam Abid",
+    difficulty,
+    trimSize,
+    includeSolutions = true,
+    includeCover = false,
+    coverState = null,
+    includeFrontMatter = true,
+    isPremium,
+    hasBleed = false,
+    showGuides = false,
+    borderTheme,
+  } = options;
 
   let width = 8.5;
   let height = 11;
@@ -166,25 +196,61 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
     format: [width, height],
   });
 
-  // 1. Draw Front Cover if integrated
+  const frontMatterPages = (!includeCover && includeFrontMatter !== false) ? 2 : 0;
+  const solPages = includeSolutions ? puzzles.length : 0;
+  const totalExpectedPages = frontMatterPages + puzzles.length + solPages;
+
   let firstPageAdded = false;
+  let currentPage = 0;
+
+  // 1. Draw Front Cover if integrated
   if (includeCover && coverState) {
     await drawCoverPagePart(doc, coverState, 'front', width, height);
     firstPageAdded = true;
+    currentPage++;
+  }
+
+  // Standard KDP Front Matter
+  if (!includeCover && includeFrontMatter !== false) {
+    drawKdpTitlePage(doc, {
+      title,
+      subtitle: subtitle || `${puzzles.length} Cross Sum Kakuro Puzzles with Complete Solutions`,
+      authorName,
+      puzzleType: "kakuro",
+      difficulty,
+      puzzleCount: puzzles.length,
+      width,
+      height,
+      totalPages: totalExpectedPages,
+    });
+    firstPageAdded = true;
+    currentPage = 1;
+
+    doc.addPage();
+    currentPage = 2;
+    drawKdpCopyrightAndInstructionsPage(doc, {
+      authorName,
+      puzzleType: "kakuro",
+      width,
+      height,
+      totalPages: totalExpectedPages,
+    });
   }
 
   // ── Puzzle pages ──────────────────────────────────────────────
   puzzles.forEach((item, index) => {
-    if (firstPageAdded || index > 0) doc.addPage();
+    if (firstPageAdded) doc.addPage();
     firstPageAdded = true;
-    drawKakuroGridPDF(doc, item.puzzle, width, height, false, index + 1, title, showGuides);
+    currentPage++;
+    drawKakuroGridPDF(doc, item.puzzle, width, height, false, currentPage, index + 1, title, totalExpectedPages, showGuides);
   });
 
   // ── Solution pages (appended after all puzzles) ───────────────
   if (includeSolutions) {
     puzzles.forEach((item, index) => {
       doc.addPage();
-      drawKakuroGridPDF(doc, item.solution, width, height, true, index + 1, title, showGuides);
+      currentPage++;
+      drawKakuroGridPDF(doc, item.solution, width, height, true, currentPage, index + 1, title, totalExpectedPages, showGuides);
     });
   }
 

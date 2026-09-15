@@ -11,6 +11,7 @@ import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { checkPremiumStatus } from "@/app/actions";
 import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
+import { getCrosswordThemes } from "@/lib/crosswordDictionary";
 
 const DEFAULT_CROSSWORDS_TEXT = `# Puzzle 1
 REACT, A popular UI library
@@ -177,14 +178,38 @@ export default function CrosswordGenerator() {
       return;
     }
 
-    // Build targetCount puzzles by cycling through available templates
+    // Build targetCount puzzles.
+    // If using default text OR if fewer custom puzzles were provided than targetCount,
+    // draw from the comprehensive 105-theme library so puzzles NEVER loop or repeat!
+    const isDefaultText = inputText.trim() === DEFAULT_CROSSWORDS_TEXT.trim();
     const finalPuzzlesList: Array<{ title: string; words: Array<{ word: string; clue: string }> }> = [];
-    for (let i = 0; i < targetCount; i++) {
-      const tmpl = parsedTemplatesList[i % parsedTemplatesList.length];
-      finalPuzzlesList.push({
-        title: `Crossword Puzzle #${i + 1}`,
-        words: [...tmpl.words]
+
+    if (isDefaultText) {
+      const libraryThemes = getCrosswordThemes(targetCount);
+      libraryThemes.forEach((t, i) => {
+        finalPuzzlesList.push({
+          title: `Crossword Puzzle #${i + 1} - ${t.title}`,
+          words: t.words
+        });
       });
+    } else {
+      const libraryThemes = getCrosswordThemes(targetCount);
+      let libIdx = 0;
+      for (let i = 0; i < targetCount; i++) {
+        if (i < parsedTemplatesList.length) {
+          finalPuzzlesList.push({
+            title: `Crossword Puzzle #${i + 1}`,
+            words: [...parsedTemplatesList[i].words]
+          });
+        } else {
+          const suppTheme = libraryThemes[libIdx % libraryThemes.length];
+          libIdx++;
+          finalPuzzlesList.push({
+            title: `Crossword Puzzle #${i + 1} - ${suppTheme.title}`,
+            words: suppTheme.words.map(w => ({ ...w }))
+          });
+        }
+      }
     }
 
     // Generate puzzle grids for all targetCount puzzles
@@ -313,7 +338,13 @@ export default function CrosswordGenerator() {
       };
 
       // Draw Puzzles
-      puzzles.forEach((puzzle, idx) => {
+      for (let idx = 0; idx < puzzles.length; idx++) {
+        if (idx % 10 === 0) {
+          // Yield to event loop every 10 pages to release memory and prevent buffer exhaustion
+          await new Promise(r => setTimeout(r, 0));
+        }
+
+        const puzzle = puzzles[idx];
         if (firstPageAdded) {
           doc.addPage();
         }
@@ -335,26 +366,24 @@ export default function CrosswordGenerator() {
         puzzle.grid.forEach((row, r) => {
           row.forEach((cell, c) => {
             const isBlank = cell === '';
+            // Amazon KDP Print Best Practice: Pure white background, do not fill dark ink blocks!
+            if (isBlank) return;
+
             const cellX = gridStartX + c * cellSize;
             const cellY = gridOffsetTop + r * cellSize;
 
-            if (isBlank) {
-              doc.setFillColor(30, 41, 59); // dark block
-              doc.rect(cellX, cellY, cellSize, cellSize, 'F');
-            } else {
-              doc.setDrawColor(30, 41, 59);
-              doc.setLineWidth(0.008);
-              doc.setFillColor(255, 255, 255);
-              doc.rect(cellX, cellY, cellSize, cellSize, 'FD');
+            doc.setDrawColor(15, 23, 42);
+            doc.setLineWidth(0.01);
+            doc.setFillColor(255, 255, 255);
+            doc.rect(cellX, cellY, cellSize, cellSize, 'FD');
 
-              // Draw small number
-              const wordStart = puzzle.placedWords.find(w => w.r === r && w.c === c);
-              if (wordStart) {
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(cellSize * 18);
-                doc.setTextColor(30, 41, 59);
-                doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.35));
-              }
+            // Draw small clue number in top-left
+            const wordStart = puzzle.placedWords.find(w => w.r === r && w.c === c);
+            if (wordStart) {
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(Math.max(5, cellSize * 16));
+              doc.setTextColor(15, 23, 42);
+              doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.32));
             }
           });
         });
@@ -398,11 +427,16 @@ export default function CrosswordGenerator() {
           doc.text(wrapped, marginL + colW + 0.4, downY);
           downY += wrapped.length * 0.16 + 0.05;
         });
-      });
+      }
 
       // Draw Solutions
       if (incSol) {
-        puzzles.forEach((puzzle, idx) => {
+        for (let idx = 0; idx < puzzles.length; idx++) {
+          if (idx % 10 === 0) {
+            await new Promise(r => setTimeout(r, 0));
+          }
+
+          const puzzle = puzzles[idx];
           doc.addPage();
           currentPage++;
           const margins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);
@@ -420,36 +454,34 @@ export default function CrosswordGenerator() {
           puzzle.grid.forEach((row, r) => {
             row.forEach((cell, c) => {
               const isBlank = cell === '';
+              // Pure white background, skip empty cells
+              if (isBlank) return;
+
               const cellX = gridStartX + c * cellSize;
               const cellY = gridOffsetTop + r * cellSize;
 
-              if (isBlank) {
-                doc.setFillColor(30, 41, 59);
-                doc.rect(cellX, cellY, cellSize, cellSize, 'F');
-              } else {
-                doc.setDrawColor(30, 41, 59);
-                doc.setLineWidth(0.008);
-                doc.setFillColor(255, 255, 255);
-                doc.rect(cellX, cellY, cellSize, cellSize, 'FD');
+              doc.setDrawColor(15, 23, 42);
+              doc.setLineWidth(0.01);
+              doc.setFillColor(255, 255, 255);
+              doc.rect(cellX, cellY, cellSize, cellSize, 'FD');
 
-                // Draw small number
-                const wordStart = puzzle.placedWords.find(w => w.r === r && w.c === c);
-                if (wordStart) {
-                  doc.setFont("helvetica", "bold");
-                  doc.setFontSize(cellSize * 18);
-                  doc.setTextColor(30, 41, 59);
-                  doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.35));
-                }
-
-                // Draw solution letter in solid black
+              // Draw small clue number
+              const wordStart = puzzle.placedWords.find(w => w.r === r && w.c === c);
+              if (wordStart) {
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(cellSize * 25);
-                doc.setTextColor(15, 23, 42);
-                doc.text(cell, cellX + cellSize / 2, cellY + cellSize * 0.72, { align: "center" });
+                doc.setFontSize(Math.max(5, cellSize * 16));
+                doc.setTextColor(100, 116, 139);
+                doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.32));
               }
+
+              // Draw solution letter in solid dark text
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(cellSize * 24);
+              doc.setTextColor(15, 23, 42);
+              doc.text(cell, cellX + cellSize / 2, cellY + cellSize * 0.72, { align: "center" });
             });
           });
-        });
+        }
       }
 
       // Draw Back Cover
@@ -809,26 +841,28 @@ export default function CrosswordGenerator() {
                 {/* Crossword Grid Canvas */}
                 <div className="flex justify-center my-2 select-none">
                   <div 
-                    className="grid border-[2px] border-slate-900 bg-slate-900 shadow-md"
+                    className="grid bg-transparent"
                     style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}
                   >
                     {puzzles[activePreviewIndex].grid.map((row, r) => 
                       row.map((cell, c) => {
                         const isBlank = cell === '';
                         const wordStart = puzzles[activePreviewIndex].placedWords.find(w => w.r === r && w.c === c);
+                        if (isBlank) {
+                          return <div key={`${r}-${c}`} className="w-6 h-6 bg-transparent" />;
+                        }
                         return (
                           <div 
                             key={`${r}-${c}`}
-                            className={`w-6 h-6 flex items-center justify-center relative transition-all duration-300
-                              ${isBlank ? 'bg-slate-900' : 'bg-white border-[0.5px] border-slate-900 hover:bg-slate-50'}`}
+                            className="w-6 h-6 flex items-center justify-center relative bg-white border border-slate-900"
                           >
                             {wordStart && (
                               <span className="absolute top-0.5 left-0.5 text-[5px] font-black text-slate-800 leading-none">
                                 {wordStart.num}
                               </span>
                             )}
-                            {!isBlank && previewSolMode && (
-                              <span className="text-xs font-black text-slate-800">{cell}</span>
+                            {previewSolMode && (
+                              <span className="text-xs font-black text-slate-900">{cell}</span>
                             )}
                           </div>
                         );

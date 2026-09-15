@@ -195,7 +195,7 @@ export default function WordScrambleGenerator() {
       const marginT = 0.75;
       const marginB = 0.75;
 
-      const frontMatterPages = (!incCover) ? 2 : 0;
+      const frontMatterPages = 2;
       const estSolPages = incSol ? Math.ceil(puzzles.length / 8) : 0;
       const totalExpectedPages = frontMatterPages + puzzles.length + estSolPages;
       const totalSteps = puzzles.length + estSolPages;
@@ -210,31 +210,30 @@ export default function WordScrambleGenerator() {
         currentPage++;
       }
 
-      // Standard KDP Front Matter
-      if (!incCover) {
-        drawKdpTitlePage(doc, {
-          title: bookTitle.trim() || "Word Scramble Puzzle Book",
-          subtitle: bookSubtitle.trim() || `${puzzles.length} Brain-Teasing Anagram & Scramble Puzzles`,
-          authorName: authorName.trim() || "Independent Publisher",
-          puzzleType: "word_scramble",
-          puzzleCount: puzzles.length,
-          width: pageW,
-          height: pageH,
-          totalPages: totalExpectedPages,
-        });
-        firstPageAdded = true;
-        currentPage = 1;
+      // Standard KDP Front Matter (Mandatory)
+      if (firstPageAdded) doc.addPage();
+      firstPageAdded = true;
+      currentPage++;
+      drawKdpTitlePage(doc, {
+        title: bookTitle.trim() || "Word Scramble Puzzle Book",
+        subtitle: bookSubtitle.trim() || `${puzzles.length} Brain-Teasing Anagram & Scramble Puzzles`,
+        authorName: authorName.trim() || "Independent Publisher",
+        puzzleType: "word_scramble",
+        puzzleCount: puzzles.length,
+        width: pageW,
+        height: pageH,
+        totalPages: totalExpectedPages,
+      });
 
-        doc.addPage();
-        currentPage = 2;
-        drawKdpCopyrightAndInstructionsPage(doc, {
-          authorName: authorName.trim() || "Independent Publisher",
-          puzzleType: "word_scramble",
-          width: pageW,
-          height: pageH,
-          totalPages: totalExpectedPages,
-        });
-      }
+      doc.addPage();
+      currentPage++;
+      drawKdpCopyrightAndInstructionsPage(doc, {
+        authorName: authorName.trim() || "Independent Publisher",
+        puzzleType: "word_scramble",
+        width: pageW,
+        height: pageH,
+        totalPages: totalExpectedPages,
+      });
       
       // 1. Draw Puzzles with periodic yielding
       for (let pIdx = 0; pIdx < puzzles.length; pIdx++) {

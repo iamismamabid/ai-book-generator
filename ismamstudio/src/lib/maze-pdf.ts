@@ -205,7 +205,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     format: [widthInches, heightInches],
   });
 
-  const frontMatterPages = (!includeCover && includeFrontMatter !== false) ? 2 : 0;
+  const frontMatterPages = 2;
   const solPages = includeSolutions && mazes.length > 0 ? 1 + Math.ceil(mazes.length / 4) : 0;
   const totalExpectedPages = frontMatterPages + mazes.length + solPages;
 
@@ -226,33 +226,31 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     currentPage++;
   }
 
-  // 2. Standard KDP Front Matter (Title Page & Copyright/Instructions)
-  if (!includeCover && includeFrontMatter !== false) {
-    // Page 1: Title Page (Recto / Right page)
-    drawKdpTitlePage(doc, {
-      title,
-      subtitle: subtitle || `Featuring Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Shaped Mazes with Solutions`,
-      authorName,
-      puzzleType: "maze",
-      puzzleCount: mazes.length,
-      width: widthInches,
-      height: heightInches,
-      totalPages: totalExpectedPages,
-    });
-    firstPageAdded = true;
-    currentPage = 1;
+  // 2. Standard KDP Front Matter (Title Page & Copyright/Instructions) - Mandatory
+  if (firstPageAdded) doc.addPage();
+  firstPageAdded = true;
+  currentPage++;
+  drawKdpTitlePage(doc, {
+    title,
+    subtitle: subtitle || `Featuring Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Shaped Mazes with Solutions`,
+    authorName,
+    puzzleType: "maze",
+    puzzleCount: mazes.length,
+    width: widthInches,
+    height: heightInches,
+    totalPages: totalExpectedPages,
+  });
 
-    // Page 2: Copyright & Rules Page (Verso / Left page)
-    doc.addPage();
-    currentPage = 2;
-    drawKdpCopyrightAndInstructionsPage(doc, {
-      authorName,
-      puzzleType: "maze",
-      width: widthInches,
-      height: heightInches,
-      totalPages: totalExpectedPages,
-    });
-  }
+  // Page 2: Copyright & Rules Page (Verso / Left page)
+  doc.addPage();
+  currentPage++;
+  drawKdpCopyrightAndInstructionsPage(doc, {
+    authorName,
+    puzzleType: "maze",
+    width: widthInches,
+    height: heightInches,
+    totalPages: totalExpectedPages,
+  });
 
   // --------------------------------------------------
   // PAGES 3+: Interactive Puzzle Generation Loop

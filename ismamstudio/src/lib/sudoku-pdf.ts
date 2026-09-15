@@ -387,7 +387,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
   // Calculate total pages for KDP inside gutter margin sizing
   const solPerPage = Math.min(4, Math.max(1, solutionsPerPage));
   const totalSolPages = includeSolutions ? Math.ceil(puzzles.length / solPerPage) : 0;
-  const frontMatterPages = (!includeCover && includeFrontMatter) ? 2 : 0;
+  const frontMatterPages = 2;
   const totalExpectedPages = frontMatterPages + puzzles.length + totalSolPages;
 
   // KDP gutter calculation (0.375" up to 150 pages, 0.5" up to 300 pages)
@@ -405,42 +405,40 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     currentPage++;
   }
 
-  // 2. Standard KDP Front Matter (Title Page & Copyright/Instructions)
-  if (!includeCover && includeFrontMatter) {
-    // Page 1: Title Page (Recto / Right page, spine on LEFT)
-    drawFrontMatterTitlePage(
-      doc,
-      {
-        title,
-        subtitle,
-        authorName,
-        difficulty,
-        puzzleCount: puzzles.length,
-        pdfFont,
-      },
-      width,
-      height,
-      insideMargin,
-      outsideMargin
-    );
-    firstPageAdded = true;
-    currentPage = 1;
+  // 2. Standard KDP Front Matter (Title Page & Copyright/Instructions) - Mandatory
+  if (firstPageAdded) doc.addPage();
+  firstPageAdded = true;
+  currentPage++;
+  drawFrontMatterTitlePage(
+    doc,
+    {
+      title,
+      subtitle,
+      authorName,
+      difficulty,
+      puzzleCount: puzzles.length,
+      pdfFont,
+    },
+    width,
+    height,
+    insideMargin,
+    outsideMargin
+  );
 
-    // Page 2: Copyright & Rules Page (Verso / Left page, spine on RIGHT)
-    doc.addPage();
-    currentPage = 2;
-    drawFrontMatterCopyrightAndRulesPage(
-      doc,
-      {
-        authorName,
-        pdfFont,
-      },
-      width,
-      height,
-      insideMargin,
-      outsideMargin
-    );
-  }
+  // Page 2: Copyright & Rules Page (Verso / Left page, spine on RIGHT)
+  doc.addPage();
+  currentPage++;
+  drawFrontMatterCopyrightAndRulesPage(
+    doc,
+    {
+      authorName,
+      pdfFont,
+    },
+    width,
+    height,
+    insideMargin,
+    outsideMargin
+  );
 
   // ── Puzzle pages (1 per page - Standard KDP Book Format) ─────────
   for (let index = 0; index < puzzles.length; index++) {

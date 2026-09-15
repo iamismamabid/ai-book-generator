@@ -103,7 +103,7 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
 
   const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [width, height] });
 
-  const frontMatterPages = (!includeCover && includeFrontMatter !== false) ? 2 : 0;
+  const frontMatterPages = 2;
   const solPages = includeSolutions ? puzzles.length : 0;
   const totalExpectedPages = frontMatterPages + puzzles.length + solPages;
 
@@ -116,31 +116,30 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
     currentPage++;
   }
 
-  // Standard KDP Front Matter
-  if (!includeCover && includeFrontMatter !== false) {
-    drawKdpTitlePage(doc, {
-      title,
-      subtitle: subtitle || `${puzzles.length} Themed Word Searches with Solutions Included`,
-      authorName,
-      puzzleType: "word_search",
-      puzzleCount: puzzles.length,
-      width,
-      height,
-      totalPages: totalExpectedPages,
-    });
-    firstPageAdded = true;
-    currentPage = 1;
+  // Standard KDP Front Matter (Mandatory)
+  if (firstPageAdded) doc.addPage();
+  firstPageAdded = true;
+  currentPage++;
+  drawKdpTitlePage(doc, {
+    title,
+    subtitle: subtitle || `${puzzles.length} Themed Word Searches with Solutions Included`,
+    authorName,
+    puzzleType: "word_search",
+    puzzleCount: puzzles.length,
+    width,
+    height,
+    totalPages: totalExpectedPages,
+  });
 
-    doc.addPage();
-    currentPage = 2;
-    drawKdpCopyrightAndInstructionsPage(doc, {
-      authorName,
-      puzzleType: "word_search",
-      width,
-      height,
-      totalPages: totalExpectedPages,
-    });
-  }
+  doc.addPage();
+  currentPage++;
+  drawKdpCopyrightAndInstructionsPage(doc, {
+    authorName,
+    puzzleType: "word_search",
+    width,
+    height,
+    totalPages: totalExpectedPages,
+  });
 
   // Draw Puzzles
   puzzles.forEach((data, index) => {

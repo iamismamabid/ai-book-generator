@@ -251,7 +251,7 @@ export default function CryptogramGenerator() {
 
         // Calculate packaging
         const itemsPerPage = puzzlesPerPage;
-        const frontMatterPages = (!incCover) ? 2 : 0;
+        const frontMatterPages = 2;
         const estPuzPages = Math.ceil(puzzles.length / itemsPerPage);
         const estSolPages = incSol ? Math.ceil(puzzles.length / 15) : 0;
         const totalExpectedPages = frontMatterPages + estPuzPages + estSolPages;
@@ -273,31 +273,30 @@ export default function CryptogramGenerator() {
           currentPage++;
         }
 
-        // Standard KDP Front Matter
-        if (!incCover) {
-          drawKdpTitlePage(doc, {
-            title: bookTitle.trim() || "Cryptogram Puzzle Book",
-            subtitle: bookSubtitle.trim() || `${puzzles.length} Inspirational Cryptoquotes & Decryption Challenges`,
-            authorName: authorName.trim() || "Independent Publisher",
-            puzzleType: "cryptogram",
-            puzzleCount: puzzles.length,
-            width: pageW,
-            height: pageH,
-            totalPages: totalExpectedPages,
-          });
-          firstPageAdded = true;
-          currentPage = 1;
+        // Standard KDP Front Matter (Mandatory)
+        if (firstPageAdded) doc.addPage();
+        firstPageAdded = true;
+        currentPage++;
+        drawKdpTitlePage(doc, {
+          title: bookTitle.trim() || "Cryptogram Puzzle Book",
+          subtitle: bookSubtitle.trim() || `${puzzles.length} Inspirational Cryptoquotes & Decryption Challenges`,
+          authorName: authorName.trim() || "Independent Publisher",
+          puzzleType: "cryptogram",
+          puzzleCount: puzzles.length,
+          width: pageW,
+          height: pageH,
+          totalPages: totalExpectedPages,
+        });
 
-          doc.addPage();
-          currentPage = 2;
-          drawKdpCopyrightAndInstructionsPage(doc, {
-            authorName: authorName.trim() || "Independent Publisher",
-            puzzleType: "cryptogram",
-            width: pageW,
-            height: pageH,
-            totalPages: totalExpectedPages,
-          });
-        }
+        doc.addPage();
+        currentPage++;
+        drawKdpCopyrightAndInstructionsPage(doc, {
+          authorName: authorName.trim() || "Independent Publisher",
+          puzzleType: "cryptogram",
+          width: pageW,
+          height: pageH,
+          totalPages: totalExpectedPages,
+        });
 
         const drawPageHeaderAndFooter = (pageNum: number, margins: ReturnType<typeof calculateKdpMargins>) => {
           // Header Title

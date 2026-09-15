@@ -278,7 +278,7 @@ export default function CrosswordGenerator() {
       const marginT = 0.75;
       const marginB = 0.75;
 
-      const frontMatterPages = (!incCover) ? 2 : 0;
+      const frontMatterPages = 2;
       const solPages = incSol ? puzzles.length : 0;
       const totalExpectedPages = frontMatterPages + puzzles.length + solPages;
 
@@ -291,30 +291,30 @@ export default function CrosswordGenerator() {
         currentPage++;
       }
 
-      if (!incCover) {
-        drawKdpTitlePage(doc, {
-          title: bookTitle.trim() || "Crossword Puzzle Book",
-          subtitle: bookSubtitle.trim() || `${puzzles.length} Large Print Themed Crosswords with Complete Solutions`,
-          authorName: authorName.trim() || "Independent Publisher",
-          puzzleType: "crossword",
-          puzzleCount: puzzles.length,
-          width: pageW,
-          height: pageH,
-          totalPages: totalExpectedPages,
-        });
-        firstPageAdded = true;
-        currentPage = 1;
+      // Standard KDP Front Matter (Mandatory)
+      if (firstPageAdded) doc.addPage();
+      firstPageAdded = true;
+      currentPage++;
+      drawKdpTitlePage(doc, {
+        title: bookTitle.trim() || "Crossword Puzzle Book",
+        subtitle: bookSubtitle.trim() || `${puzzles.length} Large Print Themed Crosswords with Complete Solutions`,
+        authorName: authorName.trim() || "Independent Publisher",
+        puzzleType: "crossword",
+        puzzleCount: puzzles.length,
+        width: pageW,
+        height: pageH,
+        totalPages: totalExpectedPages,
+      });
 
-        doc.addPage();
-        currentPage = 2;
-        drawKdpCopyrightAndInstructionsPage(doc, {
-          authorName: authorName.trim() || "Independent Publisher",
-          puzzleType: "crossword",
-          width: pageW,
-          height: pageH,
-          totalPages: totalExpectedPages,
-        });
-      }
+      doc.addPage();
+      currentPage++;
+      drawKdpCopyrightAndInstructionsPage(doc, {
+        authorName: authorName.trim() || "Independent Publisher",
+        puzzleType: "crossword",
+        width: pageW,
+        height: pageH,
+        totalPages: totalExpectedPages,
+      });
 
       const drawHeaderFooter = (titleText: string, pageNum: number, margins: ReturnType<typeof calculateKdpMargins>) => {
         doc.setFont("helvetica", "bold");

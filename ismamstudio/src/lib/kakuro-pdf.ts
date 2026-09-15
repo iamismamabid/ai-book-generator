@@ -196,7 +196,7 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
     format: [width, height],
   });
 
-  const frontMatterPages = (!includeCover && includeFrontMatter !== false) ? 2 : 0;
+  const frontMatterPages = 2;
   const solPages = includeSolutions ? puzzles.length : 0;
   const totalExpectedPages = frontMatterPages + puzzles.length + solPages;
 
@@ -210,32 +210,31 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
     currentPage++;
   }
 
-  // Standard KDP Front Matter
-  if (!includeCover && includeFrontMatter !== false) {
-    drawKdpTitlePage(doc, {
-      title,
-      subtitle: subtitle || `${puzzles.length} Cross Sum Kakuro Puzzles with Complete Solutions`,
-      authorName,
-      puzzleType: "kakuro",
-      difficulty,
-      puzzleCount: puzzles.length,
-      width,
-      height,
-      totalPages: totalExpectedPages,
-    });
-    firstPageAdded = true;
-    currentPage = 1;
+  // Standard KDP Front Matter (Mandatory)
+  if (firstPageAdded) doc.addPage();
+  firstPageAdded = true;
+  currentPage++;
+  drawKdpTitlePage(doc, {
+    title,
+    subtitle: subtitle || `${puzzles.length} Cross Sum Kakuro Puzzles with Complete Solutions`,
+    authorName,
+    puzzleType: "kakuro",
+    difficulty,
+    puzzleCount: puzzles.length,
+    width,
+    height,
+    totalPages: totalExpectedPages,
+  });
 
-    doc.addPage();
-    currentPage = 2;
-    drawKdpCopyrightAndInstructionsPage(doc, {
-      authorName,
-      puzzleType: "kakuro",
-      width,
-      height,
-      totalPages: totalExpectedPages,
-    });
-  }
+  doc.addPage();
+  currentPage++;
+  drawKdpCopyrightAndInstructionsPage(doc, {
+    authorName,
+    puzzleType: "kakuro",
+    width,
+    height,
+    totalPages: totalExpectedPages,
+  });
 
   // ── Puzzle pages ──────────────────────────────────────────────
   puzzles.forEach((item, index) => {

@@ -316,7 +316,7 @@ export default function SudokuClient() {
             ? bookSubtitle.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${count} $1`)
             : `${count} Handcrafted Large Print Puzzles with Complete Solutions`,
           authorName: authorName.trim() || "Independent Publisher",
-          includeFrontMatter: !incCover,
+          includeFrontMatter: true,
           headerText,
           footerText,
           borderThickness,

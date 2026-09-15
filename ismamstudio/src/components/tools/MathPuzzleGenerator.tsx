@@ -349,7 +349,7 @@ export default function MathPuzzleGenerator() {
       const contentW = pageW - marginL - marginR;
       const contentH = pageH - marginT - marginB;
 
-      const frontMatterPages = (!incCover) ? 2 : 0;
+      const frontMatterPages = 2;
       const solPages = incSol ? (puzzlesPerPage === 2 ? Math.ceil(numPages / 2) : Math.ceil(numPages / 4)) : 0;
       const totalExpectedPages = frontMatterPages + numPages + solPages;
 
@@ -363,33 +363,32 @@ export default function MathPuzzleGenerator() {
         currentPage++;
       }
 
-      // Standard KDP Front Matter
-      if (!incCover) {
-        const totalPuzzles = numPages * puzzlesPerPage;
-        drawKdpTitlePage(doc, {
-          title: bookTitle.trim() || "Math Puzzle Book",
-          subtitle: bookSubtitle.trim() || `${totalPuzzles} Challenging Math & Logic Puzzles with Complete Solutions`,
-          authorName: authorName.trim() || "Independent Publisher",
-          puzzleType: "math_puzzle",
-          difficulty,
-          puzzleCount: totalPuzzles,
-          width: pageW,
-          height: pageH,
-          totalPages: totalExpectedPages,
-        });
-        firstPageAdded = true;
-        currentPage = 1;
+      // Standard KDP Front Matter (Mandatory)
+      const totalPuzzles = numPages * puzzlesPerPage;
+      if (firstPageAdded) doc.addPage();
+      firstPageAdded = true;
+      currentPage++;
+      drawKdpTitlePage(doc, {
+        title: bookTitle.trim() || "Math Puzzle Book",
+        subtitle: bookSubtitle.trim() || `${totalPuzzles} Challenging Math & Logic Puzzles with Complete Solutions`,
+        authorName: authorName.trim() || "Independent Publisher",
+        puzzleType: "math_puzzle",
+        difficulty,
+        puzzleCount: totalPuzzles,
+        width: pageW,
+        height: pageH,
+        totalPages: totalExpectedPages,
+      });
 
-        doc.addPage();
-        currentPage = 2;
-        drawKdpCopyrightAndInstructionsPage(doc, {
-          authorName: authorName.trim() || "Independent Publisher",
-          puzzleType: "math_puzzle",
-          width: pageW,
-          height: pageH,
-          totalPages: totalExpectedPages,
-        });
-      }
+      doc.addPage();
+      currentPage++;
+      drawKdpCopyrightAndInstructionsPage(doc, {
+        authorName: authorName.trim() || "Independent Publisher",
+        puzzleType: "math_puzzle",
+        width: pageW,
+        height: pageH,
+        totalPages: totalExpectedPages,
+      });
 
       // 1. Draw Puzzle Pages
       for (let pIdx = 0; pIdx < numPages; pIdx++) {

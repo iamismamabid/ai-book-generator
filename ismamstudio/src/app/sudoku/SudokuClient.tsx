@@ -95,9 +95,9 @@ export default function SudokuClient() {
   const [borderThickness, setBorderThickness] = useState<number>(2);
   const [fontFamily, setFontFamily] = useState<"sans-serif" | "serif" | "monospace">("sans-serif");
   const [headerText, setHeaderText] = useState("SUDOKU CHALLENGE");
-  const [footerText, setFooterText] = useState("KDPage Studio • All Rights Reserved");
+  const [footerText, setFooterText] = useState("Independent Publishing • All Rights Reserved");
   const [authorName, setAuthorName] = useState("Ismam Abid");
-  const [bookSubtitle, setBookSubtitle] = useState("100 Large Print Puzzles with Complete Solutions");
+  const [bookSubtitle, setBookSubtitle] = useState("");
   const [presets, setPresets] = useState<HeaderFooterPreset[]>([]);
 
   useEffect(() => {
@@ -312,7 +312,9 @@ export default function SudokuClient() {
           difficulty,
           trimSize: finalTrim,
           title: headerText || `Sudoku Master`,
-          subtitle: bookSubtitle,
+          subtitle: bookSubtitle.trim()
+            ? bookSubtitle.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${count} $1`)
+            : `${count} Handcrafted Large Print Puzzles with Complete Solutions`,
           authorName: authorName || "Ismam Abid",
           includeFrontMatter: !incCover,
           headerText,
@@ -663,7 +665,7 @@ export default function SudokuClient() {
                       type="text"
                       value={bookSubtitle}
                       onChange={(e) => setBookSubtitle(e.target.value)}
-                      placeholder="e.g. 100 Large Print Puzzles"
+                      placeholder={`${bookCount} Large Print Puzzles with Complete Solutions`}
                       className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white"
                     />
                   </div>

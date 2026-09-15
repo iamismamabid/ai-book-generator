@@ -45,15 +45,23 @@ const FONT_MAP: Record<string, string> = {
 
 function getSolutionPackZones(count: number, x0: number, y0: number, safeW: number, safeH: number) {
   if (count <= 1) return [{ x: x0, y: y0, w: safeW, h: safeH }];
-  if (count === 2) return [
-    { x: x0, y: y0, w: safeW, h: safeH / 2 - 0.2 },
-    { x: x0, y: y0 + safeH / 2 + 0.2, w: safeW, h: safeH / 2 - 0.2 },
-  ];
+  if (count === 2) {
+    const gap = 0.4;
+    const h = (safeH - gap) / 2;
+    return [
+      { x: x0, y: y0, w: safeW, h },
+      { x: x0, y: y0 + h + gap, w: safeW, h },
+    ];
+  }
+  const gapX = 0.45;
+  const gapY = 0.5;
+  const w = (safeW - gapX) / 2;
+  const h = (safeH - gapY) / 2;
   return [
-    { x: x0, y: y0, w: safeW / 2 - 0.15, h: safeH / 2 - 0.15 },
-    { x: x0 + safeW / 2 + 0.15, y: y0, w: safeW / 2 - 0.15, h: safeH / 2 - 0.15 },
-    { x: x0, y: y0 + safeH / 2 + 0.15, w: safeW / 2 - 0.15, h: safeH / 2 - 0.15 },
-    { x: x0 + safeW / 2 + 0.15, y: y0 + safeH / 2 + 0.15, w: safeW / 2 - 0.15, h: safeH / 2 - 0.15 },
+    { x: x0, y: y0, w, h },
+    { x: x0 + w + gapX, y: y0, w, h },
+    { x: x0, y: y0 + h + gapY, w, h },
+    { x: x0 + w + gapX, y: y0 + h + gapY, w, h },
   ];
 }
 
@@ -71,16 +79,16 @@ function drawSudokuTile(
 ) {
   if (showTitle) {
     doc.setFont(pdfFont, "bold");
-    doc.setFontSize(size > 4.5 ? 14 : 11);
+    doc.setFontSize(size > 4.5 ? 14 : 10.5);
     doc.setTextColor(15, 23, 42);
     const label = isSolution ? `Answer #${puzzleNumber}` : `Puzzle #${puzzleNumber}`;
-    doc.text(label, x + size / 2, y - 0.1, { align: "center" });
+    doc.text(label, x + size / 2, y - 0.12, { align: "center" });
   }
 
   const cellSize = size / 9;
 
   // Thin cell borders scaled with user borderThickness
-  const thinLine = Math.max(0.004, borderThickness * 0.004);
+  const thinLine = Math.max(0.004, Math.min(0.012, borderThickness * 0.004));
   doc.setLineWidth(thinLine);
   doc.setDrawColor(148, 163, 184);
 
@@ -93,7 +101,7 @@ function drawSudokuTile(
   }
 
   // Thick 3x3 box borders scaled with user borderThickness
-  const thickLine = Math.max(0.012, borderThickness * 0.012);
+  const thickLine = Math.max(0.012, Math.min(0.024, borderThickness * 0.012));
   doc.setLineWidth(thickLine);
   doc.setDrawColor(15, 23, 42);
   for (let b = 0; b <= 3; b++) {
@@ -102,11 +110,16 @@ function drawSudokuTile(
     doc.line(x, y + offset, x + size, y + offset);
   }
 
-  // Draw numbers in solid rich black for crisp Amazon KDP print readability
-  const numberFontSize = Math.max(8, Math.floor(cellSize * 30));
+  // Draw numbers: precise optical centering + safe proportional font sizing
+  const numberFontSize = isSolution
+    ? Math.max(7, Math.min(10, Math.floor(cellSize * 24)))
+    : Math.max(12, Math.min(20, Math.floor(cellSize * 28)));
+
   doc.setFontSize(numberFontSize);
   doc.setFont(pdfFont, "bold");
   doc.setTextColor(15, 23, 42);
+
+  const verticalOffset = cellSize * 0.65;
 
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
@@ -115,7 +128,7 @@ function drawSudokuTile(
         doc.text(
           val.toString(),
           x + c * cellSize + cellSize / 2,
-          y + r * cellSize + cellSize * 0.66,
+          y + r * cellSize + verticalOffset,
           { align: "center" }
         );
       }
@@ -170,7 +183,9 @@ function drawFrontMatterTitlePage(
   doc.setFontSize(12);
   doc.setTextColor(71, 85, 105);
   const defaultSub = `${options.puzzleCount} Handcrafted Large Print Puzzles with Complete Solutions`;
-  const subLines = doc.splitTextToSize(options.subtitle || defaultSub, contentW - 0.6);
+  const rawSub = options.subtitle && options.subtitle.trim() ? options.subtitle : defaultSub;
+  const cleanSub = rawSub.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${options.puzzleCount} $1`);
+  const subLines = doc.splitTextToSize(cleanSub, contentW - 0.6);
   doc.text(subLines, centerX, titleBottomY + 0.25, { align: "center" });
 
   // Elegant Divider
@@ -529,10 +544,13 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
         if (solIndex >= puzzles.length) break;
 
         const zone = zones[z];
-        const titleSpace = 0.25;
-        const tileSize = Math.min(zone.w, zone.h - titleSpace);
+        const titleSpace = 0.28;
+        const maxTileW = zone.w - 0.1;
+        const maxTileH = zone.h - titleSpace - 0.1;
+        const maxAllowedSize = trimSize === "5x8" ? 1.5 : trimSize === "6x9" ? 2.0 : 2.7;
+        const tileSize = Math.min(maxTileW, maxTileH, maxAllowedSize);
         const startX = zone.x + (zone.w - tileSize) / 2;
-        const startY = zone.y + titleSpace;
+        const startY = zone.y + titleSpace + (zone.h - titleSpace - tileSize) / 2;
 
         drawSudokuTile(doc, puzzles[solIndex].solution, startX, startY, tileSize, true, solIndex + 1, true, pdfFont, borderThickness);
       }

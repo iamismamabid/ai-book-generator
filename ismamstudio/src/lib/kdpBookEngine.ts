@@ -91,7 +91,9 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   doc.setFontSize(12);
   doc.setTextColor(71, 85, 105);
   const defaultSub = `${opts.puzzleCount} Handcrafted Large Print Puzzles with Complete Solutions`;
-  const subLines = doc.splitTextToSize(opts.subtitle || defaultSub, contentW - 0.6);
+  const rawSub = opts.subtitle && opts.subtitle.trim() ? opts.subtitle : defaultSub;
+  const cleanSub = rawSub.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${opts.puzzleCount} $1`);
+  const subLines = doc.splitTextToSize(cleanSub, contentW - 0.6);
   doc.text(subLines, contentCenterX, titleBottomY + 0.25, { align: "center" });
 
   // Divider

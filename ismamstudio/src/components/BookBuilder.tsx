@@ -1002,10 +1002,11 @@ export default function BookBuilder({
           leftOpen ? "absolute md:relative left-0 top-0 h-full z-30 shadow-2xl" : "relative"
         }`}
       >
-        <div className="w-72 p-5 space-y-6 flex flex-col h-full justify-between">
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-3">
+        <div className="w-72 flex flex-col h-full overflow-hidden">
+          {/* Main scrollable body */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5 min-h-0">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-2">
                 <h2 className="text-[10px] font-black uppercase text-slate-400 tracking-wider font-sans">Content Creator</h2>
                 <div className="flex items-center gap-1.5">
                   <QuickStartTour />
@@ -1014,7 +1015,7 @@ export default function BookBuilder({
               </div>
 
               {/* Step 1 Tour Target: KDP Trim Size Selector */}
-              <div className="mb-3.5 bg-slate-800/40 p-2.5 rounded-2xl border border-slate-800/80" data-tour="quick-trim-size">
+              <div className="bg-slate-800/40 p-2.5 rounded-2xl border border-slate-800/80" data-tour="quick-trim-size">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider">Book Trim Size</span>
                   <span className="text-[9px] font-bold text-indigo-400 bg-indigo-950/80 border border-indigo-800/60 px-1.5 py-0.5 rounded-md">KDP Standard</span>
@@ -1034,7 +1035,7 @@ export default function BookBuilder({
               </div>
 
               {/* Multilingual Market Selector */}
-              <div className="mb-3.5 bg-slate-800/40 p-2.5 rounded-2xl border border-slate-800/80">
+              <div className="bg-slate-800/40 p-2.5 rounded-2xl border border-slate-800/80">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider">Language / Mercado</span>
                   <span className="text-[9px] font-bold text-amber-400 bg-amber-950/80 border border-amber-800/60 px-1.5 py-0.5 rounded-md">KDP Market</span>
@@ -1055,12 +1056,12 @@ export default function BookBuilder({
               <button
                 onClick={() => setIsAddModalOpen(true)}
                 data-tour="quick-add-page"
-                className="btn-premium-primary w-full py-4 rounded-2xl normal-case text-sm"
+                className="btn-premium-primary w-full py-3.5 rounded-2xl normal-case text-sm shadow-md"
               >
                 <Plus className="w-4 h-4" /> Add New Page
               </button>
 
-              <div className="flex items-center gap-1.5 mt-2">
+              <div className="flex items-center gap-1.5 pt-1">
                 <button
                   onClick={handleUndo}
                   disabled={historyStep <= 0}
@@ -1113,48 +1114,57 @@ export default function BookBuilder({
                   subtitle={`Trim: ${selectedTrim} | Total Pages: ${bookPages.length}`}
                   category="puzzle-book"
                   data={{ pagesCount: bookPages.length, pages: bookPages }}
-                  className="w-full justify-center py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black text-[10px] uppercase tracking-wider"
+                  className="w-full justify-center py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black text-[10px] uppercase tracking-wider"
                 />
+              </div>
+            </div>
+
+            {/* Bulk Solutions Settings (2-Column Compact Grid) */}
+            <div className="pt-3 border-t border-slate-800 space-y-2" data-tour="solutions-settings">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Solutions Per Page</span>
+                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider bg-slate-800 px-1.5 py-0.5 rounded">8 Puzzles</span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {([
+                  ['Word Search', wordSearchSolutionsPerPage, setWordSearchSolutionsPerPage],
+                  ['Sudoku', sudokuSolutionsPerPage, setSudokuSolutionsPerPage],
+                  ['Crossword', crosswordSolutionsPerPage, setCrosswordSolutionsPerPage],
+                  ['Maze', mazeSolutionsPerPage, setMazeSolutionsPerPage],
+                  ['Kakuro', kakuroSolutionsPerPage, setKakuroSolutionsPerPage],
+                  ['Word Scramble', wordScrambleSolutionsPerPage, setWordScrambleSolutionsPerPage],
+                  ['Cryptogram', cryptogramSolutionsPerPage, setCryptogramSolutionsPerPage],
+                  ['Math Puzzle', mathPuzzleSolutionsPerPage, setMathPuzzleSolutionsPerPage],
+                ] as const).map(([label, val, setter]) => (
+                  <div key={label} className="flex items-center justify-between gap-1 bg-slate-800/60 hover:bg-slate-800 px-2 py-1.5 rounded-xl border border-slate-800/80 transition">
+                    <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-tight truncate" title={label}>{label}</span>
+                    <select
+                      value={val}
+                      onChange={(e) => (setter as (v: 1|2|4) => void)(Number(e.target.value) as 1 | 2 | 4)}
+                      className="bg-slate-900 border border-slate-700/80 rounded-md text-[9px] font-black text-amber-300 px-1.5 py-0.5 cursor-pointer shrink-0 outline-none"
+                    >
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
+                      <option value={4}>4</option>
+                    </select>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Bulk Utility Section */}
-          <div className="pt-4 border-t border-slate-800 space-y-2" data-tour="solutions-settings">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Solutions Per Page</span>
-            {([
-              ['Word Search', wordSearchSolutionsPerPage, setWordSearchSolutionsPerPage],
-              ['Sudoku', sudokuSolutionsPerPage, setSudokuSolutionsPerPage],
-              ['Crossword', crosswordSolutionsPerPage, setCrosswordSolutionsPerPage],
-              ['Maze', mazeSolutionsPerPage, setMazeSolutionsPerPage],
-              ['Kakuro', kakuroSolutionsPerPage, setKakuroSolutionsPerPage],
-              ['Word Scramble', wordScrambleSolutionsPerPage, setWordScrambleSolutionsPerPage],
-              ['Cryptogram', cryptogramSolutionsPerPage, setCryptogramSolutionsPerPage],
-              ['Math Puzzle', mathPuzzleSolutionsPerPage, setMathPuzzleSolutionsPerPage],
-            ] as const).map(([label, val, setter]) => (
-              <div key={label} className="flex items-center justify-between gap-2">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{label}</span>
-                <select
-                  value={val}
-                  onChange={(e) => (setter as (v: 1|2|4) => void)(Number(e.target.value) as 1 | 2 | 4)}
-                  className="bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-200 px-2 py-1 cursor-pointer"
-                >
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={4}>4</option>
-                </select>
-              </div>
-            ))}
+          {/* Pinned Bottom: Auto-Build Solutions Action (Always Visible & Prominent) */}
+          <div className="p-4 border-t border-slate-800 bg-slate-900/95 backdrop-blur-xs shrink-0 shadow-2xl">
             <button
               onClick={autoGenerateAllSolutions}
               data-tour="auto-solutions-btn"
-              className={`w-full py-3 border rounded-2xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] cursor-pointer ${
+              className={`w-full py-3.5 border rounded-2xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] cursor-pointer shadow-lg ${
                 solutionsStatus === 'success'
-                  ? "bg-emerald-500/20 border-emerald-500/35 text-emerald-400"
-                  : "bg-amber-500/10 hover:bg-amber-500/25 border border-amber-500/20 text-amber-400"
+                  ? "bg-emerald-500/20 border-emerald-500/35 text-emerald-400 shadow-emerald-500/10"
+                  : "bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-orange-500/20 hover:from-amber-500/30 hover:via-yellow-500/30 hover:to-orange-500/30 border border-amber-500/30 text-amber-300 shadow-amber-500/10"
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               {solutionsStatus === 'success' ? "✓ Solutions Added!" : "Auto-Build Solutions"}
             </button>
           </div>

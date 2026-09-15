@@ -5666,7 +5666,10 @@ export default function FabricCoverStudio({
     canvas.requestRenderAll();
     
     setTimeout(async () => {
-      const dataURL = await exportCanvasWithBackground(canvas, 3);
+      // Dynamically calculate multiplier to guarantee true 300+ DPI print quality for Amazon KDP
+      const targetDpi = 300;
+      const targetMultiplier = Math.max(3, Math.ceil((layout.coverWidthInches * targetDpi) / layout.canvasWidth));
+      const dataURL = await exportCanvasWithBackground(canvas, targetMultiplier);
       const { jsPDF } = await import("jspdf");
 
       const doc = new jsPDF({
@@ -5676,7 +5679,8 @@ export default function FabricCoverStudio({
       });
 
       doc.addImage(dataURL, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
-      doc.save(`KDP_Premium_Cover_${trimSize.w}x${trimSize.h}.pdf`);
+      const safePageCount = pageCount || 100;
+      doc.save(`KDP_Full_Wrap_Cover_${trimSize.w}x${trimSize.h}_${safePageCount}p.pdf`);
       setIsGenerating(false);
 
       // 🎁 Record trial download if on trial
@@ -5796,7 +5800,9 @@ export default function FabricCoverStudio({
       canvas.requestRenderAll();
       await new Promise((r) => setTimeout(r, 120));
 
-      const coverDataUrl = await exportCanvasWithBackground(canvas, 3);
+      const targetDpi = 300;
+      const targetMultiplier = Math.max(3, Math.ceil((layout.coverWidthInches * targetDpi) / layout.canvasWidth));
+      const coverDataUrl = await exportCanvasWithBackground(canvas, targetMultiplier);
       if (!coverDataUrl) {
         throw new Error("Failed to render 300 DPI Cover from canvas.");
       }

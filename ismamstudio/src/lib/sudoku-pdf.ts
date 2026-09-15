@@ -4,6 +4,7 @@ import { Grid, Difficulty } from "./sudokuGenerator";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
+import { getGutterMargin } from "./gutterMargin";
 
 export interface PdfProgressInfo {
   phase: "generating_pages" | "generating_solutions" | "decorating" | "saving";
@@ -18,6 +19,8 @@ export interface PdfOptions {
   difficulty: Difficulty;
   trimSize: "6x9" | "8.5x11" | "5x8";
   title?: string;
+  subtitle?: string;
+  authorName?: string;
   headerText?: string;
   footerText?: string;
   borderThickness?: number;
@@ -26,6 +29,7 @@ export interface PdfOptions {
   solutionsPerPage?: number; // 1, 2, or 4 per page
   includeCover?: boolean;
   coverState?: any;
+  includeFrontMatter?: boolean;
   isPremium?: boolean;
   hasBleed?: boolean;
   showGuides?: boolean;
@@ -68,7 +72,7 @@ function drawSudokuTile(
   if (showTitle) {
     doc.setFont(pdfFont, "bold");
     doc.setFontSize(size > 4.5 ? 14 : 11);
-    doc.setTextColor(20, 20, 30);
+    doc.setTextColor(15, 23, 42);
     const label = isSolution ? `Answer #${puzzleNumber}` : `Puzzle #${puzzleNumber}`;
     doc.text(label, x + size / 2, y - 0.1, { align: "center" });
   }
@@ -98,22 +102,16 @@ function drawSudokuTile(
     doc.line(x, y + offset, x + size, y + offset);
   }
 
-  // Draw numbers
+  // Draw numbers in solid rich black for crisp Amazon KDP print readability
   const numberFontSize = Math.max(8, Math.floor(cellSize * 30));
   doc.setFontSize(numberFontSize);
+  doc.setFont(pdfFont, "bold");
+  doc.setTextColor(15, 23, 42);
 
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       const val = grid[r][c];
       if (val !== 0) {
-        if (isSolution) {
-          doc.setTextColor(79, 70, 229);
-          doc.setFont(pdfFont, "bold");
-        } else {
-          doc.setTextColor(15, 23, 42);
-          doc.setFont(pdfFont, "bold");
-        }
-
         doc.text(
           val.toString(),
           x + c * cellSize + cellSize / 2,
@@ -127,12 +125,216 @@ function drawSudokuTile(
   doc.setTextColor(0);
 }
 
+function drawFrontMatterTitlePage(
+  doc: jsPDF,
+  options: {
+    title: string;
+    subtitle?: string;
+    authorName?: string;
+    difficulty: Difficulty;
+    puzzleCount: number;
+    pdfFont: string;
+  },
+  width: number,
+  height: number,
+  insideMargin: number,
+  outsideMargin: number
+) {
+  // Page 1 is a Recto (Right-hand) page: Spine is on the LEFT
+  const marginLeft = insideMargin;
+  const marginRight = outsideMargin;
+  const contentW = width - marginLeft - marginRight;
+  const centerX = marginLeft + contentW / 2;
+
+  // Category Header Badge
+  doc.setFont(options.pdfFont, "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text("KDP PREMIUM PUZZLE COLLECTION", centerX, 2.2, { align: "center" });
+
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.015);
+  doc.line(centerX - 0.75, 2.4, centerX + 0.75, 2.4);
+
+  // Main Title
+  doc.setFont(options.pdfFont, "bold");
+  doc.setFontSize(26);
+  doc.setTextColor(15, 23, 42);
+  const titleLines = doc.splitTextToSize(options.title || "Sudoku Master", contentW - 0.5);
+  doc.text(titleLines, centerX, 3.2, { align: "center" });
+
+  const titleBottomY = 3.2 + titleLines.length * 0.38;
+
+  // Subtitle
+  doc.setFont(options.pdfFont, "normal");
+  doc.setFontSize(12);
+  doc.setTextColor(71, 85, 105);
+  const defaultSub = `${options.puzzleCount} Handcrafted Large Print Puzzles with Complete Solutions`;
+  const subLines = doc.splitTextToSize(options.subtitle || defaultSub, contentW - 0.6);
+  doc.text(subLines, centerX, titleBottomY + 0.25, { align: "center" });
+
+  // Elegant Divider
+  const divY = titleBottomY + 0.45 + subLines.length * 0.22;
+  doc.setDrawColor(148, 163, 184);
+  doc.setLineWidth(0.01);
+  doc.line(centerX - 1.5, divY, centerX + 1.5, divY);
+
+  // Specs & Badges Box
+  const badgeY = divY + 0.55;
+  doc.setFont(options.pdfFont, "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text(`DIFFICULTY LEVEL: ${options.difficulty.toUpperCase()}`, centerX, badgeY, { align: "center" });
+
+  doc.setFont(options.pdfFont, "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text("Standard 9×9 Grids • 100% Mathematically Unique Solutions", centerX, badgeY + 0.25, { align: "center" });
+  doc.text("Engineered for Amazon KDP Print Perfection", centerX, badgeY + 0.45, { align: "center" });
+
+  // Author & Imprint
+  const authorY = height - 2.1;
+  doc.setFont(options.pdfFont, "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text("CREATED & PUBLISHED BY", centerX, authorY - 0.25, { align: "center" });
+
+  doc.setFont(options.pdfFont, "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(15, 23, 42);
+  doc.text(options.authorName || "Ismam Abid", centerX, authorY, { align: "center" });
+
+  // Publishing imprint
+  doc.setFont(options.pdfFont, "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(148, 163, 184);
+  doc.text("KDPage Studio • Independent Publishing Edition", centerX, height - 1.0, { align: "center" });
+}
+
+function drawFrontMatterCopyrightAndRulesPage(
+  doc: jsPDF,
+  options: {
+    authorName?: string;
+    pdfFont: string;
+  },
+  width: number,
+  height: number,
+  insideMargin: number,
+  outsideMargin: number
+) {
+  // Page 2 is a Verso (Left-hand) page: Spine is on the RIGHT
+  const marginLeft = outsideMargin;
+  const marginRight = insideMargin;
+  const contentW = width - marginLeft - marginRight;
+  const centerX = marginLeft + contentW / 2;
+
+  // Section Header: HOW TO PLAY SUDOKU
+  doc.setFont(options.pdfFont, "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(15, 23, 42);
+  doc.text("HOW TO PLAY SUDOKU", centerX, 1.2, { align: "center" });
+
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.012);
+  doc.line(centerX - 1.0, 1.35, centerX + 1.0, 1.35);
+
+  // Intro text
+  doc.setFont(options.pdfFont, "normal");
+  doc.setFontSize(9.5);
+  doc.setTextColor(51, 65, 85);
+  const intro = "Sudoku is a logic-based number placement puzzle. The objective is to fill a 9×9 grid with digits so that every row, column, and 3×3 subgrid contains all the numbers from 1 to 9.";
+  const introLines = doc.splitTextToSize(intro, contentW);
+  doc.text(introLines, marginLeft, 1.65);
+
+  // Rules Box
+  const boxTop = 1.65 + introLines.length * 0.2 + 0.15;
+  const boxHeight = 1.65;
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.012);
+  doc.roundedRect(marginLeft, boxTop, contentW, boxHeight, 0.08, 0.08, "FD");
+
+  doc.setFont(options.pdfFont, "bold");
+  doc.setFontSize(10.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text("THE THREE FUNDAMENTAL RULES", marginLeft + 0.25, boxTop + 0.32);
+
+  doc.setFont(options.pdfFont, "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(51, 65, 85);
+
+  const rules = [
+    "1. Each row (horizontal) must contain the digits 1 through 9, with no duplicates.",
+    "2. Each column (vertical) must contain the digits 1 through 9, with no duplicates.",
+    "3. Each 3×3 box (region) must contain the digits 1 through 9, with no duplicates.",
+  ];
+
+  let curRuleY = boxTop + 0.6;
+  rules.forEach((rule) => {
+    const lines = doc.splitTextToSize(rule, contentW - 0.5);
+    doc.text(lines, marginLeft + 0.25, curRuleY);
+    curRuleY += lines.length * 0.16 + 0.1;
+  });
+
+  // Solving Tips
+  const tipsTop = boxTop + boxHeight + 0.3;
+  doc.setFont(options.pdfFont, "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text("PRO SOLVING STRATEGIES", marginLeft, tipsTop);
+
+  doc.setFont(options.pdfFont, "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(51, 65, 85);
+
+  const tips = [
+    "• Start with scanning: Focus on rows, columns, or 3×3 boxes that already have 5 or more numbers completed.",
+    "• Elimination technique: Cross-reference rows and columns to find cells where only a single digit can legally fit (naked singles).",
+    "• Single unique solutions: Every puzzle in this book is mathematically verified to have exactly ONE unique solution—no guessing is ever required!",
+    "• Complete solution keys: Full answer grids are provided at the back of this book for quick checking.",
+  ];
+
+  let curTipY = tipsTop + 0.22;
+  tips.forEach((tip) => {
+    const lines = doc.splitTextToSize(tip, contentW);
+    doc.text(lines, marginLeft, curTipY);
+    curTipY += lines.length * 0.16 + 0.08;
+  });
+
+  // Copyright Section at bottom
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.01);
+  doc.line(marginLeft, height - 2.1, marginLeft + contentW, height - 2.1);
+
+  doc.setFont(options.pdfFont, "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+
+  const year = new Date().getFullYear();
+  const author = options.authorName || "Ismam Abid";
+  const copyrightNotice = [
+    `Copyright © ${year} by ${author}. All rights reserved.`,
+    "No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the author or publisher.",
+    "Published Independently for Amazon Kindle Direct Publishing (KDP).",
+    "Printed on Demand. 100% Quality Guaranteed.",
+  ];
+
+  let cY = height - 1.85;
+  copyrightNotice.forEach((cLine) => {
+    const lines = doc.splitTextToSize(cLine, contentW);
+    doc.text(lines, centerX, cY, { align: "center" });
+    cY += lines.length * 0.15 + 0.05;
+  });
+}
+
 export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
   const {
     puzzles,
     difficulty,
     trimSize,
     title = "Sudoku Puzzle Book",
+    subtitle,
+    authorName = "Ismam Abid",
     headerText,
     footerText,
     borderThickness = 2,
@@ -141,6 +343,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     solutionsPerPage = 4,
     includeCover = false,
     coverState = null,
+    includeFrontMatter = true,
     isPremium,
     hasBleed = false,
     showGuides = false,
@@ -165,46 +368,102 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     format: [width, height],
   });
 
-  // 1. Draw Front Cover if integrated
+  // Calculate total pages for KDP inside gutter margin sizing
+  const solPerPage = Math.min(4, Math.max(1, solutionsPerPage));
+  const totalSolPages = includeSolutions ? Math.ceil(puzzles.length / solPerPage) : 0;
+  const frontMatterPages = (!includeCover && includeFrontMatter) ? 2 : 0;
+  const totalExpectedPages = frontMatterPages + puzzles.length + totalSolPages;
+
+  // KDP gutter calculation (0.375" up to 150 pages, 0.5" up to 300 pages)
+  const gutterExtra = getGutterMargin(totalExpectedPages);
+  const outsideMargin = 0.5;
+  const insideMargin = 0.5 + Math.min(0.35, gutterExtra); // 0.75" to 0.85" inside spine margin
+
   let firstPageAdded = false;
+  let currentPage = 0;
+
+  // 1. Draw Front Cover if integrated
   if (includeCover && coverState) {
     await drawCoverPagePart(doc, coverState, 'front', width, height);
     firstPageAdded = true;
+    currentPage++;
+  }
+
+  // 2. Standard KDP Front Matter (Title Page & Copyright/Instructions)
+  if (!includeCover && includeFrontMatter) {
+    // Page 1: Title Page (Recto / Right page, spine on LEFT)
+    drawFrontMatterTitlePage(
+      doc,
+      {
+        title,
+        subtitle,
+        authorName,
+        difficulty,
+        puzzleCount: puzzles.length,
+        pdfFont,
+      },
+      width,
+      height,
+      insideMargin,
+      outsideMargin
+    );
+    firstPageAdded = true;
+    currentPage = 1;
+
+    // Page 2: Copyright & Rules Page (Verso / Left page, spine on RIGHT)
+    doc.addPage();
+    currentPage = 2;
+    drawFrontMatterCopyrightAndRulesPage(
+      doc,
+      {
+        authorName,
+        pdfFont,
+      },
+      width,
+      height,
+      insideMargin,
+      outsideMargin
+    );
   }
 
   // ── Puzzle pages (1 per page - Standard KDP Book Format) ─────────
   for (let index = 0; index < puzzles.length; index++) {
     const item = puzzles[index];
-    if (firstPageAdded || index > 0) doc.addPage();
+    if (firstPageAdded) doc.addPage();
     firstPageAdded = true;
+    currentPage++;
 
-    let maxGridSize = 5.4;
+    // Alternating KDP Gutter Margins:
+    // Odd pages (recto / right page): Spine is on the LEFT -> inside margin on left
+    // Even pages (verso / left page): Spine is on the RIGHT -> inside margin on right
+    const isOdd = currentPage % 2 !== 0;
+    const marginLeft = isOdd ? insideMargin : outsideMargin;
+    const marginRight = isOdd ? outsideMargin : insideMargin;
+    const contentW = width - marginLeft - marginRight;
+    const contentCenterX = marginLeft + contentW / 2;
+
+    let maxGridSize = 5.5;
     if (trimSize === "6x9") maxGridSize = 4.2;
     if (trimSize === "5x8") maxGridSize = 3.5;
 
-    const safeMarginX = 0.65;
-    const safeW = width - (safeMarginX * 2);
-    const safeH = height - 1.5;
-
-    const gridSize = Math.min(maxGridSize, safeW, safeH);
-    const startX = (width - gridSize) / 2;
+    const gridSize = Math.min(maxGridSize, contentW, height - 1.6);
+    const startX = marginLeft + (contentW - gridSize) / 2;
     const startY = (height - gridSize) / 2 - 0.1;
 
     // Header Title
     doc.setFont(pdfFont, "bold");
     doc.setFontSize(16);
-    doc.setTextColor(20, 20, 30);
+    doc.setTextColor(15, 23, 42);
     const pageHeader = headerText && headerText.trim()
       ? (headerText.includes("#") ? headerText : `${headerText} #${index + 1}`)
       : `${title} #${index + 1}`;
-    doc.text(pageHeader, width / 2, startY - 0.35, { align: "center" });
+    doc.text(pageHeader, contentCenterX, startY - 0.35, { align: "center" });
 
     // Draw Sudoku Tile with chosen border thickness and font
     drawSudokuTile(doc, item.puzzle, startX, startY, gridSize, false, index + 1, false, pdfFont, borderThickness);
 
     if (showGuides) {
-      const margin = 0.5;
-      drawMarginGuides(doc, margin, margin, margin, margin, width, height);
+      drawMarginGuides(doc, marginLeft, 0.5, marginRight, 0.5, width, height);
     }
 
     // Footer Copyright Line & Page Number
@@ -212,10 +471,10 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
     if (footerText && footerText.trim()) {
-      doc.text(footerText, safeMarginX, height - 0.4);
-      doc.text(`Page ${index + 1}`, width - safeMarginX, height - 0.4, { align: "right" });
+      doc.text(footerText, marginLeft, height - 0.4);
+      doc.text(`Page ${currentPage}`, width - marginRight, height - 0.4, { align: "right" });
     } else {
-      doc.text(`Page ${index + 1}`, width - 0.5, height - 0.4, { align: "right" });
+      doc.text(`Page ${currentPage}`, contentCenterX, height - 0.4, { align: "center" });
     }
 
     // Yield periodically to keep UI fluid and responsive
@@ -234,31 +493,36 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
 
   // ── Solution pages (1, 2, or 4 per page) ─────────────────────
   if (includeSolutions) {
-    const solPerPage = Math.min(4, Math.max(1, solutionsPerPage));
-    const totalSolPages = Math.ceil(puzzles.length / solPerPage);
-
     for (let p = 0; p < totalSolPages; p++) {
       doc.addPage();
-      const margin = 0.5;
-      const safeW = width - (margin * 2);
-      const safeH = height - (margin * 2);
+      currentPage++;
+
+      // Alternating KDP Gutter Margins for solution pages
+      const isOdd = currentPage % 2 !== 0;
+      const marginLeft = isOdd ? insideMargin : outsideMargin;
+      const marginRight = isOdd ? outsideMargin : insideMargin;
+      const contentW = width - marginLeft - marginRight;
+      const contentCenterX = marginLeft + contentW / 2;
+
+      const marginTop = 0.5;
+      const safeH = height - marginTop * 2;
       const topReserved = 0.5;
       const availH = safeH - topReserved;
 
       // Solution Section Header
       doc.setFont(pdfFont, "bold");
       doc.setFontSize(14);
-      doc.setTextColor(20, 20, 30);
+      doc.setTextColor(15, 23, 42);
       const solHeader = headerText && headerText.trim()
         ? `${headerText} — Solutions`
         : `Solutions (Page ${p + 1} of ${totalSolPages})`;
-      doc.text(solHeader, width / 2, margin + 0.3, { align: "center" });
+      doc.text(solHeader, contentCenterX, marginTop + 0.3, { align: "center" });
 
       if (showGuides) {
-        drawMarginGuides(doc, margin, margin, margin, margin, width, height);
+        drawMarginGuides(doc, marginLeft, marginTop, marginRight, marginTop, width, height);
       }
 
-      const zones = getSolutionPackZones(solPerPage, margin, margin + topReserved, safeW, availH);
+      const zones = getSolutionPackZones(solPerPage, marginLeft, marginTop + topReserved, contentW, availH);
 
       for (let z = 0; z < solPerPage; z++) {
         const solIndex = p * solPerPage + z;
@@ -274,11 +538,14 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
       }
 
       // Solution Page Footer
+      doc.setFont(pdfFont, "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
       if (footerText && footerText.trim()) {
-        doc.setFont(pdfFont, "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text(footerText, margin, height - 0.35);
+        doc.text(footerText, marginLeft, height - 0.35);
+        doc.text(`Page ${currentPage}`, width - marginRight, height - 0.35, { align: "right" });
+      } else {
+        doc.text(`Page ${currentPage}`, contentCenterX, height - 0.35, { align: "center" });
       }
 
       // Yield periodically to keep UI responsive
@@ -341,4 +608,4 @@ export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
   });
   await new Promise((resolve) => setTimeout(resolve, 10));
   doc.save(filename);
-}
+}

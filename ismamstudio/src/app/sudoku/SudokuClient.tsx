@@ -96,6 +96,8 @@ export default function SudokuClient() {
   const [fontFamily, setFontFamily] = useState<"sans-serif" | "serif" | "monospace">("sans-serif");
   const [headerText, setHeaderText] = useState("SUDOKU CHALLENGE");
   const [footerText, setFooterText] = useState("KDPage Studio • All Rights Reserved");
+  const [authorName, setAuthorName] = useState("Ismam Abid");
+  const [bookSubtitle, setBookSubtitle] = useState("100 Large Print Puzzles with Complete Solutions");
   const [presets, setPresets] = useState<HeaderFooterPreset[]>([]);
 
   useEffect(() => {
@@ -309,7 +311,10 @@ export default function SudokuClient() {
           puzzles,
           difficulty,
           trimSize: finalTrim,
-          title: headerText || `Sudoku Puzzle Book`,
+          title: headerText || `Sudoku Master`,
+          subtitle: bookSubtitle,
+          authorName: authorName || "Ismam Abid",
+          includeFrontMatter: !incCover,
           headerText,
           footerText,
           borderThickness,
@@ -357,6 +362,9 @@ export default function SudokuClient() {
           difficulty,
           trimSize: "6x9",
           title: headerText || `Sample Sudoku Book`,
+          subtitle: "Sample Large Print Edition",
+          authorName: authorName || "Ismam Abid",
+          includeFrontMatter: true,
           headerText,
           footerText,
           borderThickness,
@@ -635,6 +643,29 @@ export default function SudokuClient() {
                       <option value="serif">Serif (Classic Book)</option>
                       <option value="monospace">Monospace (Technical)</option>
                     </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Author Name (Title Page)</label>
+                    <input
+                      type="text"
+                      value={authorName}
+                      onChange={(e) => setAuthorName(e.target.value)}
+                      placeholder="e.g. Ismam Abid"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Book Subtitle</label>
+                    <input
+                      type="text"
+                      value={bookSubtitle}
+                      onChange={(e) => setBookSubtitle(e.target.value)}
+                      placeholder="e.g. 100 Large Print Puzzles"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white"
+                    />
                   </div>
                 </div>
 

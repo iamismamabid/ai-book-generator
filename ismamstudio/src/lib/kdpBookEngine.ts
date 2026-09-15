@@ -121,15 +121,16 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
 
   // Author & Imprint
   const authorY = opts.height - 2.1;
+  const author = opts.authorName?.trim() || "Independent Publisher";
   doc.setFont(pdfFont, "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(100, 116, 139);
   doc.text("CREATED & PUBLISHED BY", contentCenterX, authorY - 0.25, { align: "center" });
 
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(14);
   doc.setTextColor(15, 23, 42);
-  doc.text(opts.authorName || "Ismam Abid", contentCenterX, authorY, { align: "center" });
+  doc.text(author, contentCenterX, authorY, { align: "center" });
 
   // Publishing imprint
   doc.setFont(pdfFont, "normal");
@@ -350,7 +351,7 @@ export function drawKdpCopyrightAndInstructionsPage(
   doc.setTextColor(100, 116, 139);
 
   const year = new Date().getFullYear();
-  const author = opts.authorName || "Ismam Abid";
+  const author = opts.authorName?.trim() || "Independent Publisher";
   const copyrightNotice = [
     `Copyright © ${year} by ${author}. All rights reserved.`,
     "No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the author or publisher.",

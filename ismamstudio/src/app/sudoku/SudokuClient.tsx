@@ -96,7 +96,7 @@ export default function SudokuClient() {
   const [fontFamily, setFontFamily] = useState<"sans-serif" | "serif" | "monospace">("sans-serif");
   const [headerText, setHeaderText] = useState("SUDOKU CHALLENGE");
   const [footerText, setFooterText] = useState("Independent Publishing • All Rights Reserved");
-  const [authorName, setAuthorName] = useState("Ismam Abid");
+  const [authorName, setAuthorName] = useState("");
   const [bookSubtitle, setBookSubtitle] = useState("");
   const [presets, setPresets] = useState<HeaderFooterPreset[]>([]);
 
@@ -315,7 +315,7 @@ export default function SudokuClient() {
           subtitle: bookSubtitle.trim()
             ? bookSubtitle.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${count} $1`)
             : `${count} Handcrafted Large Print Puzzles with Complete Solutions`,
-          authorName: authorName || "Ismam Abid",
+          authorName: authorName.trim() || "Independent Publisher",
           includeFrontMatter: !incCover,
           headerText,
           footerText,
@@ -365,7 +365,7 @@ export default function SudokuClient() {
           trimSize: "6x9",
           title: headerText || `Sample Sudoku Book`,
           subtitle: "Sample Large Print Edition",
-          authorName: authorName || "Ismam Abid",
+          authorName: authorName.trim() || "Independent Publisher",
           includeFrontMatter: true,
           headerText,
           footerText,
@@ -655,7 +655,7 @@ export default function SudokuClient() {
                       type="text"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
-                      placeholder="e.g. Ismam Abid"
+                      placeholder="e.g. Puzzle Master Press / Pen Name"
                       className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white"
                     />
                   </div>

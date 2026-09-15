@@ -93,6 +93,9 @@ export default function MathPuzzleGenerator() {
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
+  const [bookTitle, setBookTitle] = useState<string>("Math Puzzle Book");
+  const [bookSubtitle, setBookSubtitle] = useState<string>("");
+  const [authorName, setAuthorName] = useState<string>("");
 
   // Puzzle lists states
   const [additionPuzzles, setAdditionPuzzles] = useState<AdditionPuzzle[]>([]);
@@ -326,10 +329,11 @@ export default function MathPuzzleGenerator() {
       const pageW = finalBleed ? finalW + bleed * 2 : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
+        import("@/lib/kdpBookEngine"),
       ]);
       const doc = new jsPDF({
         orientation: "portrait",
@@ -345,17 +349,53 @@ export default function MathPuzzleGenerator() {
       const contentW = pageW - marginL - marginR;
       const contentH = pageH - marginT - marginB;
 
-      // 1. Draw Front Cover if integrated
+      const frontMatterPages = (!incCover) ? 2 : 0;
+      const solPages = incSol ? (puzzlesPerPage === 2 ? Math.ceil(numPages / 2) : Math.ceil(numPages / 4)) : 0;
+      const totalExpectedPages = frontMatterPages + numPages + solPages;
+
       let firstPageAdded = false;
+      let currentPage = 0;
+
+      // 1. Draw Front Cover if integrated
       if (incCover && coverState) {
         await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
         firstPageAdded = true;
+        currentPage++;
+      }
+
+      // Standard KDP Front Matter
+      if (!incCover) {
+        const totalPuzzles = numPages * puzzlesPerPage;
+        drawKdpTitlePage(doc, {
+          title: bookTitle.trim() || "Math Puzzle Book",
+          subtitle: bookSubtitle.trim() || `${totalPuzzles} Challenging Math & Logic Puzzles with Complete Solutions`,
+          authorName: authorName.trim() || "Independent Publisher",
+          puzzleType: "math_puzzle",
+          difficulty,
+          puzzleCount: totalPuzzles,
+          width: pageW,
+          height: pageH,
+          totalPages: totalExpectedPages,
+        });
+        firstPageAdded = true;
+        currentPage = 1;
+
+        doc.addPage();
+        currentPage = 2;
+        drawKdpCopyrightAndInstructionsPage(doc, {
+          authorName: authorName.trim() || "Independent Publisher",
+          puzzleType: "math_puzzle",
+          width: pageW,
+          height: pageH,
+          totalPages: totalExpectedPages,
+        });
       }
 
       // 1. Draw Puzzle Pages
       for (let pIdx = 0; pIdx < numPages; pIdx++) {
         if (firstPageAdded || pIdx > 0) doc.addPage();
         firstPageAdded = true;
+        currentPage++;
 
         if (finalGuides) {
           drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
@@ -914,6 +954,41 @@ export default function MathPuzzleGenerator() {
               />
               Show Safe Margins Guide
             </label>
+
+            {/* KDP Book Details */}
+            <div className="space-y-3 pt-3 border-t border-slate-800/80">
+              <label className="text-xs font-black uppercase text-amber-400 tracking-wider block">KDP Book Details</label>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Book Title</label>
+                <input
+                  type="text"
+                  value={bookTitle}
+                  onChange={(e) => setBookTitle(e.target.value)}
+                  placeholder="Math Puzzle Book"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Subtitle</label>
+                <input
+                  type="text"
+                  value={bookSubtitle}
+                  onChange={(e) => setBookSubtitle(e.target.value)}
+                  placeholder={`${numPages * puzzlesPerPage} Challenging Math & Logic Puzzles with Complete Solutions`}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Author / Pen Name</label>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="e.g. Puzzle Master Press / Pen Name"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+            </div>
           </div>
 
         </div>

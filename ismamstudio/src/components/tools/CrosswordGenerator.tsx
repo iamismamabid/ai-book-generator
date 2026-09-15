@@ -55,7 +55,7 @@ export default function CrosswordGenerator() {
   const [includeCover, setIncludeCover] = useState<boolean>(false);
   const [bookTitle, setBookTitle] = useState<string>("Crossword Puzzle Book");
   const [bookSubtitle, setBookSubtitle] = useState<string>("");
-  const [authorName, setAuthorName] = useState<string>("Ismam Abid");
+  const [authorName, setAuthorName] = useState<string>("");
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   // Puzzle generation states
@@ -293,9 +293,9 @@ export default function CrosswordGenerator() {
 
       if (!incCover) {
         drawKdpTitlePage(doc, {
-          title: bookTitle || "Crossword Puzzle Book",
-          subtitle: bookSubtitle || `${puzzles.length} Large Print Themed Crosswords with Complete Solutions`,
-          authorName: authorName || "Ismam Abid",
+          title: bookTitle.trim() || "Crossword Puzzle Book",
+          subtitle: bookSubtitle.trim() || `${puzzles.length} Large Print Themed Crosswords with Complete Solutions`,
+          authorName: authorName.trim() || "Independent Publisher",
           puzzleType: "crossword",
           puzzleCount: puzzles.length,
           width: pageW,
@@ -308,7 +308,7 @@ export default function CrosswordGenerator() {
         doc.addPage();
         currentPage = 2;
         drawKdpCopyrightAndInstructionsPage(doc, {
-          authorName: authorName || "Ismam Abid",
+          authorName: authorName.trim() || "Independent Publisher",
           puzzleType: "crossword",
           width: pageW,
           height: pageH,
@@ -712,12 +712,12 @@ export default function CrosswordGenerator() {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-400 block mb-1">Author Name</label>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Author / Pen Name</label>
                 <input
                   type="text"
                   value={authorName}
                   onChange={(e) => setAuthorName(e.target.value)}
-                  placeholder="Ismam Abid"
+                  placeholder="e.g. Puzzle Master Press / Pen Name"
                   className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500"
                 />
               </div>

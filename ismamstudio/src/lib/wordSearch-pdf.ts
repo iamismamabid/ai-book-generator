@@ -87,7 +87,7 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
     puzzles,
     title = "Word Search Puzzle Book",
     subtitle,
-    authorName = "Ismam Abid",
+    authorName = "Independent Publisher",
     trimSize,
     includeSolutions = true,
     includeCover = false,

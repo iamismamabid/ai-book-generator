@@ -182,7 +182,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     shape,
     title = "Maze Puzzle Book",
     subtitle,
-    authorName = "Ismam Abid",
+    authorName = "Independent Publisher",
     trimSize = "8.5x11",
     includeSolutions = true,
     includeCover = false,

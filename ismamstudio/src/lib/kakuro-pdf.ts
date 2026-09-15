@@ -168,7 +168,7 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
     puzzles,
     title = "Kakuro Cross Sums",
     subtitle,
-    authorName = "Ismam Abid",
+    authorName = "Independent Publisher",
     difficulty,
     trimSize,
     includeSolutions = true,

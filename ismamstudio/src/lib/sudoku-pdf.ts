@@ -209,21 +209,22 @@ function drawFrontMatterTitlePage(
 
   // Author & Imprint
   const authorY = height - 2.1;
+  const author = options.authorName?.trim() || "Independent Publisher";
   doc.setFont(options.pdfFont, "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(100, 116, 139);
   doc.text("CREATED & PUBLISHED BY", centerX, authorY - 0.25, { align: "center" });
 
   doc.setFont(options.pdfFont, "bold");
   doc.setFontSize(14);
   doc.setTextColor(15, 23, 42);
-  doc.text(options.authorName || "Ismam Abid", centerX, authorY, { align: "center" });
+  doc.text(author, centerX, authorY, { align: "center" });
 
   // Publishing imprint
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(148, 163, 184);
-  doc.text("KDPage Studio • Independent Publishing Edition", centerX, height - 1.0, { align: "center" });
+  doc.text("Independent Publishing Edition", centerX, height - 1.0, { align: "center" });
 }
 
 function drawFrontMatterCopyrightAndRulesPage(
@@ -326,7 +327,7 @@ function drawFrontMatterCopyrightAndRulesPage(
   doc.setTextColor(100, 116, 139);
 
   const year = new Date().getFullYear();
-  const author = options.authorName || "Ismam Abid";
+  const author = options.authorName?.trim() || "Independent Publisher";
   const copyrightNotice = [
     `Copyright © ${year} by ${author}. All rights reserved.`,
     "No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the author or publisher.",
@@ -349,7 +350,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     trimSize,
     title = "Sudoku Puzzle Book",
     subtitle,
-    authorName = "Ismam Abid",
+    authorName = "Independent Publisher",
     headerText,
     footerText,
     borderThickness = 2,

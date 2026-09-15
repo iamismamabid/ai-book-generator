@@ -78,6 +78,9 @@ export default function MazeGeneratorPage() {
   const [mazeScale, setMazeScale] = useState<number>(100);
   const [includeSolutions, setIncludeSolutions] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
+  const [bookTitle, setBookTitle] = useState<string>("");
+  const [bookSubtitle, setBookSubtitle] = useState<string>("");
+  const [authorName, setAuthorName] = useState<string>("");
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   
   const [previewMaze, setPreviewMaze] = useState<{
@@ -232,7 +235,9 @@ export default function MazeGeneratorPage() {
           trimSize: finalTrim,
           includeSolutions: incSol,
           scale: mazeScale,
-          title: `Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
+          title: bookTitle.trim() || `Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
+          subtitle: bookSubtitle.trim() || undefined,
+          authorName: authorName.trim() || "Independent Publisher",
           includeCover: incCover,
           coverState,
           hasBleed,
@@ -540,6 +545,41 @@ export default function MazeGeneratorPage() {
                 <label htmlFor="cover" className="text-sm text-slate-300 cursor-pointer select-none font-bold">
                   Include Cover Pages (Add Front & Back cover to PDF)
                 </label>
+              </div>
+
+              {/* KDP Book Details */}
+              <div className="space-y-3 pt-3 border-t border-slate-900">
+                <label className="text-xs font-black uppercase text-amber-400 tracking-wider block">KDP Book Details</label>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 block mb-1">Book Title</label>
+                  <input
+                    type="text"
+                    value={bookTitle}
+                    onChange={(e) => setBookTitle(e.target.value)}
+                    placeholder={`Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`}
+                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 block mb-1">Subtitle</label>
+                  <input
+                    type="text"
+                    value={bookSubtitle}
+                    onChange={(e) => setBookSubtitle(e.target.value)}
+                    placeholder={`Featuring Premium ${shape.charAt(0).toUpperCase() + shape.slice(1)} Shaped Mazes with Solutions`}
+                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 block mb-1">Author / Pen Name</label>
+                  <input
+                    type="text"
+                    value={authorName}
+                    onChange={(e) => setAuthorName(e.target.value)}
+                    placeholder="e.g. Puzzle Master Press / Pen Name"
+                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                  />
+                </div>
               </div>
             </div>
 

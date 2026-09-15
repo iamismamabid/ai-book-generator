@@ -41,6 +41,9 @@ export default function CryptogramGenerator() {
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
+  const [bookTitle, setBookTitle] = useState<string>("Cryptogram Puzzle Book");
+  const [bookSubtitle, setBookSubtitle] = useState<string>("");
+  const [authorName, setAuthorName] = useState<string>("");
 
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
 
@@ -273,9 +276,9 @@ export default function CryptogramGenerator() {
         // Standard KDP Front Matter
         if (!incCover) {
           drawKdpTitlePage(doc, {
-            title: "Cryptogram Puzzle Book",
-            subtitle: `${puzzles.length} Inspirational Cryptoquotes & Decryption Challenges`,
-            authorName: "Ismam Abid",
+            title: bookTitle.trim() || "Cryptogram Puzzle Book",
+            subtitle: bookSubtitle.trim() || `${puzzles.length} Inspirational Cryptoquotes & Decryption Challenges`,
+            authorName: authorName.trim() || "Independent Publisher",
             puzzleType: "cryptogram",
             puzzleCount: puzzles.length,
             width: pageW,
@@ -288,7 +291,7 @@ export default function CryptogramGenerator() {
           doc.addPage();
           currentPage = 2;
           drawKdpCopyrightAndInstructionsPage(doc, {
-            authorName: "Ismam Abid",
+            authorName: authorName.trim() || "Independent Publisher",
             puzzleType: "cryptogram",
             width: pageW,
             height: pageH,
@@ -765,6 +768,41 @@ export default function CryptogramGenerator() {
               />
               Show Safe Margins Guide
             </label>
+
+            {/* KDP Book Details */}
+            <div className="space-y-3 pt-3 border-t border-slate-800/80">
+              <label className="text-xs font-black uppercase text-amber-400 tracking-wider block">KDP Book Details</label>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Book Title</label>
+                <input
+                  type="text"
+                  value={bookTitle}
+                  onChange={(e) => setBookTitle(e.target.value)}
+                  placeholder="Cryptogram Puzzle Book"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Subtitle</label>
+                <input
+                  type="text"
+                  value={bookSubtitle}
+                  onChange={(e) => setBookSubtitle(e.target.value)}
+                  placeholder={`${puzzles.length} Inspirational Cryptoquotes & Decryption Challenges`}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Author / Pen Name</label>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="e.g. Puzzle Master Press / Pen Name"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+            </div>
           </div>
 
         </div>

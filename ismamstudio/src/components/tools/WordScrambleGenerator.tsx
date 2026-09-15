@@ -46,6 +46,9 @@ export default function WordScrambleGenerator() {
   const [wordsPerPage, setWordsPerPage] = useState<number>(8);
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
+  const [bookTitle, setBookTitle] = useState<string>("Word Scramble Puzzle Book");
+  const [bookSubtitle, setBookSubtitle] = useState<string>("");
+  const [authorName, setAuthorName] = useState<string>("");
 
   useEffect(() => {
     async function loadPremium() {
@@ -188,7 +191,6 @@ export default function WordScrambleGenerator() {
         format: [pageW, pageH]
       });
 
-      const bookTitle = "";
       const showClues = false;
       const marginT = 0.75;
       const marginB = 0.75;
@@ -211,9 +213,9 @@ export default function WordScrambleGenerator() {
       // Standard KDP Front Matter
       if (!incCover) {
         drawKdpTitlePage(doc, {
-          title: bookTitle || "Word Scramble Puzzle Book",
-          subtitle: `${puzzles.length} Brain-Teasing Anagram & Scramble Puzzles`,
-          authorName: "Ismam Abid",
+          title: bookTitle.trim() || "Word Scramble Puzzle Book",
+          subtitle: bookSubtitle.trim() || `${puzzles.length} Brain-Teasing Anagram & Scramble Puzzles`,
+          authorName: authorName.trim() || "Independent Publisher",
           puzzleType: "word_scramble",
           puzzleCount: puzzles.length,
           width: pageW,
@@ -226,7 +228,7 @@ export default function WordScrambleGenerator() {
         doc.addPage();
         currentPage = 2;
         drawKdpCopyrightAndInstructionsPage(doc, {
-          authorName: "Ismam Abid",
+          authorName: authorName.trim() || "Independent Publisher",
           puzzleType: "word_scramble",
           width: pageW,
           height: pageH,
@@ -716,6 +718,41 @@ export default function WordScrambleGenerator() {
               />
               Show Safe Margins Guide
             </label>
+
+            {/* KDP Book Details */}
+            <div className="space-y-3 pt-3 border-t border-slate-800/80">
+              <label className="text-xs font-black uppercase text-amber-400 tracking-wider block">KDP Book Details</label>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Book Title</label>
+                <input
+                  type="text"
+                  value={bookTitle}
+                  onChange={(e) => setBookTitle(e.target.value)}
+                  placeholder="Word Scramble Puzzle Book"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Subtitle</label>
+                <input
+                  type="text"
+                  value={bookSubtitle}
+                  onChange={(e) => setBookSubtitle(e.target.value)}
+                  placeholder={`${puzzles.length} Brain-Teasing Anagram & Scramble Puzzles`}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Author / Pen Name</label>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="e.g. Puzzle Master Press / Pen Name"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-500 font-medium"
+                />
+              </div>
+            </div>
           </div>
 
         </div>

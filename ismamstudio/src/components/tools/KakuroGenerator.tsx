@@ -31,6 +31,9 @@ export default function KakuroGenerator() {
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
   const [includeCover, setIncludeCover] = useState<boolean>(false);
+  const [bookTitle, setBookTitle] = useState<string>("Kakuro Cross Sums");
+  const [bookSubtitle, setBookSubtitle] = useState<string>("");
+  const [authorName, setAuthorName] = useState<string>("");
 
   // Preview puzzle state
   const [previewPuzzle, setPreviewPuzzle] = useState<{ puzzle: KakuroPuzzle; solution: KakuroPuzzle } | null>(null);
@@ -141,7 +144,9 @@ export default function KakuroGenerator() {
         puzzles: generatedPuzzles,
         difficulty,
         trimSize: finalTrimSize,
-        title: "Kakuro",
+        title: bookTitle.trim() || "Kakuro Cross Sums",
+        subtitle: bookSubtitle.trim() || `${finalNumPages} Kakuro Cross Sums with Complete Solutions`,
+        authorName: authorName.trim() || "Independent Publisher",
         includeSolutions: includeSolutions,
         includeCover: incCover,
         coverState,
@@ -301,6 +306,41 @@ export default function KakuroGenerator() {
                   checked={showAnswers}
                   onChange={(e) => setShowAnswers(e.target.checked)}
                   className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* KDP Book Details */}
+            <div className="space-y-3 pt-4 border-t border-slate-800/80">
+              <label className="text-xs font-black uppercase text-indigo-400 tracking-wider block">KDP Book Details</label>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Book Title</label>
+                <input
+                  type="text"
+                  value={bookTitle}
+                  onChange={(e) => setBookTitle(e.target.value)}
+                  placeholder="Kakuro Cross Sums"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-indigo-500 font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Subtitle</label>
+                <input
+                  type="text"
+                  value={bookSubtitle}
+                  onChange={(e) => setBookSubtitle(e.target.value)}
+                  placeholder={`${numPages} Kakuro Cross Sums with Complete Solutions`}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-indigo-500 font-medium"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 block mb-1">Author / Pen Name</label>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="e.g. Puzzle Master Press / Pen Name"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-indigo-500 font-medium"
                 />
               </div>
             </div>

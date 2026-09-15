@@ -71,7 +71,7 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
-  doc.text("KDP PREMIUM PUZZLE COLLECTION", contentCenterX, 2.2, { align: "center" });
+  doc.text("PREMIUM PUZZLE COLLECTION", contentCenterX, 2.2, { align: "center" });
 
   doc.setDrawColor(203, 213, 225);
   doc.setLineWidth(0.015);
@@ -115,7 +115,7 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
   doc.text("100% Mathematically Verified Solutions • Clear Large Print", contentCenterX, badgeY + 0.25, { align: "center" });
-  doc.text("Engineered for Amazon KDP Print Perfection", contentCenterX, badgeY + 0.45, { align: "center" });
+  doc.text("Engineered for Large Print Perfection", contentCenterX, badgeY + 0.45, { align: "center" });
 
   // Author & Imprint
   const authorY = opts.height - 2.1;
@@ -133,7 +133,7 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(148, 163, 184);
-  doc.text("KDPage Studio • Independent Publishing Edition", contentCenterX, opts.height - 1.0, { align: "center" });
+  doc.text("Independent Publishing Edition", contentCenterX, opts.height - 1.0, { align: "center" });
 }
 
 interface RuleGuide {
@@ -352,7 +352,7 @@ export function drawKdpCopyrightAndInstructionsPage(
   const copyrightNotice = [
     `Copyright © ${year} by ${author}. All rights reserved.`,
     "No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the author or publisher.",
-    "Published Independently for Amazon Kindle Direct Publishing (KDP).",
+    "Published Independently • First Edition",
     "Printed on Demand. 100% Quality Guaranteed.",
   ];
 

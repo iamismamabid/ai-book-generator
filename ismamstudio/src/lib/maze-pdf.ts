@@ -33,6 +33,30 @@ const TRIM_SIZES: Record<string, [number, number]> = {
   "5x8": [5, 8],
 };
 
+// Helper to merge continuous segments: given boolean flags for indices 0..n-1, returns [start, end][] intervals
+function getActiveSegments(flags: boolean[]): [number, number][] {
+  const segments: [number, number][] = [];
+  let inSeg = false;
+  let start = 0;
+  for (let i = 0; i < flags.length; i++) {
+    if (flags[i]) {
+      if (!inSeg) {
+        inSeg = true;
+        start = i;
+      }
+    } else {
+      if (inSeg) {
+        segments.push([start, i]);
+        inSeg = false;
+      }
+    }
+  }
+  if (inSeg) {
+    segments.push([start, flags.length]);
+  }
+  return segments;
+}
+
 // Helper to draw a single maze on a given jsPDF document instance
 function drawMaze(
   doc: jsPDF,
@@ -51,25 +75,57 @@ function drawMaze(
   doc.setLineWidth(Math.max(0.015, cellSize * 0.08)); // Clear, crisp bold lines for printing
   doc.setDrawColor(15, 23, 42); // Slate-900 bold black tone
 
-  // 1. Draw Maze Walls
-  for (let r = 0; r < rows; r++) {
+  // 1. Draw Optimized Horizontal Wall Segments (Deduplicated & Merged)
+  for (let r = 0; r <= rows; r++) {
+    const rowFlags: boolean[] = new Array(cols).fill(false);
     for (let c = 0; c < cols; c++) {
-      const cell = grid[r][c];
-      if (!cell.active) continue;
+      if (r === 0) {
+        rowFlags[c] = !!grid[0]?.[c]?.active && !!grid[0][c].walls.top;
+      } else if (r === rows) {
+        rowFlags[c] = !!grid[rows - 1]?.[c]?.active && !!grid[rows - 1][c].walls.bottom;
+      } else {
+        const topCell = grid[r - 1]?.[c];
+        const bottomCell = grid[r]?.[c];
+        rowFlags[c] =
+          (!!topCell?.active && !!topCell.walls.bottom) ||
+          (!!bottomCell?.active && !!bottomCell.walls.top);
+      }
+    }
 
-      const x = xOffset + c * cellSize;
-      const y = yOffset + r * cellSize;
-
-      if (cell.walls.top) doc.line(x, y, x + cellSize, y);
-      if (cell.walls.bottom) doc.line(x, y + cellSize, x + cellSize, y + cellSize);
-      if (cell.walls.left) doc.line(x, y, x, y + cellSize);
-      if (cell.walls.right) doc.line(x + cellSize, y, x + cellSize, y + cellSize);
+    const segments = getActiveSegments(rowFlags);
+    const y = yOffset + r * cellSize;
+    for (const [cStart, cEnd] of segments) {
+      doc.line(xOffset + cStart * cellSize, y, xOffset + cEnd * cellSize, y);
     }
   }
 
-  // 2. Draw Start (S) and End (E) Markers in bold high-contrast tones
+  // 2. Draw Optimized Vertical Wall Segments (Deduplicated & Merged)
+  for (let c = 0; c <= cols; c++) {
+    const colFlags: boolean[] = new Array(rows).fill(false);
+    for (let r = 0; r < rows; r++) {
+      if (c === 0) {
+        colFlags[r] = !!grid[r]?.[0]?.active && !!grid[r][0].walls.left;
+      } else if (c === cols) {
+        colFlags[r] = !!grid[r]?.[cols - 1]?.active && !!grid[r][cols - 1].walls.right;
+      } else {
+        const leftCell = grid[r]?.[c - 1];
+        const rightCell = grid[r]?.[c];
+        colFlags[r] =
+          (!!leftCell?.active && !!leftCell.walls.right) ||
+          (!!rightCell?.active && !!rightCell.walls.left);
+      }
+    }
+
+    const segments = getActiveSegments(colFlags);
+    const x = xOffset + c * cellSize;
+    for (const [rStart, rEnd] of segments) {
+      doc.line(x, yOffset + rStart * cellSize, x, yOffset + rEnd * cellSize);
+    }
+  }
+
+  // 3. Draw Start (S) and End (E) Markers in bold high-contrast tones
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(Math.max(8, Math.floor(cellSize * 32)));
+  doc.setFontSize(Math.max(7, Math.floor(cellSize * 30)));
   doc.setTextColor(15, 23, 42);
 
   const startX = xOffset + start[1] * cellSize + cellSize / 2;
@@ -80,22 +136,43 @@ function drawMaze(
   const endY = yOffset + end[0] * cellSize + cellSize * 0.72;
   doc.text("E", endX, endY, { align: "center" });
 
-  // 3. Draw Solution Path if provided (Solid rich black line with circular endpoints)
-  if (solutionPath && solutionPath.length > 0) {
+  // 4. Draw Solution Path if provided (Collinear line segments merged)
+  if (solutionPath && solutionPath.length > 1) {
     doc.setLineWidth(Math.max(0.02, cellSize * 0.28));
     doc.setDrawColor(15, 23, 42);
 
-    for (let i = 0; i < solutionPath.length - 1; i++) {
-      const p1 = solutionPath[i];
-      const p2 = solutionPath[i + 1];
+    let segStart = solutionPath[0];
+    let prevPoint = solutionPath[0];
+    let prevDx = 0;
+    let prevDy = 0;
 
-      const x1 = xOffset + p1[1] * cellSize + cellSize / 2;
-      const y1 = yOffset + p1[0] * cellSize + cellSize / 2;
-      const x2 = xOffset + p2[1] * cellSize + cellSize / 2;
-      const y2 = yOffset + p2[0] * cellSize + cellSize / 2;
+    for (let i = 1; i < solutionPath.length; i++) {
+      const cur = solutionPath[i];
+      const dx = cur[1] - prevPoint[1];
+      const dy = cur[0] - prevPoint[0];
 
-      doc.line(x1, y1, x2, y2);
+      if (i === 1) {
+        prevDx = dx;
+        prevDy = dy;
+      } else if (dx !== prevDx || dy !== prevDy) {
+        const x1 = xOffset + segStart[1] * cellSize + cellSize / 2;
+        const y1 = yOffset + segStart[0] * cellSize + cellSize / 2;
+        const x2 = xOffset + prevPoint[1] * cellSize + cellSize / 2;
+        const y2 = yOffset + prevPoint[0] * cellSize + cellSize / 2;
+        doc.line(x1, y1, x2, y2);
+
+        segStart = prevPoint;
+        prevDx = dx;
+        prevDy = dy;
+      }
+      prevPoint = cur;
     }
+
+    const x1 = xOffset + segStart[1] * cellSize + cellSize / 2;
+    const y1 = yOffset + segStart[0] * cellSize + cellSize / 2;
+    const x2 = xOffset + prevPoint[1] * cellSize + cellSize / 2;
+    const y2 = yOffset + prevPoint[0] * cellSize + cellSize / 2;
+    doc.line(x1, y1, x2, y2);
   }
 }
 
@@ -138,7 +215,6 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
 
   const scaleFactor = Math.max(0.5, Math.min(1.4, (scale || 100) / 100));
   const targetSize = standardBaseSize * scaleFactor;
-  const safeH = heightInches - 1.6;
 
   let firstPageAdded = false;
   let currentPage = 0;
@@ -186,9 +262,11 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     firstPageAdded = true;
     currentPage++;
 
-    // Alternating KDP Gutter Margins
+    // Alternating KDP Gutter Margins with safety padding
     const margins = calculateKdpMargins(currentPage, totalExpectedPages, widthInches);
-    const mazeSize = Math.min(targetSize, margins.contentW, safeH);
+    const maxSafeW = margins.contentW - 0.4;
+    const maxSafeH = heightInches - 2.8;
+    const mazeSize = Math.min(targetSize, maxSafeW, maxSafeH);
     const mazeX = margins.marginLeft + (margins.contentW - mazeSize) / 2;
     const mazeY = (heightInches - mazeSize) / 2 - 0.1;
 
@@ -244,8 +322,8 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     doc.text(`Complete Answer Keys for Mazes #1 to #${mazes.length}`, divMargins.contentCenterX, heightInches / 2 + 0.2, { align: "center" });
 
     let currentSolutionCount = 0;
-    const solTopReserved = 1.0;
-    const solBottomReserved = 0.7;
+    const solTopReserved = 1.1;
+    const solBottomReserved = 0.8;
     const solSafeH = heightInches - solTopReserved - solBottomReserved;
     const gapX = 0.35;
     const gapY = 0.45;
@@ -258,23 +336,23 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
       }
 
       const solMargins = calculateKdpMargins(currentPage, totalExpectedPages, widthInches);
-      const solSafeW = solMargins.contentW;
+      const solSafeW = solMargins.contentW - 0.35; // Safe padding inside KDP margins
 
       const maxTileW = (solSafeW - gapX) / 2;
       const maxTileH = (solSafeH - gapY) / 2;
-      const maxAllowedTileSize = trimSize === "5x8" ? 1.7 : trimSize === "6x9" ? 2.2 : 3.2;
+      const maxAllowedTileSize = trimSize === "5x8" ? 1.45 : trimSize === "6x9" ? 1.95 : 2.7;
       const solutionMazeSize = Math.min(maxTileW, maxTileH, maxAllowedTileSize);
 
       const totalGridW = solutionMazeSize * 2 + gapX;
       const totalGridH = solutionMazeSize * 2 + gapY;
-      const solGridStartX = solMargins.marginLeft + (solSafeW - totalGridW) / 2;
+      const solGridStartX = solMargins.marginLeft + (solMargins.contentW - totalGridW) / 2;
       const solGridStartY = solTopReserved + (solSafeH - totalGridH) / 2;
 
       if (currentSolutionCount % 4 === 0) {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
         doc.setTextColor(15, 23, 42);
-        doc.text("Answer Keys", solMargins.contentCenterX, 0.8, { align: "center" });
+        doc.text("Answer Keys", solMargins.contentCenterX, 0.85, { align: "center" });
         if (showGuides) {
           drawMarginGuides(doc, solMargins.marginLeft, 0.75, solMargins.marginRight, 0.75, widthInches, heightInches);
         }
@@ -282,7 +360,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         doc.setTextColor(148, 163, 184);
-        doc.text(`Page ${currentPage}`, solMargins.contentCenterX, heightInches - 0.4, { align: "center" });
+        doc.text(`Page ${currentPage}`, solMargins.contentCenterX, heightInches - 0.45, { align: "center" });
       }
 
       // Compute row and column positions dynamically for the 2x2 grid

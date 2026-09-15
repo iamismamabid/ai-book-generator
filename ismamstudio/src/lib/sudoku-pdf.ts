@@ -150,7 +150,7 @@ function drawFrontMatterTitlePage(
   doc.setFont(options.pdfFont, "bold");
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
-  doc.text("KDP PREMIUM PUZZLE COLLECTION", centerX, 2.2, { align: "center" });
+  doc.text("PREMIUM PUZZLE COLLECTION", centerX, 2.2, { align: "center" });
 
   doc.setDrawColor(203, 213, 225);
   doc.setLineWidth(0.015);
@@ -190,7 +190,7 @@ function drawFrontMatterTitlePage(
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
   doc.text("Standard 9×9 Grids • 100% Mathematically Unique Solutions", centerX, badgeY + 0.25, { align: "center" });
-  doc.text("Engineered for Amazon KDP Print Perfection", centerX, badgeY + 0.45, { align: "center" });
+  doc.text("Engineered for Large Print Perfection", centerX, badgeY + 0.45, { align: "center" });
 
   // Author & Imprint
   const authorY = height - 2.1;
@@ -315,7 +315,7 @@ function drawFrontMatterCopyrightAndRulesPage(
   const copyrightNotice = [
     `Copyright © ${year} by ${author}. All rights reserved.`,
     "No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the author or publisher.",
-    "Published Independently for Amazon Kindle Direct Publishing (KDP).",
+    "Published Independently • First Edition",
     "Printed on Demand. 100% Quality Guaranteed.",
   ];
 

@@ -300,55 +300,64 @@ export function drawKdpCopyrightAndInstructionsPage(
   const introLines = doc.splitTextToSize(guide.intro, contentW);
   doc.text(introLines, marginLeft, 1.65);
 
-  // Rules Box
+  // Rules Box with Solid Black Header Banner
   const boxTop = 1.65 + introLines.length * 0.2 + 0.15;
-  const boxHeight = 1.65;
+  const boxHeight = 1.75;
   doc.setFillColor(255);
   doc.setDrawColor(0);
-  doc.setLineWidth(0.01);
+  doc.setLineWidth(0.015);
   doc.roundedRect(marginLeft, boxTop, contentW, boxHeight, 0.08, 0.08, "FD");
 
-  doc.setFont(pdfFont, "bold");
-  doc.setFontSize(10.5);
-  doc.setTextColor(0);
-  doc.text("CORE RULES & OBJECTIVES", marginLeft + 0.25, boxTop + 0.32);
+  // Solid black header banner
+  doc.setFillColor(0);
+  doc.roundedRect(marginLeft, boxTop, contentW, 0.35, 0.08, 0.08, "F");
+  doc.rect(marginLeft, boxTop + 0.2, contentW, 0.15, "F");
 
-  doc.setFont(pdfFont, "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(0);
-
-  let curRuleY = boxTop + 0.6;
-  guide.rules.forEach((rule) => {
-    const lines = doc.splitTextToSize(rule, contentW - 0.5);
-    doc.text(lines, marginLeft + 0.25, curRuleY);
-    curRuleY += lines.length * 0.16 + 0.1;
-  });
-
-  // Solving Strategies / Tips
-  const tipsTop = boxTop + boxHeight + 0.3;
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(11);
-  doc.setTextColor(0);
-  doc.text("PRO SOLVING STRATEGIES", marginLeft, tipsTop);
+  doc.setTextColor(255);
+  doc.text("CORE RULES & OBJECTIVES", marginLeft + 0.2, boxTop + 0.24);
 
   doc.setFont(pdfFont, "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   doc.setTextColor(0);
 
-  let curTipY = tipsTop + 0.22;
+  let curRuleY = boxTop + 0.62;
+  guide.rules.forEach((rule) => {
+    const lines = doc.splitTextToSize(rule, contentW - 0.4);
+    doc.text(lines, marginLeft + 0.2, curRuleY);
+    curRuleY += lines.length * 0.18 + 0.1;
+  });
+
+  // Solving Strategies / Tips with Solid Black Header Banner
+  const tipsTop = boxTop + boxHeight + 0.35;
+  doc.setFillColor(0);
+  doc.roundedRect(marginLeft, tipsTop, contentW, 0.35, 0.08, 0.08, "F");
+  doc.rect(marginLeft, tipsTop + 0.2, contentW, 0.15, "F");
+
+  doc.setFont(pdfFont, "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(255);
+  doc.text("PRO SOLVING STRATEGIES", marginLeft + 0.2, tipsTop + 0.24);
+
+  doc.setFont(pdfFont, "normal");
+  doc.setFontSize(9.5);
+  doc.setTextColor(0);
+
+  let curTipY = tipsTop + 0.6;
   guide.tips.forEach((tip) => {
     const lines = doc.splitTextToSize(tip, contentW);
     doc.text(lines, marginLeft, curTipY);
-    curTipY += lines.length * 0.16 + 0.08;
+    curTipY += lines.length * 0.18 + 0.08;
   });
 
   // Copyright Section at bottom
   doc.setDrawColor(0);
-  doc.setLineWidth(0.01);
+  doc.setLineWidth(0.015);
   doc.line(marginLeft, opts.height - 2.1, marginLeft + contentW, opts.height - 2.1);
 
   doc.setFont(pdfFont, "normal");
-  doc.setFontSize(8);
+  doc.setFontSize(8.5);
   doc.setTextColor(0);
 
   const year = new Date().getFullYear();
@@ -364,6 +373,6 @@ export function drawKdpCopyrightAndInstructionsPage(
   copyrightNotice.forEach((cLine) => {
     const lines = doc.splitTextToSize(cLine, contentW);
     doc.text(lines, contentCenterX, cY, { align: "center" });
-    cY += lines.length * 0.15 + 0.05;
+    cY += lines.length * 0.16 + 0.05;
   });
 }

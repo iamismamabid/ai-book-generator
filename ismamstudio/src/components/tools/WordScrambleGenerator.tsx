@@ -275,7 +275,7 @@ export default function WordScrambleGenerator() {
         
         // Divider line
         doc.setLineWidth(0.015);
-        doc.setDrawColor(180);
+        doc.setDrawColor(0);
         doc.line(marginL, marginT + 0.8, marginL + contentW, marginT + 0.8);
 
         // Render Scrambled Words

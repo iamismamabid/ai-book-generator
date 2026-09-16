@@ -76,8 +76,8 @@ export function drawKakuroGridPDF(
         doc.setFillColor(255);
         doc.rect(cellX, cellY, cellSize, cellSize, "F");
 
-        doc.setDrawColor(180);
-        doc.setLineWidth(0.005);
+        doc.setDrawColor(0);
+        doc.setLineWidth(0.008);
         doc.rect(cellX, cellY, cellSize, cellSize, "S");
 
         // Render solution value if in solution view
@@ -109,10 +109,10 @@ export function drawKakuroGridPDF(
 
         if (hasRowClue || hasColClue) {
           // Clue cell with diagonal divider
-          doc.setFillColor(60);
+          doc.setFillColor(0);
           doc.rect(cellX, cellY, cellSize, cellSize, "F");
 
-          doc.setDrawColor(180);
+          doc.setDrawColor(255);
           doc.setLineWidth(0.008);
           doc.line(cellX, cellY, cellX + cellSize, cellY + cellSize);
 

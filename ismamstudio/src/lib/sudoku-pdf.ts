@@ -88,9 +88,9 @@ function drawSudokuTile(
   const cellSize = size / 9;
 
   // Thin cell borders scaled with user borderThickness
-  const thinLine = Math.max(0.004, Math.min(0.012, borderThickness * 0.004));
+  const thinLine = Math.max(0.006, Math.min(0.012, borderThickness * 0.006));
   doc.setLineWidth(thinLine);
-  doc.setDrawColor(180);
+  doc.setDrawColor(0);
 
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {

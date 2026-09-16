@@ -327,7 +327,7 @@ export default function CrosswordGenerator() {
         }
 
         doc.setLineWidth(0.015);
-        doc.setDrawColor(180);
+        doc.setDrawColor(0);
         doc.line(margins.marginLeft, marginT + 0.5, margins.marginLeft + margins.contentW, marginT + 0.5);
 
         // Footer page numbering
@@ -366,14 +366,18 @@ export default function CrosswordGenerator() {
         puzzle.grid.forEach((row, r) => {
           row.forEach((cell, c) => {
             const isBlank = cell === '';
-            // Amazon KDP Print Best Practice: Pure white background, do not fill dark ink blocks!
-            if (isBlank) return;
-
             const cellX = gridStartX + c * cellSize;
             const cellY = gridOffsetTop + r * cellSize;
 
+            if (isBlank) {
+              // Solid black block cell in crossword
+              doc.setFillColor(0);
+              doc.rect(cellX, cellY, cellSize, cellSize, 'F');
+              return;
+            }
+
             doc.setDrawColor(0);
-            doc.setLineWidth(0.01);
+            doc.setLineWidth(0.012);
             doc.setFillColor(255);
             doc.rect(cellX, cellY, cellSize, cellSize, 'FD');
 
@@ -381,7 +385,7 @@ export default function CrosswordGenerator() {
             const wordStart = puzzle.placedWords.find(w => w.r === r && w.c === c);
             if (wordStart) {
               doc.setFont("helvetica", "bold");
-              doc.setFontSize(Math.max(5, cellSize * 16));
+              doc.setFontSize(Math.max(6.5, Math.floor(cellSize * 18)));
               doc.setTextColor(0);
               doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.32));
             }
@@ -399,7 +403,7 @@ export default function CrosswordGenerator() {
         doc.text("ACROSS", marginL, cluesStartY);
 
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
+        doc.setFontSize(9.5);
         doc.setTextColor(0);
 
         let acrossY = cluesStartY + 0.2;
@@ -417,7 +421,7 @@ export default function CrosswordGenerator() {
         doc.text("DOWN", marginL + colW + 0.4, cluesStartY);
 
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
+        doc.setFontSize(9.5);
         doc.setTextColor(0);
 
         let downY = cluesStartY + 0.2;
@@ -454,14 +458,18 @@ export default function CrosswordGenerator() {
           puzzle.grid.forEach((row, r) => {
             row.forEach((cell, c) => {
               const isBlank = cell === '';
-              // Pure white background, skip empty cells
-              if (isBlank) return;
-
               const cellX = gridStartX + c * cellSize;
               const cellY = gridOffsetTop + r * cellSize;
 
+              if (isBlank) {
+                // Solid black block cell in crossword
+                doc.setFillColor(0);
+                doc.rect(cellX, cellY, cellSize, cellSize, 'F');
+                return;
+              }
+
               doc.setDrawColor(0);
-              doc.setLineWidth(0.01);
+              doc.setLineWidth(0.012);
               doc.setFillColor(255);
               doc.rect(cellX, cellY, cellSize, cellSize, 'FD');
 
@@ -469,7 +477,7 @@ export default function CrosswordGenerator() {
               const wordStart = puzzle.placedWords.find(w => w.r === r && w.c === c);
               if (wordStart) {
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(Math.max(5, cellSize * 16));
+                doc.setFontSize(Math.max(6.5, Math.floor(cellSize * 18)));
                 doc.setTextColor(0);
                 doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.32));
               }

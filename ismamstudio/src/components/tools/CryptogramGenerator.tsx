@@ -316,7 +316,7 @@ export default function CryptogramGenerator() {
           );
 
           doc.setLineWidth(0.015);
-          doc.setDrawColor(180);
+          doc.setDrawColor(0);
           doc.line(margins.marginLeft, marginT + 0.7, margins.marginLeft + margins.contentW, marginT + 0.7);
 
           if (finalGuides) {
@@ -409,8 +409,8 @@ export default function CryptogramGenerator() {
 
               if (isLetter) {
                 // Write-in Box
-                doc.setDrawColor(180); // slate-400 equivalent
-                doc.setLineWidth(0.008);
+                doc.setDrawColor(0);
+                doc.setLineWidth(0.012);
                 doc.rect(curX, curBoxY, charBoxW, charBoxH);
 
                 // Cipher Letter (Bottom)
@@ -449,7 +449,7 @@ export default function CryptogramGenerator() {
           doc.text("Answer Key", ansMargins.contentCenterX, marginT + 0.3, { align: "center" });
 
           doc.setLineWidth(0.015);
-          doc.setDrawColor(180);
+          doc.setDrawColor(0);
           doc.line(ansMargins.marginLeft, marginT + 0.6, ansMargins.marginLeft + ansMargins.contentW, marginT + 0.6);
 
           if (finalGuides) {
@@ -476,7 +476,8 @@ export default function CryptogramGenerator() {
           doc.text(`Original: ${alphaStr}`, ansMargins.marginLeft, marginT + 1.25);
           doc.text(`Cipher:   ${cipherStr}`, ansMargins.marginLeft, marginT + 1.45);
 
-          doc.setDrawColor(180);
+          doc.setDrawColor(0);
+          doc.setLineWidth(0.015);
           doc.line(ansMargins.marginLeft, marginT + 1.65, ansMargins.marginLeft + ansMargins.contentW, marginT + 1.65);
 
           // B. Print Decrypted Solutions List

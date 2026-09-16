@@ -48,7 +48,7 @@ export default function WordSearchStudio() {
     
     // 🚨 INTERIOR SETTINGS STATES 🚨
     const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
-    const [totalPuzzles, setTotalPuzzles] = useState(5); 
+    const [totalPuzzles, setTotalPuzzles] = useState(6); 
     const [gridSize, setGridSize] = useState(12);
     const [wordsPerPage, setWordsPerPage] = useState(15); 
     
@@ -342,7 +342,7 @@ export default function WordSearchStudio() {
         finalW += bleed;
         finalH += bleed * 2;
 
-        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
             import("jspdf"),
             import("../../utils/pdfExportService"),
             import("../../utils/borderThemeDrawing"),
@@ -573,6 +573,7 @@ export default function WordSearchStudio() {
             }
         }
 
+        ensureEvenPageCount(doc);
         doc.save(`KDP_Interior_${finalW}x${finalH}.pdf`);
         setIsGenerating(false);
     };
@@ -674,10 +675,15 @@ export default function WordSearchStudio() {
                                             </div>
                                             <input
                                                 type="number"
-                                                min="1"
+                                                min={2}
+                                                step={2}
                                                 max={maxWordSearchPuzzles}
                                                 value={totalPuzzles}
-                                                onChange={(e) => setTotalPuzzles(Math.min(maxWordSearchPuzzles, Math.max(1, Number(e.target.value))))}
+                                                onChange={(e) => {
+                                                    const val = Number(e.target.value);
+                                                    const clamped = Math.min(maxWordSearchPuzzles, Math.max(2, val));
+                                                    setTotalPuzzles(clamped % 2 === 0 ? clamped : clamped + 1);
+                                                }}
                                                 className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"
                                             />
                                         </div>

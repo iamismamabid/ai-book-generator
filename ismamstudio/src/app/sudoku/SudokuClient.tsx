@@ -79,7 +79,7 @@ export default function SudokuClient() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"generator" | "solution" | "guide">("generator");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
-  const [bookCount, setBookCount] = useState(5);
+  const [bookCount, setBookCount] = useState(6);
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
   const [currentPuzzle, setCurrentPuzzle] = useState<{ puzzle: Grid; solution: Grid } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -152,7 +152,7 @@ export default function SudokuClient() {
       if (isRestoringRef.current) return;
       if (res.plan === "free") {
         setDifficulty("easy");
-        setBookCount(5);
+        setBookCount(6);
       } else if (res.plan === "starter") {
         setDifficulty("medium");
         setBookCount(20);
@@ -234,14 +234,15 @@ export default function SudokuClient() {
     premiumStatus.plan === "agency" ? 1000 :
       isPro || premiumStatus.plan === "pro" ? 1000 :
         premiumStatus.plan === "starter" ? 100 :
-          5;
+          6;
 
   const handleBookCountChange = (val: number) => {
-    let count = Math.max(1, val);
+    let count = Math.max(2, val);
     if (premiumStatus.checked && count > maxPuzzles) {
       count = maxPuzzles;
     }
-    setBookCount(count);
+    const evenVal = count % 2 === 0 ? count : count + 1;
+    setBookCount(Math.min(evenVal, maxPuzzles % 2 === 0 ? maxPuzzles : maxPuzzles - 1));
   };
 
   const handlePreview = () => {
@@ -270,7 +271,7 @@ export default function SudokuClient() {
     plan === "agency" ? 1000 :
       plan === "pro" ? 1000 :
         plan === "starter" ? 100 :
-          5;
+          6;
 
   const handleDownloadPdf = async (options: {
     includeCover: boolean;
@@ -541,7 +542,8 @@ export default function SudokuClient() {
                   </label>
                   <input
                     type="number"
-                    min={1}
+                    min={2}
+                    step={2}
                     max={maxPuzzles}
                     value={bookCount}
                     onChange={(e) => handleBookCountChange(Number(e.target.value))}

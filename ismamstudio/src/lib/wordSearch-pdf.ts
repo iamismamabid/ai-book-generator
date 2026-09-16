@@ -8,7 +8,7 @@ import {
   drawWordSearchWordList,
   WordSearchStyle,
 } from "../app/utils/pdfExportService";
-import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage } from "./kdpBookEngine";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "./kdpBookEngine";
 
 interface PdfOptions {
   puzzles: WordSearchGridData[];
@@ -187,6 +187,7 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
     }
   }
 
+  ensureEvenPageCount(doc);
   return doc;
 }
 

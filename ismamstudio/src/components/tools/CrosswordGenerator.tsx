@@ -32,7 +32,14 @@ GUITAR, String instrument with frets
 PIANO, Keyed musical instrument
 DRUMS, Percussion instrument
 VIOLIN, Bowed string instrument
-FLUTE, Wind instrument played sideways`;
+FLUTE, Wind instrument played sideways
+
+# Puzzle 4
+ASTRONOMY, The study of stars and space
+TELESCOPE, Optical instrument for distant viewing
+GALAXY, Vast system of billions of stars
+COMET, Celestial object of ice and dust
+PLANET, Celestial body orbiting a star`;
 
 const TRIM_SIZES = [
   { id: "8.5x11", label: "8.5\" x 11\" (Large Print)", w: 8.5, h: 11 },
@@ -47,7 +54,7 @@ export default function CrosswordGenerator() {
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
   const [inputText, setInputText] = useState(DEFAULT_CROSSWORDS_TEXT);
   const [gridSize, setGridSize] = useState<number>(15);
-  const [numPuzzles, setNumPuzzles] = useState<number>(3);
+  const [numPuzzles, setNumPuzzles] = useState<number>(4);
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [includeAnswers, setIncludeAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
@@ -263,7 +270,7 @@ export default function CrosswordGenerator() {
       const pageW = finalBleed ? finalW + bleed : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
@@ -513,6 +520,7 @@ export default function CrosswordGenerator() {
         }
       }
 
+      ensureEvenPageCount(doc);
       doc.save(`crosswords-${puzzles.length}-pack.pdf`);
       setIsDownloading(false);
     }, 50);
@@ -584,23 +592,25 @@ export default function CrosswordGenerator() {
               </div>
               <input
                 type="number"
-                min={1}
+                min={2}
+                step={2}
                 max={tierMaxFor(premiumStatus.plan)}
                 value={numPuzzles}
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   const maxVal = tierMaxFor(premiumStatus.plan);
-                  setNumPuzzles(Math.min(maxVal, Math.max(1, val)));
+                  const clamped = Math.min(maxVal, Math.max(2, val));
+                  setNumPuzzles(clamped % 2 === 0 ? clamped : clamped + 1);
                 }}
                 className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500 font-mono mb-2"
               />
               <div className="flex flex-wrap items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setNumPuzzles(5)}
+                  onClick={() => setNumPuzzles(6)}
                   className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-bold transition"
                 >
-                  5
+                  6
                 </button>
                 <button
                   type="button"

@@ -1870,7 +1870,9 @@ export default function ColoringBookClient() {
         setExportProgress(Math.floor(((p + 1) / totalP) * 100));
       }
 
-      doc.save(`KDPage_Coloring_Book_${trimSize.id}_${useBleed ? "bleed" : "nobleed"}_${totalP}Pages.pdf`);
+      const { ensureEvenPageCount } = await import("@/lib/kdpBookEngine");
+      ensureEvenPageCount(doc);
+      doc.save(`KDPage_Coloring_Book_${trimSize.id}_${useBleed ? "bleed" : "nobleed"}_${doc.getNumberOfPages()}Pages.pdf`);
     } catch (err) {
       console.error("PDF Export error:", err);
       alert("Failed to export PDF. Please try again.");
@@ -2318,10 +2320,16 @@ export default function ColoringBookClient() {
                   </div>
                   <input
                     type="number"
-                    min="1"
+                    min="2"
+                    step="2"
                     max={isPremium ? 500 : 30}
                     value={bookPagesCount}
-                    onChange={(e) => setBookPagesCount(Number(e.target.value))}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      const maxLimit = isPremium ? 500 : 30;
+                      const clamped = Math.min(maxLimit, Math.max(2, val));
+                      setBookPagesCount(clamped % 2 === 0 ? clamped : clamped + 1);
+                    }}
                     className="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1 text-center font-mono text-xs"
                   />
                 </div>

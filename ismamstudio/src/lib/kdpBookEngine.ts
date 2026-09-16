@@ -398,3 +398,19 @@ export function drawKdpCopyrightAndInstructionsPage(
     cY += lines.length * 0.16 + 0.05;
   });
 }
+
+/**
+ * Ensures that the document has an EVEN total page count for Amazon KDP signature printing.
+ * Amazon KDP physical sheets fold into signatures (2 pages per sheet / double-sided).
+ * If the current page count is odd, it appends a clean blank page so that totalPages % 2 === 0.
+ *
+ * @returns true if a padding page was added, false if already even.
+ */
+export function ensureEvenPageCount(doc: jsPDF): boolean {
+  const currentTotal = doc.getNumberOfPages();
+  if (currentTotal % 2 !== 0) {
+    doc.addPage();
+    return true;
+  }
+  return false;
+}

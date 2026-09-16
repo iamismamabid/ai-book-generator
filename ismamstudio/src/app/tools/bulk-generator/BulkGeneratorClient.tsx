@@ -45,7 +45,7 @@ export default function BulkGeneratorClient() {
 
   const [items, setItems] = useState<BatchItem[]>([
     { id: "1", title: "Seniors Easy Sudoku Book", type: "Sudoku", difficulty: "Easy", count: 20, trimSize: "8.5x11", status: "Pending" },
-    { id: "2", title: "Labyrinth Quest Volume 1", type: "Maze", difficulty: "Medium", count: 15, trimSize: "6x9", status: "Pending" },
+    { id: "2", title: "Labyrinth Quest Volume 1", type: "Maze", difficulty: "Medium", count: 16, trimSize: "6x9", status: "Pending" },
     { id: "3", title: "Word Search Fun", type: "Word Search", difficulty: "Medium", count: 30, trimSize: "8.5x11", status: "Pending" }
   ]);
 
@@ -95,12 +95,13 @@ export default function BulkGeneratorClient() {
       return;
     }
 
+    const parsedCount = Math.max(2, newCount);
     const newItem: BatchItem = {
       id: Math.random().toString(36).substring(2, 9),
       title: newTitle.trim(),
       type: newType,
       difficulty: newDifficulty,
-      count: Math.max(1, newCount),
+      count: parsedCount % 2 === 0 ? parsedCount : parsedCount + 1,
       trimSize: newTrim,
       status: "Pending"
     };
@@ -149,7 +150,9 @@ export default function BulkGeneratorClient() {
       if (cols[2].toLowerCase() === "easy") difficulty = "Easy";
       else if (cols[2].toLowerCase() === "hard") difficulty = "Hard";
 
-      const count = parseInt(cols[3]) || 30;
+      const rawCount = parseInt(cols[3]) || 30;
+      const clampedCount = Math.max(2, rawCount);
+      const count = clampedCount % 2 === 0 ? clampedCount : clampedCount + 1;
       
       let trimSize: BatchItem["trimSize"] = "8.5x11";
       if (cols[4] && cols[4].includes("6x9")) trimSize = "6x9";
@@ -465,6 +468,8 @@ export default function BulkGeneratorClient() {
             for (let pg = 1; pg <= totalPages; pg++) { doc.setPage(pg); drawWatermark(doc, w, h); }
           }
 
+          const { ensureEvenPageCount } = await import("@/lib/kdpBookEngine");
+          ensureEvenPageCount(doc);
           doc.save(filename);
           logMessage(`Compiled real Cryptogram book PDF interior: ${filename}`);
         }
@@ -496,6 +501,8 @@ export default function BulkGeneratorClient() {
             doc.text("[Puzzle Content]", w / 2, h / 2, { align: "center" });
           }
 
+          const { ensureEvenPageCount } = await import("@/lib/kdpBookEngine");
+          ensureEvenPageCount(doc);
           const pdfOutput = doc.output("blob");
           const downloadUrl = URL.createObjectURL(pdfOutput);
           item.downloadUrl = downloadUrl;
@@ -742,10 +749,15 @@ export default function BulkGeneratorClient() {
                   <input
                     type="number"
                     placeholder="Puzzles"
-                    min={1}
+                    min={2}
+                    step={2}
                     max={500}
                     value={newCount}
-                    onChange={(e) => setNewCount(parseInt(e.target.value) || 30)}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 2;
+                      const clamped = Math.min(500, Math.max(2, val));
+                      setNewCount(clamped % 2 === 0 ? clamped : clamped + 1);
+                    }}
                     className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-yellow-500 transition text-center"
                     required
                   />

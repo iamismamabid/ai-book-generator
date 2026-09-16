@@ -3,7 +3,7 @@ import { MazeGrid, Shape, solveMaze } from "./maze";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
-import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage } from "./kdpBookEngine";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "./kdpBookEngine";
 
 interface PdfOptions {
   mazes: {
@@ -406,6 +406,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     }
   }
 
+  ensureEvenPageCount(doc);
   return doc;
 }
 

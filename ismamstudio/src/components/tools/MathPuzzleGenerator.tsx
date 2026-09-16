@@ -51,7 +51,7 @@ export default function MathPuzzleGenerator() {
   const [puzzleType, setPuzzleType] = useState<PuzzleType>("multiplication");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
-  const [numPages, setNumPages] = useState<number>(3);
+  const [numPages, setNumPages] = useState<number>(4);
   const [puzzlesPerPage, setPuzzlesPerPage] = useState<number>(2); // 1 or 2 per page
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
 
@@ -329,7 +329,7 @@ export default function MathPuzzleGenerator() {
       const pageW = finalBleed ? finalW + bleed : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
@@ -571,6 +571,7 @@ export default function MathPuzzleGenerator() {
         }
       }
 
+      ensureEvenPageCount(doc);
       doc.save(`math-puzzle-${puzzleType}-${numPages}pages.pdf`);
       setIsDownloading(false);
     }, 50);
@@ -858,14 +859,16 @@ export default function MathPuzzleGenerator() {
               </label>
               <input
                 type="number"
-                min="1"
+                min={2}
+                step={2}
                 max={tierMaxFor(premiumStatus.plan)}
                 value={numPages}
                 onChange={(e) => {
-                  let val = Math.max(1, parseInt(e.target.value) || 1);
+                  let val = Math.max(2, parseInt(e.target.value) || 2);
                   const maxLimit = tierMaxFor(premiumStatus.plan);
                   if (val > maxLimit) val = maxLimit;
-                  setNumPages(val);
+                  const evenVal = val % 2 === 0 ? val : val + 1;
+                  setNumPages(Math.min(evenVal, maxLimit % 2 === 0 ? maxLimit : maxLimit - 1));
                 }}
                 className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-2xl text-xs font-mono text-amber-400 focus:border-indigo-500 outline-none transition-colors duration-200"
               />

@@ -3,7 +3,7 @@ import { KakuroGrid, KakuroPuzzle } from "./kakuro";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
-import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage } from "./kdpBookEngine";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "./kdpBookEngine";
 
 interface KakuroPdfOptions {
   puzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[];
@@ -274,5 +274,6 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
     }
   }
 
+  ensureEvenPageCount(doc);
   doc.save(filename);
 }

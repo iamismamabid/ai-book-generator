@@ -392,5 +392,9 @@ export function downloadMathPDF(
     pdf.text(`Page ${idx + 1}`, pageW - margin, pageH - mm(8), { align: "right" });
   });
 
+  if (pdf.getNumberOfPages() % 2 !== 0) {
+    pdf.addPage();
+  }
+
   pdf.save(filename);
 }

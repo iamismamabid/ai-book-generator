@@ -73,7 +73,7 @@ export default function MazeGeneratorPage() {
   const [activeTab, setActiveTab] = useState<"generator" | "guide">("generator");
   const [shape, setShape] = useState<Shape>("square");
   const [gridSize, setGridSize] = useState<number>(15);
-  const [bookCount, setBookCount] = useState<number>(5);
+  const [bookCount, setBookCount] = useState<number>(6);
   const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
   const [mazeScale, setMazeScale] = useState<number>(100);
   const [includeSolutions, setIncludeSolutions] = useState<boolean>(true);
@@ -120,7 +120,7 @@ export default function MazeGeneratorPage() {
         if (isRestoringRef.current) return;
         if (res.plan === "free") {
           setShape("square");
-          setBookCount(5);
+          setBookCount(6);
         } else if (res.plan === "starter") {
           setShape("square");
           setBookCount(20);
@@ -161,16 +161,17 @@ export default function MazeGeneratorPage() {
   // arbitrarily high and, combined with the sample button below hardcoding
   // isPremium: true, download a full-size, watermark-free book for free.
   const maxMazes =
-    premiumStatus.plan === "free" ? 5 :
+    premiumStatus.plan === "free" ? 6 :
       premiumStatus.plan === "starter" ? 100 :
         1000;
 
   const handleBookCountChange = (val: number) => {
-    let count = Math.max(1, val);
+    let count = Math.max(2, val);
     if (premiumStatus.checked && count > maxMazes) {
       count = maxMazes;
     }
-    setBookCount(count);
+    const evenVal = count % 2 === 0 ? count : count + 1;
+    setBookCount(Math.min(evenVal, maxMazes % 2 === 0 ? maxMazes : maxMazes - 1));
   };
 
   const handlePreview = () => {
@@ -204,7 +205,7 @@ export default function MazeGeneratorPage() {
   };
 
   const tierMaxFor = (plan: string) =>
-    plan === "free" ? 5 :
+    plan === "free" ? 6 :
       plan === "starter" ? 100 :
         1000;
 
@@ -469,7 +470,8 @@ export default function MazeGeneratorPage() {
                   </label>
                   <input
                     type="number"
-                    min={1}
+                    min={2}
+                    step={2}
                     max={maxMazes}
                     value={bookCount}
                     onChange={(e) => handleBookCountChange(Number(e.target.value))}

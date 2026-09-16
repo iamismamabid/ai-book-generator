@@ -105,10 +105,15 @@ export function SudokuGenerator() {
             <label className="block text-sm text-slate-400 mb-2">Number of puzzles</label>
             <input
               type="number"
-              min={1}
+              min={2}
+              step={2}
               max={200}
               value={bookCount}
-              onChange={(e) => setBookCount(Number(e.target.value))}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                const clamped = Math.min(200, Math.max(2, val));
+                setBookCount(clamped % 2 === 0 ? clamped : clamped + 1);
+              }}
               className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 mb-4 text-white focus:border-indigo-500 outline-none transition-colors duration-200"
             />
             <label className="block text-sm text-slate-400 mb-2">Trim size</label>

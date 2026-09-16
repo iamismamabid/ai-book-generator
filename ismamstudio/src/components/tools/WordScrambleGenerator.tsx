@@ -42,7 +42,7 @@ export default function WordScrambleGenerator() {
   // Options states
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
-  const [numPages, setNumPages] = useState<number>(3);
+  const [numPages, setNumPages] = useState<number>(4);
   const [wordsPerPage, setWordsPerPage] = useState<number>(8);
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
@@ -179,7 +179,7 @@ export default function WordScrambleGenerator() {
       const pageW = finalBleed ? finalW + bleed : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
       
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
@@ -477,6 +477,7 @@ export default function WordScrambleGenerator() {
       
       setDownloadProgress(100);
       await new Promise(r => setTimeout(r, 100));
+      ensureEvenPageCount(doc);
       doc.save(`word-scramble-${difficulty}-${puzzles.length}pages.pdf`);
     } catch (err) {
       console.error("PDF export error:", err);
@@ -532,7 +533,7 @@ export default function WordScrambleGenerator() {
                 type="button"
                 onClick={() => {
                   setInputText(DEFAULT_WORDS.join("\n"));
-                  setNumPages(3);
+                  setNumPages(4);
                 }}
                 className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg text-[10px] font-bold transition cursor-pointer"
               >
@@ -631,19 +632,21 @@ export default function WordScrambleGenerator() {
               </label>
               <input
                 type="number"
-                min="1"
+                min="2"
+                step="2"
                 max={tierMaxFor(premiumStatus.plan, premiumStatus.isPremium)}
                 value={numPages}
                 onChange={(e) => {
-                  let val = Math.max(1, parseInt(e.target.value) || 1);
+                  let val = Math.max(2, parseInt(e.target.value) || 2);
                   const maxLimit = tierMaxFor(premiumStatus.plan, premiumStatus.isPremium);
                   if (val > maxLimit) val = maxLimit;
-                  setNumPages(val);
+                  const evenVal = val % 2 === 0 ? val : val + 1;
+                  setNumPages(Math.min(evenVal, maxLimit % 2 === 0 ? maxLimit : maxLimit - 1));
                 }}
                 className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-2xl text-xs font-mono text-amber-400 focus:border-indigo-500 outline-none transition-colors duration-200"
               />
               <div className="flex items-center gap-1.5 pt-2">
-                {[3, 50, 100].map((pCount) => (
+                {[4, 50, 100].map((pCount) => (
                   <button
                     key={pCount}
                     type="button"

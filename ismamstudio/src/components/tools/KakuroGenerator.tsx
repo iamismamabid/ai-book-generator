@@ -26,7 +26,7 @@ export default function KakuroGenerator() {
   const [sizeId, setSizeId] = useState<string>("6x6");
   const [difficulty, setDifficulty] = useState<string>("medium");
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
-  const [numPages, setNumPages] = useState<number>(5);
+  const [numPages, setNumPages] = useState<number>(6);
   const [showAnswers, setShowAnswers] = useState<boolean>(true);
   const [hasBleed, setHasBleed] = useState<boolean>(false);
   const [showGuides, setShowGuides] = useState<boolean>(true);
@@ -73,7 +73,7 @@ export default function KakuroGenerator() {
   };
 
   const tierMaxFor = (plan: string) =>
-    plan === "free" ? 5 :
+    plan === "free" ? 6 :
       plan === "starter" ? 50 :
         plan === "pro" ? 200 :
           1000;
@@ -282,14 +282,16 @@ export default function KakuroGenerator() {
                 </div>
                 <input
                   type="number"
-                  min="1"
+                  min={2}
+                  step={2}
                   max={tierMaxFor(premiumStatus.plan)}
                   value={numPages}
                   onChange={(e) => {
-                    let val = Math.max(1, parseInt(e.target.value) || 1);
+                    let val = Math.max(2, parseInt(e.target.value) || 2);
                     const maxLimit = tierMaxFor(premiumStatus.plan);
                     if (val > maxLimit) val = maxLimit;
-                    setNumPages(val);
+                    const evenVal = val % 2 === 0 ? val : val + 1;
+                    setNumPages(Math.min(evenVal, maxLimit % 2 === 0 ? maxLimit : maxLimit - 1));
                   }}
                   className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-mono text-indigo-400 focus:border-indigo-500 outline-none transition-colors duration-200"
                 />

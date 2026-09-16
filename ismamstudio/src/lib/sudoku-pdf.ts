@@ -5,6 +5,7 @@ import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
 import { getGutterMargin } from "./gutterMargin";
+import { ensureEvenPageCount } from "./kdpBookEngine";
 
 export interface PdfProgressInfo {
   phase: "generating_pages" | "generating_solutions" | "decorating" | "saving";
@@ -612,6 +613,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     }
   }
 
+  ensureEvenPageCount(doc);
   return doc;
 }
 

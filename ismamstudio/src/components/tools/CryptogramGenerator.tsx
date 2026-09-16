@@ -18,7 +18,8 @@ const DEFAULT_QUOTES = [
   "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY.",
   "IMAGINATION IS MORE IMPORTANT THAN KNOWLEDGE. KNOWLEDGE IS LIMITED. IMAGINATION ENCIRCLES THE WORLD.",
   "DO NOT GO WHERE THE PATH MAY LEAD, GO INSTEAD WHERE THERE IS NO PATH AND LEAVE A TRAIL.",
-  "THE FUTURE BELONGS TO THOSE WHO BELIEVE IN THE BEAUTY OF THEIR DREAMS."
+  "THE FUTURE BELONGS TO THOSE WHO BELIEVE IN THE BEAUTY OF THEIR DREAMS.",
+  "HAPPINESS IS NOT SOMETHING READY MADE. IT COMES FROM YOUR OWN ACTIONS."
 ];
 
 const TRIM_SIZES = [
@@ -97,7 +98,7 @@ export default function CryptogramGenerator() {
   const tierMaxFor = (plan?: string, isPremium?: boolean) =>
     (isPremium || plan === "agency" || plan === "pro") ? 1000 :
       plan === "starter" ? 100 :
-        7;
+        8;
 
   const generateBulkQuotes = async (count: number) => {
     const freshStatus = await getFreshPremiumStatus();
@@ -234,7 +235,7 @@ export default function CryptogramGenerator() {
         const pageW = finalBleed ? finalW + bleed : finalW;
         const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
           import("jspdf"),
           import("@/app/utils/pdfExportService"),
           import("@/app/utils/borderThemeDrawing"),
@@ -559,6 +560,7 @@ export default function CryptogramGenerator() {
         }
 
         setDownloadProgress(100);
+        ensureEvenPageCount(doc);
         doc.save(`cryptogram-${fontSizeType}-${puzzles.length}puzzles.pdf`);
         setIsDownloading(false);
         setDownloadProgress(0);
@@ -617,7 +619,7 @@ export default function CryptogramGenerator() {
                 }}
                 className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg text-[10px] font-bold transition cursor-pointer"
               >
-                Defaults (7)
+                Defaults (8)
               </button>
               <button
                 type="button"

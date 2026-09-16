@@ -66,79 +66,208 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   const pdfFont = opts.pdfFont || "helvetica";
   // Page 1 is Recto (Right page): Spine is on LEFT
   const margins = calculateKdpMargins(1, opts.totalPages, opts.width);
-  const { contentW, contentCenterX } = margins;
+  const { contentW, contentCenterX, marginLeft } = margins;
 
-  // Header Badge
-  doc.setFont(pdfFont, "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(0);
-  doc.text("PREMIUM PUZZLE COLLECTION", contentCenterX, 2.2, { align: "center" });
+  // 1. Elegant outer double-line border frame
+  const frameL = marginLeft + 0.15;
+  const frameT = Math.max(0.55, opts.height * 0.065);
+  const frameW = contentW - 0.3;
+  const frameH = opts.height - frameT * 2;
 
   doc.setDrawColor(0);
-  doc.setLineWidth(0.01);
-  doc.line(contentCenterX - 0.75, 2.4, contentCenterX + 0.75, 2.4);
+  doc.setLineWidth(0.02);
+  doc.rect(frameL, frameT, frameW, frameH);
 
-  // Main Book Title
+  doc.setLineWidth(0.008);
+  doc.rect(frameL + 0.04, frameT + 0.04, frameW - 0.08, frameH - 0.08);
+
+  // Corner decorative accent squares
+  const markSize = 0.07;
+  doc.setFillColor(0);
+  doc.rect(frameL - 0.015, frameT - 0.015, markSize, markSize, "F");
+  doc.rect(frameL + frameW - markSize + 0.015, frameT - 0.015, markSize, markSize, "F");
+  doc.rect(frameL - 0.015, frameT + frameH - markSize + 0.015, markSize, markSize, "F");
+  doc.rect(frameL + frameW - markSize + 0.015, frameT + frameH - markSize + 0.015, markSize, markSize, "F");
+
+  // 2. Header Badge (Solid black filled pill banner)
+  const badgeW = Math.min(3.6, frameW - 0.6);
+  const badgeH = 0.36;
+  const badgeX = contentCenterX - badgeW / 2;
+  const badgeY = frameT + Math.max(0.35, opts.height * 0.045);
+
+  doc.setFillColor(0);
+  doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 0.06, 0.06, "F");
+
   doc.setFont(pdfFont, "bold");
-  doc.setFontSize(26);
+  doc.setFontSize(opts.width < 7 ? 9 : 10.5);
+  doc.setTextColor(255);
+  doc.text("★ PREMIUM PUZZLE COLLECTION ★", contentCenterX, badgeY + badgeH * 0.65, { align: "center" });
+
+  // 3. Main Book Title
+  doc.setFont(pdfFont, "bold");
+  doc.setFontSize(opts.width < 7 ? 22 : 28);
   doc.setTextColor(0);
-  const titleLines = doc.splitTextToSize(opts.title || "Puzzle Master", contentW - 0.5);
-  doc.text(titleLines, contentCenterX, 3.2, { align: "center" });
+  const titleLines = doc.splitTextToSize(opts.title || "Puzzle Master", frameW - 0.6);
+  const titleY = badgeY + badgeH + (opts.height < 10 ? 0.35 : 0.55);
+  doc.text(titleLines, contentCenterX, titleY, { align: "center" });
 
-  const titleBottomY = 3.2 + titleLines.length * 0.38;
+  const titleBottomY = titleY + (titleLines.length - 1) * (opts.width < 7 ? 0.32 : 0.4);
 
-  // Subtitle
+  // 4. Subtitle
   doc.setFont(pdfFont, "normal");
-  doc.setFontSize(12);
+  doc.setFontSize(opts.width < 7 ? 10.5 : 12);
   doc.setTextColor(0);
   const defaultSub = `${opts.puzzleCount} Handcrafted Large Print Puzzles with Complete Solutions`;
   const rawSub = opts.subtitle && opts.subtitle.trim() ? opts.subtitle : defaultSub;
   const cleanSub = rawSub.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${opts.puzzleCount} $1`);
-  const subLines = doc.splitTextToSize(cleanSub, contentW - 0.6);
-  doc.text(subLines, contentCenterX, titleBottomY + 0.25, { align: "center" });
+  const subLines = doc.splitTextToSize(cleanSub, frameW - 0.8);
+  const subY = titleBottomY + (opts.height < 10 ? 0.25 : 0.35);
+  doc.text(subLines, contentCenterX, subY, { align: "center" });
 
-  // Divider
-  const divY = titleBottomY + 0.45 + subLines.length * 0.22;
+  // 5. Divider Line with Accent Dot
+  const divY = subY + subLines.length * (opts.width < 7 ? 0.18 : 0.22) + 0.12;
+  const divW = Math.min(3.6, frameW - 1.0);
+  doc.setLineWidth(0.015);
   doc.setDrawColor(0);
+  doc.line(contentCenterX - divW / 2, divY, contentCenterX + divW / 2, divY);
+  doc.setFillColor(0);
+  doc.circle(contentCenterX, divY, 0.035, "F");
+
+  // 6. Specs & Badges Box (Solid Header + Clean Border)
+  const specBoxW = Math.min(5.8, frameW - 0.6);
+  const specBoxH = opts.height < 10 ? 1.15 : 1.35;
+  const specBoxX = contentCenterX - specBoxW / 2;
+  const specBoxY = divY + (opts.height < 10 ? 0.25 : 0.4);
+
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.015);
+  doc.roundedRect(specBoxX, specBoxY, specBoxW, specBoxH, 0.08, 0.08, "S");
+
+  // Spec Box Top Header Banner
+  const specHeaderH = opts.height < 10 ? 0.3 : 0.35;
+  doc.setFillColor(0);
+  doc.roundedRect(specBoxX, specBoxY, specBoxW, specHeaderH, 0.08, 0.08, "F");
+  doc.rect(specBoxX, specBoxY + specHeaderH - 0.15, specBoxW, 0.15, "F");
+
+  doc.setFont(pdfFont, "bold");
+  doc.setFontSize(opts.width < 7 ? 9.5 : 10.5);
+  doc.setTextColor(255);
+  const editionText = opts.difficulty
+    ? `DIFFICULTY LEVEL: ${opts.difficulty.toUpperCase()} • ${opts.puzzleCount} PUZZLES`
+    : `COMPLETE EDITION • ${opts.puzzleCount} PUZZLES`;
+  doc.text(editionText, contentCenterX, specBoxY + specHeaderH * 0.66, { align: "center" });
+
+  doc.setFont(pdfFont, "normal");
+  doc.setFontSize(opts.width < 7 ? 8.5 : 9.5);
+  doc.setTextColor(0);
+  const lineSpacing = opts.height < 10 ? 0.22 : 0.25;
+  doc.text("• 100% Mathematically Verified Solutions Included", contentCenterX, specBoxY + specHeaderH + lineSpacing * 1.0, { align: "center" });
+  doc.text("• Precision Clean Vector Lines • Large Print Format", contentCenterX, specBoxY + specHeaderH + lineSpacing * 1.9, { align: "center" });
+  doc.text("• Engineered for Amazon KDP Print Perfection", contentCenterX, specBoxY + specHeaderH + lineSpacing * 2.8, { align: "center" });
+
+  // 7. Author & Imprint
+  const authorY = frameT + frameH - (opts.height < 10 ? 0.85 : 1.15);
   doc.setLineWidth(0.01);
-  doc.line(contentCenterX - 1.5, divY, contentCenterX + 1.5, divY);
-
-  // Specs & Badges Box
-  const badgeY = divY + 0.55;
-  doc.setFont(pdfFont, "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(0);
-  if (opts.difficulty) {
-    doc.text(`DIFFICULTY LEVEL: ${opts.difficulty.toUpperCase()}`, contentCenterX, badgeY, { align: "center" });
-  } else {
-    doc.text(`COMPLETE EDITION • ${opts.puzzleCount} PUZZLES`, contentCenterX, badgeY, { align: "center" });
-  }
+  doc.setDrawColor(0);
+  doc.line(contentCenterX - 1.2, authorY - 0.25, contentCenterX + 1.2, authorY - 0.25);
 
   doc.setFont(pdfFont, "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(opts.width < 7 ? 8 : 9);
   doc.setTextColor(0);
-  doc.text("100% Mathematically Verified Solutions • Clear Large Print", contentCenterX, badgeY + 0.25, { align: "center" });
-  doc.text("Engineered for Large Print Perfection", contentCenterX, badgeY + 0.45, { align: "center" });
+  doc.text("CREATED & PUBLISHED BY", contentCenterX, authorY - 0.1, { align: "center" });
 
-  // Author & Imprint
-  const authorY = opts.height - 2.1;
   const author = opts.authorName?.trim() || "Independent Publisher";
-  doc.setFont(pdfFont, "normal");
-  doc.setFontSize(9.5);
+  doc.setFont(pdfFont, "bold");
+  doc.setFontSize(opts.width < 7 ? 12 : 14);
   doc.setTextColor(0);
-  doc.text("CREATED & PUBLISHED BY", contentCenterX, authorY - 0.25, { align: "center" });
+  doc.text(author, contentCenterX, authorY + 0.15, { align: "center" });
+
+  doc.setFont(pdfFont, "normal");
+  doc.setFontSize(opts.width < 7 ? 7.5 : 8.5);
+  doc.setTextColor(0);
+  doc.text("Independent Publishing Edition • All Rights Reserved", contentCenterX, authorY + (opts.height < 10 ? 0.38 : 0.48), { align: "center" });
+}
+
+export interface KdpSolutionsDividerOptions {
+  puzzleCount: number;
+  puzzleType?: KdpPuzzleType;
+  width: number;
+  height: number;
+  pageNumber: number;
+  totalPages: number;
+  pdfFont?: string;
+  customSubtitle?: string;
+}
+
+export function drawKdpSolutionsDividerPage(doc: jsPDF, opts: KdpSolutionsDividerOptions) {
+  const pdfFont = opts.pdfFont || "helvetica";
+  const margins = calculateKdpMargins(opts.pageNumber, opts.totalPages, opts.width);
+  const { contentW, contentCenterX, marginLeft } = margins;
+
+  // Frame
+  const frameL = marginLeft + 0.15;
+  const frameT = Math.max(0.55, opts.height * 0.065);
+  const frameW = contentW - 0.3;
+  const frameH = opts.height - frameT * 2;
+
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.02);
+  doc.rect(frameL, frameT, frameW, frameH);
+
+  doc.setLineWidth(0.008);
+  doc.rect(frameL + 0.04, frameT + 0.04, frameW - 0.08, frameH - 0.08);
+
+  // 4 corner decorative squares
+  const markSize = 0.07;
+  doc.setFillColor(0);
+  doc.rect(frameL - 0.015, frameT - 0.015, markSize, markSize, "F");
+  doc.rect(frameL + frameW - markSize + 0.015, frameT - 0.015, markSize, markSize, "F");
+  doc.rect(frameL - 0.015, frameT + frameH - markSize + 0.015, markSize, markSize, "F");
+  doc.rect(frameL + frameW - markSize + 0.015, frameT + frameH - markSize + 0.015, markSize, markSize, "F");
+
+  // Center Hero Ribbon / Banner for SOLUTIONS
+  const bannerW = Math.min(5.8, frameW - 0.6);
+  const bannerH = opts.height < 10 ? 0.95 : 1.15;
+  const bannerX = contentCenterX - bannerW / 2;
+  const bannerY = opts.height / 2 - (opts.height < 10 ? 0.9 : 1.1);
+
+  doc.setFillColor(0);
+  doc.roundedRect(bannerX, bannerY, bannerW, bannerH, 0.08, 0.08, "F");
 
   doc.setFont(pdfFont, "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(0);
-  doc.text(author, contentCenterX, authorY, { align: "center" });
+  doc.setFontSize(opts.width < 7 ? 24 : 32);
+  doc.setTextColor(255);
+  doc.text("SOLUTIONS", contentCenterX, bannerY + bannerH * 0.5, { align: "center" });
 
-  // Publishing imprint
-  doc.setFont(pdfFont, "normal");
-  doc.setFontSize(8.5);
+  doc.setFont(pdfFont, "bold");
+  doc.setFontSize(opts.width < 7 ? 9 : 11);
+  doc.setTextColor(255);
+  doc.text("COMPLETE ANSWER KEYS & VERIFIED SOLUTIONS", contentCenterX, bannerY + bannerH * 0.8, { align: "center" });
+
+  // Subtitle / guide card underneath
+  const cardW = bannerW;
+  const cardH = opts.height < 10 ? 1.05 : 1.25;
+  const cardX = bannerX;
+  const cardY = bannerY + bannerH + (opts.height < 10 ? 0.25 : 0.35);
+
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.015);
+  doc.roundedRect(cardX, cardY, cardW, cardH, 0.08, 0.08, "S");
+
+  doc.setFont(pdfFont, "bold");
+  doc.setFontSize(opts.width < 7 ? 9.5 : 11);
   doc.setTextColor(0);
-  doc.text("Independent Publishing Edition", contentCenterX, opts.height - 1.0, { align: "center" });
+  const cardHeading = opts.customSubtitle || `ANSWER KEYS FOR PUZZLES #1 TO #${opts.puzzleCount}`;
+  doc.text(cardHeading.toUpperCase(), contentCenterX, cardY + (opts.height < 10 ? 0.28 : 0.35), { align: "center" });
+
+  doc.setFont(pdfFont, "normal");
+  doc.setFontSize(opts.width < 7 ? 8.5 : 9.5);
+  doc.setTextColor(0);
+  const lineSpacing = opts.height < 10 ? 0.22 : 0.25;
+  doc.text("All solutions are organized in consecutive numerical order.", contentCenterX, cardY + (opts.height < 10 ? 0.28 : 0.35) + lineSpacing * 1.1, { align: "center" });
+  doc.text("Each answer key displays the direct, step-by-step solved solution.", contentCenterX, cardY + (opts.height < 10 ? 0.28 : 0.35) + lineSpacing * 2.1, { align: "center" });
 }
+
 
 interface RuleGuide {
   title: string;

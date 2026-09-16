@@ -3,7 +3,7 @@ import { MazeGrid, Shape, solveMaze } from "./maze";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
-import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "./kdpBookEngine";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount } from "./kdpBookEngine";
 
 interface PdfOptions {
   mazes: {
@@ -306,18 +306,16 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     doc.addPage();
     currentPage++;
 
-    const divMargins = calculateKdpMargins(currentPage, totalExpectedPages, widthInches);
-
-    // Section Header Divider
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(28);
-    doc.setTextColor(0);
-    doc.text("SOLUTIONS", divMargins.contentCenterX, heightInches / 2 - 0.3, { align: "center" });
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text(`Complete Answer Keys for Mazes #1 to #${mazes.length}`, divMargins.contentCenterX, heightInches / 2 + 0.2, { align: "center" });
+    // Section Header Divider with High-Contrast KDP Layout
+    drawKdpSolutionsDividerPage(doc, {
+      puzzleCount: mazes.length,
+      puzzleType: "maze",
+      width: widthInches,
+      height: heightInches,
+      pageNumber: currentPage,
+      totalPages: totalExpectedPages,
+      customSubtitle: `Complete Answer Keys for Mazes #1 to #${mazes.length}`,
+    });
 
     let currentSolutionCount = 0;
     const solTopReserved = 1.1;

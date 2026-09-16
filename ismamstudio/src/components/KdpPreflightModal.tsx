@@ -33,6 +33,7 @@ interface KdpPreflightModalProps {
     trimHeight: number;
     pageCount: number;
     paperType: string;
+    coverBackground?: any;
   };
   onSelectObject?: (obj: fabric.Object) => void;
   onProceedDownload?: () => void;
@@ -43,7 +44,13 @@ interface KdpPreflightModalProps {
 export function runKdpPreflightChecks(
   canvas: fabric.Canvas | null,
   layout: KdpLayoutResult,
-  specs: { trimWidth: number; trimHeight: number; pageCount: number; paperType: string }
+  specs: {
+    trimWidth: number;
+    trimHeight: number;
+    pageCount: number;
+    paperType: string;
+    coverBackground?: any;
+  }
 ): PreflightFinding[] {
   if (!canvas) return [];
 
@@ -265,31 +272,91 @@ export function runKdpPreflightChecks(
   });
 
   // -------------------------------------------------------------
-  // 4. Image Resolution / DPI Check
+  // 4. Image Resolution / DPI Check (Hard KDP Rejection if < 300 DPI)
   // -------------------------------------------------------------
   objects.forEach((obj: any, idx) => {
     if (obj.type === "image") {
       const img = obj as fabric.Image;
       const el = img.getElement() as HTMLImageElement;
-      if (el && el.naturalWidth) {
+      if (el && (el.naturalWidth || (el as any).width)) {
+        const natW = el.naturalWidth || (el as any).width;
+        const natH = el.naturalHeight || (el as any).height;
         const renderWidthInches = (obj.getScaledWidth()) / layout.scale;
-        const effectiveDPI = Math.round(el.naturalWidth / Math.max(0.1, renderWidthInches));
+        const renderHeightInches = (obj.getScaledHeight()) / layout.scale;
+        const effectiveDPI = Math.round(
+          Math.min(
+            natW / Math.max(0.1, renderWidthInches),
+            natH / Math.max(0.1, renderHeightInches)
+          )
+        );
 
-        if (effectiveDPI < 200) {
+        if (effectiveDPI < 300) {
           findings.push({
             id: `dpi-low-${idx}`,
-            severity: "warning",
+            severity: "critical", // Strictly blocks export until >= 300 DPI!
             category: "resolution",
-            title: `Low Resolution Image (${effectiveDPI} DPI)`,
-            message: `This image renders at ~${effectiveDPI} DPI. Amazon KDP requires 300 DPI for crisp print results (200 DPI minimum). It may print visibly blurred or pixelated.`,
-            recommendation: "Use higher-resolution source artwork or reduce the image display dimensions.",
+            title: `Resolution Below 300 DPI (${effectiveDPI} DPI)`,
+            message: `This image renders at only ${effectiveDPI} DPI (${natW}x${natH}px at ${renderWidthInches.toFixed(1)}" x ${renderHeightInches.toFixed(1)}"). Amazon KDP strictly requires a minimum of 300 DPI for physical printing. Export is locked to prevent blurry, pixelated covers and KDP file rejection.`,
+            recommendation: `Replace with a higher-resolution image (at least ${Math.round(renderWidthInches * 300)}x${Math.round(renderHeightInches * 300)}px) or scale down the image size until it reaches 300 DPI.`,
             object: obj,
-            objectLabel: `Image (${el.naturalWidth}x${el.naturalHeight}px)`
+            objectLabel: `Image (${effectiveDPI} DPI)`,
+            autoFixLabel: "Auto-Scale to 300 DPI",
+            autoFix: () => {
+              const targetScaledWidthPx = (natW / 300) * layout.scale;
+              const scaleFactor = targetScaledWidthPx / (natW || 1);
+              obj.scale(scaleFactor);
+              obj.setCoords();
+              canvas.requestRenderAll();
+            }
           });
         }
       }
     }
   });
+
+  // Check Background Images if present
+  if (specs.coverBackground) {
+    const bg = specs.coverBackground;
+    const bleed = 0.125;
+    if (bg.frontCoverImage && typeof window !== "undefined") {
+      const img = new Image();
+      img.src = bg.frontCoverImage;
+      if (img.naturalWidth && img.naturalHeight) {
+        const targetW = specs.trimWidth + bleed;
+        const targetH = specs.trimHeight + bleed * 2;
+        const dpi = Math.round(Math.min(img.naturalWidth / targetW, img.naturalHeight / targetH));
+        if (dpi < 300) {
+          findings.push({
+            id: "bg-front-dpi-low",
+            severity: "critical",
+            category: "resolution",
+            title: `Front Cover Background Below 300 DPI (${dpi} DPI)`,
+            message: `The uploaded front cover background image is ${img.naturalWidth}x${img.naturalHeight}px (${dpi} DPI). To print crisply at 300 DPI for ${targetW.toFixed(2)}" x ${targetH.toFixed(2)}", it must be at least ${Math.round(targetW * 300)}x${Math.round(targetH * 300)}px. Export is locked until 300+ DPI artwork is provided.`,
+            recommendation: `Upload a higher-resolution front cover artwork with at least ${Math.round(targetW * 300)}x${Math.round(targetH * 300)}px.`
+          });
+        }
+      }
+    }
+    if (bg.fullCoverImage && typeof window !== "undefined") {
+      const img = new Image();
+      img.src = bg.fullCoverImage;
+      if (img.naturalWidth && img.naturalHeight) {
+        const fullW = layout.coverWidthInches;
+        const fullH = layout.coverHeightInches;
+        const dpi = Math.round(Math.min(img.naturalWidth / fullW, img.naturalHeight / fullH));
+        if (dpi < 300) {
+          findings.push({
+            id: "bg-full-dpi-low",
+            severity: "critical",
+            category: "resolution",
+            title: `Full Wraparound Cover Below 300 DPI (${dpi} DPI)`,
+            message: `The full cover background image is ${img.naturalWidth}x${img.naturalHeight}px (${dpi} DPI). Amazon KDP requires 300 DPI across the entire cover (${Math.round(fullW * 300)}x${Math.round(fullH * 300)}px). Export is locked until 300+ DPI artwork is provided.`,
+            recommendation: `Upload a high-res wraparound cover with at least ${Math.round(fullW * 300)}x${Math.round(fullH * 300)}px.`
+          });
+        }
+      }
+    }
+  }
 
   // -------------------------------------------------------------
   // 5. Positive Guidance Checks (If everything is clear)
@@ -531,6 +598,16 @@ export default function KdpPreflightModal({
           ))}
         </div>
 
+        {/* Critical DPI / Preflight Blocker Alert */}
+        {criticalCount > 0 && (
+          <div className="mx-1 mb-2 p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-bold flex items-center gap-2.5">
+            <AlertOctagon className="w-4 h-4 text-rose-400 shrink-0" />
+            <span className="leading-snug">
+              <strong>Export Locked:</strong> Amazon KDP requires 300 DPI or higher for all print book elements. You have {criticalCount} issue{criticalCount > 1 ? "s" : ""} that must be fixed to enable PDF export.
+            </span>
+          </div>
+        )}
+
         {/* Footer Actions */}
         <div className="pt-4 mt-4 border-t border-slate-800 flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
           <div className="flex items-center gap-2">
@@ -564,19 +641,22 @@ export default function KdpPreflightModal({
             {onProceedDownload && (
               <button
                 onClick={() => {
+                  if (criticalCount > 0) return;
                   onClose();
                   onProceedDownload();
                 }}
-                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all shadow-md ${
+                disabled={criticalCount > 0}
+                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md ${
                   criticalCount > 0
-                    ? "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/20"
-                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30"
+                    ? "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/60 opacity-60"
+                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30 cursor-pointer active:scale-95"
                 }`}
+                title={criticalCount > 0 ? `Export locked: ${criticalCount} critical issue(s) must be resolved (300+ DPI required)` : "Download PDF Cover"}
               >
                 <Download className="w-4 h-4" />
                 <span>
                   {criticalCount > 0 
-                    ? "Download Anyway" 
+                    ? "Export Locked (Must be 300+ DPI)" 
                     : colorSpace !== "srgb" 
                     ? "Download CMYK Cover" 
                     : "Download PDF Cover"}

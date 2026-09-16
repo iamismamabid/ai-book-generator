@@ -5664,6 +5664,20 @@ export default function FabricCoverStudio({
 
   const handleGenerateCoverDirect = () => {
     if (!canvas) return;
+
+    // Strict 300+ DPI & POD Safety Guardrail: Never export if sub-300 DPI
+    const findings = runKdpPreflightChecks(canvas, layout, {
+      trimWidth: trimSize.w,
+      trimHeight: trimSize.h,
+      pageCount: pageCount,
+      paperType: paperType,
+      coverBackground: coverBackground,
+    });
+    if (findings.some((f) => f.severity === "critical")) {
+      setIsPreflightOpen(true);
+      return;
+    }
+
     setIsGenerating(true);
     canvas.discardActiveObject();
     canvas.requestRenderAll();
@@ -5730,6 +5744,7 @@ export default function FabricCoverStudio({
       trimHeight: trimSize.h,
       pageCount: pageCount,
       paperType: paperType,
+      coverBackground: coverBackground,
     });
 
     const hasCritical = findings.some((f) => f.severity === "critical");
@@ -5767,6 +5782,7 @@ export default function FabricCoverStudio({
       trimHeight: trimSize.h,
       pageCount: pageCount,
       paperType: paperType,
+      coverBackground: coverBackground,
     });
 
     const hasCritical = findings.some((f) => f.severity === "critical");
@@ -10158,6 +10174,7 @@ export default function FabricCoverStudio({
           trimHeight: safeTrimSize.h,
           pageCount: safePageCount,
           paperType: paperType,
+          coverBackground: coverBackground,
         }}
         colorSpace={coverColorSpace}
         onToggleColorSpace={setCoverColorSpace}

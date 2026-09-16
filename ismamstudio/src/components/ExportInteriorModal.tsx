@@ -221,6 +221,15 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
       alert("Please design a cover in the Cover Studio first, or uncheck the Cover option.");
       return;
     }
+    if (includeCover && coverDpiChecks.length > 0) {
+      const lowRes = coverDpiChecks.find((c) => c.isLowRes);
+      if (lowRes) {
+        alert(
+          `❌ Export Locked: ${lowRes.label} is only ${lowRes.effectiveDpi} DPI. Amazon KDP requires 300 DPI or higher for all print book elements. Please replace with high-resolution artwork or uncheck the cover option to export.`
+        );
+        return;
+      }
+    }
     setIsExporting(true);
     try {
       await onExport({
@@ -738,7 +747,7 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
               {premiumStatus.isPremium ? (
                 <button
                   onClick={handleActionExport}
-                  disabled={isExporting || (includeCover && !hasSavedCover)}
+                  disabled={isExporting || (includeCover && !hasSavedCover) || (includeCover && coverDpiChecks.some(c => c.isLowRes))}
                   className="w-full flex flex-col items-center justify-center gap-1.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white py-3.5 px-4 rounded-2xl text-xs font-black shadow-lg shadow-indigo-600/25 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isExporting ? (
@@ -759,7 +768,9 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
                   ) : (
                     <div className="flex items-center justify-center gap-2">
                       <FileDown className="w-4 h-4" />
-                      Export 300 DPI Print-Ready PDF
+                      {includeCover && coverDpiChecks.some(c => c.isLowRes)
+                        ? "Export Locked (Cover is Below 300 DPI)"
+                        : "Export 300 DPI Print-Ready PDF"}
                     </div>
                   )}
                 </button>

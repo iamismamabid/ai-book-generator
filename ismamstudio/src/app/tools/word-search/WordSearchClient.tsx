@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText, Lock, Sparkles } from "lucide-react";
+import { Download, Grid3x3, Settings, Eye, EyeOff, BookOpen, Loader2, Palette, Type, LayoutTemplate, MousePointer2, Plus, Image as ImageIcon, ArrowUpToLine, ArrowDownToLine, SlidersHorizontal, Square, Circle, Layers, Magnet, ScanBarcode, FileText, Lock, Sparkles, ChevronDown, RotateCcw, CheckCircle2 } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { generatePuzzleGrid, WordSearchShape } from "../../utils/puzzleEngine";
@@ -73,6 +73,18 @@ export default function WordSearchStudio() {
     const [solutionHighlighter, setSolutionHighlighter] = useState<'apple' | 'fill' | 'grayout' | 'fade'>('apple');
     const [useFirstLineAsTitle, setUseFirstLineAsTitle] = useState(false);
     const [includeCover, setIncludeCover] = useState(false);
+
+    // 🚨 MANDATORY KDP FRONT MATTER (TITLE & COPYRIGHT/HOW TO SOLVE) STATES 🚨
+    const [bookTitle, setBookTitle] = useState("Word Search Puzzle Book");
+    const [bookSubtitle, setBookSubtitle] = useState("");
+    const [authorName, setAuthorName] = useState("");
+    const [customCopyright, setCustomCopyright] = useState("");
+    const [customGuideTitle, setCustomGuideTitle] = useState("HOW TO SOLVE WORD SEARCHES");
+    const [customGuideIntro, setCustomGuideIntro] = useState("");
+    const [customRules, setCustomRules] = useState("");
+    const [customTips, setCustomTips] = useState("");
+    const [showGuideCustomize, setShowGuideCustomize] = useState(false);
+    const [previewPageMode, setPreviewPageMode] = useState<'puzzle' | 'title' | 'instructions'>('puzzle');
 
     const [words, setWords] = useState("NEXTJS\nREACT\nPRISMA\nTAILWIND\nCODING\nJAVASCRIPT\nTYPESCRIPT\nDATABASE\nSERVER\nVERCEL\nGITHUB\nAPI\nJSON\nNODE\nFRONTEND\nBACKEND");
     const [previewGrid, setPreviewGrid] = useState<string[][] | null>(null);
@@ -146,6 +158,14 @@ export default function WordSearchStudio() {
             if (d.puzzleShape) setPuzzleShape(d.puzzleShape);
             if (typeof d.selectedThemeId === "string") setSelectedThemeId(d.selectedThemeId);
             if (typeof d.hiddenMessage === "string") setHiddenMessage(d.hiddenMessage);
+            if (typeof d.bookTitle === "string") setBookTitle(d.bookTitle);
+            if (typeof d.bookSubtitle === "string") setBookSubtitle(d.bookSubtitle);
+            if (typeof d.authorName === "string") setAuthorName(d.authorName);
+            if (typeof d.customCopyright === "string") setCustomCopyright(d.customCopyright);
+            if (typeof d.customGuideTitle === "string") setCustomGuideTitle(d.customGuideTitle);
+            if (typeof d.customGuideIntro === "string") setCustomGuideIntro(d.customGuideIntro);
+            if (typeof d.customRules === "string") setCustomRules(d.customRules);
+            if (typeof d.customTips === "string") setCustomTips(d.customTips);
         }).catch((err) => console.error("Failed to load notebook entry:", err));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -322,10 +342,11 @@ export default function WordSearchStudio() {
         finalW += bleed;
         finalH += bleed * 2;
 
-        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([
             import("jspdf"),
             import("../../utils/pdfExportService"),
             import("../../utils/borderThemeDrawing"),
+            import("@/lib/kdpBookEngine"),
         ]);
         const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [finalW, finalH] });
         const margin = 0.5; const safeWidth = finalW - (margin * 2); const safeHeight = finalH - (margin * 2);
@@ -338,20 +359,60 @@ export default function WordSearchStudio() {
             bookPuzzles.push(generatePuzzleGrid(subset, gridSize, textCase, { shape: puzzleShape, hiddenMessage }));
         }
 
-        // 1. Draw Front Cover if integrated
+        const frontMatterPages = 2;
+        const totalPuzPages = Math.ceil(totalPuzzles / puzzlesPerPage);
+        const totalSolPages = incSol ? Math.ceil(totalPuzzles / solutionsPerPage) : 0;
+        const totalExpectedPages = frontMatterPages + totalPuzPages + totalSolPages;
+
         let firstPageAdded = false;
+        let currentPage = 0;
+
+        // 1. Draw Front Cover if integrated
         if (incCover && coverState) {
             await drawCoverPagePart(doc, coverState, 'front', finalW, finalH);
             firstPageAdded = true;
+            currentPage++;
         }
 
-        // ================= FRONT SECTION =================
+        // 2. Mandatory Page 1: Title Page
+        if (firstPageAdded) doc.addPage();
+        firstPageAdded = true;
+        currentPage++;
+        drawKdpTitlePage(doc, {
+            title: bookTitle.trim() || (useFirstLineAsTitle && titleText ? titleText : "Word Search Puzzle Book"),
+            subtitle: bookSubtitle.trim() || `${totalPuzzles} Themed Large Print Word Searches with Solutions`,
+            authorName: authorName.trim() || "Independent Publisher",
+            puzzleType: "word_search",
+            puzzleCount: totalPuzzles,
+            width: finalW,
+            height: finalH,
+            totalPages: totalExpectedPages,
+        });
+
+        // 3. Mandatory Page 2: Copyright & How to Play Page
+        doc.addPage();
+        currentPage++;
+        const parsedCustomRules = customRules.trim() ? customRules.split("\n").map(s => s.trim()).filter(Boolean) : undefined;
+        const parsedCustomTips = customTips.trim() ? customTips.split("\n").map(s => s.trim()).filter(Boolean) : undefined;
+        drawKdpCopyrightAndInstructionsPage(doc, {
+            authorName: authorName.trim() || "Independent Publisher",
+            puzzleType: "word_search",
+            width: finalW,
+            height: finalH,
+            totalPages: totalExpectedPages,
+            guideTitle: customGuideTitle.trim() || undefined,
+            guideIntro: customGuideIntro.trim() || undefined,
+            guideRules: parsedCustomRules,
+            guideTips: parsedCustomTips,
+            copyrightText: customCopyright.trim() || undefined,
+        });
+
+        // ================= PUZZLE PAGES =================
         const puzZones = getZones(puzzlesPerPage, safeWidth, safeHeight, margin);
-        const totalPuzPages = Math.ceil(totalPuzzles / puzzlesPerPage);
 
         for (let p = 0; p < totalPuzPages; p++) {
-            if (firstPageAdded || p > 0) doc.addPage();
-            firstPageAdded = true;
+            doc.addPage();
+            currentPage++;
             for (let z = 0; z < puzzlesPerPage; z++) {
                 const puzIndex = (p * puzzlesPerPage) + z;
                 if (puzIndex >= totalPuzzles) break;
@@ -417,15 +478,25 @@ export default function WordSearchStudio() {
                     style: { wordFont, wordFontSize: effectiveWordFontSize, wordTextColor, wordTextAlign, wordColumns, wordRowStep },
                 });
             }
+
+            // Running footer page number
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(0);
+            doc.text(`Page ${currentPage}`, finalW / 2, finalH - 0.35, { align: "center" });
+
+            if (showGuides) {
+                drawMarginGuides(doc, margin, margin, margin, margin, finalW, finalH);
+            }
         }
 
         // ================= ANSWER KEYS SECTION =================
         if (incSol) {
             const solZones = getZones(solutionsPerPage, safeWidth, safeHeight, margin);
-            const totalSolPages = Math.ceil(totalPuzzles / solutionsPerPage);
 
             for (let p = 0; p < totalSolPages; p++) {
                 doc.addPage();
+                currentPage++;
                 for (let z = 0; z < solutionsPerPage; z++) {
                     const solIndex = (p * solutionsPerPage) + z;
                     if (solIndex >= totalPuzzles) break;
@@ -466,6 +537,16 @@ export default function WordSearchStudio() {
                         solutionHighlighter: solutionHighlighter === 'grayout' ? 'fade' : solutionHighlighter,
                         letterBold: true,
                     });
+                }
+
+                // Running footer page number
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.setTextColor(0);
+                doc.text(`Page ${currentPage}`, finalW / 2, finalH - 0.35, { align: "center" });
+
+                if (showGuides) {
+                    drawMarginGuides(doc, margin, margin, margin, margin, finalW, finalH);
                 }
             }
         }
@@ -603,6 +684,135 @@ export default function WordSearchStudio() {
                                         <div><label className="text-xs font-semibold text-slate-600">Words/Puzzle</label><input type="number" value={wordsPerPage} onChange={(e) => setWordsPerPage(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs" /></div>
                                         <div><label className="text-xs font-semibold text-slate-600">Puzzles/Page</label><select value={puzzlesPerPage} onChange={(e) => setPuzzlesPerPage(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"><option value={1}>1</option><option value={2}>2</option><option value={4}>4</option></select></div>
                                         <div><label className="text-xs font-semibold text-slate-600">Puzzle Align</label><select value={puzzleAlign} onChange={(e) => setPuzzleAlign(e.target.value as any)} className="w-full mt-1 border border-slate-200 rounded p-1.5 text-xs"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>
+                                    </div>
+                                </div>
+
+                                {/* KDP Book Details & Mandatory Front Matter */}
+                                <div className="space-y-3 bg-indigo-50/80 dark:bg-indigo-950/30 p-3.5 rounded-xl border border-indigo-200 dark:border-indigo-900/50 shadow-xs">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="font-bold text-xs text-indigo-700 dark:text-indigo-400 uppercase flex items-center gap-1.5">
+                                            <BookOpen className="w-3.5 h-3.5" /> Book Front Matter
+                                        </h3>
+                                        <span className="text-[9px] font-black uppercase tracking-wider bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-1.5 py-0.5 rounded-full">
+                                            Pages 1 &amp; 2 Mandatory
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Book Title (Page 1)</label>
+                                        <input
+                                            type="text"
+                                            value={bookTitle}
+                                            onChange={(e) => setBookTitle(e.target.value)}
+                                            placeholder="Word Search Puzzle Book"
+                                            className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Subtitle</label>
+                                        <input
+                                            type="text"
+                                            value={bookSubtitle}
+                                            onChange={(e) => setBookSubtitle(e.target.value)}
+                                            placeholder={`${totalPuzzles} Themed Large Print Word Searches with Solutions`}
+                                            className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Author / Pen Name</label>
+                                            <input
+                                                type="text"
+                                                value={authorName}
+                                                onChange={(e) => setAuthorName(e.target.value)}
+                                                placeholder="Puzzle Master Press"
+                                                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">Copyright Notice / Year</label>
+                                            <input
+                                                type="text"
+                                                value={customCopyright}
+                                                onChange={(e) => setCustomCopyright(e.target.value)}
+                                                placeholder={`© ${new Date().getFullYear()} by Author`}
+                                                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Expandable Customize How to Play / Instructions */}
+                                    <div className="pt-2 border-t border-indigo-100 dark:border-indigo-900/40">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowGuideCustomize(!showGuideCustomize)}
+                                            className="w-full flex items-center justify-between text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition py-1"
+                                        >
+                                            <span className="flex items-center gap-1">
+                                                <SlidersHorizontal className="w-3 h-3" /> Customize How to Play (Page 2)
+                                            </span>
+                                            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showGuideCustomize ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        {showGuideCustomize && (
+                                            <div className="space-y-2.5 mt-2.5 pt-2 border-t border-indigo-100/60 dark:border-indigo-900/30 animate-in fade-in duration-200">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block mb-1">Guide Heading</label>
+                                                    <input
+                                                        type="text"
+                                                        value={customGuideTitle}
+                                                        onChange={(e) => setCustomGuideTitle(e.target.value)}
+                                                        placeholder="HOW TO SOLVE WORD SEARCHES"
+                                                        className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded p-1.5 text-xs text-slate-900 dark:text-white"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block mb-1">Intro Explanation</label>
+                                                    <textarea
+                                                        rows={2}
+                                                        value={customGuideIntro}
+                                                        onChange={(e) => setCustomGuideIntro(e.target.value)}
+                                                        placeholder="A word search consists of letters arranged in a grid with hidden target words..."
+                                                        className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded p-1.5 text-xs text-slate-900 dark:text-white resize-none"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block mb-1">Custom Rules (1 per line)</label>
+                                                    <textarea
+                                                        rows={3}
+                                                        value={customRules}
+                                                        onChange={(e) => setCustomRules(e.target.value)}
+                                                        placeholder={"1. Words run horizontally, vertically, or diagonally.\n2. Words may share letters or overlap.\n3. Mark found words in the bank."}
+                                                        className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded p-1.5 text-xs text-slate-900 dark:text-white resize-none"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block mb-1">Custom Strategies / Tips (1 per line)</label>
+                                                    <textarea
+                                                        rows={3}
+                                                        value={customTips}
+                                                        onChange={(e) => setCustomTips(e.target.value)}
+                                                        placeholder={"• Scan systematically for rare letters (Q, X, Z, J).\n• Cross off found words from the word bank.\n• Answer keys are located in the back of this book."}
+                                                        className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded p-1.5 text-xs text-slate-900 dark:text-white resize-none"
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setCustomGuideTitle("HOW TO SOLVE WORD SEARCHES");
+                                                        setCustomGuideIntro("");
+                                                        setCustomRules("");
+                                                        setCustomTips("");
+                                                        setCustomCopyright("");
+                                                    }}
+                                                    className="text-[10px] font-bold text-slate-500 hover:text-indigo-600 transition flex items-center gap-1 pt-1"
+                                                >
+                                                    <RotateCcw className="w-2.5 h-2.5" /> Reset to Standard KDP Guidelines
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -772,6 +982,8 @@ export default function WordSearchStudio() {
                                         wordsSort, wordTextAlign, wordFont, wordTextSize, wordTextColor,
                                         solutionHighlighter, useFirstLineAsTitle, includeCover,
                                         words, puzzleShape, selectedThemeId, hiddenMessage,
+                                        bookTitle, bookSubtitle, authorName, customCopyright,
+                                        customGuideTitle, customGuideIntro, customRules, customTips,
                                     }}
                                     className="w-full justify-center"
                                 />
@@ -779,65 +991,217 @@ export default function WordSearchStudio() {
                             </div>
                         </div>
                         
-                        <div className="col-span-1 lg:col-span-3 bg-slate-100 rounded-xl shadow-inner border border-slate-200 flex flex-col items-center justify-center p-8 relative overflow-y-auto">
-                            {previewGrid && answerMask ? (
-                                <div className="bg-white p-8 shadow-xl rounded-sm w-full max-w-xl aspect-[8.5/11] flex flex-col relative" style={{ borderColor, borderWidth: `${lineWidth}px` }}>
-                                    <button onClick={() => setShowAnswers(!showAnswers)} className="absolute top-4 right-4 bg-slate-100 p-2 rounded-full text-slate-600 hover:bg-slate-200 z-20">{showAnswers ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}</button>
-                                    
-                                    <h3 className="font-bold text-xl mb-4" style={{ textAlign: puzzleAlign, fontFamily: lettersFont }}>
-                                        {useFirstLineAsTitle && cleanWordsList.length > 0 ? `${cleanWordsList[0].title} #1` : 'Puzzle #1'}
-                                    </h3>
-                                    
-                                    <div className="relative flex-1 w-full mx-auto max-h-[60%] flex flex-col justify-center">
-                                        <div className="absolute inset-0 grid z-10" style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
-                                            {previewGrid.map((row, r) => row.map((letter, c) => {
-                                                const isActiveCell = !previewActive || previewActive[r][c];
-                                                const isMessageCell = showAnswers && previewHiddenMessageCells?.some(m => m.r === r && m.c === c);
-                                                if (!isActiveCell) return <div key={`${r}-${c}`} style={{ visibility: "hidden" }} />;
+                        <div className="col-span-1 lg:col-span-3 bg-slate-100 dark:bg-slate-900/40 rounded-xl shadow-inner border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-start p-4 md:p-8 relative overflow-y-auto">
+                            {/* Preview Page Selector */}
+                            <div className="flex flex-wrap items-center justify-center gap-1.5 mb-5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => setPreviewPageMode('puzzle')}
+                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                        previewPageMode === 'puzzle'
+                                            ? 'bg-indigo-600 text-white shadow-xs'
+                                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    <Grid3x3 className="w-3.5 h-3.5" /> Puzzle #1
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPreviewPageMode('title')}
+                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                        previewPageMode === 'title'
+                                            ? 'bg-indigo-600 text-white shadow-xs'
+                                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    <BookOpen className="w-3.5 h-3.5" /> Page 1: Title Page
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPreviewPageMode('instructions')}
+                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                        previewPageMode === 'instructions'
+                                            ? 'bg-indigo-600 text-white shadow-xs'
+                                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    <FileText className="w-3.5 h-3.5" /> Page 2: How to Play &amp; Copyright
+                                </button>
+                            </div>
+
+                            {previewPageMode === 'puzzle' ? (
+                                previewGrid && answerMask ? (
+                                    <div className="bg-white p-8 shadow-xl rounded-sm w-full max-w-xl aspect-[8.5/11] flex flex-col relative" style={{ borderColor, borderWidth: `${lineWidth}px` }}>
+                                        <button onClick={() => setShowAnswers(!showAnswers)} className="absolute top-4 right-4 bg-slate-100 p-2 rounded-full text-slate-600 hover:bg-slate-200 z-20" title={showAnswers ? "Hide Answers" : "Show Answers"}>
+                                            {showAnswers ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                                        </button>
+                                        
+                                        <h3 className="font-bold text-xl mb-4" style={{ textAlign: puzzleAlign, fontFamily: lettersFont }}>
+                                            {useFirstLineAsTitle && cleanWordsList.length > 0 ? `${cleanWordsList[0].title} #1` : 'Puzzle #1'}
+                                        </h3>
+                                        
+                                        <div className="relative flex-1 w-full mx-auto max-h-[60%] flex flex-col justify-center">
+                                            <div className="absolute inset-0 grid z-10" style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
+                                                {previewGrid.map((row, r) => row.map((letter, c) => {
+                                                    const isActiveCell = !previewActive || previewActive[r][c];
+                                                    const isMessageCell = showAnswers && previewHiddenMessageCells?.some(m => m.r === r && m.c === c);
+                                                    if (!isActiveCell) return <div key={`${r}-${c}`} style={{ visibility: "hidden" }} />;
+                                                    return (
+                                                        <div key={`${r}-${c}`} className="flex items-center justify-center font-bold"
+                                                            style={{
+                                                                backgroundColor: isMessageCell ? '#FCD34D' : (showAnswers && solutionHighlighter === 'fill' && answerMask[r][c]) ? '#E2E8F0' : cellColor,
+                                                                borderWidth: `${lineWidth}px`, borderColor,
+                                                                fontFamily: lettersFont,
+                                                                color: (showAnswers && (solutionHighlighter === 'fade' || solutionHighlighter === 'apple') && !answerMask[r][c] && !isMessageCell) ? '#D1D5DB' : '#000000'
+                                                            }}>
+                                                            {letter}
+                                                        </div>
+                                                    );
+                                                }))}
+                                            </div>
+                                            {showAnswers && solutionHighlighter === 'apple' && (() => {
+                                                const padX = 0.38, halfH = 0.26, rx = 0.09, borderExtra = 0.05;
+                                                const wordRect = (w: any, dx: number, dy: number, grow: number) => {
+                                                    const cx = (w.startC + w.endC) / 2 + 0.5 + dx;
+                                                    const cy = (w.startR + w.endR) / 2 + 0.5 + dy;
+                                                    const len = Math.hypot(w.endC - w.startC, w.endR - w.startR);
+                                                    const angle = Math.atan2(w.endR - w.startR, w.endC - w.startC) * (180 / Math.PI);
+                                                    const width = len + (padX + grow) * 2, height = (halfH + grow) * 2;
+                                                    return { x: cx - width / 2, y: cy - height / 2, width, height, rx: rx + grow, transform: `rotate(${angle} ${cx} ${cy})` };
+                                                };
                                                 return (
-                                                    <div key={`${r}-${c}`} className="flex items-center justify-center font-bold"
-                                                        style={{
-                                                            backgroundColor: isMessageCell ? '#FCD34D' : (showAnswers && solutionHighlighter === 'fill' && answerMask[r][c]) ? '#E2E8F0' : cellColor,
-                                                            borderWidth: `${lineWidth}px`, borderColor,
-                                                            fontFamily: lettersFont,
-                                                            color: (showAnswers && (solutionHighlighter === 'fade' || solutionHighlighter === 'apple') && !answerMask[r][c] && !isMessageCell) ? '#D1D5DB' : '#000000'
-                                                        }}>
-                                                        {letter}
-                                                    </div>
+                                                    <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                                                        {cleanWordsList.map((w, i) => (
+                                                            <g key={i}>
+                                                                <rect {...wordRect(w, 0.06, 0.07, borderExtra)} fill="#64748B" opacity="0.24" />
+                                                                <rect {...wordRect(w, 0, 0, borderExtra)} fill="#64748B" opacity="0.95" />
+                                                                <rect {...wordRect(w, 0, 0, 0)} fill="#E2E8F0" opacity="0.98" />
+                                                            </g>
+                                                        ))}
+                                                    </svg>
                                                 );
-                                            }))}
+                                            })()}
                                         </div>
-                                        {showAnswers && solutionHighlighter === 'apple' && (() => {
-                                            const padX = 0.38, halfH = 0.26, rx = 0.09, borderExtra = 0.05;
-                                            const wordRect = (w: any, dx: number, dy: number, grow: number) => {
-                                                const cx = (w.startC + w.endC) / 2 + 0.5 + dx;
-                                                const cy = (w.startR + w.endR) / 2 + 0.5 + dy;
-                                                const len = Math.hypot(w.endC - w.startC, w.endR - w.startR);
-                                                const angle = Math.atan2(w.endR - w.startR, w.endC - w.startC) * (180 / Math.PI);
-                                                const width = len + (padX + grow) * 2, height = (halfH + grow) * 2;
-                                                return { x: cx - width / 2, y: cy - height / 2, width, height, rx: rx + grow, transform: `rotate(${angle} ${cx} ${cy})` };
-                                            };
-                                            return (
-                                                <svg viewBox={`0 0 ${gridSize} ${gridSize}`} className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                                                    {cleanWordsList.map((w, i) => (
-                                                        <g key={i}>
-                                                            <rect {...wordRect(w, 0.06, 0.07, borderExtra)} fill="#64748B" opacity="0.24" />
-                                                            <rect {...wordRect(w, 0, 0, borderExtra)} fill="#64748B" opacity="0.95" />
-                                                            <rect {...wordRect(w, 0, 0, 0)} fill="#E2E8F0" opacity="0.98" />
-                                                        </g>
-                                                    ))}
-                                                </svg>
-                                            );
-                                        })()}
+                                        <div className="w-full mt-6" style={{ textAlign: wordTextAlign, fontFamily: wordFont, color: wordTextColor }}>
+                                            <h4 className="font-bold mb-2">Words to Find:</h4>
+                                            <div className="grid grid-cols-4 gap-2 text-sm">
+                                                {cleanWordsList.map((w, i) => <span key={i}>{w.text}</span>)}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="w-full mt-6" style={{ textAlign: wordTextAlign, fontFamily: wordFont, color: wordTextColor }}>
-                                        <h4 className="font-bold mb-2">Words to Find:</h4>
-                                        <div className="grid grid-cols-4 gap-2 text-sm">
-                                            {cleanWordsList.map((w, i) => <span key={i}>{w.text}</span>)}
+                                ) : (
+                                    <div className="text-slate-400 flex flex-col items-center justify-center h-80">
+                                        <BookOpen className="w-12 h-12 mb-2 opacity-50" />
+                                        <p>Adjust settings and click Live Preview</p>
+                                    </div>
+                                )
+                            ) : previewPageMode === 'title' ? (
+                                <div className="bg-white text-slate-900 p-8 sm:p-12 shadow-2xl rounded-sm w-full max-w-xl aspect-[8.5/11] flex flex-col justify-between border border-slate-200 relative font-sans select-none animate-in fade-in duration-200">
+                                    <div className="text-center space-y-6 pt-6">
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                                                PREMIUM PUZZLE COLLECTION
+                                            </span>
+                                            <div className="w-16 h-0.5 bg-slate-900 mx-auto mt-2 opacity-80" />
                                         </div>
+
+                                        <div className="space-y-3 pt-4">
+                                            <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-tight text-slate-950">
+                                                {bookTitle.trim() || (useFirstLineAsTitle && getCleanMasterList().titleText ? getCleanMasterList().titleText : "Word Search Puzzle Book")}
+                                            </h2>
+                                            <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-sm mx-auto">
+                                                {bookSubtitle.trim() || `${totalPuzzles} Handcrafted Large Print Puzzles with Complete Solutions`}
+                                            </p>
+                                        </div>
+
+                                        <div className="w-32 h-px bg-slate-300 mx-auto" />
+
+                                        {/* Specs Box */}
+                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 max-w-xs mx-auto text-center space-y-1 shadow-xs">
+                                            <p className="text-xs font-black uppercase tracking-wider text-slate-900">
+                                                COMPLETE EDITION • {totalPuzzles} PUZZLES
+                                            </p>
+                                            <p className="text-[10px] text-slate-500">
+                                                100% Mathematically Verified Solutions • Clear Large Print
+                                            </p>
+                                            <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">
+                                                Engineered for Large Print Perfection
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-center space-y-2 pt-8 border-t border-slate-100">
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">CREATED &amp; PUBLISHED BY</p>
+                                        <p className="text-sm font-black text-slate-900 uppercase tracking-wide">
+                                            {authorName.trim() || "Independent Publisher"}
+                                        </p>
+                                        <p className="text-[9px] text-slate-400">
+                                            Independent Publishing Edition • Mandatory Page 1
+                                        </p>
                                     </div>
                                 </div>
-                            ) : <div className="text-slate-400 flex flex-col items-center"><BookOpen className="w-12 h-12 mb-2 opacity-50" /><p>Adjust settings and click Live Preview</p></div>}
+                            ) : (
+                                <div className="bg-white text-slate-900 p-6 sm:p-10 shadow-2xl rounded-sm w-full max-w-xl aspect-[8.5/11] flex flex-col justify-between border border-slate-200 relative font-sans select-none overflow-hidden animate-in fade-in duration-200">
+                                    <div className="space-y-4">
+                                        <div className="text-center space-y-1">
+                                            <h3 className="text-base sm:text-lg font-black uppercase tracking-wide text-slate-950">
+                                                {customGuideTitle.trim() || "HOW TO SOLVE WORD SEARCHES"}
+                                            </h3>
+                                            <div className="w-20 h-0.5 bg-slate-900 mx-auto opacity-70" />
+                                        </div>
+
+                                        <p className="text-[11px] text-slate-600 leading-relaxed">
+                                            {customGuideIntro.trim() || "A word search consists of letters arranged in a grid with hidden target words. The objective is to locate and circle or highlight all listed words within the letter matrix."}
+                                        </p>
+
+                                        {/* Core Rules Box with Solid Black Banner */}
+                                        <div className="border border-slate-900 rounded-lg overflow-hidden bg-white shadow-xs">
+                                            <div className="bg-slate-950 text-white px-3 py-1.5 text-[10px] font-black uppercase tracking-wider flex items-center justify-between">
+                                                <span>CORE RULES &amp; OBJECTIVES</span>
+                                                <span className="text-[8px] bg-white/20 px-1.5 py-0.5 rounded">High Contrast</span>
+                                            </div>
+                                            <div className="p-3 space-y-1.5 text-[10px] text-slate-800 leading-normal font-medium">
+                                                {customRules.trim() ? (
+                                                    customRules.split('\n').filter(Boolean).map((r, i) => <p key={i}>{r}</p>)
+                                                ) : (
+                                                    <>
+                                                        <p>1. Words can run horizontally (left-to-right or right-to-left).</p>
+                                                        <p>2. Words can run vertically (top-to-bottom or bottom-to-top).</p>
+                                                        <p>3. Words can run diagonally in any direction, and may intersect or share letters.</p>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Pro Solving Strategies with Solid Black Banner */}
+                                        <div className="space-y-1.5">
+                                            <div className="bg-slate-950 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                                                PRO SOLVING STRATEGIES
+                                            </div>
+                                            <div className="px-1 space-y-1 text-[10px] text-slate-700 leading-normal font-medium">
+                                                {customTips.trim() ? (
+                                                    customTips.split('\n').filter(Boolean).map((t, i) => <p key={i}>{t}</p>)
+                                                ) : (
+                                                    <>
+                                                        <p>• Scan systematically for rare letters (such as Q, X, Z, J, or double letters like EE, OO).</p>
+                                                        <p>• Cross off found words from the word bank to keep track of remaining clues.</p>
+                                                        <p>• Complete answer keys with letter highlights are included at the back of this book.</p>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 border-t border-slate-900 text-center space-y-1 text-[9px] text-slate-600">
+                                        <p className="font-bold text-slate-900">
+                                            {customCopyright.trim() || `Copyright © ${new Date().getFullYear()} by ${authorName.trim() || "Independent Publisher"}. All rights reserved.`}
+                                        </p>
+                                        <p className="text-[8px] text-slate-400">
+                                            Published Independently • First Edition • Mandatory Page 2
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

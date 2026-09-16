@@ -270,6 +270,12 @@ export interface KdpCopyrightPageOptions {
   width: number;
   height: number;
   totalPages: number;
+  guideTitle?: string;
+  guideIntro?: string;
+  guideRules?: string[];
+  guideTips?: string[];
+  copyrightText?: string;
+  copyrightYear?: string | number;
 }
 
 export function drawKdpCopyrightAndInstructionsPage(
@@ -281,13 +287,17 @@ export function drawKdpCopyrightAndInstructionsPage(
   const margins = calculateKdpMargins(2, opts.totalPages, opts.width);
   const { marginLeft, contentW, contentCenterX } = margins;
 
-  const guide = PUZZLE_GUIDES[opts.puzzleType] || PUZZLE_GUIDES.sudoku;
+  const defaultGuide = PUZZLE_GUIDES[opts.puzzleType] || PUZZLE_GUIDES.sudoku;
+  const guideTitle = opts.guideTitle?.trim() || defaultGuide.title;
+  const guideIntro = opts.guideIntro?.trim() || defaultGuide.intro;
+  const guideRules = (opts.guideRules && opts.guideRules.length > 0) ? opts.guideRules : defaultGuide.rules;
+  const guideTips = (opts.guideTips && opts.guideTips.length > 0) ? opts.guideTips : defaultGuide.tips;
 
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(0);
-  doc.text(guide.title, contentCenterX, 1.2, { align: "center" });
+  doc.text(guideTitle, contentCenterX, 1.2, { align: "center" });
 
   doc.setDrawColor(0);
   doc.setLineWidth(0.01);
@@ -297,12 +307,18 @@ export function drawKdpCopyrightAndInstructionsPage(
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(9.5);
   doc.setTextColor(0);
-  const introLines = doc.splitTextToSize(guide.intro, contentW);
+  const introLines = doc.splitTextToSize(guideIntro, contentW);
   doc.text(introLines, marginLeft, 1.65);
 
   // Rules Box with Solid Black Header Banner
   const boxTop = 1.65 + introLines.length * 0.2 + 0.15;
-  const boxHeight = 1.75;
+  let estimatedRuleLines = 0;
+  guideRules.forEach((rule) => {
+    const lines = doc.splitTextToSize(rule, contentW - 0.4);
+    estimatedRuleLines += lines.length;
+  });
+  const boxHeight = Math.max(1.65, 0.55 + estimatedRuleLines * 0.28);
+
   doc.setFillColor(255);
   doc.setDrawColor(0);
   doc.setLineWidth(0.015);
@@ -323,7 +339,7 @@ export function drawKdpCopyrightAndInstructionsPage(
   doc.setTextColor(0);
 
   let curRuleY = boxTop + 0.62;
-  guide.rules.forEach((rule) => {
+  guideRules.forEach((rule) => {
     const lines = doc.splitTextToSize(rule, contentW - 0.4);
     doc.text(lines, marginLeft + 0.2, curRuleY);
     curRuleY += lines.length * 0.18 + 0.1;
@@ -345,7 +361,7 @@ export function drawKdpCopyrightAndInstructionsPage(
   doc.setTextColor(0);
 
   let curTipY = tipsTop + 0.6;
-  guide.tips.forEach((tip) => {
+  guideTips.forEach((tip) => {
     const lines = doc.splitTextToSize(tip, contentW);
     doc.text(lines, marginLeft, curTipY);
     curTipY += lines.length * 0.18 + 0.08;
@@ -360,14 +376,20 @@ export function drawKdpCopyrightAndInstructionsPage(
   doc.setFontSize(8.5);
   doc.setTextColor(0);
 
-  const year = new Date().getFullYear();
+  const year = opts.copyrightYear || new Date().getFullYear();
   const author = opts.authorName?.trim() || "Independent Publisher";
-  const copyrightNotice = [
-    `Copyright © ${year} by ${author}. All rights reserved.`,
-    "No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the author or publisher.",
-    "Published Independently • First Edition",
-    "Printed on Demand. 100% Quality Guaranteed.",
-  ];
+  const copyrightNotice = opts.copyrightText?.trim()
+    ? [
+        opts.copyrightText.trim(),
+        "Published Independently • First Edition",
+        "Printed on Demand. 100% Quality Guaranteed.",
+      ]
+    : [
+        `Copyright © ${year} by ${author}. All rights reserved.`,
+        "No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the author or publisher.",
+        "Published Independently • First Edition",
+        "Printed on Demand. 100% Quality Guaranteed.",
+      ];
 
   let cY = opts.height - 1.85;
   copyrightNotice.forEach((cLine) => {

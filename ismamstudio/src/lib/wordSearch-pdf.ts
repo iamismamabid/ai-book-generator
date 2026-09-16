@@ -22,6 +22,12 @@ interface PdfOptions {
   includeFrontMatter?: boolean;
   isPremium?: boolean;
   style?: Partial<WordSearchStyle>;
+  customCopyright?: string;
+  copyrightYear?: string | number;
+  customGuideTitle?: string;
+  customGuideIntro?: string;
+  customRules?: string[];
+  customTips?: string[];
 }
 
 function drawWordSearchPage(
@@ -139,6 +145,12 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
     width,
     height,
     totalPages: totalExpectedPages,
+    guideTitle: options.customGuideTitle,
+    guideIntro: options.customGuideIntro,
+    guideRules: options.customRules,
+    guideTips: options.customTips,
+    copyrightText: options.customCopyright,
+    copyrightYear: options.copyrightYear,
   });
 
   // Draw Puzzles

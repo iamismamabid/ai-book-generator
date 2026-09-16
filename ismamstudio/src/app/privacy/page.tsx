@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Read the Privacy Policy of KDPage. Learn how we collect, use, and protect your personal data when you use our KDP publishing tool.",
 };
 
+export const revalidate = 86400;
+
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden">

@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import { Menu, X, Sparkles, BookOpen, Wrench, CreditCard, LayoutGrid } from "lucide-react";
 
 interface MobileNavMenuProps {
-  userId: string | null;
+  userId?: string | null;
 }
 
-export default function MobileNavMenu({ userId }: MobileNavMenuProps) {
+export default function MobileNavMenu({ userId: propUserId }: MobileNavMenuProps = {}) {
+  const { userId: clientUserId } = useAuth();
+  const userId = propUserId !== undefined ? propUserId : clientUserId;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (

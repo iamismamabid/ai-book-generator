@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "Explore KDPage pricing options. Choose from our Free plan, Starter Creator, Pro Studio, or Publisher Agency monthly and annual subscription plans.",
 };
 
+export const revalidate = 86400;
+
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-12 relative overflow-hidden">

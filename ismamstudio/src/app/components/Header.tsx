@@ -1,13 +1,13 @@
+"use client";
+
 import Link from 'next/link';
 import Image from 'next/image';
-import { auth } from '@clerk/nextjs/server';
-import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
+import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import GlobalSearchModal from '@/app/components/GlobalSearchModal';
 import MobileNavMenu from '@/app/components/MobileNavMenu';
 import { Sparkles, BookOpen, Users } from 'lucide-react';
 
-export default async function Header() {
-  const { userId } = await auth();
+export default function Header() {
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 flex flex-col transition-all duration-300" suppressHydrationWarning>
@@ -77,16 +77,16 @@ export default async function Header() {
             </Link>
           </div>
 
-          {/* Action Buttons & Auth (Server-Side Rendered via auth()) */}
+          {/* Action Buttons & Auth (Client-Rendered via SignedIn / SignedOut to preserve static CDN caching) */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0 h-10">
             {/* Global Search Modal */}
             <div className="shrink-0">
               <GlobalSearchModal />
             </div>
 
-            {/* Auth Buttons: Sent directly in initial server HTML (0ms delay) */}
-            <div className={`flex items-center justify-end shrink-0 h-10 ${userId ? "min-w-[44px] sm:min-w-[270px] md:min-w-[340px]" : "min-w-[130px] sm:min-w-[165px]"}`}>
-              {userId ? (
+            {/* Auth Buttons: Client-rendered with SignedIn / SignedOut so root layout stays static */}
+            <div className="flex items-center justify-end shrink-0 h-10 min-w-[130px] sm:min-w-[165px]">
+              <SignedIn>
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Link href="/notebook" prefetch={true} className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1 shrink-0">
                     <BookOpen className="w-4 h-4 text-indigo-400" />
@@ -106,7 +106,8 @@ export default async function Header() {
                     </div>
                   </div>
                 </div>
-              ) : (
+              </SignedIn>
+              <SignedOut>
                 <div className="flex items-center gap-2 shrink-0">
                   <SignInButton mode="modal" initialValues={{ emailAddress: "" }}>
                     <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2 cursor-pointer whitespace-nowrap">
@@ -119,11 +120,11 @@ export default async function Header() {
                     </button>
                   </SignUpButton>
                 </div>
-              )}
+              </SignedOut>
             </div>
 
             {/* Mobile Hamburger Toggle & Drawer */}
-            <MobileNavMenu userId={userId} />
+            <MobileNavMenu />
           </div>
 
         </div>

@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Read the Terms of Service of KDPage. Learn about commercial rights, user responsibilities, and licensing terms for generated books and puzzles.",
 };
 
+export const revalidate = 86400;
+
 export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden">

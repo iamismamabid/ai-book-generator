@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Have questions about KDPage? Read our FAQs about puzzle creation, trim size compliance, commercial rights, licensing, and subscription plans.",
 };
 
+export const revalidate = 86400;
+
 export default function FAQPage() {
   const faqSchema = {
     "@context": "https://schema.org",

@@ -30,6 +30,8 @@ import HomeTrustpilotLazy from "./components/HomeTrustpilotLazy";
 import UserReviewsSection from "./components/UserReviewsSection";
 import PricingSection from "../components/PricingSection";
 
+export const revalidate = 86400; // Cache on Vercel CDN for 24h (0ms Active CPU)
+
 export const metadata: Metadata = {
   title: "KDPage — Free Amazon KDP Book Creator & 30+ Publishing Tools (2026)",
   description:

@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   }
 };
 
+export const revalidate = 86400;
+
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 py-16 px-6 relative overflow-hidden">

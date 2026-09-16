@@ -945,14 +945,17 @@ export default function FabricCoverStudio({
     ? trimSize
     : { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 };
 
-  const safePageCount = (typeof pageCount === 'number' && !isNaN(pageCount) && pageCount >= 24)
+  const rawPageCount = (typeof pageCount === 'number' && !isNaN(pageCount) && pageCount >= 24)
     ? Math.min(1000, pageCount)
     : 100;
+  // Amazon KDP strictly requires an even page count between 24 and 1000 for physical sheet binding
+  const safePageCount = rawPageCount % 2 !== 0 ? rawPageCount + 1 : rawPageCount;
 
   const [sliderPageCount, setSliderPageCount] = useState(safePageCount);
   useEffect(() => {
     if (typeof pageCount === 'number' && !isNaN(pageCount)) {
-      setSliderPageCount(pageCount);
+      const evenVal = pageCount % 2 !== 0 ? pageCount + 1 : pageCount;
+      setSliderPageCount(evenVal);
     }
   }, [pageCount]);
 
@@ -9200,19 +9203,22 @@ export default function FabricCoverStudio({
                     type="number" 
                     min="24" 
                     max="1000" 
+                    step="2"
                     value={sliderPageCount} 
                     onChange={(e) => {
                       const val = Number(e.target.value);
                       setSliderPageCount(val);
                     }}
                     onBlur={() => {
-                      const finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                      let finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                      if (finalVal % 2 !== 0) finalVal += 1;
                       setSliderPageCount(finalVal);
                       if (finalVal !== pageCount) setPageCount(finalVal);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        const finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                        let finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                        if (finalVal % 2 !== 0) finalVal += 1;
                         setSliderPageCount(finalVal);
                         if (finalVal !== pageCount) setPageCount(finalVal);
                       }
@@ -9224,19 +9230,33 @@ export default function FabricCoverStudio({
                   type="range" 
                   min="24" 
                   max="1000" 
+                  step="2"
                   value={sliderPageCount} 
-                  onChange={(e) => setSliderPageCount(Number(e.target.value))}
+                  onChange={(e) => {
+                    let val = Number(e.target.value);
+                    if (val % 2 !== 0) val += 1;
+                    setSliderPageCount(val);
+                  }}
                   onPointerUp={() => {
-                    const finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                    let finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                    if (finalVal % 2 !== 0) finalVal += 1;
+                    setSliderPageCount(finalVal);
                     if (finalVal !== pageCount) setPageCount(finalVal);
                   }}
                   onKeyUp={() => {
-                    const finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                    let finalVal = Math.max(24, Math.min(1000, sliderPageCount || 24));
+                    if (finalVal % 2 !== 0) finalVal += 1;
+                    setSliderPageCount(finalVal);
                     if (finalVal !== pageCount) setPageCount(finalVal);
                   }}
                   className="w-full accent-amber-500 cursor-ew-resize bg-slate-200 rounded"
                 />
-                <p className="text-[10px] text-slate-400 font-semibold mt-1">Spine size: {layout.spineWidth.toFixed(4)}" inches</p>
+                <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold mt-1">
+                  <span>Spine size: {layout.spineWidth.toFixed(4)}"</span>
+                  <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold">
+                    ✓ KDP Even: {safePageCount}p
+                  </span>
+                </div>
               </div>
 
               {/* KDP Gutter Reference Card */}

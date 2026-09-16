@@ -276,7 +276,9 @@ export async function generateFullKdpCover(
   } = options;
 
   const theme = COVER_THEMES[themeId] || COVER_THEMES.midnight_gold;
-  const actualPages = Math.max(24, pageCount);
+  const clampedPages = Math.max(24, Math.min(1000, pageCount));
+  // Amazon KDP requires even page counts between 24 and 1000
+  const actualPages = clampedPages % 2 !== 0 ? clampedPages + 1 : clampedPages;
 
   // KDP calculation formulas
   let multiplier = 0.002252;

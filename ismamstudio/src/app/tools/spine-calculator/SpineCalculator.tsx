@@ -69,8 +69,9 @@ export default function SpineCalculator() {
     if (paperType === "cream") spineMultiplier = 0.0025; // Cream Paper (Black & White printing)
     if (paperType === "color") spineMultiplier = 0.002347; // White Paper (Color printing)
 
-    // Calculate Spine Width
-    const spineWidth = pageCount * spineMultiplier;
+    // Calculate Spine Width based on KDP Even Page Count (Amazon strictly requires even numbers)
+    const evenPageCount = pageCount % 2 !== 0 ? pageCount + 1 : pageCount;
+    const spineWidth = evenPageCount * spineMultiplier;
 
     // Full Cover Width = Trim Width * 2 + Spine Width + 0.25 (0.125" bleed on each side)
     const fullWidth = trimWidth * 2 + spineWidth + 0.25;
@@ -287,6 +288,7 @@ export default function SpineCalculator() {
                       type="number"
                       min={minPages}
                       max={maxPages}
+                      step={2}
                       value={pageCount || ""}
                       onChange={(e) => setPageCount(parseInt(e.target.value) || 0)}
                       className="w-20 bg-slate-950 border border-slate-900 text-white rounded-lg px-2.5 py-1 text-center font-bold text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -299,6 +301,7 @@ export default function SpineCalculator() {
                   type="range"
                   min={minPages}
                   max={maxPages}
+                  step={2}
                   value={pageCount || minPages}
                   onChange={(e) => setPageCount(parseInt(e.target.value))}
                   className="w-full accent-indigo-500 cursor-pointer h-2 bg-slate-950 rounded-lg appearance-none"
@@ -308,6 +311,11 @@ export default function SpineCalculator() {
                   <span>{minPages} PGS</span>
                   <span>RECOMMENDED MAX: {maxPages} PGS</span>
                 </div>
+                {pageCount > 0 && pageCount % 2 !== 0 && (
+                  <p className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 p-2 rounded-xl">
+                    ℹ️ Amazon KDP paperback requires an even page count. {pageCount}p is automatically calculated as {pageCount + 1}p for the physical spine.
+                  </p>
+                )}
               </div>
 
               {/* Constraint/Warnings alerts */}

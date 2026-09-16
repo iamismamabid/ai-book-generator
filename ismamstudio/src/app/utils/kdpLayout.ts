@@ -51,7 +51,9 @@ export interface KdpLayoutResult {
 export function calculateKdpLayout(specs: KdpSpecs, canvasWidth: number = 800): KdpLayoutResult {
   const trimWidth = typeof specs?.trimWidth === 'number' && !isNaN(specs.trimWidth) && specs.trimWidth > 0 ? specs.trimWidth : 8.5;
   const trimHeight = typeof specs?.trimHeight === 'number' && !isNaN(specs.trimHeight) && specs.trimHeight > 0 ? specs.trimHeight : 11;
-  const pageCount = typeof specs?.pageCount === 'number' && !isNaN(specs.pageCount) && specs.pageCount >= 24 ? Math.min(1000, specs.pageCount) : 100;
+  const rawPageCount = typeof specs?.pageCount === 'number' && !isNaN(specs.pageCount) && specs.pageCount >= 24 ? Math.min(1000, specs.pageCount) : 100;
+  // Amazon KDP physical paperback sheets require an even number of pages between 24 and 1000
+  const pageCount = rawPageCount % 2 !== 0 ? rawPageCount + 1 : rawPageCount;
   const paperType = specs?.paperType || 'white';
   const cWidth = typeof canvasWidth === 'number' && !isNaN(canvasWidth) && canvasWidth > 0 ? canvasWidth : 800;
   

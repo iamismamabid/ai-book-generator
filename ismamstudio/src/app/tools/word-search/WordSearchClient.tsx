@@ -342,7 +342,7 @@ export default function WordSearchStudio() {
         finalW += bleed;
         finalH += bleed * 2;
 
-        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount }] = await Promise.all([
             import("jspdf"),
             import("../../utils/pdfExportService"),
             import("../../utils/borderThemeDrawing"),
@@ -360,9 +360,10 @@ export default function WordSearchStudio() {
         }
 
         const frontMatterPages = 2;
+        const solDividerPages = incSol ? 1 : 0;
         const totalPuzPages = Math.ceil(totalPuzzles / puzzlesPerPage);
         const totalSolPages = incSol ? Math.ceil(totalPuzzles / solutionsPerPage) : 0;
-        const totalExpectedPages = frontMatterPages + totalPuzPages + totalSolPages;
+        const totalExpectedPages = frontMatterPages + totalPuzPages + solDividerPages + totalSolPages;
 
         let firstPageAdded = false;
         let currentPage = 0;
@@ -492,6 +493,18 @@ export default function WordSearchStudio() {
 
         // ================= ANSWER KEYS SECTION =================
         if (incSol) {
+            doc.addPage();
+            currentPage++;
+            drawKdpSolutionsDividerPage(doc, {
+                puzzleCount: totalPuzzles,
+                puzzleType: "word_search",
+                width: finalW,
+                height: finalH,
+                pageNumber: currentPage,
+                totalPages: totalExpectedPages,
+                customSubtitle: `Complete Answer Keys for Word Searches #1 to #${totalPuzzles}`,
+            });
+
             const solZones = getZones(solutionsPerPage, safeWidth, safeHeight, margin);
 
             for (let p = 0; p < totalSolPages; p++) {

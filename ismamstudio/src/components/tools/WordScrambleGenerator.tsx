@@ -179,7 +179,7 @@ export default function WordScrambleGenerator() {
       const pageW = finalBleed ? finalW + bleed : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
       
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
@@ -196,8 +196,9 @@ export default function WordScrambleGenerator() {
       const marginB = 0.75;
 
       const frontMatterPages = 2;
+      const solDividerPages = incSol ? 1 : 0;
       const estSolPages = incSol ? Math.ceil(puzzles.length / 8) : 0;
-      const totalExpectedPages = frontMatterPages + puzzles.length + estSolPages;
+      const totalExpectedPages = frontMatterPages + puzzles.length + solDividerPages + estSolPages;
       const totalSteps = puzzles.length + estSolPages;
 
       let firstPageAdded = false;
@@ -364,6 +365,19 @@ export default function WordScrambleGenerator() {
       
       // 2. Draw Answer Keys Page
       if (incSol) {
+        // High-contrast KDP Solutions Divider Page
+        doc.addPage();
+        currentPage++;
+        drawKdpSolutionsDividerPage(doc, {
+          puzzleCount: puzzles.length,
+          puzzleType: "word_scramble",
+          width: pageW,
+          height: pageH,
+          pageNumber: currentPage,
+          totalPages: totalExpectedPages,
+          customSubtitle: `Complete Solutions & Unscrambled Word Keys #1 to #${puzzles.length}`,
+        });
+
         doc.addPage();
         currentPage++;
         

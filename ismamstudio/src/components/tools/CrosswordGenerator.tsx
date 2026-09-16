@@ -270,7 +270,7 @@ export default function CrosswordGenerator() {
       const pageW = finalBleed ? finalW + bleed : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
@@ -286,8 +286,9 @@ export default function CrosswordGenerator() {
       const marginB = 0.75;
 
       const frontMatterPages = 2;
+      const solDividerPages = incSol ? 1 : 0;
       const solPages = incSol ? puzzles.length : 0;
-      const totalExpectedPages = frontMatterPages + puzzles.length + solPages;
+      const totalExpectedPages = frontMatterPages + puzzles.length + solDividerPages + solPages;
 
       let firstPageAdded = false;
       let currentPage = 0;
@@ -442,6 +443,18 @@ export default function CrosswordGenerator() {
 
       // Draw Solutions
       if (incSol) {
+        doc.addPage();
+        currentPage++;
+        drawKdpSolutionsDividerPage(doc, {
+          puzzleCount: puzzles.length,
+          puzzleType: "crossword",
+          width: pageW,
+          height: pageH,
+          pageNumber: currentPage,
+          totalPages: totalExpectedPages,
+          customSubtitle: `Complete Answer Keys for Crosswords #1 to #${puzzles.length}`,
+        });
+
         for (let idx = 0; idx < puzzles.length; idx++) {
           if (idx % 10 === 0) {
             await new Promise(r => setTimeout(r, 0));

@@ -255,19 +255,6 @@ export default function BulkGeneratorClient() {
         if (item.type === "Sudoku") {
           const diff = item.difficulty.toLowerCase() as any;
           const puzzles = generateSudokuBook(item.count, diff);
-          const doc = new jsPDF({
-            orientation: "portrait",
-            unit: "in",
-            format: item.trimSize === "6x9" ? [6, 9] : item.trimSize === "5x8" ? [5, 8] : [8.5, 11]
-          });
-          
-          // Draw standard title page
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(22);
-          doc.text(item.title, doc.internal.pageSize.width / 2, 4, { align: "center" });
-          doc.setFontSize(12);
-          doc.setFont("helvetica", "normal");
-          doc.text(`${item.difficulty} Difficulty - ${item.count} Puzzles`, doc.internal.pageSize.width / 2, 4.5, { align: "center" });
 
           // Run actual PDF compiling
           await downloadSudokuPdf({
@@ -402,15 +389,41 @@ export default function BulkGeneratorClient() {
           const encode = (text: string) =>
             text.toUpperCase().split("").map(ch => (enc[ch] || ch)).join("");
 
+          const { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount } = await import("@/lib/kdpBookEngine");
           const trimW = item.trimSize === "6x9" ? 6 : item.trimSize === "5x8" ? 5 : 8.5;
           const trimH = item.trimSize === "6x9" ? 9 : item.trimSize === "5x8" ? 8 : 11;
           const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [trimW, trimH] });
           const w = trimW; const h = trimH;
 
           const phrases = [...PHRASES].sort(() => Math.random() - 0.5).slice(0, item.count);
+          const totalPagesEst = 2 + phrases.length + 1 + phrases.length;
+
+          // 1. Title Page
+          drawKdpTitlePage(doc, {
+            title: item.title,
+            subtitle: `${item.count} Inspirational Cryptoquotes & Decryption Challenges`,
+            authorName: "Independent Publisher",
+            puzzleType: "cryptogram",
+            puzzleCount: phrases.length,
+            width: w,
+            height: h,
+            pageNumber: 1,
+            totalPages: totalPagesEst,
+          });
+
+          // 2. Copyright / Instructions Page
+          doc.addPage();
+          drawKdpCopyrightAndInstructionsPage(doc, {
+            authorName: "Independent Publisher",
+            puzzleType: "cryptogram",
+            width: w,
+            height: h,
+            pageNumber: 2,
+            totalPages: totalPagesEst,
+          });
 
           phrases.forEach((phrase, idx) => {
-            if (idx > 0) doc.addPage();
+            doc.addPage();
             const encoded = encode(phrase);
 
             // Title
@@ -452,6 +465,19 @@ export default function BulkGeneratorClient() {
             doc.text("A=B C=D ... (each letter has a unique substitute)", w / 2, h - 0.7, { align: "center" });
           });
 
+          // Section Header Divider with High-Contrast KDP Layout
+          doc.addPage();
+          const dividerPg = 2 + phrases.length + 1;
+          drawKdpSolutionsDividerPage(doc, {
+            puzzleCount: phrases.length,
+            puzzleType: "cryptogram",
+            width: w,
+            height: h,
+            pageNumber: dividerPg,
+            totalPages: totalPagesEst,
+            customSubtitle: `Complete Decryption Keys for Cryptograms #1 to #${phrases.length}`,
+          });
+
           // Append solution pages
           phrases.forEach((phrase, idx) => {
             doc.addPage();
@@ -468,28 +494,47 @@ export default function BulkGeneratorClient() {
             for (let pg = 1; pg <= totalPages; pg++) { doc.setPage(pg); drawWatermark(doc, w, h); }
           }
 
-          const { ensureEvenPageCount } = await import("@/lib/kdpBookEngine");
           ensureEvenPageCount(doc);
           doc.save(filename);
           logMessage(`Compiled real Cryptogram book PDF interior: ${filename}`);
         }
         else {
-          // Remaining types: produce a properly-labeled placeholder with book metadata
+          // Remaining types: produce a properly-labeled interior with high-contrast KDP front matter
+          const { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } = await import("@/lib/kdpBookEngine");
+          const trimW = item.trimSize === "6x9" ? 6 : item.trimSize === "5x8" ? 5 : 8.5;
+          const trimH = item.trimSize === "6x9" ? 9 : item.trimSize === "5x8" ? 8 : 11;
           const doc = new jsPDF({
             orientation: "portrait",
             unit: "in",
-            format: item.trimSize === "6x9" ? [6, 9] : item.trimSize === "5x8" ? [5, 8] : [8.5, 11]
+            format: [trimW, trimH]
           });
 
           const w = doc.internal.pageSize.width;
           const h = doc.internal.pageSize.height;
+          const totalExpectedPages = 2 + item.count;
 
-          doc.setFont("helvetica", "bold"); doc.setFontSize(24);
-          doc.text(item.title, w / 2, h / 3, { align: "center" });
-          doc.setFont("helvetica", "normal"); doc.setFontSize(12);
-          doc.text(`${item.type} Puzzle Book`, w / 2, h / 3 + 0.5, { align: "center" });
-          doc.text(`Difficulty: ${item.difficulty}`, w / 2, h / 3 + 0.8, { align: "center" });
-          doc.text(`${item.count} Puzzles with Solutions`, w / 2, h / 3 + 1.1, { align: "center" });
+          // 1. Title Page
+          drawKdpTitlePage(doc, {
+            title: item.title,
+            subtitle: `${item.count} Puzzles with Solutions`,
+            authorName: "Independent Publisher",
+            puzzleCount: item.count,
+            difficulty: item.difficulty,
+            width: w,
+            height: h,
+            pageNumber: 1,
+            totalPages: totalExpectedPages,
+          });
+
+          // 2. Copyright / Instructions Page
+          doc.addPage();
+          drawKdpCopyrightAndInstructionsPage(doc, {
+            authorName: "Independent Publisher",
+            width: w,
+            height: h,
+            pageNumber: 2,
+            totalPages: totalExpectedPages,
+          });
 
           for (let p = 1; p <= item.count; p++) {
             doc.addPage();
@@ -501,7 +546,6 @@ export default function BulkGeneratorClient() {
             doc.text("[Puzzle Content]", w / 2, h / 2, { align: "center" });
           }
 
-          const { ensureEvenPageCount } = await import("@/lib/kdpBookEngine");
           ensureEvenPageCount(doc);
           const pdfOutput = doc.output("blob");
           const downloadUrl = URL.createObjectURL(pdfOutput);

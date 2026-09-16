@@ -235,7 +235,7 @@ export default function CryptogramGenerator() {
         const pageW = finalBleed ? finalW + bleed : finalW;
         const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount }] = await Promise.all([
           import("jspdf"),
           import("@/app/utils/pdfExportService"),
           import("@/app/utils/borderThemeDrawing"),
@@ -254,8 +254,9 @@ export default function CryptogramGenerator() {
         const itemsPerPage = puzzlesPerPage;
         const frontMatterPages = 2;
         const estPuzPages = Math.ceil(puzzles.length / itemsPerPage);
+        const solDividerPages = incSol ? 1 : 0;
         const estSolPages = incSol ? Math.ceil(puzzles.length / 15) : 0;
-        const totalExpectedPages = frontMatterPages + estPuzPages + estSolPages;
+        const totalExpectedPages = frontMatterPages + estPuzPages + solDividerPages + estSolPages;
 
         let firstPageAdded = false;
         let currentPage = 0;
@@ -440,6 +441,19 @@ export default function CryptogramGenerator() {
 
         // 2. Renders Answers Key at the end
         if (incSol) {
+          // High-contrast KDP Solutions Divider Page
+          doc.addPage();
+          currentPage++;
+          drawKdpSolutionsDividerPage(doc, {
+            puzzleCount: puzzles.length,
+            puzzleType: "cryptogram",
+            width: pageW,
+            height: pageH,
+            pageNumber: currentPage,
+            totalPages: totalExpectedPages,
+            customSubtitle: `Complete Decryption Keys for Cryptograms #1 to #${puzzles.length}`,
+          });
+
           doc.addPage();
           currentPage++;
           let ansMargins = calculateKdpMargins(currentPage, totalExpectedPages, pageW);

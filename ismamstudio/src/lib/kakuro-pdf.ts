@@ -3,7 +3,7 @@ import { KakuroGrid, KakuroPuzzle } from "./kakuro";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
-import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "./kdpBookEngine";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount } from "./kdpBookEngine";
 
 interface KakuroPdfOptions {
   puzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[];
@@ -197,8 +197,9 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
   });
 
   const frontMatterPages = 2;
+  const solDividerPages = includeSolutions ? 1 : 0;
   const solPages = includeSolutions ? puzzles.length : 0;
-  const totalExpectedPages = frontMatterPages + puzzles.length + solPages;
+  const totalExpectedPages = frontMatterPages + puzzles.length + solDividerPages + solPages;
 
   let firstPageAdded = false;
   let currentPage = 0;
@@ -246,6 +247,18 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
 
   // ── Solution pages (appended after all puzzles) ───────────────
   if (includeSolutions) {
+    doc.addPage();
+    currentPage++;
+    drawKdpSolutionsDividerPage(doc, {
+      puzzleCount: puzzles.length,
+      puzzleType: "kakuro",
+      width,
+      height,
+      pageNumber: currentPage,
+      totalPages: totalExpectedPages,
+      customSubtitle: `Complete Answer Keys for Kakuro Puzzles #1 to #${puzzles.length}`,
+    });
+
     puzzles.forEach((item, index) => {
       doc.addPage();
       currentPage++;

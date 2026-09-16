@@ -8,7 +8,7 @@ import {
   drawWordSearchWordList,
   WordSearchStyle,
 } from "../app/utils/pdfExportService";
-import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "./kdpBookEngine";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount } from "./kdpBookEngine";
 
 interface PdfOptions {
   puzzles: WordSearchGridData[];
@@ -110,8 +110,9 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
   const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [width, height] });
 
   const frontMatterPages = 2;
+  const solDividerPages = includeSolutions ? 1 : 0;
   const solPages = includeSolutions ? puzzles.length : 0;
-  const totalExpectedPages = frontMatterPages + puzzles.length + solPages;
+  const totalExpectedPages = frontMatterPages + puzzles.length + solDividerPages + solPages;
 
   let firstPageAdded = false;
   let currentPage = 0;
@@ -163,6 +164,18 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
 
   // Draw Solutions
   if (includeSolutions) {
+    doc.addPage();
+    currentPage++;
+    drawKdpSolutionsDividerPage(doc, {
+      puzzleCount: puzzles.length,
+      puzzleType: "word_search",
+      width,
+      height,
+      pageNumber: currentPage,
+      totalPages: totalExpectedPages,
+      customSubtitle: `Complete Answer Keys for Word Searches #1 to #${puzzles.length}`,
+    });
+
     puzzles.forEach((data, index) => {
       doc.addPage();
       currentPage++;

@@ -329,7 +329,7 @@ export default function MathPuzzleGenerator() {
       const pageW = finalBleed ? finalW + bleed : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount }] = await Promise.all([
+      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount }] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
@@ -350,8 +350,9 @@ export default function MathPuzzleGenerator() {
       const contentH = pageH - marginT - marginB;
 
       const frontMatterPages = 2;
+      const solDividerPages = incSol ? 1 : 0;
       const solPages = incSol ? (puzzlesPerPage === 2 ? Math.ceil(numPages / 2) : Math.ceil(numPages / 4)) : 0;
-      const totalExpectedPages = frontMatterPages + numPages + solPages;
+      const totalExpectedPages = frontMatterPages + numPages + solDividerPages + solPages;
 
       let firstPageAdded = false;
       let currentPage = 0;
@@ -495,7 +496,22 @@ export default function MathPuzzleGenerator() {
 
       // 2. Draw Answer Keys
       if (incSol) {
+        // High-contrast KDP Solutions Divider Page
         doc.addPage();
+        currentPage++;
+        drawKdpSolutionsDividerPage(doc, {
+          puzzleCount: totalPuzzles,
+          puzzleType: "math_puzzle",
+          difficulty,
+          width: pageW,
+          height: pageH,
+          pageNumber: currentPage,
+          totalPages: totalExpectedPages,
+          customSubtitle: `Complete Solutions for Math Puzzles #1 to #${totalPuzzles}`,
+        });
+
+        doc.addPage();
+        currentPage++;
         let ansPageCounter = numPages + 1;
 
         doc.setFont("helvetica", "bold");

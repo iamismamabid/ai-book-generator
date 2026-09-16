@@ -8,6 +8,7 @@ import { generateSudoku } from "@/lib/sudokuGenerator";
 import { generatePuzzleGrid } from "./puzzleEngine";
 import { generateCrosswordGrid } from "./crosswordGenerator";
 import { generateKakuro } from "@/lib/kakuro";
+import { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage } from "@/lib/kdpBookEngine";
 
 export interface ExportOptions {
   includeCover?: boolean;
@@ -185,25 +186,26 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     } else if (page.type === 'low_content') {
       drawLowContent(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'title') {
-      doc.setFont("Helvetica", "bold");
-      doc.setFontSize(32);
-      const titleText = page.config.title || "Book Title";
-      const titleW = doc.getTextWidth(titleText);
-      doc.text(titleText, (w - titleW) / 2 + leftMarginShift, h * 0.3);
-
-      doc.setFont("Helvetica", "normal");
-      doc.setFontSize(16);
-      const subtitleText = page.config.subtitle || "Book Subtitle";
-      const subtitleW = doc.getTextWidth(subtitleText);
-      doc.text(subtitleText, (w - subtitleW) / 2 + leftMarginShift, h * 0.38);
-
-      doc.setFont("Helvetica", "italic");
-      doc.setFontSize(14);
-      const authorText = page.config.author ? `By ${page.config.author}` : "Author Name";
-      const authorW = doc.getTextWidth(authorText);
-      doc.text(authorText, (w - authorW) / 2 + leftMarginShift, h * 0.68);
+      drawKdpTitlePage(doc, {
+        title: page.config?.title || "Book Title",
+        subtitle: page.config?.subtitle || "A Collection of Puzzles & Brain Challenges",
+        authorName: page.config?.author || "Independent Publisher",
+        width: w,
+        height: h,
+        pageNumber: index + 1,
+        totalPages: bookPages.length,
+      });
     } else if (page.type === 'copyright') {
-      drawCopyrightPage(doc, page, leftMarginShift, w, h);
+      drawKdpCopyrightAndInstructionsPage(doc, {
+        authorName: page.config?.author || "Independent Publisher",
+        year: page.config?.year || new Date().getFullYear().toString(),
+        edition: page.config?.edition || "First Edition",
+        width: w,
+        height: h,
+        pageNumber: index + 1,
+        totalPages: bookPages.length,
+        disclaimer: page.config?.disclaimer,
+      });
     }
 
     // Apply the decorative border theme and the free-tier watermark
@@ -3337,63 +3339,5 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     }
   }
 
-  doc.setTextColor(0);
-};
-
-const drawCopyrightPage = (doc: any, page: any, xShift: number, w: number, h: number) => {
-  const cfg = page.config || {};
-  const title = cfg.title || "Book Title";
-  const author = cfg.author || "Independent Publisher";
-  const year = cfg.year || new Date().getFullYear().toString();
-  const edition = cfg.edition || "First Edition";
-  const printedIn = cfg.printedIn || "Independently Published";
-  const disclaimer = cfg.disclaimer ||
-    "All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without prior written permission of the publisher, except in the case of brief quotations embodied in critical reviews and certain other noncommercial uses permitted by copyright law.";
-
-  const contentW = Math.min(w - 1.8, 5.5);
-  const startX = (w - contentW) / 2 + xShift;
-
-  let curY = h * 0.42;
-
-  // Book Title
-  doc.setFont("Helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(0);
-  doc.text(title, startX, curY);
-  curY += 0.25;
-
-  // Divider line
-  doc.setDrawColor(0);
-  doc.setLineWidth(0.012);
-  doc.line(startX, curY, startX + contentW, curY);
-  curY += 0.28;
-
-  // Copyright Line
-  doc.setFont("Helvetica", "bold");
-  doc.setFontSize(9.5);
-  doc.setTextColor(0);
-  doc.text(`Copyright © ${year} by ${author}`, startX, curY);
-  curY += 0.22;
-
-  doc.setFont("Helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(0);
-  doc.text("All rights reserved.", startX, curY);
-  curY += 0.28;
-
-  // Disclaimer text
-  doc.setFontSize(8);
-  doc.setTextColor(0);
-  const disclaimerLines = doc.splitTextToSize(disclaimer, contentW);
-  doc.text(disclaimerLines, startX, curY);
-  curY += disclaimerLines.length * 0.15 + 0.3;
-
-  // Edition & Print Notice
-  doc.setFont("Helvetica", "italic");
-  doc.setFontSize(8);
-  doc.setTextColor(0);
-  doc.text(`${edition} • ${year}`, startX, curY);
-  curY += 0.18;
-  doc.text(printedIn, startX, curY);
   doc.setTextColor(0);
 };

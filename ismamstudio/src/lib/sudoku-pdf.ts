@@ -393,7 +393,8 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
   // KDP gutter calculation (0.375" up to 150 pages, 0.5" up to 300 pages)
   const gutterExtra = getGutterMargin(totalExpectedPages);
   const outsideMargin = 0.5;
-  const insideMargin = 0.5 + Math.min(0.35, gutterExtra); // 0.75" to 0.85" inside spine margin
+  // Dynamically scale inside gutter with book thickness: 0.75" for <=300 pages up to 1.00" for 500+ pages
+  const insideMargin = Math.max(0.75, Math.min(1.0, 0.25 + gutterExtra));
 
   let firstPageAdded = false;
   let currentPage = 0;

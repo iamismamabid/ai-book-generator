@@ -29,7 +29,8 @@ export function calculateKdpMargins(
 ): KdpMarginResult {
   const gutterExtra = getGutterMargin(totalPages);
   const outsideMargin = 0.5;
-  const insideMargin = 0.5 + Math.min(0.35, gutterExtra); // 0.75" to 0.85" inside spine gutter
+  // Dynamically scale inside gutter with book thickness: 0.75" for <=300 pages up to 1.00" for 500+ pages
+  const insideMargin = Math.max(0.75, Math.min(1.0, 0.25 + gutterExtra));
 
   const isOdd = pageNumber % 2 !== 0; // Odd = Recto (Right page): spine on LEFT
   const marginLeft = isOdd ? insideMargin : outsideMargin;

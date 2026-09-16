@@ -56,7 +56,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     // Apply gutter margin if requested:
     // Odd pages (recto, right-hand): spine is on the LEFT -> shift content right (+shift)
     // Even pages (verso, left-hand): spine is on the RIGHT -> shift content left (-shift)
-    const gutterShiftAmount = Math.min(0.2, Math.max(0.1, requiredGutter - 0.35));
+    const gutterShiftAmount = Math.min(0.4, Math.max(0.1, requiredGutter - 0.25));
     const leftMarginShift = gutterMargin
       ? (index % 2 === 0 ? gutterShiftAmount : -gutterShiftAmount)
       : 0;

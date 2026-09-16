@@ -83,7 +83,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       if (includePageNumbers) {
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(100, 100, 100);
         doc.text(`Page ${index + 1}`, w / 2, h - 0.45, { align: "center" });
         doc.setTextColor(0);
       }
@@ -490,15 +490,15 @@ const WORD_SEARCH_DEFAULT_STYLE: Required<WordSearchStyle> = {
   letterFontSize: 16,
   lineWidth: 0.012,
   cellColor: '#FFFFFF',
-  borderColor: '#94A3B8',
+  borderColor: '#808080',
   wordFont: 'helvetica',
   wordFontSize: 11,
   wordTextColor: '#000000',
   wordTextAlign: 'left',
   wordColumns: 3,
   wordRowStep: 0.22,
-  highlightColor: '#E0E7FF',
-  highlightTextColor: '#4F46E5',
+  highlightColor: '#E0E0E0',
+  highlightTextColor: '#000000',
   solutionHighlighter: 'apple',
   letterBold: true,
 };
@@ -542,9 +542,8 @@ export function drawWordSearchGrid(
       }
 
       if (isMessageLetter) {
-        // Distinct highlight (amber) so the revealed message reads clearly
-        // against the word-search green/apple highlight used for found words.
-        doc.setFillColor(252, 211, 77);
+        // Distinct highlight so revealed message reads clearly in B&W/Grayscale
+        doc.setFillColor(210, 210, 210);
         doc.roundedRect(x + cellSize * 0.12, y + cellSize * 0.12, cellSize * 0.76, cellSize * 0.76, cellSize * 0.1, cellSize * 0.1, "F");
       }
     });
@@ -636,12 +635,12 @@ export function drawWordSearchGrid(
         ctx.restore();
       };
 
-      // Shadow: soft, offset down-right, behind this word's own border+fill.
-      drawPill(cellSize * 0.06, cellSize * 0.07, borderExtra, "#64748B", 0.24);
-      // Border: opaque, slightly bigger than the fill so it forms a visible ring.
-      drawPill(0, 0, borderExtra, "#64748B", 0.95);
-      // Fill: opaque light gray, on top, at normal size.
-      drawPill(0, 0, 0, "#E2E8F0", 0.98);
+      // Shadow: soft neutral gray, offset down-right, behind this word's own border+fill.
+      drawPill(cellSize * 0.06, cellSize * 0.07, borderExtra, "#808080", 0.24);
+      // Border: opaque neutral dark gray, slightly bigger than the fill so it forms a visible ring.
+      drawPill(0, 0, borderExtra, "#666666", 0.95);
+      // Fill: opaque neutral light gray, on top, at normal size.
+      drawPill(0, 0, 0, "#E5E5E5", 0.98);
     });
 
     doc.restoreGraphicsState();
@@ -666,7 +665,7 @@ export function drawWordSearchGrid(
       } else if (isSolution && (s.solutionHighlighter === 'fade' || s.solutionHighlighter === 'apple')) {
         doc.setTextColor(210, 210, 210);
       } else {
-        doc.setTextColor(30, 41, 59);
+        doc.setTextColor(0);
       }
 
       const letterWidth = doc.getTextWidth(letter);
@@ -701,7 +700,7 @@ export function drawWordSearchWordList(
 
   doc.setFont(s.wordFont, "bold");
   doc.setFontSize(Math.max(6, Math.floor(s.wordFontSize * scaleFactor)));
-  doc.setTextColor(isSolution ? "#94A3B8" : s.wordTextColor);
+  doc.setTextColor(isSolution ? "#808080" : s.wordTextColor);
 
   const colWidth = zone.w / s.wordColumns;
   // jsPDF's align:"center" centers the text ON the given x, so x itself has
@@ -3382,12 +3381,12 @@ const drawCopyrightPage = (doc: any, page: any, xShift: number, w: number, h: nu
   // Book Title
   doc.setFont("Helvetica", "bold");
   doc.setFontSize(14);
-  doc.setTextColor(30, 41, 59);
+  doc.setTextColor(0);
   doc.text(title, startX, curY);
   curY += 0.25;
 
   // Divider line
-  doc.setDrawColor(203, 213, 225);
+  doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.012);
   doc.line(startX, curY, startX + contentW, curY);
   curY += 0.28;
@@ -3395,18 +3394,19 @@ const drawCopyrightPage = (doc: any, page: any, xShift: number, w: number, h: nu
   // Copyright Line
   doc.setFont("Helvetica", "bold");
   doc.setFontSize(9.5);
-  doc.setTextColor(51, 65, 85);
+  doc.setTextColor(0);
   doc.text(`Copyright © ${year} by ${author}`, startX, curY);
   curY += 0.22;
 
   doc.setFont("Helvetica", "normal");
   doc.setFontSize(8.5);
+  doc.setTextColor(40, 40, 40);
   doc.text("All rights reserved.", startX, curY);
   curY += 0.28;
 
   // Disclaimer text
   doc.setFontSize(8);
-  doc.setTextColor(71, 85, 105);
+  doc.setTextColor(40, 40, 40);
   const disclaimerLines = doc.splitTextToSize(disclaimer, contentW);
   doc.text(disclaimerLines, startX, curY);
   curY += disclaimerLines.length * 0.15 + 0.3;
@@ -3414,7 +3414,7 @@ const drawCopyrightPage = (doc: any, page: any, xShift: number, w: number, h: nu
   // Edition & Print Notice
   doc.setFont("Helvetica", "italic");
   doc.setFontSize(8);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100, 100, 100);
   doc.text(`${edition} • ${year}`, startX, curY);
   curY += 0.18;
   doc.text(printedIn, startX, curY);

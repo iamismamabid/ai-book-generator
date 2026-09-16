@@ -71,17 +71,17 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   // Header Badge
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100, 100, 100);
   doc.text("PREMIUM PUZZLE COLLECTION", contentCenterX, 2.2, { align: "center" });
 
-  doc.setDrawColor(203, 213, 225);
+  doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.015);
   doc.line(contentCenterX - 0.75, 2.4, contentCenterX + 0.75, 2.4);
 
   // Main Book Title
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(26);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   const titleLines = doc.splitTextToSize(opts.title || "Puzzle Master", contentW - 0.5);
   doc.text(titleLines, contentCenterX, 3.2, { align: "center" });
 
@@ -90,7 +90,7 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   // Subtitle
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(12);
-  doc.setTextColor(71, 85, 105);
+  doc.setTextColor(60, 60, 60);
   const defaultSub = `${opts.puzzleCount} Handcrafted Large Print Puzzles with Complete Solutions`;
   const rawSub = opts.subtitle && opts.subtitle.trim() ? opts.subtitle : defaultSub;
   const cleanSub = rawSub.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${opts.puzzleCount} $1`);
@@ -99,7 +99,7 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
 
   // Divider
   const divY = titleBottomY + 0.45 + subLines.length * 0.22;
-  doc.setDrawColor(148, 163, 184);
+  doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.01);
   doc.line(contentCenterX - 1.5, divY, contentCenterX + 1.5, divY);
 
@@ -107,7 +107,7 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   const badgeY = divY + 0.55;
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   if (opts.difficulty) {
     doc.text(`DIFFICULTY LEVEL: ${opts.difficulty.toUpperCase()}`, contentCenterX, badgeY, { align: "center" });
   } else {
@@ -116,7 +116,7 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
 
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100, 100, 100);
   doc.text("100% Mathematically Verified Solutions • Clear Large Print", contentCenterX, badgeY + 0.25, { align: "center" });
   doc.text("Engineered for Large Print Perfection", contentCenterX, badgeY + 0.45, { align: "center" });
 
@@ -125,18 +125,18 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   const author = opts.authorName?.trim() || "Independent Publisher";
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(9.5);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100, 100, 100);
   doc.text("CREATED & PUBLISHED BY", contentCenterX, authorY - 0.25, { align: "center" });
 
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(14);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   doc.text(author, contentCenterX, authorY, { align: "center" });
 
   // Publishing imprint
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(8.5);
-  doc.setTextColor(148, 163, 184);
+  doc.setTextColor(120, 120, 120);
   doc.text("Independent Publishing Edition", contentCenterX, opts.height - 1.0, { align: "center" });
 }
 
@@ -286,36 +286,36 @@ export function drawKdpCopyrightAndInstructionsPage(
   // Header
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(16);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   doc.text(guide.title, contentCenterX, 1.2, { align: "center" });
 
-  doc.setDrawColor(203, 213, 225);
+  doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.012);
   doc.line(contentCenterX - 1.0, 1.35, contentCenterX + 1.0, 1.35);
 
   // Intro text
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(9.5);
-  doc.setTextColor(51, 65, 85);
+  doc.setTextColor(40, 40, 40);
   const introLines = doc.splitTextToSize(guide.intro, contentW);
   doc.text(introLines, marginLeft, 1.65);
 
   // Rules Box
   const boxTop = 1.65 + introLines.length * 0.2 + 0.15;
   const boxHeight = 1.65;
-  doc.setFillColor(248, 250, 252);
-  doc.setDrawColor(226, 232, 240);
+  doc.setFillColor(245, 245, 245);
+  doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.012);
   doc.roundedRect(marginLeft, boxTop, contentW, boxHeight, 0.08, 0.08, "FD");
 
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(10.5);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   doc.text("CORE RULES & OBJECTIVES", marginLeft + 0.25, boxTop + 0.32);
 
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(9);
-  doc.setTextColor(51, 65, 85);
+  doc.setTextColor(40, 40, 40);
 
   let curRuleY = boxTop + 0.6;
   guide.rules.forEach((rule) => {
@@ -328,12 +328,12 @@ export function drawKdpCopyrightAndInstructionsPage(
   const tipsTop = boxTop + boxHeight + 0.3;
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   doc.text("PRO SOLVING STRATEGIES", marginLeft, tipsTop);
 
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(9);
-  doc.setTextColor(51, 65, 85);
+  doc.setTextColor(40, 40, 40);
 
   let curTipY = tipsTop + 0.22;
   guide.tips.forEach((tip) => {
@@ -343,13 +343,13 @@ export function drawKdpCopyrightAndInstructionsPage(
   });
 
   // Copyright Section at bottom
-  doc.setDrawColor(226, 232, 240);
+  doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.01);
   doc.line(marginLeft, opts.height - 2.1, marginLeft + contentW, opts.height - 2.1);
 
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(8);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100, 100, 100);
 
   const year = new Date().getFullYear();
   const author = opts.authorName?.trim() || "Independent Publisher";

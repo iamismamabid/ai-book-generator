@@ -461,7 +461,7 @@ export default function WordSearchStudio() {
                     drawWordSearchGrid(doc, { grid, words: pageWords, mask, active, shape: puzzleShape, hiddenMessage: solHiddenMessage }, { x: startX, y: startY, size: gridDrawSize }, true, {
                         font: lettersFont,
                         letterFontSize: letterTextSize * (gridDrawSize / 6.5),
-                        highlightColor: '#E2E8F0',
+                        highlightColor: '#E0E0E0',
                         highlightTextColor: '#000000',
                         solutionHighlighter: solutionHighlighter === 'grayout' ? 'fade' : solutionHighlighter,
                         letterBold: true,

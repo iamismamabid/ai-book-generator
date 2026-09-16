@@ -42,7 +42,7 @@ function drawWordSearchPage(
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
 
   const marginTop = 0.6;
   const safeH = height - (marginTop * 2);
@@ -77,7 +77,7 @@ function drawWordSearchPage(
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100, 100, 100);
   doc.text(`Page ${pageNumber}`, contentCenterX, height - 0.4, { align: "center" });
   doc.setTextColor(0);
 }

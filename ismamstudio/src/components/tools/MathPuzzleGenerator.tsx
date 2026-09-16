@@ -326,7 +326,7 @@ export default function MathPuzzleGenerator() {
       }
 
       const bleed = 0.125;
-      const pageW = finalBleed ? finalW + bleed * 2 : finalW;
+      const pageW = finalBleed ? finalW + bleed : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
       const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage }] = await Promise.all([

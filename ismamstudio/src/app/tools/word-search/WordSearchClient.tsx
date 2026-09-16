@@ -319,7 +319,7 @@ export default function WordSearchStudio() {
         }
 
         const bleed = hasBleed ? 0.125 : 0;
-        finalW += bleed * 2;
+        finalW += bleed;
         finalH += bleed * 2;
 
         const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }] = await Promise.all([

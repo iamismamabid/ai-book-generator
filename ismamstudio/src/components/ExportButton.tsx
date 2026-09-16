@@ -147,7 +147,7 @@ export default function ExportButton({
     const { w, h } = TRIM_DIMENSIONS[trimSize] ?? TRIM_DIMENSIONS["8.5x11"];
 
     const bleed = 0.125;
-    const pageW = hasBleed ? w + bleed * 2 : w;
+    const pageW = hasBleed ? w + bleed : w;
     const pageH = hasBleed ? h + bleed * 2 : h;
 
     // Typography & Margins custom layout parameters

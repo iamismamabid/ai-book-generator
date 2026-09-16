@@ -1298,6 +1298,9 @@ export default function FabricCoverStudio({
   // Pro Export Paywall Modal state
   const [isExportPaywallOpen, setIsExportPaywallOpen] = useState(false);
 
+  // KDP Cover Color Space (CMYK for print presses, sRGB for web/digital)
+  const [coverColorSpace, setCoverColorSpace] = useState<"cmyk" | "srgb">("cmyk");
+
   // Smart resize — remap the design when the cover geometry changes. Mirrored
   // into a ref because the canvas-init effect that consumes it deliberately
   // doesn't re-run on this toggle.
@@ -5666,29 +5669,43 @@ export default function FabricCoverStudio({
     canvas.requestRenderAll();
     
     setTimeout(async () => {
-      // Dynamically calculate multiplier to guarantee true 300+ DPI print quality for Amazon KDP
-      const targetDpi = 300;
-      const targetMultiplier = Math.max(3, Math.ceil((layout.coverWidthInches * targetDpi) / layout.canvasWidth));
-      const dataURL = await exportCanvasWithBackground(canvas, targetMultiplier);
-      const { jsPDF } = await import("jspdf");
+      try {
+        // Dynamically calculate multiplier to guarantee true 300+ DPI print quality for Amazon KDP
+        const targetDpi = 300;
+        const targetMultiplier = Math.max(3, Math.ceil((layout.coverWidthInches * targetDpi) / layout.canvasWidth));
+        const dataURL = await exportCanvasWithBackground(canvas, targetMultiplier);
+        const safePageCount = pageCount || 100;
+        const filename = `KDP_Full_Wrap_Cover_${trimSize.w}x${trimSize.h}_${safePageCount}p_${coverColorSpace.toUpperCase()}.pdf`;
 
-      const doc = new jsPDF({
-        orientation: "landscape",
-        unit: "in",
-        format: [layout.coverWidthInches, layout.coverHeightInches]
-      });
-
-      doc.addImage(dataURL, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
-      const safePageCount = pageCount || 100;
-      doc.save(`KDP_Full_Wrap_Cover_${trimSize.w}x${trimSize.h}_${safePageCount}p.pdf`);
-      setIsGenerating(false);
-
-      // 🎁 Record trial download if on trial
-      checkPremiumStatus().then((st: any) => {
-        if (st?.isTrial) {
-          import("@/app/actions").then(({ recordTrialDownload }) => recordTrialDownload()).catch(() => {});
+        if (coverColorSpace === "cmyk") {
+          const { exportDataUrlToCmykPdf } = await import("@/lib/cmykPdfExport");
+          await exportDataUrlToCmykPdf(dataURL, {
+            widthInches: layout.coverWidthInches,
+            heightInches: layout.coverHeightInches,
+            filename,
+          });
+        } else {
+          const { jsPDF } = await import("jspdf");
+          const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "in",
+            format: [layout.coverWidthInches, layout.coverHeightInches]
+          });
+          doc.addImage(dataURL, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
+          doc.save(filename);
         }
-      }).catch(() => {});
+
+        // 🎁 Record trial download if on trial
+        checkPremiumStatus().then((st: any) => {
+          if (st?.isTrial) {
+            import("@/app/actions").then(({ recordTrialDownload }) => recordTrialDownload()).catch(() => {});
+          }
+        }).catch(() => {});
+      } catch (err) {
+        console.error("Cover PDF export error:", err);
+      } finally {
+        setIsGenerating(false);
+      }
     }, 300);
   };
 
@@ -5873,6 +5890,7 @@ export default function FabricCoverStudio({
         trimHeight: trimSize.h,
         dpi: 300,
         customFullCoverDataUrl: coverDataUrl,
+        colorSpace: coverColorSpace,
       });
 
       // Formulate KDP Metadata Cheatsheet
@@ -9509,6 +9527,21 @@ export default function FabricCoverStudio({
 
             <div className="w-px h-5 bg-slate-200 mx-1" />
 
+            {/* Color Profile Switcher: CMYK Print (KDP 0 Warnings) vs sRGB Web */}
+            <button
+              type="button"
+              onClick={() => setCoverColorSpace((prev) => (prev === "cmyk" ? "srgb" : "cmyk"))}
+              title={`Color Space: ${coverColorSpace.toUpperCase()} — Click to switch between CMYK (Amazon KDP Commercial Print) and sRGB (Digital/Web)`}
+              className={`p-1.5 px-2.5 rounded-full border text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all duration-150 active:scale-[0.94] cursor-pointer ${
+                coverColorSpace === "cmyk"
+                  ? "bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100/80 shadow-xs"
+                  : "bg-slate-100 border-slate-300 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${coverColorSpace === "cmyk" ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+              <span>{coverColorSpace === "cmyk" ? "CMYK Print" : "sRGB Web"}</span>
+            </button>
+
             <button
               onClick={() => setIsPreflightOpen(true)}
               title="KDP Pre-Flight Inspector — Validate Amazon POD Guidelines"
@@ -9521,11 +9554,13 @@ export default function FabricCoverStudio({
             <button
               onClick={handleGenerateCover}
               disabled={isGenerating}
-              title="Compile & Download PDF Cover"
+              title={`Compile & Download 300 DPI ${coverColorSpace.toUpperCase()} Cover PDF`}
               className="p-2 pl-3 pr-4 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5 shadow-sm shadow-indigo-600/30 cursor-pointer"
             >
               {isGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>}
-              <span className="text-[10px] font-black uppercase tracking-wider">{isGenerating ? "Compiling..." : "Download PDF"}</span>
+              <span className="text-[10px] font-black uppercase tracking-wider">
+                {isGenerating ? "Compiling..." : `Download ${coverColorSpace.toUpperCase()}`}
+              </span>
             </button>
 
           </div>
@@ -10124,6 +10159,8 @@ export default function FabricCoverStudio({
           pageCount: safePageCount,
           paperType: paperType,
         }}
+        colorSpace={coverColorSpace}
+        onToggleColorSpace={setCoverColorSpace}
         onProceedDownload={() => {
           setIsPreflightOpen(false);
           handleGenerateCoverDirect();

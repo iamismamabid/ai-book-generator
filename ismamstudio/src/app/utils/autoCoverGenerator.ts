@@ -194,6 +194,7 @@ export interface AutoCoverOptions {
   dpi?: number;
   frontCoverImageUrl?: string; // Optional uploaded image or AI artwork for front cover
   customFullCoverDataUrl?: string; // Optional full wraparound cover exported from Fabric Cover Studio
+  colorSpace?: "cmyk" | "srgb"; // Default to CMYK for 100% Amazon KDP compliance
 }
 
 export interface GeneratedCoverPackage {
@@ -796,26 +797,36 @@ export async function generateFullKdpCover(
   const coverDataUrl = canvas.toDataURL("image/jpeg", 0.92);
 
   // -------------------------------------------------------------
-  // BUILD PRINT-READY COVER PDF (using jsPDF)
+  // BUILD PRINT-READY COVER PDF (DeviceCMYK or sRGB)
   // -------------------------------------------------------------
-  const coverDoc = new jsPDF({
-    orientation: "landscape",
-    unit: "in",
-    format: [coverWidthInches, coverHeightInches],
-  });
+  let coverPdfBlob: Blob;
+  if (options.colorSpace !== "srgb") {
+    const { exportCanvasToCmykPdf } = await import("@/lib/cmykPdfExport");
+    coverPdfBlob = await exportCanvasToCmykPdf(canvas, {
+      widthInches: coverWidthInches,
+      heightInches: coverHeightInches,
+      returnBlob: true,
+    });
+  } else {
+    const coverDoc = new jsPDF({
+      orientation: "landscape",
+      unit: "in",
+      format: [coverWidthInches, coverHeightInches],
+    });
 
-  coverDoc.addImage(
-    coverDataUrl,
-    "JPEG",
-    0,
-    0,
-    coverWidthInches,
-    coverHeightInches,
-    undefined,
-    "FAST"
-  );
+    coverDoc.addImage(
+      coverDataUrl,
+      "JPEG",
+      0,
+      0,
+      coverWidthInches,
+      coverHeightInches,
+      undefined,
+      "FAST"
+    );
 
-  const coverPdfBlob = coverDoc.output("blob");
+    coverPdfBlob = coverDoc.output("blob");
+  }
 
   // -------------------------------------------------------------
   // BUILD PHOTOREALISTIC 3D ANGLED BOOK MOCKUP PNG

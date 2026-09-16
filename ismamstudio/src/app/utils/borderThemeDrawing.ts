@@ -201,5 +201,5 @@ export function drawPageBorderTheme(doc: any, themeId: BorderThemeId | undefined
       break;
   }
   doc.restoreGraphicsState();
-  doc.setFillColor(0, 0, 0);
+  doc.setFillColor(0);
 }

@@ -393,7 +393,7 @@ export default function WordSearchStudio() {
                 // Draw title (vertically balanced above the grid)
                 doc.setFont(lettersFont, "bold"); 
                 doc.setFontSize(isSinglePuzzle ? 18 : 16); 
-                doc.setTextColor('#000000');
+                doc.setTextColor(0);
                 const titleStr = useFirstLineAsTitle && titleText ? `${titleText} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
                 doc.text(titleStr, zone.x + zone.w/2, contentTop + (isSinglePuzzle ? 0.28 : 0.22), { align: "center" });
 
@@ -453,7 +453,7 @@ export default function WordSearchStudio() {
 
                     doc.setFont(lettersFont, "bold"); 
                     doc.setFontSize(isSingleSol ? 18 : 16); 
-                    doc.setTextColor('#000000');
+                    doc.setTextColor(0);
                     doc.text(`Answer #${solIndex + 1}`, zone.x + zone.w/2, solContentTop + (isSingleSol ? 0.28 : 0.22), { align: "center" });
 
                     // Highlighted answer grid via the shared word search PDF primitive

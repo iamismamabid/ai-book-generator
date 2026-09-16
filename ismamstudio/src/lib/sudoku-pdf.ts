@@ -162,10 +162,10 @@ function drawFrontMatterTitlePage(
   // Category Header Badge
   doc.setFont(options.pdfFont, "bold");
   doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(0);
   doc.text("PREMIUM PUZZLE COLLECTION", centerX, 2.2, { align: "center" });
 
-  doc.setDrawColor(203, 213, 225);
+  doc.setDrawColor(0);
   doc.setLineWidth(0.015);
   doc.line(centerX - 0.75, 2.4, centerX + 0.75, 2.4);
 
@@ -181,7 +181,7 @@ function drawFrontMatterTitlePage(
   // Subtitle
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(12);
-  doc.setTextColor(60);
+  doc.setTextColor(0);
   const defaultSub = `${options.puzzleCount} Handcrafted Large Print Puzzles with Complete Solutions`;
   const rawSub = options.subtitle && options.subtitle.trim() ? options.subtitle : defaultSub;
   const cleanSub = rawSub.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${options.puzzleCount} $1`);
@@ -190,7 +190,7 @@ function drawFrontMatterTitlePage(
 
   // Elegant Divider
   const divY = titleBottomY + 0.45 + subLines.length * 0.22;
-  doc.setDrawColor(180);
+  doc.setDrawColor(0);
   doc.setLineWidth(0.01);
   doc.line(centerX - 1.5, divY, centerX + 1.5, divY);
 
@@ -203,7 +203,7 @@ function drawFrontMatterTitlePage(
 
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(10);
-  doc.setTextColor(100);
+  doc.setTextColor(0);
   doc.text("Standard 9×9 Grids • 100% Mathematically Unique Solutions", centerX, badgeY + 0.25, { align: "center" });
   doc.text("Engineered for Large Print Perfection", centerX, badgeY + 0.45, { align: "center" });
 
@@ -212,7 +212,7 @@ function drawFrontMatterTitlePage(
   const author = options.authorName?.trim() || "Independent Publisher";
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(9.5);
-  doc.setTextColor(100);
+  doc.setTextColor(0);
   doc.text("CREATED & PUBLISHED BY", centerX, authorY - 0.25, { align: "center" });
 
   doc.setFont(options.pdfFont, "bold");
@@ -223,7 +223,7 @@ function drawFrontMatterTitlePage(
   // Publishing imprint
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(8.5);
-  doc.setTextColor(120);
+  doc.setTextColor(0);
   doc.text("Independent Publishing Edition", centerX, height - 1.0, { align: "center" });
 }
 
@@ -250,14 +250,14 @@ function drawFrontMatterCopyrightAndRulesPage(
   doc.setTextColor(0);
   doc.text("HOW TO PLAY SUDOKU", centerX, 1.2, { align: "center" });
 
-  doc.setDrawColor(180);
+  doc.setDrawColor(0);
   doc.setLineWidth(0.012);
   doc.line(centerX - 1.0, 1.35, centerX + 1.0, 1.35);
 
   // Intro text
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(9.5);
-  doc.setTextColor(40);
+  doc.setTextColor(0);
   const intro = "Sudoku is a logic-based number placement puzzle. The objective is to fill a 9×9 grid with digits so that every row, column, and 3×3 subgrid contains all the numbers from 1 to 9.";
   const introLines = doc.splitTextToSize(intro, contentW);
   doc.text(introLines, marginLeft, 1.65);
@@ -265,8 +265,8 @@ function drawFrontMatterCopyrightAndRulesPage(
   // Rules Box
   const boxTop = 1.65 + introLines.length * 0.2 + 0.15;
   const boxHeight = 1.65;
-  doc.setFillColor(245);
-  doc.setDrawColor(200);
+  doc.setFillColor(255);
+  doc.setDrawColor(0);
   doc.setLineWidth(0.012);
   doc.roundedRect(marginLeft, boxTop, contentW, boxHeight, 0.08, 0.08, "FD");
 
@@ -277,7 +277,7 @@ function drawFrontMatterCopyrightAndRulesPage(
 
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(9);
-  doc.setTextColor(40);
+  doc.setTextColor(0);
 
   const rules = [
     "1. Each row (horizontal) must contain the digits 1 through 9, with no duplicates.",
@@ -301,7 +301,7 @@ function drawFrontMatterCopyrightAndRulesPage(
 
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(9);
-  doc.setTextColor(40);
+  doc.setTextColor(0);
 
   const tips = [
     "• Start with scanning: Focus on rows, columns, or 3×3 boxes that already have 5 or more numbers completed.",
@@ -318,13 +318,13 @@ function drawFrontMatterCopyrightAndRulesPage(
   });
 
   // Copyright Section at bottom
-  doc.setDrawColor(200);
+  doc.setDrawColor(0);
   doc.setLineWidth(0.01);
   doc.line(marginLeft, height - 2.1, marginLeft + contentW, height - 2.1);
 
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(8);
-  doc.setTextColor(100);
+  doc.setTextColor(0);
 
   const year = new Date().getFullYear();
   const author = options.authorName?.trim() || "Independent Publisher";
@@ -484,7 +484,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     // Footer Copyright Line & Page Number
     doc.setFont(pdfFont, "normal");
     doc.setFontSize(9);
-    doc.setTextColor(100);
+    doc.setTextColor(0);
     if (footerText && footerText.trim()) {
       doc.text(footerText, marginLeft, height - 0.4);
       doc.text(`Page ${currentPage}`, width - marginRight, height - 0.4, { align: "right" });
@@ -558,7 +558,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
       // Solution Page Footer
       doc.setFont(pdfFont, "normal");
       doc.setFontSize(9);
-      doc.setTextColor(100);
+      doc.setTextColor(0);
       if (footerText && footerText.trim()) {
         doc.text(footerText, marginLeft, height - 0.35);
         doc.text(`Page ${currentPage}`, width - marginRight, height - 0.35, { align: "right" });

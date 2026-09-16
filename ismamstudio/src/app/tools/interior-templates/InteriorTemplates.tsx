@@ -47,19 +47,19 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
   const margin = 0.5;
 
   const drawLined = () => {
-    doc.setDrawColor(190, 200, 215);
+    doc.setDrawColor(200);
     doc.setLineWidth(0.008);
     const lineGap = 0.28;
     for (let y = margin + 0.3; y < h - margin; y += lineGap) {
       doc.line(margin, y, w - margin, y);
     }
-    doc.setDrawColor(220, 100, 100);
+    doc.setDrawColor(180);
     doc.setLineWidth(0.01);
     doc.line(margin + 0.4, margin - 0.1, margin + 0.4, h - margin);
   };
 
   const drawDotGrid = () => {
-    doc.setFillColor(170, 180, 195);
+    doc.setFillColor(180);
     const gap = 0.2;
     for (let y = margin; y <= h - margin; y += gap) {
       for (let x = margin; x <= w - margin; x += gap) {
@@ -69,7 +69,7 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
   };
 
   const drawGraph = () => {
-    doc.setDrawColor(200, 210, 225);
+    doc.setDrawColor(200);
     doc.setLineWidth(0.006);
     const gap = 0.25;
     for (let x = margin; x <= w - margin; x += gap) doc.line(x, margin, x, h - margin);
@@ -77,18 +77,18 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
   };
 
   const drawBlank = () => {
-    doc.setDrawColor(210, 210, 210);
+    doc.setDrawColor(200);
     doc.setLineWidth(0.006);
     doc.rect(margin, margin, w - margin * 2, h - margin * 2);
   };
 
   const drawCornell = () => {
-    doc.setDrawColor(180, 190, 205);
+    doc.setDrawColor(180);
     doc.setLineWidth(0.01);
     const cueW = w * 0.3;
     const summaryH = 1.2;
     doc.setFontSize(9);
-    doc.setTextColor(120, 130, 145);
+    doc.setTextColor(0);
     doc.text("Topic:", margin, margin - 0.1);
     doc.line(margin, margin + 0.15, w - margin, margin + 0.15);
     doc.line(margin + cueW, margin + 0.3, margin + cueW, h - margin - summaryH);
@@ -97,7 +97,7 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     doc.text("Notes", margin + cueW + 0.1, margin + 0.28);
     doc.text("Summary", margin + 0.05, h - margin - summaryH + 0.15);
     // faint lines within notes area
-    doc.setDrawColor(225, 230, 238);
+    doc.setDrawColor(220);
     for (let y = margin + 0.5; y < h - margin - summaryH; y += 0.26) {
       doc.line(margin + cueW + 0.1, y, w - margin, y);
     }
@@ -105,24 +105,24 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
 
   const header = (title: string, dateLine = true) => {
     doc.setFontSize(13);
-    doc.setTextColor(40, 45, 55);
+    doc.setTextColor(0);
     doc.text(title, margin, margin + 0.05);
     if (dateLine) {
       doc.setFontSize(9);
-      doc.setTextColor(140, 148, 160);
+      doc.setTextColor(0);
       doc.text("Date: ___________________", w - margin - 1.8, margin + 0.05);
     }
-    doc.setDrawColor(40, 45, 55);
+    doc.setDrawColor(0);
     doc.setLineWidth(0.012);
     doc.line(margin, margin + 0.18, w - margin, margin + 0.18);
   };
 
   const box = (x: number, y: number, bw: number, bh: number, title: string) => {
-    doc.setDrawColor(200, 208, 220);
+    doc.setDrawColor(180);
     doc.setLineWidth(0.008);
     doc.rect(x, y, bw, bh);
     doc.setFontSize(8);
-    doc.setTextColor(130, 138, 150);
+    doc.setTextColor(0);
     doc.text(title.toUpperCase(), x + 0.08, y + 0.16);
   };
 
@@ -134,7 +134,7 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     const half = (w - margin * 2 - 0.15) / 2;
     box(margin, y, half, 2.2, "Schedule");
     box(margin + half + 0.15, y, half, 2.2, "To-Do List");
-    doc.setDrawColor(230, 234, 240);
+    doc.setDrawColor(220);
     for (let ly = y + 0.35; ly < y + 2.1; ly += 0.24) {
       doc.line(margin + 0.08, ly, margin + half - 0.08, ly);
     }
@@ -145,7 +145,7 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
   const drawWeeklyPlanner = () => {
     header("Weekly Planner", false);
     doc.setFontSize(9);
-    doc.setTextColor(140, 148, 160);
+    doc.setTextColor(0);
     doc.text("Week of: ___________________", margin, margin + 0.14);
     let y = margin + 0.5;
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -160,7 +160,7 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
   const drawHabitTracker = () => {
     header("Habit Tracker", false);
     doc.setFontSize(9);
-    doc.setTextColor(140, 148, 160);
+    doc.setTextColor(0);
     doc.text("Month: ___________________", margin, margin + 0.14);
     const rows = 10;
     const cols = 31;
@@ -170,16 +170,16 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     const rowH = 0.28;
     doc.setFontSize(7);
     for (let r = 0; r < rows; r++) {
-      doc.setDrawColor(210, 216, 228);
+      doc.setDrawColor(200);
       doc.line(margin, gridY + r * rowH + rowH, w - margin, gridY + r * rowH + rowH);
       doc.text(`Habit ${r + 1}`, margin, gridY + r * rowH + rowH - 0.08);
     }
     for (let c = 0; c <= cols; c++) {
-      doc.setDrawColor(225, 230, 238);
+      doc.setDrawColor(220);
       doc.line(gridX + c * cellW, gridY, gridX + c * cellW, gridY + rows * rowH);
       if (c < cols) doc.text(String(c + 1), gridX + c * cellW + cellW / 2 - 0.03, gridY - 0.05);
     }
-    doc.setDrawColor(120, 128, 140);
+    doc.setDrawColor(0);
     doc.line(gridX, gridY, w - margin, gridY);
   };
 
@@ -195,10 +195,10 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     ];
     doc.setFontSize(10);
     prompts.forEach((p) => {
-      doc.setTextColor(70, 78, 90);
+      doc.setTextColor(0);
       doc.text(p, margin, y);
       y += 0.22;
-      doc.setDrawColor(220, 226, 236);
+      doc.setDrawColor(220);
       for (let i = 0; i < 2; i++) {
         doc.line(margin, y, w - margin, y);
         y += 0.24;
@@ -217,18 +217,18 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     const rowH = 0.9;
     doc.setFontSize(8);
     meals.forEach((m, r) => {
-      doc.setTextColor(120, 128, 140);
+      doc.setTextColor(0);
       doc.text(m, margin, gridY + r * rowH + rowH / 2);
-      doc.setDrawColor(210, 216, 228);
+      doc.setDrawColor(200);
       doc.line(margin, gridY + r * rowH + rowH, w - margin, gridY + r * rowH + rowH);
     });
     days.forEach((d, c) => {
-      doc.setTextColor(70, 78, 90);
+      doc.setTextColor(0);
       doc.text(d, gridX + c * colW + colW / 2 - 0.12, gridY - 0.08);
-      doc.setDrawColor(225, 230, 238);
+      doc.setDrawColor(220);
       doc.line(gridX + c * colW, gridY, gridX + c * colW, gridY + meals.length * rowH);
     });
-    doc.setDrawColor(120, 128, 140);
+    doc.setDrawColor(0);
     doc.line(gridX, gridY, w - margin, gridY);
     const groceryY = gridY + meals.length * rowH + 0.2;
     box(margin, groceryY, w - margin * 2, h - margin - groceryY - 0.05, "Grocery List");
@@ -242,7 +242,7 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     for (let i = 0; i < count; i++) {
       box(margin, y, w - margin * 2, itemH - 0.08, `Website / App #${i + 1}`);
       doc.setFontSize(8);
-      doc.setTextColor(100, 110, 125);
+      doc.setTextColor(0);
       doc.text("Username / Email: ___________________________", margin + 0.15, y + 0.34);
       doc.text("Password: _______________________________", margin + 0.15, y + 0.54);
       doc.text("Hint / Notes: _______________________________", margin + 0.15, y + 0.74);
@@ -259,18 +259,18 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     const colWidths = [(w - margin * 2) * 0.4, (w - margin * 2) * 0.15, (w - margin * 2) * 0.15, (w - margin * 2) * 0.15, (w - margin * 2) * 0.15];
     let curX = margin;
     doc.setFontSize(8);
-    doc.setTextColor(80, 90, 105);
+    doc.setTextColor(0);
     cols.forEach((col, idx) => {
       doc.text(col, curX + 0.05, y);
       curX += colWidths[idx];
     });
     y += 0.1;
-    doc.setDrawColor(180, 190, 205);
+    doc.setDrawColor(0);
     doc.line(margin, y, w - margin, y);
     y += 0.05;
     for (let r = 0; r < 10; r++) {
       y += 0.28;
-      doc.setDrawColor(225, 230, 238);
+      doc.setDrawColor(220);
       doc.line(margin, y, w - margin, y);
     }
     y += 0.2;
@@ -285,15 +285,15 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     box(margin + half + 0.15, y, half, 1.4, "Fixed Bills Summary");
     y += 1.55;
     doc.setFontSize(9);
-    doc.setTextColor(50, 58, 70);
+    doc.setTextColor(0);
     doc.text("Daily Expense Tracker", margin, y);
     y += 0.1;
-    doc.setDrawColor(180, 190, 205);
+    doc.setDrawColor(0);
     doc.line(margin, y, w - margin, y);
     y += 0.05;
     for (let i = 0; i < 12; i++) {
       y += 0.26;
-      doc.setDrawColor(230, 234, 240);
+      doc.setDrawColor(220);
       doc.line(margin, y, w - margin, y);
     }
   };
@@ -306,7 +306,7 @@ async function generatePdf(template: TemplateKey, w: number, h: number, pageCoun
     const half = (w - margin * 2 - 0.15) / 2;
     box(margin, y, half, 2.5, "Ingredients");
     box(margin + half + 0.15, y, half, 2.5, "Directions & Steps");
-    doc.setDrawColor(230, 234, 240);
+    doc.setDrawColor(220);
     for (let ly = y + 0.35; ly < y + 2.4; ly += 0.26) {
       doc.line(margin + 0.08, ly, margin + half - 0.08, ly);
       doc.line(margin + half + 0.23, ly, w - margin - 0.08, ly);

@@ -265,7 +265,7 @@ export default function WordScrambleGenerator() {
         // Subtitle instructions
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        doc.setTextColor(100);
+        doc.setTextColor(0);
         doc.text(
           "Unscramble the letters below and write the correct word in the blank space.",
           margins.contentCenterX, 
@@ -290,7 +290,7 @@ export default function WordScrambleGenerator() {
           
           doc.setFont("helvetica", "bold");
           doc.setFontSize(12);
-          doc.setTextColor(100);
+          doc.setTextColor(0);
           doc.text(`${wIdx + 1}.`, marginL + 0.2, y);
 
           // Scrambled letters (bold & wide spacing)
@@ -304,7 +304,7 @@ export default function WordScrambleGenerator() {
           // Write-in line
           const lineStartX = marginL + contentW - 2.8;
           const lineEndX = marginL + contentW - 0.2;
-          doc.setDrawColor(180);
+          doc.setDrawColor(0);
           doc.setLineWidth(0.012);
           doc.line(lineStartX, y + 0.05, lineEndX, y + 0.05);
 
@@ -312,7 +312,7 @@ export default function WordScrambleGenerator() {
           if (showClues && typeof item !== "string" && item?.clue) {
             doc.setFont("helvetica", "italic");
             doc.setFontSize(8.5);
-            doc.setTextColor(100);
+            doc.setTextColor(0);
             doc.text(`Hint: ${item.clue}`, marginL + 0.8, y + 0.22);
           }
         });
@@ -325,8 +325,8 @@ export default function WordScrambleGenerator() {
           const boxHeight = 0.35 + numRows * rowSpacing;
           const bankStartY = marginT + contentH - boxHeight;
           
-          doc.setDrawColor(180);
-          doc.setFillColor(245);
+          doc.setDrawColor(0);
+          doc.setFillColor(255);
           doc.setLineWidth(0.01);
           doc.roundedRect(marginL + 0.1, bankStartY, contentW - 0.2, boxHeight, 0.1, 0.1, "FD");
           
@@ -337,7 +337,7 @@ export default function WordScrambleGenerator() {
           
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9.5);
-          doc.setTextColor(40);
+          doc.setTextColor(0);
           
           const colW = (contentW - 0.6) / 3;
           let row = 0;
@@ -358,7 +358,7 @@ export default function WordScrambleGenerator() {
         // Footer page numbering
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(100);
+        doc.setTextColor(0);
         doc.text(`Page ${currentPage}`, margins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
       }
       
@@ -381,7 +381,7 @@ export default function WordScrambleGenerator() {
         }
 
         doc.setLineWidth(0.015);
-        doc.setDrawColor(180);
+        doc.setDrawColor(0);
         doc.line(ansMarginL, marginT + 0.6, ansMarginL + ansContentW, marginT + 0.6);
 
         const gridCols = 2;
@@ -398,7 +398,7 @@ export default function WordScrambleGenerator() {
           if (itemsOnPage > 0 && itemsOnPage % gridCols === 0 && testStartY + blockHeight > pageH - marginB - 0.3) {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(9);
-            doc.setTextColor(100);
+            doc.setTextColor(0);
             doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
 
             doc.addPage();
@@ -413,7 +413,7 @@ export default function WordScrambleGenerator() {
             doc.setTextColor(0);
             doc.text("Answer Key (Cont.)", ansMargins.contentCenterX, marginT + 0.3, { align: "center" });
             doc.setLineWidth(0.015);
-            doc.setDrawColor(180);
+            doc.setDrawColor(0);
             doc.line(ansMarginL, marginT + 0.6, ansMarginL + ansContentW, marginT + 0.6);
             if (finalGuides) {
               drawMarginGuides(doc, ansMargins.marginLeft, ansMargins.marginRight, marginT, marginB, pageW, pageH);
@@ -433,7 +433,7 @@ export default function WordScrambleGenerator() {
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
-          doc.setTextColor(40);
+          doc.setTextColor(0);
 
           puzzle.original.forEach((origWord, wIdx) => {
             const y = startY + 0.22 + wIdx * 0.16;
@@ -450,7 +450,7 @@ export default function WordScrambleGenerator() {
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(0);
         doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
       }
 

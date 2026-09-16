@@ -15,18 +15,18 @@ function drawTitle(
   text: string,
   y: number,
   pageWidth: number,
-  color: [number, number, number] = [20, 20, 30],
+  color: [number, number, number] = [0, 0, 0],
   size = 16
 ) {
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(size);
-  pdf.setTextColor(...color);
+  pdf.setTextColor(0);
   pdf.text(text, pageWidth / 2, y, { align: "center" });
 }
 
 /** Draws a faint horizontal divider */
 function drawDivider(pdf: jsPDF, y: number, margin: number, pageWidth: number) {
-  pdf.setDrawColor(200, 200, 210);
+  pdf.setDrawColor(0);
   pdf.setLineWidth(0.4);
   pdf.line(margin, y, pageWidth - margin, y);
 }
@@ -53,11 +53,11 @@ function drawMultiplicationGrid(
 
       // Fill
       if (r === 0 || c === 0) {
-        pdf.setFillColor(235, 235, 248); // light indigo header
+        pdf.setFillColor(245); // light neutral header
       } else {
-        pdf.setFillColor(255, 255, 255);
+        pdf.setFillColor(255);
       }
-      pdf.setDrawColor(100, 100, 120);
+      pdf.setDrawColor(0);
       pdf.setLineWidth(0.4);
       pdf.rect(x, y, cellW, cellH, "FD");
 
@@ -90,15 +90,7 @@ function drawMultiplicationGrid(
 
       if (!isHidden) {
         pdf.setFontSize(r === 0 || c === 0 ? 14 : 13);
-        if (r === 0 && c === 0) {
-          pdf.setTextColor(79, 70, 229);
-        } else if (isAnswer) {
-          pdf.setTextColor(79, 70, 229);
-        } else if (r === 0 || c === 0) {
-          pdf.setTextColor(40, 40, 60);
-        } else {
-          pdf.setTextColor(15, 23, 42);
-        }
+        pdf.setTextColor(0);
         pdf.setFont("helvetica", "bold");
         pdf.text(text, x + cellW / 2, y + cellH / 2 + 1.5, {
           align: "center",
@@ -106,7 +98,7 @@ function drawMultiplicationGrid(
         });
       } else {
         // draw an underscore placeholder
-        pdf.setDrawColor(160, 160, 170);
+        pdf.setDrawColor(0);
         pdf.setLineWidth(0.6);
         pdf.line(x + cellW * 0.25, y + cellH * 0.72, x + cellW * 0.75, y + cellH * 0.72);
       }
@@ -176,14 +168,14 @@ function drawAdditionGrid(
 
       // Background
       if (isHidden) {
-        pdf.setFillColor(248, 250, 252);
-        pdf.setDrawColor(180, 180, 200);
+        pdf.setFillColor(255);
+        pdf.setDrawColor(0);
       } else if (isAnswer) {
-        pdf.setFillColor(238, 242, 255);
-        pdf.setDrawColor(129, 140, 248);
+        pdf.setFillColor(245);
+        pdf.setDrawColor(0);
       } else {
-        pdf.setFillColor(255, 255, 255);
-        pdf.setDrawColor(80, 80, 100);
+        pdf.setFillColor(255);
+        pdf.setDrawColor(0);
       }
       pdf.setLineWidth(isHidden ? 0.3 : 0.5);
       pdf.rect(x, y, cellW, cellH, "FD");
@@ -191,7 +183,7 @@ function drawAdditionGrid(
       if (!isHidden) {
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(14);
-        pdf.setTextColor(isAnswer ? 79 : 15, isAnswer ? 70 : 23, isAnswer ? 229 : 42);
+        pdf.setTextColor(0);
         pdf.text(String(val), x + cellW / 2, y + cellH / 2 + 1.5, {
           align: "center",
           baseline: "middle",
@@ -208,7 +200,7 @@ function drawAdditionGrid(
       const y = rowYs[cellRows[ri]];
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(16);
-      pdf.setTextColor(120, 120, 140);
+      pdf.setTextColor(0);
       pdf.text(hOps[oi], x + opW / 2, y + cellH / 2 + 1.5, {
         align: "center",
         baseline: "middle",
@@ -224,7 +216,7 @@ function drawAdditionGrid(
       const y = rowYs[opVRows[oi]];
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(16);
-      pdf.setTextColor(120, 120, 140);
+      pdf.setTextColor(0);
       pdf.text(vOps[oi], x + cellW / 2, y + gapH / 2 + 1, {
         align: "center",
         baseline: "middle",
@@ -272,8 +264,8 @@ function drawNumberFillGrid(
         displayVal = String(
           c === 4 ? puzzleData.rowSums[r] : puzzleData.colSums[c]
         );
-        pdf.setFillColor(235, 235, 248);
-        pdf.setDrawColor(100, 100, 200);
+        pdf.setFillColor(245);
+        pdf.setDrawColor(0);
       } else {
         displayVal = String(puzzleData.grid[r][c]);
         isHidden =
@@ -287,14 +279,14 @@ function drawNumberFillGrid(
           );
 
         if (isHidden) {
-          pdf.setFillColor(248, 250, 252);
-          pdf.setDrawColor(180, 180, 200);
+          pdf.setFillColor(255);
+          pdf.setDrawColor(0);
         } else if (isAnswer) {
-          pdf.setFillColor(238, 242, 255);
-          pdf.setDrawColor(129, 140, 248);
+          pdf.setFillColor(245);
+          pdf.setDrawColor(0);
         } else {
-          pdf.setFillColor(255, 255, 255);
-          pdf.setDrawColor(100, 100, 120);
+          pdf.setFillColor(255);
+          pdf.setDrawColor(0);
         }
       }
 
@@ -304,17 +296,13 @@ function drawNumberFillGrid(
       if (!isHidden) {
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(isSumCell ? 12 : 13);
-        pdf.setTextColor(
-          isSumCell ? 79 : isAnswer ? 79 : 15,
-          isSumCell ? 70 : isAnswer ? 70 : 23,
-          isSumCell ? 229 : isAnswer ? 229 : 42
-        );
+        pdf.setTextColor(0);
         pdf.text(displayVal, x + cellW / 2, y + cellH / 2 + 1.5, {
           align: "center",
           baseline: "middle",
         });
       } else {
-        pdf.setDrawColor(160, 160, 170);
+        pdf.setDrawColor(0);
         pdf.setLineWidth(0.6);
         pdf.line(x + cellW * 0.25, y + cellH * 0.72, x + cellW * 0.75, y + cellH * 0.72);
       }
@@ -355,12 +343,12 @@ export function downloadMathPDF(
     let y = mm(18);
 
     // ── Puzzle Section ────────────────────────────────────────────
-    drawTitle(pdf, `${typeLabel} #${idx + 1}`, y, pageW, [20, 20, 30], 17);
+    drawTitle(pdf, `${typeLabel} #${idx + 1}`, y, pageW, [0, 0, 0], 17);
     y += mm(6);
 
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(9);
-    pdf.setTextColor(100, 116, 139);
+    pdf.setTextColor(0);
     pdf.text(
       puzzleType === "addition"
         ? "Fill in the blank boxes to make all equations correct."
@@ -386,7 +374,7 @@ export function downloadMathPDF(
     y += mm(6);
 
     // ── Solution Section ──────────────────────────────────────────
-    drawTitle(pdf, `Solution Key #${idx + 1}`, y, pageW, [79, 70, 229], 14);
+    drawTitle(pdf, `Solution Key #${idx + 1}`, y, pageW, [0, 0, 0], 14);
     y += mm(7);
 
     if (puzzleType === "multiplication") {
@@ -400,7 +388,7 @@ export function downloadMathPDF(
     // ── Page number footer ────────────────────────────────────────
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8);
-    pdf.setTextColor(148, 163, 184);
+    pdf.setTextColor(0);
     pdf.text(`Page ${idx + 1}`, pageW - margin, pageH - mm(8), { align: "right" });
   });
 

@@ -1862,7 +1862,7 @@ export default function ColoringBookClient() {
         // Page Number
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(100);
+        doc.setTextColor(0);
         doc.text(`Page ${p + 1}`, trimSize.w / 2, trimSize.h - 0.3, { align: "center" });
 
         if (!isPremium) drawWatermark(doc, trimSize.w, trimSize.h);

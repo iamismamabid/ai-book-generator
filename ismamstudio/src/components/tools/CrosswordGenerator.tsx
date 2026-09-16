@@ -333,7 +333,7 @@ export default function CrosswordGenerator() {
         // Footer page numbering
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(100);
+        doc.setTextColor(0);
         doc.text(`Page ${pageNum}`, margins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
       };
 
@@ -400,7 +400,7 @@ export default function CrosswordGenerator() {
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(40);
+        doc.setTextColor(0);
 
         let acrossY = cluesStartY + 0.2;
         puzzle.placedWords.filter(w => w.dir === 'H').forEach(w => {
@@ -418,7 +418,7 @@ export default function CrosswordGenerator() {
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(40);
+        doc.setTextColor(0);
 
         let downY = cluesStartY + 0.2;
         puzzle.placedWords.filter(w => w.dir === 'V').forEach(w => {
@@ -470,7 +470,7 @@ export default function CrosswordGenerator() {
               if (wordStart) {
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(Math.max(5, cellSize * 16));
-                doc.setTextColor(100);
+                doc.setTextColor(0);
                 doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.32));
               }
 

@@ -83,9 +83,8 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       if (includePageNumbers) {
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(100, 100, 100);
-        doc.text(`Page ${index + 1}`, w / 2, h - 0.45, { align: "center" });
         doc.setTextColor(0);
+        doc.text(`Page ${index + 1}`, w / 2, h - 0.45, { align: "center" });
       }
     }
 
@@ -273,7 +272,7 @@ export function drawWatermark(doc: any, w: number, h: number) {
     doc.saveGraphicsState();
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(56);
-    doc.setTextColor(140, 140, 140); // darker grey for high visibility
+    doc.setTextColor(140); // DeviceGray for sample watermark
 
     // Try drawing with opacity/transparency
     try {
@@ -365,7 +364,7 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number, p
   const startY = 1.3;
 
   doc.setLineWidth(cellSize * 0.033);
-  doc.setDrawColor(30, 41, 59);
+  doc.setDrawColor(0);
 
   // Draw grid
   data.grid.forEach((row: string[], r: number) => {
@@ -375,7 +374,7 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number, p
       
       if (cell === '') {
         // Black block
-        doc.setFillColor(30, 41, 59);
+        doc.setFillColor(0);
         doc.rect(x, y, cellSize, cellSize, "F");
       } else {
         // White cell
@@ -386,7 +385,7 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number, p
         if (wordStart) {
           doc.setFontSize(Math.max(4.5, Math.floor(cellSize * 20)));
           doc.setFont("Helvetica", "bold");
-          doc.setTextColor(30, 41, 59);
+          doc.setTextColor(0);
           doc.text(String(wordStart.num), x + cellSize * 0.1, y + cellSize * 0.3);
         }
 
@@ -394,7 +393,7 @@ const drawCrossword = (doc: any, page: any, xShift: number, pageWidth: number, p
         if (isSolution) {
           doc.setFontSize(Math.max(8, Math.floor(cellSize * 40)));
           doc.setFont("Helvetica", "bold");
-          doc.setTextColor(30, 41, 59);
+          doc.setTextColor(0);
           const letterWidth = doc.getTextWidth(cell);
           doc.text(cell, x + (cellSize - letterWidth) / 2, y + cellSize * 0.73);
         }
@@ -543,7 +542,7 @@ export function drawWordSearchGrid(
 
       if (isMessageLetter) {
         // Distinct highlight so revealed message reads clearly in B&W/Grayscale
-        doc.setFillColor(210, 210, 210);
+        doc.setFillColor(210);
         doc.roundedRect(x + cellSize * 0.12, y + cellSize * 0.12, cellSize * 0.76, cellSize * 0.76, cellSize * 0.1, cellSize * 0.1, "F");
       }
     });
@@ -659,14 +658,7 @@ export function drawWordSearchGrid(
 
       // Masked (answer) letters are always bold; other cells follow style.letterBold.
       doc.setFont(s.font, isWordLetter || s.letterBold ? "bold" : "normal");
-
-      if (isWordLetter) {
-        doc.setTextColor(s.solutionHighlighter === 'apple' ? '#000000' : s.highlightTextColor);
-      } else if (isSolution && (s.solutionHighlighter === 'fade' || s.solutionHighlighter === 'apple')) {
-        doc.setTextColor(210, 210, 210);
-      } else {
-        doc.setTextColor(0);
-      }
+      doc.setTextColor(0);
 
       const letterWidth = doc.getTextWidth(letter);
       doc.text(letter, x + (cellSize - letterWidth) / 2, y + cellSize * 0.65);
@@ -700,7 +692,7 @@ export function drawWordSearchWordList(
 
   doc.setFont(s.wordFont, "bold");
   doc.setFontSize(Math.max(6, Math.floor(s.wordFontSize * scaleFactor)));
-  doc.setTextColor(isSolution ? "#808080" : s.wordTextColor);
+  doc.setTextColor(0);
 
   const colWidth = zone.w / s.wordColumns;
   // jsPDF's align:"center" centers the text ON the given x, so x itself has
@@ -838,7 +830,7 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
 
   // Draw thin cell borders first
   doc.setLineWidth(0.01);
-  doc.setDrawColor(148, 163, 184);
+  doc.setDrawColor(180);
 
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
@@ -852,13 +844,8 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
       const isAnswer = isSolution && initialVal === 0;
 
       if (displayedVal !== 0) {
-        if (isAnswer) {
-          doc.setTextColor(79, 70, 229); // Indigo 600
-          doc.setFont("Helvetica", "bold");
-        } else {
-          doc.setTextColor(15, 23, 42); // slate-900
-          doc.setFont("Helvetica", "bold");
-        }
+        doc.setTextColor(0);
+        doc.setFont("Helvetica", "bold");
         const scaledFontSize = Math.max(10, Math.floor(cellSize * 36));
         doc.setFontSize(scaledFontSize);
         const valStr = String(displayedVal);
@@ -869,7 +856,7 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
 
   // Draw thicker borders for 3x3 subdivisions
   doc.setLineWidth(0.028);
-  doc.setDrawColor(15, 23, 42);
+  doc.setDrawColor(0);
   for (let i = 0; i <= 9; i += 3) {
     const offset = i * cellSize;
     // Vertical lines
@@ -911,7 +898,7 @@ const drawSudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
     const cellSize = gridDrawSize / 9;
 
     doc.setLineWidth(0.006);
-    doc.setDrawColor(148, 163, 184);
+    doc.setDrawColor(180);
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
         doc.rect(startX + c * cellSize, startY + r * cellSize, cellSize, cellSize);
@@ -919,7 +906,7 @@ const drawSudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
     }
 
     doc.setLineWidth(0.02);
-    doc.setDrawColor(15, 23, 42);
+    doc.setDrawColor(0);
     for (let b = 0; b <= 3; b++) {
       const offset = b * cellSize * 3;
       doc.line(startX + offset, startY, startX + offset, startY + gridDrawSize);
@@ -933,7 +920,7 @@ const drawSudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
       for (let c = 0; c < 9; c++) {
         const val = data.solution ? data.solution[r][c] : (data.grid ? data.grid[r][c] : 0);
         if (val !== 0) {
-          doc.setTextColor(79, 70, 229);
+          doc.setTextColor(0);
           doc.setFont("Helvetica", "bold");
           doc.text(String(val), startX + c * cellSize + cellSize / 2, startY + r * cellSize + cellSize * 0.68, { align: "center" });
         }
@@ -981,18 +968,18 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
       if (cell.type === "white") {
         // Draw white playable cell
         doc.setLineWidth(0.005);
-        doc.setDrawColor(180, 180, 190);
-        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(0);
+        doc.setFillColor(255);
         doc.rect(x, y, cellSize, cellSize, "FD");
 
         // Display numbers inside
         if (isSolution) {
-          doc.setTextColor(79, 70, 229); // Solution in Indigo
+          doc.setTextColor(0);
           doc.setFont("Helvetica", "bold");
           doc.setFontSize(Math.floor(cellSize * 32));
           doc.text(String(cell.value), x + cellSize / 2, y + cellSize * 0.65, { align: "center" });
         } else if (cell.displayValue) {
-          doc.setTextColor(51, 65, 85); // Clues/helpers in dark slate
+          doc.setTextColor(0);
           doc.setFont("Helvetica", "normal");
           doc.setFontSize(Math.floor(cellSize * 30));
           doc.text(cell.displayValue, x + cellSize / 2, y + cellSize * 0.65, { align: "center" });
@@ -1000,8 +987,8 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
       } else {
         // Draw black / clue cell
         doc.setLineWidth(0.005);
-        doc.setDrawColor(60, 60, 70);
-        doc.setFillColor(30, 30, 35); // Dark gray fill
+        doc.setDrawColor(0);
+        doc.setFillColor(0); // Pure black clue cell
         doc.rect(x, y, cellSize, cellSize, "FD");
 
         const hasRow = cell.rowClue !== undefined;
@@ -1011,13 +998,13 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
         if (hasClues) {
           // Draw diagonal line from top-left to bottom-right
           doc.setLineWidth(0.008);
-          doc.setDrawColor(100, 100, 110);
+          doc.setDrawColor(255);
           doc.line(x, y, x + cellSize, y + cellSize);
 
           // Clue text styling
           doc.setFont("Helvetica", "bold");
           doc.setFontSize(Math.floor(cellSize * 18));
-          doc.setTextColor(248, 250, 252); // White clue text
+          doc.setTextColor(255); // White clue text
 
           // 1. Row Clue (Top-Right triangle)
           if (hasRow) {
@@ -1045,7 +1032,7 @@ const drawKakuro = (doc: any, page: any, xShift: number, pageWidth: number) => {
 
   // Draw outer thick borders
   doc.setLineWidth(0.015);
-  doc.setDrawColor(25, 25, 35);
+  doc.setDrawColor(0);
   doc.rect(startX, startY, gridW, gridH);
 
   // Reset text color
@@ -1091,7 +1078,7 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHe
 
   // Draw maze walls
   doc.setLineWidth(Math.max(0.015, cellSize * 0.08));
-  doc.setDrawColor(15, 23, 42); // slate-900 bold black walls
+  doc.setDrawColor(0); // Pure solid black walls for KDP B&W
 
   data.grid.forEach((row: any[], r: number) => {
     row.forEach((cell: any, c: number) => {
@@ -1114,19 +1101,19 @@ const drawMaze = (doc: any, page: any, xShift: number, pageWidth: number, pageHe
   doc.setFontSize(markerFontSize);
 
   if (data.start) {
-    doc.setTextColor(37, 99, 235); // Blue-600 Start
+    doc.setTextColor(0);
     doc.text("S", startX + data.start[1] * cellSize + cellSize / 2, startY + data.start[0] * cellSize + cellSize * 0.72, { align: "center" });
   }
 
   if (data.end) {
-    doc.setTextColor(220, 38, 38); // Red-600 Exit
+    doc.setTextColor(0);
     doc.text("E", startX + data.end[1] * cellSize + cellSize / 2, startY + data.end[0] * cellSize + cellSize * 0.72, { align: "center" });
   }
 
   // Draw Solution Path if checked
   if (showSolution && data.solution && data.solution.length > 0) {
     doc.setLineWidth(Math.max(0.02, cellSize * 0.15));
-    doc.setDrawColor(239, 68, 68); // Vibrant Red path
+    doc.setDrawColor(0); // Solid black path for KDP print
 
     const path = data.solution;
     for (let i = 0; i < path.length - 1; i++) {
@@ -2154,25 +2141,25 @@ const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number
     // Number indicator
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(11);
-    doc.setTextColor(148, 163, 184);
+    doc.setTextColor(0);
     doc.text(`${wIdx + 1}.`, marginL + 0.2, y);
 
     // Scrambled letters
     const displayScrambled = (scrambled || "").split("").join(" ");
     doc.setFont("Courier", "bold");
     doc.setFontSize(12);
-    doc.setTextColor(30, 41, 59);
+    doc.setTextColor(0);
     doc.text(displayScrambled, marginL + 0.6, y);
 
     // Answer representation
     if (isSolution) {
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(11);
-      doc.setTextColor(79, 70, 229);
+      doc.setTextColor(0);
       doc.text(data.original[wIdx] || "", marginL + contentW - 2.0, y);
     } else {
       // Underline
-      doc.setDrawColor(148, 163, 184);
+      doc.setDrawColor(0);
       doc.setLineWidth(0.008);
       doc.line(marginL + contentW - 2.2, y + 0.05, marginL + contentW - 0.2, y + 0.05);
     }
@@ -2189,19 +2176,19 @@ const drawWordScramble = (doc: any, page: any, xShift: number, pageWidth: number
     const boxHeight = 0.35 + numRows * rowSpacing;
     const bankStartY = pageHeight - marginB - boxHeight - 0.05;
 
-    doc.setDrawColor(203, 213, 225);
-    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(0);
+    doc.setFillColor(255);
     doc.setLineWidth(0.008);
     doc.roundedRect(marginL + 0.1, bankStartY, contentW - 0.2, boxHeight, 0.08, 0.08, "FD");
 
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(9);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(0);
     doc.text("WORD BANK", marginL + 0.3, bankStartY + 0.2);
 
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(9);
-    doc.setTextColor(71, 85, 105);
+    doc.setTextColor(0);
 
     const colW = (contentW - 0.6) / 3;
     let row = 0;
@@ -2281,26 +2268,26 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
       const originalChar = originalWord[i] || "";
 
       if (isLetter) {
-        doc.setDrawColor(148, 163, 184);
+        doc.setDrawColor(0);
         doc.setLineWidth(0.008);
         doc.rect(curX, curY, charBoxW, charBoxH);
 
         if (isSolution) {
           doc.setFont("Helvetica", "bold");
           doc.setFontSize(11);
-          doc.setTextColor(15, 23, 42);
+          doc.setTextColor(0);
           doc.text(originalChar, curX + charBoxW / 2, curY + charBoxH - 0.08, { align: "center" });
         }
 
         // Bottom Cipher letter
         doc.setFont("Courier", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(15, 23, 42);
+        doc.setTextColor(0);
         doc.text(char, curX + charBoxW / 2, curY + charBoxH + 0.16, { align: "center" });
       } else {
         doc.setFont("Courier", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(15, 23, 42);
+        doc.setTextColor(0);
         doc.text(char, curX + charBoxW / 2, curY + charBoxH - 0.05, { align: "center" });
       }
 
@@ -2316,12 +2303,12 @@ const drawCryptogram = (doc: any, page: any, xShift: number, pageWidth: number, 
     const keyStartY = pageHeight - marginB - 1.2;
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(9);
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(0);
     doc.text("SUBSTITUTION KEY:", marginL + 0.2, keyStartY);
 
     doc.setFont("Courier", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(30, 41, 59);
+    doc.setTextColor(0);
 
     const alpha1 = "A B C D E F G H I J K L M";
     const alpha2 = "N O P Q R S T U V W X Y Z";
@@ -2367,7 +2354,7 @@ const drawMathPuzzleBox = (
   if (label) {
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(11);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(0);
     const labelW = doc.getTextWidth(label);
     doc.text(label, (pageWidth - labelW) / 2 + xShift, startY - 0.2);
   }
@@ -2386,7 +2373,7 @@ const drawMathPuzzleBox = (
         const cx = startX + c * (boxW + cellSpacing);
         const cy = startY + r * (boxH + cellSpacing);
 
-        doc.setDrawColor(30, 41, 59);
+        doc.setDrawColor(0);
         doc.setLineWidth(0.015);
         doc.rect(cx, cy, boxW, boxH);
 
@@ -2397,18 +2384,14 @@ const drawMathPuzzleBox = (
         if (!isHidden) {
           doc.setFont("Helvetica", "bold");
           doc.setFontSize(13);
-          if (isAnswer) {
-            doc.setTextColor(79, 70, 229);
-          } else {
-            doc.setTextColor(30, 41, 59);
-          }
+          doc.setTextColor(0);
           doc.text(val.toString(), cx + boxW / 2, cy + boxH / 2 + 0.05, { align: "center" });
         }
 
         // Operators
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(14);
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(0);
 
         if (c < size - 1) {
           const char = c === 1 ? "=" : "+";
@@ -2429,7 +2412,7 @@ const drawMathPuzzleBox = (
     const startX = (pageWidth - size * cellW) / 2 + xShift;
 
     doc.setLineWidth(0.012);
-    doc.setDrawColor(30, 41, 59);
+    doc.setDrawColor(0);
 
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
@@ -2438,7 +2421,7 @@ const drawMathPuzzleBox = (
         const isHeader = r === 0 || c === 0;
 
         if (isHeader) {
-          doc.setFillColor(241, 245, 249);
+          doc.setFillColor(245);
           doc.rect(cx, cy, cellW, cellH, "FD");
         } else {
           doc.rect(cx, cy, cellW, cellH);
@@ -2447,39 +2430,36 @@ const drawMathPuzzleBox = (
         if (r === 0 && c === 0) {
           doc.setFont("Helvetica", "bold");
           doc.setFontSize(13);
-          doc.setTextColor(79, 70, 229);
+          doc.setTextColor(0);
           doc.text("x", cx + cellW / 2, cy + cellH / 2 + 0.05, { align: "center" });
         } else if (r === 0) {
           const val = puzzle.colFactors[c - 1];
           const isHidden = puzzle.hiddenCols.includes(c - 1) && !isSolution;
-          const isAnswer = isSolution && puzzle.hiddenCols.includes(c - 1);
 
           if (!isHidden) {
             doc.setFont("Helvetica", "bold");
             doc.setFontSize(11);
-            doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+            doc.setTextColor(0);
             doc.text(val.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
           }
         } else if (c === 0) {
           const val = puzzle.rowFactors[r - 1];
           const isHidden = puzzle.hiddenRows.includes(r - 1) && !isSolution;
-          const isAnswer = isSolution && puzzle.hiddenRows.includes(r - 1);
 
           if (!isHidden) {
             doc.setFont("Helvetica", "bold");
             doc.setFontSize(11);
-            doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+            doc.setTextColor(0);
             doc.text(val.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
           }
         } else {
           const val = puzzle.grid[r - 1][c - 1];
           const isHidden = puzzle.hiddenProducts.some((p: any) => p[0] === r - 1 && p[1] === c - 1) && !isSolution;
-          const isAnswer = isSolution && puzzle.hiddenProducts.some((p: any) => p[0] === r - 1 && p[1] === c - 1);
 
           if (!isHidden) {
-            doc.setFont("Helvetica", isAnswer ? "bold" : "normal");
+            doc.setFont("Helvetica", isSolution && puzzle.hiddenProducts.some((p: any) => p[0] === r - 1 && p[1] === c - 1) ? "bold" : "normal");
             doc.setFontSize(11);
-            doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+            doc.setTextColor(0);
             doc.text(val.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
           }
         }
@@ -2493,7 +2473,7 @@ const drawMathPuzzleBox = (
     const startX = (pageWidth - size * cellW) / 2 + xShift;
 
     doc.setLineWidth(0.012);
-    doc.setDrawColor(30, 41, 59);
+    doc.setDrawColor(0);
 
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
@@ -2504,27 +2484,26 @@ const drawMathPuzzleBox = (
         if (r === 4 && c === 4) continue;
 
         if (isSumHeader) {
-          doc.setFillColor(248, 250, 252);
-          doc.setDrawColor(148, 163, 184);
+          doc.setFillColor(245);
+          doc.setDrawColor(0);
           doc.rect(cx, cy, cellW, cellH, "FD");
 
           doc.setFont("Helvetica", "bold");
           doc.setFontSize(11);
-          doc.setTextColor(79, 70, 229);
+          doc.setTextColor(0);
           const sumVal = r === 4 ? puzzle.colSums[c] : puzzle.rowSums[r];
           doc.text(sumVal.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
         } else {
-          doc.setDrawColor(30, 41, 59);
+          doc.setDrawColor(0);
           doc.rect(cx, cy, cellW, cellH);
 
           const val = puzzle.grid[r][c];
           const isHidden = puzzle.hiddenCells.some((cell: any) => cell[0] === r && cell[1] === c) && !isSolution;
-          const isAnswer = isSolution && puzzle.hiddenCells.some((cell: any) => cell[0] === r && cell[1] === c);
 
           if (!isHidden) {
             doc.setFont("Helvetica", "bold");
             doc.setFontSize(11);
-            doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+            doc.setTextColor(0);
             doc.text(val.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
           }
         }
@@ -2573,7 +2552,7 @@ const drawMathPuzzle = (doc: any, page: any, xShift: number, pageWidth: number, 
 
     const dividerY = startYA + gridH + dividerSpace / 2;
     doc.setLineWidth(0.01);
-    doc.setDrawColor(226, 232, 240);
+    doc.setDrawColor(0);
     doc.line(0.75 + xShift, dividerY, pageWidth - 0.75 + xShift, dividerY);
 
     const startYB = startYA + gridH + dividerSpace + labelSpace;
@@ -2613,19 +2592,19 @@ const drawCrosswordSolutionPack = (doc: any, page: any, xShift: number, pageWidt
     doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
     doc.setLineWidth(cellSize * 0.033);
-    doc.setDrawColor(30, 41, 59);
+    doc.setDrawColor(0);
     data.grid.forEach((row: string[], r: number) => {
       row.forEach((cell: string, c: number) => {
         const x = startX + c * cellSize;
         const y = startY + r * cellSize;
         if (cell === '') {
-          doc.setFillColor(30, 41, 59);
+          doc.setFillColor(0);
           doc.rect(x, y, cellSize, cellSize, "F");
         } else {
           doc.rect(x, y, cellSize, cellSize);
           doc.setFontSize(Math.max(5, Math.floor(cellSize * 38)));
           doc.setFont("Helvetica", "bold");
-          doc.setTextColor(30, 41, 59);
+          doc.setTextColor(0);
           const lw = doc.getTextWidth(cell);
           doc.text(cell, x + (cellSize - lw) / 2, y + cellSize * 0.73);
         }
@@ -2670,28 +2649,28 @@ const drawKakuroSolutionPack = (doc: any, page: any, xShift: number, pageWidth: 
         const x = startX + c * cellSize;
         const y = startY + r * cellSize;
         if (cell.type === "white") {
-          doc.setLineWidth(0.005); doc.setDrawColor(180, 180, 190); doc.setFillColor(255, 255, 255);
+          doc.setLineWidth(0.005); doc.setDrawColor(0); doc.setFillColor(255);
           doc.rect(x, y, cellSize, cellSize, "FD");
-          doc.setTextColor(79, 70, 229); doc.setFont("Helvetica", "bold");
+          doc.setTextColor(0); doc.setFont("Helvetica", "bold");
           doc.setFontSize(Math.max(6, Math.floor(cellSize * 30)));
           doc.text(String(cell.value), x + cellSize / 2, y + cellSize * 0.65, { align: "center" });
         } else {
-          doc.setLineWidth(0.005); doc.setDrawColor(60, 60, 70); doc.setFillColor(30, 30, 35);
+          doc.setLineWidth(0.005); doc.setDrawColor(0); doc.setFillColor(0);
           doc.rect(x, y, cellSize, cellSize, "FD");
           const hasRow = cell.rowClue !== undefined;
           const hasCol = cell.colClue !== undefined;
           if (hasRow || hasCol) {
-            doc.setLineWidth(0.006); doc.setDrawColor(100, 100, 110);
+            doc.setLineWidth(0.006); doc.setDrawColor(255);
             doc.line(x, y, x + cellSize, y + cellSize);
             doc.setFont("Helvetica", "bold"); doc.setFontSize(Math.max(5, Math.floor(cellSize * 15)));
-            doc.setTextColor(248, 250, 252);
+            doc.setTextColor(255);
             if (hasRow) doc.text(String(cell.rowClue), x + cellSize * 0.72, y + cellSize * 0.38, { align: "center" });
             if (hasCol) doc.text(String(cell.colClue), x + cellSize * 0.28, y + cellSize * 0.8, { align: "center" });
           }
         }
       }
     }
-    doc.setLineWidth(0.012); doc.setDrawColor(25, 25, 35);
+    doc.setLineWidth(0.012); doc.setDrawColor(0);
     doc.rect(startX, startY, gridW, gridH);
   });
   doc.setTextColor(0);
@@ -2731,7 +2710,7 @@ const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: nu
     doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0);
     doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
 
-    doc.setLineWidth(Math.max(0.01, cellSize * 0.08)); doc.setDrawColor(15, 23, 42);
+    doc.setLineWidth(Math.max(0.01, cellSize * 0.08)); doc.setDrawColor(0);
     data.grid.forEach((row: any[], r: number) => {
       row.forEach((cell: any, c: number) => {
         if (!cell.active) return;
@@ -2748,17 +2727,17 @@ const drawMazeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: nu
     const markerFontSize = Math.max(6, Math.floor(cellSize * 30));
     doc.setFont("Helvetica", "bold"); doc.setFontSize(markerFontSize);
     if (data.start) {
-      doc.setTextColor(37, 99, 235);
+      doc.setTextColor(0);
       doc.text("S", startX + data.start[1] * cellSize + cellSize / 2, startY + data.start[0] * cellSize + cellSize * 0.72, { align: "center" });
     }
     if (data.end) {
-      doc.setTextColor(220, 38, 38);
+      doc.setTextColor(0);
       doc.text("E", startX + data.end[1] * cellSize + cellSize / 2, startY + data.end[0] * cellSize + cellSize * 0.72, { align: "center" });
     }
 
     // Draw high contrast bold solution path
     if (data.solution && data.solution.length > 0) {
-      doc.setLineWidth(Math.max(0.018, cellSize * 0.16)); doc.setDrawColor(239, 68, 68);
+      doc.setLineWidth(Math.max(0.018, cellSize * 0.16)); doc.setDrawColor(0);
       const path = data.solution;
       for (let pi = 0; pi < path.length - 1; pi++) {
         const p1 = path[pi]; const p2 = path[pi + 1];
@@ -2799,12 +2778,12 @@ const drawWordScrambleSolutionPack = (doc: any, page: any, xShift: number, pageW
     const stepY = Math.min(0.26, (zone.h - titleSpace - 0.1) / Math.max(1, words.length));
     words.forEach((word: string, wi: number) => {
       const y = zone.y + titleSpace + wi * stepY + 0.1;
-      doc.setFont("Helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+      doc.setFont("Helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(0);
       doc.text(`${wi + 1}.`, zone.x + 0.1, y);
-      doc.setFont("Courier", "bold"); doc.setFontSize(9); doc.setTextColor(30, 41, 59);
+      doc.setFont("Courier", "bold"); doc.setFontSize(9); doc.setTextColor(0);
       const scr = data?.scrambled?.[wi] || "";
       doc.text(scr.split("").join(" "), zone.x + 0.32, y);
-      doc.setFont("Helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(79, 70, 229);
+      doc.setFont("Helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(0);
       doc.text(word, zone.x + zone.w - 0.1, y, { align: "right" });
     });
   });
@@ -2837,7 +2816,7 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     const data = entry.cryptogramData;
     const innerW = zone.w - 0.3;
 
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.title); doc.setTextColor(15, 23, 42);
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.title); doc.setTextColor(0);
     const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
     doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.25, { align: "center" });
     const titleSpace = 0.30 + (sizeTier.title - 10) * 0.015;
@@ -2861,7 +2840,7 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     const availableHeight = zone.h - titleSpace;
     const contentStartY = zone.y + titleSpace + Math.max(0, (availableHeight - contentHeight) / 2);
 
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.sentence); doc.setTextColor(15, 23, 42);
+    doc.setFont("Helvetica", "bold"); doc.setFontSize(sizeTier.sentence); doc.setTextColor(0);
     let sy = contentStartY + sizeTier.lineStep;
     sentenceLines.forEach((line: string) => {
       doc.text(line, zone.x + 0.15, sy);
@@ -2869,10 +2848,10 @@ const drawCryptogramSolutionPack = (doc: any, page: any, xShift: number, pageWid
     });
 
     if (data.cipherMap) {
-      doc.setFont("Courier", "bold"); doc.setFontSize(cipherFont); doc.setTextColor(30, 41, 59);
+      doc.setFont("Courier", "bold"); doc.setFontSize(cipherFont); doc.setTextColor(0);
       const keyY = sy - sizeTier.lineStep + sizeTier.cipherGap + cipherLineHeight;
       doc.text(origLine, zone.x + 0.15, keyY);
-      doc.setTextColor(71, 85, 105);
+      doc.setTextColor(0);
       doc.text(cipherLine, zone.x + 0.15, keyY + cipherLineHeight);
     }
   });
@@ -2915,13 +2894,12 @@ const drawMathPuzzleSolutionPack = (doc: any, page: any, xShift: number, pageWid
           const idx = r * 3 + c;
           const cx = startX + c * (boxW + cellSpacing);
           const cy = startY + r * (boxW + cellSpacing);
-          doc.setDrawColor(30, 41, 59); doc.setLineWidth(0.01); doc.rect(cx, cy, boxW, boxW);
+          doc.setDrawColor(0); doc.setLineWidth(0.01); doc.rect(cx, cy, boxW, boxW);
           const val = puzzle.grid[idx];
-          const isAnswer = puzzle.hiddenIndices.includes(idx);
           doc.setFont("Helvetica", "bold"); doc.setFontSize(Math.max(8, Math.floor(boxW * 22)));
-          doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+          doc.setTextColor(0);
           doc.text(val.toString(), cx + boxW / 2, cy + boxW / 2 + boxW * 0.1, { align: "center" });
-          doc.setFontSize(Math.max(7, Math.floor(boxW * 20))); doc.setTextColor(100, 116, 139);
+          doc.setFontSize(Math.max(7, Math.floor(boxW * 20))); doc.setTextColor(0);
           if (c < size - 1) doc.text(c === 1 ? "=" : "+", cx + boxW + cellSpacing / 2, cy + boxW / 2 + boxW * 0.1, { align: "center" });
           if (r < size - 1) doc.text(r === 1 ? "=" : "+", cx + boxW / 2, cy + boxW + cellSpacing / 2 + boxW * 0.1, { align: "center" });
         }
@@ -2934,30 +2912,29 @@ const drawMathPuzzleSolutionPack = (doc: any, page: any, xShift: number, pageWid
       const startX = zone.x + (zone.w - totalW) / 2;
       const startY = zone.y + titleSpace + (availH - totalH) / 2;
 
-      doc.setLineWidth(0.01); doc.setDrawColor(30, 41, 59);
+      doc.setLineWidth(0.01); doc.setDrawColor(0);
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           const cx = startX + c * cellW; const cy = startY + r * cellH;
           if (puzzleType === "multiplication") {
             const isHeader = r === 0 || c === 0;
-            if (isHeader) { doc.setFillColor(241, 245, 249); doc.rect(cx, cy, cellW, cellH, "FD"); }
+            if (isHeader) { doc.setFillColor(245); doc.rect(cx, cy, cellW, cellH, "FD"); }
             else doc.rect(cx, cy, cellW, cellH);
-            let val: any = ""; let isAnswer = false;
+            let val: any = "";
             if (r === 0 && c === 0) { val = "×"; }
-            else if (r === 0) { val = puzzle.colFactors[c-1]; isAnswer = puzzle.hiddenCols.includes(c-1); }
-            else if (c === 0) { val = puzzle.rowFactors[r-1]; isAnswer = puzzle.hiddenRows.includes(r-1); }
-            else { val = puzzle.grid[r-1][c-1]; isAnswer = puzzle.hiddenProducts.some((p: any) => p[0]===r-1 && p[1]===c-1); }
+            else if (r === 0) { val = puzzle.colFactors[c-1]; }
+            else if (c === 0) { val = puzzle.rowFactors[r-1]; }
+            else { val = puzzle.grid[r-1][c-1]; }
             doc.setFont("Helvetica", "bold"); doc.setFontSize(Math.max(7, Math.floor(cellW * 18)));
-            doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+            doc.setTextColor(0);
             doc.text(val.toString(), cx + cellW/2, cy + cellH/2 + cellH*0.08, { align: "center" });
           } else {
             if (r === size-1 && c === size-1) continue;
             const isSumHeader = r === size-1 || c === size-1;
-            if (isSumHeader) { doc.setFillColor(248, 250, 252); doc.setDrawColor(148, 163, 184); doc.rect(cx, cy, cellW, cellH, "FD"); }
-            else { doc.setDrawColor(30, 41, 59); doc.rect(cx, cy, cellW, cellH); }
+            if (isSumHeader) { doc.setFillColor(245); doc.setDrawColor(0); doc.rect(cx, cy, cellW, cellH, "FD"); }
+            else { doc.setDrawColor(0); doc.rect(cx, cy, cellW, cellH); }
             doc.setFont("Helvetica", "bold"); doc.setFontSize(Math.max(7, Math.floor(cellW * 18)));
-            const isAnswer = !isSumHeader && puzzle.hiddenCells.some((cell: any) => cell[0]===r && cell[1]===c);
-            doc.setTextColor(isAnswer ? 79 : 30, isAnswer ? 70 : 41, isAnswer ? 229 : 59);
+            doc.setTextColor(0);
             const val = isSumHeader ? (r === size-1 ? puzzle.colSums[c] : puzzle.rowSums[r]) : puzzle.grid[r][c];
             doc.text(val.toString(), cx + cellW/2, cy + cellH/2 + cellH*0.08, { align: "center" });
           }
@@ -2977,16 +2954,16 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
   // 1. Draw Title
   doc.setFont("Helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(30, 41, 59);
+  doc.setTextColor(0);
   const titleWidth = doc.getTextWidth(pageTitle.toUpperCase());
   doc.text(pageTitle.toUpperCase(), (w - titleWidth) / 2 + xShift, 0.95);
 
   doc.setLineWidth(0.015);
-  doc.setDrawColor(79, 70, 229);
+  doc.setDrawColor(0);
   doc.line((w - 1.2) / 2 + xShift, 1.1, (w + 1.2) / 2 + xShift, 1.1);
 
   // 2. Render templates
-  doc.setDrawColor(203, 213, 225);
+  doc.setDrawColor(180);
   doc.setLineWidth(0.008);
 
   const startX = 0.75 + xShift;
@@ -3003,7 +2980,7 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     const spacing = 0.25; 
     for (let currentY = 1.6; currentY < h - 0.8; currentY += spacing) {
       for (let currentX = startX; currentX < endX; currentX += spacing) {
-        doc.setFillColor(148, 163, 184);
+        doc.setFillColor(0);
         doc.circle(currentX, currentY, 0.01, "F");
       }
     }
@@ -3020,15 +2997,15 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
       const cX = isNotes ? (0.75 + xShift) : (0.75 + colIdx * (cardW + 0.3) + xShift);
       const cY = 1.6 + rowIdx * 1.9;
 
-      doc.setDrawColor(203, 213, 225);
+      doc.setDrawColor(180);
       doc.rect(cX, cY, cardW, cardH);
       
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(8);
-      doc.setTextColor(79, 70, 229);
+      doc.setTextColor(0);
       doc.text(day.toUpperCase(), cX + 0.1, cY + 0.2);
 
-      doc.setDrawColor(241, 245, 249);
+      doc.setDrawColor(220);
       doc.line(cX + 0.1, cY + 0.3, cX + cardW - 0.1, cY + 0.3);
     });
   } 
@@ -3041,16 +3018,16 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     doc.rect(sX, sY, sW, sH);
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(0);
     doc.text("TODAY'S SCHEDULE", sX + 0.15, sY + 0.25);
     
-    doc.setDrawColor(241, 245, 249);
+    doc.setDrawColor(220);
     let schedY = sY + 0.55;
     const hours = ["7:00 AM", "9:00 AM", "11:00 AM", "1:00 PM", "3:00 PM", "5:00 PM", "7:00 PM"];
     hours.forEach((time) => {
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(6);
-      doc.setTextColor(148, 163, 184);
+      doc.setTextColor(0);
       doc.text(time, sX + 0.15, schedY + 0.03);
       doc.line(sX + 0.85, schedY, sX + sW - 0.15, schedY);
       schedY += 0.55;
@@ -3059,11 +3036,11 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     const rX = 0.75 + sW + 0.3 + xShift;
     const pW = sW;
     
-    doc.setDrawColor(203, 213, 225);
+    doc.setDrawColor(180);
     doc.rect(rX, sY, pW, 2.2);
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(0);
     doc.text("TOP PRIORITIES", rX + 0.15, sY + 0.25);
     
     let priorityY = sY + 0.65;
@@ -3076,7 +3053,7 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     doc.rect(rX, sY + 2.5, pW, 1.2);
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(0);
     doc.text("WATER INTAKE", rX + 0.15, sY + 2.75);
 
     const dropXStart = rX + (pW - (8 * 0.3)) / 2;
@@ -3089,7 +3066,7 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
   else if (templateType === 'habit_tracker') {
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(9);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(0);
     doc.text("MONTHLY HABIT LOG", startX, 1.75);
 
     const cellW = 0.16;
@@ -3097,13 +3074,13 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     const rowH = 0.45;
     const startY = 1.95;
 
-    doc.setFillColor(248, 250, 252);
+    doc.setFillColor(245);
     doc.rect(startX, startY, descW + (31 * cellW), rowH, "F");
     doc.rect(startX, startY, descW + (31 * cellW), rowH);
 
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(6);
-    doc.setTextColor(148, 163, 184);
+    doc.setTextColor(0);
     doc.text("HABIT DESCRIPTION", startX + 0.1, startY + 0.28);
     doc.text("DAYS OF THE MONTH (1 - 31)", startX + descW + 1.2, startY + 0.28);
 
@@ -3131,17 +3108,17 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
       doc.rect(startX, currentY, w - 1.5, blockH);
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(7);
-      doc.setTextColor(148, 163, 184);
+      doc.setTextColor(0);
       doc.text("WEBSITE:", startX + 0.15, currentY + 0.35);
       doc.text("USERNAME / EMAIL:", startX + 0.15, currentY + 0.7);
       doc.text("PASSWORD:", startX + 0.15, currentY + 1.05);
 
-      doc.setDrawColor(241, 245, 249);
+      doc.setDrawColor(220);
       doc.line(startX + 1.8, currentY + 0.4, startX + w - 1.8, currentY + 0.4);
       doc.line(startX + 1.8, currentY + 0.75, startX + w - 1.8, currentY + 0.75);
       doc.line(startX + 1.8, currentY + 1.1, startX + w - 1.8, currentY + 1.1);
 
-      doc.setDrawColor(203, 213, 225);
+      doc.setDrawColor(180);
       currentY += blockStep;
     }
   }
@@ -3151,13 +3128,13 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     const rowH = 0.4;
     const startY = 1.6;
 
-    doc.setFillColor(248, 250, 252);
+    doc.setFillColor(245);
     doc.rect(startX, startY, w - 1.5, headerH, "F");
     doc.rect(startX, startY, w - 1.5, headerH);
 
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(7);
-    doc.setTextColor(148, 163, 184);
+    doc.setTextColor(0);
     doc.text("DATE", startX + 0.15, startY + 0.28);
     doc.text("DESCRIPTION", startX + colW[0] + 0.15, startY + 0.28);
     doc.text("AMOUNT / BALANCE", startX + colW[0] + colW[1] + 0.15, startY + 0.28);
@@ -3184,7 +3161,7 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
       doc.rect(cX, startY, cardW, 0.45);
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(7);
-      doc.setTextColor(148, 163, 184);
+      doc.setTextColor(0);
       doc.text(lbl, cX + 0.1, startY + 0.28);
     });
 
@@ -3195,7 +3172,7 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     doc.rect(startX, boxY, boxW, boxH);
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(9);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(0);
     doc.text("INGREDIENTS", startX + 0.15, boxY + 0.3);
 
     // Line counts scale with boxH (which already scales with page height)
@@ -3225,15 +3202,15 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
       doc.rect(startX, currentY, w - 1.5, 2.2);
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(8);
-      doc.setTextColor(79, 70, 229);
+      doc.setTextColor(0);
       doc.text(p.toUpperCase(), startX + 0.15, currentY + 0.3);
 
-      doc.setDrawColor(241, 245, 249);
+      doc.setDrawColor(220);
       doc.line(startX + 0.15, currentY + 0.75, startX + w - 0.9, currentY + 0.75);
       doc.line(startX + 0.15, currentY + 1.25, startX + w - 0.9, currentY + 1.25);
       doc.line(startX + 0.15, currentY + 1.75, startX + w - 0.9, currentY + 1.75);
 
-      doc.setDrawColor(203, 213, 225);
+      doc.setDrawColor(180);
       currentY += 2.5;
     });
   } 
@@ -3247,16 +3224,16 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
       doc.rect(startX, currentY, w - 1.5, blockH);
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(7);
-      doc.setTextColor(148, 163, 184);
+      doc.setTextColor(0);
       doc.text("VISITOR NAME:", startX + 0.15, currentY + 0.35);
       doc.text("DATE: _____________", startX + w - 2.8, currentY + 0.35);
       doc.text("MESSAGE / THOUGHTS:", startX + 0.15, currentY + 0.75);
 
-      doc.setDrawColor(241, 245, 249);
+      doc.setDrawColor(220);
       doc.line(startX + 1.8, currentY + 0.4, startX + w - 3.2, currentY + 0.4);
       doc.line(startX + 0.15, currentY + 1.05, startX + w - 0.9, currentY + 1.05);
 
-      doc.setDrawColor(203, 213, 225);
+      doc.setDrawColor(180);
       currentY += blockStep;
     }
   }
@@ -3277,12 +3254,12 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(79, 70, 229);
+    doc.setTextColor(0);
     doc.text("CUES / KEYWORDS", startX + 0.1, 1.8);
     doc.text("NOTES", startX + cueW + 0.15, 1.8);
     doc.text("SUMMARY", startX + 0.1, h - 0.8 - summaryH + 0.25);
 
-    doc.setDrawColor(241, 245, 249);
+    doc.setDrawColor(220);
     let noteY = 2.1;
     while (noteY < h - 0.8 - summaryH - 0.2) {
       doc.line(startX + cueW + 0.15, noteY, endX, noteY);
@@ -3298,7 +3275,7 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
         doc.rect(startX, cY, w - 1.5, rowH);
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(8);
-        doc.setTextColor(79, 70, 229);
+        doc.setTextColor(0);
         doc.text(d.toUpperCase(), startX + 0.15, cY + 0.38);
         doc.line(startX + 1.1, cY, startX + 1.1, cY + rowH);
         cY += rowH + 0.08;
@@ -3310,12 +3287,12 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     const headerH = 0.4;
     const rowH = 0.38;
     const startY = 1.6;
-    doc.setFillColor(248, 250, 252);
+    doc.setFillColor(245);
     doc.rect(startX, startY, w - 1.5, headerH, "F");
     doc.rect(startX, startY, w - 1.5, headerH);
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(7);
-    doc.setTextColor(148, 163, 184);
+    doc.setTextColor(0);
     doc.text("EXERCISE", startX + 0.1, startY + 0.25);
     doc.text("SETS", startX + colW[0] + 0.1, startY + 0.25);
     doc.text("REPS", startX + colW[0] + colW[1] + 0.1, startY + 0.25);
@@ -3347,15 +3324,15 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
       doc.rect(startX, currentY, w - 1.5, blockH);
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(7);
-      doc.setTextColor(148, 163, 184);
+      doc.setTextColor(0);
       doc.text("BOOK TITLE:", startX + 0.15, currentY + 0.35);
       doc.text("AUTHOR:", startX + 0.15, currentY + 0.7);
       doc.text("RATING & THOUGHTS:", startX + 0.15, currentY + 1.05);
-      doc.setDrawColor(241, 245, 249);
+      doc.setDrawColor(220);
       doc.line(startX + 1.8, currentY + 0.4, startX + w - 1.8, currentY + 0.4);
       doc.line(startX + 1.8, currentY + 0.75, startX + w - 1.8, currentY + 0.75);
       doc.line(startX + 1.8, currentY + 1.1, startX + w - 1.8, currentY + 1.1);
-      doc.setDrawColor(203, 213, 225);
+      doc.setDrawColor(180);
       currentY += blockStep;
     }
   }

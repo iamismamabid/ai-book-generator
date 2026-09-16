@@ -416,12 +416,12 @@ export default function MathPuzzleGenerator() {
           // Header Box 1
           doc.setFont("helvetica", "bold");
           doc.setFontSize(16);
-          doc.setTextColor(30, 41, 59);
+          doc.setTextColor(0);
           doc.text(`${titleStr} #${idx1 + 1}`, marginL + contentW / 2, marginT + 0.25, { align: "center" });
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
-          doc.setTextColor(100, 116, 139);
+          doc.setTextColor(0);
           doc.text(instruction, marginL + contentW / 2, marginT + 0.45, { align: "center" });
 
           // Draw Top Puzzle
@@ -436,7 +436,7 @@ export default function MathPuzzleGenerator() {
           // Separator line
           const midY = marginT + contentH / 2 + 0.05;
           doc.setLineWidth(0.01);
-          doc.setDrawColor(226, 232, 240);
+          doc.setDrawColor(0);
           doc.line(marginL + 0.5, midY, marginL + contentW - 0.5, midY);
 
           // Header Box 2
@@ -444,12 +444,12 @@ export default function MathPuzzleGenerator() {
           if (idx2 < totalListLen) {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
-            doc.setTextColor(30, 41, 59);
+            doc.setTextColor(0);
             doc.text(`${titleStr} #${idx2 + 1}`, marginL + contentW / 2, midY + 0.35, { align: "center" });
 
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8);
-            doc.setTextColor(100, 116, 139);
+            doc.setTextColor(0);
             doc.text(instruction, marginL + contentW / 2, midY + 0.55, { align: "center" });
 
             // Draw Bottom Puzzle
@@ -465,16 +465,16 @@ export default function MathPuzzleGenerator() {
           // 1-up layout
           doc.setFont("helvetica", "bold");
           doc.setFontSize(22);
-          doc.setTextColor(30, 41, 59);
+          doc.setTextColor(0);
           doc.text(`${titleStr} #${pIdx + 1}`, marginL + contentW / 2, marginT + 0.3, { align: "center" });
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
-          doc.setTextColor(100, 116, 139);
+          doc.setTextColor(0);
           doc.text(instruction, marginL + contentW / 2, marginT + 0.6, { align: "center" });
 
           doc.setLineWidth(0.015);
-          doc.setDrawColor(226, 232, 240);
+          doc.setDrawColor(0);
           doc.line(marginL, marginT + 0.8, marginL + contentW, marginT + 0.8);
 
           if (puzzleType === "addition" && additionPuzzles[pIdx]) {
@@ -489,7 +489,7 @@ export default function MathPuzzleGenerator() {
         // Footer page numbers
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
+        doc.setTextColor(0);
         doc.text(`Page ${pIdx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
       }
 
@@ -500,7 +500,7 @@ export default function MathPuzzleGenerator() {
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
-        doc.setTextColor(30, 41, 59);
+        doc.setTextColor(0);
         doc.text("Answer Key", marginL + contentW / 2, marginT + 0.3, { align: "center" });
         doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
         if (finalGuides) {
@@ -518,7 +518,7 @@ export default function MathPuzzleGenerator() {
             ansPageCounter++;
             doc.setFont("helvetica", "bold");
             doc.setFontSize(22);
-            doc.setTextColor(30, 41, 59);
+            doc.setTextColor(0);
             doc.text("Answer Key (Cont.)", marginL + contentW / 2, marginT + 0.3, { align: "center" });
             doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
             if (finalGuides) {
@@ -531,7 +531,7 @@ export default function MathPuzzleGenerator() {
           // Mini Puzzle Label
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
-          doc.setTextColor(79, 70, 229);
+          doc.setTextColor(0);
           doc.text(`Puzzle #${pIdx + 1} Answers`, marginL, startY);
 
           if (puzzleType === "addition" && additionPuzzles[pIdx]) {
@@ -546,7 +546,7 @@ export default function MathPuzzleGenerator() {
         // Footer page numbering for Answer page
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
+        doc.setTextColor(0);
         doc.text(`Page ${ansPageCounter}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
       }
 
@@ -593,7 +593,7 @@ export default function MathPuzzleGenerator() {
         const cy = y + r * (boxH + cellSpacing);
 
         // Draw outer borders
-        doc.setDrawColor(30, 41, 59);
+        doc.setDrawColor(0);
         doc.setLineWidth(0.015);
         doc.rect(cx, cy, boxW, boxH);
 
@@ -603,17 +603,14 @@ export default function MathPuzzleGenerator() {
         if (!isHidden) {
           doc.setFont("helvetica", "bold");
           doc.setFontSize(14);
-          doc.setTextColor(30, 41, 59);
-          if (puzzle.hiddenIndices.includes(idx) && showAll) {
-            doc.setTextColor(79, 70, 229); // answers in color
-          }
+          doc.setTextColor(0);
           doc.text(val.toString(), cx + boxW / 2, cy + boxH / 2 + 0.06, { align: "center" });
         }
 
         // Draw inline Math operators (plus signs, equal signs)
         doc.setFont("helvetica", "bold");
         doc.setFontSize(15);
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(0);
 
         // Horizontal Plus
         if (c < size - 1) {
@@ -639,7 +636,7 @@ export default function MathPuzzleGenerator() {
     const startX = x + (width - size * cellW) / 2;
 
     doc.setLineWidth(0.012);
-    doc.setDrawColor(30, 41, 59);
+    doc.setDrawColor(0);
 
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
@@ -650,7 +647,7 @@ export default function MathPuzzleGenerator() {
         const isHeader = r === 0 || c === 0;
         
         if (isHeader) {
-          doc.setFillColor(241, 245, 249); // slate-100
+          doc.setFillColor(245);
           doc.rect(cx, cy, cellW, cellH, "FD");
         } else {
           doc.rect(cx, cy, cellW, cellH);
@@ -661,7 +658,7 @@ export default function MathPuzzleGenerator() {
           // Top left corner math icon multiplier sign
           doc.setFont("helvetica", "bold");
           doc.setFontSize(14);
-          doc.setTextColor(79, 70, 229);
+          doc.setTextColor(0);
           doc.text("x", cx + cellW / 2, cy + cellH / 2 + 0.05, { align: "center" });
         } 
         else if (r === 0) {
@@ -671,8 +668,7 @@ export default function MathPuzzleGenerator() {
           if (!isHidden) {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(11);
-            doc.setTextColor(30, 41, 59);
-            if (puzzle.hiddenCols.includes(c - 1) && showAll) doc.setTextColor(79, 70, 229);
+            doc.setTextColor(0);
             doc.text(val.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
           }
         } 
@@ -683,8 +679,7 @@ export default function MathPuzzleGenerator() {
           if (!isHidden) {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(11);
-            doc.setTextColor(30, 41, 59);
-            if (puzzle.hiddenRows.includes(r - 1) && showAll) doc.setTextColor(79, 70, 229);
+            doc.setTextColor(0);
             doc.text(val.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
           }
         } 
@@ -694,13 +689,9 @@ export default function MathPuzzleGenerator() {
           const isHidden = puzzle.hiddenProducts.some(p => p[0] === r - 1 && p[1] === c - 1) && !showAll;
           
           if (!isHidden) {
-            doc.setFont("helvetica", "normal");
+            doc.setFont("helvetica", showAll && puzzle.hiddenProducts.some(p => p[0] === r - 1 && p[1] === c - 1) ? "bold" : "normal");
             doc.setFontSize(11);
-            doc.setTextColor(30, 41, 59);
-            if (puzzle.hiddenProducts.some(p => p[0] === r - 1 && p[1] === c - 1) && showAll) {
-              doc.setFont("helvetica", "bold");
-              doc.setTextColor(79, 70, 229);
-            }
+            doc.setTextColor(0);
             doc.text(val.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
           }
         }
@@ -717,7 +708,7 @@ export default function MathPuzzleGenerator() {
     const startX = x + (width - size * cellW) / 2;
 
     doc.setLineWidth(0.012);
-    doc.setDrawColor(30, 41, 59);
+    doc.setDrawColor(0);
 
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
@@ -733,17 +724,17 @@ export default function MathPuzzleGenerator() {
         }
 
         if (isSumHeader) {
-          doc.setFillColor(248, 250, 252);
-          doc.setDrawColor(148, 163, 184); // lighter borders for sums
+          doc.setFillColor(245);
+          doc.setDrawColor(0);
           doc.rect(cx, cy, cellW, cellH, "FD");
           
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
-          doc.setTextColor(79, 70, 229);
+          doc.setTextColor(0);
           const sumVal = r === 4 ? puzzle.colSums[c] : puzzle.rowSums[r];
           doc.text(sumVal.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
         } else {
-          doc.setDrawColor(30, 41, 59);
+          doc.setDrawColor(0);
           doc.rect(cx, cy, cellW, cellH);
 
           const val = puzzle.grid[r][c];
@@ -752,10 +743,7 @@ export default function MathPuzzleGenerator() {
           if (!isHidden) {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(11);
-            doc.setTextColor(30, 41, 59);
-            if (puzzle.hiddenCells.some(cell => cell[0] === r && cell[1] === c) && showAll) {
-              doc.setTextColor(79, 70, 229);
-            }
+            doc.setTextColor(0);
             doc.text(val.toString(), cx + cellW / 2, cy + cellH / 2 + 0.04, { align: "center" });
           }
         }

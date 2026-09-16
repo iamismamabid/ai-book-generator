@@ -159,8 +159,8 @@ export default function ExportButton({
     // Map line height spacing (in)
     const lineSpacing = customLineSpacing * 0.13;
 
-    // Convert hex text color to RGB values
-    let r = 30, g = 41, b = 59;
+    // Convert hex text color to RGB values (defaults to pure black 0, 0, 0 for KDP B&W interior)
+    let r = 0, g = 0, b = 0;
     if (customTextColor) {
       const cleanHex = customTextColor.replace("#", "");
       if (cleanHex.length === 6) {
@@ -169,6 +169,26 @@ export default function ExportButton({
         b = parseInt(cleanHex.substring(4, 6), 16);
       }
     }
+
+    const applyTextColor = (d: jsPDF) => {
+      if (r === 0 && g === 0 && b === 0) {
+        d.setTextColor(0);
+      } else if (r === g && g === b) {
+        d.setTextColor(r);
+      } else {
+        d.setTextColor(r, g, b);
+      }
+    };
+
+    const applyDrawColor = (d: jsPDF) => {
+      if (r === 0 && g === 0 && b === 0) {
+        d.setDrawColor(0);
+      } else if (r === g && g === b) {
+        d.setDrawColor(r);
+      } else {
+        d.setDrawColor(r, g, b);
+      }
+    };
 
     const marginT = 0.85;
     const marginB = 0.85;
@@ -196,14 +216,14 @@ export default function ExportButton({
         const footerY = pageH - 0.45;
 
         // Draw running header thin line
-        doc.setDrawColor(226, 232, 240); // slate-200
+        doc.setDrawColor(0);
         doc.setLineWidth(0.005);
         doc.line(marginL, headerY + 0.05, pageW - marginR, headerY + 0.05);
 
         // Draw Running Header Text
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.setTextColor(100, 116, 139); // slate-500
+        doc.setTextColor(0);
 
         if (isOdd) {
           // Odd Page: Book Title Left, Chapter Title Right
@@ -218,7 +238,7 @@ export default function ExportButton({
         // Draw Footer Page Number
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184); // slate-400
+        doc.setTextColor(0);
         doc.text(`Page ${pNum}`, marginL + (pageW - marginL - marginR) / 2, footerY, { align: "center" });
 
         if (drawGuides) {
@@ -267,7 +287,7 @@ export default function ExportButton({
 
             doc.setFont(docFont, "normal");
             doc.setFontSize(docFontSize);
-            doc.setTextColor(r, g, b);
+            applyTextColor(doc);
 
             const splitResult = doc.splitTextToSize(remainingText, activeWidth);
             const lineToPrint = splitResult[0];
@@ -295,18 +315,18 @@ export default function ExportButton({
 
       doc.setFont(docFont, "bold");
       doc.setFontSize(28);
-      doc.setTextColor(r, g, b);
+      applyTextColor(doc);
       const titleLines = doc.splitTextToSize(title, titleContentW);
       doc.text(titleLines, titleMarginL + titleContentW / 2, pageH * 0.3, { align: "center" });
 
       // Decorative divider line
-      doc.setDrawColor(r, g, b);
+      applyDrawColor(doc);
       doc.setLineWidth(0.015);
       doc.line(titleMarginL + titleContentW * 0.4, pageH * 0.4, titleMarginL + titleContentW * 0.6, pageH * 0.4);
 
       doc.setFont(docFont, "italic");
       doc.setFontSize(14);
-      doc.setTextColor(r, g, b);
+      applyTextColor(doc);
       const subtitleLines = doc.splitTextToSize(subtitle, titleContentW);
       doc.text(subtitleLines, titleMarginL + titleContentW / 2, pageH * 0.46, { align: "center" });
 
@@ -322,7 +342,7 @@ export default function ExportButton({
       // Title: Introduction
       doc.setFont(docFont, "bold");
       doc.setFontSize(20);
-      doc.setTextColor(r, g, b);
+      applyTextColor(doc);
       doc.text("Introduction", 0.85, marginT + 0.2);
       currentLineIndex = 3; // Leave space under heading
 
@@ -355,14 +375,14 @@ export default function ExportButton({
         // Bold stylized Chapter Title starting lower on the page (1.8 inches down)
         doc.setFont(docFont, "bold");
         doc.setFontSize(22);
-        doc.setTextColor(r, g, b);
+        applyTextColor(doc);
 
         const chapterTitleText = chapter.title.toUpperCase();
         const splitTitle = doc.splitTextToSize(chapterTitleText, contentW);
         doc.text(splitTitle, marginL + contentW / 2, 1.8, { align: "center" });
 
         // Decorative divider under chapter header
-        doc.setDrawColor(r, g, b);
+        applyDrawColor(doc);
         doc.setLineWidth(0.005);
         doc.line(marginL + contentW * 0.35, 2.3, marginL + contentW * 0.65, 2.3);
 

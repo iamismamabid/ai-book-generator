@@ -307,7 +307,7 @@ export default function CryptogramGenerator() {
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9.5);
-          doc.setTextColor(100);
+          doc.setTextColor(0);
           doc.text(
             "Decode the cipher substitution. Each letter represents another letter of the alphabet.",
             margins.contentCenterX,
@@ -326,7 +326,7 @@ export default function CryptogramGenerator() {
           // Page Number Footer
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
-          doc.setTextColor(100);
+          doc.setTextColor(0);
           doc.text(`Page ${pageNum}`, margins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
         };
 
@@ -499,7 +499,7 @@ export default function CryptogramGenerator() {
             if (ansY + 1.0 > pageH - marginB) {
               doc.setFont("helvetica", "normal");
               doc.setFontSize(9);
-              doc.setTextColor(100);
+              doc.setTextColor(0);
               doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
 
               doc.addPage();
@@ -518,7 +518,7 @@ export default function CryptogramGenerator() {
 
             doc.setFont("helvetica", "normal");
             doc.setFontSize(9.5);
-            doc.setTextColor(40);
+            doc.setTextColor(0);
 
             // Wrap solution string inside the margins
             const wrappedSol = doc.splitTextToSize(puzzle.original, ansMargins.contentW - 0.2);
@@ -529,7 +529,7 @@ export default function CryptogramGenerator() {
           // Footer page index for answer page
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
-          doc.setTextColor(100);
+          doc.setTextColor(0);
           doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
         }
 

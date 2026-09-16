@@ -250,10 +250,10 @@ function runTypeset(
     if (options.runningHeaders) {
       doc.setFont(fontFamily, "italic");
       doc.setFontSize(fontSize * 0.75);
-      doc.setTextColor(100, 116, 139);
+      doc.setTextColor(0);
 
       // Divider line
-      doc.setDrawColor(226, 232, 240);
+      doc.setDrawColor(0);
       doc.setLineWidth(0.008);
 
       if (isOdd) {
@@ -274,7 +274,7 @@ function runTypeset(
     if (options.pageNumbers) {
       doc.setFont(fontFamily, "normal");
       doc.setFontSize(fontSize * 0.85);
-      doc.setTextColor(15, 23, 42);
+      doc.setTextColor(0);
 
       const pageStr = i.toString();
       if (isOdd) {

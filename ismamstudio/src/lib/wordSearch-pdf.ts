@@ -77,7 +77,7 @@ function drawWordSearchPage(
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
+  doc.setTextColor(0);
   doc.text(`Page ${pageNumber}`, contentCenterX, height - 0.4, { align: "center" });
   doc.setTextColor(0);
 }

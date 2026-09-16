@@ -93,7 +93,7 @@ export function drawKakuroGridPDF(
           );
         } else if (cell.displayValue) {
           doc.setFontSize(Math.max(7, Math.floor(cellSize * 22)));
-          doc.setTextColor(40);
+          doc.setTextColor(0);
           doc.setFont("helvetica", "normal");
           doc.text(
             cell.displayValue,
@@ -159,7 +159,7 @@ export function drawKakuroGridPDF(
   // Page number footer
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.setTextColor(100);
+  doc.setTextColor(0);
   doc.text(`Page ${pageNumber}`, contentCenterX, height - 0.4, { align: "center" });
 }
 

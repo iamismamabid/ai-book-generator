@@ -411,7 +411,7 @@ export default function BulkGeneratorClient() {
             const encoded = encode(phrase);
 
             // Title
-            doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(30, 41, 59);
+            doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(0);
             doc.text(`Cryptogram #${idx + 1}`, w / 2, 1.0, { align: "center" });
 
             // Encoded text in chunked letter-box rows
@@ -424,7 +424,7 @@ export default function BulkGeneratorClient() {
             let curY = 1.8;
 
             doc.setFont("helvetica", "normal"); doc.setFontSize(Math.max(8, boxSize * 28));
-            doc.setDrawColor(100, 116, 139); doc.setLineWidth(0.012);
+            doc.setDrawColor(0); doc.setLineWidth(0.012);
             let colIdx = 0;
             letters.forEach((ch) => {
               if (ch === " ") { colIdx += 0.6; return; }
@@ -437,22 +437,22 @@ export default function BulkGeneratorClient() {
 
             // Blank answer line below each letter box
             curY += boxSize + 0.55;
-            doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(0);
             doc.text("Decode:", (w - Math.min(letters.length, cols) * step) / 2, curY);
             const lineY = curY + 0.22;
             const lineW = w - 1.2;
-            doc.setDrawColor(150); doc.setLineWidth(0.008);
+            doc.setDrawColor(0); doc.setLineWidth(0.008);
             doc.line(0.6, lineY, 0.6 + lineW, lineY);
 
             // Hint: cipher alphabet key at bottom
-            doc.setFont("helvetica", "italic"); doc.setFontSize(7); doc.setTextColor(150);
+            doc.setFont("helvetica", "italic"); doc.setFontSize(7); doc.setTextColor(0);
             doc.text("A=B C=D ... (each letter has a unique substitute)", w / 2, h - 0.7, { align: "center" });
           });
 
           // Append solution pages
           phrases.forEach((phrase, idx) => {
             doc.addPage();
-            doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.setTextColor(30, 41, 59);
+            doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.setTextColor(0);
             doc.text(`Solution #${idx + 1}`, w / 2, 1.0, { align: "center" });
             doc.setFont("helvetica", "normal"); doc.setFontSize(12); doc.setTextColor(0);
             const lines = doc.splitTextToSize(phrase, w - 1.4);
@@ -490,7 +490,7 @@ export default function BulkGeneratorClient() {
             doc.addPage();
             doc.setFont("helvetica", "bold"); doc.setFontSize(16);
             doc.text(`${item.type} Puzzle #${p}`, w / 2, 1, { align: "center" });
-            doc.setDrawColor(100, 116, 139); doc.setLineWidth(0.02);
+            doc.setDrawColor(0); doc.setLineWidth(0.02);
             doc.rect(1.5, 2, w - 3, h - 4);
             doc.setFont("helvetica", "normal"); doc.setFontSize(10);
             doc.text("[Puzzle Content]", w / 2, h / 2, { align: "center" });

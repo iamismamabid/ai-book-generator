@@ -80,7 +80,7 @@ function drawSudokuTile(
   if (showTitle) {
     doc.setFont(pdfFont, "bold");
     doc.setFontSize(size > 4.5 ? 14 : 10.5);
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(0);
     const label = isSolution ? `Answer #${puzzleNumber}` : `Puzzle #${puzzleNumber}`;
     doc.text(label, x + size / 2, y - 0.12, { align: "center" });
   }
@@ -90,7 +90,7 @@ function drawSudokuTile(
   // Thin cell borders scaled with user borderThickness
   const thinLine = Math.max(0.004, Math.min(0.012, borderThickness * 0.004));
   doc.setLineWidth(thinLine);
-  doc.setDrawColor(148, 163, 184);
+  doc.setDrawColor(180);
 
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
@@ -103,7 +103,7 @@ function drawSudokuTile(
   // Thick 3x3 box borders scaled with user borderThickness
   const thickLine = Math.max(0.012, Math.min(0.024, borderThickness * 0.012));
   doc.setLineWidth(thickLine);
-  doc.setDrawColor(15, 23, 42);
+  doc.setDrawColor(0);
   for (let b = 0; b <= 3; b++) {
     const offset = b * cellSize * 3;
     doc.line(x + offset, y, x + offset, y + size);
@@ -117,7 +117,7 @@ function drawSudokuTile(
 
   doc.setFontSize(numberFontSize);
   doc.setFont(pdfFont, "bold");
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
 
   const verticalOffset = cellSize * 0.65;
 
@@ -172,7 +172,7 @@ function drawFrontMatterTitlePage(
   // Main Title
   doc.setFont(options.pdfFont, "bold");
   doc.setFontSize(26);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   const titleLines = doc.splitTextToSize(options.title || "Sudoku Master", contentW - 0.5);
   doc.text(titleLines, centerX, 3.2, { align: "center" });
 
@@ -181,7 +181,7 @@ function drawFrontMatterTitlePage(
   // Subtitle
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(12);
-  doc.setTextColor(71, 85, 105);
+  doc.setTextColor(60);
   const defaultSub = `${options.puzzleCount} Handcrafted Large Print Puzzles with Complete Solutions`;
   const rawSub = options.subtitle && options.subtitle.trim() ? options.subtitle : defaultSub;
   const cleanSub = rawSub.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${options.puzzleCount} $1`);
@@ -190,7 +190,7 @@ function drawFrontMatterTitlePage(
 
   // Elegant Divider
   const divY = titleBottomY + 0.45 + subLines.length * 0.22;
-  doc.setDrawColor(148, 163, 184);
+  doc.setDrawColor(180);
   doc.setLineWidth(0.01);
   doc.line(centerX - 1.5, divY, centerX + 1.5, divY);
 
@@ -198,12 +198,12 @@ function drawFrontMatterTitlePage(
   const badgeY = divY + 0.55;
   doc.setFont(options.pdfFont, "bold");
   doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   doc.text(`DIFFICULTY LEVEL: ${options.difficulty.toUpperCase()}`, centerX, badgeY, { align: "center" });
 
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100);
   doc.text("Standard 9×9 Grids • 100% Mathematically Unique Solutions", centerX, badgeY + 0.25, { align: "center" });
   doc.text("Engineered for Large Print Perfection", centerX, badgeY + 0.45, { align: "center" });
 
@@ -212,18 +212,18 @@ function drawFrontMatterTitlePage(
   const author = options.authorName?.trim() || "Independent Publisher";
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(9.5);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100);
   doc.text("CREATED & PUBLISHED BY", centerX, authorY - 0.25, { align: "center" });
 
   doc.setFont(options.pdfFont, "bold");
   doc.setFontSize(14);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   doc.text(author, centerX, authorY, { align: "center" });
 
   // Publishing imprint
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(8.5);
-  doc.setTextColor(148, 163, 184);
+  doc.setTextColor(120);
   doc.text("Independent Publishing Edition", centerX, height - 1.0, { align: "center" });
 }
 
@@ -247,17 +247,17 @@ function drawFrontMatterCopyrightAndRulesPage(
   // Section Header: HOW TO PLAY SUDOKU
   doc.setFont(options.pdfFont, "bold");
   doc.setFontSize(16);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   doc.text("HOW TO PLAY SUDOKU", centerX, 1.2, { align: "center" });
 
-  doc.setDrawColor(203, 213, 225);
+  doc.setDrawColor(180);
   doc.setLineWidth(0.012);
   doc.line(centerX - 1.0, 1.35, centerX + 1.0, 1.35);
 
   // Intro text
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(9.5);
-  doc.setTextColor(51, 65, 85);
+  doc.setTextColor(40);
   const intro = "Sudoku is a logic-based number placement puzzle. The objective is to fill a 9×9 grid with digits so that every row, column, and 3×3 subgrid contains all the numbers from 1 to 9.";
   const introLines = doc.splitTextToSize(intro, contentW);
   doc.text(introLines, marginLeft, 1.65);
@@ -265,19 +265,19 @@ function drawFrontMatterCopyrightAndRulesPage(
   // Rules Box
   const boxTop = 1.65 + introLines.length * 0.2 + 0.15;
   const boxHeight = 1.65;
-  doc.setFillColor(248, 250, 252);
-  doc.setDrawColor(226, 232, 240);
+  doc.setFillColor(245);
+  doc.setDrawColor(200);
   doc.setLineWidth(0.012);
   doc.roundedRect(marginLeft, boxTop, contentW, boxHeight, 0.08, 0.08, "FD");
 
   doc.setFont(options.pdfFont, "bold");
   doc.setFontSize(10.5);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   doc.text("THE THREE FUNDAMENTAL RULES", marginLeft + 0.25, boxTop + 0.32);
 
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(9);
-  doc.setTextColor(51, 65, 85);
+  doc.setTextColor(40);
 
   const rules = [
     "1. Each row (horizontal) must contain the digits 1 through 9, with no duplicates.",
@@ -296,12 +296,12 @@ function drawFrontMatterCopyrightAndRulesPage(
   const tipsTop = boxTop + boxHeight + 0.3;
   doc.setFont(options.pdfFont, "bold");
   doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   doc.text("PRO SOLVING STRATEGIES", marginLeft, tipsTop);
 
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(9);
-  doc.setTextColor(51, 65, 85);
+  doc.setTextColor(40);
 
   const tips = [
     "• Start with scanning: Focus on rows, columns, or 3×3 boxes that already have 5 or more numbers completed.",
@@ -318,13 +318,13 @@ function drawFrontMatterCopyrightAndRulesPage(
   });
 
   // Copyright Section at bottom
-  doc.setDrawColor(226, 232, 240);
+  doc.setDrawColor(200);
   doc.setLineWidth(0.01);
   doc.line(marginLeft, height - 2.1, marginLeft + contentW, height - 2.1);
 
   doc.setFont(options.pdfFont, "normal");
   doc.setFontSize(8);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100);
 
   const year = new Date().getFullYear();
   const author = options.authorName?.trim() || "Independent Publisher";
@@ -468,7 +468,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     // Header Title
     doc.setFont(pdfFont, "bold");
     doc.setFontSize(16);
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(0);
     const pageHeader = headerText && headerText.trim()
       ? (headerText.includes("#") ? headerText : `${headerText} #${index + 1}`)
       : `${title} #${index + 1}`;
@@ -484,7 +484,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     // Footer Copyright Line & Page Number
     doc.setFont(pdfFont, "normal");
     doc.setFontSize(9);
-    doc.setTextColor(100, 116, 139);
+    doc.setTextColor(100);
     if (footerText && footerText.trim()) {
       doc.text(footerText, marginLeft, height - 0.4);
       doc.text(`Page ${currentPage}`, width - marginRight, height - 0.4, { align: "right" });
@@ -527,7 +527,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
       // Solution Section Header
       doc.setFont(pdfFont, "bold");
       doc.setFontSize(14);
-      doc.setTextColor(15, 23, 42);
+      doc.setTextColor(0);
       const solHeader = headerText && headerText.trim()
         ? `${headerText} — Solutions`
         : `Solutions (Page ${p + 1} of ${totalSolPages})`;
@@ -558,7 +558,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
       // Solution Page Footer
       doc.setFont(pdfFont, "normal");
       doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139);
+      doc.setTextColor(100);
       if (footerText && footerText.trim()) {
         doc.text(footerText, marginLeft, height - 0.35);
         doc.text(`Page ${currentPage}`, width - marginRight, height - 0.35, { align: "right" });

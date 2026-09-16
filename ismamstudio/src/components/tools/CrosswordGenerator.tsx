@@ -319,7 +319,7 @@ export default function CrosswordGenerator() {
       const drawHeaderFooter = (titleText: string, pageNum: number, margins: ReturnType<typeof calculateKdpMargins>) => {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(20);
-        doc.setTextColor(15, 23, 42);
+        doc.setTextColor(0);
         doc.text(titleText, margins.contentCenterX, marginT + 0.3, { align: "center" });
 
         if (finalGuides) {
@@ -327,13 +327,13 @@ export default function CrosswordGenerator() {
         }
 
         doc.setLineWidth(0.015);
-        doc.setDrawColor(226, 232, 240);
+        doc.setDrawColor(180);
         doc.line(margins.marginLeft, marginT + 0.5, margins.marginLeft + margins.contentW, marginT + 0.5);
 
         // Footer page numbering
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(100);
         doc.text(`Page ${pageNum}`, margins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
       };
 
@@ -372,9 +372,9 @@ export default function CrosswordGenerator() {
             const cellX = gridStartX + c * cellSize;
             const cellY = gridOffsetTop + r * cellSize;
 
-            doc.setDrawColor(15, 23, 42);
+            doc.setDrawColor(0);
             doc.setLineWidth(0.01);
-            doc.setFillColor(255, 255, 255);
+            doc.setFillColor(255);
             doc.rect(cellX, cellY, cellSize, cellSize, 'FD');
 
             // Draw small clue number in top-left
@@ -382,7 +382,7 @@ export default function CrosswordGenerator() {
             if (wordStart) {
               doc.setFont("helvetica", "bold");
               doc.setFontSize(Math.max(5, cellSize * 16));
-              doc.setTextColor(15, 23, 42);
+              doc.setTextColor(0);
               doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.32));
             }
           });
@@ -395,12 +395,12 @@ export default function CrosswordGenerator() {
         // Across
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(15, 23, 42);
+        doc.setTextColor(0);
         doc.text("ACROSS", marginL, cluesStartY);
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(71, 85, 105);
+        doc.setTextColor(40);
 
         let acrossY = cluesStartY + 0.2;
         puzzle.placedWords.filter(w => w.dir === 'H').forEach(w => {
@@ -413,12 +413,12 @@ export default function CrosswordGenerator() {
         // Down
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(15, 23, 42);
+        doc.setTextColor(0);
         doc.text("DOWN", marginL + colW + 0.4, cluesStartY);
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(71, 85, 105);
+        doc.setTextColor(40);
 
         let downY = cluesStartY + 0.2;
         puzzle.placedWords.filter(w => w.dir === 'V').forEach(w => {
@@ -460,9 +460,9 @@ export default function CrosswordGenerator() {
               const cellX = gridStartX + c * cellSize;
               const cellY = gridOffsetTop + r * cellSize;
 
-              doc.setDrawColor(15, 23, 42);
+              doc.setDrawColor(0);
               doc.setLineWidth(0.01);
-              doc.setFillColor(255, 255, 255);
+              doc.setFillColor(255);
               doc.rect(cellX, cellY, cellSize, cellSize, 'FD');
 
               // Draw small clue number
@@ -470,14 +470,14 @@ export default function CrosswordGenerator() {
               if (wordStart) {
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(Math.max(5, cellSize * 16));
-                doc.setTextColor(100, 116, 139);
+                doc.setTextColor(100);
                 doc.text(String(wordStart.num), cellX + 0.02, cellY + (cellSize * 0.32));
               }
 
               // Draw solution letter in solid dark text
               doc.setFont("helvetica", "bold");
               doc.setFontSize(cellSize * 24);
-              doc.setTextColor(15, 23, 42);
+              doc.setTextColor(0);
               doc.text(cell, cellX + cellSize / 2, cellY + cellSize * 0.72, { align: "center" });
             });
           });

@@ -300,7 +300,7 @@ export function drawWatermark(doc: any, w: number, h: number) {
 export function drawMarginGuides(doc: any, marginL: number, marginR: number, marginT: number, marginB: number, pageW: number, pageH: number) {
   try {
     doc.saveGraphicsState();
-    doc.setDrawColor(129, 140, 248); // indigo-400
+    doc.setDrawColor(180); // neutral gray
     doc.setLineWidth(0.008);
     if (typeof doc.setLineDashPattern === "function") {
       doc.setLineDashPattern([0.05, 0.05], 0);

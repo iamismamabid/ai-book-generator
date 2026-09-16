@@ -41,7 +41,7 @@ export function drawKakuroGridPDF(
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
   const label = isSolution
     ? `${title} #${puzzleNumber} — Answer Key`
     : `${title} #${puzzleNumber}`;
@@ -73,17 +73,17 @@ export function drawKakuroGridPDF(
 
       if (cell.type === "white") {
         // Playable white cell
-        doc.setFillColor(255, 255, 255);
+        doc.setFillColor(255);
         doc.rect(cellX, cellY, cellSize, cellSize, "F");
 
-        doc.setDrawColor(203, 213, 225);
+        doc.setDrawColor(180);
         doc.setLineWidth(0.005);
         doc.rect(cellX, cellY, cellSize, cellSize, "S");
 
         // Render solution value if in solution view
         if (isSolution && cell.value !== undefined) {
           doc.setFontSize(Math.max(8, Math.floor(cellSize * 24)));
-          doc.setTextColor(15, 23, 42); // Solid rich black for KDP
+          doc.setTextColor(0); // Solid pure black for KDP B&W
           doc.setFont("helvetica", "bold");
           doc.text(
             cell.value.toString(),
@@ -93,7 +93,7 @@ export function drawKakuroGridPDF(
           );
         } else if (cell.displayValue) {
           doc.setFontSize(Math.max(7, Math.floor(cellSize * 22)));
-          doc.setTextColor(51, 65, 85);
+          doc.setTextColor(40);
           doc.setFont("helvetica", "normal");
           doc.text(
             cell.displayValue,
@@ -109,15 +109,15 @@ export function drawKakuroGridPDF(
 
         if (hasRowClue || hasColClue) {
           // Clue cell with diagonal divider
-          doc.setFillColor(51, 65, 85);
+          doc.setFillColor(60);
           doc.rect(cellX, cellY, cellSize, cellSize, "F");
 
-          doc.setDrawColor(148, 163, 184);
+          doc.setDrawColor(180);
           doc.setLineWidth(0.008);
           doc.line(cellX, cellY, cellX + cellSize, cellY + cellSize);
 
           doc.setFontSize(Math.max(6, Math.floor(cellSize * 14)));
-          doc.setTextColor(255, 255, 255);
+          doc.setTextColor(255);
           doc.setFont("helvetica", "bold");
 
           // Vertical down clue (bottom-left triangle)
@@ -141,7 +141,7 @@ export function drawKakuroGridPDF(
           }
         } else {
           // Unplayable solid black cell
-          doc.setFillColor(30, 41, 59);
+          doc.setFillColor(20);
           doc.rect(cellX, cellY, cellSize, cellSize, "F");
         }
       }
@@ -150,7 +150,7 @@ export function drawKakuroGridPDF(
 
   // Draw outer thick borders
   doc.setLineWidth(0.015);
-  doc.setDrawColor(25, 25, 35);
+  doc.setDrawColor(0);
   doc.rect(startX, startY, gridW, gridH);
 
   // Reset text color
@@ -159,7 +159,7 @@ export function drawKakuroGridPDF(
   // Page number footer
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(100);
   doc.text(`Page ${pageNumber}`, contentCenterX, height - 0.4, { align: "center" });
 }
 

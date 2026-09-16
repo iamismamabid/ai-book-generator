@@ -73,7 +73,7 @@ function drawMaze(
   const cellSize = size / Math.max(rows, cols);
 
   doc.setLineWidth(Math.max(0.015, cellSize * 0.08)); // Clear, crisp bold lines for printing
-  doc.setDrawColor(15, 23, 42); // Slate-900 bold black tone
+  doc.setDrawColor(0); // Pure black for KDP B&W compliance
 
   // 1. Draw Optimized Horizontal Wall Segments (Deduplicated & Merged)
   for (let r = 0; r <= rows; r++) {
@@ -126,7 +126,7 @@ function drawMaze(
   // 3. Draw Start (S) and End (E) Markers in bold high-contrast tones
   doc.setFont("helvetica", "bold");
   doc.setFontSize(Math.max(7, Math.floor(cellSize * 30)));
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(0);
 
   const startX = xOffset + start[1] * cellSize + cellSize / 2;
   const startY = yOffset + start[0] * cellSize + cellSize * 0.72;
@@ -139,7 +139,7 @@ function drawMaze(
   // 4. Draw Solution Path if provided (Collinear line segments merged)
   if (solutionPath && solutionPath.length > 1) {
     doc.setLineWidth(Math.max(0.02, cellSize * 0.28));
-    doc.setDrawColor(15, 23, 42);
+    doc.setDrawColor(0);
 
     let segStart = solutionPath[0];
     let prevPoint = solutionPath[0];
@@ -272,12 +272,12 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     const headerY = mazeY - 0.35;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(0);
     doc.text(`Maze #${index + 1}`, mazeX, headerY);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139);
+    doc.setTextColor(100);
     doc.text(
       `Shape: ${shape.charAt(0).toUpperCase() + shape.slice(1)}`,
       mazeX + mazeSize,
@@ -295,7 +295,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     // Footer info
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.setTextColor(148, 163, 184);
+    doc.setTextColor(100);
     doc.text(`Page ${currentPage}`, margins.contentCenterX, heightInches - 0.5, { align: "center" });
   });
 
@@ -311,12 +311,12 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     // Section Header Divider
     doc.setFont("helvetica", "bold");
     doc.setFontSize(28);
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(0);
     doc.text("SOLUTIONS", divMargins.contentCenterX, heightInches / 2 - 0.3, { align: "center" });
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.setTextColor(100, 116, 139);
+    doc.setTextColor(100);
     doc.text(`Complete Answer Keys for Mazes #1 to #${mazes.length}`, divMargins.contentCenterX, heightInches / 2 + 0.2, { align: "center" });
 
     let currentSolutionCount = 0;
@@ -349,7 +349,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
       if (currentSolutionCount % 4 === 0) {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
-        doc.setTextColor(15, 23, 42);
+        doc.setTextColor(0);
         doc.text("Answer Keys", solMargins.contentCenterX, 0.85, { align: "center" });
         if (showGuides) {
           drawMarginGuides(doc, solMargins.marginLeft, 0.75, solMargins.marginRight, 0.75, widthInches, heightInches);
@@ -357,7 +357,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(148, 163, 184);
+        doc.setTextColor(100);
         doc.text(`Page ${currentPage}`, solMargins.contentCenterX, heightInches - 0.45, { align: "center" });
       }
 
@@ -371,7 +371,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
       // Label indicator over the micro-solution preview grid
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
-      doc.setTextColor(15, 23, 42);
+      doc.setTextColor(0);
       doc.text(`Solution #${index + 1}`, x + solutionMazeSize / 2, y - 0.12, { align: "center" });
 
       // Execute optimal path calculations (BFS algorithm)

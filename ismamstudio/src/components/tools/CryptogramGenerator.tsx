@@ -302,12 +302,12 @@ export default function CryptogramGenerator() {
           // Header Title
           doc.setFont("helvetica", "bold");
           doc.setFontSize(22);
-          doc.setTextColor(15, 23, 42);
+          doc.setTextColor(0);
           doc.text("Cryptogram Puzzles", margins.contentCenterX, marginT + 0.3, { align: "center" });
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9.5);
-          doc.setTextColor(100, 116, 139);
+          doc.setTextColor(100);
           doc.text(
             "Decode the cipher substitution. Each letter represents another letter of the alphabet.",
             margins.contentCenterX,
@@ -316,7 +316,7 @@ export default function CryptogramGenerator() {
           );
 
           doc.setLineWidth(0.015);
-          doc.setDrawColor(226, 232, 240);
+          doc.setDrawColor(180);
           doc.line(margins.marginLeft, marginT + 0.7, margins.marginLeft + margins.contentW, marginT + 0.7);
 
           if (finalGuides) {
@@ -326,7 +326,7 @@ export default function CryptogramGenerator() {
           // Page Number Footer
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
-          doc.setTextColor(100, 116, 139);
+          doc.setTextColor(100);
           doc.text(`Page ${pageNum}`, margins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
         };
 
@@ -384,7 +384,7 @@ export default function CryptogramGenerator() {
           // Draw Puzzle Title in solid black
           doc.setFont("helvetica", "bold");
           doc.setFontSize(13);
-          doc.setTextColor(15, 23, 42);
+          doc.setTextColor(0);
           doc.text(`Puzzle #${puzzle.index}`, currentMargins.marginLeft, puzzleStartY);
 
           // Word-wrapped rendering of letters with boxes
@@ -409,20 +409,20 @@ export default function CryptogramGenerator() {
 
               if (isLetter) {
                 // Write-in Box
-                doc.setDrawColor(148, 163, 184); // slate-400
+                doc.setDrawColor(180); // slate-400 equivalent
                 doc.setLineWidth(0.008);
                 doc.rect(curX, curBoxY, charBoxW, charBoxH);
 
                 // Cipher Letter (Bottom)
                 doc.setFont("courier", "bold");
                 doc.setFontSize(fontSizeType === "large" ? 13 : 11);
-                doc.setTextColor(15, 23, 42); // slate-900
+                doc.setTextColor(0); // slate-900 equivalent
                 doc.text(char, curX + charBoxW / 2, curBoxY + charBoxH + 0.16, { align: "center" });
               } else {
                 // Non-alphabetic character (e.g. punctuation, comma, dot)
                 doc.setFont("courier", "bold");
                 doc.setFontSize(fontSizeType === "large" ? 13 : 11);
-                doc.setTextColor(15, 23, 42);
+                doc.setTextColor(0);
                 doc.text(char, curX + charBoxW / 2, curBoxY + charBoxH - 0.05, { align: "center" });
               }
 
@@ -445,11 +445,11 @@ export default function CryptogramGenerator() {
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(22);
-          doc.setTextColor(15, 23, 42);
+          doc.setTextColor(0);
           doc.text("Answer Key", ansMargins.contentCenterX, marginT + 0.3, { align: "center" });
 
           doc.setLineWidth(0.015);
-          doc.setDrawColor(226, 232, 240);
+          doc.setDrawColor(180);
           doc.line(ansMargins.marginLeft, marginT + 0.6, ansMargins.marginLeft + ansMargins.contentW, marginT + 0.6);
 
           if (finalGuides) {
@@ -459,12 +459,12 @@ export default function CryptogramGenerator() {
           // A. Print Cipher Key alphabet mapping
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
-          doc.setTextColor(15, 23, 42);
+          doc.setTextColor(0);
           doc.text("SUBSTITUTION KEY:", ansMargins.marginLeft, marginT + 1.0);
 
           doc.setFont("courier", "bold");
           doc.setFontSize(9);
-          doc.setTextColor(30, 41, 59);
+          doc.setTextColor(0);
 
           // Draw alphabet row and matching cipher row
           const alphaStr = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z";
@@ -476,13 +476,13 @@ export default function CryptogramGenerator() {
           doc.text(`Original: ${alphaStr}`, ansMargins.marginLeft, marginT + 1.25);
           doc.text(`Cipher:   ${cipherStr}`, ansMargins.marginLeft, marginT + 1.45);
 
-          doc.setDrawColor(226, 232, 240);
+          doc.setDrawColor(180);
           doc.line(ansMargins.marginLeft, marginT + 1.65, ansMargins.marginLeft + ansMargins.contentW, marginT + 1.65);
 
           // B. Print Decrypted Solutions List
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
-          doc.setTextColor(15, 23, 42);
+          doc.setTextColor(0);
           doc.text("DECRYPTED PUZZLES:", ansMargins.marginLeft, marginT + 1.95);
 
           let ansY = marginT + 2.25;
@@ -499,7 +499,7 @@ export default function CryptogramGenerator() {
             if (ansY + 1.0 > pageH - marginB) {
               doc.setFont("helvetica", "normal");
               doc.setFontSize(9);
-              doc.setTextColor(100, 116, 139);
+              doc.setTextColor(100);
               doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
 
               doc.addPage();
@@ -513,12 +513,12 @@ export default function CryptogramGenerator() {
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
-            doc.setTextColor(15, 23, 42);
+            doc.setTextColor(0);
             doc.text(`Puzzle #${puzzle.index}:`, ansMargins.marginLeft, ansY);
 
             doc.setFont("helvetica", "normal");
             doc.setFontSize(9.5);
-            doc.setTextColor(51, 65, 85);
+            doc.setTextColor(40);
 
             // Wrap solution string inside the margins
             const wrappedSol = doc.splitTextToSize(puzzle.original, ansMargins.contentW - 0.2);
@@ -529,7 +529,7 @@ export default function CryptogramGenerator() {
           // Footer page index for answer page
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
-          doc.setTextColor(100, 116, 139);
+          doc.setTextColor(100);
           doc.text(`Page ${currentPage}`, ansMargins.contentCenterX, pageH - marginB + 0.4, { align: "center" });
         }
 

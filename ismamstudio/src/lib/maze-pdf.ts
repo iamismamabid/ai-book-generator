@@ -277,7 +277,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(100);
+    doc.setTextColor(0);
     doc.text(
       `Shape: ${shape.charAt(0).toUpperCase() + shape.slice(1)}`,
       mazeX + mazeSize,
@@ -295,7 +295,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     // Footer info
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.setTextColor(100);
+    doc.setTextColor(0);
     doc.text(`Page ${currentPage}`, margins.contentCenterX, heightInches - 0.5, { align: "center" });
   });
 
@@ -316,7 +316,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.setTextColor(100);
+    doc.setTextColor(0);
     doc.text(`Complete Answer Keys for Mazes #1 to #${mazes.length}`, divMargins.contentCenterX, heightInches / 2 + 0.2, { align: "center" });
 
     let currentSolutionCount = 0;
@@ -357,7 +357,7 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(100);
+        doc.setTextColor(0);
         doc.text(`Page ${currentPage}`, solMargins.contentCenterX, heightInches - 0.45, { align: "center" });
       }
 

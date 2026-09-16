@@ -3386,7 +3386,7 @@ const drawCopyrightPage = (doc: any, page: any, xShift: number, w: number, h: nu
   curY += 0.25;
 
   // Divider line
-  doc.setDrawColor(180, 180, 180);
+  doc.setDrawColor(0);
   doc.setLineWidth(0.012);
   doc.line(startX, curY, startX + contentW, curY);
   curY += 0.28;
@@ -3400,13 +3400,13 @@ const drawCopyrightPage = (doc: any, page: any, xShift: number, w: number, h: nu
 
   doc.setFont("Helvetica", "normal");
   doc.setFontSize(8.5);
-  doc.setTextColor(40, 40, 40);
+  doc.setTextColor(0);
   doc.text("All rights reserved.", startX, curY);
   curY += 0.28;
 
   // Disclaimer text
   doc.setFontSize(8);
-  doc.setTextColor(40, 40, 40);
+  doc.setTextColor(0);
   const disclaimerLines = doc.splitTextToSize(disclaimer, contentW);
   doc.text(disclaimerLines, startX, curY);
   curY += disclaimerLines.length * 0.15 + 0.3;
@@ -3414,7 +3414,7 @@ const drawCopyrightPage = (doc: any, page: any, xShift: number, w: number, h: nu
   // Edition & Print Notice
   doc.setFont("Helvetica", "italic");
   doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
+  doc.setTextColor(0);
   doc.text(`${edition} • ${year}`, startX, curY);
   curY += 0.18;
   doc.text(printedIn, startX, curY);

@@ -1,22 +1,29 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { RefreshCw, Upload } from "lucide-react";
+import { RefreshCw, Upload, Sparkles, Plus } from "lucide-react";
 import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
 
-export const CrosswordEditor = ({ page, updatePage }: any) => {
+const CROSSWORD_POOLS = [
+  "REACT, A popular UI library\nNEXTJS, A React framework\nVERCEL, Hosting platform\nCODING, Writing software\nSERVER, Backend computer",
+  "BIRD, Can fly high in the sky\nFISH, Swims in the water\nLION, King of the jungle\nTIGER, Big striped cat\nEAGLE, Majestic bird of prey",
+  "SUN, Center of the solar system\nMOON, Earth's natural satellite\nMARS, The Red Planet\nEARTH, Our home planet\nVENUS, Bright morning star",
+  "PIZZA, Flatbread with cheese and tomato\nBURGER, Patty inside a bun\nSUSHI, Japanese raw fish dish\nPASTA, Italian noodle dish\nTACOS, Mexican folded tortilla",
+  "GUITAR, String instrument with frets\nPIANO, Keyed musical instrument\nDRUMS, Percussion instrument\nVIOLIN, Bowed string instrument\nFLUTE, Wind instrument",
+  "OCEAN, Vast body of saltwater\nRIVER, Flowing stream of water\nLAKE, Large inland water body\nGLACIER, Moving mass of ice\nISLAND, Land surrounded by water",
+  "APPLE, Sweet red or green fruit\nBANANA, Long curved yellow fruit\nORANGE, Citrus fruit with peeling\nGRAPE, Small berry growing in clusters\nMANGO, Tropical stone fruit",
+  "DOCTOR, Treats sick patients\nNURSE, Assists medical care\nTEACHER, Educates students in school\nARTIST, Creates visual paintings\nAUTHOR, Writes published books",
+  "AUTUMN, Season of falling leaves\nWINTER, Coldest snowy season\nSPRING, Season of blooming flowers\nSUMMER, Warmest sunny season\nBREEZE, Gentle refreshing wind",
+  "CASTLE, Fortified medieval residence\nPALACE, Grand royal residence\nTEMPLE, Sacred place of worship\nPYRAMID, Ancient monumental tomb\nBRIDGE, Structure spanning across water"
+];
+
+export const CrosswordEditor = ({ page, updatePage, bulkAddPages }: any) => {
   const [inputText, setInputText] = useState(() => {
     if (page.config.rawText) return page.config.rawText;
-    const pools = [
-      "REACT, A popular UI library\nNEXTJS, A React framework\nVERCEL, Hosting platform\nCODING, Writing software",
-      "BIRD, Can fly high in the sky\nFISH, Swims in the water",
-      "SUN, Center of the solar system\nMOON, Earth's natural satellite\nMARS, The Red Planet\nEARTH, Our home planet",
-      "PIZZA, Flatbread with cheese and tomato\nBURGER, Patty inside a bun\nSUSHI, Japanese raw fish dish\nPASTA, Italian noodle dish",
-      "GUITAR, String instrument with frets\nPIANO, Keyed musical instrument\nDRUMS, Percussion instrument\nVIOLIN, Bowed string instrument"
-    ];
-    return pools[Math.floor(Math.random() * pools.length)];
+    return CROSSWORD_POOLS[Math.floor(Math.random() * CROSSWORD_POOLS.length)];
   });
   const [gridData, setGridData] = useState<any>(page.config.gridData || null);
+  const [customCount, setCustomCount] = useState<number>(10);
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   const isSolution = page.config.isSolution || false;
@@ -48,6 +55,29 @@ export const CrosswordEditor = ({ page, updatePage }: any) => {
     const result = generateCrosswordGrid(wordList, 15);
     setGridData(result);
     updatePage({ rawText: inputText, gridData: result, isSolution });
+  };
+
+  const handleQuickAddCrosswords = (count: number) => {
+    if (!bulkAddPages) return;
+    const num = Math.max(1, Math.min(100, count));
+    const configs = [];
+    for (let i = 0; i < num; i++) {
+      const pool = CROSSWORD_POOLS[i % CROSSWORD_POOLS.length];
+      const lines = pool.split('\n').filter((l: string) => l.trim().length > 0);
+      const wordList = lines.map((l: string) => {
+        const parts = l.split(',');
+        return { word: parts[0]?.trim() || '', clue: parts[1]?.trim() || '' };
+      }).filter((item: any) => item.word.length > 0);
+
+      const gridResult = generateCrosswordGrid(wordList, 15);
+      configs.push({
+        rawText: pool,
+        gridData: gridResult,
+        isSolution: false,
+      });
+    }
+    bulkAddPages(configs);
+    alert(`✅ Successfully added ${configs.length} Crossword puzzles to your book!`);
   };
 
   const handleToggleMode = (solMode: boolean) => {
@@ -90,6 +120,52 @@ export const CrosswordEditor = ({ page, updatePage }: any) => {
             </button>
           </div>
         </div>
+
+        {/* Quick Add Crossword Pages */}
+        {bulkAddPages && (
+          <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Quick Add Crossword Pages
+              </span>
+              <span className="text-[10px] font-bold text-slate-400">Themed</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 mb-2.5">
+              {[3, 5, 10, 15].map((cnt) => (
+                <button
+                  key={cnt}
+                  onClick={() => handleQuickAddCrosswords(cnt)}
+                  className="py-1.5 bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-black transition cursor-pointer text-center"
+                >
+                  +{cnt} Puzzles
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Add Page Option */}
+            <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200">
+              <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-500 transition">
+                <span className="text-[11px] font-bold text-slate-500 mr-1.5 shrink-0">Custom:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={customCount}
+                  onChange={(e) => setCustomCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                  className="w-full bg-transparent text-xs font-black text-slate-900 outline-none"
+                  placeholder="20"
+                />
+                <span className="text-[10px] text-slate-400 font-bold ml-1 shrink-0">pages</span>
+              </div>
+              <button
+                onClick={() => handleQuickAddCrosswords(customCount)}
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-sm flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center justify-between mb-1">
           <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Words &amp; Clues</label>

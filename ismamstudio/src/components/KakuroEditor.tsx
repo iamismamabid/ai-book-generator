@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { RefreshCw, BookOpen, AlertCircle } from "lucide-react";
+import { RefreshCw, BookOpen, AlertCircle, Sparkles, Plus } from "lucide-react";
 import { generateKakuro, KakuroPuzzle } from "../lib/kakuro";
 
-export function KakuroEditor({ page, updatePage }: any) {
+export function KakuroEditor({ page, updatePage, bulkAddPages }: any) {
   const [sizeId, setSizeId] = useState<string>(page.config.sizeId || "6x6");
   const [difficulty, setDifficulty] = useState<string>(page.config.difficulty || "medium");
   const [puzzleData, setPuzzleData] = useState<KakuroPuzzle | null>(page.config.gridData || null);
+  const [customCount, setCustomCount] = useState<number>(10);
 
   const isSolution = page.config.isSolution || false;
 
@@ -27,6 +28,23 @@ export function KakuroEditor({ page, updatePage }: any) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleQuickAddKakuro = (count: number) => {
+    if (!bulkAddPages) return;
+    const num = Math.max(1, Math.min(100, count));
+    const configs = [];
+    for (let i = 0; i < num; i++) {
+      const result = generateKakuro(sizeId, difficulty);
+      configs.push({
+        sizeId,
+        difficulty,
+        gridData: result,
+        isSolution: false,
+      });
+    }
+    bulkAddPages(configs);
+    alert(`✅ Successfully added ${configs.length} Kakuro puzzles (${sizeId} • ${difficulty}) to your book!`);
+  };
 
   return (
     <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 h-full p-2 sm:p-4 overflow-y-auto">
@@ -104,6 +122,53 @@ export function KakuroEditor({ page, updatePage }: any) {
             </div>
           </div>
         </div>
+
+        {/* Quick Add Kakuro Pages */}
+        {bulkAddPages && (
+          <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Quick Add Kakuro Pages
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 capitalize">{sizeId} • {difficulty}</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 mb-2.5">
+              {[3, 5, 10, 15].map((cnt) => (
+                <button
+                  key={cnt}
+                  onClick={() => handleQuickAddKakuro(cnt)}
+                  className="py-1.5 bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-black transition cursor-pointer text-center"
+                >
+                  +{cnt} Puzzles
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Add Page Option */}
+            <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200">
+              <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-500 transition">
+                <span className="text-[11px] font-bold text-slate-500 mr-1.5 shrink-0">Custom:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={customCount}
+                  onChange={(e) => setCustomCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                  className="w-full bg-transparent text-xs font-black text-slate-900 outline-none"
+                  placeholder="20"
+                />
+                <span className="text-[11px] font-medium text-slate-400 ml-1 shrink-0">pages</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleQuickAddKakuro(customCount)}
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black flex items-center gap-1 transition shadow-sm shrink-0 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </div>
+          </div>
+        )}
 
         <button
           onClick={() => handleGenerate()}

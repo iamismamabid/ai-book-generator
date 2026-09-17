@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Sparkles, Plus } from "lucide-react";
 import { generateSudoku, Difficulty } from "../lib/sudokuGenerator";
 
-export function SudokuEditor({ page, updatePage }: any) {
+export function SudokuEditor({ page, updatePage, bulkAddPages }: any) {
   const [difficulty, setDifficulty] = useState<Difficulty>(page.config.difficulty || "medium");
   const [puzzleData, setPuzzleData] = useState<any>(page.config.gridData || null);
+  const [customCount, setCustomCount] = useState<number>(10);
 
   const isSolution = page.config.isSolution || false;
 
@@ -28,6 +29,21 @@ export function SudokuEditor({ page, updatePage }: any) {
       setPuzzleData(data);
     }
     updatePage({ difficulty, gridData: data, isSolution: solMode });
+  };
+
+  const handleQuickAddSudoku = (count: number) => {
+    if (!bulkAddPages) return;
+    const num = Math.max(1, Math.min(100, count));
+    const configs = [];
+    for (let i = 0; i < num; i++) {
+      configs.push({
+        difficulty,
+        gridData: generateSudoku(difficulty),
+        isSolution: false,
+      });
+    }
+    bulkAddPages(configs);
+    alert(`✅ Successfully added ${configs.length} Sudoku puzzles (${difficulty}) to your book!`);
   };
 
   useEffect(() => {
@@ -93,9 +109,55 @@ export function SudokuEditor({ page, updatePage }: any) {
           </div>
         </div>
 
+        {/* Quick Add Sudoku Pages */}
+        {bulkAddPages && (
+          <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Quick Add Sudoku Pages
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 capitalize">{difficulty}</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 mb-2.5">
+              {[3, 5, 10, 15].map((cnt) => (
+                <button
+                  key={cnt}
+                  onClick={() => handleQuickAddSudoku(cnt)}
+                  className="py-1.5 bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-black transition cursor-pointer text-center"
+                >
+                  +{cnt} Puzzles
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Add Page Option */}
+            <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200">
+              <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-500 transition">
+                <span className="text-[11px] font-bold text-slate-500 mr-1.5 shrink-0">Custom:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={customCount}
+                  onChange={(e) => setCustomCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                  className="w-full bg-transparent text-xs font-black text-slate-900 outline-none"
+                  placeholder="20"
+                />
+                <span className="text-[10px] text-slate-400 font-bold ml-1 shrink-0">pages</span>
+              </div>
+              <button
+                onClick={() => handleQuickAddSudoku(customCount)}
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-sm flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </div>
+          </div>
+        )}
+
         <button 
           onClick={() => handleGenerate()} 
-          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 cursor-pointer shadow-sm"
         >
           <RefreshCw className="w-4 h-4"/> Generate Sudoku
         </button>

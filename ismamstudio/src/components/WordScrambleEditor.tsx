@@ -1,11 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { RefreshCw, Upload } from "lucide-react";
+import { RefreshCw, Upload, Sparkles, Plus } from "lucide-react";
 
-const DEFAULT_WORDS = [
-  "AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION",
-  "ANTIGRAVITY", "FLIGHT", "PAYLOAD"
+const SCRAMBLE_POOLS = [
+  ["AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION", "ANTIGRAVITY", "FLIGHT", "PAYLOAD"],
+  ["GALAXY", "NEBULA", "SUPERNOVA", "TELESCOPE", "ASTRONAUT", "GRAVITY", "ORBIT"],
+  ["ALGORITHM", "COMPILER", "DATABASE", "ENCRYPTION", "RECURSION", "VARIABLE", "FUNCTION"],
+  ["HYDROGEN", "OXYGEN", "CARBON", "NITROGEN", "HELIUM", "URANIUM", "PLATINUM"],
+  ["CARNIVORE", "HERBIVORE", "OMNIVORE", "PREDATOR", "MAMMAL", "REPTILE", "AMPHIBIAN"],
+  ["METROPOLIS", "ARCHITECT", "SKYLINE", "SUBWAY", "BOULEVARD", "MONUMENT", "DISTRICT"],
+  ["CHAMPION", "ATHLETE", "TOURNAMENT", "MARATHON", "STADIUM", "REFEREE", "VICTORY"],
+  ["DIAMOND", "EMERALD", "SAPPHIRE", "AMETHYST", "TURQUOISE", "OBSIDIAN", "MALACHITE"],
+  ["SYMPHONY", "ORCHESTRA", "HARMONY", "MELODY", "COMPOSER", "CRESCENDO", "SONATA"],
+  ["EVEREST", "KILIMANJARO", "MATTERHORN", "VOLCANO", "AVALANCHE", "GLACIER", "PLATEAU"]
 ];
 
 function normalizeScrambledData(data: any): { original: string[]; scrambled: string[]; wordBank: string[] } | null {
@@ -27,19 +35,10 @@ function normalizeScrambledData(data: any): { original: string[]; scrambled: str
   return null;
 }
 
-export function WordScrambleEditor({ page, updatePage }: any) {
+export function WordScrambleEditor({ page, updatePage, bulkAddPages }: any) {
   const [inputText, setInputText] = useState(() => {
     if (page.config.rawText) return page.config.rawText;
-    const pools = [
-      ["AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION", "ANTIGRAVITY", "FLIGHT", "PAYLOAD"],
-      ["GALAXY", "NEBULA", "SUPERNOVA", "TELESCOPE", "ASTRONAUT", "GRAVITY", "ORBIT"],
-      ["ALGORITHM", "COMPILER", "DATABASE", "ENCRYPTION", "RECURSION", "VARIABLE", "FUNCTION"],
-      ["HYDROGEN", "OXYGEN", "CARBON", "NITROGEN", "HELIUM", "URANIUM", "PLATINUM"],
-      ["CARNIVORE", "HERBIVORE", "OMNIVORE", "PREDATOR", "MAMMAL", "REPTILE", "AMPHIBIAN"],
-      ["METROPOLIS", "ARCHITECT", "SKYLINE", "SUBWAY", "BOULEVARD", "MONUMENT", "DISTRICT"],
-      ["CHAMPION", "ATHLETE", "TOURNAMENT", "MARATHON", "STADIUM", "REFEREE", "VICTORY"]
-    ];
-    const selected = pools[Math.floor(Math.random() * pools.length)];
+    const selected = SCRAMBLE_POOLS[Math.floor(Math.random() * SCRAMBLE_POOLS.length)];
     return selected.join("\n");
   });
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
@@ -48,6 +47,7 @@ export function WordScrambleEditor({ page, updatePage }: any) {
   const [scrambledData, setScrambledData] = useState<any>(() =>
     normalizeScrambledData(page.config.scrambledData)
   );
+  const [customCount, setCustomCount] = useState<number>(10);
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   const isSolution = page.config.isSolution || false;
@@ -160,6 +160,25 @@ export function WordScrambleEditor({ page, updatePage }: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleQuickAddScrambles = (count: number) => {
+    if (!bulkAddPages) return;
+    const num = Math.max(1, Math.min(100, count));
+    const configs = [];
+    for (let i = 0; i < num; i++) {
+      const words = SCRAMBLE_POOLS[i % SCRAMBLE_POOLS.length];
+      const scrambled = words.map((w) => scrambleWord(w, difficulty));
+      const wordBank = [...words].sort((a, b) => a.localeCompare(b));
+      configs.push({
+        rawText: words.join("\n"),
+        difficulty,
+        scrambledData: { original: words, scrambled, wordBank },
+        isSolution: false,
+      });
+    }
+    bulkAddPages(configs);
+    alert(`✅ Successfully added ${configs.length} Word Scramble puzzles to your book!`);
+  };
+
   return (
     <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 h-full p-2 sm:p-4 overflow-y-auto">
       {/* Options Panel */}
@@ -209,6 +228,52 @@ export function WordScrambleEditor({ page, updatePage }: any) {
             </div>
           </div>
         </div>
+
+        {/* Quick Add Word Scramble Pages */}
+        {bulkAddPages && (
+          <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Quick Add Scramble Pages
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 capitalize">{difficulty}</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 mb-2.5">
+              {[3, 5, 10, 15].map((cnt) => (
+                <button
+                  key={cnt}
+                  onClick={() => handleQuickAddScrambles(cnt)}
+                  className="py-1.5 bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-black transition cursor-pointer text-center"
+                >
+                  +{cnt} Puzzles
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Add Page Option */}
+            <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200">
+              <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-500 transition">
+                <span className="text-[11px] font-bold text-slate-500 mr-1.5 shrink-0">Custom:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={customCount}
+                  onChange={(e) => setCustomCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                  className="w-full bg-transparent text-xs font-black text-slate-900 outline-none"
+                  placeholder="20"
+                />
+                <span className="text-[10px] text-slate-400 font-bold ml-1 shrink-0">pages</span>
+              </div>
+              <button
+                onClick={() => handleQuickAddScrambles(customCount)}
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-sm flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 flex flex-col gap-2">
           <div className="flex items-center justify-between">

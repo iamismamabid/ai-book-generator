@@ -560,15 +560,38 @@ export function MathPuzzleEditor({
         <div className="h-px bg-slate-200" />
 
         <div>
-          <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Number of Pages</h3>
-          <input
-            type="number"
-            min={1}
-            max={200}
-            value={numPagesToAdd}
-            onChange={(e) => setNumPagesToAdd(Math.max(1, Math.min(200, parseInt(e.target.value) || 1)))}
-            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 outline-none"
-          />
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Number of Pages</h3>
+            <span className="text-[10px] font-bold text-slate-400 capitalize">{puzzleType}</span>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5 mb-2.5">
+            {[3, 5, 10, 15].map((cnt) => (
+              <button
+                key={cnt}
+                type="button"
+                onClick={() => setNumPagesToAdd(cnt)}
+                className={`py-1.5 border rounded-xl text-xs font-black transition cursor-pointer text-center ${
+                  numPagesToAdd === cnt ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white hover:bg-indigo-50 border-slate-200 text-slate-700'
+                }`}
+              >
+                +{cnt} Pgs
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-500 transition">
+              <span className="text-[11px] font-bold text-slate-500 mr-1.5 shrink-0">Custom:</span>
+              <input
+                type="number"
+                min={1}
+                max={200}
+                value={numPagesToAdd}
+                onChange={(e) => setNumPagesToAdd(Math.max(1, Math.min(200, parseInt(e.target.value) || 1)))}
+                className="w-full bg-transparent text-xs font-black text-slate-900 outline-none"
+              />
+              <span className="text-[11px] font-medium text-slate-400 ml-1 shrink-0">pages</span>
+            </div>
+          </div>
           <p className="text-[10px] text-slate-400 font-semibold mt-1">Premium: max 200 pages ({numPagesToAdd * 2} puzzles) per batch.</p>
         </div>
 

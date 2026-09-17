@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { RefreshCw, Upload } from "lucide-react";
+import { RefreshCw, Upload, Sparkles, Plus } from "lucide-react";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -21,7 +21,7 @@ const DEFAULT_QUOTES = [
   "LIFE IS WHAT HAPPENS WHEN YOU ARE BUSY MAKING OTHER PLANS."
 ];
 
-export function CryptogramEditor({ page, updatePage }: any) {
+export function CryptogramEditor({ page, updatePage, bulkAddPages }: any) {
   const [inputText, setInputText] = useState(
     page.config.rawText || DEFAULT_QUOTES.join("\n")
   );
@@ -32,6 +32,7 @@ export function CryptogramEditor({ page, updatePage }: any) {
   const [cryptogramData, setCryptogramData] = useState<any>(
     page.config.cryptogramData || null
   );
+  const [customCount, setCustomCount] = useState<number>(10);
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   const isSolution = page.config.isSolution || false;
@@ -144,6 +145,35 @@ export function CryptogramEditor({ page, updatePage }: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuoteIndex]);
 
+  const handleQuickAddCryptograms = (count: number) => {
+    if (!bulkAddPages) return;
+    const num = Math.max(1, Math.min(100, count));
+    const parsed = inputText
+      .split("\n")
+      .map((q: string) => q.trim().toUpperCase())
+      .filter((q: string) => q.length > 0);
+    const quotes = parsed.length > 0 ? parsed : DEFAULT_QUOTES;
+
+    const configs = [];
+    for (let i = 0; i < num; i++) {
+      const qIdx = i % quotes.length;
+      const targetQuote = quotes[qIdx];
+      const mapping = generateCipher();
+      const encrypted = targetQuote
+        .split("")
+        .map((c: string) => (/[A-Z]/.test(c) ? mapping[c] || c : c))
+        .join("");
+      configs.push({
+        rawText: inputText,
+        selectedQuoteIndex: qIdx,
+        cryptogramData: { original: targetQuote, encrypted, cipherMap: mapping },
+        isSolution: false,
+      });
+    }
+    bulkAddPages(configs);
+    alert(`✅ Successfully added ${configs.length} Cryptogram puzzles to your book!`);
+  };
+
   return (
     <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 h-full p-2 sm:p-4 overflow-y-auto">
       {/* Options Panel */}
@@ -192,6 +222,53 @@ export function CryptogramEditor({ page, updatePage }: any) {
             </div>
           </div>
         </div>
+
+        {/* Quick Add Cryptogram Pages */}
+        {bulkAddPages && (
+          <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Quick Add Cryptogram Pages
+              </span>
+              <span className="text-[10px] font-bold text-slate-400">Quotes Pool</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 mb-2.5">
+              {[3, 5, 10, 15].map((cnt) => (
+                <button
+                  key={cnt}
+                  onClick={() => handleQuickAddCryptograms(cnt)}
+                  className="py-1.5 bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-black transition cursor-pointer text-center"
+                >
+                  +{cnt} Puzzles
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Add Page Option */}
+            <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200">
+              <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-500 transition">
+                <span className="text-[11px] font-bold text-slate-500 mr-1.5 shrink-0">Custom:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={customCount}
+                  onChange={(e) => setCustomCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                  className="w-full bg-transparent text-xs font-black text-slate-900 outline-none"
+                  placeholder="20"
+                />
+                <span className="text-[11px] font-medium text-slate-400 ml-1 shrink-0">pages</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleQuickAddCryptograms(customCount)}
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black flex items-center gap-1 transition shadow-sm shrink-0 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 flex flex-col gap-2">
           <div className="flex items-center justify-between">

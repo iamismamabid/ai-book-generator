@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { RefreshCw, Upload, Files, Plus, ExternalLink, X, Check, FileSpreadsheet, Sparkles } from "lucide-react";
-import { generatePuzzleGrid } from "@/app/utils/puzzleEngine"; 
+import { generatePuzzleGrid } from "@/app/utils/puzzleEngine";
 
 const PRESET_CATEGORIES = [
   { name: "Wild Animals", words: ["LION", "TIGER", "ELEPHANT", "GIRAFFE", "ZEBRA", "MONKEY", "BEAR", "CHEETAH", "PANDA", "WOLF"] },
@@ -9,7 +9,7 @@ const PRESET_CATEGORIES = [
   { name: "World Oceans", words: ["PACIFIC", "ATLANTIC", "INDIAN", "ARCTIC", "SOUTHERN", "CORAL", "TRENCH", "CURRENTS", "COAST", "REEF"] },
   { name: "Solar System", words: ["MERCURY", "VENUS", "EARTH", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO", "COMET"] },
   { name: "Popular Sports", words: ["SOCCER", "TENNIS", "BASKETBALL", "GOLF", "CRICKET", "RUGBY", "HOCKEY", "BASEBALL", "BOXING", "SWIMMING"] },
-  { name: "Programming", words: ["JAVASCRIPT", "PYTHON", "TYPESCRIPT", "RUST", "GOLANG", "KOTLIN", "REACT", "NEXTJS", "DOCKER", "PRISMA"] },
+  { name: "Programming", words: ["JAVASCRIPT", "TYPESCRIPT", "RUST", "GOLANG", "KOTLIN", "REACT", "NEXTJS", "DOCKER", "PRISMA"] },
   { name: "World Capitals", words: ["LONDON", "PARIS", "TOKYO", "ROME", "BERLIN", "MADRID", "OTTAWA", "CAIRO", "BEIJING", "CANBERRA"] },
   { name: "Beverages", words: ["COFFEE", "TEA", "JUICE", "WATER", "SMOOTHIE", "ESPRESSO", "LATTE", "MATCHA", "CIDER", "SHAKE"] },
   { name: "World Cuisine", words: ["PIZZA", "BURGER", "PASTA", "SUSHI", "TACOS", "BURRITO", "CURRY", "FALAFEL", "RAMEN", "PAELLA"] },
@@ -347,7 +347,7 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
       <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 flex-1 p-2 sm:p-4 overflow-y-auto">
         {/* Left Settings Console */}
         <div className="w-full lg:w-84 lg:shrink-0 flex flex-col gap-4">
-          
+
           {/* Multi-Puzzle Batch Importer Button (High Priority) */}
           <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-4 rounded-2xl text-white shadow-md">
             <div className="flex items-center gap-2 mb-1.5">
@@ -439,21 +439,19 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleToggleMode(false)}
-                className={`py-2 rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer ${
-                  !isSolution
-                    ? "bg-indigo-600 text-white shadow-sm"
-                    : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
-                }`}
+                className={`py-2 rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer ${!isSolution
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                  }`}
               >
                 Puzzle Grid
               </button>
               <button
                 onClick={() => handleToggleMode(true)}
-                className={`py-2 rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer ${
-                  isSolution
-                    ? "bg-indigo-600 text-white shadow-sm"
-                    : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
-                }`}
+                className={`py-2 rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer ${isSolution
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                  }`}
               >
                 Solution Grid
               </button>
@@ -480,14 +478,14 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
                 className="hidden"
               />
             </div>
-            <textarea 
-              value={inputText} 
+            <textarea
+              value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="w-full h-48 p-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-mono shadow-inner bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500"
               placeholder="Enter words separated by commas..."
             />
-            <button 
-              onClick={handleGenerate} 
+            <button
+              onClick={handleGenerate}
               className="w-full bg-indigo-600 text-white font-black text-xs uppercase tracking-wider py-3 rounded-2xl hover:bg-indigo-700 transition shadow-sm cursor-pointer flex items-center justify-center gap-2"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Re-Generate Current Grid
@@ -500,15 +498,15 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
           <h2 className="text-2xl font-black text-center mb-6 uppercase tracking-widest text-slate-900 dark:text-slate-100">
             {page?.config?.title || "Word Search"} {isSolution && <span className="text-indigo-600 dark:text-indigo-400">(Solution)</span>}
           </h2>
-          
+
           {gridData ? (
             <div className="flex flex-col items-center max-w-full overflow-x-auto">
               <div className="grid border-2 border-slate-900 dark:border-slate-100 bg-white dark:bg-slate-950 shadow-md" style={{ gridTemplateColumns: `repeat(12, minmax(0, 1fr))` }}>
                 {gridData.grid.map((row: string[], r: number) => row.map((letter: string, c: number) => {
                   const isKeyWord = isSolution && gridData.mask && gridData.mask[r][c];
                   return (
-                    <div 
-                      key={`${r}-${c}`} 
+                    <div
+                      key={`${r}-${c}`}
                       className={`w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 flex items-center justify-center border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-bold transition-all duration-200
                         ${isKeyWord ? 'bg-indigo-600 text-white border-indigo-700 font-black' : 'text-slate-900 dark:text-slate-100'}`}
                     >

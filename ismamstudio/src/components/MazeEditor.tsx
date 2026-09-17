@@ -1,20 +1,38 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { RefreshCw, Eye, EyeOff } from "lucide-react";
+import { RefreshCw, Eye, EyeOff, Sparkles, Plus } from "lucide-react";
 import { generateMaze, solveMaze, Shape, generateMazeData } from "../lib/maze";
 
-export function MazeEditor({ page, updatePage }: any) {
+export function MazeEditor({ page, updatePage, bulkAddPages }: any) {
   const [shape, setShape] = useState<Shape>(page.config.shape || "square");
   const [gridSize, setGridSize] = useState<number>(page.config.gridSize || 20);
   const [showSolution, setShowSolution] = useState<boolean>(page.config.showSolution || false);
   const [scale, setScale] = useState<number>(page.config.scale || 100);
   const [mazeData, setMazeData] = useState<any>(page.config.gridData || null);
+  const [customCount, setCustomCount] = useState<number>(10);
 
   const handleGenerate = (targetShape: Shape = shape, targetGridSize: number = gridSize) => {
     const data = generateMazeData(targetShape, targetGridSize);
     setMazeData(data);
     updatePage({ shape: targetShape, gridSize: targetGridSize, showSolution, scale, gridData: data });
+  };
+
+  const handleQuickAddMazes = (count: number) => {
+    if (!bulkAddPages) return;
+    const num = Math.max(1, Math.min(100, count));
+    const configs = [];
+    for (let i = 0; i < num; i++) {
+      configs.push({
+        shape,
+        gridSize,
+        showSolution: false,
+        scale,
+        gridData: generateMazeData(shape, gridSize),
+      });
+    }
+    bulkAddPages(configs);
+    alert(`✅ Successfully added ${configs.length} Mazes (${shape} ${gridSize}x${gridSize}) to your book!`);
   };
 
   const toggleSolution = () => {
@@ -185,8 +203,54 @@ export function MazeEditor({ page, updatePage }: any) {
           <span className="bg-indigo-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
             300 DPI
           </span>
-          <span>Print-Ready High-Res Maze (KDP Compliant)</span>
+          <span>Vector-sharp print output</span>
         </div>
+
+        {/* Quick Add Maze Pages */}
+        {bulkAddPages && (
+          <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Quick Add Maze Pages
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 capitalize">{shape}</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 mb-2.5">
+              {[3, 5, 10, 15].map((cnt) => (
+                <button
+                  key={cnt}
+                  onClick={() => handleQuickAddMazes(cnt)}
+                  className="py-1.5 bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-black transition cursor-pointer text-center"
+                >
+                  +{cnt} Mazes
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Add Page Option */}
+            <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200">
+              <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-500 transition">
+                <span className="text-[11px] font-bold text-slate-500 mr-1.5 shrink-0">Custom:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={customCount}
+                  onChange={(e) => setCustomCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                  className="w-full bg-transparent text-xs font-black text-slate-900 outline-none"
+                  placeholder="20"
+                />
+                <span className="text-[10px] text-slate-400 font-bold ml-1 shrink-0">pages</span>
+              </div>
+              <button
+                onClick={() => handleQuickAddMazes(customCount)}
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-sm flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </div>
+          </div>
+        )}
 
         <button 
           onClick={toggleSolution} 

@@ -1245,6 +1245,7 @@ export default function BookBuilder({
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                bulkAddPages={(configs: any[]) => addMultiplePages('crossword', configs)}
               />
             )}
             {bookPages[activeIndex].type === 'word_search' && !bookPages[activeIndex].config.isMultiSolution && (
@@ -1260,6 +1261,7 @@ export default function BookBuilder({
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                bulkAddPages={(configs: any[]) => addMultiplePages('sudoku', configs)}
               />
             )}
             {bookPages[activeIndex].type === 'maze' && !bookPages[activeIndex].config.isMultiSolution && (
@@ -1267,6 +1269,7 @@ export default function BookBuilder({
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                bulkAddPages={(configs: any[]) => addMultiplePages('maze', configs)}
               />
             )}
             {bookPages[activeIndex].type === 'word_scramble' && !bookPages[activeIndex].config.isMultiSolution && (
@@ -1274,6 +1277,7 @@ export default function BookBuilder({
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                bulkAddPages={(configs: any[]) => addMultiplePages('word_scramble', configs)}
               />
             )}
             {bookPages[activeIndex].type === 'cryptogram' && !bookPages[activeIndex].config.isMultiSolution && (
@@ -1281,6 +1285,7 @@ export default function BookBuilder({
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                bulkAddPages={(configs: any[]) => addMultiplePages('cryptogram', configs)}
               />
             )}
             {bookPages[activeIndex].type === 'math_puzzle' && !bookPages[activeIndex].config.isMultiSolution && (
@@ -1300,6 +1305,7 @@ export default function BookBuilder({
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                bulkAddPages={(configs: any[]) => addMultiplePages('kakuro', configs)}
               />
             )}
             {bookPages[activeIndex].type === 'coloring_book' && (

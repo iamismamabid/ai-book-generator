@@ -48,11 +48,58 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
 
   // Parse text or CSV into multiple puzzles
   const parseMultiPuzzleText = (rawText: string): ParsedBatchPuzzle[] => {
-    const lines = rawText.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
-    const results: ParsedBatchPuzzle[] = [];
+    const text = rawText.trim();
+    if (!text) return [];
 
-    lines.forEach((line, idx) => {
-      // Check for Title: Words format (e.g. "Animals: Lion, Tiger, Bear" or "Animals, Lion, Tiger, Bear")
+    // 1. Check if text is separated into blocks by blank lines (e.g. 10 words per block)
+    const blocks = text.split(/\r?\n\s*\r?\n+/).map((b) => b.trim()).filter((b) => b.length > 0);
+
+    if (blocks.length > 1) {
+      const results: ParsedBatchPuzzle[] = [];
+      blocks.forEach((block, idx) => {
+        const lines = block.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+        let title = `Word Search #${idx + 1}`;
+
+        const firstLine = lines[0];
+        const isExplicitTitle =
+          firstLine.includes(":") ||
+          firstLine.startsWith("#") ||
+          firstLine.toLowerCase().startsWith("puzzle") ||
+          firstLine.toLowerCase().startsWith("theme") ||
+          (firstLine.split(/\s+/).length >= 2 && lines.length > 4 && lines.slice(1).every((l) => l.split(/\s+/).length === 1));
+
+        let contentLines = lines;
+        if (isExplicitTitle) {
+          if (firstLine.includes(":")) {
+            const parts = firstLine.split(":");
+            title = (parts[0] || parts[1]).trim() || title;
+            const afterColon = parts.slice(1).join(":").trim();
+            contentLines = afterColon ? [afterColon, ...lines.slice(1)] : lines.slice(1);
+          } else {
+            title = firstLine.replace(/^#+\s*/, "").trim() || title;
+            contentLines = lines.slice(1);
+          }
+        }
+
+        // Extract all words from content lines
+        const rawWords = contentLines
+          .flatMap((line) => line.split(/[,;\t\r\n]/))
+          .map((w) => w.trim().replace(/^["']|["']$/g, "").toUpperCase())
+          .filter((w) => w.length > 1 && !w.includes(":"));
+
+        if (rawWords.length >= 3) {
+          results.push({ title, words: rawWords });
+        }
+      });
+
+      if (results.length > 0) return results;
+    }
+
+    // 2. Row-based / CSV parsing (1 line = 1 puzzle, separated by comma/tab/semicolon)
+    const singleLines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+    const rowResults: ParsedBatchPuzzle[] = [];
+
+    singleLines.forEach((line, idx) => {
       let title = `Word Search #${idx + 1}`;
       let wordsPart = line;
 
@@ -62,26 +109,39 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
         wordsPart = line.substring(colonIdx + 1);
       }
 
-      // Parse comma/semicolon/tab separated words
       const rawWords = wordsPart
         .split(/[,;\t]/)
         .map((w) => w.trim().replace(/^["']|["']$/g, "").toUpperCase())
         .filter((w) => w.length > 1 && !w.includes(":"));
 
       if (rawWords.length >= 3) {
-        // If line didn't have explicit colon but 1st word looks like title (and there are 5+ words)
-        if (!line.includes(":") && rawWords.length >= 6 && isNaN(Number(rawWords[0]))) {
-          // Keep words as-is
-        }
-        results.push({
+        rowResults.push({
           title,
           words: rawWords,
         });
       }
     });
 
-    return results;
+    if (rowResults.length > 0) {
+      return rowResults;
+    }
+
+    // 3. Fallback: If no lines had >= 3 words, treat all lines as a single puzzle (1 word per line)
+    const allWords = singleLines
+      .flatMap((l) => l.split(/[,;\t]/))
+      .map((w) => w.trim().replace(/^["']|["']$/g, "").toUpperCase())
+      .filter((w) => w.length > 1 && !w.includes(":"));
+
+    if (allWords.length >= 3) {
+      return [{
+        title: "Word Search #1",
+        words: allWords,
+      }];
+    }
+
+    return [];
   };
+
 
   // 📁 Single-Page CSV / TXT import handler
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -446,14 +506,14 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
                     CSV or Multi-Line Text Format
                   </label>
                   <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
-                    1 row = 1 puzzle page
+                    1 row per puzzle OR empty line between puzzles
                   </span>
                 </div>
                 <textarea
                   value={batchRawInput}
                   onChange={(e) => handleBatchInputChange(e.target.value)}
                   className="w-full h-40 p-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-mono bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 outline-none focus:border-indigo-500"
-                  placeholder="Theme: Word1, Word2, Word3&#10;Fruits: Apple, Banana, Orange, Mango&#10;Countries: Italy, France, Spain, Germany"
+                  placeholder="Format A (CSV Rows):&#10;Fruits: Apple, Banana, Orange, Mango&#10;Countries: Italy, France, Spain, Germany&#10;&#10;Format B (Word Blocks separated by empty line):&#10;Gold&#10;Map&#10;Chest&#10;&#10;Jewel&#10;Ruby&#10;Emerald"
                 />
               </div>
 
@@ -464,7 +524,7 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
                     Detected Puzzles: <span className="text-indigo-600 dark:text-indigo-400">{parsedPuzzles.length}</span>
                   </span>
                   <span className="text-[11px] text-slate-500">
-                    (Minimum 3 words per row required)
+                    (Minimum 3 words per puzzle required)
                   </span>
                 </div>
 

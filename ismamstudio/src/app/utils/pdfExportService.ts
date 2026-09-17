@@ -8,7 +8,7 @@ import { generateSudoku } from "@/lib/sudokuGenerator";
 import { generatePuzzleGrid } from "./puzzleEngine";
 import { generateCrosswordGrid } from "./crosswordGenerator";
 import { generateKakuro } from "@/lib/kakuro";
-import { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage } from "@/lib/kdpBookEngine";
+import { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "@/lib/kdpBookEngine";
 
 export interface ExportOptions {
   includeCover?: boolean;
@@ -232,6 +232,9 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     doc.addPage([w, h], "portrait");
     await drawCoverPagePart(doc, coverState, 'back', w, h);
   }
+
+  // Ensure even page count for Amazon KDP interior printing compliance
+  ensureEvenPageCount(doc);
 
   if (options.returnBlob) {
     return doc.output("blob");

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { RefreshCw, Upload, Sparkles, Plus } from "lucide-react";
+import { RefreshCw, Upload, Sparkles, Plus, Files, FileSpreadsheet, Check, X } from "lucide-react";
 
 const DEFAULT_QUOTES = [
   "THE ONLY LIMIT TO OUR REALIZATION OF TOMORROW WILL BE OUR DOUBTS OF TODAY.",
@@ -21,6 +21,11 @@ const DEFAULT_QUOTES = [
   "LIFE IS WHAT HAPPENS WHEN YOU ARE BUSY MAKING OTHER PLANS."
 ];
 
+interface ParsedBatchCryptogram {
+  title: string;
+  quote: string;
+}
+
 export function CryptogramEditor({ page, updatePage, bulkAddPages }: any) {
   const [inputText, setInputText] = useState(
     page.config.rawText || DEFAULT_QUOTES.join("\n")
@@ -34,8 +39,194 @@ export function CryptogramEditor({ page, updatePage, bulkAddPages }: any) {
   );
   const [customCount, setCustomCount] = useState<number>(10);
   const csvInputRef = useRef<HTMLInputElement>(null);
+  const batchCsvInputRef = useRef<HTMLInputElement>(null);
 
   const isSolution = page.config.isSolution || false;
+
+  // Multi-puzzle batch modal state
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [batchRawInput, setBatchRawInput] = useState("");
+  const [parsedPuzzles, setParsedPuzzles] = useState<ParsedBatchCryptogram[]>([]);
+  const [includeMatchingSolutions, setIncludeMatchingSolutions] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+
+  // Parse text or CSV into multiple cryptograms
+  const parseMultiCryptogramText = (rawText: string): ParsedBatchCryptogram[] => {
+    const text = rawText.trim();
+    if (!text) return [];
+
+    // Check if separated by blank lines (blocks)
+    const blocks = text.split(/\r?\n\s*\r?\n+/).map((b) => b.trim()).filter((b) => b.length > 0);
+
+    if (blocks.length > 1) {
+      const results: ParsedBatchCryptogram[] = [];
+      blocks.forEach((block, idx) => {
+        const lines = block.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+        let title = `Cryptogram #${idx + 1}`;
+        let quote = "";
+
+        const firstLine = lines[0];
+        const isExplicitTitle =
+          firstLine.toUpperCase().startsWith("THEME") ||
+          firstLine.toUpperCase().startsWith("TITLE") ||
+          firstLine.toUpperCase().startsWith("AUTHOR") ||
+          firstLine.toUpperCase().startsWith("CATEGORY");
+
+        if (isExplicitTitle) {
+          title = firstLine.replace(/^(THEME|TITLE|AUTHOR|CATEGORY)\s*:?/i, "").replace(/^[:\-–]/, "").trim() || title;
+          quote = lines.slice(1).join(" ").trim().toUpperCase();
+        } else {
+          quote = lines.join(" ").trim().toUpperCase();
+        }
+
+        quote = quote.replace(/^["']|["']$/g, "").trim();
+
+        if (quote.length >= 8) {
+          results.push({ title, quote });
+        }
+      });
+      if (results.length > 0) return results;
+    }
+
+    // Otherwise line-by-line (each line is a quote / cryptogram)
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+    const rowResults: ParsedBatchCryptogram[] = [];
+
+    lines.forEach((line, idx) => {
+      let title = `Cryptogram #${idx + 1}`;
+      let quote = line;
+
+      // Check if line is CSV formatted e.g. "Category/Author","Quote..."
+      if (line.includes(",") && (line.startsWith('"') || line.includes('","') || !line.endsWith('.'))) {
+        const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+        if (matches && matches.length >= 2) {
+          const col1 = matches[0].replace(/^["']|["']$/g, "").trim();
+          const col2 = matches[1].replace(/^["']|["']$/g, "").trim();
+          if (col1.length < col2.length && col2.length >= 8) {
+            title = col1;
+            quote = col2;
+          } else {
+            quote = col1;
+          }
+        }
+      } else if (line.includes(":") && !line.startsWith("http")) {
+        const parts = line.split(":");
+        if (parts[0].length < 30 && parts.slice(1).join(":").trim().length >= 8) {
+          title = parts[0].trim();
+          quote = parts.slice(1).join(":").trim();
+        }
+      }
+
+      quote = quote.replace(/^["']|["']$/g, "").trim().toUpperCase();
+      if (quote.length >= 8) {
+        rowResults.push({ title, quote });
+      }
+    });
+
+    return rowResults;
+  };
+
+  // 📁 Multi-Puzzle CSV file upload handler
+  const handleBatchCsvFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = (event.target?.result as string) || "";
+      setBatchRawInput(text);
+      const parsed = parseMultiCryptogramText(text);
+      setParsedPuzzles(parsed);
+      setIsBatchModalOpen(true);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  const handleBatchInputChange = (val: string) => {
+    setBatchRawInput(val);
+    const parsed = parseMultiCryptogramText(val);
+    setParsedPuzzles(parsed);
+  };
+
+  // 🚀 Execute Batch Creation
+  const handleExecuteBatchCryptogramImport = () => {
+    if (parsedPuzzles.length === 0) {
+      alert("No valid quotes detected. Please make sure quotes are at least 8 characters.");
+      return;
+    }
+
+    setIsImporting(true);
+    setTimeout(() => {
+      // 1. First puzzle updates the active page
+      const firstPuz = parsedPuzzles[0];
+      const mapping = generateCipher();
+      const encrypted = firstPuz.quote
+        .split("")
+        .map((c: string) => (/[A-Z]/.test(c) ? mapping[c] || c : c))
+        .join("");
+      const firstResult = {
+        original: firstPuz.quote,
+        encrypted,
+        cipherMap: mapping,
+      };
+
+      setInputText(parsedPuzzles.map((p) => p.quote).join("\n"));
+      setSelectedQuoteIndex(0);
+      setCryptogramData(firstResult);
+      updatePage({
+        rawText: parsedPuzzles.map((p) => p.quote).join("\n"),
+        selectedQuoteIndex: 0,
+        cryptogramData: firstResult,
+        title: firstPuz.title,
+        isSolution: false,
+      });
+
+      // 2. Prepare remaining puzzle pages
+      const newConfigs: any[] = [];
+      for (let i = 1; i < parsedPuzzles.length; i++) {
+        const puz = parsedPuzzles[i];
+        const map = generateCipher();
+        const enc = puz.quote
+          .split("")
+          .map((c: string) => (/[A-Z]/.test(c) ? map[c] || c : c))
+          .join("");
+        newConfigs.push({
+          rawText: puz.quote,
+          selectedQuoteIndex: i,
+          cryptogramData: { original: puz.quote, encrypted: enc, cipherMap: map },
+          title: puz.title,
+          isSolution: false,
+        });
+      }
+
+      // 3. If matching solutions requested, append solution pages
+      if (includeMatchingSolutions) {
+        parsedPuzzles.forEach((puz, pIdx) => {
+          const map = pIdx === 0 ? mapping : generateCipher();
+          const enc = puz.quote
+            .split("")
+            .map((c: string) => (/[A-Z]/.test(c) ? map[c] || c : c))
+            .join("");
+          newConfigs.push({
+            rawText: puz.quote,
+            selectedQuoteIndex: pIdx,
+            cryptogramData: { original: puz.quote, encrypted: enc, cipherMap: map },
+            title: `${puz.title} (Solution)`,
+            isSolution: true,
+          });
+        });
+      }
+
+      if (newConfigs.length > 0 && bulkAddPages) {
+        bulkAddPages(newConfigs);
+      }
+
+      setIsImporting(false);
+      setIsBatchModalOpen(false);
+      const totalCreated = 1 + newConfigs.length;
+      alert(`✅ Success! Created ${totalCreated} total pages from your CSV file (${parsedPuzzles.length} puzzle pages${includeMatchingSolutions ? ` + ${parsedPuzzles.length} solution pages` : ''}).`);
+    }, 150);
+  };
 
   // 📁 CSV / TXT import handler (one quote per line)
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,6 +414,40 @@ export function CryptogramEditor({ page, updatePage, bulkAddPages }: any) {
           </div>
         </div>
 
+        {/* Multi-Puzzle Batch CSV Button */}
+        {bulkAddPages && (
+          <div className="bg-gradient-to-r from-indigo-50 to-indigo-100/60 border border-indigo-200 p-4 rounded-2xl flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-indigo-600 text-white rounded-lg shadow-sm">
+                  <FileSpreadsheet className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                    Batch CSV Generator
+                  </h4>
+                  <p className="text-[10px] text-slate-500 font-medium">
+                    1 CSV = entire book of cryptograms
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => batchCsvInputRef.current?.click()}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider py-2.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Upload className="w-3.5 h-3.5" /> Upload Full CSV (Multi-Page)
+            </button>
+            <input
+              type="file"
+              accept=".csv,.txt"
+              ref={batchCsvInputRef}
+              onChange={handleBatchCsvFile}
+              className="hidden"
+            />
+          </div>
+        )}
+
         {/* Quick Add Cryptogram Pages */}
         {bulkAddPages && (
           <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
@@ -334,7 +559,7 @@ export function CryptogramEditor({ page, updatePage, bulkAddPages }: any) {
               {/* Encrypted Puzzle block */}
               <div className="flex-1 flex flex-col justify-start pt-4 space-y-4">
                 <h4 className="text-xs font-black text-indigo-600 uppercase">
-                  Puzzle #{selectedQuoteIndex + 1}
+                  {page?.config?.title || `Puzzle #${selectedQuoteIndex + 1}`}
                 </h4>
                 
                 {/* Grid wrap simulation */}
@@ -408,6 +633,136 @@ export function CryptogramEditor({ page, updatePage, bulkAddPages }: any) {
           <div className="text-center text-slate-400 mt-20">Click generate to load cryptogram.</div>
         )}
       </div>
+
+      {/* ⚡ Multi-Puzzle Batch Importer Modal */}
+      {isBatchModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-indigo-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-sm">
+                  <Files className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">
+                    Bulk CSV &amp; Multi-Cryptogram Importer
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Generate an entire collection of cryptogram pages from a single CSV or text file
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsBatchModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-5 overflow-y-auto space-y-4 flex-1">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-700">
+                    CSV or Multi-Line Text Format
+                  </label>
+                  <span className="text-[11px] font-bold text-indigo-600">
+                    1 quote per line OR empty line between quotes
+                  </span>
+                </div>
+                <textarea
+                  value={batchRawInput}
+                  onChange={(e) => handleBatchInputChange(e.target.value)}
+                  className="w-full h-40 p-3.5 border border-slate-200 rounded-2xl text-xs font-mono bg-slate-50 text-slate-900 outline-none focus:border-indigo-500"
+                  placeholder="Format A (CSV Rows with Category/Author and Quote):&#10;&quot;Inspiration&quot;,&quot;The only limit to our realization of tomorrow will be our doubts of today.&quot;&#10;&quot;Albert Einstein&quot;,&quot;In the middle of difficulty lies opportunity.&quot;&#10;&#10;Format B (Plain Quotes, one per line):&#10;SUCCESS IS NOT FINAL, FAILURE IS NOT FATAL.&#10;BELIEVE YOU CAN AND YOU ARE HALFWAY THERE."
+                />
+              </div>
+
+              {/* Detected summary */}
+              <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-800">
+                    Detected Puzzles: <span className="text-indigo-600 font-bold">{parsedPuzzles.length}</span>
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    (Minimum 8 characters per quote required)
+                  </span>
+                </div>
+
+                {parsedPuzzles.length > 0 ? (
+                  <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
+                    {parsedPuzzles.slice(0, 6).map((puz, i) => (
+                      <div
+                        key={i}
+                        className="bg-white border border-slate-200 p-2 rounded-xl text-xs flex items-center justify-between"
+                      >
+                        <span className="font-black text-slate-800 truncate max-w-[160px]">
+                          {i + 1}. {puz.title}
+                        </span>
+                        <span className="text-[11px] text-slate-500 truncate max-w-[280px]">
+                          {puz.quote}
+                        </span>
+                      </div>
+                    ))}
+                    {parsedPuzzles.length > 6 && (
+                      <p className="text-[11px] text-center text-slate-400 font-medium pt-1">
+                        + {parsedPuzzles.length - 6} more cryptograms will be generated
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No valid quotes found yet. Add quotes or paste CSV content above.</p>
+                )}
+              </div>
+
+              {/* Matching Solutions Option */}
+              <label className="flex items-center gap-2.5 p-3 rounded-2xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+                <input
+                  type="checkbox"
+                  checked={includeMatchingSolutions}
+                  onChange={(e) => setIncludeMatchingSolutions(e.target.checked)}
+                  className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                />
+                <div>
+                  <div className="text-xs font-black uppercase tracking-wider text-slate-800">
+                    Also generate matching Solution Pages
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-medium">
+                    Appends a decoded solution page with complete substitution cipher key for each created puzzle.
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+              <button
+                onClick={() => setIsBatchModalOpen(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExecuteBatchCryptogramImport}
+                disabled={parsedPuzzles.length === 0 || isImporting}
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                {isImporting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" /> Generating {parsedPuzzles.length} Pages...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" /> Generate &amp; Insert All {parsedPuzzles.length} Pages
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

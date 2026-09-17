@@ -18,7 +18,42 @@ const PRESET_CATEGORIES = [
   { name: "Weather Wonders", words: ["THUNDER", "LIGHTNING", "BLIZZARD", "HURRICANE", "RAINBOW", "MONSOON", "TORNADO", "DRIZZLE", "SUNSHINE", "BREEZE"] },
   { name: "Forest Trees", words: ["OAK", "PINE", "MAPLE", "CEDAR", "BIRCH", "REDWOOD", "WILLOW", "SPRUCE", "CHESTNUT", "CYPRESS"] },
   { name: "Garden Flowers", words: ["ROSE", "TULIP", "ORCHID", "LILY", "DAISY", "SUNFLOWER", "JASMINE", "LAVENDER", "MARIGOLD", "LOTUS"] },
-  { name: "Kitchen Utensils", words: ["SPATULA", "WHISK", "BLENDER", "TOASTER", "SKILLET", "CLEAVER", "GRATER", "COLANDER", "SAUCEPAN", "LADLE"] }
+  { name: "Kitchen Utensils", words: ["SPATULA", "WHISK", "BLENDER", "TOASTER", "SKILLET", "CLEAVER", "GRATER", "COLANDER", "SAUCEPAN", "LADLE"] },
+  { name: "Pirate Treasure", words: ["CHEST", "COINS", "ISLAND", "PEARL", "GALLEON", "COMPASS", "SPYGLASS", "CUTLASS", "ANCHOR", "DAGGER"] },
+  { name: "Mythical Creatures", words: ["DRAGON", "PHOENIX", "UNICORN", "GRIFFIN", "MERMAID", "KRAKEN", "PEGASUS", "CENTAUR", "CHIMERA", "HYDRA"] },
+  { name: "Winter Season", words: ["SNOWFLAKE", "BLIZZARD", "FIREPLACE", "SCARF", "MITTENS", "ICEBERG", "SLEIGH", "FROST", "SKATING", "SNOWMAN"] },
+  { name: "Summer Vacation", words: ["BEACH", "SUNSHINE", "SURFING", "SANDALS", "SUNGLASSES", "RESORT", "TRAVEL", "PICNIC", "SWIMMING", "CAMPING"] },
+  { name: "Farm Life", words: ["TRACTOR", "BARN", "ROOSTER", "HARVEST", "CATTLE", "SILO", "PASTURE", "WHEAT", "FARMHOUSE", "PLOW"] },
+  { name: "Coffee Culture", words: ["ESPRESSO", "CAPPUCCINO", "BARISTA", "ROAST", "MOCHA", "LATTE", "ARABICA", "BREW", "CARAMEL", "AMERICANO"] },
+  { name: "Bakery Treats", words: ["CROISSANT", "BAGUETTE", "MUFFIN", "DONUT", "CUPCAKE", "PASTRY", "SCONE", "BRIOCHE", "COOKIE", "BROWNIE"] },
+  { name: "Space Voyage", words: ["ASTRONAUT", "ROCKET", "GALAXY", "NEBULA", "TELESCOPE", "SHUTTLE", "ORBIT", "SATELLITE", "COSMOS", "ECLIPSE"] },
+  { name: "Desert Wildlife", words: ["CAMEL", "SCORPION", "CACTUS", "DUNE", "GECKO", "COYOTE", "OASIS", "VULTURE", "MIRAGE", "LIZARD"] },
+  { name: "Marine Life", words: ["DOLPHIN", "SHARK", "OCTOPUS", "WHALE", "JELLYFISH", "SEAHORSE", "LOBSTER", "TURTLE", "STINGRAY", "STARFISH"] },
+  { name: "Camping Trip", words: ["TENT", "CAMPFIRE", "BACKPACK", "LANTERN", "COMPASS", "SLEEPINGBAG", "TRAIL", "CANTEEN", "HIKING", "BONFIRE"] },
+  { name: "European Capitals", words: ["PARIS", "LONDON", "ROME", "MADRID", "BERLIN", "VIENNA", "AMSTERDAM", "PRAGUE", "DUBLIN", "ATHENS"] },
+  { name: "Asian Cities", words: ["TOKYO", "BEIJING", "SEOUL", "BANGKOK", "SINGAPORE", "KYOTO", "HANOI", "MUMBAI", "TAIPEI", "BALI"] },
+  { name: "National Parks", words: ["YELLOWSTONE", "YOSEMITE", "ZION", "GLACIER", "ACADIA", "GRANDCANYON", "SEQUOIA", "OLYMPIC", "DENALI", "ARCHES"] },
+  { name: "Mountain Peaks", words: ["EVEREST", "KILIMANJARO", "DENALI", "MATTERHORN", "ELBRUS", "ACONCAGUA", "BLANC", "FUJI", "OLYMPUS", "RAINIER"] },
+  { name: "Musical Genres", words: ["JAZZ", "CLASSICAL", "ROCK", "BLUES", "REGGAE", "HIPHOP", "COUNTRY", "OPERA", "DISCO", "FOLK"] },
+  { name: "Art & Painting", words: ["CANVAS", "PALETTE", "EASEL", "BRUSH", "ACRYLIC", "WATERCOLOR", "PORTRAIT", "SKETCH", "GALLERY", "OILPAINT"] },
+  { name: "Breakfast Table", words: ["PANCAKES", "WAFFLES", "BACON", "OMELET", "OATMEAL", "TOAST", "BAGEL", "YOGURT", "HONEY", "SAUSAGE"] },
+  { name: "Herbs & Spices", words: ["BASIL", "ROSEMARY", "OREGANO", "CINNAMON", "VANILLA", "PAPRIKA", "NUTMEG", "THYME", "GINGER", "CLOVES"] },
+  { name: "School Days", words: ["MATHEMATICS", "HISTORY", "SCIENCE", "BIOLOGY", "CHEMISTRY", "PHYSICS", "ENGLISH", "GEOGRAPHY", "ALGEBRA", "LIBRARY"] },
+  { name: "Architecture", words: ["COLUMNS", "ARCHWAY", "DOMES", "FACADE", "TOWERS", "PILLARS", "BALCONY", "ATRIUM", "VAULTS", "PEDIMENT"] },
+  { name: "Tropical Birds", words: ["PARROT", "TOUCAN", "FLAMINGO", "MACAW", "HUMMINGBIRD", "COCKATOO", "HORNBILL", "PEACOCK", "CANARY", "PARAKEET"] },
+  { name: "Autumn Season", words: ["PUMPKIN", "SQUASH", "CIDER", "ACORN", "CHESTNUT", "CRANBERRY", "FOLIAGE", "HARVEST", "HAYSTACK", "ORCHARD"] },
+  { name: "Board Games", words: ["CHESS", "CHECKERS", "MONOPOLY", "SCRABBLE", "DOMINOES", "CATAN", "PUZZLE", "BACKGAMMON", "TRIVIA", "STRATEGY"] },
+  { name: "Cinema & Movies", words: ["DIRECTOR", "ACTOR", "SCREENPLAY", "CAMERA", "THEATER", "OSCAR", "PRODUCER", "EDITING", "SOUNDTRACK", "PREMIERE"] },
+  { name: "Detective Mystery", words: ["CLUES", "SUSPECT", "ALIBI", "DETECTIVE", "FINGERPRINT", "EVIDENCE", "MAGNIFIER", "SECRET", "MYSTERY", "WITNESS"] },
+  { name: "Ancient Egypt", words: ["PHARAOH", "PYRAMID", "SPHINX", "HIEROGLYPH", "MUMMY", "NILE", "SCARAB", "PAPYRUS", "TEMPLE", "DYNASTY"] },
+  { name: "Rainforest", words: ["CANOPY", "JAGUAR", "ANACONDA", "SLOTH", "ORCHID", "LIANA", "MONKEY", "FROG", "RIVER", "PARADISE"] },
+  { name: "Deep Ocean", words: ["SUBMARINE", "SUNKEN", "CORAL", "ABYSS", "MERMAID", "TREASURE", "PEARL", "ANEMONE", "SPONGE", "DIVER"] },
+  { name: "Science Lab", words: ["MICROSCOPE", "BEAKER", "FLASK", "PIPETTE", "CENTRIFUGE", "BUNSEN", "PETRIDISH", "MOLECULE", "GENETICS", "QUANTUM"] },
+  { name: "World Rivers", words: ["AMAZON", "NILE", "MISSISSIPPI", "DANUBE", "YANGTZE", "GANGES", "VOLGA", "THAMES", "RHINE", "MEKONG"] },
+  { name: "Olympic Sports", words: ["MARATHON", "ARCHERY", "FENCING", "GYMNASTICS", "ROWING", "SAILING", "JAVELIN", "HURDLES", "TRIATHLON", "PODIUM"] },
+  { name: "Cozy Home", words: ["ARMCHAIR", "BOOKSHELF", "FIREPLACE", "BLANKET", "CUSHION", "CURTAIN", "SLIPPERS", "CARPET", "CANDLE", "BALCONY"] },
+  { name: "Dessert Delights", words: ["TIRAMISU", "CHEESECAKE", "PUDDING", "GELATO", "MACARON", "ECLAIR", "MOUSSE", "TART", "SUNDAE", "SORBET"] },
+  { name: "Vehicles & Transport", words: ["AIRPLANE", "HELICOPTER", "SUBWAY", "BICYCLE", "SCOOTER", "TRAMWAY", "MONORAIL", "FERRY", "CARAVAN", "MOTORCYCLE"] }
 ];
 
 interface ParsedBatchPuzzle {
@@ -240,15 +275,23 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
   // 🎲 Quick Add Random Themed Puzzles
   const handleQuickAddRandomPuzzles = (count: number) => {
     if (!bulkAddPages) return;
+    const countToGenerate = Math.max(1, Math.min(100, count));
     const shuffled = [...PRESET_CATEGORIES].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+    const configs: any[] = [];
 
-    const configs = selected.map((cat) => ({
-      rawText: cat.words.join(", "),
-      gridData: generatePuzzleGrid(cat.words, 12, "uppercase"),
-      title: cat.name,
-      isSolution: false,
-    }));
+    for (let i = 0; i < countToGenerate; i++) {
+      const cat = shuffled[i % shuffled.length];
+      const cycle = Math.floor(i / shuffled.length);
+      const title = cycle > 0 ? `${cat.name} ${cycle + 1}` : cat.name;
+      const shuffledWords = [...cat.words].sort(() => 0.5 - Math.random());
+
+      configs.push({
+        rawText: shuffledWords.join(", "),
+        gridData: generatePuzzleGrid(shuffledWords, 12, "uppercase"),
+        title,
+        isSolution: false,
+      });
+    }
 
     bulkAddPages(configs);
     alert(`✅ Successfully added ${configs.length} themed Word Search puzzles to your book!`);
@@ -353,16 +396,39 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
                 </span>
                 <span className="text-[10px] font-bold text-slate-400">Instant</span>
               </div>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-4 gap-1.5 mb-2.5">
                 {[3, 5, 10, 15].map((cnt) => (
                   <button
                     key={cnt}
                     onClick={() => handleQuickAddRandomPuzzles(cnt)}
-                    className="py-1.5 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black transition cursor-pointer"
+                    className="py-1.5 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black transition cursor-pointer text-center"
                   >
                     +{cnt} Puzzles
                   </button>
                 ))}
+              </div>
+
+              {/* Custom Add Page Option */}
+              <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200/80 dark:border-slate-800/80">
+                <div className="flex-1 flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-500 transition">
+                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mr-1.5 shrink-0">Custom:</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={quickAddCount}
+                    onChange={(e) => setQuickAddCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                    className="w-full bg-transparent text-xs font-black text-slate-900 dark:text-slate-100 outline-none"
+                    placeholder="20"
+                  />
+                  <span className="text-[10px] text-slate-400 font-bold ml-1 shrink-0">pages</span>
+                </div>
+                <button
+                  onClick={() => handleQuickAddRandomPuzzles(quickAddCount)}
+                  className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-sm flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add
+                </button>
               </div>
             </div>
           )}

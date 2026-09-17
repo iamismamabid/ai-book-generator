@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { RefreshCw, Upload, Sparkles, Plus } from "lucide-react";
+import { RefreshCw, Upload, Sparkles, Plus, Files, FileSpreadsheet, Check, X } from "lucide-react";
 
 const SCRAMBLE_POOLS = [
   ["AEROSPACE", "PROPULSION", "CONTAINMENT", "STABILIZATION", "ANTIGRAVITY", "FLIGHT", "PAYLOAD"],
@@ -15,6 +15,11 @@ const SCRAMBLE_POOLS = [
   ["SYMPHONY", "ORCHESTRA", "HARMONY", "MELODY", "COMPOSER", "CRESCENDO", "SONATA"],
   ["EVEREST", "KILIMANJARO", "MATTERHORN", "VOLCANO", "AVALANCHE", "GLACIER", "PLATEAU"]
 ];
+
+interface ParsedBatchScramble {
+  title: string;
+  words: string[];
+}
 
 function normalizeScrambledData(data: any): { original: string[]; scrambled: string[]; wordBank: string[] } | null {
   if (!data) return null;
@@ -49,8 +54,172 @@ export function WordScrambleEditor({ page, updatePage, bulkAddPages }: any) {
   );
   const [customCount, setCustomCount] = useState<number>(10);
   const csvInputRef = useRef<HTMLInputElement>(null);
+  const batchCsvInputRef = useRef<HTMLInputElement>(null);
 
   const isSolution = page.config.isSolution || false;
+
+  // Multi-puzzle batch modal state
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [batchRawInput, setBatchRawInput] = useState("");
+  const [parsedPuzzles, setParsedPuzzles] = useState<ParsedBatchScramble[]>([]);
+  const [includeMatchingSolutions, setIncludeMatchingSolutions] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+
+  // Parse text or CSV into multiple scrambles
+  const parseMultiScrambleText = (rawText: string): ParsedBatchScramble[] => {
+    const text = rawText.trim();
+    if (!text) return [];
+
+    // 1. Check if separated by blank lines (blocks)
+    const blocks = text.split(/\r?\n\s*\r?\n+/).map((b) => b.trim()).filter((b) => b.length > 0);
+
+    if (blocks.length > 1) {
+      const results: ParsedBatchScramble[] = [];
+      blocks.forEach((block, idx) => {
+        const lines = block.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+        let title = `Word Scramble #${idx + 1}`;
+        const firstLine = lines[0];
+        const isExplicitTitle =
+          firstLine.includes(":") ||
+          firstLine.toUpperCase().startsWith("THEME") ||
+          firstLine.toUpperCase().startsWith("TOPIC") ||
+          firstLine.toUpperCase().startsWith("CATEGORY") ||
+          firstLine.toUpperCase().startsWith("SCRAMBLE");
+
+        let words: string[] = [];
+        if (isExplicitTitle) {
+          title = firstLine.replace(/^(THEME|TOPIC|CATEGORY|SCRAMBLE)\s*:?/i, "").replace(/^[:\-–]/, "").trim() || title;
+          words = lines.slice(1).flatMap((l) => l.split(/[,;\t]/)).map((w) => w.trim().toUpperCase().replace(/[^A-Z]/g, "")).filter((w) => w.length > 1);
+        } else {
+          words = lines.flatMap((l) => l.split(/[,;\t]/)).map((w) => w.trim().toUpperCase().replace(/[^A-Z]/g, "")).filter((w) => w.length > 1);
+        }
+
+        if (words.length >= 3) {
+          results.push({ title, words });
+        }
+      });
+      if (results.length > 0) return results;
+    }
+
+    // 2. Otherwise parse row by row (each row is a scramble puzzle)
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+    const rowResults: ParsedBatchScramble[] = [];
+
+    lines.forEach((line, idx) => {
+      let title = `Word Scramble #${idx + 1}`;
+      let remainingLine = line;
+
+      // Check if row has "Title: Word1, Word2, ..."
+      if (line.includes(":") && !line.startsWith("http")) {
+        const parts = line.split(":");
+        title = parts[0].trim();
+        remainingLine = parts.slice(1).join(":");
+      }
+
+      const words = remainingLine
+        .split(/[,;\t]/)
+        .map((w) => w.trim().toUpperCase().replace(/[^A-Z]/g, ""))
+        .filter((w) => w.length > 1);
+
+      if (words.length >= 3) {
+        rowResults.push({ title, words });
+      }
+    });
+
+    return rowResults;
+  };
+
+  // 📁 Multi-Puzzle CSV file upload handler
+  const handleBatchCsvFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = (event.target?.result as string) || "";
+      setBatchRawInput(text);
+      const parsed = parseMultiScrambleText(text);
+      setParsedPuzzles(parsed);
+      setIsBatchModalOpen(true);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  const handleBatchInputChange = (val: string) => {
+    setBatchRawInput(val);
+    const parsed = parseMultiScrambleText(val);
+    setParsedPuzzles(parsed);
+  };
+
+  // 🚀 Execute Batch Creation
+  const handleExecuteBatchScrambleImport = () => {
+    if (parsedPuzzles.length === 0) {
+      alert("No valid scrambles detected. Please make sure each puzzle row or block has at least 3 words.");
+      return;
+    }
+
+    setIsImporting(true);
+    setTimeout(() => {
+      // 1. Update active page with Scramble #1
+      const firstPuz = parsedPuzzles[0];
+      const scrambledList = firstPuz.words.map((w) => scrambleWord(w, difficulty));
+      const wordBank = [...firstPuz.words].sort((a, b) => a.localeCompare(b));
+      const firstResult = {
+        original: firstPuz.words,
+        scrambled: scrambledList,
+        wordBank,
+      };
+
+      setInputText(firstPuz.words.join("\n"));
+      setScrambledData(firstResult);
+      updatePage({
+        rawText: firstPuz.words.join("\n"),
+        difficulty,
+        scrambledData: firstResult,
+        title: firstPuz.title,
+        isSolution: false,
+      });
+
+      // 2. Prepare remaining pages
+      const newConfigs: any[] = [];
+      for (let i = 1; i < parsedPuzzles.length; i++) {
+        const puz = parsedPuzzles[i];
+        const sList = puz.words.map((w) => scrambleWord(w, difficulty));
+        const wBank = [...puz.words].sort((a, b) => a.localeCompare(b));
+        newConfigs.push({
+          rawText: puz.words.join("\n"),
+          difficulty,
+          scrambledData: { original: puz.words, scrambled: sList, wordBank: wBank },
+          title: puz.title,
+          isSolution: false,
+        });
+      }
+
+      // 3. If solutions requested, append solution pages for all puzzles
+      if (includeMatchingSolutions) {
+        parsedPuzzles.forEach((puz) => {
+          const sList = puz.words.map((w) => scrambleWord(w, difficulty));
+          const wBank = [...puz.words].sort((a, b) => a.localeCompare(b));
+          newConfigs.push({
+            rawText: puz.words.join("\n"),
+            difficulty,
+            scrambledData: { original: puz.words, scrambled: sList, wordBank: wBank },
+            title: `${puz.title} (Solution)`,
+            isSolution: true,
+          });
+        });
+      }
+
+      if (newConfigs.length > 0 && bulkAddPages) {
+        bulkAddPages(newConfigs);
+      }
+
+      setIsImporting(false);
+      setIsBatchModalOpen(false);
+      const totalCreated = 1 + newConfigs.length;
+      alert(`✅ Success! Created ${totalCreated} total pages from your CSV file (${parsedPuzzles.length} puzzle pages${includeMatchingSolutions ? ` + ${parsedPuzzles.length} solution pages` : ''}).`);
+    }, 150);
+  };
 
   // 📁 CSV / TXT import handler (one word per line, or comma-separated)
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,6 +398,40 @@ export function WordScrambleEditor({ page, updatePage, bulkAddPages }: any) {
           </div>
         </div>
 
+        {/* Multi-Puzzle Batch CSV Button */}
+        {bulkAddPages && (
+          <div className="bg-gradient-to-r from-indigo-50 to-indigo-100/60 border border-indigo-200 p-4 rounded-2xl flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-indigo-600 text-white rounded-lg shadow-sm">
+                  <FileSpreadsheet className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                    Batch CSV Generator
+                  </h4>
+                  <p className="text-[10px] text-slate-500 font-medium">
+                    1 CSV = entire book of scrambles
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => batchCsvInputRef.current?.click()}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider py-2.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Upload className="w-3.5 h-3.5" /> Upload Full CSV (Multi-Page)
+            </button>
+            <input
+              type="file"
+              accept=".csv,.txt"
+              ref={batchCsvInputRef}
+              onChange={handleBatchCsvFile}
+              className="hidden"
+            />
+          </div>
+        )}
+
         {/* Quick Add Word Scramble Pages */}
         {bulkAddPages && (
           <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
@@ -357,6 +560,136 @@ export function WordScrambleEditor({ page, updatePage, bulkAddPages }: any) {
           <div className="text-center text-slate-400 mt-20">Click generate to load scramble.</div>
         )}
       </div>
+
+      {/* ⚡ Multi-Puzzle Batch Importer Modal */}
+      {isBatchModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-indigo-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-sm">
+                  <Files className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">
+                    Bulk CSV &amp; Multi-Scramble Importer
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Generate an entire collection of word scramble pages from a single CSV or text file
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsBatchModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-5 overflow-y-auto space-y-4 flex-1">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-700">
+                    CSV or Multi-Line Text Format
+                  </label>
+                  <span className="text-[11px] font-bold text-indigo-600">
+                    1 row per puzzle OR empty line between puzzles
+                  </span>
+                </div>
+                <textarea
+                  value={batchRawInput}
+                  onChange={(e) => handleBatchInputChange(e.target.value)}
+                  className="w-full h-40 p-3.5 border border-slate-200 rounded-2xl text-xs font-mono bg-slate-50 text-slate-900 outline-none focus:border-indigo-500"
+                  placeholder="Format A (CSV Rows):&#10;Animals: Lion, Tiger, Elephant, Giraffe, Zebra&#10;Fruits: Apple, Banana, Orange, Mango, Peach&#10;&#10;Format B (Word Blocks separated by empty line):&#10;Theme: Solar System&#10;Mercury&#10;Venus&#10;Earth&#10;Mars"
+                />
+              </div>
+
+              {/* Detected summary */}
+              <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-800">
+                    Detected Puzzles: <span className="text-indigo-600 font-bold">{parsedPuzzles.length}</span>
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    (Minimum 3 words per puzzle required)
+                  </span>
+                </div>
+
+                {parsedPuzzles.length > 0 ? (
+                  <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
+                    {parsedPuzzles.slice(0, 6).map((puz, i) => (
+                      <div
+                        key={i}
+                        className="bg-white border border-slate-200 p-2 rounded-xl text-xs flex items-center justify-between"
+                      >
+                        <span className="font-black text-slate-800 truncate max-w-[160px]">
+                          {i + 1}. {puz.title}
+                        </span>
+                        <span className="text-[11px] text-slate-500 truncate max-w-[280px]">
+                          {puz.words.slice(0, 5).join(", ")}{puz.words.length > 5 ? "..." : ""} ({puz.words.length} words)
+                        </span>
+                      </div>
+                    ))}
+                    {parsedPuzzles.length > 6 && (
+                      <p className="text-[11px] text-center text-slate-400 font-medium pt-1">
+                        + {parsedPuzzles.length - 6} more scrambles will be generated
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No valid scrambles found yet. Add words or paste CSV content above.</p>
+                )}
+              </div>
+
+              {/* Matching Solutions Option */}
+              <label className="flex items-center gap-2.5 p-3 rounded-2xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+                <input
+                  type="checkbox"
+                  checked={includeMatchingSolutions}
+                  onChange={(e) => setIncludeMatchingSolutions(e.target.checked)}
+                  className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                />
+                <div>
+                  <div className="text-xs font-black uppercase tracking-wider text-slate-800">
+                    Also generate matching Solution Pages
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-medium">
+                    Appends a complete solution unscrambled page for each created puzzle.
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+              <button
+                onClick={() => setIsBatchModalOpen(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExecuteBatchScrambleImport}
+                disabled={parsedPuzzles.length === 0 || isImporting}
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                {isImporting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" /> Generating {parsedPuzzles.length} Pages...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" /> Generate &amp; Insert All {parsedPuzzles.length} Pages
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -358,6 +358,7 @@ export default function BookBuilder({
   // Template Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addModalCategory, setAddModalCategory] = useState<'all' | 'interior' | 'puzzle' | 'structure'>('all');
+  const [addPageQuantity, setAddPageQuantity] = useState<number>(1);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isPackagerModalOpen, setIsPackagerModalOpen] = useState(false);
@@ -1251,6 +1252,7 @@ export default function BookBuilder({
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                bulkAddPages={(configs: any[]) => addMultiplePages('word_search', configs)}
               />
             )}
             {bookPages[activeIndex].type === 'sudoku' && !bookPages[activeIndex].config.isMultiSolution && (
@@ -1500,6 +1502,45 @@ export default function BookBuilder({
             ))}
           </div>
 
+          {/* Quantity Selector for Bulk Insertion */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/90 dark:border-indigo-800/80 px-4 py-2.5 rounded-2xl mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black uppercase tracking-wider text-indigo-950 dark:text-indigo-200">
+                Quantity to Insert:
+              </span>
+              <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-400">
+                {addPageQuantity === 1 ? "(Adds 1 page on click)" : `(Clicking any template will add ${addPageQuantity} pages at once)`}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 self-end sm:self-auto">
+              {[1, 5, 10, 20, 50].map((qty) => (
+                <button
+                  key={qty}
+                  type="button"
+                  onClick={() => setAddPageQuantity(qty)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer ${
+                    addPageQuantity === qty
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {qty === 1 ? "1 Page" : `+${qty}`}
+                </button>
+              ))}
+              <div className="flex items-center gap-1 ml-1.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Qty:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={addPageQuantity}
+                  onChange={(e) => setAddPageQuantity(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                  className="w-14 px-2 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-black text-center text-slate-900 dark:text-slate-100 outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[calc(100vh-320px)] overflow-y-auto pr-1 custom-scrollbar">
             {[
               // Structure First
@@ -1553,7 +1594,17 @@ export default function BookBuilder({
                       setIsAddModalOpen(false);
                       return;
                     }
-                    addPage(tmpl.type, tmpl.config);
+                    if (addPageQuantity > 1) {
+                      const configs = Array.from({ length: addPageQuantity }, () =>
+                        hydrateOrGeneratePuzzleData(tmpl.type, tmpl.config, true, bookLanguage)
+                      );
+                      const startIndex = bookPages.length;
+                      addMultiplePages(tmpl.type, configs);
+                      setActiveIndex(startIndex);
+                      showToast(`✅ Successfully added ${addPageQuantity} ${tmpl.label} pages!`, "success");
+                    } else {
+                      addPage(tmpl.type, tmpl.config);
+                    }
                     setIsAddModalOpen(false);
                   }}
                   className="interactive-tile p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-2xl text-left flex flex-col justify-between h-32 group cursor-pointer"

@@ -1313,6 +1313,7 @@ export default function BookBuilder({
                 key={bookPages[activeIndex].id}
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                bulkAddPages={(configs: any[]) => addMultiplePages('coloring_book', configs)}
               />
             )}
 

@@ -183,7 +183,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       drawMathPuzzleSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'math_puzzle' && page.config.puzzleData) {
       drawMathPuzzle(doc, page, leftMarginShift, w, h);
-    } else if (page.type === 'coloring_book' && page.config.presetId) {
+    } else if (page.type === 'coloring_book' && (page.config.presetId || page.config.uploadedImageUrl)) {
       drawColoringBookPage(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'low_content') {
       drawLowContent(doc, page, leftMarginShift, w, h);
@@ -341,6 +341,61 @@ const drawColoringBookPage = (doc: any, page: any, xShift: number, pageWidth: nu
   const safeW = pageWidth - margin * 2;
   const safeH = pageHeight - topReserved - margin;
   if (safeW <= 0 || safeH <= 0) return;
+
+  if (page.config?.uploadedImageUrl) {
+    try {
+      let drawW = safeW;
+      let drawH = safeH;
+      let drawX = margin + xShift;
+      let drawY = topReserved;
+
+      try {
+        const imgProps = doc.getImageProperties(page.config.uploadedImageUrl);
+        if (imgProps && imgProps.width && imgProps.height) {
+          const imgAspect = imgProps.width / imgProps.height;
+          const boxAspect = safeW / safeH;
+          if (imgAspect > boxAspect) {
+            drawW = safeW;
+            drawH = safeW / imgAspect;
+            drawY = topReserved + (safeH - drawH) / 2;
+          } else {
+            drawH = safeH;
+            drawW = safeH * imgAspect;
+            drawX = margin + xShift + (safeW - drawW) / 2;
+          }
+        }
+      } catch {
+        // Fallback to full safeW / safeH if getImageProperties is unsupported
+      }
+
+      if (page.config.isMidnightMode) {
+        doc.setFillColor(10, 10, 15);
+        doc.rect(margin + xShift, topReserved, safeW, safeH, "F");
+      }
+
+      doc.addImage(page.config.uploadedImageUrl, "PNG", drawX, drawY, drawW, drawH, undefined, "FAST");
+
+      if (page.config.frameStyle && page.config.frameStyle !== "none") {
+        doc.setDrawColor(page.config.isMidnightMode ? 240 : 30);
+        doc.setLineWidth(0.02);
+        if (page.config.frameStyle === "circle") {
+          const cx = margin + xShift + safeW / 2;
+          const cy = topReserved + safeH / 2;
+          const r = Math.min(safeW, safeH) / 2;
+          doc.circle(cx, cy, r);
+        } else {
+          doc.rect(margin + xShift, topReserved, safeW, safeH);
+          if (page.config.frameStyle === "ornamental") {
+            doc.setLineWidth(0.01);
+            doc.rect(margin + xShift + 0.05, topReserved + 0.05, safeW - 0.1, safeH - 0.1);
+          }
+        }
+      }
+      return;
+    } catch (err) {
+      console.error("Failed to render uploaded coloring image in PDF:", err);
+    }
+  }
 
   const dpi = 300;
   const pxW = Math.max(1, Math.round(safeW * dpi));

@@ -101,7 +101,7 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(opts.width < 7 ? 9 : 10.5);
   doc.setTextColor(255);
-  doc.text("★ PREMIUM PUZZLE COLLECTION ★", contentCenterX, badgeY + badgeH * 0.65, { align: "center" });
+  doc.text("PREMIUM PUZZLE COLLECTION", contentCenterX, badgeY + badgeH * 0.65, { align: "center" });
 
   // 3. Main Book Title
   doc.setFont(pdfFont, "bold");
@@ -117,9 +117,12 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   doc.setFont(pdfFont, "normal");
   doc.setFontSize(opts.width < 7 ? 10.5 : 12);
   doc.setTextColor(0);
-  const defaultSub = `${opts.puzzleCount} Handcrafted Large Print Puzzles with Complete Solutions`;
+  const countDisplay = opts.puzzleCount ? `${opts.puzzleCount}` : "Handcrafted";
+  const defaultSub = `${countDisplay} Handcrafted Large Print Puzzles with Complete Solutions`;
   const rawSub = opts.subtitle && opts.subtitle.trim() ? opts.subtitle : defaultSub;
-  const cleanSub = rawSub.replace(/\b\d+\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${opts.puzzleCount} $1`);
+  const cleanSub = opts.puzzleCount
+    ? rawSub.replace(/\b(undefined|\d+)\s+(Large Print Puzzles|Puzzles|Handcrafted)/i, `${opts.puzzleCount} $1`)
+    : rawSub.replace(/\bundefined\s*/i, "");
   const subLines = doc.splitTextToSize(cleanSub, frameW - 0.8);
   const subY = titleBottomY + (opts.height < 10 ? 0.25 : 0.35);
   doc.text(subLines, contentCenterX, subY, { align: "center" });
@@ -152,9 +155,10 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(opts.width < 7 ? 9.5 : 10.5);
   doc.setTextColor(255);
+  const countStr = opts.puzzleCount ? `${opts.puzzleCount} PUZZLES` : "PREMIUM PUZZLES";
   const editionText = opts.difficulty
-    ? `DIFFICULTY LEVEL: ${opts.difficulty.toUpperCase()} • ${opts.puzzleCount} PUZZLES`
-    : `COMPLETE EDITION • ${opts.puzzleCount} PUZZLES`;
+    ? `DIFFICULTY LEVEL: ${opts.difficulty.toUpperCase()} • ${countStr}`
+    : `COMPLETE EDITION • ${countStr}`;
   doc.text(editionText, contentCenterX, specBoxY + specHeaderH * 0.66, { align: "center" });
 
   doc.setFont(pdfFont, "normal");

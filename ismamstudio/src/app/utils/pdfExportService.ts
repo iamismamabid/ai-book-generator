@@ -70,10 +70,12 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
         doc.setFontSize(18);
         const isSol = page.config.isSolution || false;
         const isMultiSol = page.config.isMultiSolution || false;
-        const solSuffix = isSol
+        const baseTitle = page.type.replace('_', ' ').toUpperCase();
+        const alreadyHasSol = baseTitle.toLowerCase().includes('solution');
+        const solSuffix = (isSol && !alreadyHasSol)
           ? (!isMultiSol && page.config.pageNumber ? ` (PAGE ${page.config.pageNumber} SOLUTION)` : ' (SOLUTION)')
           : '';
-        const title = `${page.type.replace('_', ' ').toUpperCase()}${solSuffix}`;
+        const title = `${baseTitle}${solSuffix}`;
         const titleWidth = doc.getTextWidth(title);
         doc.text(title, (w - titleWidth) / 2 + leftMarginShift, 0.6);
       }
@@ -186,18 +188,26 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     } else if (page.type === 'low_content') {
       drawLowContent(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'title') {
+      const primaryPuzzlePage = bookPages.find((p: any) => !['title', 'copyright', 'blank'].includes(p.type));
+      const primaryPuzzleType = primaryPuzzlePage?.type || 'word_search';
+      const actualPuzzleCount = bookPages.filter((p: any) => !['title', 'copyright', 'blank'].includes(p.type) && !p.config?.isSolution).length;
       drawKdpTitlePage(doc, {
         title: page.config?.title || "Book Title",
         subtitle: page.config?.subtitle || "A Collection of Puzzles & Brain Challenges",
         authorName: page.config?.author || "Independent Publisher",
+        puzzleType: (page.config?.puzzleType || primaryPuzzleType) as any,
+        puzzleCount: page.config?.puzzleCount || actualPuzzleCount || 40,
         width: w,
         height: h,
         pageNumber: index + 1,
         totalPages: bookPages.length,
       });
     } else if (page.type === 'copyright') {
+      const primaryPuzzlePage = bookPages.find((p: any) => !['title', 'copyright', 'blank'].includes(p.type));
+      const primaryPuzzleType = primaryPuzzlePage?.type || 'word_search';
       drawKdpCopyrightAndInstructionsPage(doc, {
         authorName: page.config?.author || "Independent Publisher",
+        puzzleType: (page.config?.puzzleType || primaryPuzzleType) as any,
         year: page.config?.year || new Date().getFullYear().toString(),
         edition: page.config?.edition || "First Edition",
         width: w,
@@ -744,10 +754,11 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   doc.setFont("Helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(0);
-  const solSuffix = isSolution
+  const baseTitle = page.config.title || page.type.replace('_', ' ').toUpperCase();
+  const alreadyHasSol = baseTitle.toLowerCase().includes('solution');
+  const solSuffix = (isSolution && !alreadyHasSol)
     ? (page.config.pageNumber ? ` (PAGE ${page.config.pageNumber} SOLUTION)` : ' (SOLUTION)')
     : '';
-  const baseTitle = page.config.title || page.type.replace('_', ' ').toUpperCase();
   const title = `${baseTitle}${solSuffix}`;
   const titleWidth = doc.getTextWidth(title);
   doc.text(title, (pageWidth - titleWidth) / 2 + xShift, titleY);

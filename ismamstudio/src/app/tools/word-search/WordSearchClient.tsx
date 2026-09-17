@@ -1116,13 +1116,7 @@ export default function WordSearchStudio() {
                                 )
                             ) : previewPageMode === 'title' ? (
                                 <div className="bg-white text-slate-900 p-8 sm:p-12 shadow-2xl rounded-sm w-full max-w-xl aspect-[8.5/11] flex flex-col justify-between border border-slate-200 relative font-sans select-none animate-in fade-in duration-200">
-                                    <div className="text-center space-y-6 pt-6">
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-                                                PREMIUM PUZZLE COLLECTION
-                                            </span>
-                                            <div className="w-16 h-0.5 bg-slate-900 mx-auto mt-2 opacity-80" />
-                                        </div>
+                                    <div className="text-center space-y-6 pt-10">
 
                                         <div className="space-y-3 pt-4">
                                             <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-tight text-slate-950">

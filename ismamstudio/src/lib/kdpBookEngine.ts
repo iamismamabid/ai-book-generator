@@ -89,26 +89,12 @@ export function drawKdpTitlePage(doc: jsPDF, opts: KdpTitlePageOptions) {
   doc.rect(frameL - 0.015, frameT + frameH - markSize + 0.015, markSize, markSize, "F");
   doc.rect(frameL + frameW - markSize + 0.015, frameT + frameH - markSize + 0.015, markSize, markSize, "F");
 
-  // 2. Header Badge (Solid black filled pill banner)
-  const badgeW = Math.min(3.6, frameW - 0.6);
-  const badgeH = 0.36;
-  const badgeX = contentCenterX - badgeW / 2;
-  const badgeY = frameT + Math.max(0.35, opts.height * 0.045);
-
-  doc.setFillColor(0);
-  doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 0.06, 0.06, "F");
-
-  doc.setFont(pdfFont, "bold");
-  doc.setFontSize(opts.width < 7 ? 9 : 10.5);
-  doc.setTextColor(255);
-  doc.text("PREMIUM PUZZLE COLLECTION", contentCenterX, badgeY + badgeH * 0.65, { align: "center" });
-
-  // 3. Main Book Title
+  // 2. Main Book Title
   doc.setFont(pdfFont, "bold");
   doc.setFontSize(opts.width < 7 ? 22 : 28);
   doc.setTextColor(0);
   const titleLines = doc.splitTextToSize(opts.title || "Puzzle Master", frameW - 0.6);
-  const titleY = badgeY + badgeH + (opts.height < 10 ? 0.35 : 0.55);
+  const titleY = frameT + (opts.height < 10 ? 0.75 : 0.95);
   doc.text(titleLines, contentCenterX, titleY, { align: "center" });
 
   const titleBottomY = titleY + (titleLines.length - 1) * (opts.width < 7 ? 0.32 : 0.4);

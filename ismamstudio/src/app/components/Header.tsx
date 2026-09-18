@@ -1,29 +1,13 @@
 "use client";
 
-import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { SignInButton, SignUpButton, UserButton, SignedIn, useUser } from '@clerk/nextjs';
+import { SignInButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import GlobalSearchModal from '@/app/components/GlobalSearchModal';
 import MobileNavMenu from '@/app/components/MobileNavMenu';
 import { Sparkles, BookOpen, Users } from 'lucide-react';
 
 export default function Header() {
-  const { isSignedIn, isLoaded } = useUser();
-
-  // Sync clerk-authed class & localStorage when Clerk fully loads in React
-  useEffect(() => {
-    if (isLoaded) {
-      if (isSignedIn) {
-        document.documentElement.classList.add('clerk-authed');
-        try { localStorage.setItem('kdpage_authed', '1'); } catch (e) {}
-      } else {
-        document.documentElement.classList.remove('clerk-authed');
-        try { localStorage.removeItem('kdpage_authed'); } catch (e) {}
-      }
-    }
-  }, [isLoaded, isSignedIn]);
-
   return (
     <header className="fixed top-0 inset-x-0 z-50 flex flex-col transition-all duration-300" suppressHydrationWarning>
       {/* 📣 Announcement Bar */}
@@ -70,7 +54,7 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Central Standard Navigation Links (Desktop) - Anchored next to brand logo to eliminate layout shifts */}
+          {/* Central Standard Navigation Links (Desktop) */}
           <div className="hidden md:flex items-center gap-5 lg:gap-8 ml-6 lg:ml-10 mr-auto">
             <Link href="/" prefetch={true} className="text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors">
               Home
@@ -92,50 +76,54 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Action Buttons & Auth */}
+          {/* Action Buttons & Navigation (100% Solid Frame-0 Layout - Zero Width Shifts) */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0 h-10">
             {/* Global Search Modal */}
             <div className="shrink-0">
               <GlobalSearchModal />
             </div>
 
-            {/* Auth Buttons: Instant Zero-Flicker Rendering (No skeleton, no delay) */}
-            <div className="flex items-center justify-end shrink-0 h-10">
-              {/* Logged-in View: Shown on Frame 0 via html.clerk-authed */}
-              <div className="clerk-authed-only hidden items-center gap-2 sm:gap-3">
-                <Link href="/notebook" prefetch={true} className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1 shrink-0">
-                  <BookOpen className="w-4 h-4 text-indigo-400" />
-                  <span>My Notebook</span>
-                </Link>
-                <Link href="/studio" prefetch={true} className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0">
-                  <Sparkles className="w-4 h-4" /> Creator Studio
-                </Link>
+            {/* My Notebook (Permanent static link) */}
+            <Link 
+              href="/notebook" 
+              prefetch={true} 
+              className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1 shrink-0"
+            >
+              <BookOpen className="w-4 h-4 text-indigo-400" />
+              <span>My Notebook</span>
+            </Link>
 
-                <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-800 flex items-center shrink-0 w-9 h-9 sm:w-10 sm:h-10 justify-center">
-                  <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/80 flex items-center justify-center overflow-hidden shrink-0">
-                    <SignedIn>
-                      <UserButton afterSignOutUrl="/">
-                        <UserButton.MenuItems>
-                          <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
-                        </UserButton.MenuItems>
-                      </UserButton>
-                    </SignedIn>
-                  </div>
-                </div>
-              </div>
+            {/* Creator Studio (Core Product CTA - Always visible on Frame 0 for everyone) */}
+            <Link 
+              href="/studio" 
+              prefetch={true} 
+              className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0"
+            >
+              <Sparkles className="w-4 h-4" /> Creator Studio
+            </Link>
 
-              {/* Guest View: Shown on Frame 0 for unauthenticated visitors */}
-              <div className="clerk-guest-only flex items-center gap-2 shrink-0">
-                <SignInButton mode="modal" initialValues={{ emailAddress: "" }}>
-                  <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2 cursor-pointer whitespace-nowrap">
-                    Sign In
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal" initialValues={{ emailAddress: "" }}>
-                  <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all active:scale-95 cursor-pointer whitespace-nowrap">
-                    Sign Up
-                  </button>
-                </SignUpButton>
+            {/* Account / User Avatar Slot (Fixed 32px circle, zero shift) */}
+            <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-800 flex items-center shrink-0 w-9 h-9 sm:w-10 sm:h-10 justify-center">
+              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/80 flex items-center justify-center overflow-hidden shrink-0">
+                <SignedIn>
+                  <UserButton afterSignOutUrl="/">
+                    <UserButton.MenuItems>
+                      <UserButton.Link label="My Notebook" labelIcon={<BookOpen className="w-4 h-4" />} href="/notebook" />
+                      <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
+                    </UserButton.MenuItems>
+                  </UserButton>
+                </SignedIn>
+                <SignedOut>
+                  <SignInButton mode="modal" initialValues={{ emailAddress: "" }}>
+                    <button 
+                      className="w-full h-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+                      title="Sign In"
+                      aria-label="Sign In"
+                    >
+                      <Users className="w-4 h-4" />
+                    </button>
+                  </SignInButton>
+                </SignedOut>
               </div>
             </div>
 

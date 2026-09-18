@@ -152,19 +152,5 @@
   animation-play-state: paused;
 }
 
-/* ⚡ Zero-Flicker Instant Header Auth State */
-html.clerk-authed .clerk-authed-only {
-  display: flex !important;
-}
-html.clerk-authed .clerk-guest-only {
-  display: none !important;
-}
-
-html:not(.clerk-authed) .clerk-authed-only {
-  display: none !important;
-}
-html:not(.clerk-authed) .clerk-guest-only {
-  display: flex !important;
-}
 
 

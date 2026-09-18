@@ -6,16 +6,7 @@ const hasClerkKeys =
   Boolean(process.env.CLERK_SECRET_KEY);
 
 const middleware = hasClerkKeys
-  ? clerkMiddleware(async (auth, req) => {
-      const { userId } = await auth();
-      const res = NextResponse.next();
-      if (userId) {
-        res.cookies.set("kdpage_authed", "1", { path: "/", httpOnly: false, sameSite: "lax", maxAge: 60 * 60 * 24 * 30 });
-      } else {
-        res.cookies.set("kdpage_authed", "0", { path: "/", httpOnly: false, sameSite: "lax", maxAge: 0 });
-      }
-      return res;
-    })
+  ? clerkMiddleware()
   : () => NextResponse.next();
 
 export default middleware;

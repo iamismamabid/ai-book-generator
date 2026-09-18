@@ -82,27 +82,6 @@ export default function RootLayout({
       {/* 🎯 html ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
       <html lang="en" className={`scroll-smooth ${inter.variable}`} suppressHydrationWarning>
         <head>
-          {/* ⚡ Instant Zero-Flicker Auth Detection Script (Runs on Frame 0 before HTML paint) */}
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function() {
-                  try {
-                    var isAuthed = false;
-                    if (typeof localStorage !== 'undefined' && localStorage.getItem('kdpage_authed') === '1') {
-                      isAuthed = true;
-                    }
-                    if (!isAuthed && document.cookie.indexOf('kdpage_authed=1') !== -1) {
-                      isAuthed = true;
-                    }
-                    if (isAuthed) {
-                      document.documentElement.classList.add('clerk-authed');
-                    }
-                  } catch (e) {}
-                })();
-              `,
-            }}
-          />
           {/* Google Tag Manager (Top of <head>) */}
           <Script id="google-tag-manager" strategy="afterInteractive">
             {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

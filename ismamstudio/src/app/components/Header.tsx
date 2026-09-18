@@ -1,13 +1,26 @@
 "use client";
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut, ClerkLoading, ClerkLoaded } from '@clerk/nextjs';
+import { SignInButton, SignUpButton, UserButton, SignedIn, useUser } from '@clerk/nextjs';
 import GlobalSearchModal from '@/app/components/GlobalSearchModal';
 import MobileNavMenu from '@/app/components/MobileNavMenu';
 import { Sparkles, BookOpen, Users } from 'lucide-react';
 
 export default function Header() {
+  const { isSignedIn, isLoaded } = useUser();
+
+  // Sync clerk-authed class when Clerk fully loads in React
+  useEffect(() => {
+    if (isLoaded) {
+      if (isSignedIn) {
+        document.documentElement.classList.add('clerk-authed');
+      } else {
+        document.documentElement.classList.remove('clerk-authed');
+      }
+    }
+  }, [isLoaded, isSignedIn]);
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 flex flex-col transition-all duration-300" suppressHydrationWarning>
@@ -84,52 +97,44 @@ export default function Header() {
               <GlobalSearchModal />
             </div>
 
-            {/* Auth Buttons with ClerkLoading skeleton & smooth fade-in to prevent layout jumps */}
-            <div className="flex items-center justify-end shrink-0 h-10 min-w-[70px] sm:min-w-[120px]">
-              <ClerkLoading>
-                <div className="flex items-center gap-2 sm:gap-3 animate-pulse opacity-50">
-                  <div className="hidden sm:block h-8 w-24 rounded-full bg-slate-800/80" />
-                  <div className="h-8 w-20 sm:w-28 rounded-full bg-indigo-950/60 border border-indigo-500/20" />
-                  <div className="w-8 h-8 rounded-full bg-slate-800/80 border border-slate-700/60 shrink-0" />
-                </div>
-              </ClerkLoading>
-              <ClerkLoaded>
-                <SignedIn>
-                  <div className="flex items-center gap-2 sm:gap-3 animate-in fade-in duration-200">
-                    <Link href="/notebook" prefetch={true} className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1 shrink-0">
-                      <BookOpen className="w-4 h-4 text-indigo-400" />
-                      <span>My Notebook</span>
-                    </Link>
-                    <Link href="/studio" prefetch={true} className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0">
-                      <Sparkles className="w-4 h-4" /> Creator Studio
-                    </Link>
+            {/* Auth Buttons: Instant Zero-Flicker Rendering (No skeleton, no delay) */}
+            <div className="flex items-center justify-end shrink-0 h-10">
+              {/* Logged-in View: Shown on Frame 0 via html.clerk-authed */}
+              <div className="clerk-authed-only hidden items-center gap-2 sm:gap-3">
+                <Link href="/notebook" prefetch={true} className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors mr-1 shrink-0">
+                  <BookOpen className="w-4 h-4 text-indigo-400" />
+                  <span>My Notebook</span>
+                </Link>
+                <Link href="/studio" prefetch={true} className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap shrink-0">
+                  <Sparkles className="w-4 h-4" /> Creator Studio
+                </Link>
 
-                    <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-800 flex items-center shrink-0 w-9 h-9 sm:w-10 sm:h-10 justify-center">
-                      <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/80 flex items-center justify-center overflow-hidden shrink-0">
-                        <UserButton afterSignOutUrl="/">
-                          <UserButton.MenuItems>
-                            <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
-                          </UserButton.MenuItems>
-                        </UserButton>
-                      </div>
-                    </div>
+                <div className="ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-slate-800 flex items-center shrink-0 w-9 h-9 sm:w-10 sm:h-10 justify-center">
+                  <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/80 flex items-center justify-center overflow-hidden shrink-0">
+                    <SignedIn>
+                      <UserButton afterSignOutUrl="/">
+                        <UserButton.MenuItems>
+                          <UserButton.Link label="Team Seats" labelIcon={<Users className="w-4 h-4" />} href="/team" />
+                        </UserButton.MenuItems>
+                      </UserButton>
+                    </SignedIn>
                   </div>
-                </SignedIn>
-                <SignedOut>
-                  <div className="flex items-center gap-2 shrink-0 animate-in fade-in duration-200">
-                    <SignInButton mode="modal" initialValues={{ emailAddress: "" }}>
-                      <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2 cursor-pointer whitespace-nowrap">
-                        Sign In
-                      </button>
-                    </SignInButton>
-                    <SignUpButton mode="modal" initialValues={{ emailAddress: "" }}>
-                      <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all active:scale-95 cursor-pointer whitespace-nowrap">
-                        Sign Up
-                      </button>
-                    </SignUpButton>
-                  </div>
-                </SignedOut>
-              </ClerkLoaded>
+                </div>
+              </div>
+
+              {/* Guest View: Shown on Frame 0 for unauthenticated visitors */}
+              <div className="clerk-guest-only flex items-center gap-2 shrink-0">
+                <SignInButton mode="modal" initialValues={{ emailAddress: "" }}>
+                  <button className="text-xs sm:text-sm font-bold text-slate-200 hover:text-indigo-400 transition-colors px-1.5 sm:px-2 cursor-pointer whitespace-nowrap">
+                    Sign In
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal" initialValues={{ emailAddress: "" }}>
+                  <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all active:scale-95 cursor-pointer whitespace-nowrap">
+                    Sign Up
+                  </button>
+                </SignUpButton>
+              </div>
             </div>
 
             {/* Mobile Hamburger Toggle & Drawer */}

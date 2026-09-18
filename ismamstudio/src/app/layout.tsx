@@ -82,6 +82,25 @@ export default function RootLayout({
       {/* 🎯 html ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
       <html lang="en" className={`scroll-smooth ${inter.variable}`} suppressHydrationWarning>
         <head>
+          {/* ⚡ Instant Zero-Flicker Auth Detection Script (Runs on Frame 0 before HTML paint) */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                      var c = cookies[i].trim().split('=');
+                      if ((c[0] === '__client_uat' && c[1] && c[1] !== '0') || c[0] === '__session') {
+                        document.documentElement.classList.add('clerk-authed');
+                        break;
+                      }
+                    }
+                  } catch (e) {}
+                })();
+              `,
+            }}
+          />
           {/* Google Tag Manager (Top of <head>) */}
           <Script id="google-tag-manager" strategy="afterInteractive">
             {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

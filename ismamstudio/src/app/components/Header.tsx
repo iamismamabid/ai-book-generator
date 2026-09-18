@@ -11,13 +11,15 @@ import { Sparkles, BookOpen, Users } from 'lucide-react';
 export default function Header() {
   const { isSignedIn, isLoaded } = useUser();
 
-  // Sync clerk-authed class when Clerk fully loads in React
+  // Sync clerk-authed class & localStorage when Clerk fully loads in React
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn) {
         document.documentElement.classList.add('clerk-authed');
+        try { localStorage.setItem('kdpage_authed', '1'); } catch (e) {}
       } else {
         document.documentElement.classList.remove('clerk-authed');
+        try { localStorage.removeItem('kdpage_authed'); } catch (e) {}
       }
     }
   }, [isLoaded, isSignedIn]);

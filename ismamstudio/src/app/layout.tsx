@@ -88,13 +88,15 @@ export default function RootLayout({
               __html: `
                 (function() {
                   try {
-                    var cookies = document.cookie.split(';');
-                    for (var i = 0; i < cookies.length; i++) {
-                      var c = cookies[i].trim().split('=');
-                      if ((c[0] === '__client_uat' && c[1] && c[1] !== '0') || c[0] === '__session') {
-                        document.documentElement.classList.add('clerk-authed');
-                        break;
-                      }
+                    var isAuthed = false;
+                    if (typeof localStorage !== 'undefined' && localStorage.getItem('kdpage_authed') === '1') {
+                      isAuthed = true;
+                    }
+                    if (!isAuthed && document.cookie.indexOf('kdpage_authed=1') !== -1) {
+                      isAuthed = true;
+                    }
+                    if (isAuthed) {
+                      document.documentElement.classList.add('clerk-authed');
                     }
                   } catch (e) {}
                 })();

@@ -89,11 +89,11 @@ export default function CountdownBanner() {
         >
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-950 text-amber-300 text-[10px] font-black uppercase tracking-wider shrink-0 shadow-sm animate-pulse">
             <Sparkles className="w-3 h-3 text-amber-300" />
-            <span>50% OFF</span>
+            <span>LIMITED DEAL</span>
           </span>
           
           <span className="font-black text-slate-950 tracking-tight text-xs sm:text-sm whitespace-nowrap">
-            KDPage Lifetime Deal
+            50% OFF EVERY MONTH FOR LIFE
           </span>
         </Link>
 

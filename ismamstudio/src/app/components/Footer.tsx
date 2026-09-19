@@ -69,11 +69,11 @@ export default function Footer() {
                 title="Featured on LaunchBuff"
               >
                 <img
-                  src="https://launchbuff.com/badge-featured-dark.svg"
+                  src="/launchbuff-badge.svg"
                   alt="Featured on LaunchBuff"
                   loading="lazy"
-                  width={256}
-                  height={80}
+                  width={216}
+                  height={54}
                   className="h-9 w-auto rounded-lg shadow-sm"
                 />
               </a>

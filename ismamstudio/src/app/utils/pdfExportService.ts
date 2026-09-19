@@ -60,7 +60,8 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     const pageNum = index + 1;
     const margins = calculateKdpMargins(pageNum, bookPages.length, w);
     const kdpShift = margins.contentCenterX - (w / 2);
-    const leftMarginShift = gutterMargin ? kdpShift : 0;
+    // KDP interior books always apply alternating gutter margins matching Sudoku & Amazon KDP requirements
+    const leftMarginShift = gutterMargin !== false ? kdpShift : 0;
 
     // Page Title (except for title/copyright/blank pages, and single word search which centers its title above the grid)
     const isSingleWordSearch = page.type === 'word_search' && !page.config.isMultiSolution;
@@ -76,17 +77,17 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
           ? (!isMultiSol && page.config.pageNumber ? ` (PAGE ${page.config.pageNumber} SOLUTION)` : ' (SOLUTION)')
           : '';
         const title = `${baseTitle}${solSuffix}`;
-        doc.text(title, w / 2 + leftMarginShift, 0.6, { align: "center" });
+        doc.text(title, margins.contentCenterX, 0.6, { align: "center" });
       }
 
-      // Render Page Number - center-aligned at the bottom so it is always safely
+      // Render Page Number - center-aligned within the printable content area so it is always safely
       // within margins on both odd (recto) and even (verso) pages, completely
       // immune to KDP inside gutter or edge margin violations.
       if (includePageNumbers) {
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(9);
         doc.setTextColor(0);
-        doc.text(`Page ${index + 1}`, w / 2, h - 0.45, { align: "center" });
+        doc.text(`Page ${index + 1}`, margins.contentCenterX, h - 0.45, { align: "center" });
       }
     }
 
@@ -805,9 +806,10 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
 
   // Balanced KDP layout: grid stays well proportioned without spilling over (matches Sudoku's 5.5" width)
   const maxAvailableGridH = safeH - (startY - margin) - wordListSpace;
+  const maxKdpGrid = (pageWidth <= 5.5) ? 3.5 : (pageWidth <= 6.5) ? 4.2 : 5.5;
   const gridDrawSize = isSolution
     ? Math.min(safeW * 0.85, maxAvailableGridH, 4.8)
-    : Math.min(safeW * 0.85, maxAvailableGridH, 5.5);
+    : Math.min(safeW * 0.85, maxAvailableGridH, maxKdpGrid);
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
   const gridCenterX = startX + gridDrawSize / 2;

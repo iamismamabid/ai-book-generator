@@ -77,9 +77,10 @@ function drawWordSearchPage(
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridPx }, isSolution, style);
 
   if (!isSolution) {
+    const wordTextAlign = style?.wordTextAlign || 'left';
     drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridPx + gridToWordGap, w: gridPx }, {
       showHeading: true,
-      style: { wordColumns: 3, wordFontSize: 9.5, wordTextAlign: 'center', ...style },
+      style: { wordColumns: 3, wordFontSize: 9.5, wordTextAlign, ...style },
     });
   }
 

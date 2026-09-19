@@ -563,7 +563,7 @@ const WORD_SEARCH_DEFAULT_STYLE: Required<WordSearchStyle> = {
   wordFont: 'helvetica',
   wordFontSize: 11,
   wordTextColor: '#000000',
-  wordTextAlign: 'center',
+  wordTextAlign: 'left',
   wordColumns: 3,
   wordRowStep: 0.22,
   highlightColor: '#E0E0E0',
@@ -829,10 +829,11 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
 
   if (!isSolution) {
+    const wordTextAlign = page.config?.wordTextAlign || 'left';
     drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridDrawSize + gridToWordGap, w: gridDrawSize }, {
       isSolution,
       showHeading: true,
-      style: { wordColumns: 3, wordFontSize: 11, wordRowStep: 0.24, wordTextAlign: 'center' }
+      style: { wordColumns: 3, wordFontSize: 11, wordRowStep: 0.24, wordTextAlign }
     });
   }
 };

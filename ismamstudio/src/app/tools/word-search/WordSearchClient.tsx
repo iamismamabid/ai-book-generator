@@ -65,7 +65,7 @@ export default function WordSearchStudio() {
     const [textCase, setTextCase] = useState('UPPERCASE');
     
     const [wordsSort, setWordsSort] = useState<'random' | 'alphabetical' | 'length'>('random');
-    const [wordTextAlign, setWordTextAlign] = useState<'left' | 'center'>('center');
+    const [wordTextAlign, setWordTextAlign] = useState<'left' | 'center'>('left');
     const [wordFont, setWordFont] = useState('helvetica');
     const [wordTextSize, setWordTextSize] = useState(10);
     const [wordTextColor, setWordTextColor] = useState('#000000');

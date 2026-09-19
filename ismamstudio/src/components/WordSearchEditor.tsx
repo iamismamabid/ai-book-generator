@@ -68,6 +68,7 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
     return cat.words.join(", ");
   });
   const [gridData, setGridData] = useState<any>(page.config.gridData || null);
+  const [wordTextAlign, setWordTextAlign] = useState<'left' | 'center'>(page.config?.wordTextAlign || 'left');
   const csvInputRef = useRef<HTMLInputElement>(null);
   const batchCsvInputRef = useRef<HTMLInputElement>(null);
 
@@ -233,6 +234,7 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
         gridData: firstGrid,
         title: firstPuz.title,
         isSolution: false,
+        wordTextAlign,
       });
 
       // 2. Prepare remaining pages
@@ -246,6 +248,7 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
           gridData: gData,
           title: puz.title,
           isSolution: false,
+          wordTextAlign,
         });
       }
 
@@ -290,6 +293,7 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
         gridData: generatePuzzleGrid(shuffledWords, 12, "uppercase"),
         title,
         isSolution: false,
+        wordTextAlign,
       });
     }
 
@@ -303,11 +307,16 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
 
     const result = generatePuzzleGrid(wordList, 12, "uppercase");
     setGridData(result);
-    updatePage({ rawText: inputText, gridData: result, isSolution });
+    updatePage({ rawText: inputText, gridData: result, isSolution, wordTextAlign });
   };
 
   const handleToggleMode = (solMode: boolean) => {
-    updatePage({ rawText: inputText, gridData, isSolution: solMode });
+    updatePage({ rawText: inputText, gridData, isSolution: solMode, wordTextAlign });
+  };
+
+  const handleAlignChange = (align: 'left' | 'center') => {
+    setWordTextAlign(align);
+    updatePage({ rawText: inputText, gridData, isSolution, wordTextAlign: align });
   };
 
   React.useEffect(() => {
@@ -458,6 +467,38 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
             </div>
           </div>
 
+          {/* Word List Alignment */}
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Word List Alignment</h3>
+              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 capitalize">{wordTextAlign}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleAlignChange('left')}
+                className={`py-2 rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer ${
+                  wordTextAlign === 'left'
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                }`}
+              >
+                Left
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAlignChange('center')}
+                className={`py-2 rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer ${
+                  wordTextAlign === 'center'
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                }`}
+              >
+                Center
+              </button>
+            </div>
+          </div>
+
           {/* Active Page Word Editor */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
@@ -522,7 +563,7 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                   {gridData.words.map((w: any, i: number) => (
-                    <div key={i} className={`px-2 py-1 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 font-bold text-center ${isSolution ? 'line-through text-slate-400' : ''}`}>
+                    <div key={i} className={`px-2.5 py-1 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 font-bold ${wordTextAlign === 'left' ? 'text-left' : 'text-center'} ${isSolution ? 'line-through text-slate-400' : ''}`}>
                       {w.text}
                     </div>
                   ))}

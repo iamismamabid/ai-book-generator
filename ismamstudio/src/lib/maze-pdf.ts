@@ -410,5 +410,6 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
 
 export async function downloadMazePdf(options: PdfOptions, filename = "maze-book.pdf") {
   const doc = await generateMazePdf(options);
-  doc.save(filename);
+  const { saveKdpCompliantPdf } = await import("./kdpFontEmbedder");
+  await saveKdpCompliantPdf(doc, filename);
 }

@@ -206,6 +206,7 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
 
 export async function downloadWordSearchPdf(options: PdfOptions, filename = "word-search-book.pdf") {
   const doc = await generateWordSearchPdf(options);
-  doc.save(filename);
+  const { saveKdpCompliantPdf } = await import("./kdpFontEmbedder");
+  await saveKdpCompliantPdf(doc, filename);
 }
 

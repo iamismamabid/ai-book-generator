@@ -288,5 +288,6 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
   }
 
   ensureEvenPageCount(doc);
-  doc.save(filename);
+  const { saveKdpCompliantPdf } = await import("./kdpFontEmbedder");
+  await saveKdpCompliantPdf(doc, filename);
 }

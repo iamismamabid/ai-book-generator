@@ -429,8 +429,9 @@ export async function downloadSudokuPdf(options: PdfOptions, filename: string) {
     current: 100,
     total: 100,
     percent: 100,
-    message: "Saving PDF file...",
+    message: "Embedding print-ready fonts and saving PDF...",
   });
   await new Promise((resolve) => setTimeout(resolve, 10));
-  doc.save(filename);
+  const { saveKdpCompliantPdf } = await import("./kdpFontEmbedder");
+  await saveKdpCompliantPdf(doc, filename);
 }

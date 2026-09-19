@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { SignInButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import CountdownBanner from '@/app/components/CountdownBanner';
 import GlobalSearchModal from '@/app/components/GlobalSearchModal';
 import MobileNavMenu from '@/app/components/MobileNavMenu';
 import { Sparkles, BookOpen, Users } from 'lucide-react';
@@ -10,17 +11,8 @@ import { Sparkles, BookOpen, Users } from 'lucide-react';
 export default function Header() {
   return (
     <header className="fixed top-0 inset-x-0 z-50 flex flex-col transition-all duration-300" suppressHydrationWarning>
-      {/* 📣 Announcement Bar */}
-      <Link 
-        href="/pricing" 
-        className="w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-slate-950 text-center py-2 px-4 text-xs font-black tracking-wider hover:opacity-95 transition-opacity flex items-center justify-center gap-2 group z-50 shadow-md"
-      >
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-950 text-amber-300 text-[9px] font-black uppercase tracking-widest animate-pulse">
-          ⚡ Limited Launch Deal
-        </span>
-        <span className="truncate font-black">🔥 KDPage Lifetime Deals: Pro ($69) &amp; Agency ($98) — Expires in a few days!</span>
-        <span className="group-hover:translate-x-1 transition-transform inline-block shrink-0">→</span>
-      </Link>
+      {/* 📣 Golden Yellow Lifetime 50% Off Countdown Banner */}
+      <CountdownBanner />
 
       <nav className="bg-[#0b0f19]/95 backdrop-blur-xl border-b border-slate-800/80 text-slate-100 shadow-xl transition-colors duration-300" suppressHydrationWarning>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between" suppressHydrationWarning>

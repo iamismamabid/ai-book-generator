@@ -799,7 +799,9 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const wordColumns = 3;
   const wordRowStep = 0.24;
   const numWordRows = isSolution ? 0 : Math.ceil((data.words?.length || 12) / wordColumns);
-  const wordListSpace = isSolution ? 0 : 0.35 + (numWordRows * wordRowStep);
+  const gridToWordGap = 0.35;
+  const headingSpace = 0.28;
+  const wordListSpace = isSolution ? 0 : gridToWordGap + headingSpace + (numWordRows * wordRowStep);
 
   // Balanced KDP layout: grid stays well proportioned without spilling over (matches Sudoku's 5.5" width)
   const maxAvailableGridH = safeH - (startY - margin) - wordListSpace;
@@ -825,7 +827,7 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
 
   if (!isSolution) {
-    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridDrawSize + 0.35, w: gridDrawSize }, {
+    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridDrawSize + gridToWordGap, w: gridDrawSize }, {
       isSolution,
       showHeading: true,
       style: { wordColumns: 3, wordFontSize: 11, wordRowStep: 0.24, wordTextAlign: 'center' }

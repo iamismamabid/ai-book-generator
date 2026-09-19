@@ -57,7 +57,9 @@ function drawWordSearchPage(
   const wordColumns = 3;
   const wordRowStep = 0.24;
   const numWordRows = isSolution ? 0 : Math.ceil((data.words?.length || 12) / wordColumns);
-  const wordListSpace = isSolution ? 0 : 0.35 + (numWordRows * wordRowStep);
+  const gridToWordGap = 0.35;
+  const headingSpace = 0.28;
+  const wordListSpace = isSolution ? 0 : gridToWordGap + headingSpace + (numWordRows * wordRowStep);
 
   const maxKdpGrid = (width <= 5.5) ? 3.5 : (width <= 6.5) ? 4.2 : 5.5;
   const gridPx = Math.min(contentW, safeH - titleBlockH - wordListSpace, maxKdpGrid);
@@ -75,7 +77,7 @@ function drawWordSearchPage(
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridPx }, isSolution, style);
 
   if (!isSolution) {
-    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridPx + 0.35, w: gridPx }, {
+    drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridPx + gridToWordGap, w: gridPx }, {
       showHeading: true,
       style: { wordColumns: 3, wordFontSize: 9.5, wordTextAlign: 'center', ...style },
     });

@@ -52,7 +52,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 const DEFAULT_WORD_SEARCH_POOLS = [
-  ["LION", "TIGER", "ELEPHANT", "GIRAFFE", "ZEBRA", "MONKEY", "BEAR"],
+  ["MOUNTAIN", "VALLEY", "RIVER", "CANYON", "FOREST", "DESERT", "ISLAND"],
   ["APPLE", "BANANA", "CHERRY", "ORANGE", "GRAPE", "MANGO", "PEACH"],
   ["PACIFIC", "ATLANTIC", "INDIAN", "ARCTIC", "SOUTHERN", "OCEAN"],
   ["MARS", "VENUS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO"],
@@ -65,28 +65,28 @@ const DEFAULT_WORD_SEARCH_POOLS = [
 
 const DEFAULT_CROSSWORD_POOLS = [
   [{ word: "REACT", clue: "Popular UI library" }, { word: "NEXTJS", clue: "React framework" }, { word: "VERCEL", clue: "Hosting platform" }, { word: "CODING", clue: "Writing software" }],
-  [{ word: "BIRD", clue: "Can fly high in the sky" }, { word: "FISH", clue: "Swims in the water" }, { word: "LION", clue: "King of the jungle" }, { word: "BEAR", clue: "Hibernates in winter" }],
+  [{ word: "BOOK", clue: "Contains printed pages to read" }, { word: "DESK", clue: "Piece of furniture to work on" }, { word: "LAMP", clue: "Provides light in a room" }, { word: "TREE", clue: "Tall plant with a wooden trunk" }],
   [{ word: "SUN", clue: "Center of solar system" }, { word: "MOON", clue: "Earth's satellite" }, { word: "MARS", clue: "The Red Planet" }, { word: "EARTH", clue: "Our home planet" }],
-  [{ word: "PIZZA", clue: "Flatbread with cheese" }, { word: "BURGER", clue: "Patty inside a bun" }, { word: "SUSHI", clue: "Japanese fish dish" }, { word: "PASTA", clue: "Italian noodle dish" }],
+  [{ word: "PIZZA", clue: "Flatbread with cheese" }, { word: "BREAD", clue: "Baked staple food" }, { word: "RICE", clue: "Grain staple food" }, { word: "PASTA", clue: "Italian noodle dish" }],
   [{ word: "GUITAR", clue: "String instrument" }, { word: "PIANO", clue: "Keyed instrument" }, { word: "DRUMS", clue: "Percussion instrument" }, { word: "VIOLIN", clue: "Bowed string instrument" }]
 ];
 
 const DEFAULT_CROSSWORD_POOLS_ES = [
   [{ word: "SOL", clue: "Estrella luminosa centro del sistema solar" }, { word: "LUNA", clue: "Satélite natural que orbita la Tierra" }, { word: "TIERRA", clue: "Planeta donde vivimos" }, { word: "MARTE", clue: "El planeta rojo del sistema" }],
-  [{ word: "GATO", clue: "Felino doméstico de bigotes" }, { word: "PERRO", clue: "El amigo más fiel del ser humano" }, { word: "LEON", clue: "El majestuoso rey de la selva" }, { word: "AGUILA", clue: "Ave rapaz de vuelo imponente" }],
+  [{ word: "CASA", clue: "Lugar donde vive una familia" }, { word: "MESA", clue: "Mueble con tablero horizontal" }, { word: "LAGO", clue: "Gran masa de agua dulce" }, { word: "ARBOL", clue: "Planta perenne de tronco leñoso" }],
   [{ word: "LIBRO", clue: "Obra impresa de páginas encuadernadas" }, { word: "MUSICA", clue: "Arte de organizar los sonidos" }, { word: "PINTURA", clue: "Expresión visual mediante pigmentos" }, { word: "POESIA", clue: "Composición de versos y belleza" }],
   [{ word: "PLAYA", clue: "Ribera del mar formada de arena" }, { word: "BOSQUE", clue: "Sitio poblado de árboles y vegetación" }, { word: "VOLCAN", clue: "Abertura terrestre que arroja lava" }, { word: "RIO", clue: "Corriente continua y caudalosa de agua" }]
 ];
 
 const DEFAULT_CROSSWORD_POOLS_DE = [
   [{ word: "SONNE", clue: "Stern im Zentrum unseres Sonnensystems" }, { word: "MOND", clue: "Natürlicher Trabant der Erde" }, { word: "ERDE", clue: "Unser Heimatplanet im All" }, { word: "STERN", clue: "Leuchtender Himmelskörper in der Nacht" }],
-  [{ word: "KATZE", clue: "Beliebtes schnurrendes Haustier" }, { word: "HUND", clue: "Der treueste Begleiter des Menschen" }, { word: "LOEWE", clue: "König der afrikanischen Savanne" }, { word: "ADLER", clue: "Majestätischer Greifvogel der Lüfte" }],
+  [{ word: "HAUS", clue: "Gebäude zum Wohnen und Leben" }, { word: "TISCH", clue: "Möbelstück mit Platte und Beinen" }, { word: "BERG", clue: "Hohe Erhebung in der Landschaft" }, { word: "BAUM", clue: "Große Holzpflanze mit Ästen und Krone" }],
   [{ word: "BUCH", clue: "Gedrucktes Werk mit vielen Seiten" }, { word: "MUSIK", clue: "Klangkunst aus Tönen und Rhythmen" }, { word: "KUNST", clue: "Kreatives Schaffen und Gestalten" }, { word: "BLUME", clue: "Duftende Pflanze im Frühlingsgarten" }]
 ];
 
 const DEFAULT_CROSSWORD_POOLS_FR = [
   [{ word: "SOLEIL", clue: "Étoile au centre du système solaire" }, { word: "LUNE", clue: "Satellite naturel de notre Terre" }, { word: "TERRE", clue: "Notre planète bleue dans l'espace" }, { word: "ETOILE", clue: "Astre lumineux dans le ciel nocturne" }],
-  [{ word: "CHAT", clue: "Félin domestique affectueux" }, { word: "CHIEN", clue: "Le fidèle compagnon de l'homme" }, { word: "LION", clue: "Le majestueux roi des animaux" }, { word: "AIGLE", clue: "Oiseau rapace aux serres acérées" }],
+  [{ word: "MAISON", clue: "Bâtiment servant de logement" }, { word: "TABLE", clue: "Meuble formé d'un plateau horizontal" }, { word: "PONT", clue: "Construction reliant deux rives" }, { word: "ARBRE", clue: "Plante ligneuse à tronc dressé" }],
   [{ word: "LIVRE", clue: "Ouvrage relié comprenant des pages écrites" }, { word: "MUSIQUE", clue: "Art des sons harmonieux et rythmes" }, { word: "FLEUR", clue: "Végétal ornemental et parfumé" }, { word: "OCEAN", clue: "Vaste étendue d'eau salée sur Terre" }]
 ];
 

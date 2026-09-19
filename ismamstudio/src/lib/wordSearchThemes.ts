@@ -48,16 +48,16 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
   { id: "winter", category: "Holidays & Seasons", name: "Winter", language: "en",
     words: ["SNOWFLAKE", "MITTENS", "FIREPLACE", "BLIZZARD", "ICICLE", "SKATING", "SLEDDING", "SCARF", "FROST", "HOTCOCOA", "SNOWBALL", "BLANKET"] },
 
-  // --- Nature & Animals (English) ---
-  { id: "ocean", category: "Nature & Animals", name: "Ocean Life", language: "en",
-    words: ["DOLPHIN", "OCTOPUS", "STARFISH", "CORAL", "SHARK", "WHALE", "JELLYFISH", "SEAHORSE", "LOBSTER", "STINGRAY", "SEAWEED", "TIDEPOOL", "URCHIN"] },
-  { id: "farm", category: "Nature & Animals", name: "Farm Animals", language: "en",
-    words: ["COW", "DONKEY", "CHICKEN", "HORSE", "SHEEP", "GOAT", "DUCK", "ROOSTER", "TRACTOR", "BARN", "PASTURE", "HAYSTACK", "TURKEY"] },
-  { id: "birds", category: "Nature & Animals", name: "Birdwatching", language: "en",
-    words: ["SPARROW", "EAGLE", "ROBIN", "CARDINAL", "HUMMINGBIRD", "OWL", "FALCON", "WOODPECKER", "SWALLOW", "PELICAN", "FEATHER", "NEST", "BIRDSONG"] },
-  { id: "garden", category: "Nature & Animals", name: "Garden & Flowers", language: "en",
+  // --- Nature & Landscapes (English) ---
+  { id: "ocean", category: "Nature & Landscapes", name: "Ocean & Seas", language: "en",
+    words: ["CORAL", "SEAWEED", "TIDEPOOL", "CURRENTS", "COAST", "REEF", "WAVES", "SURF", "ISLAND", "LAGOON", "ANCHOR", "BEACH", "HORIZON"] },
+  { id: "farm", category: "Nature & Landscapes", name: "Farm & Harvest", language: "en",
+    words: ["TRACTOR", "BARN", "PASTURE", "HAYSTACK", "HARVEST", "SILO", "WHEAT", "WINDMILL", "FARMHOUSE", "PLOW", "ORCHARD", "BARROW", "CROPS"] },
+  { id: "forest", category: "Nature & Landscapes", name: "Forest & Woodlands", language: "en",
+    words: ["REDWOOD", "MAPLE", "CEDAR", "PINE", "SPRUCE", "WILLOW", "ACORN", "FOLIAGE", "BRANCH", "TIMBER", "GROVE", "CANOPY", "EVERGREEN"] },
+  { id: "garden", category: "Nature & Landscapes", name: "Garden & Flowers", language: "en",
     words: ["ROSE", "TULIP", "DAISY", "SUNFLOWER", "ORCHID", "LAVENDER", "MARIGOLD", "PETUNIA", "TRELLIS", "BLOSSOM", "SPROUT", "GREENHOUSE"] },
-  { id: "weather", category: "Nature & Animals", name: "Weather", language: "en",
+  { id: "weather", category: "Nature & Landscapes", name: "Weather", language: "en",
     words: ["THUNDER", "LIGHTNING", "RAINBOW", "DROUGHT", "HURRICANE", "BREEZE", "HUMIDITY", "FORECAST", "TORNADO", "FROST", "DRIZZLE", "SUNSHINE"] },
 
   // --- Food & Drink (English) ---
@@ -101,8 +101,8 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
   // --- Space, Science & Kids (English) ---
   { id: "space", category: "Space & Science", name: "Outer Space", language: "en",
     words: ["ROCKET", "GALAXY", "ASTRONAUT", "PLANET", "COMET", "NEBULA", "SATELLITE", "METEOR", "TELESCOPE", "ORBIT", "GRAVITY", "STARDUST"] },
-  { id: "dinosaurs", category: "Space & Science", name: "Dinosaurs", language: "en",
-    words: ["TREX", "TRICERATOPS", "VELOCIRAPTOR", "STEGOSAURUS", "FOSSIL", "PTERODACTYL", "JURASSIC", "EXTINCT", "PALEONTOLOGY", "BRACHIOSAURUS", "CLAW", "SWAMP"] },
+  { id: "science", category: "Space & Science", name: "Science & Geology", language: "en",
+    words: ["VOLCANO", "CRYSTAL", "MINERAL", "TELESCOPE", "MICROSCOPE", "FOSSIL", "GALAXY", "MAGNET", "PRISM", "GRAVITY", "GEOLOGY", "CRATER"] },
   { id: "sports", category: "Sports & Music", name: "Team Sports", language: "en",
     words: ["SOCCER", "BASKETBALL", "BASEBALL", "HOCKEY", "VOLLEYBALL", "FOOTBALL", "REFEREE", "TOURNAMENT", "STADIUM", "CHAMPION", "SCOREBOARD", "DEFENSE"] },
   { id: "music", category: "Sports & Music", name: "Musical Instruments", language: "en",
@@ -113,8 +113,8 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
   // ==========================================
   { id: "es_navidad", category: "Español - Fiestas & Tradiciones", name: "Navidad y Fiestas (ES)", language: "es",
     words: ["NAVIDAD", "CAMPANAS", "REGALOS", "GUIRNALDA", "ESTRELLA", "TURRON", "CHIMENEA", "PESEBRE", "VILLANCICO", "TRINEO", "NIEVE", "FAMILIA", "PASTOR"] },
-  { id: "es_animales", category: "Español - Naturaleza & Animales", name: "Animales y Selva (ES)", language: "es",
-    words: ["DELFIN", "ELEFANTE", "JIRAFA", "AGUILA", "TORTUGA", "BALLENA", "COLIBRI", "CABALLO", "MARIPOSA", "FLAMENCO", "CONEJO", "LEOPARDO", "HALCON"] },
+  { id: "es_naturaleza", category: "Español - Naturaleza & Paisajes", name: "Naturaleza y Paisajes (ES)", language: "es",
+    words: ["BOSQUE", "MONTAÑA", "RIO", "SELVA", "PLAYA", "VOLCAN", "LAGO", "VALLE", "ISLA", "CASCADA", "SENDERO", "COLINA", "PRADERA"] },
   { id: "es_ciudades", category: "Español - Geografía & Viajes", name: "Ciudades Hispanas (ES)", language: "es",
     words: ["MADRID", "BARCELONA", "SEVILLA", "BOGOTA", "BUENOSAIRES", "LIMA", "MEXICO", "SANTIAGO", "CARACAS", "HABANA", "QUITO", "MONTEVIDEO", "VALENCIA"] },
   { id: "es_comida", category: "Español - Comida & Cocina", name: "Gastronomía Hispana (ES)", language: "es",
@@ -131,8 +131,8 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
   // ==========================================
   { id: "de_weihnachten", category: "Deutsch - Feste & Jahreszeiten", name: "Weihnachten & Winter (DE)", language: "de",
     words: ["WEIHNACHTEN", "SCHNEEFLOCKE", "TANNENBAUM", "GESCHENKE", "SCHLITTEN", "KERZENSCHEIN", "LEBKUCHEN", "ENGEL", "STERN", "KAMIN", "GLUEHWEIN", "GLOCKE"] },
-  { id: "de_tiere", category: "Deutsch - Natur & Tiere", name: "Tiere des Waldes (DE)", language: "de",
-    words: ["DELFIN", "ADLER", "SCHMETTERLING", "EICHHOERNCHEN", "HIRSCH", "SCHILDKROETE", "PFERD", "FUCHS", "EULE", "WOLF", "BAER", "HASE", "IGEL"] },
+  { id: "de_natur", category: "Deutsch - Natur & Landschaften", name: "Natur & Landschaften (DE)", language: "de",
+    words: ["WALD", "BERG", "FLUSS", "SEE", "TAL", "WIESE", "BAUM", "BLUME", "QUELLE", "GIPFEL", "SCHNEE", "SONNE", "WOLKE"] },
   { id: "de_staedte", category: "Deutsch - Geografie & Reisen", name: "Deutsche Städte (DE)", language: "de",
     words: ["BERLIN", "MUENCHEN", "HAMBURG", "KOELN", "WIEN", "ZUERICH", "DRESDEN", "LEIPZIG", "FRANKFURT", "STUTTGART", "SALZBURG", "BREMEN", "POTSDAM"] },
   { id: "de_kueche", category: "Deutsch - Essen & Trinken", name: "Küche & Genuss (DE)", language: "de",
@@ -143,8 +143,8 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
   // ==========================================
   { id: "fr_noel", category: "Français - Fêtes & Saisons", name: "Noël et Fêtes (FR)", language: "fr",
     words: ["NOEL", "SAPIN", "CADEAUX", "ETOILE", "TRAINEAU", "BOUGIE", "GUIRLANDE", "REVEILLON", "CHEMINEE", "LUTIN", "CHOCOLAT", "FLOCON", "CLOCHES"] },
-  { id: "fr_animaux", category: "Français - Nature & Animaux", name: "Animaux et Nature (FR)", language: "fr",
-    words: ["DAUPHIN", "AIGLE", "RENARD", "PAPILLON", "ECUREUIL", "CHOUETTE", "BALEINE", "TORTUE", "CHEVAL", "CERF", "HIRONDELLE", "LOUP", "HERISSON"] },
+  { id: "fr_nature", category: "Français - Nature & Paysages", name: "Nature et Paysages (FR)", language: "fr",
+    words: ["FORET", "MONTAGNE", "RIVIERE", "FLEUVE", "VALLEE", "CASCADE", "OCEAN", "PLAGE", "SENTIER", "COLLINE", "PRAIRIE", "NATURE", "SOURCE"] },
   { id: "fr_villes", category: "Français - Voyage & Géographie", name: "Villes Francophones (FR)", language: "fr",
     words: ["PARIS", "LYON", "MARSEILLE", "BORDEAUX", "NICE", "STRASBOURG", "TOULOUSE", "NANTES", "LILLE", "BRUXELLES", "GENEVE", "MONTREAL", "QUEBEC"] },
   { id: "fr_cuisine", category: "Français - Cuisine & Gastronomie", name: "Cuisine & Pâtisserie (FR)", language: "fr",
@@ -165,8 +165,8 @@ export const WORD_SEARCH_THEMES: WordSearchTheme[] = [
   // ==========================================
   { id: "pt_natal", category: "Português - Festas & Tradições", name: "Natal e Celebrações (PT)", language: "pt",
     words: ["NATAL", "PRESENTE", "ESTRELA", "ARVORE", "TRENHO", "VELAS", "GUIRLANDA", "FAMILIA", "CEIA", "SINO", "ALEGRIA", "PAZ", "ABRACO"] },
-  { id: "pt_natureza", category: "Português - Natureza & Animais", name: "Natureza e Animais (PT)", language: "pt",
-    words: ["GOLFINHO", "AGUIA", "BORBOLETA", "TARTARUGA", "CAVALO", "FLAMINGO", "CORUJA", "TIGRE", "ELEFANTE", "BALEIA", "TUCANO", "ONCA"] },
+  { id: "pt_natureza", category: "Português - Natureza & Paisagens", name: "Natureza e Paisagens (PT)", language: "pt",
+    words: ["FLORESTA", "MONTANHA", "RIO", "PRAIA", "VALE", "LAGO", "CASCATA", "OCEANO", "CAMPINA", "TRILHA", "COLINA", "SERRA"] },
   { id: "pt_cidades", category: "Português - Cidades & Viagens", name: "Cidades Lusófonas (PT)", language: "pt",
     words: ["LISBOA", "PORTO", "SAOPAULO", "RIODEJANEIRO", "SALVADOR", "BRASILIA", "COIMBRA", "FARO", "CURITIBA", "FORTALEZA", "RECIFE", "MANAUS"] },
 ];

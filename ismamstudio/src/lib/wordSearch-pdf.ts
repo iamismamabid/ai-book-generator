@@ -77,7 +77,7 @@ function drawWordSearchPage(
   if (!isSolution) {
     drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridPx + 0.35, w: gridPx }, {
       showHeading: true,
-      style: { wordColumns: 3, wordFontSize: 9.5, ...style },
+      style: { wordColumns: 3, wordFontSize: 9.5, wordTextAlign: 'center', ...style },
     });
   }
 

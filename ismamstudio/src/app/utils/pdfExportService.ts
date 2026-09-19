@@ -76,8 +76,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
           ? (!isMultiSol && page.config.pageNumber ? ` (PAGE ${page.config.pageNumber} SOLUTION)` : ' (SOLUTION)')
           : '';
         const title = `${baseTitle}${solSuffix}`;
-        const titleWidth = doc.getTextWidth(title);
-        doc.text(title, (w - titleWidth) / 2 + leftMarginShift, 0.6);
+        doc.text(title, w / 2 + leftMarginShift, 0.6, { align: "center" });
       }
 
       // Render Page Number - center-aligned at the bottom so it is always safely
@@ -563,7 +562,7 @@ const WORD_SEARCH_DEFAULT_STYLE: Required<WordSearchStyle> = {
   wordFont: 'helvetica',
   wordFontSize: 11,
   wordTextColor: '#000000',
-  wordTextAlign: 'left',
+  wordTextAlign: 'center',
   wordColumns: 3,
   wordRowStep: 0.22,
   highlightColor: '#E0E0E0',
@@ -756,7 +755,7 @@ export function drawWordSearchWordList(
     doc.setFont(s.wordFont, "bold");
     doc.setFontSize(Math.max(7, Math.floor(11 * scaleFactor)));
     doc.setTextColor(0);
-    doc.text("WORDS TO FIND:", zone.x, zone.y);
+    doc.text("WORDS TO FIND:", zone.x + zone.w / 2, zone.y, { align: "center" });
     headingOffset = 0.25 * scaleFactor;
   }
 
@@ -800,15 +799,16 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
   const numWordRows = isSolution ? 0 : Math.ceil((data.words?.length || 12) / wordColumns);
   const wordListSpace = isSolution ? 0 : 0.35 + (numWordRows * wordRowStep);
 
-  // Balanced KDP layout: grid stays well proportioned without spilling over
+  // Balanced KDP layout: grid stays well proportioned without spilling over (matches Sudoku's 5.5" width)
   const maxAvailableGridH = safeH - (startY - margin) - wordListSpace;
   const gridDrawSize = isSolution
-    ? Math.min(safeW * 0.82, maxAvailableGridH, 4.5)
-    : Math.min(safeW * 0.82, maxAvailableGridH, 5.2);
+    ? Math.min(safeW * 0.85, maxAvailableGridH, 4.8)
+    : Math.min(safeW * 0.85, maxAvailableGridH, 5.5);
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;
+  const gridCenterX = startX + gridDrawSize / 2;
 
-  // Render Title directly on the header line area above the grid
+  // Render Title directly on the header line area centered above the grid
   doc.setFont("Helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(0);
@@ -818,8 +818,7 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
     ? (page.config.pageNumber ? ` (PAGE ${page.config.pageNumber} SOLUTION)` : ' (SOLUTION)')
     : '';
   const title = `${baseTitle}${solSuffix}`;
-  const titleWidth = doc.getTextWidth(title);
-  doc.text(title, (pageWidth - titleWidth) / 2 + xShift, titleY);
+  doc.text(title, gridCenterX, titleY, { align: "center" });
 
   drawWordSearchGrid(doc, data, { x: startX, y: startY, size: gridDrawSize }, isSolution);
 
@@ -827,7 +826,7 @@ const drawWordSearch = (doc: any, page: any, xShift: number, pageWidth: number, 
     drawWordSearchWordList(doc, data.words, { x: startX, y: startY + gridDrawSize + 0.35, w: gridDrawSize }, {
       isSolution,
       showHeading: true,
-      style: { wordColumns: 3, wordFontSize: 11, wordRowStep: 0.24 }
+      style: { wordColumns: 3, wordFontSize: 11, wordRowStep: 0.24, wordTextAlign: 'center' }
     });
   }
 };

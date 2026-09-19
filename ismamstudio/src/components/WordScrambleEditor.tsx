@@ -603,7 +603,7 @@ export function WordScrambleEditor({ page, updatePage, bulkAddPages }: any) {
                   value={batchRawInput}
                   onChange={(e) => handleBatchInputChange(e.target.value)}
                   className="w-full h-40 p-3.5 border border-slate-200 rounded-2xl text-xs font-mono bg-slate-50 text-slate-900 outline-none focus:border-indigo-500"
-                  placeholder="Format A (CSV Rows):&#10;Animals: Lion, Tiger, Elephant, Giraffe, Zebra&#10;Fruits: Apple, Banana, Orange, Mango, Peach&#10;&#10;Format B (Word Blocks separated by empty line):&#10;Theme: Solar System&#10;Mercury&#10;Venus&#10;Earth&#10;Mars"
+                  placeholder="Format A (CSV Rows):&#10;Landmarks: Pyramid, Colosseum, Parthenon, Eiffel, BigBen&#10;Fruits: Apple, Banana, Orange, Mango, Peach&#10;&#10;Format B (Word Blocks separated by empty line):&#10;Theme: Solar System&#10;Mercury&#10;Venus&#10;Earth&#10;Mars"
                 />
               </div>
 

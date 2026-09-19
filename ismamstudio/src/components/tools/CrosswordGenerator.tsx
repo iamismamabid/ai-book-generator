@@ -21,11 +21,11 @@ CODING, Writing software
 ENGINE, Core system logic
 
 # Puzzle 2
-LION, King of the jungle
-TIGER, Striped orange wild cat
-ELEPHANT, Large mammal with a trunk
-GIRAFFE, Long-necked African mammal
-ZEBRA, Black and white striped animal
+MOUNTAIN, High natural elevation of earth
+VALLEY, Low land between hills or peaks
+RIVER, Natural flowing stream of water
+CANYON, Deep gorge with steep sides
+ISLAND, Land completely surrounded by water
 
 # Puzzle 3
 GUITAR, String instrument with frets

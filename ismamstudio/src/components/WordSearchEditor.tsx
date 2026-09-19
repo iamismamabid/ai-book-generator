@@ -4,7 +4,7 @@ import { RefreshCw, Upload, Files, Plus, ExternalLink, X, Check, FileSpreadsheet
 import { generatePuzzleGrid } from "@/app/utils/puzzleEngine";
 
 const PRESET_CATEGORIES = [
-  { name: "Wild Animals", words: ["LION", "TIGER", "ELEPHANT", "GIRAFFE", "ZEBRA", "MONKEY", "BEAR", "CHEETAH", "PANDA", "WOLF"] },
+  { name: "World Landmarks", words: ["PYRAMID", "COLOSSEUM", "PARTHENON", "TAJMAHAL", "EIFFEL", "ACROPOLIS", "STONEHENGE", "BIGBEN", "ALHAMBRA", "PETRA"] },
   { name: "Fresh Fruits", words: ["APPLE", "BANANA", "CHERRY", "ORANGE", "GRAPE", "MANGO", "PEACH", "PAPAYA", "BERRY", "LEMON"] },
   { name: "World Oceans", words: ["PACIFIC", "ATLANTIC", "INDIAN", "ARCTIC", "SOUTHERN", "CORAL", "TRENCH", "CURRENTS", "COAST", "REEF"] },
   { name: "Solar System", words: ["MERCURY", "VENUS", "EARTH", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO", "COMET"] },
@@ -20,15 +20,15 @@ const PRESET_CATEGORIES = [
   { name: "Garden Flowers", words: ["ROSE", "TULIP", "ORCHID", "LILY", "DAISY", "SUNFLOWER", "JASMINE", "LAVENDER", "MARIGOLD", "LOTUS"] },
   { name: "Kitchen Utensils", words: ["SPATULA", "WHISK", "BLENDER", "TOASTER", "SKILLET", "CLEAVER", "GRATER", "COLANDER", "SAUCEPAN", "LADLE"] },
   { name: "Pirate Treasure", words: ["CHEST", "COINS", "ISLAND", "PEARL", "GALLEON", "COMPASS", "SPYGLASS", "CUTLASS", "ANCHOR", "DAGGER"] },
-  { name: "Mythical Creatures", words: ["DRAGON", "PHOENIX", "UNICORN", "GRIFFIN", "MERMAID", "KRAKEN", "PEGASUS", "CENTAUR", "CHIMERA", "HYDRA"] },
+  { name: "Natural Wonders", words: ["WATERFALL", "VOLCANO", "GEYSER", "GLACIER", "CANYON", "AURORA", "CAVERN", "FJORD", "ARCHIPELAGO", "OASIS"] },
   { name: "Winter Season", words: ["SNOWFLAKE", "BLIZZARD", "FIREPLACE", "SCARF", "MITTENS", "ICEBERG", "SLEIGH", "FROST", "SKATING", "SNOWMAN"] },
   { name: "Summer Vacation", words: ["BEACH", "SUNSHINE", "SURFING", "SANDALS", "SUNGLASSES", "RESORT", "TRAVEL", "PICNIC", "SWIMMING", "CAMPING"] },
-  { name: "Farm Life", words: ["TRACTOR", "BARN", "ROOSTER", "HARVEST", "CATTLE", "SILO", "PASTURE", "WHEAT", "FARMHOUSE", "PLOW"] },
+  { name: "Farm Life", words: ["TRACTOR", "BARN", "HARVEST", "SILO", "PASTURE", "WHEAT", "FARMHOUSE", "PLOW", "WINDMILL", "CROPS"] },
   { name: "Coffee Culture", words: ["ESPRESSO", "CAPPUCCINO", "BARISTA", "ROAST", "MOCHA", "LATTE", "ARABICA", "BREW", "CARAMEL", "AMERICANO"] },
   { name: "Bakery Treats", words: ["CROISSANT", "BAGUETTE", "MUFFIN", "DONUT", "CUPCAKE", "PASTRY", "SCONE", "BRIOCHE", "COOKIE", "BROWNIE"] },
   { name: "Space Voyage", words: ["ASTRONAUT", "ROCKET", "GALAXY", "NEBULA", "TELESCOPE", "SHUTTLE", "ORBIT", "SATELLITE", "COSMOS", "ECLIPSE"] },
-  { name: "Desert Wildlife", words: ["CAMEL", "SCORPION", "CACTUS", "DUNE", "GECKO", "COYOTE", "OASIS", "VULTURE", "MIRAGE", "LIZARD"] },
-  { name: "Marine Life", words: ["DOLPHIN", "SHARK", "OCTOPUS", "WHALE", "JELLYFISH", "SEAHORSE", "LOBSTER", "TURTLE", "STINGRAY", "STARFISH"] },
+  { name: "Desert Landscapes", words: ["CACTUS", "DUNE", "OASIS", "MIRAGE", "CANYON", "PLATEAU", "SAND", "SUNSHINE", "BOULDER", "VALLEY"] },
+  { name: "Ocean Wonders", words: ["CORAL", "SEAWEED", "TIDEPOOL", "CURRENTS", "COAST", "REEF", "WAVES", "SURF", "ISLAND", "LAGOON"] },
   { name: "Camping Trip", words: ["TENT", "CAMPFIRE", "BACKPACK", "LANTERN", "COMPASS", "SLEEPINGBAG", "TRAIL", "CANTEEN", "HIKING", "BONFIRE"] },
   { name: "European Capitals", words: ["PARIS", "LONDON", "ROME", "MADRID", "BERLIN", "VIENNA", "AMSTERDAM", "PRAGUE", "DUBLIN", "ATHENS"] },
   { name: "Asian Cities", words: ["TOKYO", "BEIJING", "SEOUL", "BANGKOK", "SINGAPORE", "KYOTO", "HANOI", "MUMBAI", "TAIPEI", "BALI"] },
@@ -36,18 +36,18 @@ const PRESET_CATEGORIES = [
   { name: "Mountain Peaks", words: ["EVEREST", "KILIMANJARO", "DENALI", "MATTERHORN", "ELBRUS", "ACONCAGUA", "BLANC", "FUJI", "OLYMPUS", "RAINIER"] },
   { name: "Musical Genres", words: ["JAZZ", "CLASSICAL", "ROCK", "BLUES", "REGGAE", "HIPHOP", "COUNTRY", "OPERA", "DISCO", "FOLK"] },
   { name: "Art & Painting", words: ["CANVAS", "PALETTE", "EASEL", "BRUSH", "ACRYLIC", "WATERCOLOR", "PORTRAIT", "SKETCH", "GALLERY", "OILPAINT"] },
-  { name: "Breakfast Table", words: ["PANCAKES", "WAFFLES", "BACON", "OMELET", "OATMEAL", "TOAST", "BAGEL", "YOGURT", "HONEY", "SAUSAGE"] },
+  { name: "Breakfast Table", words: ["PANCAKES", "WAFFLES", "BREAD", "OMELET", "OATMEAL", "TOAST", "BAGEL", "YOGURT", "HONEY", "CHEESE"] },
   { name: "Herbs & Spices", words: ["BASIL", "ROSEMARY", "OREGANO", "CINNAMON", "VANILLA", "PAPRIKA", "NUTMEG", "THYME", "GINGER", "CLOVES"] },
   { name: "School Days", words: ["MATHEMATICS", "HISTORY", "SCIENCE", "BIOLOGY", "CHEMISTRY", "PHYSICS", "ENGLISH", "GEOGRAPHY", "ALGEBRA", "LIBRARY"] },
   { name: "Architecture", words: ["COLUMNS", "ARCHWAY", "DOMES", "FACADE", "TOWERS", "PILLARS", "BALCONY", "ATRIUM", "VAULTS", "PEDIMENT"] },
-  { name: "Tropical Birds", words: ["PARROT", "TOUCAN", "FLAMINGO", "MACAW", "HUMMINGBIRD", "COCKATOO", "HORNBILL", "PEACOCK", "CANARY", "PARAKEET"] },
+  { name: "Botanical Gardens", words: ["ORCHID", "FERN", "BONSAI", "BAMBOO", "PALM", "SUCCULENT", "MOSS", "LOTUS", "MAGNOLIA", "IVY"] },
   { name: "Autumn Season", words: ["PUMPKIN", "SQUASH", "CIDER", "ACORN", "CHESTNUT", "CRANBERRY", "FOLIAGE", "HARVEST", "HAYSTACK", "ORCHARD"] },
   { name: "Board Games", words: ["CHESS", "CHECKERS", "MONOPOLY", "SCRABBLE", "DOMINOES", "CATAN", "PUZZLE", "BACKGAMMON", "TRIVIA", "STRATEGY"] },
   { name: "Cinema & Movies", words: ["DIRECTOR", "ACTOR", "SCREENPLAY", "CAMERA", "THEATER", "OSCAR", "PRODUCER", "EDITING", "SOUNDTRACK", "PREMIERE"] },
   { name: "Detective Mystery", words: ["CLUES", "SUSPECT", "ALIBI", "DETECTIVE", "FINGERPRINT", "EVIDENCE", "MAGNIFIER", "SECRET", "MYSTERY", "WITNESS"] },
-  { name: "Ancient Egypt", words: ["PHARAOH", "PYRAMID", "SPHINX", "HIEROGLYPH", "MUMMY", "NILE", "SCARAB", "PAPYRUS", "TEMPLE", "DYNASTY"] },
-  { name: "Rainforest", words: ["CANOPY", "JAGUAR", "ANACONDA", "SLOTH", "ORCHID", "LIANA", "MONKEY", "FROG", "RIVER", "PARADISE"] },
-  { name: "Deep Ocean", words: ["SUBMARINE", "SUNKEN", "CORAL", "ABYSS", "MERMAID", "TREASURE", "PEARL", "ANEMONE", "SPONGE", "DIVER"] },
+  { name: "Ancient Egypt", words: ["PHARAOH", "PYRAMID", "OBELISK", "HIEROGLYPH", "MONUMENT", "NILE", "GOLDEN", "PAPYRUS", "TEMPLE", "DYNASTY"] },
+  { name: "Rainforest", words: ["CANOPY", "ORCHID", "LIANA", "FERN", "RIVER", "PARADISE", "BAMBOO", "WATERFALL", "MOSS", "TROPICAL"] },
+  { name: "Deep Ocean", words: ["SUBMARINE", "SUNKEN", "CORAL", "ABYSS", "VOYAGE", "TREASURE", "PEARL", "ANEMONE", "SPONGE", "DIVER"] },
   { name: "Science Lab", words: ["MICROSCOPE", "BEAKER", "FLASK", "PIPETTE", "CENTRIFUGE", "BUNSEN", "PETRIDISH", "MOLECULE", "GENETICS", "QUANTUM"] },
   { name: "World Rivers", words: ["AMAZON", "NILE", "MISSISSIPPI", "DANUBE", "YANGTZE", "GANGES", "VOLGA", "THAMES", "RHINE", "MEKONG"] },
   { name: "Olympic Sports", words: ["MARATHON", "ARCHERY", "FENCING", "GYMNASTICS", "ROWING", "SAILING", "JAVELIN", "HURDLES", "TRIATHLON", "PODIUM"] },
@@ -368,7 +368,7 @@ export const WordSearchEditor = ({ page, updatePage, bulkAddPages }: any) => {
                 onClick={() => {
                   setIsBatchModalOpen(true);
                   if (parsedPuzzles.length === 0) {
-                    const sample = "Wild Animals: Lion, Tiger, Elephant, Giraffe, Zebra\nFresh Fruits: Apple, Banana, Orange, Mango, Peach\nSolar System: Mercury, Venus, Earth, Mars, Jupiter";
+                    const sample = "World Landmarks: Pyramid, Colosseum, Parthenon, Eiffel, BigBen\nFresh Fruits: Apple, Banana, Orange, Mango, Peach\nSolar System: Mercury, Venus, Earth, Mars, Jupiter";
                     setBatchRawInput(sample);
                     setParsedPuzzles(parseMultiPuzzleText(sample));
                   }

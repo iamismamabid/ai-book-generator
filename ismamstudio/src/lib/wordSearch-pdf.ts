@@ -59,8 +59,8 @@ function drawWordSearchPage(
   const numWordRows = isSolution ? 0 : Math.ceil((data.words?.length || 12) / wordColumns);
   const wordListSpace = isSolution ? 0 : 0.35 + (numWordRows * wordRowStep);
 
-  const STANDARD_CELL_IN = 0.45;
-  const gridPx = Math.min(contentW, safeH - titleBlockH - wordListSpace, data.grid.length * STANDARD_CELL_IN);
+  const maxKdpGrid = (width <= 5.5) ? 3.5 : (width <= 6.5) ? 4.2 : 5.5;
+  const gridPx = Math.min(contentW, safeH - titleBlockH - wordListSpace, maxKdpGrid);
 
   const totalContentH = titleBlockH + gridPx + wordListSpace;
   const verticalOffset = Math.max(0, (safeH - totalContentH) / 2);

@@ -8,7 +8,7 @@ import { generateSudoku } from "@/lib/sudokuGenerator";
 import { generatePuzzleGrid } from "./puzzleEngine";
 import { generateCrosswordGrid } from "./crosswordGenerator";
 import { generateKakuro } from "@/lib/kakuro";
-import { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "@/lib/kdpBookEngine";
+import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "@/lib/kdpBookEngine";
 
 export interface ExportOptions {
   includeCover?: boolean;
@@ -26,7 +26,7 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     includeCover = false,
     coverState = null,
     includePageNumbers = true,
-    gutterMargin = false,
+    gutterMargin = true,
     trimSize = { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
     borderTheme,
   } = options;
@@ -54,13 +54,13 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
     }
     firstPageAdded = true;
 
-    // Apply gutter margin if requested:
+    // Alternating KDP Gutter Margins matching calculateKdpMargins & Sudoku:
     // Odd pages (recto, right-hand): spine is on the LEFT -> shift content right (+shift)
     // Even pages (verso, left-hand): spine is on the RIGHT -> shift content left (-shift)
-    const gutterShiftAmount = Math.min(0.4, Math.max(0.1, requiredGutter - 0.25));
-    const leftMarginShift = gutterMargin
-      ? (index % 2 === 0 ? gutterShiftAmount : -gutterShiftAmount)
-      : 0;
+    const pageNum = index + 1;
+    const margins = calculateKdpMargins(pageNum, bookPages.length, w);
+    const kdpShift = margins.contentCenterX - (w / 2);
+    const leftMarginShift = gutterMargin ? kdpShift : 0;
 
     // Page Title (except for title/copyright/blank pages, and single word search which centers its title above the grid)
     const isSingleWordSearch = page.type === 'word_search' && !page.config.isMultiSolution;
@@ -890,9 +890,10 @@ const drawSudoku = (doc: any, page: any, xShift: number, pageWidth: number, page
   const titleSpace = 0.3;
   // The solution grid is an answer key, not a second full-size puzzle to
   // solve, so cap it smaller than the puzzle's own grid.
+  const maxKdpGrid = (pageWidth <= 5.5) ? 3.5 : (pageWidth <= 6.5) ? 4.2 : 5.5;
   const gridDrawSize = isSolution
     ? Math.min(safeW * 0.82, safeH - titleSpace - 0.3, 4.5)
-    : Math.min(safeW * 0.82, safeH - titleSpace - 0.3);
+    : Math.min(safeW * 0.82, safeH - titleSpace - 0.3, maxKdpGrid);
   const cellSize = gridDrawSize / 9;
 
   const startX = (pageWidth - gridDrawSize) / 2 + xShift;

@@ -279,19 +279,29 @@ export default function WordSearchStudio() {
     const STANDARD_WORD_SEARCH_CELL_IN = 0.45;
 
     // 🖨️ INTERIOR PDF ZONE MATHEMATICS
-    const getZones = (itemsPerPage: number, safeW: number, safeH: number, margin: number) => {
-        if (itemsPerPage === 1) return [{ x: margin, y: margin, w: safeW, h: safeH }];
-        if (itemsPerPage === 2) return [
-            { x: margin, y: margin, w: safeW, h: safeH/2 - 0.25 },
-            { x: margin, y: margin + (safeH/2) + 0.25, w: safeW, h: safeH/2 - 0.25 }
-        ];
-        if (itemsPerPage === 4) return [
-            { x: margin, y: margin, w: safeW/2 - 0.1, h: safeH/2 - 0.1 },
-            { x: margin + safeW/2 + 0.1, y: margin, w: safeW/2 - 0.1, h: safeH/2 - 0.1 },
-            { x: margin, y: margin + safeH/2 + 0.1, w: safeW/2 - 0.1, h: safeH/2 - 0.1 },
-            { x: margin + safeW/2 + 0.1, y: margin + safeH/2 + 0.1, w: safeW/2 - 0.1, h: safeH/2 - 0.1 }
-        ];
-        return [{ x: margin, y: margin, w: safeW, h: safeH }];
+    const getZones = (itemsPerPage: number, x0: number, y0: number, safeW: number, safeH: number) => {
+        if (itemsPerPage === 1) return [{ x: x0, y: y0, w: safeW, h: safeH }];
+        if (itemsPerPage === 2) {
+            const gap = 0.4;
+            const h = (safeH - gap) / 2;
+            return [
+                { x: x0, y: y0, w: safeW, h },
+                { x: x0, y: y0 + h + gap, w: safeW, h }
+            ];
+        }
+        if (itemsPerPage === 4) {
+            const gapX = 0.35;
+            const gapY = 0.4;
+            const w = (safeW - gapX) / 2;
+            const h = (safeH - gapY) / 2;
+            return [
+                { x: x0, y: y0, w, h },
+                { x: x0 + w + gapX, y: y0, w, h },
+                { x: x0, y: y0 + h + gapY, w, h },
+                { x: x0 + w + gapX, y: y0 + h + gapY, w, h }
+            ];
+        }
+        return [{ x: x0, y: y0, w: safeW, h: safeH }];
     };
 
     const handleGeneratePreview = () => {
@@ -342,14 +352,13 @@ export default function WordSearchStudio() {
         finalW += bleed;
         finalH += bleed * 2;
 
-        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount }] = await Promise.all([
+        const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawWordSearchGrid, drawWordSearchWordList, drawMarginGuides }, { drawPageBorderTheme }, { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount }] = await Promise.all([
             import("jspdf"),
             import("../../utils/pdfExportService"),
             import("../../utils/borderThemeDrawing"),
             import("@/lib/kdpBookEngine"),
         ]);
         const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [finalW, finalH] });
-        const margin = 0.5; const safeWidth = finalW - (margin * 2); const safeHeight = finalH - (margin * 2);
 
         const bookPuzzles = [];
         for (let i = 0; i < totalPuzzles; i++) {
@@ -409,11 +418,20 @@ export default function WordSearchStudio() {
         });
 
         // ================= PUZZLE PAGES =================
-        const puzZones = getZones(puzzlesPerPage, safeWidth, safeHeight, margin);
-
         for (let p = 0; p < totalPuzPages; p++) {
             doc.addPage();
             currentPage++;
+
+            // Alternating KDP Gutter Margins matching Sudoku & Amazon KDP specifications:
+            // Odd pages (recto / right page): Spine is on LEFT -> inside margin on left
+            // Even pages (verso / left page): Spine is on RIGHT -> inside margin on right
+            const margins = calculateKdpMargins(currentPage, totalExpectedPages, finalW);
+            const { marginLeft, marginRight, contentW, contentCenterX } = margins;
+
+            const marginTop = 0.5;
+            const safeHeight = finalH - (marginTop * 2);
+            const puzZones = getZones(puzzlesPerPage, marginLeft, marginTop, contentW, safeHeight);
+
             for (let z = 0; z < puzzlesPerPage; z++) {
                 const puzIndex = (p * puzzlesPerPage) + z;
                 if (puzIndex >= totalPuzzles) break;
@@ -433,11 +451,10 @@ export default function WordSearchStudio() {
                 // Dynamically fit grid within available vertical zone space
                 const maxAvailableGridH = zone.h - titleBlockH - totalListSpace;
 
-                // In large-print 1-puzzle-per-page mode, allow the grid to expand comfortably
-                // to fill the page (up to 90% of zone width or available height) like Amazon Large Print books.
-                // For multi-per-page (2 or 4), retain the compact cell cap.
+                // Standard KDP grid size (5.5" on 8.5x11, 4.2" on 6x9, 3.5" on 5x8) matching Sudoku geometry exactly
+                const maxKdpGrid = finalTrim === "5x8" ? 3.5 : finalTrim === "6x9" ? 4.2 : 5.5;
                 const gridDrawSize = isSinglePuzzle
-                    ? Math.min(zone.w * 0.90, maxAvailableGridH, 7.0)
+                    ? Math.min(zone.w, maxAvailableGridH, maxKdpGrid)
                     : Math.min(zone.w, maxAvailableGridH, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
 
                 // Calculate total height of the combined puzzle block (Title + Grid + Word list)
@@ -448,16 +465,17 @@ export default function WordSearchStudio() {
                 const contentTop = zone.y + verticalOffset;
 
                 let startX = zone.x;
-                if (puzzleAlign === 'center') startX = zone.x + (zone.w - gridDrawSize)/2;
+                if (puzzleAlign === 'center') startX = zone.x + (zone.w - gridDrawSize) / 2;
                 if (puzzleAlign === 'right') startX = zone.x + zone.w - gridDrawSize;
                 const startY = contentTop + titleBlockH;
 
-                // Draw title (vertically balanced above the grid)
+                // Draw title (centered above the grid in content area)
                 doc.setFont(lettersFont, "bold"); 
                 doc.setFontSize(isSinglePuzzle ? 18 : 16); 
                 doc.setTextColor(0);
                 const titleStr = useFirstLineAsTitle && titleText ? `${titleText} #${puzIndex + 1}` : `Puzzle #${puzIndex + 1}`;
-                doc.text(titleStr, zone.x + zone.w/2, contentTop + (isSinglePuzzle ? 0.28 : 0.22), { align: "center" });
+                const titleCenterX = puzzleAlign === 'center' ? (zone.x + zone.w / 2) : (startX + gridDrawSize / 2);
+                doc.text(titleStr, titleCenterX, contentTop + (isSinglePuzzle ? 0.28 : 0.22), { align: "center" });
 
                 // Draw grid + word bank via the shared word search PDF primitives
                 // (also used by pdfExportService.ts and the bulk generator)
@@ -467,27 +485,25 @@ export default function WordSearchStudio() {
                     lineWidth: lineWidth * 0.01,
                     cellColor,
                     borderColor,
-                    // Matches the live-preview grid cells, which render bold
-                    // unconditionally (font-bold) -- this override was the one
-                    // thing making the exported PDF look thinner than the preview.
                     letterBold: true,
                 });
 
                 // Match the word list's x/width to the grid's actual drawn bounds
                 const effectiveWordFontSize = isSinglePuzzle ? Math.max(wordTextSize, 12) : wordTextSize;
                 drawWordSearchWordList(doc, pageWords, { x: startX, y: startY + gridDrawSize + gridToWordGap - wordRowStep, w: gridDrawSize }, {
+                    showHeading: true,
                     style: { wordFont, wordFontSize: effectiveWordFontSize, wordTextColor, wordTextAlign, wordColumns, wordRowStep },
                 });
             }
 
-            // Running footer page number
+            // Running footer page number centered in the printable content area
             doc.setFont("helvetica", "normal");
             doc.setFontSize(9);
             doc.setTextColor(0);
-            doc.text(`Page ${currentPage}`, finalW / 2, finalH - 0.35, { align: "center" });
+            doc.text(`Page ${currentPage}`, contentCenterX, finalH - 0.35, { align: "center" });
 
             if (showGuides) {
-                drawMarginGuides(doc, margin, margin, margin, margin, finalW, finalH);
+                drawMarginGuides(doc, marginLeft, marginTop, marginRight, marginTop, finalW, finalH);
             }
         }
 
@@ -505,11 +521,17 @@ export default function WordSearchStudio() {
                 customSubtitle: `Complete Answer Keys for Word Searches #1 to #${totalPuzzles}`,
             });
 
-            const solZones = getZones(solutionsPerPage, safeWidth, safeHeight, margin);
-
             for (let p = 0; p < totalSolPages; p++) {
                 doc.addPage();
                 currentPage++;
+
+                const margins = calculateKdpMargins(currentPage, totalExpectedPages, finalW);
+                const { marginLeft, marginRight, contentW, contentCenterX } = margins;
+                const marginTop = 0.5;
+                const safeHeight = finalH - (marginTop * 2);
+
+                const solZones = getZones(solutionsPerPage, marginLeft, marginTop, contentW, safeHeight);
+
                 for (let z = 0; z < solutionsPerPage; z++) {
                     const solIndex = (p * solutionsPerPage) + z;
                     if (solIndex >= totalPuzzles) break;
@@ -519,9 +541,10 @@ export default function WordSearchStudio() {
                     const isSingleSol = solutionsPerPage === 1;
                     const titleBlockH = isSingleSol ? 0.50 : 0.40;
                     const maxAvailableGridH = zone.h - titleBlockH;
-                    const gridDrawSize = isSingleSol
-                        ? Math.min(zone.w * 0.90, maxAvailableGridH, 7.0)
-                        : Math.min(zone.w, maxAvailableGridH, gridSize * STANDARD_WORD_SEARCH_CELL_IN);
+                    const maxKdpSolGrid = isSingleSol
+                        ? (finalTrim === "5x8" ? 3.5 : finalTrim === "6x9" ? 4.2 : 5.5)
+                        : (finalTrim === "5x8" ? 1.8 : finalTrim === "6x9" ? 2.2 : 2.8);
+                    const gridDrawSize = Math.min(zone.w, maxAvailableGridH, maxKdpSolGrid);
 
                     // Calculate total height of answer key block (Title + Grid)
                     const totalSolBlockH = titleBlockH + gridDrawSize;
@@ -536,9 +559,10 @@ export default function WordSearchStudio() {
                     const startY = solContentTop + titleBlockH;
 
                     doc.setFont(lettersFont, "bold"); 
-                    doc.setFontSize(isSingleSol ? 18 : 16); 
+                    doc.setFontSize(isSingleSol ? 18 : 14); 
                     doc.setTextColor(0);
-                    doc.text(`Answer #${solIndex + 1}`, zone.x + zone.w/2, solContentTop + (isSingleSol ? 0.28 : 0.22), { align: "center" });
+                    const ansTitleX = solutionAlign === 'center' ? (zone.x + zone.w / 2) : (startX + gridDrawSize / 2);
+                    doc.text(`Answer #${solIndex + 1}`, ansTitleX, solContentTop + (isSingleSol ? 0.28 : 0.22), { align: "center" });
 
                     // Highlighted answer grid via the shared word search PDF primitive
                     // (also used by pdfExportService.ts and the bulk generator)
@@ -556,10 +580,10 @@ export default function WordSearchStudio() {
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(9);
                 doc.setTextColor(0);
-                doc.text(`Page ${currentPage}`, finalW / 2, finalH - 0.35, { align: "center" });
+                doc.text(`Page ${currentPage}`, contentCenterX, finalH - 0.35, { align: "center" });
 
                 if (showGuides) {
-                    drawMarginGuides(doc, margin, margin, margin, margin, finalW, finalH);
+                    drawMarginGuides(doc, marginLeft, marginTop, marginRight, marginTop, finalW, finalH);
                 }
             }
         }
@@ -580,7 +604,9 @@ export default function WordSearchStudio() {
                 const isBackCover = incCover && coverState && i === totalPages;
                 if (!isFrontCover && !isBackCover) {
                     doc.setPage(i);
-                    if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, finalW, finalH);
+                    const margins = calculateKdpMargins(i, totalPages, finalW);
+                    const kdpShift = margins.contentCenterX - (finalW / 2);
+                    if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, finalW, finalH, kdpShift);
                     if (!isPremium) drawWatermark(doc, finalW, finalH);
                 }
             }

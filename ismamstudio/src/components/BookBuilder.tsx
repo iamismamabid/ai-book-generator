@@ -331,11 +331,50 @@ export default function BookBuilder({
   onInteriorChange?: (info: { pageCount: number; trimSize: any; bookPages?: any[]; borderTheme?: any; language?: KdpBookLanguage }) => void;
   onSyncPages?: (pages: any[], borderTheme?: any) => void;
 }) {
-  const [bookPages, setBookPages] = useState<any[]>(() =>
-    ensureMandatoryFrontMatter(initialPages || [])
-  );
-  const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [bookLanguage, setBookLanguage] = useState<KdpBookLanguage>("en");
+  const [bookPages, setBookPages] = useState<any[]>(() => {
+    if (initialPages && initialPages.length > 0) {
+      return ensureMandatoryFrontMatter(initialPages);
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("kdp-book-draft");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return ensureMandatoryFrontMatter(parsed);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to load synchronous draft from localStorage:", e);
+      }
+    }
+    return ensureMandatoryFrontMatter([]);
+  });
+
+  const [activeIndex, setActiveIndex] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedIdx = localStorage.getItem("kdp-book-active-index");
+        if (savedIdx !== null) {
+          const parsedIdx = parseInt(savedIdx, 10);
+          if (!isNaN(parsedIdx) && parsedIdx >= 0) {
+            return parsedIdx;
+          }
+        }
+      } catch (e) {}
+    }
+    return 0;
+  });
+
+  const [bookLanguage, setBookLanguage] = useState<KdpBookLanguage>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("kdp-book-language");
+        if (saved) return saved as KdpBookLanguage;
+      } catch (e) {}
+    }
+    return "en";
+  });
 
   // Undo/redo history (page-list level: add/remove/duplicate/reorder/paste/
   // edit-settings all flow through setBookPages, so watching that one state
@@ -352,8 +391,22 @@ export default function BookBuilder({
   const [contextMenuPage, setContextMenuPage] = useState<{ x: number; y: number; index: number } | null>(null);
 
   // Collapsible Sidebars States
-  const [leftOpen, setLeftOpen] = useState(true);
-  const [rightOpen, setRightOpen] = useState(true);
+  const [leftOpen, setLeftOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      if (window.innerWidth < 768) return false;
+      const saved = localStorage.getItem("kdp-book-left-open");
+      if (saved !== null) return saved === "true";
+    }
+    return true;
+  });
+  const [rightOpen, setRightOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      if (window.innerWidth < 768) return false;
+      const saved = localStorage.getItem("kdp-book-right-open");
+      if (saved !== null) return saved === "true";
+    }
+    return true;
+  });
 
   // Template Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -365,8 +418,27 @@ export default function BookBuilder({
   const [includeCover, setIncludeCover] = useState(false);
   const [includePageNumbers, setIncludePageNumbers] = useState(true);
   const [gutterMargin, setGutterMargin] = useState(true);
-  const [selectedTrim, setSelectedTrim] = useState(TRIM_SIZES[0]);
-  const [borderTheme, setBorderTheme] = useState<BorderThemeId>("none");
+  const [selectedTrim, setSelectedTrim] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("kdp-book-trim");
+        if (saved) {
+          const found = TRIM_SIZES.find(t => t.label === saved);
+          if (found) return found;
+        }
+      } catch (e) {}
+    }
+    return TRIM_SIZES[0];
+  });
+  const [borderTheme, setBorderTheme] = useState<BorderThemeId>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("kdp-book-border-theme");
+        if (saved) return saved as BorderThemeId;
+      } catch (e) {}
+    }
+    return "none";
+  });
   const [isExporting, setIsExporting] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [solutionsStatus, setSolutionsStatus] = useState<'idle' | 'success'>('idle');
@@ -390,11 +462,56 @@ export default function BookBuilder({
 
   useEffect(() => {
     setMounted(true);
-    if (typeof window !== "undefined" && window.innerWidth < 768) {
-      setLeftOpen(false);
-      setRightOpen(false);
-    }
   }, []);
+
+  // Persist view and layout preferences to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("kdp-book-active-index", String(activeIndex));
+    } catch (e) {}
+  }, [activeIndex]);
+
+  useEffect(() => {
+    if (bookPages.length > 0 && activeIndex >= bookPages.length) {
+      setActiveIndex(Math.max(0, bookPages.length - 1));
+    }
+  }, [bookPages.length, activeIndex]);
+
+  useEffect(() => {
+    try {
+      if (selectedTrim?.label) {
+        localStorage.setItem("kdp-book-trim", selectedTrim.label);
+      }
+    } catch (e) {}
+  }, [selectedTrim]);
+
+  useEffect(() => {
+    try {
+      if (bookLanguage) {
+        localStorage.setItem("kdp-book-language", bookLanguage);
+      }
+    } catch (e) {}
+  }, [bookLanguage]);
+
+  useEffect(() => {
+    try {
+      if (borderTheme) {
+        localStorage.setItem("kdp-book-border-theme", borderTheme);
+      }
+    } catch (e) {}
+  }, [borderTheme]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("kdp-book-left-open", String(leftOpen));
+    } catch (e) {}
+  }, [leftOpen]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("kdp-book-right-open", String(rightOpen));
+    } catch (e) {}
+  }, [rightOpen]);
 
   useEffect(() => {
     if (onSyncPages) {
@@ -482,7 +599,13 @@ export default function BookBuilder({
       try {
         const idbPages = await loadBookDraftFromIndexedDB();
         if (idbPages && idbPages.length > 0) {
-          setBookPages(ensureMandatoryFrontMatter(idbPages));
+          const ensured = ensureMandatoryFrontMatter(idbPages);
+          setBookPages((prev) => {
+            if (prev.length === ensured.length && JSON.stringify(prev) === JSON.stringify(ensured)) {
+              return prev;
+            }
+            return ensured;
+          });
           return;
         }
       } catch (e) {
@@ -494,7 +617,13 @@ export default function BookBuilder({
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            setBookPages(ensureMandatoryFrontMatter(parsed));
+            const ensured = ensureMandatoryFrontMatter(parsed);
+            setBookPages((prev) => {
+              if (prev.length === ensured.length && JSON.stringify(prev) === JSON.stringify(ensured)) {
+                return prev;
+              }
+              return ensured;
+            });
           }
         } catch (e) {
           console.error("Error parsing saved draft", e);
@@ -994,6 +1123,7 @@ export default function BookBuilder({
 
       {/* Sidebar Left: Asset Tool buttons */}
       <motion.div
+        initial={false}
         animate={{ 
           width: leftOpen ? 288 : 0,
           opacity: leftOpen ? 1 : 0
@@ -1356,6 +1486,7 @@ export default function BookBuilder({
 
       {/* Sidebar Right: Book Pages & Merge Export */}
       <motion.div
+        initial={false}
         animate={{ 
           width: rightOpen ? 304 : 0,
           opacity: rightOpen ? 1 : 0

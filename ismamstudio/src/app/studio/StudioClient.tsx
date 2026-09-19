@@ -26,7 +26,16 @@ const TRIM_SIZES = [
 export default function MasterStudioApp() {
   const { isSignedIn } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'interior' | 'cover'>('interior');
+  const [activeTab, setActiveTab] = useState<'interior' | 'cover'>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab === "cover" || tab === "interior") {
+        return tab;
+      }
+    }
+    return 'interior';
+  });
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
   // Populated when arriving via /studio?notebookId=... (e.g. "Open in Studio"
   // from a saved My Notebook entry) so Book Builder restores those exact pages
@@ -64,13 +73,6 @@ export default function MasterStudioApp() {
 
   useEffect(() => {
     setIsMounted(true);
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get("tab");
-      if (tab === "cover" || tab === "interior") {
-        setActiveTab(tab);
-      }
-    }
   }, []);
 
   useEffect(() => {

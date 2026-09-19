@@ -445,8 +445,9 @@ export default function WordSearchStudio() {
                 const numWordRows = Math.ceil(pageWords.length / wordColumns);
                 const titleBlockH = isSinglePuzzle ? 0.55 : 0.45;
                 const gridToWordGap = isSinglePuzzle ? 0.40 : 0.35;
+                const headingSpace = 0.28;
                 const wordListH = numWordRows * wordRowStep;
-                const totalListSpace = gridToWordGap + wordListH;
+                const totalListSpace = gridToWordGap + headingSpace + wordListH;
 
                 // Dynamically fit grid within available vertical zone space
                 const maxAvailableGridH = zone.h - titleBlockH - totalListSpace;
@@ -490,7 +491,7 @@ export default function WordSearchStudio() {
 
                 // Match the word list's x/width to the grid's actual drawn bounds
                 const effectiveWordFontSize = isSinglePuzzle ? Math.max(wordTextSize, 12) : wordTextSize;
-                drawWordSearchWordList(doc, pageWords, { x: startX, y: startY + gridDrawSize + gridToWordGap - wordRowStep, w: gridDrawSize }, {
+                drawWordSearchWordList(doc, pageWords, { x: startX, y: startY + gridDrawSize + gridToWordGap, w: gridDrawSize }, {
                     showHeading: true,
                     style: { wordFont, wordFontSize: effectiveWordFontSize, wordTextColor, wordTextAlign, wordColumns, wordRowStep },
                 });

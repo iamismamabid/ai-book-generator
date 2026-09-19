@@ -756,7 +756,7 @@ export function drawWordSearchWordList(
     doc.setFontSize(Math.max(7, Math.floor(11 * scaleFactor)));
     doc.setTextColor(0);
     doc.text("WORDS TO FIND:", zone.x + zone.w / 2, zone.y, { align: "center" });
-    headingOffset = 0.25 * scaleFactor;
+    headingOffset = Math.max(0.24, 0.28 * scaleFactor);
   }
 
   doc.setFont(s.wordFont, "bold");
@@ -773,7 +773,9 @@ export function drawWordSearchWordList(
     const colIdx = idx % s.wordColumns;
     const colLeft = zone.x + (colIdx * colWidth);
     const x = s.wordTextAlign === 'center' ? colLeft + colWidth / 2 : colLeft;
-    const y = zone.y + headingOffset + ((rowIdx + 1) * wordRowStep);
+    const y = opts.showHeading
+      ? zone.y + headingOffset + (rowIdx * wordRowStep)
+      : zone.y + ((rowIdx + 1) * wordRowStep);
     doc.text(w.text, x, y, { align: s.wordTextAlign });
   });
 

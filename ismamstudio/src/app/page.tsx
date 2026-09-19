@@ -121,7 +121,7 @@ export default function HomePage() {
             <span>•</span>
             <span>⚡ 2 Free 300 DPI PDF Exports</span>
             <span>•</span>
-            <span>🎁 25% Off Code: <strong className="text-indigo-600 font-black">LAUNCH25</strong></span>
+            <span>🎁 50% Off For Life Code: <strong className="text-indigo-600 font-black">SWITCH50</strong></span>
           </p>
 
           {/* Value Proof Badges */}

@@ -86,6 +86,60 @@ export default function MasterStudioApp() {
     }
     loadPremium();
   }, []);
+
+  // Support incoming query parameters from MCP server / external AI agents
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const urlTitle = params.get("title");
+    const urlSubtitle = params.get("subtitle");
+    const urlAuthor = params.get("author");
+    const urlPages = params.get("pages");
+    const urlTrim = params.get("trim");
+    const urlTheme = params.get("theme");
+
+    if (urlTitle || urlAuthor || urlPages || urlTrim || urlTheme) {
+      const pageNum = urlPages ? parseInt(urlPages, 10) : undefined;
+      let matchedTrim = undefined;
+      if (urlTrim) {
+        matchedTrim = TRIM_SIZES.find(
+          t => t.label.toLowerCase().includes(urlTrim.toLowerCase()) || `${t.w}x${t.h}` === urlTrim
+        );
+      }
+
+      setBookMeta(prev => ({
+        ...prev,
+        title: urlTitle || prev.title,
+        subtitle: urlSubtitle || prev.subtitle,
+        author: urlAuthor || prev.author,
+        pageCount: (pageNum && !isNaN(pageNum) && pageNum >= 24) ? pageNum : prev.pageCount,
+        trimSize: matchedTrim || prev.trimSize,
+        themeId: urlTheme || prev.themeId,
+      }));
+
+      if (pageNum && !isNaN(pageNum) && pageNum >= 24) {
+        setPageCount(pageNum);
+      }
+      if (matchedTrim) {
+        setTrimSize(matchedTrim);
+      }
+      if (urlTheme && COVER_THEMES[urlTheme as CoverThemeId]) {
+        const theme = COVER_THEMES[urlTheme as CoverThemeId];
+        setCoverBackground(prev => ({
+          ...prev,
+          frontCoverColor: theme.bgGradStart,
+          frontCoverType: 'gradient',
+          frontCoverGradientStart: theme.bgGradStart,
+          frontCoverGradientEnd: theme.bgGradEnd,
+          backCoverColor: theme.bgGradStart,
+          backCoverType: 'gradient',
+          backCoverGradientStart: theme.bgGradStart,
+          backCoverGradientEnd: theme.bgGradEnd,
+        }));
+      }
+    }
+  }, []);
+
   const [trimSize, setTrimSize] = useState(TRIM_SIZES[0]);
   const [pageCount, setPageCount] = useState(24);
 

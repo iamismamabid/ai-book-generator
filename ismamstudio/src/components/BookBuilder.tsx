@@ -336,16 +336,28 @@ export default function BookBuilder({
       return ensureMandatoryFrontMatter(initialPages);
     }
     if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("kdp-book-draft");
-        if (saved) {
+      const params = new URLSearchParams(window.location.search);
+      const urlTitle = params.get("title");
+      const urlSubtitle = params.get("subtitle");
+      const urlAuthor = params.get("author");
+
+      const saved = localStorage.getItem("kdp-book-draft");
+      if (saved && !urlTitle) {
+        try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
             return ensureMandatoryFrontMatter(parsed);
           }
+        } catch (e) {
+          console.warn("Failed to load synchronous draft from localStorage:", e);
         }
-      } catch (e) {
-        console.warn("Failed to load synchronous draft from localStorage:", e);
+      }
+
+      if (urlTitle) {
+        return [
+          createDefaultTitlePage(urlTitle, urlSubtitle || "A Collection of Puzzles", urlAuthor || "KDPage Publishing"),
+          createDefaultCopyrightPage(urlTitle, urlAuthor || "KDPage Publishing")
+        ];
       }
     }
     return ensureMandatoryFrontMatter([]);
@@ -420,6 +432,14 @@ export default function BookBuilder({
   const [gutterMargin, setGutterMargin] = useState(true);
   const [selectedTrim, setSelectedTrim] = useState(() => {
     if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlTrim = params.get("trim");
+      if (urlTrim) {
+        const found = TRIM_SIZES.find(
+          t => t.label.toLowerCase().includes(urlTrim.toLowerCase()) || `${t.w}x${t.h}` === urlTrim
+        );
+        if (found) return found;
+      }
       try {
         const saved = localStorage.getItem("kdp-book-trim");
         if (saved) {

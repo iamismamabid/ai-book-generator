@@ -168,9 +168,147 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["pageCount", "trimSize"],
         },
       },
+      {
+        name: "create_cover_template",
+        description: "Calculate full wrap cover dimensions and return an SVG/HTML wireframe layout for Amazon KDP",
+        inputSchema: {
+          type: "object",
+          properties: {
+            title: { type: "string", description: "Book title for the front cover" },
+            subtitle: { type: "string", description: "Optional subtitle" },
+            authorName: { type: "string", description: "Author name" },
+            trimWidth: { type: "number", description: "Trim width in inches (e.g., 8.5)", default: 8.5 },
+            trimHeight: { type: "number", description: "Trim height in inches (e.g., 11)", default: 11 },
+            pageCount: { type: "number", description: "Total page count", default: 120 },
+            paperType: {
+              type: "string",
+              enum: ["white", "cream", "color"],
+              default: "white",
+              description: "Paper type (affects spine thickness)",
+            },
+            themeColor: { type: "string", description: "Primary hex color", default: "#1E293B" },
+            accentColor: { type: "string", description: "Accent hex color", default: "#F59E0B" },
+          },
+          required: ["title", "pageCount"],
+        },
+      },
     ],
   };
 });
+
+interface CoverParams {
+  title: string;
+  subtitle?: string;
+  authorName?: string;
+  trimWidth: number;
+  trimHeight: number;
+  pageCount: number;
+  paperType: "white" | "cream" | "color";
+  themeColor?: string;
+  accentColor?: string;
+}
+
+function generateCoverSample(params: CoverParams) {
+  const {
+    title,
+    subtitle = "",
+    authorName = "Author Name",
+    trimWidth = 8.5,
+    trimHeight = 11,
+    pageCount = 120,
+    paperType = "white",
+    themeColor = "#0f172a",
+    accentColor = "#38bdf8",
+  } = params;
+
+  const multipliers: Record<string, number> = {
+    white: 0.002252,
+    cream: 0.0025,
+    color: 0.002347,
+  };
+
+  const bleed = 0.125;
+  const spineMultiplier = multipliers[paperType] || 0.002252;
+  const spineWidth = Number((pageCount * spineMultiplier).toFixed(4));
+  const fullWidth = Number((trimWidth * 2 + spineWidth + bleed * 2).toFixed(4));
+  const fullHeight = Number((trimHeight + bleed * 2).toFixed(4));
+
+  const ppi = 72;
+  const svgWidth = fullWidth * ppi;
+  const svgHeight = fullHeight * ppi;
+  const bleedPx = bleed * ppi;
+  const spinePx = spineWidth * ppi;
+  const trimWidthPx = trimWidth * ppi;
+
+  const backCoverX = bleedPx;
+  const spineX = bleedPx + trimWidthPx;
+  const frontCoverX = spineX + spinePx;
+
+  const svgMarkup = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth} ${svgHeight}" width="100%" height="auto" style="background: ${themeColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <defs>
+    <style>
+      .guideline { stroke: rgba(255,255,255,0.25); stroke-dasharray: 4 4; stroke-width: 1; }
+      .text-title { fill: #ffffff; font-weight: 800; font-size: 26px; text-anchor: middle; text-transform: uppercase; letter-spacing: 1px; }
+      .text-subtitle { fill: ${accentColor}; font-weight: 500; font-size: 14px; text-anchor: middle; letter-spacing: 0.5px; }
+      .text-author { fill: #ffffff; font-weight: 600; font-size: 13px; text-anchor: middle; letter-spacing: 1.5px; }
+      .text-meta { fill: #94a3b8; font-size: 11px; text-anchor: middle; }
+      .barcode-box { fill: #ffffff; stroke: #cbd5e1; }
+    </style>
+  </defs>
+
+  <!-- Bleed / Safety Guidelines -->
+  <line x1="${spineX}" y1="0" x2="${spineX}" y2="${svgHeight}" class="guideline" />
+  <line x1="${frontCoverX}" y1="0" x2="${frontCoverX}" y2="${svgHeight}" class="guideline" />
+
+  <!-- BACK COVER CONTENT -->
+  <g transform="translate(${backCoverX + trimWidthPx / 2}, ${svgHeight / 3})">
+    <text class="text-meta" y="0">BACK COVER SUMMARY</text>
+    <text class="text-meta" y="24">Engaging blurb and book features go here.</text>
+  </g>
+
+  <!-- KDP Barcode Reservation Zone (Standard lower right of back cover) -->
+  <rect x="${spineX - 160}" y="${svgHeight - bleedPx - 85}" width="144" height="72" class="barcode-box" rx="4" />
+  <text x="${spineX - 88}" y="${svgHeight - bleedPx - 44}" fill="#64748b" font-size="10" text-anchor="middle">KDP Barcode Area</text>
+
+  <!-- SPINE CONTENT -->
+  <g transform="translate(${spineX + spinePx / 2}, ${svgHeight / 2})">
+    ${
+      spineWidth >= 0.35
+        ? `<text transform="rotate(90)" fill="#cbd5e1" font-size="10" letter-spacing="2" text-anchor="middle">${title.toUpperCase()}</text>`
+        : `<text class="text-meta" font-size="8">SPINE</text>`
+    }
+  </g>
+
+  <!-- FRONT COVER CONTENT -->
+  <g transform="translate(${frontCoverX + trimWidthPx / 2}, ${svgHeight * 0.32})">
+    <text class="text-title" y="0">${title}</text>
+    ${subtitle ? `<text class="text-subtitle" y="32">${subtitle}</text>` : ""}
+  </g>
+
+  <g transform="translate(${frontCoverX + trimWidthPx / 2}, ${svgHeight * 0.85})">
+    <text class="text-author" y="0">${authorName.toUpperCase()}</text>
+  </g>
+</svg>`.trim();
+
+  return {
+    specs: {
+      trimSize: `${trimWidth}" x ${trimHeight}"`,
+      pageCount,
+      paperType,
+      bleedInches: bleed,
+      spineWidthInches: spineWidth,
+      fullCoverWidthInches: fullWidth,
+      fullCoverHeightInches: fullHeight,
+      minimumDpi: 300,
+      canvasPixelDimensions300DPI: {
+        width: Math.round(fullWidth * 300),
+        height: Math.round(fullHeight * 300),
+      },
+    },
+    svgPreview: svgMarkup,
+  };
+}
 
 // 3. Handle Tool Calls
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -334,6 +472,55 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             text: isValid
               ? `✅ **Amazon KDP Ready!** Zero rejection risks detected for ${pageCount} pages (${trimSize}).`
               : `⚠️ **KDP Validation Warnings (${issues.length}):**\n\n` + issues.map((i) => `• ${i}`).join("\n"),
+          },
+        ],
+      };
+    }
+
+    if (name === "create_cover_template") {
+      const toolArgs = (args || {}) as any;
+      const result = generateCoverSample({
+        title: String(toolArgs.title || "My KDP Book"),
+        subtitle: toolArgs.subtitle ? String(toolArgs.subtitle) : "",
+        authorName: toolArgs.authorName ? String(toolArgs.authorName) : "KDPage Publishing",
+        trimWidth: Number(toolArgs.trimWidth) || 8.5,
+        trimHeight: Number(toolArgs.trimHeight) || 11,
+        pageCount: Number(toolArgs.pageCount) || 120,
+        paperType: (toolArgs.paperType as "white" | "cream" | "color") || "white",
+        themeColor: toolArgs.themeColor ? String(toolArgs.themeColor) : "#0F172A",
+        accentColor: toolArgs.accentColor ? String(toolArgs.accentColor) : "#F59E0B",
+      });
+
+      const coverStudioUrl = new URL(`${KDPAGE_API_BASE}/studio`);
+      coverStudioUrl.searchParams.set("tab", "cover");
+      coverStudioUrl.searchParams.set("title", String(toolArgs.title || "My KDP Book"));
+      if (toolArgs.subtitle) coverStudioUrl.searchParams.set("subtitle", String(toolArgs.subtitle));
+      if (toolArgs.authorName) coverStudioUrl.searchParams.set("author", String(toolArgs.authorName));
+      coverStudioUrl.searchParams.set("pages", String(toolArgs.pageCount || 120));
+      coverStudioUrl.searchParams.set("trim", `${toolArgs.trimWidth || 8.5}x${toolArgs.trimHeight || 11}`);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: [
+              `🎨 **Amazon KDP Cover Wireframe & Dimensions:**`,
+              ``,
+              `• **Trim Size (Single Page):** ${result.specs.trimSize} (${result.specs.canvasPixelDimensions300DPI.width / 2} × ${result.specs.canvasPixelDimensions300DPI.height} px @ 300 DPI)`,
+              `• **Page Count:** ${result.specs.pageCount} pages (${result.specs.paperType} paper)`,
+              `• **Spine Width:** ${result.specs.spineWidthInches}" (~${Math.round(result.specs.spineWidthInches * 300)} px @ 300 DPI)`,
+              `• **Bleed (Top, Bottom, Outer):** ${result.specs.bleedInches}" (38 px @ 300 DPI)`,
+              `• **Full Wrap Cover Canvas:** ${result.specs.fullCoverWidthInches}" × ${result.specs.fullCoverHeightInches}" (${result.specs.canvasPixelDimensions300DPI.width} × ${result.specs.canvasPixelDimensions300DPI.height} px @ 300 DPI)`,
+              `• **Spine Text Status:** ${result.specs.pageCount >= 79 ? "✅ Enabled (79+ pages)" : "❌ Disabled (Requires 79+ pages)"}`,
+              `• **Barcode Clearance Zone:** 2.0" × 1.2" (144 × 72 pt) pinned to lower right back cover`,
+              ``,
+              `👉 **[Open & Customize in KDPage Cover Studio](${coverStudioUrl.toString()})**`,
+              ``,
+              `### SVG Layout Wireframe:`,
+              `\`\`\`xml`,
+              result.svgPreview,
+              `\`\`\``,
+            ].join("\n"),
           },
         ],
       };

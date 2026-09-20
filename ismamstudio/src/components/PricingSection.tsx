@@ -832,21 +832,28 @@ function PricingSectionInner() {
           </button>
         </div>
 
-        {/* 🏷️ 50% OFF FOR LIFE Banner with Copyable Coupon Code SWITCH50 */}
+        {/* 🏷️ 50% OFF FOR LIFE Banner with Copyable Coupon Code SWITCH50 (Black & Golden Yellow VIP Theme) */}
         {billingCycle === 'monthly' && (
-          <div className="mt-8 max-w-2xl mx-auto p-4 md:p-5 rounded-3xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-yellow-500/20 border-2 border-amber-400/50 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl shadow-amber-500/10 backdrop-blur-md animate-in fade-in">
-            <div className="flex items-center gap-3 text-left">
-              <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
-                <Sparkles className="w-6 h-6 text-amber-400 animate-pulse" />
+          <div className="relative mt-8 max-w-2xl mx-auto p-4 sm:p-5 rounded-3xl bg-black border-2 border-amber-400/90 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[0_0_30px_rgba(245,158,11,0.22)] overflow-hidden animate-in fade-in">
+            {/* Top golden accent line */}
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+            
+            {/* Subtle background ambient gold illumination */}
+            <div className="absolute -top-10 -left-10 w-32 h-32 bg-amber-500/15 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="flex items-center gap-3.5 text-left relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400/20 via-yellow-500/10 to-amber-950/40 text-amber-400 flex items-center justify-center shrink-0 border border-amber-400/50 shadow-inner">
+                <Sparkles className="w-6 h-6 text-amber-300 animate-pulse" />
               </div>
               <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/30 text-amber-300 text-[10px] font-black uppercase tracking-wider mb-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/40 text-[10px] font-black uppercase tracking-wider mb-1 shadow-sm">
                   🔥 Special Lifetime Promotion
                 </div>
-                <h3 className="text-base sm:text-lg font-black text-white tracking-tight">
+                <h3 className="text-base sm:text-lg md:text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-400 drop-shadow-[0_2px_8px_rgba(245,158,11,0.3)]">
                   50% OFF EVERY MONTH FOR LIFE
                 </h3>
-                <p className="text-xs text-slate-300 font-medium">
+                <p className="text-xs text-amber-100/80 font-medium">
                   Prices cut in half! Lock in 50% off every renewal forever with coupon:
                 </p>
               </div>
@@ -856,15 +863,15 @@ function PricingSectionInner() {
               onClick={handleCopyCode}
               type="button"
               title="Click to copy coupon code"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-amber-300 border border-amber-400/60 shadow-md transition-all active:scale-95 cursor-pointer shrink-0 hover:scale-105"
+              className="relative z-10 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black border border-yellow-200 shadow-lg shadow-amber-500/30 transition-all active:scale-95 cursor-pointer shrink-0 hover:scale-105"
             >
-              <span className="font-mono font-black text-sm tracking-wider text-amber-300">SWITCH50</span>
+              <span className="font-mono font-black text-sm tracking-wider text-slate-950">SWITCH50</span>
               {copiedCode ? (
-                <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
-                  <Check className="w-3.5 h-3.5" /> Copied!
+                <span className="flex items-center gap-1 text-[11px] font-black text-emerald-950 bg-emerald-300/70 px-1.5 py-0.5 rounded">
+                  <Check className="w-3.5 h-3.5 text-emerald-950" /> Copied!
                 </span>
               ) : (
-                <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400/80">
+                <span className="flex items-center gap-1 text-[11px] font-black text-slate-900/80">
                   <Copy className="w-3.5 h-3.5" /> Copy
                 </span>
               )}

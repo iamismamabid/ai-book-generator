@@ -341,8 +341,11 @@ export default function BookBuilder({
       const urlSubtitle = params.get("subtitle");
       const urlAuthor = params.get("author");
 
+      const urlTypes = params.get("types");
+      const urlPages = params.get("pages");
+
       const saved = localStorage.getItem("kdp-book-draft");
-      if (saved && !urlTitle) {
+      if (saved && !urlTitle && !urlTypes) {
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -353,11 +356,34 @@ export default function BookBuilder({
         }
       }
 
-      if (urlTitle) {
-        return [
-          createDefaultTitlePage(urlTitle, urlSubtitle || "A Collection of Puzzles", urlAuthor || "KDPage Publishing"),
-          createDefaultCopyrightPage(urlTitle, urlAuthor || "KDPage Publishing")
-        ];
+      if (urlTitle || urlTypes) {
+        const titlePage = createDefaultTitlePage(
+          urlTitle || "My Masterpiece Book",
+          urlSubtitle || "A Collection of Puzzles",
+          urlAuthor || "KDPage Publishing"
+        );
+        const copyrightPage = createDefaultCopyrightPage(
+          urlTitle || "My Masterpiece Book",
+          urlAuthor || "KDPage Publishing"
+        );
+        const initialBook: any[] = [titlePage, copyrightPage];
+
+        if (urlTypes) {
+          const typesList = urlTypes.split(",").map((t: string) => t.trim().toLowerCase()).filter(Boolean);
+          const requestedPages = Math.min(200, Math.max(2, parseInt(urlPages || "24", 10)));
+          const puzzlePagesToGenerate = Math.max(0, requestedPages - 2);
+
+          for (let i = 0; i < puzzlePagesToGenerate; i++) {
+            const pType = typesList[i % typesList.length] || "sudoku";
+            const pConfig = hydrateOrGeneratePuzzleData(pType, {}, true, "en");
+            initialBook.push({
+              id: Date.now() + Math.random() + i,
+              type: pType,
+              config: pConfig,
+            });
+          }
+        }
+        return initialBook;
       }
     }
     return ensureMandatoryFrontMatter([]);
@@ -613,6 +639,14 @@ export default function BookBuilder({
     if (initialPages && initialPages.length > 0) {
       setBookPages(ensureMandatoryFrontMatter(initialPages));
       return;
+    }
+
+    // If arrival was via MCP URL with explicit title or types, keep the newly generated book!
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("title") || params.get("types")) {
+        return;
+      }
     }
 
     (async () => {

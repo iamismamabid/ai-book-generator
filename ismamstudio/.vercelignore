@@ -66,3 +66,15 @@ appsumo_codes.txt
 scripts/
 tsconfig.tsbuildinfo
 prisma/migrations/
+
+# ─── Marketing, Script Outputs & Unused Media (~36.6 MB) ─────────────────────
+public/appsumo_custom_banners/
+public/appsumo_new_user_banners/
+public/dealify_assets/
+public/pinterest/
+public/user_uploads/
+public/user_new_uploads/
+public/fixed_sudoku_154p.pdf
+public/sudoku-master-cover.jpg
+public/sudoku-cover-clean*.jpg
+

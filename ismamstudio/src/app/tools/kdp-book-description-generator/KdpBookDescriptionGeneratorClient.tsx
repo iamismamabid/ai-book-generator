@@ -196,6 +196,14 @@ export default function KdpBookDescriptionGeneratorClient() {
 
       <div className="max-w-7xl mx-auto space-y-12 relative z-10">
         {/* Header Breadcrumb & Titles */}
+        <nav aria-label="Breadcrumb" className="flex items-center justify-center gap-2 text-xs font-semibold text-slate-400">
+          <Link href="/" className="hover:text-white transition">Home</Link>
+          <span>/</span>
+          <Link href="/tools" className="hover:text-white transition">Free Tools</Link>
+          <span>/</span>
+          <span className="text-amber-400 font-bold">100% Free Amazon KDP Formatter</span>
+        </nav>
+
         <div className="space-y-4 text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-black uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" /> 100% Free Amazon KDP Formatter
@@ -808,6 +816,12 @@ export default function KdpBookDescriptionGeneratorClient() {
                 className="px-6 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 border border-slate-700"
               >
                 Print Cost &amp; Royalty Calculator
+              </Link>
+              <Link
+                href="/tools"
+                className="px-6 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 border border-slate-700"
+              >
+                Browse All 30+ Free Tools →
               </Link>
             </div>
           </div>

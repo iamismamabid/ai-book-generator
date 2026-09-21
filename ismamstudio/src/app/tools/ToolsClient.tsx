@@ -333,12 +333,12 @@ export default function FreeToolsHub() {
     },
     {
       id: "kdp-book-description-generator",
-      name: "Free KDP Book Description Generator",
+      name: "100% Free Amazon KDP Formatter & Description Generator",
       badge: "Essential",
-      category: "Marketing",
+      category: "Formatting",
       description: "Format clean Amazon-compliant HTML with bolding, headlines, bullet points, 4,000-character counter & live Amazon preview.",
       features: ["Live Amazon mockup", "Amazon-compliant HTML", "4,000-char counter & alert", "1-click copy"],
-      keywords: ["kdp book description generator", "amazon book description generator", "kdp html description generator", "amazon book description editor", "kdp description formatter", "book blurb generator"],
+      keywords: ["kdp book description generator", "amazon book description generator", "kdp html description generator", "amazon book description editor", "kdp description formatter", "book blurb generator", "100% free amazon kdp formatter", "kdp formatter", "amazon kdp formatter", "free kdp formatter"],
       link: "/tools/kdp-book-description-generator"
     },
     {

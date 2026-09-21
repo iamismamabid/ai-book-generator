@@ -19,7 +19,8 @@ import {
   LayoutTemplate,
   Star,
   Paintbrush,
-  Shuffle
+  Shuffle,
+  FileText
 } from "lucide-react";
 
 import HomeNewsletterForm from "./components/HomeNewsletterForm";
@@ -292,6 +293,7 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
+            { href: "/tools/kdp-book-description-generator", icon: FileText, name: "100% Free KDP Formatter", desc: "HTML book description & formatting" },
             { href: "/tools/print-cost-calculator", icon: Calculator, name: "Free Print Cost Calculator", desc: "Paperback & hardcover printing costs" },
             { href: "/tools/ebook-royalty-calculator", icon: Calculator, name: "Free eBook Royalty Calculator", desc: "35% vs 70% Kindle plans" },
             { href: "/tools/kenp-calculator", icon: BookOpen, name: "Free KENP Royalty Calculator", desc: "Kindle Unlimited earnings estimator" },

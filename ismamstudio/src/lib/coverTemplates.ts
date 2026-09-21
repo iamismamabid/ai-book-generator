@@ -56,7 +56,6 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     category: "Puzzle Books",
     swatch: "#1E1B4B",
     photoQuery: "puzzle brain teaser variety",
-    previewImage: "/puzzle_previews/3d_puzzle_fan_mockup.webp",
     background: {
       frontCoverColor: "#0F172A",
       frontCoverType: "solid",
@@ -72,14 +71,12 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
       { type: "textbox", xFrac: 0.08, yFrac: 0.06, widthFrac: 0.84, fontSizeFrac: 0.035, fontFamily: "Oswald", fontStyle: "bold", fill: "#F59E0B", align: "center", text: "★ THE ULTIMATE COLLECTION ★" },
       { type: "textbox", xFrac: 0.06, yFrac: 0.11, widthFrac: 0.88, fontSizeFrac: 0.12, fontFamily: "Montserrat", fontStyle: "bold", fill: "#FFFFFF", align: "center", text: "VARIETY PUZZLE BOOK" },
       { type: "textbox", xFrac: 0.08, yFrac: 0.24, widthFrac: 0.84, fontSizeFrac: 0.038, fontFamily: "Outfit", fill: "#CBD5E1", align: "center", text: "Mazes • Word Search • Sudoku • Crosswords" },
-      { type: "clipart", src: "/puzzle_previews/3d_puzzle_fan_mockup.webp", xFrac: 0.08, yFrac: 0.32, widthFrac: 0.84, heightFrac: 0.46 },
       { type: "rect", xFrac: 0.12, yFrac: 0.83, widthFrac: 0.76, heightFrac: 0.08, fill: "#F59E0B", cornerRadius: 24 },
       { type: "textbox", xFrac: 0.12, yFrac: 0.852, widthFrac: 0.76, fontSizeFrac: 0.032, fontFamily: "Montserrat", fontStyle: "bold", fill: "#0F172A", align: "center", text: "150+ PUZZLES WITH SOLUTIONS" },
 
       // Back Cover Elements
       { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.08, widthFrac: 0.84, fontSizeFrac: 0.055, fontFamily: "Montserrat", fontStyle: "bold", fill: "#F59E0B", align: "center", text: "WHAT'S INSIDE THIS BOOK?" },
-      { type: "clipart", coverSide: "back", src: "/puzzle_previews/all_puzzles_grid.webp", xFrac: 0.14, yFrac: 0.18, widthFrac: 0.72, heightFrac: 0.42 },
-      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.64, widthFrac: 0.84, fontSizeFrac: 0.032, fontFamily: "Lora", fill: "#E2E8F0", align: "center", text: "✔ 50+ Challenging Mazes\n✔ Themed Word Searches\n✔ Classic 9x9 Sudoku Grids\n✔ Complete Solutions Included" },
+      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.40, widthFrac: 0.84, fontSizeFrac: 0.032, fontFamily: "Lora", fill: "#E2E8F0", align: "center", text: "✔ 50+ Challenging Mazes\n✔ Themed Word Searches\n✔ Classic 9x9 Sudoku Grids\n✔ Complete Solutions Included" },
     ],
   },
   {
@@ -88,7 +85,6 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     category: "Puzzle Books",
     swatch: "#0284C7",
     photoQuery: "colorful puzzle game activity",
-    previewImage: "/puzzle_previews/all_puzzles_grid.webp",
     background: {
       frontCoverColor: "#0284C7",
       frontCoverType: "solid",
@@ -104,14 +100,12 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
       { type: "textbox", xFrac: 0.08, yFrac: 0.06, widthFrac: 0.84, fontSizeFrac: 0.035, fontFamily: "Montserrat", fontStyle: "bold", fill: "#FDE047", align: "center", text: "FUN BRAIN-BUILDING GAMES" },
       { type: "textbox", xFrac: 0.06, yFrac: 0.11, widthFrac: 0.88, fontSizeFrac: 0.13, fontFamily: "Bebas Neue", fill: "#FFFFFF", align: "center", text: "MEGA PUZZLE CHALLENGE" },
       { type: "textbox", xFrac: 0.08, yFrac: 0.24, widthFrac: 0.84, fontSizeFrac: 0.04, fontFamily: "Outfit", fill: "#F1F5F9", align: "center", text: "Word Finds, Mazes, Numbers & Logic" },
-      { type: "clipart", src: "/puzzle_previews/3d_puzzle_fan_mockup.webp", xFrac: 0.08, yFrac: 0.32, widthFrac: 0.84, heightFrac: 0.46 },
       { type: "rect", xFrac: 0.14, yFrac: 0.83, widthFrac: 0.72, heightFrac: 0.08, fill: "#FDE047", cornerRadius: 24 },
       { type: "textbox", xFrac: 0.14, yFrac: 0.852, widthFrac: 0.72, fontSizeFrac: 0.034, fontFamily: "Montserrat", fontStyle: "bold", fill: "#0369A1", align: "center", text: "FOR TEENS, ADULTS & SENIORS" },
 
       // Back Cover Elements
       { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.08, widthFrac: 0.84, fontSizeFrac: 0.055, fontFamily: "Montserrat", fontStyle: "bold", fill: "#FDE047", align: "center", text: "LOOK INSIDE!" },
-      { type: "clipart", coverSide: "back", src: "/puzzle_previews/all_puzzles_grid.webp", xFrac: 0.14, yFrac: 0.18, widthFrac: 0.72, heightFrac: 0.42 },
-      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.64, widthFrac: 0.84, fontSizeFrac: 0.032, fontFamily: "Outfit", fill: "#FFFFFF", align: "center", text: "Designed to boost memory, focus, and problem-solving skills.\nFull answer keys provided at the back of the book." },
+      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.40, widthFrac: 0.84, fontSizeFrac: 0.032, fontFamily: "Outfit", fill: "#FFFFFF", align: "center", text: "Designed to boost memory, focus, and problem-solving skills.\nFull answer keys provided at the back of the book." },
     ],
   },
   {
@@ -120,7 +114,6 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     category: "Puzzle Books",
     swatch: "#059669",
     photoQuery: "green nature puzzle relaxing",
-    previewImage: "/puzzle_previews/all_circular_badges.webp",
     background: {
       frontCoverColor: "#064E3B",
       frontCoverType: "solid",
@@ -136,14 +129,12 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
       { type: "textbox", xFrac: 0.08, yFrac: 0.07, widthFrac: 0.84, fontSizeFrac: 0.035, fontFamily: "Lora", fontStyle: "italic", fill: "#A7F3D0", align: "center", text: "Relax & Sharpen Your Mind" },
       { type: "textbox", xFrac: 0.06, yFrac: 0.12, widthFrac: 0.88, fontSizeFrac: 0.11, fontFamily: "Playfair Display", fontStyle: "bold", fill: "#FFFFFF", align: "center", text: "VARIETY PUZZLES" },
       { type: "textbox", xFrac: 0.08, yFrac: 0.24, widthFrac: 0.84, fontSizeFrac: 0.038, fontFamily: "Outfit", fill: "#CBD5E1", align: "center", text: "Crosswords • Word Search • Sudoku • Mazes" },
-      { type: "clipart", src: "/puzzle_previews/all_circular_badges.webp", xFrac: 0.12, yFrac: 0.32, widthFrac: 0.76, heightFrac: 0.46 },
       { type: "rect", xFrac: 0.14, yFrac: 0.83, widthFrac: 0.72, heightFrac: 0.08, fill: "#FFFFFF", cornerRadius: 24 },
       { type: "textbox", xFrac: 0.14, yFrac: 0.852, widthFrac: 0.72, fontSizeFrac: 0.032, fontFamily: "Montserrat", fontStyle: "bold", fill: "#064E3B", align: "center", text: "LARGE PRINT • SOLUTIONS INCLUDED" },
 
       // Back Cover Elements
       { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.08, widthFrac: 0.84, fontSizeFrac: 0.055, fontFamily: "Playfair Display", fontStyle: "bold", fill: "#A7F3D0", align: "center", text: "DAILY BRAIN WELLNESS" },
-      { type: "clipart", coverSide: "back", src: "/puzzle_previews/all_puzzles_grid.webp", xFrac: 0.14, yFrac: 0.18, widthFrac: 0.72, heightFrac: 0.42 },
-      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.64, widthFrac: 0.84, fontSizeFrac: 0.032, fontFamily: "Lora", fill: "#E2E8F0", align: "center", text: "A mindful collection of classic puzzles created to keep your mind agile and entertained. Generous margins and easy-to-read print." },
+      { type: "textbox", coverSide: "back", xFrac: 0.08, yFrac: 0.40, widthFrac: 0.84, fontSizeFrac: 0.032, fontFamily: "Lora", fill: "#E2E8F0", align: "center", text: "A mindful collection of classic puzzles created to keep your mind agile and entertained. Generous margins and easy-to-read print." },
     ],
   },
   {

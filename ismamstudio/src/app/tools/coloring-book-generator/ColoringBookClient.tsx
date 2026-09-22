@@ -57,7 +57,8 @@ import {
   FilePlus,
   CloudOff,
   Loader2,
-  Camera
+  Camera,
+  Wand2
 } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";

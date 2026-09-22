@@ -51,7 +51,7 @@ interface NotebookClientProps {
 const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) => string }> = {
   cover: { label: "Open in Cover Studio", href: (id) => `/studio?tab=cover&notebookId=${id}` },
   "puzzle-book": { label: "Open in Book Builder", href: (id) => `/studio?notebookId=${id}` },
-  "coloring-book": { label: "Open in Book Builder", href: (id) => `/studio?notebookId=${id}` },
+  "coloring-book": { label: "Open in Coloring Page Studio", href: (id) => `/tools/coloring-book-generator?notebookId=${id}` },
   crossword: { label: "Open in Crossword Studio", href: (id) => `/studio/crossword?notebookId=${id}` },
   "math-puzzle": { label: "Open in Math Puzzle Studio", href: (id) => `/studio/math-puzzle?notebookId=${id}` },
   "word-scramble": { label: "Open in Word Scramble Studio", href: (id) => `/studio/word-scramble?notebookId=${id}` },

@@ -255,8 +255,8 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
 
               {/* Quick Launch Tiles */}
               <div className="grid grid-cols-2 gap-2">
-                <Link href="/studio" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
-                  <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" /> KDP Book Studio
+                <Link href="/tools/coloring-book-generator" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
+                  <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Coloring Studio
                 </Link>
                 <Link href="/sudoku" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
                   <Zap className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Sudoku Studio

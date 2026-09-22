@@ -190,7 +190,6 @@ const nextConfig = {
       { source: "/tools/free-sudoku-generator", destination: "/sudoku", permanent: true },
       { source: "/tools/kdp-maze-generator", destination: "/maze", permanent: true },
       { source: "/tools/free-maze-generator", destination: "/maze", permanent: true },
-      { source: "/tools/coloring-book-generator", destination: "/tools", permanent: true },
     ];
   },
 

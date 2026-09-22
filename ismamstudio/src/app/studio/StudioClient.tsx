@@ -10,8 +10,29 @@ import { checkPremiumStatus, saveCoverProject, loadCoverProject, getNotebookEntr
 import { saveCoverDraftToIndexedDB, loadCoverDraftFromIndexedDB } from "@/lib/indexedDbStorage";
 
 // Dynamic imports — both components use browser-only APIs (canvas, localStorage)
-const FabricCoverStudio = dynamic(() => import("@/components/FabricCoverStudio"), { ssr: false });
-const BookBuilder = dynamic(() => import("@/components/BookBuilder"), { ssr: false });
+// Wrapped with auto-reload protection against CDN/browser cache ChunkLoadError
+const FabricCoverStudio = dynamic(
+  () =>
+    import("@/components/FabricCoverStudio").catch((err) => {
+      if (typeof window !== "undefined" && !sessionStorage.getItem("retry_chunk_cover")) {
+        sessionStorage.setItem("retry_chunk_cover", "1");
+        window.location.reload();
+      }
+      throw err;
+    }),
+  { ssr: false }
+);
+const BookBuilder = dynamic(
+  () =>
+    import("@/components/BookBuilder").catch((err) => {
+      if (typeof window !== "undefined" && !sessionStorage.getItem("retry_chunk_builder")) {
+        sessionStorage.setItem("retry_chunk_builder", "1");
+        window.location.reload();
+      }
+      throw err;
+    }),
+  { ssr: false }
+);
 import CoverStudioErrorBoundary from "@/components/CoverStudioErrorBoundary";
 import InteriorErrorBoundary from "@/components/InteriorErrorBoundary";
 import { BookCoverSyncData } from "@/components/FullBookPackagerModal";
@@ -114,7 +135,7 @@ export default function MasterStudioApp() {
         author: urlAuthor || prev.author,
         pageCount: (pageNum && !isNaN(pageNum) && pageNum >= 24) ? pageNum : prev.pageCount,
         trimSize: matchedTrim || prev.trimSize,
-        themeId: urlTheme || prev.themeId,
+        themeId: (urlTheme as CoverThemeId) || prev.themeId,
       }));
 
       if (pageNum && !isNaN(pageNum) && pageNum >= 24) {

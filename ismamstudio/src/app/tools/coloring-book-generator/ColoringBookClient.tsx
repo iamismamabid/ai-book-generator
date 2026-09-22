@@ -1636,8 +1636,35 @@ export default function ColoringBookClient() {
     // Wall check: check alpha channel in lineData (Alpha > 40 is a border wall)
     const isWall = (idx: number) => (lineData32[idx] >>> 24) > 40;
 
-    const startIdx = sy * w + sx;
-    if (isWall(startIdx)) return;
+    let fillX = sx;
+    let fillY = sy;
+    let startIdx = fillY * w + fillX;
+
+    // If clicked on or near a wall outline, search a small radius for adjacent fillable space
+    if (isWall(startIdx)) {
+      let found = false;
+      for (let r = 1; r <= 8 && !found; r++) {
+        const offsets = [
+          [0, r], [0, -r], [r, 0], [-r, 0],
+          [r, r], [-r, -r], [r, -r], [-r, r]
+        ];
+        for (const [dx, dy] of offsets) {
+          const nx = sx + dx;
+          const ny = sy + dy;
+          if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+            const nIdx = ny * w + nx;
+            if (!isWall(nIdx)) {
+              fillX = nx;
+              fillY = ny;
+              startIdx = nIdx;
+              found = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!found) return;
+    }
 
     const targetColor32 = colorData32[startIdx];
     const rgb = hexToRgb(brushColor);
@@ -1652,8 +1679,8 @@ export default function ColoringBookClient() {
     const stackY = new Int32Array(maxStack);
     let stackPtr = 0;
 
-    stackX[stackPtr] = sx;
-    stackY[stackPtr] = sy;
+    stackX[stackPtr] = fillX;
+    stackY[stackPtr] = fillY;
     stackPtr++;
 
     while (stackPtr > 0) {
@@ -1754,7 +1781,11 @@ export default function ColoringBookClient() {
     const pt = getCanvasPoint(e);
 
     if (activeTool === "select") {
-      showToast("Pointer Select Mode — Canvas Focused");
+      // Tap-to-Color: In Pointer Select Mode, clicking on an object fills it with current brush color!
+      userHasDrawnRef.current = true;
+      floodFill(pt.x, pt.y);
+      pushHistory();
+      showToast(`Colored object with ${brushColor}! 🎨 (Tip: Switch to Brush for freehand painting)`);
       return;
     }
 
@@ -2861,7 +2892,7 @@ export default function ColoringBookClient() {
                     <button
                       onClick={() => setActiveTool("select")}
                       className={`p-2 rounded-lg transition cursor-pointer ${activeTool === "select" ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
-                      title="Pointer Select Tool (V)"
+                      title="Pointer Select & Tap-to-Color Tool (V) - Click any object to color it with active palette"
                     >
                       <MousePointer2 className="w-4 h-4" />
                     </button>
@@ -3000,8 +3031,11 @@ export default function ColoringBookClient() {
                 {activeTool === "select" && (
                   <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50 flex flex-wrap items-center justify-between gap-2 animate-in fade-in duration-150">
                     <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-[10px] font-bold">
+                        🎯 Tap-to-Color Active: Click any object on canvas to fill with color
+                      </span>
                       <span className="text-[11px] font-black uppercase text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
-                        <MousePointer2 className="w-3.5 h-3.5 text-emerald-600" /> Line Art Scale / Size:
+                        <MousePointer2 className="w-3.5 h-3.5 text-emerald-600" /> Line Art Scale:
                       </span>
                       <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900 text-[11px] font-bold">
                         <button

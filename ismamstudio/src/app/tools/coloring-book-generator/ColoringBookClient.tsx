@@ -2687,9 +2687,9 @@ export default function ColoringBookClient() {
           </div>
 
           {/* 🖼️ Right Expanded Canvas Live Workspace Area (Cols: 8) */}
-          <div data-tour="interactive-coloring" className="lg:col-span-8 bg-slate-200 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[720px]">
+          <div data-tour="interactive-coloring" className="lg:col-span-8 bg-slate-200 dark:bg-slate-950 p-3 sm:p-5 lg:p-6 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[860px]">
 
-            <div className="w-full max-w-[760px] flex items-center justify-between gap-2 mb-3">
+            <div className="w-full max-w-[900px] flex items-center justify-between gap-2 mb-3">
               <button
                 onClick={() => setIsColoringMode((v) => !v)}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border transition cursor-pointer ${
@@ -2733,7 +2733,7 @@ export default function ColoringBookClient() {
 
             {/* Interactive Drawing Toolbar */}
             {isColoringMode && (
-              <div className="w-full max-w-[760px] mb-3 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-lg space-y-2.5">
+              <div className="w-full max-w-[900px] mb-3 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 shadow-lg space-y-2.5">
                 
                 {/* Main Tool Selectors */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
@@ -3400,7 +3400,7 @@ export default function ColoringBookClient() {
 
             {/* Canvas Container with Zoom Transform */}
             <div
-              className={`shadow-2xl rounded-sm border border-slate-300 dark:border-slate-700 overflow-hidden relative w-full max-w-[760px] transition-transform duration-200 ${
+              className={`shadow-2xl rounded-sm border border-slate-300 dark:border-slate-700 overflow-hidden relative w-full max-w-[900px] transition-transform duration-200 ${
                 isMidnightMode ? "bg-slate-900" : "bg-white"
               }`}
               style={{
@@ -3440,7 +3440,7 @@ export default function ColoringBookClient() {
             </div>
 
             {isColoringMode && (
-              <p className="mt-3 text-center text-[11px] text-slate-500 dark:text-slate-400 max-w-[760px]">
+              <p className="mt-3 text-center text-[11px] text-slate-500 dark:text-slate-400 max-w-[900px]">
                 🎨 In-browser interactive preview canvas -- exports clean line-art PDF/PNG for KDP printing.
               </p>
             )}

@@ -1179,108 +1179,132 @@ export default function ColoringBookClient() {
 
   const handleApplyAiColoringPage = (imageUrl: string, promptText: string) => {
     const img = new window.Image();
-    img.crossOrigin = "anonymous";
+    if (typeof imageUrl === "string" && !imageUrl.startsWith("data:") && !imageUrl.startsWith("blob:")) {
+      img.crossOrigin = "anonymous";
+    }
     img.onload = () => {
-      userHasDrawnRef.current = false;
-      rawAiImageRef.current = img;
-      rawAiImageUrlRef.current = imageUrl;
+      try {
+        userHasDrawnRef.current = false;
+        rawAiImageRef.current = img;
+        rawAiImageUrlRef.current = imageUrl;
 
-      // Use 1275×1650 (half 300 DPI) to preserve fine AI-generated line detail.
-      const PW = 1275;
-      const PH = 1650;
+        // Use 1275×1650 (half 300 DPI) to preserve fine AI-generated line detail.
+        const PW = 1275;
+        const PH = 1650;
 
-      // Smart comprehensive detection:
-      // 1. Sample corners to detect dark background/vignette
-      const detectCanvas = document.createElement("canvas");
-      detectCanvas.width = img.width;
-      detectCanvas.height = img.height;
-      const dctx = detectCanvas.getContext("2d", { willReadFrequently: true })!;
-      dctx.drawImage(img, 0, 0);
-      const w = img.width, h = img.height;
-      const sampleSize = Math.max(4, Math.round(Math.min(w, h) * 0.03));
-      const corners = [
-        dctx.getImageData(0, 0, sampleSize, sampleSize).data,
-        dctx.getImageData(w - sampleSize, 0, sampleSize, sampleSize).data,
-        dctx.getImageData(0, h - sampleSize, sampleSize, sampleSize).data,
-        dctx.getImageData(w - sampleSize, h - sampleSize, sampleSize, sampleSize).data,
-      ];
-      let cornerBrightness = 0, cornerPixels = 0;
-      for (const corner of corners) {
-        for (let i = 0; i < corner.length; i += 4) {
-          cornerBrightness += 0.299 * corner[i] + 0.587 * corner[i + 1] + 0.114 * corner[i + 2];
-          cornerPixels++;
+        // Smart comprehensive detection:
+        // 1. Sample corners to detect dark background/vignette
+        const detectCanvas = document.createElement("canvas");
+        const w = img.naturalWidth || img.width || 1024;
+        const h = img.naturalHeight || img.height || 1024;
+        detectCanvas.width = w;
+        detectCanvas.height = h;
+        const dctx = detectCanvas.getContext("2d", { willReadFrequently: true })!;
+        dctx.drawImage(img, 0, 0);
+
+        const sampleSize = Math.max(2, Math.min(20, Math.round(Math.min(w, h) * 0.03)));
+        const corners = [
+          dctx.getImageData(0, 0, sampleSize, sampleSize).data,
+          dctx.getImageData(Math.max(0, w - sampleSize), 0, sampleSize, sampleSize).data,
+          dctx.getImageData(0, Math.max(0, h - sampleSize), sampleSize, sampleSize).data,
+          dctx.getImageData(Math.max(0, w - sampleSize), Math.max(0, h - sampleSize), sampleSize, sampleSize).data,
+        ];
+        let cornerBrightness = 0, cornerPixels = 0;
+        for (const corner of corners) {
+          for (let i = 0; i < corner.length; i += 4) {
+            cornerBrightness += 0.299 * corner[i] + 0.587 * corner[i + 1] + 0.114 * corner[i + 2];
+            cornerPixels++;
+          }
+        }
+        const avgCornerBrightness = cornerPixels > 0 ? cornerBrightness / cornerPixels : 255;
+        const hasDarkCorners = avgCornerBrightness < 120;
+
+        // 2. Sample center 60% of image (where the flower / main subject is)
+        // Even if corners are white, a dark-shaded flower in the center must be detected!
+        const cx = Math.floor(w * 0.2);
+        const cy = Math.floor(h * 0.2);
+        const cw = Math.max(1, Math.floor(w * 0.6));
+        const ch = Math.max(1, Math.floor(h * 0.6));
+        const centerData = dctx.getImageData(cx, cy, cw, ch).data;
+        let centerBrightness = 0, centerCount = 0, darkCenterCount = 0;
+        for (let i = 0; i < centerData.length; i += 16) {
+          const b = 0.299 * centerData[i] + 0.587 * centerData[i + 1] + 0.114 * centerData[i + 2];
+          centerBrightness += b;
+          centerCount++;
+          if (b < 195) darkCenterCount++;
+        }
+        const avgCenterBrightness = centerCount > 0 ? centerBrightness / centerCount : 255;
+        const centerDarkRatio = centerCount > 0 ? darkCenterCount / centerCount : 0;
+
+        // If corners are dark, OR the center flower is dark/shaded (avg brightness < 170),
+        // OR more than 20% of the center subject is dark/shaded:
+        const needsSobelOutlines = hasDarkCorners || avgCenterBrightness < 170 || centerDarkRatio > 0.20;
+
+        let lineArtData: ImageData;
+        if (needsSobelOutlines) {
+          // Extract clean line-art outlines via Sobel filter.
+          // All dark/gray petals, center, and background become 100% transparent and colorable!
+          lineArtData = convertImageToLineArt(img, PW, PH, 30);
+        } else {
+          // Pure black and white line art on clean white paper
+          lineArtData = convertAiImageToLineArt(img, PW, PH, 225, 95);
+        }
+
+        // 1. Clear old color canvas fills and brush strokes
+        const colorCanvas = colorCanvasRef.current;
+        if (colorCanvas) {
+          const cctx = colorCanvas.getContext("2d");
+          cctx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+        }
+
+        // 2. Clear line art canvas
+        const lineCanvas = canvasRef.current;
+        if (lineCanvas) {
+          const lctx = lineCanvas.getContext("2d");
+          lctx?.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+        }
+
+        // 3. Reset zoom/offsets
+        setLineArtScale(1.0);
+        setLineArtOffsetX(0);
+        setLineArtOffsetY(0);
+
+        // 4. Update custom line art
+        setCustomLineArt(lineArtData);
+        const shortName = promptText ? (promptText.length > 25 ? promptText.slice(0, 25) + "..." : promptText) : "AI Generated";
+        setCustomImageName(`AI: ${shortName}`);
+
+        // 5. Ensure Coloring Mode is active and drawing tool is set
+        setIsColoringMode(true);
+        setActiveTool("brush");
+        setHistory({ stack: [], index: -1 });
+
+        // 6. Remove old autosave for this preset so it doesn't try to restore old strokes
+        try {
+          localStorage.removeItem(`kdpage_coloring_autosave_${activePreset.id}`);
+          localStorage.removeItem(`kdpage_coloring_progress_${activePreset.id}`);
+        } catch {}
+
+        showToast(`Loaded AI Line Art onto 300 DPI canvas! ${needsSobelOutlines ? "(Clean outlines extracted - petals are colorable ✓)" : ""}`);
+      } catch (procErr) {
+        console.error("Error processing AI coloring page:", procErr);
+        // Resilient fallback: simple edge extraction directly to canvas
+        try {
+          const PW = 1275, PH = 1650;
+          const fallbackData = convertImageToLineArt(img, PW, PH, 30);
+          setCustomLineArt(fallbackData);
+          setIsColoringMode(true);
+          setActiveTool("brush");
+          showToast("Loaded AI Line Art onto canvas! 🎨");
+        } catch (fbErr) {
+          console.error("Fatal image load error:", fbErr);
+          showToast("Could not load image. Please try again.");
         }
       }
-      const avgCornerBrightness = cornerPixels > 0 ? cornerBrightness / cornerPixels : 255;
-      const hasDarkCorners = avgCornerBrightness < 120;
-
-      // 2. Sample center 60% of image (where the flower / main subject is)
-      // Even if corners are white, a dark-shaded flower in the center must be detected!
-      const cx = Math.floor(w * 0.2);
-      const cy = Math.floor(h * 0.2);
-      const cw = Math.floor(w * 0.6);
-      const ch = Math.floor(h * 0.6);
-      const centerData = dctx.getImageData(cx, cy, cw, ch).data;
-      let centerBrightness = 0, centerCount = 0, darkCenterCount = 0;
-      for (let i = 0; i < centerData.length; i += 16) {
-        const b = 0.299 * centerData[i] + 0.587 * centerData[i + 1] + 0.114 * centerData[i + 2];
-        centerBrightness += b;
-        centerCount++;
-        if (b < 195) darkCenterCount++;
-      }
-      const avgCenterBrightness = centerCount > 0 ? centerBrightness / centerCount : 255;
-      const centerDarkRatio = centerCount > 0 ? darkCenterCount / centerCount : 0;
-
-      // If corners are dark, OR the center flower is dark/shaded (avg brightness < 170),
-      // OR more than 20% of the center subject is dark/shaded:
-      const needsSobelOutlines = hasDarkCorners || avgCenterBrightness < 170 || centerDarkRatio > 0.20;
-
-      let lineArtData: ImageData;
-      if (needsSobelOutlines) {
-        // Extract clean line-art outlines via Sobel filter.
-        // All dark/gray petals, center, and background become 100% transparent and colorable!
-        lineArtData = convertImageToLineArt(img, PW, PH, 30);
-      } else {
-        // Pure black and white line art on clean white paper
-        lineArtData = convertAiImageToLineArt(img, PW, PH, 225, 95);
-      }
-
-      // 1. Clear old color canvas fills and brush strokes
-      const colorCanvas = colorCanvasRef.current;
-      if (colorCanvas) {
-        const cctx = colorCanvas.getContext("2d");
-        cctx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
-      }
-
-      // 2. Clear line art canvas
-      const lineCanvas = canvasRef.current;
-      if (lineCanvas) {
-        const lctx = lineCanvas.getContext("2d");
-        lctx?.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
-      }
-
-      // 3. Reset zoom/offsets
-      setLineArtScale(1.0);
-      setLineArtOffsetX(0);
-      setLineArtOffsetY(0);
-
-      // 4. Update custom line art
-      setCustomLineArt(lineArtData);
-      const shortName = promptText ? (promptText.length > 25 ? promptText.slice(0, 25) + "..." : promptText) : "AI Generated";
-      setCustomImageName(`AI: ${shortName}`);
-
-      // 5. Ensure Coloring Mode is active and drawing tool is set
-      setIsColoringMode(true);
-      setActiveTool("brush");
-      setHistory({ stack: [], index: -1 });
-
-      // 6. Remove old autosave for this preset so it doesn't try to restore old strokes
-      try {
-        localStorage.removeItem(`kdpage_coloring_autosave_${activePreset.id}`);
-        localStorage.removeItem(`kdpage_coloring_progress_${activePreset.id}`);
-      } catch {}
-
-      showToast(`Loaded AI Line Art onto 300 DPI canvas! ${needsSobelOutlines ? "(Clean outlines extracted - petals are colorable ✓)" : ""}`);
+    };
+    img.onerror = (err) => {
+      console.error("Image load error:", err);
+      showToast("Failed to load image. Please try again.");
     };
     img.src = imageUrl;
   };
@@ -2907,7 +2931,7 @@ export default function ColoringBookClient() {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border border-amber-400 bg-amber-500 hover:bg-amber-600 text-slate-950 transition cursor-pointer active:scale-95"
                     title="Click to convert any dark shaded flower, gray areas, or dark mode artwork into clean transparent outlines so you can color inside!"
                   >
-                    <Wand2 className="w-3.5 h-3.5" />
+                    <Sparkles className="w-3.5 h-3.5" />
                     <span>Fix Dark Flower / Extract Outlines</span>
                   </button>
                 )}

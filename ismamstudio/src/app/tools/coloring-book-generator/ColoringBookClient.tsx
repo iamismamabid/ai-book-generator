@@ -116,13 +116,28 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
 
-// Sobel Filter: Converts any uploaded color image into high-contrast line art
-function convertImageToLineArt(img: HTMLImageElement, width: number, height: number): ImageData {
+// Sobel Filter: Converts any uploaded or AI image into clean line-art outlines with transparent fill areas
+function convertImageToLineArt(img: HTMLImageElement, width: number, height: number, edgeThreshold = 38): ImageData {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(img, 0, 0, width, height);
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+
+  // Centered aspect-ratio contain
+  const imgAspect = img.width / img.height;
+  const canvasAspect = width / height;
+  let drawW = width, drawH = height, drawX = 0, drawY = 0;
+  if (imgAspect > canvasAspect) {
+    drawH = width / imgAspect;
+    drawY = (height - drawH) / 2;
+  } else {
+    drawW = height * imgAspect;
+    drawX = (width - drawW) / 2;
+  }
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(img, drawX, drawY, drawW, drawH);
   const srcData = ctx.getImageData(0, 0, width, height);
   const data = srcData.data;
 
@@ -150,17 +165,17 @@ function convertImageToLineArt(img: HTMLImageElement, width: number, height: num
         1 * gray[(y + 1) * width + (x - 1)] + 2 * gray[(y + 1) * width + x] + 1 * gray[(y + 1) * width + (x + 1)];
 
       const mag = Math.sqrt(gx * gx + gy * gy);
-      const isEdge = mag > 45;
+      const isEdge = mag > edgeThreshold;
       const outIdx = idx * 4;
 
       if (isEdge) {
-        // Black outline ink
+        // Crisp deep slate black outline ink
         outData[outIdx] = 15;
         outData[outIdx + 1] = 23;
         outData[outIdx + 2] = 42;
         outData[outIdx + 3] = 255;
       } else {
-        // Transparent background
+        // Transparent background & interior so user can draw and color inside
         outData[outIdx] = 255;
         outData[outIdx + 1] = 255;
         outData[outIdx + 2] = 255;
@@ -1171,8 +1186,6 @@ export default function ColoringBookClient() {
 
       // Smart background detection: sample the 4 corners of the image to
       // determine whether the AI generated a light-bg or dark-bg image.
-      // Some AI styles (e.g. "Intricate Line Art") produce dark/black backgrounds
-      // with white/gray subjects — these need inverted processing.
       const detectCanvas = document.createElement("canvas");
       detectCanvas.width = img.width;
       detectCanvas.height = img.height;
@@ -1194,40 +1207,18 @@ export default function ColoringBookClient() {
         }
       }
       const avgCornerBrightness = totalPixels > 0 ? totalBrightness / totalPixels : 255;
-      const hasDarkBackground = avgCornerBrightness < 80;
+      const hasDarkBackground = avgCornerBrightness < 100;
 
       let lineArtData: ImageData;
       if (hasDarkBackground) {
-        // Dark-background AI image: the subject (petals, lines) is light/white,
-        // background is dark. Invert: make dark pixels transparent, keep light ones.
-        // Use convertAiImageToLineArt but with INVERTED pixel logic via a temp canvas.
-        const tmpC = document.createElement("canvas");
-        tmpC.width = PW; tmpC.height = PH;
-        const tmpCtx = tmpC.getContext("2d", { willReadFrequently: true })!;
-        const ia = img.width / img.height, ca = PW / PH;
-        let dw = PW, dh = PH, dx = 0, dy = 0;
-        if (ia > ca) { dh = PW / ia; dy = (PH - dh) / 2; }
-        else { dw = PH * ia; dx = (PW - dw) / 2; }
-        tmpCtx.fillStyle = "#000000"; tmpCtx.fillRect(0, 0, PW, PH);
-        tmpCtx.drawImage(img, dx, dy, dw, dh);
-        const src = tmpCtx.getImageData(0, 0, PW, PH);
-        const out = tmpCtx.createImageData(PW, PH);
-        for (let i = 0; i < src.data.length; i += 4) {
-          const brightness = 0.299 * src.data[i] + 0.587 * src.data[i + 1] + 0.114 * src.data[i + 2];
-          if (brightness < 50) {
-            // Dark background pixel → transparent
-            out.data[i] = 255; out.data[i+1] = 255; out.data[i+2] = 255; out.data[i+3] = 0;
-          } else {
-            // Light subject pixel → keep as dark line (map brightness to opacity)
-            const alpha = brightness > 200 ? 255 : Math.round(255 * (brightness / 200));
-            out.data[i] = 15; out.data[i+1] = 23; out.data[i+2] = 42; out.data[i+3] = alpha;
-          }
-        }
-        lineArtData = out;
+        // Dark-background AI image: Extract clean vector line-art outlines via Sobel filter.
+        // This ensures the dark background AND the petal/shape interiors become 100% transparent,
+        // allowing the user to freely draw, color with brush, and flood-fill inside the artwork!
+        lineArtData = convertImageToLineArt(img, PW, PH, 38);
       } else {
         // Standard light-background AI coloring page:
-        // Preserve pixels as-is, remove white/cream background.
-        lineArtData = preserveLineArtWithBgRemoval(img, PW, PH, 240);
+        // Use convertAiImageToLineArt with clean thresholding so white interiors become transparent
+        lineArtData = convertAiImageToLineArt(img, PW, PH, 225, 95);
       }
 
       // 1. Clear old color canvas fills and brush strokes
@@ -1254,13 +1245,18 @@ export default function ColoringBookClient() {
       const shortName = promptText ? (promptText.length > 25 ? promptText.slice(0, 25) + "..." : promptText) : "AI Generated";
       setCustomImageName(`AI: ${shortName}`);
 
-      // 5. Remove old autosave for this preset so it doesn't try to restore old strokes
+      // 5. Ensure Coloring Mode is active and drawing tool is set
+      setIsColoringMode(true);
+      setActiveTool("brush");
+      setHistory({ stack: [], index: -1 });
+
+      // 6. Remove old autosave for this preset so it doesn't try to restore old strokes
       try {
         localStorage.removeItem(`kdpage_coloring_autosave_${activePreset.id}`);
         localStorage.removeItem(`kdpage_coloring_progress_${activePreset.id}`);
       } catch {}
 
-      showToast(`Loaded AI Line Art onto 300 DPI canvas! ${hasDarkBackground ? "(Dark-bg detected, inverted ✓)" : ""}`);
+      showToast(`Loaded AI Line Art onto 300 DPI canvas! ${hasDarkBackground ? "(Dark-bg outlines extracted ✓)" : ""}`);
     };
     img.src = imageUrl;
   };
@@ -1985,7 +1981,10 @@ export default function ColoringBookClient() {
     ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
     ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
     ctx.drawImage(colorCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
+    ctx.save();
+    ctx.globalCompositeOperation = "multiply";
     ctx.drawImage(lineCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
+    ctx.restore();
     if (!isPremium) drawCanvasWatermark(ctx, exportCanvas.width, exportCanvas.height);
 
     const link = document.createElement("a");
@@ -3557,6 +3556,7 @@ export default function ColoringBookClient() {
                 width={useBleed ? trimSize.bleed.pxW : trimSize.noBleed.pxW}
                 height={useBleed ? trimSize.bleed.pxH : trimSize.noBleed.pxH}
                 className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                style={{ mixBlendMode: "multiply" }}
               />
             </div>
 

@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     // Build specialized prompt tailored to Studio domain
     let enhancedPrompt = prompt.trim();
     if (studioType === "coloring") {
-      enhancedPrompt = `coloring book page for Amazon KDP, ${prompt.trim()}, crisp vector line art, thick clean solid black outlines, closed paths, pure stark white background, high contrast graphic illustration, 300 DPI print quality, masterpiece. Strictly NO colors, NO shading, NO gray gradients, NO shadows, NO realistic textures, NO cross-hatching, NO blurry lines, NO double lines, NO sketchy scribbles`;
+      enhancedPrompt = `coloring book page for Amazon KDP, ${prompt.trim()}, crisp clean black line art, thick solid black vector outlines, closed shape contours, pure flat plain white background (#FFFFFF), high contrast graphic illustration, 300 DPI print quality, masterpiece. Strictly pure white paper background from edge to edge. Absolutely NO dark backgrounds, NO black backgrounds, NO night theme, NO colors, NO shading, NO gray gradients, NO shadows, NO realistic textures, NO cross-hatching, NO blurry lines, NO double lines, NO sketchy scribbles, NO circular frame fills`;
       if (stylePreset) {
         enhancedPrompt += `, artistic style: ${stylePreset}`;
       }
@@ -147,7 +147,7 @@ export async function POST(req: Request) {
               {
                 parts: [
                   {
-                    text: `You are an expert AI prompt engineer for ${studioType === "cover" ? "KDP Book Covers" : "Amazon KDP Coloring Books"}. Enhance this user prompt into a single ultra-detailed image generation prompt without preamble. ${studioType === "coloring" ? "CRITICAL: The output MUST be a clean black and white coloring book page with thick solid black vector outlines on pure white background, strictly zero shading, zero grayscale, and no colors." : ""} User prompt: "${enhancedPrompt}"`,
+                    text: `You are an expert AI prompt engineer for ${studioType === "cover" ? "KDP Book Covers" : "Amazon KDP Coloring Books"}. Enhance this user prompt into a single ultra-detailed image generation prompt without preamble. ${studioType === "coloring" ? "CRITICAL MANDATE: The output MUST be a clean black-and-white coloring book page with thick solid black vector outlines on a pure flat white background (#FFFFFF) across the entire canvas. Absolutely NO dark or black backgrounds, NO inverted colors, NO circular borders/vignettes with dark fills, strictly zero shading, zero grayscale, zero 3D rendering, and no colors." : ""} User prompt: "${enhancedPrompt}"`,
                   },
                 ],
               },
@@ -167,7 +167,7 @@ export async function POST(req: Request) {
         const seed = Math.floor(Math.random() * 1000000);
         const encodedPrompt = encodeURIComponent(optimizedPrompt);
         const negativePrompt = studioType === "coloring"
-          ? "color, shading, shadows, 3d, realistic, render, clay, stone, gradient, gray, photorealistic, noise, blur, texture, photo, pencil, paper background, stippling, crosshatch, dark background, embossed"
+          ? "color, shading, shadows, 3d, realistic, render, clay, stone, gradient, gray, photorealistic, noise, blur, texture, photo, pencil, paper background, stippling, crosshatch, dark background, black background, inverted, night, dark theme, vignette, frame, border, fill, solid background"
           : "blurry, low quality, distorted, watermark, text, signature";
         const encodedNeg = encodeURIComponent(negativePrompt);
         const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true&negative_prompt=${encodedNeg}`;

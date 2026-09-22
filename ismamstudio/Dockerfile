@@ -16,7 +16,7 @@ COPY prisma ./prisma/
 # ৫. ডকার বিল্ডের ভেতরেই প্রিজমা ক্লায়েন্ট জেনারেট করা
 ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 ENV DIRECT_URL="postgresql://postgres:postgres@localhost:5432/postgres"
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_dummy"
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_ZHVtbXktYnVpbGQuY2xlcmsuYWNjb3VudHMuZGV2JA=="
 ENV CLERK_SECRET_KEY="sk_test_dummy"
 ENV SKIP_ENV_VALIDATION="true"
 ENV NODE_OPTIONS="--max-old-space-size=4096"

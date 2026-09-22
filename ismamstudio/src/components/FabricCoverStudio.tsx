@@ -3120,11 +3120,13 @@ export default function FabricCoverStudio({
           layout.frontLiveBottomPx - layout.frontLiveTopPx
         );
 
-        // 4. Draw KDP Official Barcode Safety Box on Lower Back Cover
+        // 4. Draw KDP Official Barcode Safety Box on Lower-Right Back Cover (adjacent to spine)
+        // Amazon KDP Official: Barcode is 2.0" wide by 1.2" high, located in the lower right corner of the back cover,
+        // with 0.25" barcode margin (#9) from the spine fold and 0.25" from the bottom trim.
         const bcW = 2.0 * layout.scale;
         const bcH = 1.2 * layout.scale;
-        const bcMargin = 0.375 * layout.scale;
-        const bcBoxLeft = layout.trimLeftPx + bcMargin;
+        const bcMargin = 0.25 * layout.scale;
+        const bcBoxLeft = layout.spineLeftPx - bcMargin - bcW;
         const bcBoxTop = layout.trimBottomPx - bcMargin - bcH;
 
         ctx.fillStyle = "rgba(100, 116, 139, 0.08)";
@@ -5230,9 +5232,9 @@ export default function FabricCoverStudio({
     const bcW = 2.0 * layout.scale;
     const bcH = 1.2 * layout.scale;
     
-    // Bottom-left corner of the back cover, keeping 0.375" margin from trim borders
-    const margin = 0.375 * layout.scale;
-    const left = layout.trimLeftPx + margin;
+    // Lower-right corner of the back cover (adjacent to the spine fold), keeping official 0.25" margin
+    const margin = 0.25 * layout.scale;
+    const left = layout.spineLeftPx - margin - bcW;
     const top = layout.trimBottomPx - margin - bcH;
     
     // Clean, solid white rectangle of size 2" x 1.2" with sharp corners and a light dashed reference border.

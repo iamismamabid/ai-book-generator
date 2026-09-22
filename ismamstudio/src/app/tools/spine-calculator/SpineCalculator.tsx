@@ -727,9 +727,9 @@ export default function SpineCalculator() {
                       strokeWidth="0.8" 
                     />
 
-                    {/* Barcode Placeholder - #9 */}
+                    {/* Barcode Placeholder - #9 (Lower-Right of Back Cover, adjacent to Spine) */}
                     <rect 
-                      x="35" 
+                      x="150" 
                       y="150" 
                       width="42" 
                       height="32" 
@@ -737,13 +737,13 @@ export default function SpineCalculator() {
                       stroke="rgba(255, 255, 255, 0.3)" 
                       strokeWidth="1" 
                     />
-                    <line x1="40" y1="155" x2="40" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
-                    <line x1="45" y1="155" x2="45" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
-                    <line x1="50" y1="155" x2="50" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1.5" />
-                    <line x1="55" y1="155" x2="55" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
-                    <line x1="60" y1="155" x2="60" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="2" />
-                    <line x1="65" y1="155" x2="65" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
-                    <text x="40" y="180" fill="rgba(255, 255, 255, 0.4)" fontSize="4.5" fontWeight="bold">BARCODE</text>
+                    <line x1="155" y1="155" x2="155" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
+                    <line x1="160" y1="155" x2="160" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
+                    <line x1="165" y1="155" x2="165" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1.5" />
+                    <line x1="170" y1="155" x2="170" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
+                    <line x1="175" y1="155" x2="175" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="2" />
+                    <line x1="180" y1="155" x2="180" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
+                    <text x="155" y="180" fill="rgba(255, 255, 255, 0.4)" fontSize="4.5" fontWeight="bold">BARCODE</text>
 
                     {/* Section Titles */}
                     <text x="112" y="115" fill="#a5b4fc" fontSize="9" fontWeight="bold" textAnchor="middle">Back Cover</text>
@@ -798,8 +798,8 @@ export default function SpineCalculator() {
                     <text x="190" y="228" fill="#ffffff" fontSize="8" fontWeight="black" textAnchor="middle">8</text>
 
                     {/* ❾ Barcode Margin Badge */}
-                    <circle cx="82" cy="166" r="7" fill="#f59e0b" />
-                    <text x="82" y="169" fill="#000000" fontSize="8" fontWeight="black" textAnchor="middle">9</text>
+                    <circle cx="195" cy="144" r="7" fill="#f59e0b" />
+                    <text x="195" y="147" fill="#000000" fontSize="8" fontWeight="black" textAnchor="middle">9</text>
 
                     {/* Dimension Arrows */}
                     {/* Full Width Arrow (Bottom) */}

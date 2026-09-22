@@ -226,12 +226,12 @@ export function runKdpPreflightChecks(
   // -------------------------------------------------------------
   // 3. KDP Barcode Exclusion Zone Check
   // -------------------------------------------------------------
-  // Barcode box: 2.0" wide by 1.2" high on bottom back cover
+  // Barcode box: 2.0" wide by 1.2" high on bottom-right back cover (adjacent to spine)
   const bcW = 2.0 * layout.scale;
   const bcH = 1.2 * layout.scale;
-  const bcMargin = 0.375 * layout.scale;
-  // Lower-left back cover zone
-  const bcBoxLeft = layout.trimLeftPx + bcMargin;
+  const bcMargin = 0.25 * layout.scale;
+  // Lower-right back cover zone
+  const bcBoxLeft = layout.spineLeftPx - bcMargin - bcW;
   const bcBoxTop = layout.trimBottomPx - bcMargin - bcH;
   const bcBoxRight = bcBoxLeft + bcW;
   const bcBoxBottom = bcBoxTop + bcH;

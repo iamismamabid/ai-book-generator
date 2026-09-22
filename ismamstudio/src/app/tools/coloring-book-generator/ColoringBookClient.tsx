@@ -1164,15 +1164,79 @@ export default function ColoringBookClient() {
     img.crossOrigin = "anonymous";
     img.onload = () => {
       userHasDrawnRef.current = false;
-      const lineArtData = convertAiImageToLineArt(img, 850, 1100);
-      
+
+      // Use 1275×1650 (half 300 DPI) to preserve fine AI-generated line detail.
+      const PW = 1275;
+      const PH = 1650;
+
+      // Smart background detection: sample the 4 corners of the image to
+      // determine whether the AI generated a light-bg or dark-bg image.
+      // Some AI styles (e.g. "Intricate Line Art") produce dark/black backgrounds
+      // with white/gray subjects — these need inverted processing.
+      const detectCanvas = document.createElement("canvas");
+      detectCanvas.width = img.width;
+      detectCanvas.height = img.height;
+      const dctx = detectCanvas.getContext("2d", { willReadFrequently: true })!;
+      dctx.drawImage(img, 0, 0);
+      const w = img.width, h = img.height;
+      const sampleSize = Math.max(4, Math.round(Math.min(w, h) * 0.03));
+      const corners = [
+        dctx.getImageData(0, 0, sampleSize, sampleSize).data,
+        dctx.getImageData(w - sampleSize, 0, sampleSize, sampleSize).data,
+        dctx.getImageData(0, h - sampleSize, sampleSize, sampleSize).data,
+        dctx.getImageData(w - sampleSize, h - sampleSize, sampleSize, sampleSize).data,
+      ];
+      let totalBrightness = 0, totalPixels = 0;
+      for (const corner of corners) {
+        for (let i = 0; i < corner.length; i += 4) {
+          totalBrightness += 0.299 * corner[i] + 0.587 * corner[i + 1] + 0.114 * corner[i + 2];
+          totalPixels++;
+        }
+      }
+      const avgCornerBrightness = totalPixels > 0 ? totalBrightness / totalPixels : 255;
+      const hasDarkBackground = avgCornerBrightness < 80;
+
+      let lineArtData: ImageData;
+      if (hasDarkBackground) {
+        // Dark-background AI image: the subject (petals, lines) is light/white,
+        // background is dark. Invert: make dark pixels transparent, keep light ones.
+        // Use convertAiImageToLineArt but with INVERTED pixel logic via a temp canvas.
+        const tmpC = document.createElement("canvas");
+        tmpC.width = PW; tmpC.height = PH;
+        const tmpCtx = tmpC.getContext("2d", { willReadFrequently: true })!;
+        const ia = img.width / img.height, ca = PW / PH;
+        let dw = PW, dh = PH, dx = 0, dy = 0;
+        if (ia > ca) { dh = PW / ia; dy = (PH - dh) / 2; }
+        else { dw = PH * ia; dx = (PW - dw) / 2; }
+        tmpCtx.fillStyle = "#000000"; tmpCtx.fillRect(0, 0, PW, PH);
+        tmpCtx.drawImage(img, dx, dy, dw, dh);
+        const src = tmpCtx.getImageData(0, 0, PW, PH);
+        const out = tmpCtx.createImageData(PW, PH);
+        for (let i = 0; i < src.data.length; i += 4) {
+          const brightness = 0.299 * src.data[i] + 0.587 * src.data[i + 1] + 0.114 * src.data[i + 2];
+          if (brightness < 50) {
+            // Dark background pixel → transparent
+            out.data[i] = 255; out.data[i+1] = 255; out.data[i+2] = 255; out.data[i+3] = 0;
+          } else {
+            // Light subject pixel → keep as dark line (map brightness to opacity)
+            const alpha = brightness > 200 ? 255 : Math.round(255 * (brightness / 200));
+            out.data[i] = 15; out.data[i+1] = 23; out.data[i+2] = 42; out.data[i+3] = alpha;
+          }
+        }
+        lineArtData = out;
+      } else {
+        // Standard light-background AI coloring page:
+        // Preserve pixels as-is, remove white/cream background.
+        lineArtData = preserveLineArtWithBgRemoval(img, PW, PH, 240);
+      }
+
       // 1. Clear old color canvas fills and brush strokes
       const colorCanvas = colorCanvasRef.current;
       if (colorCanvas) {
         const cctx = colorCanvas.getContext("2d");
         cctx?.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
       }
-      
+
       // 2. Clear line art canvas
       const lineCanvas = canvasRef.current;
       if (lineCanvas) {
@@ -1196,7 +1260,7 @@ export default function ColoringBookClient() {
         localStorage.removeItem(`kdpage_coloring_progress_${activePreset.id}`);
       } catch {}
 
-      showToast("Loaded new AI Generated Line Art onto 300 DPI canvas!");
+      showToast(`Loaded AI Line Art onto 300 DPI canvas! ${hasDarkBackground ? "(Dark-bg detected, inverted ✓)" : ""}`);
     };
     img.src = imageUrl;
   };

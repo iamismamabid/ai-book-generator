@@ -78,6 +78,7 @@ export default function CountdownBanner() {
   return (
     <aside 
       aria-label="Limited Time Offer"
+      suppressHydrationWarning
       className="w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-slate-950 py-1.5 sm:py-2 px-3 sm:px-4 z-50 shadow-md border-b border-amber-500/30 select-none"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between sm:justify-center gap-2 sm:gap-4 lg:gap-6 flex-wrap text-xs font-black">
@@ -122,11 +123,11 @@ export default function CountdownBanner() {
             Ends In
           </span>
 
-          <div className="flex items-center gap-1 text-xs">
+          <div className="flex items-center gap-1 text-xs" suppressHydrationWarning>
             {/* Days */}
             <div className="flex items-center gap-0.5">
-              <span className="min-w-[22px] px-1 py-0.5 rounded bg-slate-950 text-amber-300 font-mono font-black text-center text-xs shadow-inner">
-                {pad(timeLeft.days)}
+              <span suppressHydrationWarning className="min-w-[22px] px-1 py-0.5 rounded bg-slate-950 text-amber-300 font-mono font-black text-center text-xs shadow-inner">
+                {mounted ? pad(timeLeft.days) : "04"}
               </span>
               <span className="text-[9px] font-extrabold uppercase text-slate-900">d</span>
             </div>
@@ -134,8 +135,8 @@ export default function CountdownBanner() {
 
             {/* Hours */}
             <div className="flex items-center gap-0.5">
-              <span className="min-w-[22px] px-1 py-0.5 rounded bg-slate-950 text-amber-300 font-mono font-black text-center text-xs shadow-inner">
-                {pad(timeLeft.hours)}
+              <span suppressHydrationWarning className="min-w-[22px] px-1 py-0.5 rounded bg-slate-950 text-amber-300 font-mono font-black text-center text-xs shadow-inner">
+                {mounted ? pad(timeLeft.hours) : "17"}
               </span>
               <span className="text-[9px] font-extrabold uppercase text-slate-900">h</span>
             </div>
@@ -143,8 +144,8 @@ export default function CountdownBanner() {
 
             {/* Minutes */}
             <div className="flex items-center gap-0.5">
-              <span className="min-w-[22px] px-1 py-0.5 rounded bg-slate-950 text-amber-300 font-mono font-black text-center text-xs shadow-inner">
-                {pad(timeLeft.minutes)}
+              <span suppressHydrationWarning className="min-w-[22px] px-1 py-0.5 rounded bg-slate-950 text-amber-300 font-mono font-black text-center text-xs shadow-inner">
+                {mounted ? pad(timeLeft.minutes) : "10"}
               </span>
               <span className="text-[9px] font-extrabold uppercase text-slate-900">m</span>
             </div>
@@ -152,8 +153,8 @@ export default function CountdownBanner() {
 
             {/* Seconds */}
             <div className="flex items-center gap-0.5">
-              <span className="min-w-[22px] px-1 py-0.5 rounded bg-slate-950 text-amber-300 font-mono font-black text-center text-xs shadow-inner">
-                {pad(timeLeft.seconds)}
+              <span suppressHydrationWarning className="min-w-[22px] px-1 py-0.5 rounded bg-slate-950 text-amber-300 font-mono font-black text-center text-xs shadow-inner">
+                {mounted ? pad(timeLeft.seconds) : "19"}
               </span>
               <span className="text-[9px] font-extrabold uppercase text-slate-900">s</span>
             </div>

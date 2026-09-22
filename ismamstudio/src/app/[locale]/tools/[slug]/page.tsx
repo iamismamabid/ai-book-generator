@@ -20,7 +20,6 @@ import PrintCostCalculator from "@/app/tools/print-cost-calculator/PrintCostCalc
 import IsbnGenerator from "@/app/tools/isbn-generator/IsbnGenerator";
 import KdpPuzzleGeneratorClient from "@/app/tools/kdp-puzzle-generator/KdpPuzzleGeneratorClient";
 import WordSearchStudio from "@/app/tools/word-search/WordSearchClient";
-import ColoringBookClient from "@/app/tools/coloring-book-generator/ColoringBookClient";
 import InteriorTemplates from "@/app/tools/interior-templates/InteriorTemplates";
 import KeywordResearchPage from "@/app/tools/keyword-research/KeywordResearchClient";
 
@@ -39,7 +38,6 @@ const TOP_10_SLUGS = [
   "isbn-generator",
   "kdp-puzzle-generator",
   "word-search",
-  "coloring-book-generator",
   "interior-templates",
   "keyword-research",
 ];
@@ -145,8 +143,6 @@ export default async function LocalizedToolPage({ params }: PageProps) {
         return <KdpPuzzleGeneratorClient />;
       case "word-search":
         return <WordSearchStudio />;
-      case "coloring-book-generator":
-        return <ColoringBookClient />;
       case "interior-templates":
         return <InteriorTemplates />;
       case "keyword-research":

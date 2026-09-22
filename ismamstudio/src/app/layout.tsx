@@ -132,7 +132,6 @@ export default function RootLayout({
                       "/tools/spine-calculator",
                       "/tools/keyword-research",
                       "/tools/isbn-generator",
-                      "/tools/coloring-book-generator",
                       "/tools/interior-templates"
                     ],
                     eagerness: "moderate"

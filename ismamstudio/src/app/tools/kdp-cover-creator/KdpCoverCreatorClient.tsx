@@ -23,7 +23,9 @@ import {
 import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
 import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
 
-type PaperType = "white" | "cream" | "color";
+import { calculateKdpLayout } from "@/app/utils/kdpLayout";
+
+type PaperType = "white" | "cream" | "color" | "standard_color";
 type CoverType = "paperback" | "hardcover";
 
 interface TrimOption {
@@ -59,30 +61,20 @@ export default function KdpCoverCreatorClient() {
 
   const selectedTrim = TRIM_PRESETS[trimIndex] ?? TRIM_PRESETS[0]!;
 
-  // Multipliers (inches per page) based on official KDP specifications
-  const getMultiplier = (type: PaperType): number => {
-    switch (type) {
-      case "white":
-        return 0.002252;
-      case "cream":
-        return 0.0025;
-      case "color":
-        return 0.002347;
-    }
-  };
+  // Official Amazon KDP Layout Calculation
+  const layout = calculateKdpLayout({
+    trimWidth: selectedTrim.width,
+    trimHeight: selectedTrim.height,
+    pageCount,
+    bindingType: coverType,
+    paperType: paperType === "color" ? "premium_color" : paperType,
+  });
 
-  const multiplier = getMultiplier(paperType);
-  const spineWidthInches = Number((pageCount * multiplier).toFixed(4));
-
-  // Calculations based on Cover Type
-  // Paperback: 0.125" bleed on all outer edges
-  // Hardcover (Case Laminate): 0.591" wrap + hinge allowance (KDP standard: board thickness + wrap)
+  const spineWidthInches = layout.spineWidth;
+  const fullWidthInches = layout.coverWidthInches;
+  const fullHeightInches = layout.coverHeightInches;
+  const bleed = layout.bleed;
   const isPaperback = coverType === "paperback";
-  const bleed = isPaperback ? 0.125 : 0.591; // Bleed per edge
-  const hinge = isPaperback ? 0 : 0.08; // Hardcover hinge area allowance
-
-  const fullWidthInches = Number(((selectedTrim.width * 2) + spineWidthInches + (bleed * 2) + (hinge * 2)).toFixed(4));
-  const fullHeightInches = Number((selectedTrim.height + (bleed * 2)).toFixed(4));
 
   // 300 DPI Pixel Dimensions
   const fullWidthPx = Math.round(fullWidthInches * 300);
@@ -314,7 +306,7 @@ export default function KdpCoverCreatorClient() {
               <label className="block text-xs font-black uppercase tracking-wider text-slate-400 mb-2">
                 3. Paper Stock (Thickness Formula)
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
                   type="button"
                   onClick={() => setPaperType("white")}
@@ -324,7 +316,7 @@ export default function KdpCoverCreatorClient() {
                       : "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700"
                   }`}
                 >
-                  White Paper
+                  White (B&amp;W)
                   <span className="block text-[9px] opacity-80">0.002252"</span>
                 </button>
                 <button
@@ -336,8 +328,20 @@ export default function KdpCoverCreatorClient() {
                       : "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700"
                   }`}
                 >
-                  Cream Paper
+                  Cream (B&amp;W)
                   <span className="block text-[9px] opacity-80">0.002500"</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaperType("standard_color")}
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold transition border ${
+                    paperType === "standard_color"
+                      ? "bg-amber-400 border-amber-300 text-black font-black"
+                      : "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700"
+                  }`}
+                >
+                  Standard Color
+                  <span className="block text-[9px] opacity-80">0.002250"</span>
                 </button>
                 <button
                   type="button"
@@ -348,7 +352,7 @@ export default function KdpCoverCreatorClient() {
                       : "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700"
                   }`}
                 >
-                  Color Interior
+                  Premium Color
                   <span className="block text-[9px] opacity-80">0.002347"</span>
                 </button>
               </div>
@@ -502,6 +506,70 @@ export default function KdpCoverCreatorClient() {
                   {copiedSpine ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                   {copiedSpine ? "Copied!" : "Copy"}
                 </button>
+              </div>
+            </div>
+
+            {/* Official Amazon KDP 9-Measurement Table */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                  <h3 className="text-xs font-black uppercase tracking-wider text-white">
+                    Official Amazon KDP Cover Measurements (#1–#9)
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={copyAllSpecs}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition border border-slate-700"
+                >
+                  {copiedAll ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedAll ? "Copied All" : "Copy All"}
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-400 text-[10px] uppercase font-black tracking-wider">
+                      <th className="py-2.5 px-3">#</th>
+                      <th className="py-2.5 px-3">Description</th>
+                      <th className="py-2.5 px-3 text-right">Width (in)</th>
+                      <th className="py-2.5 px-3 text-right">Height (in)</th>
+                      <th className="py-2.5 px-3 text-center">Copy</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800 font-mono text-slate-200">
+                    {layout.measurements.items.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
+                        <td className="py-2 px-3 font-bold">
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600/30 text-indigo-300 text-[11px] font-bold">
+                            {item.id}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 font-sans font-bold text-slate-200">
+                          {item.description}
+                        </td>
+                        <td className="py-2 px-3 text-right font-bold text-amber-400">
+                          {item.width.toFixed(3)}
+                        </td>
+                        <td className="py-2 px-3 text-right font-bold text-amber-400">
+                          {item.height.toFixed(3)}
+                        </td>
+                        <td className="py-2 px-3 text-center font-sans">
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(`${item.description}: ${item.width.toFixed(3)}" × ${item.height.toFixed(3)}"`, () => {})}
+                            className="inline-flex items-center justify-center p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                            title={`Copy ${item.description}`}
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 

@@ -2270,8 +2270,8 @@ export default function FabricCoverStudio({
   }, []);
 
 
-  // Paper Type Selection ('white' | 'cream' | 'color')
-  const [paperType, setPaperType] = useState<'white' | 'cream' | 'color'>('white');
+  // Paper Type Selection ('white' | 'cream' | 'color' | 'standard_color')
+  const [paperType, setPaperType] = useState<'white' | 'cream' | 'color' | 'standard_color'>('white');
 
   // Cover Finish is a reminder note only -- KDP's laminate choice (matte vs
   // glossy) is picked separately at upload time and has no effect on spine
@@ -9102,7 +9102,8 @@ export default function FabricCoverStudio({
                 >
                   <option value="white">White Paper (0.002252"/pg)</option>
                   <option value="cream">Cream Paper (0.002500"/pg)</option>
-                  <option value="color">Color Paper (0.002347"/pg)</option>
+                  <option value="standard_color">Standard Color (0.002250"/pg)</option>
+                  <option value="color">Premium Color (0.002347"/pg)</option>
                 </select>
               </div>
 

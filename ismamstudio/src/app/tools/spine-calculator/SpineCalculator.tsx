@@ -11,12 +11,18 @@ import {
   Info, 
   BookOpen, 
   Sparkles, 
-  Sliders 
+  Sliders,
+  CheckCircle2
 } from "lucide-react";
 import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
-
-// Paper Type specifications
-type PaperType = "white" | "cream" | "color";
+import { 
+  calculateKdpLayout, 
+  getKdpSpineMultiplier,
+  KdpBindingType, 
+  KdpInteriorType, 
+  KdpPaperType,
+  KdpMeasurementItem
+} from "@/app/utils/kdpLayout";
 
 interface Dimensions {
   spineWidth: number;
@@ -37,73 +43,89 @@ const PRESETS: TrimPreset[] = KDP_TRIM_SIZES.map((sz) => ({
 }));
 
 export default function SpineCalculator() {
-  const [trimWidth, setTrimWidth] = useState<number>(6);
-  const [trimHeight, setTrimHeight] = useState<number>(9);
-  const [pageCount, setPageCount] = useState<number>(100);
-  const [paperType, setPaperType] = useState<PaperType>("white");
+  const [bindingType, setBindingType] = useState<KdpBindingType>("paperback");
+  const [interiorType, setInteriorType] = useState<KdpInteriorType>("standard_color");
+  const [paperType, setPaperType] = useState<KdpPaperType>("white");
+  const [trimWidth, setTrimWidth] = useState<number>(8.5);
+  const [trimHeight, setTrimHeight] = useState<number>(11);
+  const [pageCount, setPageCount] = useState<number>(200);
   const [selectedPresetIndex, setSelectedPresetIndex] = useState<number>(() => {
-    const idx = PRESETS.findIndex((p) => p.width === 6 && p.height === 9);
+    const idx = PRESETS.findIndex((p) => p.width === 8.5 && p.height === 11);
     return idx !== -1 ? idx : 0;
   });
   
   // Copy feedback states
-  const [copiedSpine, setCopiedSpine] = useState(false);
-  const [copiedWidth, setCopiedWidth] = useState(false);
-  const [copiedHeight, setCopiedHeight] = useState(false);
+  const [copiedId, setCopiedId] = useState<number | string | null>(null);
 
   // Hard KDP constraints
   const getPageLimits = () => {
+    if (bindingType === "hardcover") {
+      return { min: 75, max: 550 };
+    }
     switch (paperType) {
       case "white":
         return { min: 24, max: 828 };
       case "cream":
         return { min: 24, max: 776 };
-      case "color":
-        return { min: 24, max: 828 };
     }
   };
 
   const { min: minPages, max: maxPages } = getPageLimits();
 
-  // Spine Calculation Multipliers (inches per page)
-  const calculateDimensions = (): Dimensions => {
-    let spineMultiplier = 0.002252; // White Paper (Black & White printing)
-    if (paperType === "cream") spineMultiplier = 0.0025; // Cream Paper (Black & White printing)
-    if (paperType === "color") spineMultiplier = 0.002347; // White Paper (Color printing)
+  // Calculate layout using official Amazon KDP formula
+  const layout = calculateKdpLayout({
+    trimWidth,
+    trimHeight,
+    pageCount,
+    bindingType,
+    interiorType,
+    paperType,
+  });
 
-    // Calculate Spine Width based on KDP Even Page Count (Amazon strictly requires even numbers)
-    const evenPageCount = pageCount % 2 !== 0 ? pageCount + 1 : pageCount;
-    const spineWidth = evenPageCount * spineMultiplier;
-
-    // Full Cover Width = Trim Width * 2 + Spine Width + 0.25 (0.125" bleed on each side)
-    const fullWidth = trimWidth * 2 + spineWidth + 0.25;
-
-    // Full Cover Height = Trim Height + 0.25 (0.125" bleed on top and bottom)
-    const fullHeight = trimHeight + 0.25;
-
-    return {
-      spineWidth,
-      fullWidth,
-      fullHeight,
-    };
+  const dims: Dimensions = {
+    spineWidth: layout.spineWidth,
+    fullWidth: layout.coverWidthInches,
+    fullHeight: layout.coverHeightInches,
   };
-
-  const dims = calculateDimensions();
 
   // Reset function
   const handleReset = () => {
-    setTrimWidth(6);
-    setTrimHeight(9);
-    setPageCount(100);
+    setBindingType("paperback");
+    setInteriorType("standard_color");
     setPaperType("white");
-    setSelectedPresetIndex(0);
+    setTrimWidth(8.5);
+    setTrimHeight(11);
+    setPageCount(200);
+    const idx = PRESETS.findIndex((p) => p.width === 8.5 && p.height === 11);
+    setSelectedPresetIndex(idx !== -1 ? idx : 0);
   };
 
   // Copy to clipboard helper
-  const handleCopy = (text: string, setCopied: React.Dispatch<React.SetStateAction<boolean>>) => {
+  const handleCopy = (text: string, id: number | string) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  // Copy all 9 measurements formatted as a table
+  const handleCopyAllTable = () => {
+    const text = [
+      `--- Official Amazon KDP Cover Measurements ---`,
+      `Binding type: ${bindingType === 'paperback' ? 'Paperback' : 'Hardcover'}`,
+      `Interior type: ${interiorType === 'standard_color' ? 'Standard color' : interiorType === 'premium_color' ? 'Premium color' : 'Black & white'}`,
+      `Paper type: ${paperType === 'white' ? 'White paper' : 'Cream paper'}`,
+      `Trim size: ${trimWidth}" x ${trimHeight}"`,
+      `Page count: ${pageCount}`,
+      ``,
+      `#  Description         Width (in)  Height (in)`,
+      `----------------------------------------------`,
+      ...layout.measurements.items.map(
+        item => `${item.id}  ${item.description.padEnd(19)} ${item.width.toFixed(3).padEnd(11)} ${item.height.toFixed(3)}`
+      ),
+      `----------------------------------------------`,
+      `Calculated by KDPage (https://kdpage.com/tools/spine-calculator)`
+    ].join('\n');
+    handleCopy(text, 'all');
   };
 
   // Handle preset change
@@ -263,20 +285,82 @@ export default function SpineCalculator() {
                 </div>
               )}
 
+              {/* Binding Type */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
+                  Binding Type
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBindingType("paperback")}
+                    className={`py-2.5 px-3 rounded-xl text-xs font-bold transition border ${
+                      bindingType === "paperback"
+                        ? "bg-indigo-600 border-indigo-500 text-white font-black shadow-md shadow-indigo-600/20"
+                        : "bg-slate-950 border-slate-900 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    Paperback
+                    <span className="block text-[9px] opacity-75">Standard (0.125" Bleed)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBindingType("hardcover")}
+                    className={`py-2.5 px-3 rounded-xl text-xs font-bold transition border ${
+                      bindingType === "hardcover"
+                        ? "bg-indigo-600 border-indigo-500 text-white font-black shadow-md shadow-indigo-600/20"
+                        : "bg-slate-950 border-slate-900 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    Hardcover
+                    <span className="block text-[9px] opacity-75">Case Laminate (0.562" Wrap)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Interior Type */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
+                  Interior Type
+                </label>
+                <select
+                  value={interiorType}
+                  onChange={(e) => {
+                    const newType = e.target.value as KdpInteriorType;
+                    setInteriorType(newType);
+                    if (newType !== "black_white") {
+                      setPaperType("white");
+                    }
+                  }}
+                  className="w-full bg-slate-950 border border-slate-900 text-white rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                  <option value="standard_color">Standard color (0.00225" per page)</option>
+                  <option value="premium_color">Premium color (0.002347" per page)</option>
+                  <option value="black_white">Black &amp; white (Standard paperback)</option>
+                </select>
+              </div>
+
               {/* Paper Type */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
-                  Paper Type & Printing
+                  Paper Type
                 </label>
                 <select
                   value={paperType}
-                  onChange={(e) => setPaperType(e.target.value as PaperType)}
-                  className="w-full bg-slate-950 border border-slate-900 text-white rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  onChange={(e) => setPaperType(e.target.value as KdpPaperType)}
+                  disabled={interiorType !== "black_white"}
+                  className={`w-full bg-slate-950 border border-slate-900 text-white rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none ${
+                    interiorType !== "black_white" ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 >
-                  <option value="white">White Paper (Black & White printing)</option>
-                  <option value="cream">Cream Paper (Black & White printing)</option>
-                  <option value="color">White Paper (Premium Color printing)</option>
+                  <option value="white">White paper</option>
+                  <option value="cream">Cream paper (B&amp;W only)</option>
                 </select>
+                {interiorType !== "black_white" && (
+                  <span className="text-[10px] text-slate-500 block">
+                    * KDP Color printing exclusively uses 50-70 lb white paper.
+                  </span>
+                )}
               </div>
 
               {/* Page Count */}
@@ -381,241 +465,370 @@ export default function SpineCalculator() {
             <div className="bg-gradient-to-br from-indigo-950/20 to-slate-900/40 rounded-[2rem] border border-indigo-900/30 p-8 space-y-6 relative overflow-hidden backdrop-blur-md">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-bl-[5rem] -mr-16 -mt-16 pointer-events-none" />
               
-              <h3 className="text-lg font-black text-white">Calculated Measurements</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                
-                {/* Spine Card */}
-                <div className="bg-slate-950/50 border border-slate-900 rounded-2xl p-4 flex flex-col justify-between">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Spine Width</span>
-                    <div className="text-2xl font-black text-white mt-1 font-mono">
-                      {dims.spineWidth.toFixed(4)}"
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleCopy(dims.spineWidth.toFixed(4), setCopiedSpine)}
-                    className="mt-3 inline-flex items-center gap-1.5 self-start text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
-                  >
-                    {copiedSpine ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-500" /> Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" /> Copy Value
-                      </>
-                    )}
-                  </button>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-black text-white flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-amber-400" />
+                    Exact Amazon KDP Measurements
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium">
+                    Calculated matching official Amazon KDP Cover Calculator specifications.
+                  </p>
                 </div>
-
-                {/* Cover Width Card */}
-                <div className="bg-slate-950/50 border border-slate-900 rounded-2xl p-4 flex flex-col justify-between">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Full Cover Width</span>
-                    <div className="text-2xl font-black text-white mt-1 font-mono">
-                      {dims.fullWidth.toFixed(3)}"
-                    </div>
-                    <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
-                      ({trimWidth}" + {dims.spineWidth.toFixed(4)}" + {trimWidth}" + 0.25")
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => handleCopy(dims.fullWidth.toFixed(3), setCopiedWidth)}
-                    className="mt-3 inline-flex items-center gap-1.5 self-start text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
-                  >
-                    {copiedWidth ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-500" /> Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" /> Copy Value
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Cover Height Card */}
-                <div className="bg-slate-950/50 border border-slate-900 rounded-2xl p-4 flex flex-col justify-between">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Full Cover Height</span>
-                    <div className="text-2xl font-black text-white mt-1 font-mono">
-                      {dims.fullHeight.toFixed(3)}"
-                    </div>
-                    <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
-                      ({trimHeight}" + 0.25" bleed)
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => handleCopy(dims.fullHeight.toFixed(3), setCopiedHeight)}
-                    className="mt-3 inline-flex items-center gap-1.5 self-start text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
-                  >
-                    {copiedHeight ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-500" /> Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" /> Copy Value
-                      </>
-                    )}
-                  </button>
-                </div>
-
+                <button
+                  onClick={handleCopyAllTable}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/30 border border-indigo-500/50 hover:bg-indigo-600/50 text-indigo-200 text-xs font-bold transition shadow-sm self-start sm:self-auto cursor-pointer"
+                >
+                  {copiedId === 'all' ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" /> Copied Table
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" /> Copy All Specs
+                    </>
+                  )}
+                </button>
               </div>
 
-              {/* Dynamic SVG Blueprint */}
+              {/* KPI Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Full Cover Card (#1) */}
+                <div className="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">#1 Full Cover</span>
+                      <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300">Total</span>
+                    </div>
+                    <div className="text-xl font-black text-white mt-1 font-mono">
+                      {layout.coverWidthInches.toFixed(3)}" × {layout.coverHeightInches.toFixed(3)}"
+                    </div>
+                    <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
+                      ({trimWidth}"×2 + {layout.spineWidth.toFixed(3)}" + 0.25" bleed)
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleCopy(`${layout.coverWidthInches.toFixed(3)}" × ${layout.coverHeightInches.toFixed(3)}"`, 'full')}
+                    className="mt-3 inline-flex items-center gap-1.5 self-start text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    {copiedId === 'full' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />} Copy
+                  </button>
+                </div>
+
+                {/* Spine Width Card (#6) */}
+                <div className="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">#6 Spine Width</span>
+                      <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300">Spine</span>
+                    </div>
+                    <div className="text-xl font-black text-white mt-1 font-mono">
+                      {layout.spineWidth.toFixed(3)}"
+                    </div>
+                    <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
+                      ({pageCount} pgs × {getKdpSpineMultiplier(interiorType, paperType)}")
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleCopy(layout.spineWidth.toFixed(3), 'spine')}
+                    className="mt-3 inline-flex items-center gap-1.5 self-start text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    {copiedId === 'spine' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />} Copy
+                  </button>
+                </div>
+
+                {/* Safe Area Card (#3) */}
+                <div className="bg-slate-950/60 border border-slate-900 rounded-2xl p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">#3 Safe Area</span>
+                      <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300">Live</span>
+                    </div>
+                    <div className="text-xl font-black text-white mt-1 font-mono">
+                      {layout.measurements.safeArea.width.toFixed(3)}" × {layout.measurements.safeArea.height.toFixed(3)}"
+                    </div>
+                    <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
+                      (0.125" safety margin inside trim)
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleCopy(`${layout.measurements.safeArea.width.toFixed(3)}" × ${layout.measurements.safeArea.height.toFixed(3)}"`, 'safe')}
+                    className="mt-3 inline-flex items-center gap-1.5 self-start text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    {copiedId === 'safe' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />} Copy
+                  </button>
+                </div>
+              </div>
+
+              {/* Official Amazon KDP 9-Measurement Table */}
+              <div className="bg-slate-950/70 border border-slate-900 rounded-2xl p-5 overflow-hidden">
+                <div className="flex items-center justify-between mb-3 border-b border-slate-900 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-200">
+                      Official KDP Cover Calculator Breakdown
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400 font-bold">
+                    Units: Inches (in)
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-slate-400 text-[10px] uppercase font-black tracking-wider">
+                        <th className="py-2.5 px-3">#</th>
+                        <th className="py-2.5 px-3">Description</th>
+                        <th className="py-2.5 px-3 text-right">Width (in)</th>
+                        <th className="py-2.5 px-3 text-right">Height (in)</th>
+                        <th className="py-2.5 px-3 text-center">Copy</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-900/80 font-mono text-slate-200">
+                      {layout.measurements.items.map((item) => (
+                        <tr key={item.id} className="hover:bg-indigo-500/5 transition-colors">
+                          <td className="py-2 px-3 font-bold">
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600/30 text-indigo-300 text-[11px] font-bold">
+                              {item.id}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 font-sans font-bold text-slate-200">
+                            {item.description}
+                          </td>
+                          <td className="py-2 px-3 text-right font-bold text-amber-400">
+                            {item.width.toFixed(3)}
+                          </td>
+                          <td className="py-2 px-3 text-right font-bold text-amber-400">
+                            {item.height.toFixed(3)}
+                          </td>
+                          <td className="py-2 px-3 text-center font-sans">
+                            <button
+                              onClick={() => handleCopy(`${item.description}: ${item.width.toFixed(3)}" × ${item.height.toFixed(3)}"`, item.id)}
+                              className="inline-flex items-center justify-center p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-300 transition-colors"
+                              title={`Copy ${item.description}`}
+                            >
+                              {copiedId === item.id ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Dynamic SVG Blueprint with Official Numbered Callouts (❶ to ❾) */}
               <div className="bg-slate-950/80 border border-slate-900/60 rounded-2xl p-6 flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-4 block self-start">
-                  Dynamic Cover Blueprint Preview
-                </span>
+                <div className="w-full flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    Official Template Blueprint with Guide Numbers (❶–❾)
+                  </span>
+                  <span className="text-[10px] font-bold text-indigo-400">
+                    Matches Amazon KDP Cover Diagram
+                  </span>
+                </div>
 
                 {/* SVG Mockup */}
-                <div className="w-full max-w-[450px] aspect-[1.618/1] relative flex items-center justify-center">
+                <div className="w-full max-w-[480px] aspect-[1.6/1] relative flex items-center justify-center">
                   <svg
-                    viewBox="0 0 400 240"
-                    className="w-full h-full text-slate-200 fill-none"
+                    viewBox="0 0 420 250"
+                    className="w-full h-full text-slate-200 fill-none select-none"
                   >
-                    {/* Background Grid Lines */}
                     <defs>
                       <pattern id="small-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(99, 102, 241, 0.03)" strokeWidth="0.5" />
+                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(99, 102, 241, 0.04)" strokeWidth="0.5" />
                       </pattern>
                     </defs>
                     <rect width="100%" height="100%" fill="url(#small-grid)" />
 
-                    {/* Outer Bleed Boundary (Dashed red line) */}
+                    {/* Outer Bleed Boundary (Dashed red line) - #4 */}
                     <rect 
-                      x="10" 
+                      x="15" 
                       y="20" 
-                      width="380" 
-                      height="180" 
+                      width="390" 
+                      height="190" 
                       stroke="#ef4444" 
                       strokeDasharray="4,4" 
-                      strokeWidth="1" 
+                      strokeWidth="1.2" 
                     />
-                    <text x="14" y="32" fill="#ef4444" fontSize="8" fontWeight="bold">Bleed Area Boundary (+0.125")</text>
 
-                    {/* Trim Line Boundary */}
+                    {/* Trim Line Boundary - #2 */}
                     <rect 
-                      x="16" 
-                      y="26" 
-                      width="368" 
-                      height="168" 
+                      x="22" 
+                      y="27" 
+                      width="376" 
+                      height="176" 
                       stroke="#6366f1" 
                       strokeWidth="1.5" 
                     />
                     
+                    {/* Safe Area Inner Boundary (Dashed Green) - #3 */}
+                    <rect 
+                      x="28" 
+                      y="33" 
+                      width="168" 
+                      height="164" 
+                      stroke="#10b981" 
+                      strokeDasharray="3,3" 
+                      strokeWidth="1" 
+                    />
+                    <rect 
+                      x="224" 
+                      y="33" 
+                      width="168" 
+                      height="164" 
+                      stroke="#10b981" 
+                      strokeDasharray="3,3" 
+                      strokeWidth="1" 
+                    />
+
                     {/* Back Cover Fill */}
                     <rect 
-                      x="16" 
-                      y="26" 
-                      width="168" 
-                      height="168" 
-                      fill="rgba(99, 102, 241, 0.05)" 
+                      x="22" 
+                      y="27" 
+                      width="180" 
+                      height="176" 
+                      fill="rgba(99, 102, 241, 0.04)" 
                     />
                     
                     {/* Front Cover Fill */}
                     <rect 
-                      x="216" 
-                      y="26" 
-                      width="168" 
-                      height="168" 
-                      fill="rgba(99, 102, 241, 0.05)" 
+                      x="218" 
+                      y="27" 
+                      width="180" 
+                      height="176" 
+                      fill="rgba(99, 102, 241, 0.04)" 
                     />
 
-                    {/* Spine Area */}
+                    {/* Spine Area - #6 */}
                     <rect 
-                      x="184" 
-                      y="26" 
-                      width="32" 
-                      height="168" 
-                      fill="rgba(99, 102, 241, 0.15)" 
-                      stroke="#818cf8" 
+                      x="202" 
+                      y="27" 
+                      width="16" 
+                      height="176" 
+                      fill="rgba(245, 158, 11, 0.12)" 
+                      stroke="#f59e0b" 
                       strokeWidth="1" 
                     />
 
-                    {/* Barcode Placeholder */}
+                    {/* Spine Safe Area - #7 */}
                     <rect 
-                      x="30" 
-                      y="140" 
-                      width="40" 
-                      height="30" 
-                      fill="rgba(255, 255, 255, 0.15)" 
+                      x="204" 
+                      y="33" 
+                      width="12" 
+                      height="164" 
+                      stroke="#10b981" 
+                      strokeDasharray="2,2" 
+                      strokeWidth="0.8" 
+                    />
+
+                    {/* Barcode Placeholder - #9 */}
+                    <rect 
+                      x="35" 
+                      y="150" 
+                      width="42" 
+                      height="32" 
+                      fill="rgba(255, 255, 255, 0.12)" 
                       stroke="rgba(255, 255, 255, 0.3)" 
                       strokeWidth="1" 
                     />
-                    <line x1="35" y1="145" x2="35" y2="165" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" />
-                    <line x1="40" y1="145" x2="40" y2="165" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" />
-                    <line x1="45" y1="145" x2="45" y2="165" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1.5" />
-                    <line x1="50" y1="145" x2="50" y2="165" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" />
-                    <line x1="55" y1="145" x2="55" y2="165" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="2" />
-                    <line x1="60" y1="145" x2="60" y2="165" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" />
-                    <text x="34" y="177" fill="rgba(255, 255, 255, 0.3)" fontSize="5">Barcode</text>
+                    <line x1="40" y1="155" x2="40" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
+                    <line x1="45" y1="155" x2="45" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
+                    <line x1="50" y1="155" x2="50" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1.5" />
+                    <line x1="55" y1="155" x2="55" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
+                    <line x1="60" y1="155" x2="60" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="2" />
+                    <line x1="65" y1="155" x2="65" y2="175" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" />
+                    <text x="40" y="180" fill="rgba(255, 255, 255, 0.4)" fontSize="4.5" fontWeight="bold">BARCODE</text>
 
-                    {/* Labels */}
-                    <text x="100" y="110" fill="#a5b4fc" fontSize="10" fontWeight="bold" textAnchor="middle">Back Cover</text>
-                    <text x="300" y="110" fill="#a5b4fc" fontSize="10" fontWeight="bold" textAnchor="middle">Front Cover</text>
+                    {/* Section Titles */}
+                    <text x="112" y="115" fill="#a5b4fc" fontSize="9" fontWeight="bold" textAnchor="middle">Back Cover</text>
+                    <text x="308" y="115" fill="#a5b4fc" fontSize="9" fontWeight="bold" textAnchor="middle">Front Cover</text>
                     
-                    {/* Spine Text / Alignment */}
-                    <g transform="translate(200, 110) rotate(90)">
+                    {/* Spine Text / Safety Status */}
+                    <g transform="translate(210, 115) rotate(90)">
                       <text 
                         x="0" 
                         y="0" 
-                        fill={isSpineTextEligible ? "#e0e7ff" : "rgba(239, 68, 68, 0.4)"} 
-                        fontSize={isSpineTextEligible ? "6" : "5"} 
+                        fill={layout.canHaveSpineText ? "#fbbf24" : "rgba(239, 68, 68, 0.6)"} 
+                        fontSize={layout.canHaveSpineText ? "5.5" : "4.5"} 
                         fontWeight="bold" 
                         textAnchor="middle"
                       >
-                        {isSpineTextEligible ? "SPINE TEXT" : "TEXT SAFETY BLOCKED"}
+                        {layout.canHaveSpineText ? "SPINE TEXT" : "TEXT BLOCKED (<79p)"}
                       </text>
                     </g>
 
-                    {/* Dimensions Guides */}
-                    {/* Spine Width Arrow */}
-                    <line x1="184" y1="210" x2="216" y2="210" stroke="#818cf8" strokeWidth="1" />
-                    <polygon points="184,210 188,207 188,213" fill="#818cf8" />
-                    <polygon points="216,210 212,207 212,213" fill="#818cf8" />
-                    <text x="200" y="222" fill="#818cf8" fontSize="7" fontWeight="bold" textAnchor="middle">
-                      {dims.spineWidth.toFixed(3)}"
-                    </text>
+                    {/* NUMBERED CALLOUT BADGES MATCHING AMAZON KDP DIAGRAM (#1 to #9) */}
+                    
+                    {/* ❶ Full Cover Badge (Right edge dimension) */}
+                    <circle cx="410" cy="115" r="7" fill="#6366f1" />
+                    <text x="410" y="118" fill="#ffffff" fontSize="8" fontWeight="black" textAnchor="middle">1</text>
 
-                    {/* Full Width Indicator */}
-                    <line x1="10" y1="230" x2="390" y2="230" stroke="#a5b4fc" strokeWidth="1" />
-                    <polygon points="10,230 15,227 15,233" fill="#a5b4fc" />
-                    <polygon points="390,230 385,227 385,233" fill="#a5b4fc" />
-                    <text x="200" y="239" fill="#a5b4fc" fontSize="8" fontWeight="bold" textAnchor="middle">
-                      Total Cover Width: {dims.fullWidth.toFixed(3)}"
-                    </text>
+                    {/* ❷ Front Cover Badge */}
+                    <circle cx="395" cy="115" r="7" fill="#6366f1" />
+                    <text x="395" y="118" fill="#ffffff" fontSize="8" fontWeight="black" textAnchor="middle">2</text>
 
-                    {/* Height Indicator (Vertical Right Side) */}
-                    <line x1="395" y1="20" x2="395" y2="200" stroke="#a5b4fc" strokeWidth="1" />
-                    <polygon points="395,20 392,25 398,25" fill="#a5b4fc" />
-                    <polygon points="395,200 392,195 398,195" fill="#a5b4fc" />
-                    <text x="397" y="113" fill="#a5b4fc" fontSize="8" fontWeight="bold" transform="rotate(90 397 113)" textAnchor="middle">
-                      Height: {dims.fullHeight.toFixed(3)}"
+                    {/* ❸ Safe Area Badge */}
+                    <circle cx="380" cy="115" r="7" fill="#10b981" />
+                    <text x="380" y="118" fill="#ffffff" fontSize="8" fontWeight="black" textAnchor="middle">3</text>
+
+                    {/* ❹ Bleed Badge (Top margin) */}
+                    <circle cx="360" cy="14" r="7" fill="#ef4444" />
+                    <text x="360" y="17" fill="#ffffff" fontSize="8" fontWeight="black" textAnchor="middle">4</text>
+
+                    {/* ❺ Margin Badge (Top margin between trim & safe) */}
+                    <circle cx="342" cy="14" r="7" fill="#10b981" />
+                    <text x="342" y="17" fill="#ffffff" fontSize="8" fontWeight="black" textAnchor="middle">5</text>
+
+                    {/* ❻ Spine Badge (Top center) */}
+                    <circle cx="210" cy="14" r="7" fill="#f59e0b" />
+                    <text x="210" y="17" fill="#000000" fontSize="8" fontWeight="black" textAnchor="middle">6</text>
+
+                    {/* ❼ Spine Safe Area Badge */}
+                    <circle cx="210" cy="225" r="7" fill="#10b981" />
+                    <text x="210" y="228" fill="#ffffff" fontSize="8" fontWeight="black" textAnchor="middle">7</text>
+
+                    {/* ❽ Spine Margin Badge */}
+                    <circle cx="190" cy="225" r="7" fill="#818cf8" />
+                    <text x="190" y="228" fill="#ffffff" fontSize="8" fontWeight="black" textAnchor="middle">8</text>
+
+                    {/* ❾ Barcode Margin Badge */}
+                    <circle cx="82" cy="166" r="7" fill="#f59e0b" />
+                    <text x="82" y="169" fill="#000000" fontSize="8" fontWeight="black" textAnchor="middle">9</text>
+
+                    {/* Dimension Arrows */}
+                    {/* Full Width Arrow (Bottom) */}
+                    <line x1="15" y1="240" x2="405" y2="240" stroke="#818cf8" strokeWidth="1" />
+                    <polygon points="15,240 20,237 20,243" fill="#818cf8" />
+                    <polygon points="405,240 400,237 400,243" fill="#818cf8" />
+                    <text x="210" y="247" fill="#818cf8" fontSize="7" fontWeight="bold" textAnchor="middle">
+                      #1 Full Cover Width: {layout.coverWidthInches.toFixed(3)}"
                     </text>
                   </svg>
                 </div>
 
                 {/* Guide Legend */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full border-t border-slate-900/60 pt-4 mt-2 text-[10px] text-slate-500 font-bold">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full border-t border-slate-900/80 pt-4 mt-3 text-[10px] text-slate-400 font-bold">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 bg-indigo-500/10 border border-indigo-500 block rounded" />
-                    <span>Trim Size area</span>
+                    <span className="w-3.5 h-3.5 rounded-full bg-indigo-600 text-white inline-flex items-center justify-center text-[9px] font-black shrink-0">1</span>
+                    <span>Full Cover (Bleed incl.)</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 bg-indigo-500/20 border border-indigo-400 block rounded" />
-                    <span>Spine area</span>
+                    <span className="w-3.5 h-3.5 rounded-full bg-indigo-500 text-white inline-flex items-center justify-center text-[9px] font-black shrink-0">2</span>
+                    <span>Front/Back Trim</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-0 border-t border-dashed border-red-500 block" />
-                    <span>Bleed border</span>
+                    <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 text-white inline-flex items-center justify-center text-[9px] font-black shrink-0">3</span>
+                    <span>Live Safe Area</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 bg-slate-900 border border-slate-700 block rounded" />
-                    <span>Barcode zone</span>
+                    <span className="w-3.5 h-3.5 rounded-full bg-amber-500 text-black inline-flex items-center justify-center text-[9px] font-black shrink-0">6</span>
+                    <span>Spine Width ({layout.spineWidth.toFixed(3)}")</span>
                   </div>
                 </div>
 

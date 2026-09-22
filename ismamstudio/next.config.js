@@ -125,6 +125,12 @@ const nextConfig = {
         source: "/:path*",
         headers: [
           { key: "Content-Security-Policy", value: cspHeader },
+          // Lock down CORS for page routes to our own domain (resolves ZAP cross-domain warning)
+          { key: "Access-Control-Allow-Origin", value: "https://www.kdpage.com" },
+          // Prevent unauthorized cross-domain policy files
+          { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
+          // Enforce HTTPS strictly
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           // Prevent our pages being framed by other origins (clickjacking).
           // SAMEORIGIN — not DENY — because Paddle/Clerk overlays are framed
           // BY our page, which this does not affect; it only controls who may
@@ -148,6 +154,10 @@ const nextConfig = {
           {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
           },
         ],
       },

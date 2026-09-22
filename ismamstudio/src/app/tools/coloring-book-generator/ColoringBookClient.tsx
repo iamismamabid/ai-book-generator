@@ -170,6 +170,63 @@ function convertImageToLineArt(img: HTMLImageElement, width: number, height: num
   return outImage;
 }
 
+// Converts AI-generated coloring page into clean, solid 300 DPI line art with pure black lines & transparent background
+function convertAiImageToLineArt(img: HTMLImageElement, width: number, height: number): ImageData {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+
+  // Maintain aspect ratio with centered contain
+  const imgAspect = img.width / img.height;
+  const canvasAspect = width / height;
+  let drawW = width;
+  let drawH = height;
+  let drawX = 0;
+  let drawY = 0;
+
+  if (imgAspect > canvasAspect) {
+    drawW = width;
+    drawH = width / imgAspect;
+    drawY = (height - drawH) / 2;
+  } else {
+    drawH = height;
+    drawW = height * imgAspect;
+    drawX = (width - drawW) / 2;
+  }
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+  const srcData = ctx.getImageData(0, 0, width, height);
+  const data = srcData.data;
+  const outImage = ctx.createImageData(width, height);
+  const outData = outImage.data;
+
+  // Luminance-based extraction: preserves solid black vector lines without Sobel double-line artifacts
+  for (let i = 0; i < data.length; i += 4) {
+    const brightness = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+
+    // Background (near-white pixels > 215) becomes 100% transparent so user can color underneath
+    if (brightness > 215) {
+      outData[i] = 255;
+      outData[i + 1] = 255;
+      outData[i + 2] = 255;
+      outData[i + 3] = 0;
+    } else {
+      // Solid black ink for dark lines (< 150), smooth alpha for antialiased edges (150-215)
+      const alpha = brightness < 150 ? 255 : Math.round(255 * (1 - (brightness - 150) / 65));
+      outData[i] = 15;     // Deep slate black #0F172A
+      outData[i + 1] = 23;
+      outData[i + 2] = 42;
+      outData[i + 3] = alpha;
+    }
+  }
+
+  return outImage;
+}
+
 // Custom-photo line art (customLineArt) lives only as an in-memory ImageData,
 // so autosave/progress-save previously only captured its *rendered pixels*
 // via the canvas snapshot -- not the source data itself. That meant a reload
@@ -1003,7 +1060,7 @@ export default function ColoringBookClient() {
     img.crossOrigin = "anonymous";
     img.onload = () => {
       userHasDrawnRef.current = false;
-      const lineArtData = convertImageToLineArt(img, 850, 1100);
+      const lineArtData = convertAiImageToLineArt(img, 850, 1100);
       
       // 1. Clear old color canvas fills and brush strokes
       const colorCanvas = colorCanvasRef.current;

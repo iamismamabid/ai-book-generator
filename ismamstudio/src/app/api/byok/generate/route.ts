@@ -54,9 +54,9 @@ export async function POST(req: Request) {
     // Build specialized prompt tailored to Studio domain
     let enhancedPrompt = prompt.trim();
     if (studioType === "coloring") {
-      enhancedPrompt = `${prompt.trim()}, clean vector line art, coloring book page, bold black outline, pure white background, no shading, no grayscale, high contrast ink lines, printable coloring sheet`;
+      enhancedPrompt = `coloring book page for Amazon KDP, ${prompt.trim()}, crisp vector line art, thick clean solid black outlines, closed paths, pure stark white background, high contrast graphic illustration, 300 DPI print quality, masterpiece. Strictly NO colors, NO shading, NO gray gradients, NO shadows, NO realistic textures, NO cross-hatching, NO blurry lines, NO double lines, NO sketchy scribbles`;
       if (stylePreset) {
-        enhancedPrompt += `, style: ${stylePreset}`;
+        enhancedPrompt += `, artistic style: ${stylePreset}`;
       }
     } else if (studioType === "cover") {
       enhancedPrompt = `${prompt.trim()}, book cover illustration, professional commercial quality, high resolution, vivid colors, detailed, 8k`;
@@ -147,7 +147,7 @@ export async function POST(req: Request) {
               {
                 parts: [
                   {
-                    text: `You are an expert AI prompt engineer for ${studioType === "cover" ? "KDP Book Covers" : "300 DPI Coloring Pages"}. Enhance this user prompt into a single ultra-detailed image generation prompt without preamble: "${enhancedPrompt}"`,
+                    text: `You are an expert AI prompt engineer for ${studioType === "cover" ? "KDP Book Covers" : "Amazon KDP Coloring Books"}. Enhance this user prompt into a single ultra-detailed image generation prompt without preamble. ${studioType === "coloring" ? "CRITICAL: The output MUST be a clean black and white coloring book page with thick solid black vector outlines on pure white background, strictly zero shading, zero grayscale, and no colors." : ""} User prompt: "${enhancedPrompt}"`,
                   },
                 ],
               },

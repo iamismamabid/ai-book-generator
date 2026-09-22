@@ -39,12 +39,13 @@ const COVER_PROMPT_PRESETS = [
 ];
 
 const COLORING_PROMPT_PRESETS = [
-  { label: "Mandala", prompt: "Intricate circular mandala pattern, sacred geometry, floral symmetry, fine outline line art, clean white background" },
-  { label: "Jungle Animals", prompt: "Cute baby elephant, tiger cub and playful parrot surrounded by tropical palm leaves, clear outlines for coloring" },
-  { label: "Botanical Flowers", prompt: "Detailed bouquet of wild peonies, roses, eucalyptus branches and butterflies, botanical line art, black outline" },
-  { label: "Stained Glass", prompt: "Stained glass window design featuring a majestic flying owl under a crescent moon, thick segmented black lines" },
-  { label: "Fairytale Cottage", prompt: "Whimsical fairytale cottage house with stone chimney, picket fence and climbing ivy garden, clean coloring page" },
-  { label: "Under the Sea", prompt: "Magical coral reef underwater scene with sea turtle, clownfish, starfish and sea anemones, crisp line art" },
+  { label: "Mandala", prompt: "Intricate circular mandala pattern, sacred geometry, floral symmetry, elegant black vector outlines, clean white background, zero shading" },
+  { label: "Jungle Animals", prompt: "Cute baby elephant and playful lion cub sitting together in a lush tropical jungle with palm leaves, clean thick outlines, coloring book page" },
+  { label: "Botanical Flowers", prompt: "Graceful bouquet of blooming wild roses, peonies, eucalyptus leaves and fluttering butterflies, crisp clean line art, no grayscale" },
+  { label: "Stained Glass", prompt: "Stained glass style illustration of a majestic owl perched on a branch under a crescent moon, thick segmented bold leading lines" },
+  { label: "Fairytale Cottage", prompt: "Charming whimsical cottage house with cobblestone chimney, rustic wooden door, picket fence and climbing rose garden, coloring sheet" },
+  { label: "Under the Sea", prompt: "Enchanting underwater coral reef with a friendly sea turtle, clownfish, starfish and bubbles, clean defined outlines, coloring book" },
+  { label: "Kawaii Chibi", prompt: "Adorable kawaii baby kitten wearing a wizard hat next to a magic potion bottle and tiny stars, simple cute bold outlines" },
 ];
 
 const COVER_STYLES = [
@@ -57,11 +58,12 @@ const COVER_STYLES = [
 ];
 
 const COLORING_STYLES = [
-  { label: "Default (Clean Vector)", value: "" },
-  { label: "Bold & Clean Outlines", value: "bold thick black outlines, minimal tiny details, easy coloring" },
-  { label: "Intricate Line Art (Adult)", value: "ultra-detailed fine black linework, complex intricate patterns" },
-  { label: "Stained Glass Mosaic", value: "stained glass segmented thick outlines, mosaic style" },
-  { label: "Whimsical Storybook", value: "cute storybook illustration lines, charming and friendly" },
+  { label: "Clean KDP Vector (Recommended)", value: "clean crisp vector line art, solid black outlines, flat white background, no shading, no gray tones" },
+  { label: "Bold & Simple (Kids / Toddlers)", value: "thick bold cartoon outlines, simple closed shapes, large easy-to-color areas, cute vector style, zero fine lines" },
+  { label: "Intricate Line Art (Adults)", value: "ultra-detailed delicate black linework, ornate patterns, high complexity botanical and geometric details, adult coloring book" },
+  { label: "Stained Glass Window", value: "stained glass segmented thick leading lines, mosaic panes, bold high-contrast graphic outlines" },
+  { label: "Whimsical Storybook", value: "charming children's book illustration lines, playful characters, expressive clean black contours" },
+  { label: "Kawaii Chibi (Cute Anime)", value: "cute Japanese kawaii anime style, thick smooth ink lines, simple adorable shapes, big sparkling eyes" },
 ];
 
 export default function ByokStudioPanel({

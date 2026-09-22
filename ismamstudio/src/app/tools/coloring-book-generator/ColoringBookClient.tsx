@@ -648,6 +648,8 @@ export default function ColoringBookClient() {
   const userHasDrawnRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const lineStartRef = useRef<{ x: number; y: number } | null>(null);
+  const rawAiImageRef = useRef<HTMLImageElement | null>(null);
+  const rawAiImageUrlRef = useRef<string | null>(null);
   const snapshotLoadTokenRef = useRef(0);
   const pushHistoryTimerRef = useRef<NodeJS.Timeout | null>(null);
   const restoredCustomArtForPresetRef = useRef<string | null>(null);
@@ -1179,13 +1181,15 @@ export default function ColoringBookClient() {
     img.crossOrigin = "anonymous";
     img.onload = () => {
       userHasDrawnRef.current = false;
+      rawAiImageRef.current = img;
+      rawAiImageUrlRef.current = imageUrl;
 
       // Use 1275×1650 (half 300 DPI) to preserve fine AI-generated line detail.
       const PW = 1275;
       const PH = 1650;
 
-      // Smart background detection: sample the 4 corners of the image to
-      // determine whether the AI generated a light-bg or dark-bg image.
+      // Smart comprehensive detection:
+      // 1. Sample corners to detect dark background/vignette
       const detectCanvas = document.createElement("canvas");
       detectCanvas.width = img.width;
       detectCanvas.height = img.height;
@@ -1199,25 +1203,44 @@ export default function ColoringBookClient() {
         dctx.getImageData(0, h - sampleSize, sampleSize, sampleSize).data,
         dctx.getImageData(w - sampleSize, h - sampleSize, sampleSize, sampleSize).data,
       ];
-      let totalBrightness = 0, totalPixels = 0;
+      let cornerBrightness = 0, cornerPixels = 0;
       for (const corner of corners) {
         for (let i = 0; i < corner.length; i += 4) {
-          totalBrightness += 0.299 * corner[i] + 0.587 * corner[i + 1] + 0.114 * corner[i + 2];
-          totalPixels++;
+          cornerBrightness += 0.299 * corner[i] + 0.587 * corner[i + 1] + 0.114 * corner[i + 2];
+          cornerPixels++;
         }
       }
-      const avgCornerBrightness = totalPixels > 0 ? totalBrightness / totalPixels : 255;
-      const hasDarkBackground = avgCornerBrightness < 100;
+      const avgCornerBrightness = cornerPixels > 0 ? cornerBrightness / cornerPixels : 255;
+      const hasDarkCorners = avgCornerBrightness < 120;
+
+      // 2. Sample center 60% of image (where the flower / main subject is)
+      // Even if corners are white, a dark-shaded flower in the center must be detected!
+      const cx = Math.floor(w * 0.2);
+      const cy = Math.floor(h * 0.2);
+      const cw = Math.floor(w * 0.6);
+      const ch = Math.floor(h * 0.6);
+      const centerData = dctx.getImageData(cx, cy, cw, ch).data;
+      let centerBrightness = 0, centerCount = 0, darkCenterCount = 0;
+      for (let i = 0; i < centerData.length; i += 16) {
+        const b = 0.299 * centerData[i] + 0.587 * centerData[i + 1] + 0.114 * centerData[i + 2];
+        centerBrightness += b;
+        centerCount++;
+        if (b < 195) darkCenterCount++;
+      }
+      const avgCenterBrightness = centerCount > 0 ? centerBrightness / centerCount : 255;
+      const centerDarkRatio = centerCount > 0 ? darkCenterCount / centerCount : 0;
+
+      // If corners are dark, OR the center flower is dark/shaded (avg brightness < 170),
+      // OR more than 20% of the center subject is dark/shaded:
+      const needsSobelOutlines = hasDarkCorners || avgCenterBrightness < 170 || centerDarkRatio > 0.20;
 
       let lineArtData: ImageData;
-      if (hasDarkBackground) {
-        // Dark-background AI image: Extract clean vector line-art outlines via Sobel filter.
-        // This ensures the dark background AND the petal/shape interiors become 100% transparent,
-        // allowing the user to freely draw, color with brush, and flood-fill inside the artwork!
-        lineArtData = convertImageToLineArt(img, PW, PH, 38);
+      if (needsSobelOutlines) {
+        // Extract clean line-art outlines via Sobel filter.
+        // All dark/gray petals, center, and background become 100% transparent and colorable!
+        lineArtData = convertImageToLineArt(img, PW, PH, 30);
       } else {
-        // Standard light-background AI coloring page:
-        // Use convertAiImageToLineArt with clean thresholding so white interiors become transparent
+        // Pure black and white line art on clean white paper
         lineArtData = convertAiImageToLineArt(img, PW, PH, 225, 95);
       }
 
@@ -1256,9 +1279,32 @@ export default function ColoringBookClient() {
         localStorage.removeItem(`kdpage_coloring_progress_${activePreset.id}`);
       } catch {}
 
-      showToast(`Loaded AI Line Art onto 300 DPI canvas! ${hasDarkBackground ? "(Dark-bg outlines extracted ✓)" : ""}`);
+      showToast(`Loaded AI Line Art onto 300 DPI canvas! ${needsSobelOutlines ? "(Clean outlines extracted - petals are colorable ✓)" : ""}`);
     };
     img.src = imageUrl;
+  };
+
+  const handleExtractCleanOutlines = () => {
+    const PW = 1275, PH = 1650;
+    if (rawAiImageRef.current) {
+      const lineArtData = convertImageToLineArt(rawAiImageRef.current, PW, PH, 30);
+      setCustomLineArt(lineArtData);
+      pushHistory();
+      showToast("✨ Converted dark flower & shading into clean transparent line art! Every petal is now colorable 🎨");
+    } else if (customLineArt) {
+      const tempC = document.createElement("canvas");
+      tempC.width = customLineArt.width;
+      tempC.height = customLineArt.height;
+      tempC.getContext("2d")?.putImageData(customLineArt, 0, 0);
+      const img = new window.Image();
+      img.onload = () => {
+        const lineArtData = convertImageToLineArt(img, PW, PH, 30);
+        setCustomLineArt(lineArtData);
+        pushHistory();
+        showToast("✨ Converted dark flower & shading into clean transparent line art! Every petal is now colorable 🎨");
+      };
+      img.src = tempC.toDataURL();
+    }
   };
 
   const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -2841,17 +2887,30 @@ export default function ColoringBookClient() {
           <div data-tour="interactive-coloring" className="lg:col-span-8 bg-slate-200 dark:bg-slate-950 p-3 sm:p-5 lg:p-6 rounded-3xl border border-slate-300 dark:border-slate-800 shadow-inner flex flex-col items-center min-h-[860px]">
 
             <div className="w-full max-w-[900px] flex items-center justify-between gap-2 mb-3">
-              <button
-                onClick={() => setIsColoringMode((v) => !v)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border transition cursor-pointer ${
-                  isColoringMode
-                    ? "bg-indigo-600 border-indigo-600 text-white"
-                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-300"
-                }`}
-              >
-                <Paintbrush className="w-3.5 h-3.5" />
-                {isColoringMode ? "Exit Coloring Preview" : "Try Coloring This Page"}
-              </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setIsColoringMode((v) => !v)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border transition cursor-pointer ${
+                    isColoringMode
+                      ? "bg-indigo-600 border-indigo-600 text-white"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-300"
+                  }`}
+                >
+                  <Paintbrush className="w-3.5 h-3.5" />
+                  {isColoringMode ? "Exit Coloring Preview" : "Try Coloring This Page"}
+                </button>
+
+                {customLineArt && (
+                  <button
+                    onClick={handleExtractCleanOutlines}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border border-amber-400 bg-amber-500 hover:bg-amber-600 text-slate-950 transition cursor-pointer active:scale-95"
+                    title="Click to convert any dark shaded flower, gray areas, or dark mode artwork into clean transparent outlines so you can color inside!"
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    <span>Fix Dark Flower / Extract Outlines</span>
+                  </button>
+                )}
+              </div>
 
               {/* Zoom Controls */}
               <div className="flex items-center gap-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2 py-1 rounded-full border border-slate-200 dark:border-slate-800 text-xs font-bold shadow-sm">

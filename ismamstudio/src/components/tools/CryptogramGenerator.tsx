@@ -22,11 +22,9 @@ const DEFAULT_QUOTES = [
   "HAPPINESS IS NOT SOMETHING READY MADE. IT COMES FROM YOUR OWN ACTIONS."
 ];
 
-const TRIM_SIZES = [
-  { id: "6x9", label: "6\" x 9\" (Novel)", w: 6, h: 9 },
-  { id: "8.5x11", label: "8.5\" x 11\" (Large Print)", w: 8.5, h: 11 },
-  { id: "5x8", label: "5\" x 8\" (Compact)", w: 5, h: 8 }
-];
+import { KDP_TRIM_SIZES, getTrimDimensions } from "@/lib/kdpTrimSizes";
+
+const TRIM_SIZES = KDP_TRIM_SIZES;
 
 export default function CryptogramGenerator() {
   const router = useRouter();
@@ -208,7 +206,7 @@ export default function CryptogramGenerator() {
     includeCover: boolean;
     coverState: any;
     includeSolutions: boolean;
-    trimSize: "6x9" | "8.5x11" | "5x8";
+    trimSize: string;
     hasBleed: boolean;
     showGuides: boolean;
     isPremium?: boolean;
@@ -221,15 +219,9 @@ export default function CryptogramGenerator() {
 
     setTimeout(async () => {
       try {
-        let finalW = 8.5;
-        let finalH = 11;
-        if (finalTrim === "6x9") {
-          finalW = 6;
-          finalH = 9;
-        } else if (finalTrim === "5x8") {
-          finalW = 5;
-          finalH = 8;
-        }
+        const dims = getTrimDimensions(finalTrim);
+        const finalW = dims.w;
+        const finalH = dims.h;
 
         const bleed = 0.125;
         const pageW = finalBleed ? finalW + bleed : finalW;

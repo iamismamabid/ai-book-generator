@@ -20,11 +20,9 @@ const WORD_SEARCH_SHAPES: { id: WordSearchShape; label: string }[] = [
     { id: "star", label: "Star" },
 ];
 
-const TRIM_SIZES = [
-    { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
-    { label: '6" x 9" (Novel)', w: 6, h: 9 },
-    { label: '8" x 10" (Workbook)', w: 8, h: 10 }
-];
+import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
+
+const TRIM_SIZES = KDP_TRIM_SIZES;
 
 export default function WordSearchStudio() {
     const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });

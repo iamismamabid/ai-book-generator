@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-// Relative paths matching your library utilities
 import { generateSudoku, generateSudokuBook, Grid, Difficulty } from '../lib/sudokuGenerator';
 import { downloadSudokuPdf } from '../lib/sudoku-pdf';
+import { KDP_TRIM_SIZES, getTrimDimensions } from '../lib/kdpTrimSizes';
 
 // Changed from '@/components/DownloadButton' to a relative path
 import DownloadButton from "./DownloadButton";
@@ -39,7 +39,7 @@ export function SudokuGenerator() {
   const router = useRouter();
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [bookCount, setBookCount] = useState(10);
-  const [trimSize, setTrimSize] = useState<"6x9" | "8.5x11" | "5x8">("8.5x11");
+  const [trimSize, setTrimSize] = useState<string>("8.5x11");
   const [currentPuzzle, setCurrentPuzzle] = useState<{ puzzle: Grid; solution: Grid } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -119,12 +119,14 @@ export function SudokuGenerator() {
             <label className="block text-sm text-slate-400 mb-2">Trim size</label>
             <select
               value={trimSize}
-              onChange={(e) => setTrimSize(e.target.value as typeof trimSize)}
+              onChange={(e) => setTrimSize(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white focus:border-indigo-500 outline-none transition-colors duration-200"
             >
-              <option value="6x9">6" x 9" (most popular)</option>
-              <option value="8.5x11">8.5" x 11" (large print)</option>
-              <option value="5x8">5" x 8" (compact)</option>
+              {KDP_TRIM_SIZES.map((sz) => (
+                <option key={sz.id} value={sz.id}>
+                  {sz.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -149,7 +151,8 @@ export function SudokuGenerator() {
               onClick={() => {
                 if (!currentPuzzle) return alert("Generate a preview puzzle first!");
                 const canvas = document.createElement("canvas");
-                const size = trimSize === "8.5x11" ? 2550 : trimSize === "6x9" ? 1800 : 1500;
+                const dims = getTrimDimensions(trimSize);
+                const size = Math.round(Math.min(dims.w, dims.h) * 300);
                 canvas.width = size;
                 canvas.height = size;
                 const ctx = canvas.getContext("2d");

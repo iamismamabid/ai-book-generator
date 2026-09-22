@@ -21,6 +21,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
+import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
 
 type PaperType = "white" | "cream" | "color";
 type CoverType = "paperback" | "hardcover";
@@ -32,15 +33,12 @@ interface TrimOption {
   popular?: boolean;
 }
 
-const TRIM_PRESETS: TrimOption[] = [
-  { name: '8.5" x 11" (Workbook / Activity / Coloring)', width: 8.5, height: 11, popular: true },
-  { name: '6" x 9" (Standard Trade Novel / Journal)', width: 6, height: 9, popular: true },
-  { name: '5.5" x 8.5" (Compact Fiction / Memoir)', width: 5.5, height: 8.5 },
-  { name: '5" x 8" (Pocket Fiction)', width: 5, height: 8 },
-  { name: '8.25" x 6" (Landscape Children\'s Book)', width: 8.25, height: 6 },
-  { name: '8.5" x 8.5" (Square Picture Book)', width: 8.5, height: 8.5 },
-  { name: '7" x 10" (Textbook / Manual)', width: 7, height: 10 },
-];
+const TRIM_PRESETS: TrimOption[] = KDP_TRIM_SIZES.map((sz) => ({
+  name: sz.label,
+  width: sz.w,
+  height: sz.h,
+  popular: sz.id === "8.5x11" || sz.id === "6x9",
+}));
 
 export default function KdpCoverCreatorClient() {
   const [trimIndex, setTrimIndex] = useState<number>(0);

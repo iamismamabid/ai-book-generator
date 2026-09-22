@@ -4,11 +4,12 @@ import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
 import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount } from "./kdpBookEngine";
+import { getTrimDimensions } from "./kdpTrimSizes";
 
 interface KakuroPdfOptions {
   puzzles: { puzzle: KakuroPuzzle; solution: KakuroPuzzle }[];
   difficulty: string;
-  trimSize: "6x9" | "8.5x11" | "5x8";
+  trimSize: any;
   title: string;
   subtitle?: string;
   authorName?: string;
@@ -181,10 +182,9 @@ export async function downloadKakuroPdf(options: KakuroPdfOptions, filename: str
     borderTheme,
   } = options;
 
-  let width = 8.5;
-  let height = 11;
-  if (trimSize === "6x9") { width = 6; height = 9; }
-  if (trimSize === "5x8") { width = 5; height = 8; }
+  const dims = getTrimDimensions(trimSize);
+  let width = dims.width;
+  let height = dims.height;
 
   const bleed = hasBleed ? 0.125 : 0;
   width += bleed;

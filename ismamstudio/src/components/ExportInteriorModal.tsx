@@ -8,32 +8,24 @@ import Link from "next/link";
 import { createPortal } from "react-dom";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
 import { BORDER_THEMES, BorderThemeId } from "@/lib/borderThemes";
+import { KDP_TRIM_SIZES, getTrimDimensions } from "@/lib/kdpTrimSizes";
 
-// Physical trim dimensions for the standard KDP trim-size values used across
-// the standalone puzzle tools -- needed to turn a cover image's raw pixel
-// size into an effective print DPI.
-const TRIM_DIMENSIONS_IN: Record<string, [number, number]> = {
-  "6x9": [6, 9],
-  "8.5x11": [8.5, 11],
-  "5x8": [5, 8],
-};
-
-export interface TrimSizeOption<T extends string> {
+export interface TrimSizeOption<T extends string = string> {
   value: T;
   label: string;
   /** Minimum plan tier required to select this trim size. */
   tier: "free" | "starter" | "pro";
 }
 
-const DEFAULT_TRIM_OPTIONS: TrimSizeOption<"6x9" | "8.5x11" | "5x8">[] = [
-  { value: "8.5x11", label: '8.5″ × 11″ (Large Print / Puzzle Book)', tier: "free" },
-  { value: "6x9", label: '6″ × 9″ (Novel / Workbook)', tier: "starter" },
-  { value: "5x8", label: '5″ × 8″ (Pocket Book)', tier: "starter" },
-];
+const DEFAULT_TRIM_OPTIONS: TrimSizeOption<string>[] = KDP_TRIM_SIZES.map((sz) => ({
+  value: sz.id,
+  label: sz.label,
+  tier: sz.id === "8.5x11" || sz.id === "6x9" ? "free" : "starter",
+}));
 
 const TIER_RANK = { free: 0, starter: 1, pro: 2 } as const;
 
-interface ExportInteriorModalProps<T extends string = "6x9" | "8.5x11" | "5x8"> {
+interface ExportInteriorModalProps<T extends string = string> {
   isOpen: boolean;
   onClose: () => void;
   onExport: (options: {
@@ -49,7 +41,7 @@ interface ExportInteriorModalProps<T extends string = "6x9" | "8.5x11" | "5x8"> 
   }) => void | Promise<void>;
   defaultTrimSize?: T;
   showSolutionsToggle?: boolean;
-  /** Override the selectable trim sizes. Defaults to the standard 3-size KDP set. */
+  /** Override the selectable trim sizes. Defaults to the standard 16-size KDP set. */
   trimSizeOptions?: TrimSizeOption<T>[];
   /** Hide the decorative page-border picker -- irrelevant for prose/manuscript exports. */
   showBorderThemePicker?: boolean;
@@ -61,7 +53,7 @@ interface ExportInteriorModalProps<T extends string = "6x9" | "8.5x11" | "5x8"> 
   progressPercent?: number;
 }
 
-export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" | "5x8">({
+export default function ExportInteriorModal<T extends string = string>({
   isOpen,
   onClose,
   onExport,
@@ -180,13 +172,13 @@ export default function ExportInteriorModal<T extends string = "6x9" | "8.5x11" 
   // independent) so this only ever applies to Cover Studio images.
   const [coverDpiChecks, setCoverDpiChecks] = useState<ImageResolutionCheck[]>([]);
   useEffect(() => {
-    const dims = TRIM_DIMENSIONS_IN[trimSize];
+    const dims = getTrimDimensions(trimSize);
     if (!isOpen || !includeCover || !coverState || !dims) {
       setCoverDpiChecks([]);
       return;
     }
     let cancelled = false;
-    checkCoverImageResolution(coverState, dims[0], dims[1]).then((results) => {
+    checkCoverImageResolution(coverState, dims.w, dims.h).then((results) => {
       if (!cancelled) setCoverDpiChecks(results);
     });
     return () => { cancelled = true; };

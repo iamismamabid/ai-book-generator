@@ -38,6 +38,7 @@ import { loadGoogleFontFamilies } from "@/lib/loadGoogleFont";
 import { COVER_TEXTURES, TEXTURE_CATEGORIES, renderTexture, CoverTexture } from "@/lib/coverTextures";
 import VersionHistoryModal from "@/components/VersionHistoryModal";
 import { CoverVersion } from "@/lib/coverVersions";
+import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
 import { BrandKit, loadBrandKit, addBrandColor, removeBrandColor, addBrandFont, removeBrandFont } from "@/lib/brandKit";
 import { relayoutLegacyElements, layoutsDiffer } from "@/lib/coverRelayout";
 import { optimizeImageForCanvas } from "@/lib/imageOptimizer";
@@ -620,11 +621,7 @@ const DESIGNER_PALETTES: DesignerPalette[] = [
   { id: "rosewood-velvet", name: "Rosewood Velvet", category: "Elegant", bgColor: "#4c0519", gradientStart: "#4c0519", gradientEnd: "#881337", accentColor: "#fbcfe8", textColor: "#ffffff" },
 ];
 
-const TRIM_SIZES = [
-  { label: '6" x 9" (Novel)', w: 6, h: 9 },
-  { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
-  { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
-];
+const TRIM_SIZES = KDP_TRIM_SIZES;
 
 // A background photo scaled to the bare minimum that covers its frame has
 // zero pan room in whichever axis its aspect ratio already matches the

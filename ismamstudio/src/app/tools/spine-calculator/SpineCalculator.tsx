@@ -13,6 +13,7 @@ import {
   Sparkles, 
   Sliders 
 } from "lucide-react";
+import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
 
 // Paper Type specifications
 type PaperType = "white" | "cream" | "color";
@@ -29,20 +30,21 @@ interface TrimPreset {
   height: number;
 }
 
-const PRESETS: TrimPreset[] = [
-  { name: '6" x 9" (Standard Novel)', width: 6, height: 9 },
-  { name: '8.5" x 11" (Standard Workbook/Coloring)', width: 8.5, height: 11 },
-  { name: '5.5" x 8.5" (Compact Novel)', width: 5.5, height: 8.5 },
-  { name: '8.25" x 6" (Landscape Children)', width: 8.25, height: 6 },
-  { name: '8.5" x 8.5" (Square Coloring)', width: 8.5, height: 8.5 },
-];
+const PRESETS: TrimPreset[] = KDP_TRIM_SIZES.map((sz) => ({
+  name: sz.label,
+  width: sz.w,
+  height: sz.h,
+}));
 
 export default function SpineCalculator() {
   const [trimWidth, setTrimWidth] = useState<number>(6);
   const [trimHeight, setTrimHeight] = useState<number>(9);
   const [pageCount, setPageCount] = useState<number>(100);
   const [paperType, setPaperType] = useState<PaperType>("white");
-  const [selectedPresetIndex, setSelectedPresetIndex] = useState<number>(0); // 0 is 6x9, -1 is custom
+  const [selectedPresetIndex, setSelectedPresetIndex] = useState<number>(() => {
+    const idx = PRESETS.findIndex((p) => p.width === 6 && p.height === 9);
+    return idx !== -1 ? idx : 0;
+  });
   
   // Copy feedback states
   const [copiedSpine, setCopiedSpine] = useState(false);

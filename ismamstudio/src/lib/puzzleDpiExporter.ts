@@ -3,6 +3,8 @@
  * KDP / IngramSpark Print-Ready Standard (300 DPI / Dots Per Inch)
  */
 
+import { getTrimDimensions } from "./kdpTrimSizes";
+
 export interface DpiDimensions {
   widthInches: number;
   heightInches: number;
@@ -20,8 +22,8 @@ export const TRIM_SIZE_INCHES: Record<string, { w: number; h: number }> = {
 /**
  * Calculates exact 300 DPI pixel dimensions for physical page trim sizes.
  */
-export function get300DpiDimensions(trimSize: "8.5x11" | "6x9" | "5x8" = "8.5x11"): DpiDimensions {
-  const inches = TRIM_SIZE_INCHES[trimSize] || TRIM_SIZE_INCHES["8.5x11"];
+export function get300DpiDimensions(trimSize: string = "8.5x11"): DpiDimensions {
+  const inches = getTrimDimensions(trimSize);
   const dpi = 300;
   return {
     widthInches: inches.w,
@@ -50,7 +52,7 @@ export function download300DpiPng(dataUrl: string, fileName: string) {
  */
 export async function renderElementTo300DpiPng(
   element: HTMLElement | SVGSVGElement | HTMLCanvasElement,
-  trimSize: "8.5x11" | "6x9" | "5x8" = "8.5x11"
+  trimSize: string = "8.5x11"
 ): Promise<string> {
   const { pixelWidth, pixelHeight } = get300DpiDimensions(trimSize);
 

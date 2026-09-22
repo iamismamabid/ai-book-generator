@@ -9,13 +9,14 @@ import {
   WordSearchStyle,
 } from "../app/utils/pdfExportService";
 import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount } from "./kdpBookEngine";
+import { getTrimDimensions } from "./kdpTrimSizes";
 
 interface PdfOptions {
   puzzles: WordSearchGridData[];
   title: string;
   subtitle?: string;
   authorName?: string;
-  trimSize: "6x9" | "8.5x11" | "5x8";
+  trimSize: any;
   includeSolutions?: boolean;
   includeCover?: boolean;
   coverState?: any;
@@ -105,10 +106,7 @@ export async function generateWordSearchPdf(options: PdfOptions): Promise<jsPDF>
     style,
   } = options;
 
-  let width = 8.5;
-  let height = 11;
-  if (trimSize === "6x9") { width = 6; height = 9; }
-  if (trimSize === "5x8") { width = 5; height = 8; }
+  const { width, height } = getTrimDimensions(trimSize);
 
   const doc = new jsPDF({ orientation: "portrait", unit: "in", format: [width, height] });
 

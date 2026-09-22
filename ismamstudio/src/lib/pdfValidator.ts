@@ -1,5 +1,6 @@
 import { PDFDocument } from "pdf-lib";
 import { getGutterMargin } from "./gutterMargin";
+import { KDP_TRIM_SIZES } from "./kdpTrimSizes";
 
 export interface ImageResolutionCheck {
   label: string;
@@ -84,14 +85,11 @@ export interface PdfValidationReport {
   recommendation: string;
 }
 
-const COMMON_TRIM_SIZES = [
-  { name: "6x9", width: 6.0, height: 9.0 },
-  { name: "8.5x11", width: 8.5, height: 11.0 },
-  { name: "5x8", width: 5.0, height: 8.0 },
-  { name: "5.5x8.5", width: 5.5, height: 8.5 },
-  { name: "8x10", width: 8.0, height: 10.0 },
-  { name: "7x10", width: 7.0, height: 10.0 }
-];
+const COMMON_TRIM_SIZES = KDP_TRIM_SIZES.map((sz) => ({
+  name: sz.id,
+  width: sz.w,
+  height: sz.h,
+}));
 
 export async function validatePdfLayout(fileBuffer: ArrayBuffer): Promise<PdfValidationReport> {
   const warnings: string[] = [];

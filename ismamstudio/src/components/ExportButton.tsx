@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import type { jsPDF } from "jspdf";
 import { Download, FileText } from "lucide-react";
 import ExportInteriorModal, { TrimSizeOption } from "./ExportInteriorModal";
+import { KDP_TRIM_SIZES, getTrimDimensions } from "@/lib/kdpTrimSizes";
 
 interface Chapter {
   id: string;
@@ -24,25 +25,13 @@ interface ExportButtonProps {
   customTextColor?: string;
 }
 
-type ManuscriptTrimSize = "8.5x11" | "6x9" | "5x8" | "5.5x8.5" | "8.25x6" | "8.5x8.5";
+type ManuscriptTrimSize = string;
 
-const TRIM_DIMENSIONS: Record<ManuscriptTrimSize, { w: number; h: number }> = {
-  "8.5x11": { w: 8.5, h: 11 },
-  "6x9": { w: 6, h: 9 },
-  "5x8": { w: 5, h: 8 },
-  "5.5x8.5": { w: 5.5, h: 8.5 },
-  "8.25x6": { w: 8.25, h: 6 },
-  "8.5x8.5": { w: 8.5, h: 8.5 },
-};
-
-const TRIM_SIZE_OPTIONS: TrimSizeOption<ManuscriptTrimSize>[] = [
-  { value: "8.5x11", label: '8.5″ × 11″ (Large Print)', tier: "free" },
-  { value: "6x9", label: '6″ × 9″ (Standard Novel)', tier: "starter" },
-  { value: "5.5x8.5", label: '5.5″ × 8.5″ (Compact Novel)', tier: "starter" },
-  { value: "5x8", label: '5″ × 8″ (Pocket Book)', tier: "starter" },
-  { value: "8.25x6", label: '8.25″ × 6″ (Landscape)', tier: "starter" },
-  { value: "8.5x8.5", label: '8.5″ × 8.5″ (Square)', tier: "starter" },
-];
+const TRIM_SIZE_OPTIONS: TrimSizeOption<string>[] = KDP_TRIM_SIZES.map((sz) => ({
+  value: sz.id,
+  label: sz.label,
+  tier: sz.id === "8.5x11" || sz.id === "6x9" ? "free" : "starter",
+}));
 
 // KDP's required inside (gutter) margin grows with total interior page count.
 const getKdpGutterMargin = (totalPages: number): number => {
@@ -144,7 +133,7 @@ export default function ExportButton({
     ]);
 
     // 1. Determine trim dimensions in inches
-    const { w, h } = TRIM_DIMENSIONS[trimSize] ?? TRIM_DIMENSIONS["8.5x11"];
+    const { w, h } = getTrimDimensions(trimSize);
 
     const bleed = 0.125;
     const pageW = hasBleed ? w + bleed : w;

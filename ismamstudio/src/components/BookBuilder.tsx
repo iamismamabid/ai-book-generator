@@ -22,6 +22,7 @@ import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import BookBuilderTour from "./BookBuilderTour";
 import QuickStartTour from "./QuickStartTour";
 import { BORDER_THEMES, BorderThemeId } from "@/lib/borderThemes";
+import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
 import { useBookValidation } from "@/hooks/useBookValidation";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
 import DesktopRecommendedBanner from "@/components/DesktopRecommendedBanner";
@@ -246,11 +247,7 @@ const GENERATED_CONTENT_KEY: Record<string, string> = {
   coloring_book: 'seed',
 };
 
-const TRIM_SIZES = [
-  { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
-  { label: '6" x 9" (Novel)', w: 6, h: 9 },
-  { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
-];
+const TRIM_SIZES = KDP_TRIM_SIZES;
 
 export function createDefaultTitlePage(
   title = "My Masterpiece Book",

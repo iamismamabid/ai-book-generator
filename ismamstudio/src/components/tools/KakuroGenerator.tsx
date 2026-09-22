@@ -13,11 +13,9 @@ import { generateKakuro, KakuroPuzzle } from "@/lib/kakuro";
 import { checkPremiumStatus } from "@/app/actions";
 import { generateUniquePuzzle } from "@/lib/puzzleDedup";
 
-const TRIM_SIZES = [
-  { id: "6x9", label: "6\" x 9\" (Novel)", w: 6, h: 9 },
-  { id: "8.5x11", label: "8.5\" x 11\" (Large Print)", w: 8.5, h: 11 },
-  { id: "5x8", label: "5\" x 8\" (Compact)", w: 5, h: 8 }
-];
+import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
+
+const TRIM_SIZES = KDP_TRIM_SIZES;
 
 export default function KakuroGenerator() {
   const router = useRouter();
@@ -106,7 +104,7 @@ export default function KakuroGenerator() {
     includeCover: boolean;
     coverState: any;
     includeSolutions: boolean;
-    trimSize: "6x9" | "8.5x11" | "5x8";
+    trimSize: string;
     hasBleed: boolean;
     showGuides: boolean;
     borderTheme?: import("@/lib/borderThemes").BorderThemeId;

@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { splitManuscriptIntoChapters } from "./epubExport";
 import { getGutterMargin } from "./gutterMargin";
+import { getTrimDimensions } from "./kdpTrimSizes";
 
 export { getGutterMargin };
 
@@ -8,7 +9,7 @@ export interface PdfFormatterOptions {
   title: string;
   author: string;
   rawText: string;
-  trimSize: "6x9" | "8.5x11" | "5x8";
+  trimSize: string;
   fontFamily: "times" | "helvetica" | "courier";
   fontSize: number; // 10, 11, 12
   lineSpacing: number; // 1.15, 1.25, 1.5
@@ -16,15 +17,11 @@ export interface PdfFormatterOptions {
   runningHeaders: boolean;
 }
 
-const TRIM_SIZES: Record<string, [number, number]> = {
-  "6x9": [6.0, 9.0],
-  "8.5x11": [8.5, 11.0],
-  "5x8": [5.0, 8.0],
-};
-
 export async function generateInteriorPdf(options: PdfFormatterOptions): Promise<{ blob: Blob; pageCount: number }> {
   const chapters = splitManuscriptIntoChapters(options.rawText);
-  const [width, height] = TRIM_SIZES[options.trimSize] || TRIM_SIZES["6x9"];
+  const dims = getTrimDimensions(options.trimSize || "6x9");
+  const width = dims.width;
+  const height = dims.height;
 
   // Pass 1: Typeset with default gutter to estimate page count
   const tempDoc = runTypeset(chapters, width, height, 0.5, options);

@@ -3,6 +3,7 @@
 // Each puzzle gets its own page with the puzzle grid + solution key on the SAME page.
 
 import { jsPDF } from "jspdf";
+import { getTrimDimensions } from "./kdpTrimSizes";
 
 // ─── Shared Helpers ───────────────────────────────────────────────────────────
 
@@ -323,11 +324,13 @@ export type MathPuzzleType = "addition" | "multiplication" | "number_fill";
 export function downloadMathPDF(
   puzzleType: MathPuzzleType,
   puzzles: any[],
-  filename = "Math_Puzzles.pdf"
+  filename = "Math_Puzzles.pdf",
+  trimSize?: any
 ) {
-  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const pageW = pdf.internal.pageSize.getWidth();   // 210
-  const pageH = pdf.internal.pageSize.getHeight();  // 297
+  const dims = getTrimDimensions(trimSize || "8.5x11");
+  const pageW = dims.width * 25.4;
+  const pageH = dims.height * 25.4;
+  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: [pageW, pageH] });
   const margin = mm(15);
 
   const typeLabel =

@@ -6,6 +6,7 @@ import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
 import { getGutterMargin } from "./gutterMargin";
 import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount } from "./kdpBookEngine";
+import { getTrimDimensions } from "./kdpTrimSizes";
 
 export interface PdfProgressInfo {
   phase: "generating_pages" | "generating_solutions" | "decorating" | "saving";
@@ -18,7 +19,7 @@ export interface PdfProgressInfo {
 export interface PdfOptions {
   puzzles: { puzzle: Grid; solution: Grid }[];
   difficulty: Difficulty;
-  trimSize: "6x9" | "8.5x11" | "5x8";
+  trimSize: any;
   title?: string;
   subtitle?: string;
   authorName?: string;
@@ -167,10 +168,9 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
 
   const pdfFont = FONT_MAP[fontFamily] || "helvetica";
 
-  let width = 8.5;
-  let height = 11;
-  if (trimSize === "6x9") { width = 6; height = 9; }
-  if (trimSize === "5x8") { width = 5; height = 8; }
+  const dims = getTrimDimensions(trimSize);
+  let width = dims.width;
+  let height = dims.height;
 
   const bleed = hasBleed ? 0.125 : 0;
   width += bleed;
@@ -250,9 +250,7 @@ export async function generateSudokuPdf(options: PdfOptions): Promise<jsPDF> {
     const contentW = width - marginLeft - marginRight;
     const contentCenterX = marginLeft + contentW / 2;
 
-    let maxGridSize = 5.5;
-    if (trimSize === "6x9") maxGridSize = 4.2;
-    if (trimSize === "5x8") maxGridSize = 3.5;
+    const maxGridSize = Math.min(contentW * 0.95, height - 2.0);
 
     const gridSize = Math.min(maxGridSize, contentW, height - 1.6);
     const startX = marginLeft + (contentW - gridSize) / 2;

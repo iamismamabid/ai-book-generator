@@ -3,6 +3,7 @@ import { MazeGrid, Shape, solveMaze } from "./maze";
 import { drawCoverPagePart, drawWatermark, drawMarginGuides } from "../app/utils/pdfExportService";
 import { drawPageBorderTheme } from "../app/utils/borderThemeDrawing";
 import { BorderThemeId } from "./borderThemes";
+import { getTrimDimensions } from "./kdpTrimSizes";
 import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount } from "./kdpBookEngine";
 
 interface PdfOptions {
@@ -193,7 +194,9 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
     scale = 100,
   } = options;
 
-  const [baseWidthInches, baseHeightInches] = TRIM_SIZES[trimSize] || TRIM_SIZES["8.5x11"];
+  const dims = getTrimDimensions(trimSize || "8.5x11");
+  const baseWidthInches = dims.width;
+  const baseHeightInches = dims.height;
   const bleed = hasBleed ? 0.125 : 0;
   const widthInches = baseWidthInches + bleed;
   const heightInches = baseHeightInches + bleed * 2;

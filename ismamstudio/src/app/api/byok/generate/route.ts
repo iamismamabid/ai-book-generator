@@ -161,12 +161,16 @@ export async function POST(req: Request) {
           optimizedPrompt = valData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || enhancedPrompt;
         }
 
-        // Generate high-resolution image using the optimized prompt
+        // Generate high-resolution image using the optimized prompt with negative prompt
         const width = studioType === "cover" ? 768 : 1024;
         const height = studioType === "cover" ? 1024 : 1024;
         const seed = Math.floor(Math.random() * 1000000);
         const encodedPrompt = encodeURIComponent(optimizedPrompt);
-        const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true&model=flux`;
+        const negativePrompt = studioType === "coloring"
+          ? "color, shading, shadows, 3d, realistic, render, clay, stone, gradient, gray, photorealistic, noise, blur, texture, photo, pencil, paper background, stippling, crosshatch, dark background, embossed"
+          : "blurry, low quality, distorted, watermark, text, signature";
+        const encodedNeg = encodeURIComponent(negativePrompt);
+        const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true&negative_prompt=${encodedNeg}`;
 
         const imgFetch = await fetch(pollinationsUrl);
         if (!imgFetch.ok) {

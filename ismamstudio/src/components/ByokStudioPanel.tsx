@@ -307,6 +307,12 @@ export default function ByokStudioPanel({
             );
           })}
         </div>
+        {!isCover && (
+          <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 font-medium">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span><strong>Pro Tip:</strong> Choose <strong>OpenAI (DALL-E 3)</strong> for studio-grade, clean 2D vector line art without 3D shading.</span>
+          </div>
+        )}
       </div>
 
       {/* 3. API Key Card */}

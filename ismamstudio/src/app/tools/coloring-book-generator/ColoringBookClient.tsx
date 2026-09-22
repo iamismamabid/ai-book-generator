@@ -239,6 +239,64 @@ function convertAiImageToLineArt(
   return outImage;
 }
 
+// Preserves an uploaded pencil/ink illustration pixel-for-pixel,
+// only removing the white/cream background (brightness >= bgThreshold).
+// Unlike convertAiImageToLineArt (which forces all non-white pixels to
+// solid navy), this keeps original grays, cross-hatching, and shading
+// intact so that dense illustrative line art is never crushed to black.
+function preserveLineArtWithBgRemoval(
+  img: HTMLImageElement,
+  width: number,
+  height: number,
+  bgThreshold = 240,
+): ImageData {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+
+  // Centered contain
+  const imgAspect = img.width / img.height;
+  const canvasAspect = width / height;
+  let drawW = width, drawH = height, drawX = 0, drawY = 0;
+  if (imgAspect > canvasAspect) {
+    drawH = width / imgAspect;
+    drawY = (height - drawH) / 2;
+  } else {
+    drawW = height * imgAspect;
+    drawX = (width - drawW) / 2;
+  }
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+  const srcData = ctx.getImageData(0, 0, width, height);
+  const data = srcData.data;
+  const outImage = ctx.createImageData(width, height);
+  const outData = outImage.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    if (brightness >= bgThreshold) {
+      // White/cream background → transparent
+      outData[i] = 255; outData[i + 1] = 255; outData[i + 2] = 255; outData[i + 3] = 0;
+    } else {
+      // Keep pixel EXACTLY as-is (preserves grays, cross-hatching, shading)
+      outData[i] = r; outData[i + 1] = g; outData[i + 2] = b;
+      // Opacity scales with darkness so near-white antialiasing fades smoothly
+      const alpha = brightness < 200
+        ? 255
+        : Math.round(255 * (1 - (brightness - 200) / (bgThreshold - 200)));
+      outData[i + 3] = alpha;
+    }
+  }
+
+  return outImage;
+}
+
 // Custom-photo line art (customLineArt) lives only as an in-memory ImageData,
 // so autosave/progress-save previously only captured its *rendered pixels*
 // via the canvas snapshot -- not the source data itself. That meant a reload
@@ -1038,22 +1096,21 @@ export default function ColoringBookClient() {
     img.onload = () => {
       userHasDrawnRef.current = false;
 
-      // Process at half-300DPI (1275×1650) to preserve fine pencil/ink details.
-      // Downscaling a large detailed illustration directly to 850×1100 causes
-      // antialiasing to collapse white gaps between fine lines into mid-gray,
-      // making the whole image appear as a filled dark blob.
-      // The higher intermediate resolution keeps line/gap contrast intact before
-      // the browser's drawPattern() stretches it to the actual canvas.
+      // Resolution: use 1275×1650 (half 300 DPI) to preserve fine pencil detail.
       const PW = 1275;
       const PH = 1650;
 
       let lineArtData: ImageData;
       if (uploadMode === "photo") {
+        // Real photo → Sobel edge detection to extract line art
         lineArtData = convertImageToLineArt(img, PW, PH);
       } else {
-        // Use higher white threshold (235) to handle cream/off-white backgrounds
-        // and a tighter line threshold (100) to keep only genuine ink strokes.
-        lineArtData = convertAiImageToLineArt(img, PW, PH, 235, 100);
+        // Clean Line Art (pencil drawings, Midjourney output, Canva illustrations):
+        // Preserve the image pixel-for-pixel; only remove white/cream background.
+        // This is the correct approach for real illustrations — they already ARE
+        // line art and must NOT be run through luminance thresholding which
+        // collapses cross-hatching and shading into a solid dark mass.
+        lineArtData = preserveLineArtWithBgRemoval(img, PW, PH, 240);
       }
 
       const colorCanvas = colorCanvasRef.current;

@@ -172,7 +172,15 @@ function convertImageToLineArt(img: HTMLImageElement, width: number, height: num
 }
 
 // Converts AI-generated coloring page into clean, solid 300 DPI line art with pure black lines & transparent background
-function convertAiImageToLineArt(img: HTMLImageElement, width: number, height: number): ImageData {
+// whiteThreshold: pixels brighter than this become transparent (default 235 handles cream/off-white backgrounds)
+// lineThreshold:  pixels darker than this become fully opaque black (default 100 targets genuine ink strokes)
+function convertAiImageToLineArt(
+  img: HTMLImageElement,
+  width: number,
+  height: number,
+  whiteThreshold = 235,
+  lineThreshold = 100,
+): ImageData {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -205,20 +213,23 @@ function convertAiImageToLineArt(img: HTMLImageElement, width: number, height: n
   const outImage = ctx.createImageData(width, height);
   const outData = outImage.data;
 
-  // Luminance-based extraction: preserves solid black vector lines without Sobel double-line artifacts
+  const fadeRange = whiteThreshold - lineThreshold; // transition band
+
   for (let i = 0; i < data.length; i += 4) {
     const brightness = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
 
-    // Background (near-white pixels > 215) becomes 100% transparent so user can color underneath
-    if (brightness > 215) {
-      outData[i] = 255;
+    // Pure white / cream / off-white backgrounds → fully transparent
+    if (brightness >= whiteThreshold) {
+      outData[i]     = 255;
       outData[i + 1] = 255;
       outData[i + 2] = 255;
       outData[i + 3] = 0;
     } else {
-      // Solid black ink for dark lines (< 150), smooth alpha for antialiased edges (150-215)
-      const alpha = brightness < 150 ? 255 : Math.round(255 * (1 - (brightness - 150) / 65));
-      outData[i] = 15;     // Deep slate black #0F172A
+      // Dark ink strokes → opaque black; antialiased mid-tones → smooth alpha
+      const alpha = brightness <= lineThreshold
+        ? 255
+        : Math.round(255 * (1 - (brightness - lineThreshold) / fadeRange));
+      outData[i]     = 15;   // Deep slate black #0F172A
       outData[i + 1] = 23;
       outData[i + 2] = 42;
       outData[i + 3] = alpha;
@@ -1026,9 +1037,24 @@ export default function ColoringBookClient() {
     const img = new window.Image();
     img.onload = () => {
       userHasDrawnRef.current = false;
-      const lineArtData = uploadMode === "photo"
-        ? convertImageToLineArt(img, 850, 1100)
-        : convertAiImageToLineArt(img, 850, 1100);
+
+      // Process at half-300DPI (1275×1650) to preserve fine pencil/ink details.
+      // Downscaling a large detailed illustration directly to 850×1100 causes
+      // antialiasing to collapse white gaps between fine lines into mid-gray,
+      // making the whole image appear as a filled dark blob.
+      // The higher intermediate resolution keeps line/gap contrast intact before
+      // the browser's drawPattern() stretches it to the actual canvas.
+      const PW = 1275;
+      const PH = 1650;
+
+      let lineArtData: ImageData;
+      if (uploadMode === "photo") {
+        lineArtData = convertImageToLineArt(img, PW, PH);
+      } else {
+        // Use higher white threshold (235) to handle cream/off-white backgrounds
+        // and a tighter line threshold (100) to keep only genuine ink strokes.
+        lineArtData = convertAiImageToLineArt(img, PW, PH, 235, 100);
+      }
 
       const colorCanvas = colorCanvasRef.current;
       if (colorCanvas) {

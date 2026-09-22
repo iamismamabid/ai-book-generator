@@ -67,6 +67,7 @@ import { checkPremiumStatus, saveColoringProject, loadColoringProject, getNotebo
 import ByokEarlyLaunchModal from "@/components/ByokEarlyLaunchModal";
 import ByokNewsBanner from "@/components/ByokNewsBanner";
 import ByokStudioPanel from "@/components/ByokStudioPanel";
+import ColoringBookLibrary, { ColoringBookProject } from "./ColoringBookLibrary";
 
 // Matches drawWatermark's look in pdfExportService.ts (used by every other
 // tool's PDF export) so free-tier output is consistently branded across the
@@ -375,6 +376,14 @@ function getInitialNotebookCache(): any | null {
 export default function ColoringBookClient() {
   const { isSignedIn } = useAuth();
   const [isByokModalOpen, setIsByokModalOpen] = useState(false);
+  const [activeView, setActiveView] = useState<"library" | "editor">(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("notebookId") || urlParams.get("view") === "editor") return "editor";
+    }
+    return "library";
+  });
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const initialNotebookData = getInitialNotebookCache();
 
   // Config state
@@ -1886,6 +1895,26 @@ export default function ColoringBookClient() {
     (p) => selectedCategory === "All" || p.category === selectedCategory
   );
 
+  const handleSelectBookFromLibrary = (book: ColoringBookProject) => {
+    const matchedPreset = PRESETS.find((p) => p.id === book.presetId) || PRESETS[0];
+    setActivePreset(matchedPreset);
+    const matchedTrim = TRIM_SIZES.find((t) => t.w === book.trimW && t.h === book.trimH) || TRIM_SIZES[0];
+    setTrimSize(matchedTrim);
+    setBookPagesCount(book.pageCount);
+    setActiveView("editor");
+    setToastMessage(`Loaded "${book.title}" in Canvas Studio`);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleExportBookFromLibrary = (book: ColoringBookProject) => {
+    const matchedPreset = PRESETS.find((p) => p.id === book.presetId) || PRESETS[0];
+    setActivePreset(matchedPreset);
+    const matchedTrim = TRIM_SIZES.find((t) => t.w === book.trimW && t.h === book.trimH) || TRIM_SIZES[0];
+    setTrimSize(matchedTrim);
+    setBookPagesCount(book.pageCount);
+    handleExportPdfBook();
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans">
       
@@ -1899,7 +1928,7 @@ export default function ColoringBookClient() {
 
       {/* 🚀 Header */}
       <header className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2 group shrink-0">
               <img
@@ -1922,11 +1951,46 @@ export default function ColoringBookClient() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* View Switcher: My Books vs Canvas Studio */}
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+              <button
+                onClick={() => setActiveView("library")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  activeView === "library"
+                    ? "bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                My Books
+              </button>
+              <button
+                onClick={() => setActiveView("editor")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  activeView === "editor"
+                    ? "bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <Paintbrush className="w-3.5 h-3.5" />
+                Canvas Studio
+              </button>
+            </div>
+
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-black px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Create New Book</span>
+              <span className="sm:hidden">New</span>
+            </button>
+
             <ByokNewsBanner studioType="coloring" onOpenModal={() => setIsByokModalOpen(true)} variant="badge-chip" />
             <GenericStudioTour tourKey="coloringBook" />
             <Link
               href="/tools"
-              className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 transition"
+              className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 transition hidden md:inline"
             >
               All Tools
             </Link>
@@ -1942,32 +2006,49 @@ export default function ColoringBookClient() {
           <ByokNewsBanner studioType="coloring" onOpenModal={() => setIsByokModalOpen(true)} variant="top-ribbon" />
         </div>
 
-        {/* 🛡️ Compact Alert Banner */}
-        <div className="mb-4 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-2.5 px-4 flex items-center justify-between gap-3 text-xs font-semibold">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-            <span className="font-bold text-emerald-950 dark:text-emerald-300">
-              67+ Presets &amp; Custom Photo → Line Art Converter
-            </span>
-            <span className="hidden md:inline text-slate-500 dark:text-slate-400">
-              — Mandalas, Stained Glass, Landscapes, Citrus, Flags &amp; Concept Cars
-            </span>
-          </div>
-          <span className="bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">
-            300 DPI Print-Ready
-          </span>
-        </div>
+        {activeView === "library" ? (
+          <ColoringBookLibrary
+            onSelectBook={handleSelectBookFromLibrary}
+            onExportBook={handleExportBookFromLibrary}
+            isCreateModalOpen={isCreateModalOpen}
+            setIsCreateModalOpen={setIsCreateModalOpen}
+          />
+        ) : (
+          <>
+            {/* 🛡️ Compact Alert Banner */}
+            <div className="mb-4 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-2.5 px-4 flex items-center justify-between gap-3 text-xs font-semibold">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span className="font-bold text-emerald-950 dark:text-emerald-300">
+                  67+ Presets &amp; Custom Photo → Line Art Converter
+                </span>
+                <span className="hidden md:inline text-slate-500 dark:text-slate-400">
+                  — Mandalas, Stained Glass, Landscapes, Citrus, Flags &amp; Concept Cars
+                </span>
+              </div>
+              <span className="bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">
+                300 DPI Print-Ready
+              </span>
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
-          {/* ⚙️ Left Compact Control Panel (Cols: 4) */}
-          <div className="lg:col-span-4 space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              {/* ⚙️ Left Compact Control Panel (Cols: 4) */}
+              <div className="lg:col-span-4 space-y-4">
 
-            {/* Customization Settings */}
-            <div data-tour="customization-controls" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-4">
-              <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
-                <SlidersHorizontal className="w-4 h-4 text-emerald-500" /> Customization Controls
-              </h3>
+                {/* 🔑 BYOK AI Line Art Generator (Top-Left per User Request) */}
+                <div className="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-sm space-y-3">
+                  <ByokStudioPanel
+                    studioType="coloring"
+                    onApplyColoringPage={handleApplyAiColoringPage}
+                  />
+                </div>
+
+                {/* Customization Settings */}
+                <div data-tour="customization-controls" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-4">
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                    <SlidersHorizontal className="w-4 h-4 text-emerald-500" /> Customization Controls
+                  </h3>
 
               {/* Color by Number Toggle */}
               <div className="bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50 p-3.5 rounded-xl flex items-center justify-between">
@@ -2283,14 +2364,6 @@ export default function ColoringBookClient() {
                   ))}
                 </div>
               </div>
-            </div>
-
-            {/* 🔑 BYOK AI Line Art Generator */}
-            <div className="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-sm space-y-3">
-              <ByokStudioPanel
-                studioType="coloring"
-                onApplyColoringPage={handleApplyAiColoringPage}
-              />
             </div>
 
             {/* Export Actions */}
@@ -3130,6 +3203,8 @@ export default function ColoringBookClient() {
           </div>
 
         </div>
+          </>
+        )}
 
       </main>
 

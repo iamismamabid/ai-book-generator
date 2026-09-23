@@ -149,6 +149,24 @@ const nextConfig = {
         ],
       },
       {
+        source: "/artbook-studio",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "private, no-cache, no-store, max-age=0, must-revalidate",
+          },
+        ],
+      },
+      {
+        source: "/studio/artbook",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "private, no-cache, no-store, max-age=0, must-revalidate",
+          },
+        ],
+      },
+      {
         source: "/:path*.(png|jpg|jpeg|gif|webp|avif|ico|svg|woff|woff2|ttf)",
         headers: [
           {

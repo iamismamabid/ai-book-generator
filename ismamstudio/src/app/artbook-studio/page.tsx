@@ -1,5 +1,8 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import ArtbookStudioClient from "./ArtbookStudioClient";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "AI Coloring Artbook Studio | Generate KDP-Ready Coloring Books | KDPage",

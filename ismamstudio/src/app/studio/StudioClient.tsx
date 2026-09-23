@@ -17,7 +17,9 @@ const FabricCoverStudio = dynamic(
     import("@/components/FabricCoverStudio").catch((err) => {
       if (typeof window !== "undefined" && !sessionStorage.getItem("retry_chunk_cover")) {
         sessionStorage.setItem("retry_chunk_cover", "1");
-        window.location.reload();
+        const url = new URL(window.location.href);
+        url.searchParams.set("ts", Date.now().toString());
+        window.location.replace(url.toString());
       }
       throw err;
     }),
@@ -28,7 +30,9 @@ const BookBuilder = dynamic(
     import("@/components/BookBuilder").catch((err) => {
       if (typeof window !== "undefined" && !sessionStorage.getItem("retry_chunk_builder")) {
         sessionStorage.setItem("retry_chunk_builder", "1");
-        window.location.reload();
+        const url = new URL(window.location.href);
+        url.searchParams.set("ts", Date.now().toString());
+        window.location.replace(url.toString());
       }
       throw err;
     }),
@@ -128,7 +132,9 @@ export default function MasterStudioApp() {
         const now = Date.now();
         if (!lastReload || now - parseInt(lastReload, 10) > 12000) {
           sessionStorage.setItem(lockKey, now.toString());
-          window.location.reload();
+          const url = new URL(window.location.href);
+          url.searchParams.set("ts", now.toString());
+          window.location.replace(url.toString());
         }
       }
     };

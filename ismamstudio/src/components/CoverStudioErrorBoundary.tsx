@@ -40,7 +40,9 @@ export default class CoverStudioErrorBoundary extends Component<Props, State> {
       const now = Date.now();
       if (!lastReload || now - parseInt(lastReload, 10) > 12000) {
         sessionStorage.setItem(lockKey, now.toString());
-        window.location.reload();
+        const url = new URL(window.location.href);
+        url.searchParams.set("ts", now.toString());
+        window.location.replace(url.toString());
       }
     }
   }
@@ -54,7 +56,9 @@ export default class CoverStudioErrorBoundary extends Component<Props, State> {
       msg.includes("CSS chunk");
 
     if (isChunkError && typeof window !== "undefined") {
-      window.location.reload();
+      const url = new URL(window.location.href);
+      url.searchParams.set("ts", Date.now().toString());
+      window.location.replace(url.toString());
       return;
     }
 

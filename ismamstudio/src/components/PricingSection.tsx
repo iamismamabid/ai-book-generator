@@ -2,7 +2,7 @@
 
 import posthog from "posthog-js";
 import { useState, useEffect, Suspense } from "react";
-import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X, ArrowRight, RefreshCw, ShieldCheck, AlertTriangle, Copy } from "lucide-react";
+import { Check, Sparkles, Shield, Zap, ChevronDown, HelpCircle, Star, Award, CreditCard, X, ArrowRight, RefreshCw, ShieldCheck, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -23,19 +23,6 @@ function PricingSectionInner() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
-
-  const handleCopyCode = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    try {
-      navigator.clipboard.writeText("SWITCH50");
-      setCopiedCode(true);
-      setTimeout(() => setCopiedCode(false), 2000);
-    } catch {}
-  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -246,13 +233,12 @@ function PricingSectionInner() {
     }
 
     const couponParam = searchParams.get("coupon") || searchParams.get("discount");
-    const effectiveDiscountCode = couponParam?.trim() || (isAnnualBilling ? undefined : "SWITCH50");
 
     if (!userId) {
       // Preserve affiliate tracking key, coupon code, and skipTrial parameter during signup redirect
       const affParam = customerKey ? `&aff=${encodeURIComponent(customerKey)}` : "";
       const skipTrialParam = options?.skipTrial ? "&skipTrial=true" : "";
-      const couponRedirect = effectiveDiscountCode ? `&coupon=${encodeURIComponent(effectiveDiscountCode)}` : "";
+      const couponRedirect = couponParam ? `&coupon=${encodeURIComponent(couponParam.trim())}` : "";
       router.push(`/sign-up?redirect_url=${encodeURIComponent(`/pricing?checkout=${planKey}&billing=${isAnnualBilling ? "annual" : "monthly"}${skipTrialParam}${affParam}${couponRedirect}`)}`);
       return;
     }
@@ -270,7 +256,7 @@ function PricingSectionInner() {
             quantity: 1
           }
         ],
-        ...(effectiveDiscountCode ? { discountCode: effectiveDiscountCode } : {}),
+        ...(couponParam ? { discountCode: couponParam.trim() } : {}),
         customData: {
           userId: userId,
           ...(customerKey ? {
@@ -353,8 +339,8 @@ function PricingSectionInner() {
     {
       name: "Starter Creator",
       description: "Perfect for hobbyists & beginner publishers starting their KDP journey.",
-      priceMonthly: 5.99,
-      priceMonthlyOriginal: 11.99,
+      priceMonthly: 11.99,
+      priceMonthlyOriginal: 14.99,
       priceAnnual: 8.25,
       priceAnnualOriginal: 11.99,
       priceAnnualTotal: 99,
@@ -388,8 +374,8 @@ function PricingSectionInner() {
     {
       name: "Pro Studio",
       description: "Everything you need to compile, format, and sell low/medium content books.",
-      priceMonthly: 10.50,
-      priceMonthlyOriginal: 21,
+      priceMonthly: 21,
+      priceMonthlyOriginal: 26,
       priceAnnual: 14.92,
       priceAnnualOriginal: 21,
       priceAnnualTotal: 179,
@@ -424,8 +410,8 @@ function PricingSectionInner() {
     {
       name: "Publisher Agency",
       description: "Scale your publishing business with multiple brands and team collaboration.",
-      priceMonthly: 19.50,
-      priceMonthlyOriginal: 39,
+      priceMonthly: 39,
+      priceMonthlyOriginal: 49,
       priceAnnual: 27.42,
       priceAnnualOriginal: 39,
       priceAnnualTotal: 329,
@@ -463,10 +449,6 @@ function PricingSectionInner() {
 
 
   const faqs = [
-    {
-      q: "How does the '50% Off Every Month For Life' (Coupon SWITCH50) work?",
-      a: "When you use coupon code SWITCH50 at checkout (or click any monthly plan button, which applies it automatically), you receive an immediate 50% discount on your monthly subscription. Even better: this 50% discount stays active for every recurring monthly renewal for the entire lifetime of your active subscription! Starter is just $5.99/mo (regular $11.99), Pro Studio is $10.50/mo (regular $21), and Agency is $19.50/mo (regular $39). You keep this discounted rate as long as your subscription remains active.",
-    },
     {
       q: "How does the BYOK (Bring Your Own Key) AI Magic System work?",
       a: "Our BYOK system allows you to connect your own OpenAI (DALL-E 3), Google Gemini, or Stability AI API keys directly inside KDPage Cover Studio and Coloring Book Studio. This unlocks unlimited 8K AI book cover illustrations and 300 DPI vector line art generation at direct raw provider cost (~$0.02 to $0.04 per image) with zero monthly platform caps or middleman markups. Your keys are encrypted locally in your browser and never touch or store on our servers.",
@@ -522,7 +504,7 @@ function PricingSectionInner() {
     const billingText = isLtd ? "one-time payment" : plan.priceMonthly === 0 ? "forever free" : billingCycle === 'annual' ? "billed annually" : "billed monthly";
     const billingParam = billingCycle === 'annual' && plan.priceMonthly !== 0 ? "&billing=annual" : "";
     const ctaHref = isLtd ? plan.ctaLink : plan.priceMonthly === 0 ? plan.ctaLink : `${plan.ctaLink}${billingParam}`;
-    const originalPrice = isLtd ? plan.originalPrice : (billingCycle === 'annual' ? plan.priceAnnualOriginal : (plan.priceMonthlyOriginal && plan.priceMonthly > 0 ? plan.priceMonthlyOriginal : undefined));
+    const originalPrice = isLtd ? plan.originalPrice : (billingCycle === 'annual' ? plan.priceAnnualOriginal : undefined);
 
     return (
       <div
@@ -579,7 +561,7 @@ function PricingSectionInner() {
             </span>
           </div>
 
-          {/* Annual Savings & 50% Off For Life Callout */}
+          {/* Annual Savings & 2-Month Free Callout */}
           {!isLtd && plan.priceMonthly > 0 && (
             <div className="mb-6">
               {billingCycle === 'annual' ? (
@@ -587,15 +569,9 @@ function PricingSectionInner() {
                   <span>🎁 2 Months Free • ${plan.priceAnnualTotal}/yr billed annually</span>
                 </div>
               ) : (
-                <div className="space-y-1.5">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs font-black shadow-xs">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0 animate-pulse" />
-                    <span>50% OFF FOR LIFE with <strong className="font-mono underline">SWITCH50</strong></span>
-                  </div>
-                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                    <span>💡 Or switch to Annual to get <strong className="text-emerald-500 dark:text-emerald-400">2 Months Free</strong> (${plan.priceAnnualTotal}/yr)</span>
-                  </p>
-                </div>
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                  <span>💡 Switch to Annual to get <strong className="text-emerald-500 dark:text-emerald-400">2 Months Free</strong> (${plan.priceAnnualTotal}/yr)</span>
+                </p>
               )}
             </div>
           )}
@@ -764,16 +740,16 @@ function PricingSectionInner() {
               <>
                 <button
                   onClick={() => handleCheckout(plan.planKey)}
-                  className={`w-full py-4.5 rounded-2xl font-black text-sm md:text-base transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 cursor-pointer ${plan.popular
+                  className={`w-full py-4.5 rounded-2xl font-black text-sm md:text-base transition-all duration-300 active:scale-98 shadow-md flex items-center justify-center gap-2 ${plan.popular
                       ? "bg-gradient-to-r from-amber-400 via-rose-400 to-indigo-500 text-slate-950 hover:opacity-95 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
-                      : "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-md shadow-indigo-500/20 hover:scale-[1.02]"
+                      : "bg-slate-900 hover:bg-slate-800 text-slate-300 dark:text-slate-300 border border-slate-800 hover:border-slate-700"
                     }`}
                 >
-                  <span>Claim 50% Off (${plan.priceMonthly}/mo)</span>
-                  <Zap className="w-4 h-4 shrink-0 fill-current opacity-90" />
+                  <span>Start 7-Day Free Trial</span>
+                  <Zap className="w-4 h-4 shrink-0 opacity-80" />
                 </button>
                 <p className="text-[11px] text-center font-semibold text-slate-400 mt-2.5">
-                  🔒 50% Off Every Month For Life • Code SWITCH50 Auto-Applied
+                  🔒 7 Days Free • 2 Free 300 DPI Exports • $0 Charged Today
                 </p>
               </>
             );
@@ -808,15 +784,12 @@ function PricingSectionInner() {
         <div className="mt-10 inline-flex flex-wrap items-center justify-center gap-2 bg-slate-950/90 p-2 rounded-full border border-slate-800 backdrop-blur-md shadow-xl">
           <button
             onClick={() => setBillingCycle('monthly')}
-            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all flex items-center gap-1.5 cursor-pointer ${billingCycle === 'monthly'
+            className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-black transition-all cursor-pointer ${billingCycle === 'monthly'
                 ? "bg-white text-slate-950 shadow-md"
                 : "text-slate-400 hover:text-white"
               }`}
           >
-            <span>Monthly</span>
-            <span className="bg-amber-500 text-slate-950 font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-md">
-              🔥 50% Off For Life
-            </span>
+            Monthly
           </button>
           <button
             onClick={() => setBillingCycle('annual')}
@@ -831,53 +804,6 @@ function PricingSectionInner() {
             </span>
           </button>
         </div>
-
-        {/* 🏷️ 50% OFF FOR LIFE Banner with Copyable Coupon Code SWITCH50 (Black & Golden Yellow VIP Theme) */}
-        {billingCycle === 'monthly' && (
-          <div className="relative mt-8 max-w-2xl mx-auto p-4 sm:p-5 rounded-3xl bg-black border-2 border-amber-400/90 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[0_0_30px_rgba(245,158,11,0.22)] overflow-hidden animate-in fade-in">
-            {/* Top golden accent line */}
-            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
-            
-            {/* Subtle background ambient gold illumination */}
-            <div className="absolute -top-10 -left-10 w-32 h-32 bg-amber-500/15 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl pointer-events-none" />
-
-            <div className="flex items-center gap-3.5 text-left relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400/20 via-yellow-500/10 to-amber-950/40 text-amber-400 flex items-center justify-center shrink-0 border border-amber-400/50 shadow-inner">
-                <Sparkles className="w-6 h-6 text-amber-300 animate-pulse" />
-              </div>
-              <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/40 text-[10px] font-black uppercase tracking-wider mb-1 shadow-sm">
-                  🔥 Special Lifetime Promotion
-                </div>
-                <h3 className="text-base sm:text-lg md:text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-400 drop-shadow-[0_2px_8px_rgba(245,158,11,0.3)]">
-                  50% OFF EVERY MONTH FOR LIFE
-                </h3>
-                <p className="text-xs text-amber-100/80 font-medium">
-                  Prices cut in half! Lock in 50% off every renewal forever with coupon:
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={handleCopyCode}
-              type="button"
-              title="Click to copy coupon code"
-              className="relative z-10 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black border border-yellow-200 shadow-lg shadow-amber-500/30 transition-all active:scale-95 cursor-pointer shrink-0 hover:scale-105"
-            >
-              <span className="font-mono font-black text-sm tracking-wider text-slate-950">SWITCH50</span>
-              {copiedCode ? (
-                <span className="flex items-center gap-1 text-[11px] font-black text-emerald-950 bg-emerald-300/70 px-1.5 py-0.5 rounded">
-                  <Check className="w-3.5 h-3.5 text-emerald-950" /> Copied!
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-[11px] font-black text-slate-900/80">
-                  <Copy className="w-3.5 h-3.5" /> Copy
-                </span>
-              )}
-            </button>
-          </div>
-        )}
 
         {/* 🎟️ Active Promo Code Notification Banner */}
         {searchParams.get("coupon") && (
@@ -1186,27 +1112,18 @@ function PricingSectionInner() {
             {/* Starter */}
             <div className="p-5 md:p-6 text-center border-l border-slate-800 bg-indigo-950/40">
               <span className="block text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">Starter</span>
-              <span className="block text-xl font-black text-indigo-300">
-                <span className="line-through text-xs text-slate-500 mr-1.5 opacity-60">$11.99</span>
-                $5.99<span className="text-xs font-semibold text-slate-400">/mo</span>
-              </span>
+              <span className="block text-xl font-black text-indigo-300">$11.99<span className="text-xs font-semibold text-slate-400">/mo</span></span>
             </div>
             {/* Pro */}
             <div className="p-5 md:p-6 text-center border-l border-amber-500/30 bg-amber-950/30 relative">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-yellow-400" />
               <span className="block text-[10px] font-black uppercase tracking-widest text-amber-400 mb-1">Pro Studio ⭐</span>
-              <span className="block text-xl font-black text-amber-300">
-                <span className="line-through text-xs text-slate-500 mr-1.5 opacity-60">$21</span>
-                $10.50<span className="text-xs font-semibold text-slate-400">/mo</span>
-              </span>
+              <span className="block text-xl font-black text-amber-300">$21<span className="text-xs font-semibold text-slate-400">/mo</span></span>
             </div>
             {/* Agency */}
             <div className="p-5 md:p-6 text-center border-l border-slate-800 bg-emerald-950/30">
               <span className="block text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Agency</span>
-              <span className="block text-xl font-black text-emerald-300">
-                <span className="line-through text-xs text-slate-500 mr-1.5 opacity-60">$39</span>
-                $19.50<span className="text-xs font-semibold text-slate-400">/mo</span>
-              </span>
+              <span className="block text-xl font-black text-emerald-300">$39<span className="text-xs font-semibold text-slate-400">/mo</span></span>
             </div>
           </div>
 
@@ -1362,9 +1279,9 @@ export default function PricingSection() {
 function PricingSkeleton() {
   const staticPlans = [
     { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 Chapter Outline / mo", "Access to free tools & KDP guides"] },
-    { name: "Starter Creator", price: "$5.99", originalPrice: "$11.99", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Cover & Interior Canvas Studio", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
-    { name: "Pro Studio", price: "$10.50", originalPrice: "$21", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Up to 10 Brand & pen-name profiles", "Full Sudoku Engine (Easy, Med, Hard)", "Shaped Labyrinth Generator (Circle, Heart)", "Word Search, Cryptogram & Scramble Studio", "30 AI Book Chapters & 15 Outlines / mo", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
-    { name: "Publisher Agency", price: "$19.50", originalPrice: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "KDP Niche Hunter & Keyword Spy", "Bulk batch generation & CSV import", "Dedicated customer support manager"] },
+    { name: "Starter Creator", price: "$11.99", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Cover & Interior Canvas Studio", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
+    { name: "Pro Studio", price: "$21", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Up to 10 Brand & pen-name profiles", "Full Sudoku Engine (Easy, Med, Hard)", "Shaped Labyrinth Generator (Circle, Heart)", "Word Search, Cryptogram & Scramble Studio", "30 AI Book Chapters & 15 Outlines / mo", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
+    { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "KDP Niche Hunter & Keyword Spy", "Bulk batch generation & CSV import", "Dedicated customer support manager"] },
   ];
 
   return (
@@ -1391,11 +1308,6 @@ function PricingSkeleton() {
             <div>
               <h3 className="text-2xl font-black mb-2 text-slate-900 dark:text-white">{plan.name}</h3>
               <div className="mb-8 flex items-baseline gap-2">
-                {plan.originalPrice && (
-                  <span className="text-xl font-black line-through self-end pb-1 opacity-50 text-slate-500">
-                    {plan.originalPrice}
-                  </span>
-                )}
                 <span className="text-5xl font-black tracking-tight text-slate-900 dark:text-white">{plan.price}</span>
                 <span className="font-bold text-sm text-slate-500 dark:text-slate-300">{plan.period}</span>
               </div>

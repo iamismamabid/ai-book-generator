@@ -16,5 +16,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  redirect("/tools");
+  redirect("/tools/kdp-listing-sheet");
 }

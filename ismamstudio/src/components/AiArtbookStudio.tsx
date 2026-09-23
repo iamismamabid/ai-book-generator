@@ -18,6 +18,7 @@ import {
   deleteArtbookPageAction,
   clearArtbookPagesAction,
 } from "@/app/actions";
+import ArtbookRetouchModal from "@/components/ArtbookRetouchModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ColoringPage {
@@ -183,6 +184,9 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
   const [bridgeBookSubtitle, setBridgeBookSubtitle] = useState("A Collection of AI-Generated Coloring Pages");
   const [bridgeTrimSize, setBridgeTrimSize] = useState(BRIDGE_TRIM_OPTIONS[0]);
   const [bridgeBleedProtection, setBridgeBleedProtection] = useState(true);
+
+  // Retouch Modal State
+  const [retouchPage, setRetouchPage] = useState<ColoringPage | null>(null);
 
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -369,6 +373,29 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
   };
 
   const downloadPage = (p: ColoringPage) => { const a = document.createElement("a"); a.href = p.imageUrl; a.download = `coloring-page-${Date.now()}.png`; a.click(); };
+
+  // ── Retouch Cleaned Artwork Handler ──────────────────────────────────────
+  const handleSaveRetouch = (newUrl: string) => {
+    if (!retouchPage) return;
+    const updated: ColoringPage = { ...retouchPage, imageUrl: newUrl };
+    setPages(prev => {
+      const u = prev.map(p => p.id === retouchPage.id ? updated : p);
+      try { localStorage.setItem("kdpage_coloring_pages", JSON.stringify(u)); } catch {}
+      return u;
+    });
+    if (previewPage?.id === retouchPage.id) {
+      setPreviewPage(updated);
+    }
+    if (isSignedIn) {
+      saveArtbookPageAction({
+        imageUrl: updated.imageUrl,
+        prompt: updated.prompt,
+        style: updated.style,
+        provider: updated.provider,
+      }).catch(console.error);
+    }
+    setRetouchPage(null);
+  };
 
   // ── Open in Creator Studio (1-Click Bridge to Book Builder) ───────────────
   const openBridgeModal = (targetPages?: ColoringPage[]) => {
@@ -619,6 +646,9 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
                   <button onClick={() => setLightboxOpen(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-md hover:bg-slate-50 cursor-pointer">
                     <ZoomIn className="w-3.5 h-3.5" />View
+                  </button>
+                  <button onClick={() => setRetouchPage(previewPage)} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md transition-colors cursor-pointer" title="Clean AI specks, erase white, & fix line breaks">
+                    <Paintbrush className="w-3.5 h-3.5" />Retouch
                   </button>
                   <button onClick={() => openBridgeModal([previewPage])} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md hover:from-indigo-500 hover:to-purple-500 cursor-pointer" title="Send to Creator Studio Book Builder">
                     <BookOpen className="w-3.5 h-3.5" />To Studio
@@ -950,6 +980,9 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
                 <img src={page.imageUrl} alt={page.prompt} className="w-full aspect-square object-cover bg-white" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute bottom-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={e => { e.stopPropagation(); setRetouchPage(page); }} className="w-7 h-7 rounded-full bg-white shadow flex items-center justify-center hover:bg-amber-50 cursor-pointer" title="Retouch Artwork">
+                    <Paintbrush className="w-3.5 h-3.5 text-amber-600" />
+                  </button>
                   <button onClick={e => { e.stopPropagation(); downloadPage(page); }} className="w-7 h-7 rounded-full bg-white shadow flex items-center justify-center hover:bg-slate-50 cursor-pointer">
                     <Download className="w-3.5 h-3.5 text-slate-700" />
                   </button>
@@ -1220,6 +1253,15 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
             <button
               onClick={() => {
                 setLightboxOpen(false);
+                setRetouchPage(previewPage);
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-wider cursor-pointer shadow-xl transition-colors"
+            >
+              <Paintbrush className="w-3.5 h-3.5" />Retouch &amp; Erase
+            </button>
+            <button
+              onClick={() => {
+                setLightboxOpen(false);
                 openBridgeModal([previewPage]);
               }}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-black uppercase tracking-wider hover:from-indigo-500 hover:to-purple-500 cursor-pointer shadow-xl active:scale-95"
@@ -1231,6 +1273,17 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
             </button>
           </div>
         </div>
+      )}
+
+      {/* ── Retouch & Clean Modal ─────────────────────────────────────────── */}
+      {retouchPage && (
+        <ArtbookRetouchModal
+          isOpen={!!retouchPage}
+          onClose={() => setRetouchPage(null)}
+          imageUrl={retouchPage.imageUrl}
+          pagePrompt={retouchPage.prompt}
+          onSave={handleSaveRetouch}
+        />
       )}
     </div>
   );

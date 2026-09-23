@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Grid3x3, Palette, Loader2, Sparkles, Lock, Cloud, CloudOff, Check, X, Paintbrush } from "lucide-react";
+import { Grid3x3, Palette, Loader2, Sparkles, Lock, Cloud, CloudOff, Check, X, Paintbrush, Tag, Box } from "lucide-react";
 import dynamic from 'next/dynamic';
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { checkPremiumStatus, saveCoverProject, loadCoverProject, getNotebookEntryData } from "../actions";
 import { saveCoverDraftToIndexedDB, loadCoverDraftFromIndexedDB } from "@/lib/indexedDbStorage";
+import KdpListingSheetModal from "@/components/KdpListingSheetModal";
 
 // Dynamic imports — components use browser-only APIs (canvas, localStorage)
 // Wrapped with auto-reload protection against CDN/browser cache ChunkLoadError
@@ -95,6 +96,9 @@ export default function MasterStudioApp() {
 
   // Import notification banner (e.g. when arriving via 1-click bridge from AI Artbook Studio)
   const [importToast, setImportToast] = useState<string | null>(null);
+
+  // KDP Listing & Keyword Sheet Modal
+  const [kdpSheetOpen, setKdpSheetOpen] = useState(false);
 
   useEffect(() => {
     if (importToast) {
@@ -705,6 +709,25 @@ export default function MasterStudioApp() {
 
         {/* Right: Dedicated Tools & Navigation */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setKdpSheetOpen(true)}
+            className="flex items-center gap-1.5 text-[11px] font-black text-amber-400 hover:text-amber-300 px-3 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95"
+            title="Amazon KDP 7-Backend-Keywords, Categories & HTML Description Copy Sheet"
+          >
+            <Tag className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">KDP Keywords &amp; Sheet</span>
+            <span className="sm:hidden">KDP Sheet</span>
+          </button>
+          <Link
+            href="/tools/3d-mockup"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden xl:flex items-center gap-1.5 text-[11px] font-bold text-slate-300 hover:text-white px-3 py-1.5 rounded-full bg-slate-900 border border-slate-700 hover:border-slate-600 uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+            title="Free 3D Book Mockup Generator"
+          >
+            <Box className="w-3.5 h-3.5 text-indigo-400" />
+            <span>3D Mockup ↗</span>
+          </Link>
           <Link
             href="/artbook-studio"
             target="_blank"
@@ -791,6 +814,15 @@ export default function MasterStudioApp() {
           )}
         </div>
       </main>
+
+      {/* Amazon KDP 7-Backend-Keywords & Category Copy Sheet Helper Modal */}
+      <KdpListingSheetModal
+        isOpen={kdpSheetOpen}
+        onClose={() => setKdpSheetOpen(false)}
+        bookMeta={bookMeta}
+        bookPages={getBookPages ? getBookPages() : []}
+        onUpdateMeta={(updated) => setBookMeta(prev => ({ ...prev, ...updated }))}
+      />
     </div>
   );
 }

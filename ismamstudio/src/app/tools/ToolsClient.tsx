@@ -312,6 +312,26 @@ export default function FreeToolsHub() {
   const toolsList: ToolItem[] = [
     // 1. AI & Design Studios
     {
+      id: "3d-mockup",
+      name: "Free 3D Book Mockup Generator",
+      badge: "Must-Have",
+      category: "Design",
+      description: "Generate realistic 3D paperback & hardcover book mockups from your 2D cover. Export 300 DPI transparent PNGs for Amazon A+ Content and ads.",
+      features: ["4 Photorealistic 3D perspectives", "Transparent PNG & Studio Lighting", "Paperback & Hardcover mode"],
+      keywords: ["3d book mockup", "book mockup", "mockup generator", "amazon a+ content", "paperback mockup", "hardcover mockup"],
+      link: "/tools/3d-mockup"
+    },
+    {
+      id: "kdp-listing-sheet",
+      name: "Amazon KDP 7-Backend-Keywords & Copy Sheet Helper",
+      badge: "Must-Have",
+      category: "Marketing",
+      description: "Format title, subtitle, 7 backend search keywords (<50 chars, no commas), Amazon categories, and KDP-ready HTML description with 1-click copy.",
+      features: ["7 Backend keyword boxes with length counter", "Amazon BISAC categories with 1-click copy", "KDP-compliant HTML description generator"],
+      keywords: ["kdp 7 backend keywords", "kdp keywords", "kdp listing copy sheet", "kdp keyword generator", "amazon category selector", "kdp description copy"],
+      link: "/tools/kdp-listing-sheet"
+    },
+    {
       id: "artbook-studio",
       name: "AI Coloring Artbook Studio",
       badge: "AI Studio",

@@ -6037,6 +6037,48 @@ export default function FabricCoverStudio({
     }, 300);
   };
 
+  const handleOpen3DMockupTool = async () => {
+    if (!canvas) return;
+    try {
+      canvas.discardActiveObject();
+      canvas.requestRenderAll();
+      const multiplier = 2;
+      const fullDataUrl = await exportCanvasWithBackground(canvas, multiplier);
+      const img = new Image();
+      img.onload = () => {
+        const cropRegion = (xPx: number, yPx: number, wPx: number, hPx: number): string => {
+          const cropCanvas = document.createElement('canvas');
+          cropCanvas.width = wPx;
+          cropCanvas.height = hPx;
+          const ctx = cropCanvas.getContext('2d');
+          if (!ctx) return fullDataUrl;
+          ctx.drawImage(img, xPx, yPx, wPx, hPx, 0, 0, wPx, hPx);
+          const res = cropCanvas.toDataURL('image/png');
+          cropCanvas.width = 0;
+          cropCanvas.height = 0;
+          return res;
+        };
+
+        const frontX = layout.frontLiveLeftPx - layout.safeMarginPx;
+        const frontW = layout.trimRightPx - frontX;
+        const frontH = layout.trimBottomPx - layout.trimTopPx;
+
+        const frontUrl = cropRegion(frontX * multiplier, layout.trimTopPx * multiplier, frontW * multiplier, frontH * multiplier);
+        sessionStorage.setItem("kdpage_mockup_cover", frontUrl);
+        if (layout.spineWidthPx > 2) {
+          const spineUrl = cropRegion(layout.spineLeftPx * multiplier, layout.trimTopPx * multiplier, layout.spineWidthPx * multiplier, frontH * multiplier);
+          sessionStorage.setItem("kdpage_mockup_spine", spineUrl);
+        }
+        sessionStorage.setItem("kdpage_mockup_pages", String(safePageCount));
+        window.open("/tools/3d-mockup", "_blank");
+      };
+      img.src = fullDataUrl;
+    } catch (e) {
+      console.error("Failed to prepare 3D mockup:", e);
+      window.open("/tools/3d-mockup", "_blank");
+    }
+  };
+
   // Crops out just the front-cover region (same trim math as the 3D mockup)
   // for the marketplace thumbnail preview — only the front cover shows up in
   // search results / product thumbnails, so the spine/back aren't needed.
@@ -9513,6 +9555,15 @@ export default function FabricCoverStudio({
             >
               <ShieldCheck className="w-4 h-4 text-indigo-600" />
               <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">Pre-Flight</span>
+            </button>
+
+            <button
+              onClick={handleOpen3DMockupTool}
+              title="Open in Free 3D Book Mockup Generator"
+              className="p-2 pl-2.5 pr-3 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-all duration-150 active:scale-[0.94] flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Box className="w-4 h-4 text-amber-600" />
+              <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">3D Mockup</span>
             </button>
 
             <button

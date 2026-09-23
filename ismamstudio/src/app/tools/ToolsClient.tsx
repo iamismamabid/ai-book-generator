@@ -665,16 +665,6 @@ export default function FreeToolsHub() {
       link: "/tools/keyword-density"
     },
     {
-      id: "coloring-book-generator",
-      name: "Free Coloring Book & Mandala Studio",
-      badge: "Popular",
-      category: "Design",
-      description: "Generate 300 DPI vector coloring pages, mandalas, botanical line art, and color-by-number templates.",
-      features: ["300 DPI vector PDF & PNG", "Mandalas & botanical florals", "Color-by-number palettes"],
-      keywords: ["coloring book", "mandala", "color by number", "line art", "coloring pages", "stained glass"],
-      link: "/tools/coloring-book-generator"
-    },
-    {
       id: "bulk-generator",
       name: "KDP Bulk Book Batch Studio",
       badge: "Pro",

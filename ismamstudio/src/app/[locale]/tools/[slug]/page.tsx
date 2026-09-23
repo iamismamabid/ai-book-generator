@@ -1,5 +1,4 @@
-import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
@@ -146,7 +145,7 @@ export default async function LocalizedToolPage({ params }: PageProps) {
       case "word-search":
         return <WordSearchStudio />;
       case "coloring-book-generator":
-        return <ColoringBookClient />;
+        redirect("/artbook-studio");
       case "interior-templates":
         return <InteriorTemplates />;
       case "keyword-research":

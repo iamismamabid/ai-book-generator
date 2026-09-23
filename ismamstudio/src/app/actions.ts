@@ -9,6 +9,7 @@ import { getTeamOwnerIdForMember, getWorkspaceUserIds, seatLimitForPlan } from "
 import { checkRateLimit } from "@/lib/rateLimit";
 import { AI_FEATURES_ENABLED } from "@/lib/features";
 import { addContactToLoops } from "@/lib/loops";
+import { uploadImageToR2, deleteImageFromR2 } from "@/lib/r2";
 
 
 // ২. বই ডিলিট করার ফাংশন
@@ -1918,10 +1919,24 @@ export async function saveArtbookPageAction(data: {
     const { userId } = await auth();
     if (!userId) return { success: false, error: "Unauthorized" };
 
+    // 1. If Cloudflare R2 is configured and image is base64, upload to R2 CDN
+    let finalImageUrl = data.imageUrl;
+    try {
+      if (data.imageUrl.startsWith("data:") || data.imageUrl.length > 500) {
+        const r2Res = await uploadImageToR2(data.imageUrl, "artbook");
+        if (r2Res?.url) {
+          finalImageUrl = r2Res.url;
+        }
+      }
+    } catch (r2Err) {
+      console.warn("R2 upload fallback to direct storage:", r2Err);
+    }
+
+    // 2. Save lightweight record into Neon database
     const page = await prisma.artbookPage.create({
       data: {
         userId,
-        imageUrl: data.imageUrl,
+        imageUrl: finalImageUrl,
         prompt: data.prompt,
         style: data.style || "standard",
         provider: data.provider || "gemini",
@@ -1977,6 +1992,15 @@ export async function deleteArtbookPageAction(id: string) {
   try {
     const { userId } = await auth();
     if (!userId) return { success: false, error: "Unauthorized" };
+
+    const page = await prisma.artbookPage.findFirst({
+      where: { id, userId },
+      select: { imageUrl: true },
+    });
+
+    if (page?.imageUrl && (page.imageUrl.startsWith("http://") || page.imageUrl.startsWith("https://"))) {
+      deleteImageFromR2(page.imageUrl).catch(console.error);
+    }
 
     await prisma.artbookPage.deleteMany({
       where: { id, userId },

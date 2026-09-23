@@ -1120,12 +1120,24 @@ export async function saveAccountUploadedAsset(urlOrDataUrl: string, title = "Up
   }
 
   try {
+    let finalContent = urlOrDataUrl;
+    if (urlOrDataUrl.startsWith("data:") || urlOrDataUrl.length > 500) {
+      try {
+        const r2Res = await uploadImageToR2(urlOrDataUrl, "covers/uploads");
+        if (r2Res?.url) {
+          finalContent = r2Res.url;
+        }
+      } catch (r2Err) {
+        console.warn("R2 upload fallback in saveAccountUploadedAsset:", r2Err);
+      }
+    }
+
     // Check if asset already exists for this user to avoid duplicates
     const existing = await prisma.notebook.findFirst({
       where: {
         userId,
         category: "cover_asset",
-        content: urlOrDataUrl,
+        content: finalContent,
       },
     });
 
@@ -1138,7 +1150,7 @@ export async function saveAccountUploadedAsset(urlOrDataUrl: string, title = "Up
         userId,
         category: "cover_asset",
         title: title.slice(0, 100),
-        content: urlOrDataUrl,
+        content: finalContent,
       },
     });
 

@@ -185,6 +185,12 @@ const nextConfig = {
   // ─── SEO: consolidate duplicate hub page into the canonical /tools ──────
   async redirects() {
     return [
+      {
+        source: "/artbook-studio",
+        missing: [{ type: "query", key: "v", value: "2" }],
+        destination: "/artbook-studio?v=2",
+        permanent: false,
+      },
       { source: "/kdp-formatting-guide", destination: "/kdp-checklist", permanent: true },
       { source: "/tools/free", destination: "/tools", permanent: true },
       { source: "/tools/kdp-spine-calculator", destination: "/tools/spine-calculator", permanent: true },

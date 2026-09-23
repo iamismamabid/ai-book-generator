@@ -6,8 +6,21 @@ const hasClerkKeys =
   Boolean(process.env.CLERK_SECRET_KEY);
 
 const middleware = hasClerkKeys
-  ? clerkMiddleware()
-  : () => NextResponse.next();
+  ? clerkMiddleware((auth, req) => {
+      if (req.nextUrl.pathname === "/artbook-studio" && req.nextUrl.searchParams.get("v") !== "2") {
+        const url = req.nextUrl.clone();
+        url.searchParams.set("v", "2");
+        return NextResponse.redirect(url);
+      }
+    })
+  : (req: any) => {
+      if (req.nextUrl.pathname === "/artbook-studio" && req.nextUrl.searchParams.get("v") !== "2") {
+        const url = req.nextUrl.clone();
+        url.searchParams.set("v", "2");
+        return NextResponse.redirect(url);
+      }
+      return NextResponse.next();
+    };
 
 export default middleware;
 

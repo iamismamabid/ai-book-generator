@@ -10,6 +10,16 @@ export default function ArtbookStudioClient() {
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("v") !== "2") {
+        url.searchParams.set("v", "2");
+        window.location.replace(url.pathname + url.search);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (isSignedIn) {
       checkPremiumStatus()
         .then((res: any) => setPremiumStatus(res))

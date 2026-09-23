@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { checkPremiumStatus } from "@/app/actions";
 import AiArtbookStudio from "@/components/AiArtbookStudio";
 
 export default function ArtbookStudioClient() {

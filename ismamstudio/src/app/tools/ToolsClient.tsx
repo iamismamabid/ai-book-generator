@@ -341,6 +341,16 @@ export default function FreeToolsHub() {
       keywords: ["ai artbook studio", "ai coloring book", "coloring page generator", "coloring book generator", "line art generator", "artbook maker"],
       link: "/artbook-studio"
     },
+    {
+      id: "coloring-book-generator",
+      name: "Free Coloring Book & Mandala Studio",
+      badge: "Popular",
+      category: "Design",
+      description: "Generate 300 DPI vector coloring pages, mandalas, botanical line art, and color-by-number templates.",
+      features: ["300 DPI vector PDF & PNG", "Mandalas & botanical florals", "Color-by-number palettes"],
+      keywords: ["coloring book", "mandala", "color by number", "line art", "coloring pages", "stained glass"],
+      link: "/tools/coloring-book-generator"
+    },
     // 1. Cover & Spine Tools
     {
       id: "kdp-cover-creator",

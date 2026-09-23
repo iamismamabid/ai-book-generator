@@ -145,7 +145,7 @@ export default async function LocalizedToolPage({ params }: PageProps) {
       case "word-search":
         return <WordSearchStudio />;
       case "coloring-book-generator":
-        redirect("/artbook-studio");
+        return <ColoringBookClient />;
       case "interior-templates":
         return <InteriorTemplates />;
       case "keyword-research":

@@ -62,6 +62,7 @@ const TOOL_ITEMS: { name: string; path: string }[] = [
   { name: "Free 3D Book Mockup Generator", path: "/tools/3d-mockup" },
   { name: "Amazon KDP 7-Backend-Keywords & Copy Sheet Helper", path: "/tools/kdp-listing-sheet" },
   { name: "AI Coloring Artbook Studio", path: "/artbook-studio" },
+  { name: "Free KDP Coloring Book Generator & Color-by-Number Studio", path: "/tools/coloring-book-generator" },
   { name: "Free KDP Puzzle Generator", path: "/tools/kdp-puzzle-generator" },
   { name: "Automated KDP Cover Creator", path: "/tools/kdp-cover-creator" },
   { name: "100% Free Amazon KDP Formatter (Book Description Generator)", path: "/tools/kdp-book-description-generator" },

@@ -241,6 +241,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
             { title: "All-In-One Studio", desc: "Wrap-around full-bleed covers, interior manuscript assembly, and complete KDP book builder.", href: "/studio", icon: BookOpen, badge: "Full KDP Publisher" },
+            { title: "KDP Coloring Book Studio", desc: "100+ printable vector mandalas, floral botanicals, and color-by-number templates with instant 300 DPI vector PDF export.", href: "/tools/coloring-book-generator", icon: Palette, badge: "Free Vector Studio" },
             { title: "AI Coloring Artbook Studio", desc: "Turn text ideas or photos into printable vector coloring pages, mandalas, and complete KDP artbooks.", href: "/artbook-studio", icon: Paintbrush, badge: "AI Generator" },
             { title: "Labyrinth & Maze Engine", desc: "Square, Heart, and Circle shape-masked mazes with single-solution paths and KDP-safe margins.", href: "/maze", icon: Compass, badge: "Custom Shape Mask" },
             { title: "Sudoku Studio", desc: "Bulk Sudoku grids, Easy to Hard, each verified for exactly one unique solution.", href: "/sudoku", icon: Grid3x3, badge: "300 DPI Vector" },
@@ -293,6 +294,8 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
+            { href: "/tools/coloring-book-generator", icon: Palette, name: "Free KDP Coloring Book Studio", desc: "Mandalas, botanicals & color-by-number" },
+            { href: "/tools/3d-mockup", icon: Layers, name: "Free 3D Book Mockup Generator", desc: "Photorealistic 300 DPI transparent mockups" },
             { href: "/tools/kdp-book-description-generator", icon: FileText, name: "100% Free KDP Formatter", desc: "HTML book description & formatting" },
             { href: "/tools/print-cost-calculator", icon: Calculator, name: "Free Print Cost Calculator", desc: "Paperback & hardcover printing costs" },
             { href: "/tools/ebook-royalty-calculator", icon: Calculator, name: "Free eBook Royalty Calculator", desc: "35% vs 70% Kindle plans" },

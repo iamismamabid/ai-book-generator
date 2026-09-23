@@ -1,6 +1,9 @@
 import { Metadata } from "next";
 import ColoringBookClient from "./ColoringBookClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Free KDP Coloring Book Generator & Color-by-Number Studio (300 DPI Vector) | KDPage",
   description:

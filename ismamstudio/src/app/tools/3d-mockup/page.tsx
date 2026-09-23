@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import BookMockupClient from "./BookMockupClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Free 3D Book Mockup Generator (300 DPI Transparent PNG) | KDPage",
   description:

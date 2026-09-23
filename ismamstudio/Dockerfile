@@ -14,12 +14,26 @@ RUN npm ci
 COPY prisma ./prisma/
 
 # ৫. ডকার বিল্ডের ভেতরেই প্রিজমা ক্লায়েন্ট জেনারেট করা
+# Build-time env stubs — real values are injected by Railway at runtime via Variables tab
 ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 ENV DIRECT_URL="postgresql://postgres:postgres@localhost:5432/postgres"
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_dummy"
-ENV CLERK_SECRET_KEY="sk_test_dummy"
+# NEXT_PUBLIC_ keys are embedded in the browser bundle — safe to set at build time
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_YXdhaXRlZC1mYXduLTIyLmNsZXJrLmFjY291bnRzLmRldiQ"
+ENV NEXT_PUBLIC_PADDLE_CLIENT_TOKEN="live_16495c6f0a5e429fbea919b267e"
+ENV NEXT_PUBLIC_PADDLE_ENVIRONMENT="production"
+ENV NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY="pri_01kwbgsarn24e1rn46dhadfcnx"
+ENV NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL="pri_01kwbh8envq2yez7j7hsd1y679"
+ENV NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY="pri_01kwbgyfhhq6h86av5qycv52fs"
+ENV NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL="pri_01kwbh4d3njs6ywbv9qr1wae79"
+ENV NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY="pri_01kwbwhfxnebsj6nds4m65jjrq"
+ENV NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL="pri_01kwbwkrk1w7tnc318ga4d6xt6"
+ENV NEXT_PUBLIC_PADDLE_PRICE_PRO_DIRECT_MONTHLY="pri_01m1xp939ywtagxwqc8qrr7z7t"
+ENV NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY="pri_01m1xpfd1pbtgfw3qj4gmp2h9x"
+ENV NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN="phc_AZuzMVLVXietKCedPnVtBUJDfzrREAkBQge9vjavCeHb"
+ENV NEXT_PUBLIC_POSTHOG_HOST="https://us.i.posthog.com"
 ENV SKIP_ENV_VALIDATION="true"
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 
 RUN npx prisma generate
 

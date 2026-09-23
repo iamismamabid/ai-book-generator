@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Grid3x3, Palette, Loader2, Sparkles, Lock, Cloud, CloudOff, Check, Paintbrush } from "lucide-react";
+import { Grid3x3, Palette, Loader2, Sparkles, Lock, Cloud, CloudOff, Check } from "lucide-react";
 import dynamic from 'next/dynamic';
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -33,17 +33,6 @@ const BookBuilder = dynamic(
     }),
   { ssr: false }
 );
-const AiArtbookStudio = dynamic(
-  () =>
-    import("@/components/AiArtbookStudio").catch((err) => {
-      if (typeof window !== "undefined" && !sessionStorage.getItem("retry_chunk_artbook")) {
-        sessionStorage.setItem("retry_chunk_artbook", "1");
-        window.location.reload();
-      }
-      throw err;
-    }),
-  { ssr: false }
-);
 import CoverStudioErrorBoundary from "@/components/CoverStudioErrorBoundary";
 import InteriorErrorBoundary from "@/components/InteriorErrorBoundary";
 import { BookCoverSyncData } from "@/components/FullBookPackagerModal";
@@ -58,12 +47,12 @@ const TRIM_SIZES = [
 export default function MasterStudioApp() {
   const { isSignedIn } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'interior' | 'cover' | 'artbook'>(() => {
+  const [activeTab, setActiveTab] = useState<'interior' | 'cover'>(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get("tab");
-      if (tab === "cover" || tab === "interior" || tab === "artbook") {
-        return tab as 'interior' | 'cover' | 'artbook';
+      if (tab === "cover" || tab === "interior") {
+        return tab as 'interior' | 'cover';
       }
     }
     return 'interior';
@@ -78,7 +67,7 @@ export default function MasterStudioApp() {
   // tab buttons themselves never wrote it back -- so switching to Cover
   // Studio then reloading always landed back on Book Builder. Keeping the URL
   // in sync fixes that without touching browser history on every click.
-  const handleTabChange = (tab: 'interior' | 'cover' | 'artbook') => {
+  const handleTabChange = (tab: 'interior' | 'cover') => {
     if (tab === 'cover') {
       if (bookMeta.trimSize && (trimSize.w !== bookMeta.trimSize.w || trimSize.h !== bookMeta.trimSize.h)) {
         setTrimSize(bookMeta.trimSize);
@@ -633,24 +622,6 @@ export default function MasterStudioApp() {
             <Palette className="w-3.5 h-3.5"/> Cover Studio
           </button>
 
-          <button
-            onClick={() => handleTabChange('artbook')}
-            className={`relative px-4 sm:px-5 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-200 flex items-center gap-1.5 z-10 ${
-              activeTab === 'artbook' ? 'text-slate-950 font-black' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            {activeTab === 'artbook' && (
-              <motion.div
-                layoutId="activeTabPill"
-                className="absolute inset-0 bg-fuchsia-400 rounded-full shadow-md -z-10"
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              />
-            )}
-            <Paintbrush className="w-3.5 h-3.5"/> AI Artbook
-            {activeTab !== 'artbook' && (
-              <span className="text-[7px] font-black px-1 py-0.5 rounded bg-amber-500/30 text-amber-300 border border-amber-500/30 uppercase tracking-wider leading-none">AI</span>
-            )}
-          </button>
         </div>
 
         {/* Right: Quick Home Exit */}
@@ -729,19 +700,6 @@ export default function MasterStudioApp() {
               />
             </CoverStudioErrorBoundary>
           )}
-        </div>
-
-        {/* AI Artbook Studio Tab */}
-        <div
-          className={`absolute inset-0 w-full h-full flex flex-col overflow-hidden transition-opacity duration-150 ${
-            activeTab === 'artbook' ? 'opacity-100 z-10 pointer-events-auto visible' : 'opacity-0 z-0 pointer-events-none invisible'
-          }`}
-        >
-          <AiArtbookStudio
-            isPremium={premiumStatus.isPremium}
-            isSignedIn={!!isSignedIn}
-            isActive={activeTab === 'artbook'}
-          />
         </div>
       </main>
     </div>

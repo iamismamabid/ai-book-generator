@@ -12,7 +12,7 @@ export default function LayoutShell({
   header: ReactNode;
 }) {
   const pathname = usePathname();
-  const isStudio = pathname === "/studio";
+  const isStudio = pathname === "/studio" || pathname === "/artbook-studio";
 
   if (isStudio) {
     return (

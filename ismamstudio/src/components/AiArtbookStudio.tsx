@@ -12,6 +12,12 @@ import {
   ByokProvider, loadByokKeys, saveByokKey, removeByokKey,
   getProviderInfo, loadActiveProvider, saveActiveProvider, maskApiKey,
 } from "@/lib/byokStorage";
+import {
+  saveArtbookPageAction,
+  getArtbookPagesAction,
+  deleteArtbookPageAction,
+  clearArtbookPagesAction,
+} from "@/app/actions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ColoringPage {
@@ -178,7 +184,30 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
       .then(r => r.json())
       .then(d => { if (d.hasServerGeminiKey) { setServerGemini(true); setServerGeminiHint(d.geminiKeyHint); } })
       .catch(() => {});
-  }, []);
+
+    // 1. First load instant local cache
+    try {
+      const raw = localStorage.getItem("kdpage_coloring_pages");
+      if (raw) {
+        const local = JSON.parse(raw);
+        if (Array.isArray(local) && local.length > 0) {
+          setPages(local);
+          setPreviewPage(local[0]);
+        }
+      }
+    } catch {}
+
+    // 2. If signed in, sync latest from Neon Cloud Storage
+    if (isSignedIn) {
+      getArtbookPagesAction().then(res => {
+        if (res.success && res.pages && res.pages.length > 0) {
+          setPages(res.pages as any);
+          setPreviewPage(res.pages[0] as any);
+          try { localStorage.setItem("kdpage_coloring_pages", JSON.stringify(res.pages)); } catch {}
+        }
+      }).catch(console.error);
+    }
+  }, [isSignedIn]);
 
   // ── Derived ───────────────────────────────────────────────────────────────
   const activeProvider: ByokProvider = useProMode ? "openai" : "gemini";
@@ -236,9 +265,30 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
     setIsGenerating(false);
     setGenIndex(0);
     if (newPages.length > 0) {
-      setPages(prev => { const u = [... newPages, ...prev]; setPreviewPage(newPages[0]); return u; });
+      setPages(prev => {
+        const u = [...newPages, ...prev];
+        setPreviewPage(newPages[0]);
+        try { localStorage.setItem("kdpage_coloring_pages", JSON.stringify(u)); } catch {}
+        return u;
+      });
+
+      // ── Neon Cloud Storage: Persist newly generated pages ───────────────
+      if (isSignedIn) {
+        for (const np of newPages) {
+          saveArtbookPageAction({
+            imageUrl: np.imageUrl,
+            prompt: np.prompt,
+            style: np.style,
+            provider: np.provider,
+          }).then(res => {
+            if (res.success && res.page) {
+              setPages(curr => curr.map(p => p.id === np.id ? { ...p, id: res.page!.id } : p));
+            }
+          }).catch(console.error);
+        }
+      }
     }
-  }, [mode, prompt, photoFile, hasKey, batch, activeProvider, activeKey, selectedStyle, styleId, enhancedBg]);
+  }, [mode, prompt, photoFile, hasKey, batch, activeProvider, activeKey, selectedStyle, styleId, enhancedBg, isSignedIn]);
 
   // ── Key save ──────────────────────────────────────────────────────────────
   const saveKey = () => {
@@ -281,7 +331,28 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
     finally { setIsExporting(false); }
   }, [pages]);
 
-  const deletePage = (id: string) => setPages(prev => { const u = prev.filter(p => p.id !== id); if (previewPage?.id === id) setPreviewPage(u[0] ?? null); return u; });
+  const deletePage = (id: string) => {
+    setPages(prev => {
+      const u = prev.filter(p => p.id !== id);
+      try { localStorage.setItem("kdpage_coloring_pages", JSON.stringify(u)); } catch {}
+      if (previewPage?.id === id) setPreviewPage(u[0] ?? null);
+      return u;
+    });
+    if (isSignedIn) {
+      deleteArtbookPageAction(id).catch(console.error);
+    }
+  };
+
+  const clearAllPages = () => {
+    if (!confirm("Clear all pages? This will also remove them from your Neon cloud storage.")) return;
+    setPages([]);
+    setPreviewPage(null);
+    try { localStorage.removeItem("kdpage_coloring_pages"); } catch {}
+    if (isSignedIn) {
+      clearArtbookPagesAction().catch(console.error);
+    }
+  };
+
   const downloadPage = (p: ColoringPage) => { const a = document.createElement("a"); a.href = p.imageUrl; a.download = `coloring-page-${Date.now()}.png`; a.click(); };
 
   const canGenerate = mode === "text" ? prompt.trim().length > 0 : !!photoFile;
@@ -698,9 +769,15 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
             <div className="w-2 h-2 rounded-full bg-amber-500" />
             <span className="text-sm font-black text-slate-700">Recent Creations</span>
             {pages.length > 0 && <span className="text-xs font-bold text-slate-400">({pages.length})</span>}
+            {isSignedIn && (
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full flex items-center gap-1.5 ml-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Neon Cloud Synced
+              </span>
+            )}
           </div>
           {pages.length > 0 && (
-            <button onClick={() => { if (confirm("Clear all pages?")) { setPages([]); setPreviewPage(null); } }} className="text-xs font-bold text-slate-400 hover:text-rose-500 flex items-center gap-1 cursor-pointer transition-colors">
+            <button onClick={clearAllPages} className="text-xs font-bold text-slate-400 hover:text-rose-500 flex items-center gap-1 cursor-pointer transition-colors">
               <Trash2 className="w-3 h-3" />Clear all
             </button>
           )}

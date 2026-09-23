@@ -1906,4 +1906,103 @@ export async function getBillingPortalUrl(): Promise<
   }
 }
 
+// ─── AI Artbook Cloud Storage (Neon Database) ─────────────────────────────────
+
+export async function saveArtbookPageAction(data: {
+  imageUrl: string;
+  prompt: string;
+  style?: string;
+  provider?: string;
+}) {
+  try {
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Unauthorized" };
+
+    const page = await prisma.artbookPage.create({
+      data: {
+        userId,
+        imageUrl: data.imageUrl,
+        prompt: data.prompt,
+        style: data.style || "standard",
+        provider: data.provider || "gemini",
+      },
+    });
+
+    return {
+      success: true,
+      page: {
+        id: page.id,
+        imageUrl: page.imageUrl,
+        prompt: page.prompt,
+        style: page.style,
+        provider: page.provider,
+        createdAt: page.createdAt.getTime(),
+      },
+    };
+  } catch (err: any) {
+    console.error("saveArtbookPageAction error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+export async function getArtbookPagesAction() {
+  try {
+    const { userId } = await auth();
+    if (!userId) return { success: false, pages: [] };
+
+    const pages = await prisma.artbookPage.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+
+    return {
+      success: true,
+      pages: pages.map((p) => ({
+        id: p.id,
+        imageUrl: p.imageUrl,
+        prompt: p.prompt,
+        style: p.style,
+        provider: p.provider,
+        createdAt: p.createdAt.getTime(),
+      })),
+    };
+  } catch (err: any) {
+    console.error("getArtbookPagesAction error:", err);
+    return { success: false, pages: [], error: err.message };
+  }
+}
+
+export async function deleteArtbookPageAction(id: string) {
+  try {
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Unauthorized" };
+
+    await prisma.artbookPage.deleteMany({
+      where: { id, userId },
+    });
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("deleteArtbookPageAction error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+export async function clearArtbookPagesAction() {
+  try {
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Unauthorized" };
+
+    await prisma.artbookPage.deleteMany({
+      where: { userId },
+    });
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("clearArtbookPagesAction error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
 

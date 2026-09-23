@@ -1,8 +1,6 @@
 import ArtbookStudioClient from "@/app/artbook-studio/ArtbookStudioClient";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "AI Coloring Artbook Studio | KDPage",

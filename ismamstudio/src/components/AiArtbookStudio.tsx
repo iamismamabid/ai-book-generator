@@ -18,7 +18,8 @@ import {
   deleteArtbookPageAction,
   clearArtbookPagesAction,
 } from "@/app/actions";
-import ArtbookRetouchModal from "@/components/ArtbookRetouchModal";
+import dynamic from "next/dynamic";
+const ArtbookRetouchModal = dynamic(() => import("@/components/ArtbookRetouchModal"), { ssr: false });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ColoringPage {

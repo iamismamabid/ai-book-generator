@@ -120,13 +120,13 @@ export async function POST(req: Request) {
       let b64: string | null = null;
       let usedMethod = "gemini";
 
-      // Method A: Try Gemini multimodal generateContent or Imagen 3
+      // Method A: Try Gemini multimodal generateContent or Imagen 3 (fast failover 2s)
       try {
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${encodeURIComponent(apiKey.trim())}`;
         const geminiRes = await fetch(geminiUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          signal: AbortSignal.timeout(5000),
+          signal: AbortSignal.timeout(2000),
           body: JSON.stringify({
             instances: [{ prompt: enhancedPrompt }],
             parameters: {
@@ -142,39 +142,12 @@ export async function POST(req: Request) {
           b64 = data?.predictions?.[0]?.bytesBase64Encoded || null;
         }
       } catch {
-        // Fall through to Gemini prompt optimizer
+        // Immediate fallback
       }
 
-      // Method B: If Imagen 3 is restricted to Vertex on this key, validate key via Gemini 1.5/2.0 Flash & generate high-res artwork
+      // Method B: High-res print engine with negative prompt directly (zero delay)
       if (!b64) {
-        // Validate key with Gemini 1.5 Flash
-        let optimizedPrompt = enhancedPrompt;
-        try {
-          const validateUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
-          const valRes = await fetch(validateUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            signal: AbortSignal.timeout(5000),
-            body: JSON.stringify({
-              contents: [
-                {
-                  parts: [
-                    {
-                      text: `You are an expert AI prompt engineer for ${studioType === "cover" ? "KDP Book Covers" : "Amazon KDP Coloring Books"}. Enhance this user prompt into a single ultra-detailed image generation prompt without preamble. ${studioType === "coloring" ? "CRITICAL MANDATE: The output MUST be a clean black-and-white coloring book page with thick solid black vector outlines on a pure flat white background (#FFFFFF) across the entire canvas. Absolutely NO dark or black backgrounds, NO inverted colors, NO circular borders/vignettes with dark fills, strictly zero shading, zero grayscale, zero 3D rendering, and no colors." : ""} User prompt: "${enhancedPrompt}"`,
-                    },
-                  ],
-                },
-              ],
-            }),
-          });
-
-          if (valRes.ok) {
-            const valData = await valRes.json();
-            optimizedPrompt = valData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || enhancedPrompt;
-          }
-        } catch {
-          // If Gemini Flash optimizer times out or fails, proceed directly with enhancedPrompt
-        }
+        const optimizedPrompt = enhancedPrompt;
 
         // Generate high-resolution image using the optimized prompt with negative prompt
         const width = studioType === "cover" ? 768 : 1024;

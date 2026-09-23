@@ -84,6 +84,38 @@ export async function uploadImageToR2(
 }
 
 /**
+ * Uploads any binary buffer (PDF, ZIP, PNG, SVG, JSON) to Cloudflare R2.
+ * Can be used for Puzzles, Book packages, Maze shapes, and Cover assets.
+ */
+export async function uploadBufferToR2(
+  buffer: Buffer | Uint8Array,
+  filename: string,
+  contentType = "application/octet-stream"
+): Promise<{ url: string; key: string } | null> {
+  const client = getR2Client();
+  if (!client) return null;
+
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: filename,
+        Body: Buffer.from(buffer),
+        ContentType: contentType,
+      })
+    );
+
+    const baseUrl = R2_PUBLIC_URL?.replace(/\/$/, "") || `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
+    const publicUrl = `${baseUrl}/${filename}`;
+
+    return { url: publicUrl, key: filename };
+  } catch (err) {
+    console.error("Failed to upload buffer to Cloudflare R2:", err);
+    return null;
+  }
+}
+
+/**
  * Deletes an image from Cloudflare R2 given its key or public URL.
  */
 export async function deleteImageFromR2(keyOrUrl: string): Promise<boolean> {

@@ -2029,4 +2029,31 @@ export async function clearArtbookPagesAction() {
   }
 }
 
+/**
+ * Universal Cloudflare R2 uploader for any studio:
+ * - Puzzles (Sudoku, Maze, Crossword, Word Search, Cryptogram)
+ * - Cover Studio uploaded images & cover artwork
+ * - Full Book Export PDFs and ZIP files
+ */
+export async function uploadAssetAction(data: {
+  base64OrBuffer: string;
+  folder?: string;
+}) {
+  try {
+    const { userId } = await auth();
+    if (!userId) return { success: false, error: "Unauthorized" };
+
+    const folder = data.folder || "puzzles";
+    const res = await uploadImageToR2(data.base64OrBuffer, folder);
+    if (res?.url) {
+      return { success: true, url: res.url, key: res.key };
+    }
+    return { success: false, error: "Upload failed or R2 not configured" };
+  } catch (err: any) {
+    console.error("uploadAssetAction error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+
 

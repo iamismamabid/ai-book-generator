@@ -111,6 +111,36 @@ export default function MasterStudioApp() {
     setIsMounted(true);
   }, []);
 
+  // Global ChunkLoadError auto-recovery listener for seamless post-deploy updates
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleGlobalChunkError = (event: ErrorEvent | PromiseRejectionEvent) => {
+      const message = "message" in event ? event.message : (event.reason?.message || String(event.reason || ""));
+      if (
+        message &&
+        (message.includes("Loading chunk") ||
+          message.includes("ChunkLoadError") ||
+          message.includes("Failed to fetch dynamically imported module") ||
+          message.includes("CSS chunk"))
+      ) {
+        const lockKey = "kdpage_global_chunk_reload_lock";
+        const lastReload = sessionStorage.getItem(lockKey);
+        const now = Date.now();
+        if (!lastReload || now - parseInt(lastReload, 10) > 12000) {
+          sessionStorage.setItem(lockKey, now.toString());
+          window.location.reload();
+        }
+      }
+    };
+
+    window.addEventListener("error", handleGlobalChunkError);
+    window.addEventListener("unhandledrejection", handleGlobalChunkError);
+    return () => {
+      window.removeEventListener("error", handleGlobalChunkError);
+      window.removeEventListener("unhandledrejection", handleGlobalChunkError);
+    };
+  }, []);
+
   useEffect(() => {
     async function loadPremium() {
       try {

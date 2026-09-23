@@ -114,7 +114,7 @@ export default async function DashboardPage() {
                 </Link>
               )}
               <Link
-                href="/artbook-studio"
+                href="/artbook-studio?v=2"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-[10px] uppercase tracking-wider transition-all shadow-sm shadow-orange-500/20"
               >
                 <Sparkles className="w-3 h-3" /> AI Artbook Studio
@@ -163,7 +163,7 @@ export default async function DashboardPage() {
           )}
 
           <Link
-            href="/artbook-studio"
+            href="/artbook-studio?v=2"
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-xs uppercase tracking-wider shadow-sm shadow-orange-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Sparkles className="w-3.5 h-3.5" /> AI Artbook Studio

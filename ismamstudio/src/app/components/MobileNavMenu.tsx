@@ -49,7 +49,7 @@ export default function MobileNavMenu({ userId: propUserId }: MobileNavMenuProps
           </Link>
 
           <Link
-            href="/artbook-studio"
+            href="/artbook-studio?v=2"
             onClick={() => setMobileMenuOpen(false)}
             className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
           >

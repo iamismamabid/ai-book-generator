@@ -765,7 +765,7 @@ export default function MasterStudioApp() {
             <span>3D Mockup ↗</span>
           </Link>
           <Link
-            href="/artbook-studio"
+            href="/artbook-studio?v=2"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-[11px] font-bold text-amber-300 hover:text-amber-200 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 uppercase tracking-wider transition-all hover:bg-amber-500/30 shadow-sm"

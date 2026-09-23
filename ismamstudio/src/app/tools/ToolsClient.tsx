@@ -339,7 +339,7 @@ export default function FreeToolsHub() {
       description: "Generate 300 DPI KDP-ready coloring pages, mandalas, and complete artbooks from text prompts or photos with zero markup BYOK.",
       features: ["BYOK AI generation (Gemini, OpenAI)", "Print-ready 300 DPI PDF", "1-Click bridge to Creator Studio"],
       keywords: ["ai artbook studio", "ai coloring book", "coloring page generator", "coloring book generator", "line art generator", "artbook maker"],
-      link: "/artbook-studio"
+      link: "/artbook-studio?v=2"
     },
     {
       id: "coloring-book-generator",

@@ -87,7 +87,7 @@ export default function Header() {
 
             {/* AI Artbook Studio (Dedicated Tool) */}
             <Link 
-              href="/artbook-studio" 
+              href="/artbook-studio?v=2" 
               prefetch={true} 
               className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 whitespace-nowrap shrink-0 hover:bg-amber-500/20"
             >

@@ -85,11 +85,11 @@ export default function Header() {
               <span>My Notebook</span>
             </Link>
 
-            {/* AI Artbook Studio */}
+            {/* AI Artbook Studio (Dedicated Tool) */}
             <Link 
               href="/artbook-studio" 
               prefetch={true} 
-              className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 whitespace-nowrap shrink-0 hover:bg-amber-500/20"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 whitespace-nowrap shrink-0 hover:bg-amber-500/20"
             >
               <Sparkles className="w-3.5 h-3.5" /> AI Artbook
             </Link>

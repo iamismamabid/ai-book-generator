@@ -33,17 +33,6 @@ const BookBuilder = dynamic(
     }),
   { ssr: false }
 );
-const AiArtbookStudio = dynamic(
-  () =>
-    import("@/components/AiArtbookStudio").catch((err) => {
-      if (typeof window !== "undefined" && !sessionStorage.getItem("retry_chunk_artbook")) {
-        sessionStorage.setItem("retry_chunk_artbook", "1");
-        window.location.reload();
-      }
-      throw err;
-    }),
-  { ssr: false }
-);
 import CoverStudioErrorBoundary from "@/components/CoverStudioErrorBoundary";
 import InteriorErrorBoundary from "@/components/InteriorErrorBoundary";
 import { BookCoverSyncData } from "@/components/FullBookPackagerModal";
@@ -59,12 +48,12 @@ const TRIM_SIZES = [
 export default function MasterStudioApp() {
   const { isSignedIn } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'interior' | 'cover' | 'artbook'>(() => {
+  const [activeTab, setActiveTab] = useState<'interior' | 'cover'>(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get("tab");
-      if (tab === "cover" || tab === "interior" || tab === "artbook") {
-        return tab as 'interior' | 'cover' | 'artbook';
+      if (tab === "cover" || tab === "interior") {
+        return tab as 'interior' | 'cover';
       }
     }
     return 'interior';
@@ -79,7 +68,7 @@ export default function MasterStudioApp() {
   // tab buttons themselves never wrote it back -- so switching to Cover
   // Studio then reloading always landed back on Book Builder. Keeping the URL
   // in sync fixes that without touching browser history on every click.
-  const handleTabChange = (tab: 'interior' | 'cover' | 'artbook') => {
+  const handleTabChange = (tab: 'interior' | 'cover') => {
     if (tab === 'cover') {
       if (bookMeta.trimSize && (trimSize.w !== bookMeta.trimSize.w || trimSize.h !== bookMeta.trimSize.h)) {
         setTrimSize(bookMeta.trimSize);
@@ -712,30 +701,20 @@ export default function MasterStudioApp() {
             )}
             <Palette className="w-3.5 h-3.5"/> Cover Studio
           </button>
-
-          <button
-            onClick={() => handleTabChange('artbook')}
-            className={`relative px-4 sm:px-5 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-200 flex items-center gap-1.5 z-10 ${
-              activeTab === 'artbook' ? 'text-slate-950 font-black' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            {activeTab === 'artbook' && (
-              <motion.div
-                layoutId="activeTabPill"
-                className="absolute inset-0 bg-amber-400 rounded-full shadow-md -z-10"
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              />
-            )}
-            <Paintbrush className="w-3.5 h-3.5"/> AI Artbook
-            {activeTab !== 'artbook' && (
-              <span className="text-[7px] font-black px-1 py-0.5 rounded bg-amber-500/30 text-amber-300 border border-amber-500/30 uppercase tracking-wider leading-none">AI</span>
-            )}
-          </button>
-
         </div>
 
-        {/* Right: Quick Home Exit */}
+        {/* Right: Dedicated Tools & Navigation */}
         <div className="flex items-center gap-2">
+          <Link
+            href="/artbook-studio"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[11px] font-bold text-amber-300 hover:text-amber-200 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 uppercase tracking-wider transition-all hover:bg-amber-500/30 shadow-sm"
+            title="Launch Dedicated AI Coloring Artbook Studio Tool"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>AI Artbook Tool ↗</span>
+          </Link>
           <Link
             href="/dashboard"
             className="text-[10px] font-bold text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-900 transition-colors uppercase tracking-wider"
@@ -810,19 +789,6 @@ export default function MasterStudioApp() {
               />
             </CoverStudioErrorBoundary>
           )}
-        </div>
-
-        {/* AI Artbook Studio Tab Content */}
-        <div
-          className={`absolute inset-0 w-full h-full flex flex-col overflow-y-auto transition-opacity duration-150 ${
-            activeTab === 'artbook' ? 'opacity-100 z-10 pointer-events-auto visible' : 'opacity-0 z-0 pointer-events-none invisible'
-          }`}
-        >
-          <AiArtbookStudio
-            isPremium={premiumStatus.isPremium}
-            isSignedIn={!!isSignedIn}
-            isActive={activeTab === 'artbook'}
-          />
         </div>
       </main>
     </div>

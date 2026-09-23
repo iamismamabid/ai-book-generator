@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
-import { Package } from "lucide-react";
+import { Package, Sparkles, Paintbrush } from "lucide-react";
 import { checkPremiumStatus, deleteBook } from "../actions";
 import ManageBillingButton from "@/components/ManageBillingButton";
 
@@ -110,9 +110,15 @@ export default async function DashboardPage() {
                   href="/tools/bulk-generator"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-wider transition-all"
                 >
-                  <Package className="w-3 h-3" /> Bulk Book Batch Studio
+                  <Package className="w-3 h-3" /> Bulk Batch Studio
                 </Link>
               )}
+              <Link
+                href="/artbook-studio"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-[10px] uppercase tracking-wider transition-all shadow-sm shadow-orange-500/20"
+              >
+                <Sparkles className="w-3 h-3" /> AI Artbook Studio
+              </Link>
             </div>
           </div>
 
@@ -155,6 +161,13 @@ export default async function DashboardPage() {
               <Package className="w-3.5 h-3.5" /> Bulk Book Batch Studio
             </Link>
           )}
+
+          <Link
+            href="/artbook-studio"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-xs uppercase tracking-wider shadow-sm shadow-orange-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Sparkles className="w-3.5 h-3.5" /> AI Artbook Studio
+          </Link>
 
         </div>
       </div>

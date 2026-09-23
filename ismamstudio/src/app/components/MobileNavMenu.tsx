@@ -40,32 +40,30 @@ export default function MobileNavMenu({ userId: propUserId }: MobileNavMenuProps
             </span>
             <span>→</span>
           </Link>
+          <Link
+            href="/studio"
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
+          >
+            <Sparkles className="w-4 h-4" /> Open Creator Studio
+          </Link>
+
+          <Link
+            href="/artbook-studio"
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
+          >
+            <Sparkles className="w-4 h-4" /> AI Artbook Studio
+          </Link>
+
           {userId && (
-            <>
-              <Link
-                href="/studio"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
-              >
-                <Sparkles className="w-4 h-4" /> Open Creator Studio
-              </Link>
-
-              <Link
-                href="/artbook-studio"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
-              >
-                <Sparkles className="w-4 h-4" /> AI Artbook Studio
-              </Link>
-
-              <Link
-                href="/notebook"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-sm rounded-2xl flex items-center gap-3 border border-slate-200 dark:border-slate-800"
-              >
-                <BookOpen className="w-4 h-4 text-indigo-500" /> My Notebook (Saved Data)
-              </Link>
-            </>
+            <Link
+              href="/notebook"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-sm rounded-2xl flex items-center gap-3 border border-slate-200 dark:border-slate-800"
+            >
+              <BookOpen className="w-4 h-4 text-indigo-500" /> My Notebook (Saved Data)
+            </Link>
           )}
 
           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-900">

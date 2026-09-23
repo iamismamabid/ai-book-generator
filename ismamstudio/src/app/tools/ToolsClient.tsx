@@ -310,6 +310,17 @@ export default function FreeToolsHub() {
   const totalScore = scorecard.reduce((sum, item) => sum + (item.checked ? item.points : 0), 0);
 
   const toolsList: ToolItem[] = [
+    // 1. AI & Design Studios
+    {
+      id: "artbook-studio",
+      name: "AI Coloring Artbook Studio",
+      badge: "AI Studio",
+      category: "Design",
+      description: "Generate 300 DPI KDP-ready coloring pages, mandalas, and complete artbooks from text prompts or photos with zero markup BYOK.",
+      features: ["BYOK AI generation (Gemini, OpenAI)", "Print-ready 300 DPI PDF", "1-Click bridge to Creator Studio"],
+      keywords: ["ai artbook studio", "ai coloring book", "coloring page generator", "coloring book generator", "line art generator", "artbook maker"],
+      link: "/artbook-studio"
+    },
     // 1. Cover & Spine Tools
     {
       id: "kdp-cover-creator",

@@ -5,7 +5,7 @@ import {
   Sparkles, Wand2, ImageIcon, Download, Trash2, X, Plus, Minus,
   Upload, Key, Loader2, Check, AlertCircle, Eye, EyeOff,
   ExternalLink, FileDown, ZoomIn, Settings2, ChevronRight,
-  ArrowLeft, LayoutDashboard, Paintbrush, BookOpen,
+  ArrowLeft, LayoutDashboard, Paintbrush, BookOpen, ShieldCheck, Layers,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -130,6 +130,13 @@ const SURPRISE_PROMPTS = [
   "Galaxy-themed wolf howling at a crescent moon surrounded by stars and nebulae",
 ];
 
+// ─── Bridge Trim Sizes for KDP Creator Studio ───────────────────────────────
+export const BRIDGE_TRIM_OPTIONS = [
+  { id: "8.5x11", label: '8.5" x 11" (Letter)', name: '8.5" x 11"', w: 8.5, h: 11, desc: 'KDP Standard for coloring & activity books', recommended: true },
+  { id: "8.5x8.5", label: '8.5" x 8.5" (Square)', name: '8.5" x 8.5"', w: 8.5, h: 8.5, desc: 'Popular square format for mandalas & artistic books', recommended: false },
+  { id: "6x9", label: '6" x 9" (Novel)', name: '6" x 9"', w: 6, h: 9, desc: 'Compact pocket size for travel coloring', recommended: false },
+];
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStudioProps) {
   // Mode
@@ -168,6 +175,14 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
 
   // Export
   const [isExporting, setIsExporting]     = useState(false);
+
+  // Bridge to Creator Studio Modal State
+  const [bridgeModalOpen, setBridgeModalOpen] = useState(false);
+  const [bridgeTargetPages, setBridgeTargetPages] = useState<ColoringPage[] | null>(null);
+  const [bridgeBookTitle, setBridgeBookTitle] = useState("AI Coloring Masterpiece");
+  const [bridgeBookSubtitle, setBridgeBookSubtitle] = useState("A Collection of AI-Generated Coloring Pages");
+  const [bridgeTrimSize, setBridgeTrimSize] = useState(BRIDGE_TRIM_OPTIONS[0]);
+  const [bridgeBleedProtection, setBridgeBleedProtection] = useState(true);
 
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -356,17 +371,25 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
   const downloadPage = (p: ColoringPage) => { const a = document.createElement("a"); a.href = p.imageUrl; a.download = `coloring-page-${Date.now()}.png`; a.click(); };
 
   // ── Open in Creator Studio (1-Click Bridge to Book Builder) ───────────────
-  const handleOpenInCreatorStudio = (targetPages?: ColoringPage[]) => {
-    const pagesToExport = targetPages && targetPages.length > 0 ? targetPages : pages;
+  const openBridgeModal = (targetPages?: ColoringPage[]) => {
+    setBridgeTargetPages(targetPages && targetPages.length > 0 ? targetPages : null);
+    setBridgeModalOpen(true);
+  };
+
+  const handleConfirmLaunchStudio = () => {
+    const pagesToExport = bridgeTargetPages && bridgeTargetPages.length > 0 ? bridgeTargetPages : pages;
     if (!pagesToExport || pagesToExport.length === 0) return;
+
+    const bookTitle = bridgeBookTitle.trim() || "AI Coloring Masterpiece";
+    const bookSubtitle = bridgeBookSubtitle.trim() || "A Collection of AI-Generated Coloring Pages";
 
     // 1. Mandatory Front-matter: Title Page
     const titlePage = {
       id: `title_${Date.now()}`,
       type: "title",
       config: {
-        title: "AI Coloring Masterpiece",
-        subtitle: "A Collection of AI-Generated Coloring Pages",
+        title: bookTitle,
+        subtitle: bookSubtitle,
         author: "KDPage Creator",
         puzzleType: "coloring_book",
         puzzleCount: pagesToExport.length,
@@ -378,7 +401,7 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
       id: `copyright_${Date.now()}`,
       type: "copyright",
       config: {
-        title: "AI Coloring Masterpiece",
+        title: bookTitle,
         author: "KDPage Creator",
         year: new Date().getFullYear().toString(),
         edition: "First Edition",
@@ -386,26 +409,43 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
       }
     };
 
-    // 3. Content Pages for each coloring page
-    const contentPages = pagesToExport.map((p, idx) => ({
-      id: `coloring_${p.id || idx}_${Date.now()}`,
-      type: "coloring_book",
-      config: {
-        artSource: "upload",
-        uploadedImageUrl: p.imageUrl,
-        title: p.prompt ? (p.prompt.slice(0, 45) + (p.prompt.length > 45 ? "..." : "")) : `Coloring Page ${idx + 1}`,
-        lineArtContrast: 100,
-        isMidnightMode: false,
-        frameStyle: "ornamental",
-        isColorByNumber: false,
+    // 3. Content Pages with optional blank backing pages for marker bleed-through protection
+    const contentPages: any[] = [];
+    pagesToExport.forEach((p, idx) => {
+      contentPages.push({
+        id: `coloring_${p.id || idx}_${Date.now()}`,
+        type: "coloring_book",
+        config: {
+          artSource: "upload",
+          uploadedImageUrl: p.imageUrl,
+          title: p.prompt ? (p.prompt.slice(0, 45) + (p.prompt.length > 45 ? "..." : "")) : `Coloring Page ${idx + 1}`,
+          lineArtContrast: 100,
+          isMidnightMode: false,
+          frameStyle: "ornamental",
+          isColorByNumber: false,
+        }
+      });
+
+      if (bridgeBleedProtection) {
+        contentPages.push({
+          id: `blank_${p.id || idx}_${Date.now()}`,
+          type: "blank",
+          config: {
+            title: "Blank Spacer Page",
+            isSpacer: true,
+          }
+        });
       }
-    }));
+    });
 
     const fullBookPages = [titlePage, copyrightPage, ...contentPages];
 
     const payload = {
       timestamp: Date.now(),
-      title: "AI Coloring Masterpiece",
+      title: bookTitle,
+      subtitle: bookSubtitle,
+      trimSize: bridgeTrimSize,
+      bleedProtection: bridgeBleedProtection,
       pages: fullBookPages,
       count: fullBookPages.length,
     };
@@ -420,11 +460,21 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
       }
     }
 
-    // Direct redirection to Creator Studio Book Builder
-    window.location.href = "/studio?import=artbook&tab=interior";
+    setBridgeModalOpen(false);
+    // Direct redirection to Creator Studio with trim param
+    window.location.href = `/studio?import=artbook&tab=interior&trim=${bridgeTrimSize.w}x${bridgeTrimSize.h}`;
   };
 
   const canGenerate = mode === "text" ? prompt.trim().length > 0 : !!photoFile;
+
+  // Live KDP calculations for Bridge Modal
+  const activeExportPages = bridgeTargetPages && bridgeTargetPages.length > 0 ? bridgeTargetPages : pages;
+  const illCount = activeExportPages.length;
+  const blankBackCount = bridgeBleedProtection ? illCount : 0;
+  const frontMatterCount = 2; // Title + Copyright
+  const calculatedTotalPages = illCount > 0 ? (frontMatterCount + illCount + blankBackCount) : 0;
+  const finalKdpPageCount = Math.max(24, calculatedTotalPages);
+  const calculatedSpine = (finalKdpPageCount * 0.002252).toFixed(4);
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -463,9 +513,9 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
             {pages.length > 0 && (
               <>
                 <button
-                  onClick={() => handleOpenInCreatorStudio()}
+                  onClick={() => openBridgeModal()}
                   className="flex items-center gap-1.5 text-xs font-black px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white hover:from-indigo-500 hover:to-purple-500 transition-all shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/30 cursor-pointer active:scale-95"
-                  title="Send all coloring pages to Creator Studio Book Builder and calculate cover spine"
+                  title="Configure KDP interior specifications, trim size & spine width"
                 >
                   <BookOpen className="w-3.5 h-3.5" />
                   <span>Open in Creator Studio ({pages.length})</span>
@@ -570,7 +620,7 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
                   <button onClick={() => setLightboxOpen(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-md hover:bg-slate-50 cursor-pointer">
                     <ZoomIn className="w-3.5 h-3.5" />View
                   </button>
-                  <button onClick={() => handleOpenInCreatorStudio([previewPage])} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md hover:from-indigo-500 hover:to-purple-500 cursor-pointer" title="Send to Creator Studio Book Builder">
+                  <button onClick={() => openBridgeModal([previewPage])} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md hover:from-indigo-500 hover:to-purple-500 cursor-pointer" title="Send to Creator Studio Book Builder">
                     <BookOpen className="w-3.5 h-3.5" />To Studio
                   </button>
                   <button onClick={() => downloadPage(previewPage)} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-md hover:bg-slate-50 cursor-pointer">
@@ -862,7 +912,7 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
           {pages.length > 0 && (
             <div className="flex items-center gap-2.5">
               <button
-                onClick={() => handleOpenInCreatorStudio()}
+                onClick={() => openBridgeModal()}
                 className="flex items-center gap-1.5 text-xs font-black px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500 shadow-sm shadow-indigo-200 transition-all cursor-pointer active:scale-95"
                 title="Send all coloring pages to Creator Studio Book Builder & calculate cover spine"
               >
@@ -1005,6 +1055,159 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
         </div>
       )}
 
+      {/* ── Bridge Modal: Export to Creator Studio ─────────────────────────── */}
+      {bridgeModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setBridgeModalOpen(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl border border-indigo-100 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center shadow-md shadow-indigo-200 text-white">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-900 text-base">Open in Creator Studio</h3>
+                  <p className="text-xs text-slate-400">Configure KDP interior specifications & spine calculation</p>
+                </div>
+              </div>
+              <button onClick={() => setBridgeModalOpen(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 cursor-pointer text-slate-500">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Book Title Input */}
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5">Book Title</label>
+                <input
+                  type="text"
+                  value={bridgeBookTitle}
+                  onChange={e => setBridgeBookTitle(e.target.value)}
+                  placeholder="e.g. AI Coloring Masterpiece"
+                  className="w-full text-sm font-semibold py-2.5 px-3.5 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all"
+                />
+              </div>
+
+              {/* Trim Size Selection */}
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span>Trim Size (Paper Dimensions)</span>
+                  <span className="text-[10px] text-indigo-600 font-bold">KDP Compliant</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {BRIDGE_TRIM_OPTIONS.map(opt => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setBridgeTrimSize(opt)}
+                      className={`relative p-3 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
+                        bridgeTrimSize.w === opt.w && bridgeTrimSize.h === opt.h
+                          ? "border-indigo-600 bg-indigo-50/60 shadow-sm"
+                          : "border-slate-100 hover:border-slate-200 bg-slate-50/40"
+                      }`}
+                    >
+                      {opt.recommended && (
+                        <span className="absolute -top-2 right-2 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md bg-amber-500 text-white shadow-xs">
+                          Best
+                        </span>
+                      )}
+                      <div>
+                        <p className="text-xs font-black text-slate-900">{opt.name}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">{opt.desc}</p>
+                      </div>
+                      {bridgeTrimSize.w === opt.w && bridgeTrimSize.h === opt.h && (
+                        <div className="mt-2 flex items-center gap-1 text-[10px] font-black text-indigo-600">
+                          <Check className="w-3 h-3" />Selected
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bleed-Through Protection Toggle (KDP Standard) */}
+              <div
+                onClick={() => setBridgeBleedProtection(!bridgeBleedProtection)}
+                className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3 ${
+                  bridgeBleedProtection
+                    ? "border-emerald-500 bg-emerald-50/60"
+                    : "border-slate-200 bg-slate-50/50"
+                }`}
+              >
+                <div className={`w-5 h-5 rounded-lg flex items-center justify-center mt-0.5 shrink-0 ${
+                  bridgeBleedProtection ? "bg-emerald-600 text-white" : "border-2 border-slate-300"
+                }`}>
+                  {bridgeBleedProtection && <Check className="w-3.5 h-3.5" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-slate-800">
+                      Single-Sided Pages (Marker Bleed Protection)
+                    </span>
+                    <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 uppercase">
+                      Recommended
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                    Inserts an empty left-hand page behind each illustration. Prevents ink &amp; marker bleed-through in printed paperbacks, and doubles your page count for spine thickness.
+                  </p>
+                </div>
+              </div>
+
+              {/* Live Book Metrics Summary Box */}
+              <div className="p-4 rounded-2xl bg-slate-900 text-white space-y-2 text-xs">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <span className="text-slate-400">Illustrations to transfer:</span>
+                  <span className="font-bold text-amber-400">{illCount} pages</span>
+                </div>
+                {bridgeBleedProtection && (
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-300">
+                    <span className="flex items-center gap-1.5 text-slate-400">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />Blank marker backs:
+                    </span>
+                    <span className="font-bold text-emerald-400">+{blankBackCount} pages</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-300">
+                  <span className="text-slate-400">Front matter (Title + Copyright):</span>
+                  <span className="font-bold text-indigo-400">+2 pages</span>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <div>
+                    <span className="font-black text-white text-sm">Total Book Pages:</span>
+                    <p className="text-[10px] text-slate-400">
+                      {finalKdpPageCount > calculatedTotalPages ? `(Padded to KDP 24-page minimum)` : `Ready for publishing`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-black text-white text-sm">{finalKdpPageCount} Pages</span>
+                    <p className="text-[10px] text-indigo-300 font-bold">Spine: {calculatedSpine}&quot;</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setBridgeModalOpen(false)}
+                  className="flex-1 py-3 rounded-2xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmLaunchStudio}
+                  className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-indigo-200 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
+                >
+                  <Sparkles className="w-4 h-4" />Launch in Creator Studio
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Lightbox ─────────────────────────────────────────────────────── */}
       {lightboxOpen && previewPage && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-8" onClick={() => setLightboxOpen(false)}>
@@ -1017,7 +1220,7 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
             <button
               onClick={() => {
                 setLightboxOpen(false);
-                handleOpenInCreatorStudio([previewPage]);
+                openBridgeModal([previewPage]);
               }}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-black uppercase tracking-wider hover:from-indigo-500 hover:to-purple-500 cursor-pointer shadow-xl active:scale-95"
             >

@@ -40,6 +40,7 @@ import { COVER_THEMES, CoverThemeId } from "@/app/utils/autoCoverGenerator";
 
 const TRIM_SIZES = [
   { label: '8.5" x 11" (Letter)', w: 8.5, h: 11 },
+  { label: '8.5" x 8.5" (Square)', w: 8.5, h: 8.5 },
   { label: '6" x 9" (Novel)', w: 6, h: 9 },
   { label: '5.5" x 8.5" (Compact)', w: 5.5, h: 8.5 }
 ];
@@ -370,9 +371,20 @@ export default function MasterStudioApp() {
               setPageCount(importedCount);
               setNotebookLoadState("done");
 
+              if (parsedImport.trimSize) {
+                const matched = TRIM_SIZES.find(t => t.label === parsedImport.trimSize.label || (t.w === parsedImport.trimSize.w && t.h === parsedImport.trimSize.h)) || {
+                  label: parsedImport.trimSize.label || `${parsedImport.trimSize.w}" x ${parsedImport.trimSize.h}"`,
+                  w: parsedImport.trimSize.w,
+                  h: parsedImport.trimSize.h,
+                };
+                setTrimSize(matched);
+              }
+
               const coloringPagesCount = parsedImport.pages.filter((p: any) => p.type === 'coloring_book').length;
+              const blankPagesCount = parsedImport.pages.filter((p: any) => p.type === 'blank').length;
+              const trimLabel = parsedImport.trimSize ? `${parsedImport.trimSize.w}" x ${parsedImport.trimSize.h}"` : '8.5" x 11"';
               setImportToast(
-                `🎨 Successfully imported ${coloringPagesCount} coloring page${coloringPagesCount > 1 ? "s" : ""} from Artbook Studio! Cover spine recalculated for ${importedCount} pages.`
+                `🎨 Imported ${coloringPagesCount} coloring pages in ${trimLabel}! ${blankPagesCount > 0 ? `🛡️ Bleed protection active (${blankPagesCount} blank backs).` : ''} Spine recalculated for ${importedCount} pages.`
               );
 
               try {

@@ -470,6 +470,21 @@ export default function BookBuilder({
   const [selectedTrim, setSelectedTrim] = useState(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
+      if (params.get("import") === "artbook") {
+        try {
+          const raw = sessionStorage.getItem("kdpage_artbook_import") || localStorage.getItem("kdpage_artbook_import");
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.trimSize) {
+              const found = TRIM_SIZES.find(
+                t => t.label === parsed.trimSize.label || (t.w === parsed.trimSize.w && t.h === parsed.trimSize.h)
+              );
+              if (found) return found;
+            }
+          }
+        } catch (e) {}
+      }
+
       const urlTrim = params.get("trim");
       if (urlTrim) {
         const found = TRIM_SIZES.find(

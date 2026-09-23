@@ -9,7 +9,7 @@ import { getTeamOwnerIdForMember, getWorkspaceUserIds, seatLimitForPlan } from "
 import { checkRateLimit } from "@/lib/rateLimit";
 import { AI_FEATURES_ENABLED } from "@/lib/features";
 import { addContactToLoops } from "@/lib/loops";
-import { uploadImageToR2, deleteImageFromR2 } from "@/lib/r2";
+import { uploadImageToR2, deleteImageFromR2, isR2Configured } from "@/lib/r2";
 
 
 // ২. বই ডিলিট করার ফাংশন
@@ -1085,10 +1085,49 @@ export async function saveCoverProject(data: unknown) {
   }
 
   try {
+    let payloadToSave: any = data;
+
+    // Offload heavy base64 cover images and elements to Cloudflare R2 CDN
+    if (isR2Configured() && data && typeof data === "object") {
+      try {
+        const cloned: any = JSON.parse(JSON.stringify(data));
+        let changed = false;
+
+        if (typeof cloned.frontCoverImage === "string" && cloned.frontCoverImage.startsWith("data:image/")) {
+          const up = await uploadImageToR2(cloned.frontCoverImage, "covers/backgrounds");
+          if (up?.url) { cloned.frontCoverImage = up.url; changed = true; }
+        }
+        if (typeof cloned.backCoverImage === "string" && cloned.backCoverImage.startsWith("data:image/")) {
+          const up = await uploadImageToR2(cloned.backCoverImage, "covers/backgrounds");
+          if (up?.url) { cloned.backCoverImage = up.url; changed = true; }
+        }
+        if (typeof cloned.fullCoverImage === "string" && cloned.fullCoverImage.startsWith("data:image/")) {
+          const up = await uploadImageToR2(cloned.fullCoverImage, "covers/backgrounds");
+          if (up?.url) { cloned.fullCoverImage = up.url; changed = true; }
+        }
+
+        if (Array.isArray(cloned.coverElements)) {
+          for (let i = 0; i < cloned.coverElements.length; i++) {
+            const el = cloned.coverElements[i];
+            if (el && typeof el.src === "string" && el.src.startsWith("data:image/")) {
+              const up = await uploadImageToR2(el.src, "covers/elements");
+              if (up?.url) { el.src = up.url; changed = true; }
+            }
+          }
+        }
+
+        if (changed) {
+          payloadToSave = cloned;
+        }
+      } catch (r2Err) {
+        console.warn("Cover project R2 image offload failed, proceeding with direct payload:", r2Err);
+      }
+    }
+
     await prisma.coverProject.upsert({
       where: { userId },
-      update: { data: data as any },
-      create: { userId, data: data as any },
+      update: { data: payloadToSave as any },
+      create: { userId, data: payloadToSave as any },
     });
     return { success: true };
   } catch (error) {

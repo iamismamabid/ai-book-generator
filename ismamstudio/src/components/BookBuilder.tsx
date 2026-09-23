@@ -334,6 +334,20 @@ export default function BookBuilder({
     }
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
+      if (params.get("import") === "artbook") {
+        try {
+          const raw = sessionStorage.getItem("kdpage_artbook_import") || localStorage.getItem("kdpage_artbook_import");
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.pages && Array.isArray(parsed.pages) && parsed.pages.length > 0) {
+              return ensureMandatoryFrontMatter(parsed.pages);
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to load synchronous artbook import in BookBuilder:", e);
+        }
+      }
+
       const urlTitle = params.get("title");
       const urlSubtitle = params.get("subtitle");
       const urlAuthor = params.get("author");
@@ -641,7 +655,7 @@ export default function BookBuilder({
     // If arrival was via MCP URL with explicit title or types, keep the newly generated book!
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      if (params.get("title") || params.get("types")) {
+      if (params.get("title") || params.get("types") || params.get("import") === "artbook") {
         return;
       }
     }

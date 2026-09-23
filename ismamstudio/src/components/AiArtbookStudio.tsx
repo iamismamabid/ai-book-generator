@@ -5,7 +5,7 @@ import {
   Sparkles, Wand2, ImageIcon, Download, Trash2, X, Plus, Minus,
   Upload, Key, Loader2, Check, AlertCircle, Eye, EyeOff,
   ExternalLink, FileDown, ZoomIn, Settings2, ChevronRight,
-  ArrowLeft, LayoutDashboard, Paintbrush,
+  ArrowLeft, LayoutDashboard, Paintbrush, BookOpen,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -355,6 +355,75 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
 
   const downloadPage = (p: ColoringPage) => { const a = document.createElement("a"); a.href = p.imageUrl; a.download = `coloring-page-${Date.now()}.png`; a.click(); };
 
+  // ── Open in Creator Studio (1-Click Bridge to Book Builder) ───────────────
+  const handleOpenInCreatorStudio = (targetPages?: ColoringPage[]) => {
+    const pagesToExport = targetPages && targetPages.length > 0 ? targetPages : pages;
+    if (!pagesToExport || pagesToExport.length === 0) return;
+
+    // 1. Mandatory Front-matter: Title Page
+    const titlePage = {
+      id: `title_${Date.now()}`,
+      type: "title",
+      config: {
+        title: "AI Coloring Masterpiece",
+        subtitle: "A Collection of AI-Generated Coloring Pages",
+        author: "KDPage Creator",
+        puzzleType: "coloring_book",
+        puzzleCount: pagesToExport.length,
+      }
+    };
+
+    // 2. Mandatory Front-matter: Copyright Page
+    const copyrightPage = {
+      id: `copyright_${Date.now()}`,
+      type: "copyright",
+      config: {
+        title: "AI Coloring Masterpiece",
+        author: "KDPage Creator",
+        year: new Date().getFullYear().toString(),
+        edition: "First Edition",
+        puzzleType: "coloring_book",
+      }
+    };
+
+    // 3. Content Pages for each coloring page
+    const contentPages = pagesToExport.map((p, idx) => ({
+      id: `coloring_${p.id || idx}_${Date.now()}`,
+      type: "coloring_book",
+      config: {
+        artSource: "upload",
+        uploadedImageUrl: p.imageUrl,
+        title: p.prompt ? (p.prompt.slice(0, 45) + (p.prompt.length > 45 ? "..." : "")) : `Coloring Page ${idx + 1}`,
+        lineArtContrast: 100,
+        isMidnightMode: false,
+        frameStyle: "ornamental",
+        isColorByNumber: false,
+      }
+    }));
+
+    const fullBookPages = [titlePage, copyrightPage, ...contentPages];
+
+    const payload = {
+      timestamp: Date.now(),
+      title: "AI Coloring Masterpiece",
+      pages: fullBookPages,
+      count: fullBookPages.length,
+    };
+
+    try {
+      sessionStorage.setItem("kdpage_artbook_import", JSON.stringify(payload));
+    } catch {
+      try {
+        localStorage.setItem("kdpage_artbook_import", JSON.stringify(payload));
+      } catch (e) {
+        console.warn("Storage quota exceeded", e);
+      }
+    }
+
+    // Direct redirection to Creator Studio Book Builder
+    window.location.href = "/studio?import=artbook&tab=interior";
+  };
+
   const canGenerate = mode === "text" ? prompt.trim().length > 0 : !!photoFile;
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -381,7 +450,7 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
             <Link href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</Link>
           </div>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2.5">
             <button
               onClick={() => setKeyModalOpen(true)}
               className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 px-3 py-1.5 rounded-full border border-slate-200 hover:border-slate-300 transition-all cursor-pointer"
@@ -392,13 +461,24 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
               )}
             </button>
             {pages.length > 0 && (
-              <button
-                onClick={exportPDF}
-                disabled={isExporting}
-                className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-sm shadow-emerald-200 cursor-pointer disabled:opacity-50"
-              >
-                <FileDown className="w-3 h-3" />{isExporting ? "Exporting…" : `Export PDF (${pages.length})`}
-              </button>
+              <>
+                <button
+                  onClick={() => handleOpenInCreatorStudio()}
+                  className="flex items-center gap-1.5 text-xs font-black px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white hover:from-indigo-500 hover:to-purple-500 transition-all shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/30 cursor-pointer active:scale-95"
+                  title="Send all coloring pages to Creator Studio Book Builder and calculate cover spine"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Open in Creator Studio ({pages.length})</span>
+                </button>
+                <button
+                  onClick={exportPDF}
+                  disabled={isExporting}
+                  className="hidden sm:flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-sm shadow-emerald-200 cursor-pointer disabled:opacity-50"
+                  title="Quick PDF download"
+                >
+                  <FileDown className="w-3 h-3" />{isExporting ? "Exporting…" : "Quick PDF"}
+                </button>
+              </>
             )}
             {isSignedIn ? (
               <Link href="/dashboard" className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm shadow-amber-200 hover:shadow-md hover:from-amber-400 hover:to-orange-400 transition-all">
@@ -486,9 +566,12 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
                   onClick={() => setLightboxOpen(true)}
                 />
                 {/* Hover actions */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
                   <button onClick={() => setLightboxOpen(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-md hover:bg-slate-50 cursor-pointer">
                     <ZoomIn className="w-3.5 h-3.5" />View
+                  </button>
+                  <button onClick={() => handleOpenInCreatorStudio([previewPage])} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md hover:from-indigo-500 hover:to-purple-500 cursor-pointer" title="Send to Creator Studio Book Builder">
+                    <BookOpen className="w-3.5 h-3.5" />To Studio
                   </button>
                   <button onClick={() => downloadPage(previewPage)} className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-md hover:bg-slate-50 cursor-pointer">
                     <Download className="w-3.5 h-3.5" />Save
@@ -764,8 +847,8 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
 
       {/* ── Recent Creations ─────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto w-full px-4 pb-20">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="w-2 h-2 rounded-full bg-amber-500" />
             <span className="text-sm font-black text-slate-700">Recent Creations</span>
             {pages.length > 0 && <span className="text-xs font-bold text-slate-400">({pages.length})</span>}
@@ -777,9 +860,19 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
             )}
           </div>
           {pages.length > 0 && (
-            <button onClick={clearAllPages} className="text-xs font-bold text-slate-400 hover:text-rose-500 flex items-center gap-1 cursor-pointer transition-colors">
-              <Trash2 className="w-3 h-3" />Clear all
-            </button>
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => handleOpenInCreatorStudio()}
+                className="flex items-center gap-1.5 text-xs font-black px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500 shadow-sm shadow-indigo-200 transition-all cursor-pointer active:scale-95"
+                title="Send all coloring pages to Creator Studio Book Builder & calculate cover spine"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Open in Creator Studio ({pages.length})</span>
+              </button>
+              <button onClick={clearAllPages} className="text-xs font-bold text-slate-400 hover:text-rose-500 flex items-center gap-1 cursor-pointer transition-colors px-2 py-1.5">
+                <Trash2 className="w-3 h-3" />Clear all
+              </button>
+            </div>
           )}
         </div>
 
@@ -921,6 +1014,15 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={previewPage.imageUrl} alt={previewPage.prompt} className="max-h-full max-w-full object-contain rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()} />
           <div className="absolute bottom-6 flex gap-3">
+            <button
+              onClick={() => {
+                setLightboxOpen(false);
+                handleOpenInCreatorStudio([previewPage]);
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-black uppercase tracking-wider hover:from-indigo-500 hover:to-purple-500 cursor-pointer shadow-xl active:scale-95"
+            >
+              <BookOpen className="w-3.5 h-3.5" />Open in Creator Studio
+            </button>
             <button onClick={() => downloadPage(previewPage)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-slate-900 text-xs font-black uppercase tracking-wider hover:bg-slate-100 cursor-pointer shadow-xl">
               <Download className="w-3.5 h-3.5" />Download PNG
             </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Grid3x3, Palette, Loader2, Sparkles, Lock, Cloud, CloudOff, Check } from "lucide-react";
+import { Grid3x3, Palette, Loader2, Sparkles, Lock, Cloud, CloudOff, Check, X } from "lucide-react";
 import dynamic from 'next/dynamic';
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -91,6 +91,16 @@ export default function MasterStudioApp() {
   const hasLoadedFromCloudRef = useRef(false);
   const hasUserEditedInThisSession = useRef(false);
   const hasLocalDraftLoadedRef = useRef(false);
+
+  // Import notification banner (e.g. when arriving via 1-click bridge from AI Artbook Studio)
+  const [importToast, setImportToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (importToast) {
+      const timer = setTimeout(() => setImportToast(null), 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [importToast]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -230,6 +240,9 @@ export default function MasterStudioApp() {
     if (borderTheme !== undefined) {
       interiorBorderThemeRef.current = borderTheme;
     }
+    if (typeof newPages === 'number' && !isNaN(newPages) && newPages >= 24) {
+      setPageCount(newPages);
+    }
     setBookMeta(prev => {
       const pageMatch = !newPages || prev.pageCount === newPages;
       const trimMatch = !newTrim || (prev.trimSize?.w === newTrim.w && prev.trimSize?.h === newTrim.h);
@@ -339,6 +352,44 @@ export default function MasterStudioApp() {
       const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
       const notebookId = params?.get("notebookId");
       const tabParam = params?.get("tab");
+      const importParam = params?.get("import");
+
+      // 0. Artbook Studio Bridge: 1-click import coloring pages into Book Builder
+      if (importParam === "artbook") {
+        try {
+          let cachedImportStr = sessionStorage.getItem("kdpage_artbook_import");
+          if (!cachedImportStr) {
+            cachedImportStr = localStorage.getItem("kdpage_artbook_import");
+          }
+          if (cachedImportStr) {
+            const parsedImport = JSON.parse(cachedImportStr);
+            if (parsedImport && Array.isArray(parsedImport.pages) && parsedImport.pages.length > 0) {
+              setActiveTab("interior");
+              setNotebookInitialPages(parsedImport.pages);
+              const importedCount = Math.max(24, parsedImport.pages.length);
+              setPageCount(importedCount);
+              setNotebookLoadState("done");
+
+              const coloringPagesCount = parsedImport.pages.filter((p: any) => p.type === 'coloring_book').length;
+              setImportToast(
+                `🎨 Successfully imported ${coloringPagesCount} coloring page${coloringPagesCount > 1 ? "s" : ""} from Artbook Studio! Cover spine recalculated for ${importedCount} pages.`
+              );
+
+              try {
+                sessionStorage.removeItem("kdpage_artbook_import");
+                localStorage.removeItem("kdpage_artbook_import");
+              } catch {}
+
+              const url = new URL(window.location.href);
+              url.searchParams.delete("import");
+              window.history.replaceState({}, "", url);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load artbook import in StudioClient:", e);
+        }
+      }
 
       if (notebookId) {
         setNotebookLoadState("loading");
@@ -546,6 +597,23 @@ export default function MasterStudioApp() {
   return (
     <div className="h-screen w-screen bg-[#F8FAFC] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-hidden select-none">
       
+      {/* Toast Notification (e.g. Artbook Import Success) */}
+      {importToast && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-slate-900/95 text-white border border-indigo-500/50 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-300 max-w-lg">
+          <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/30">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-xs font-semibold leading-snug">{importToast}</span>
+          <button
+            onClick={() => setImportToast(null)}
+            className="ml-auto text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Close notification"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* INTEGRATED TOP STUDIO NAVBAR (Edge-to-Edge with fixed locked height) */}
       <header className="h-[52px] min-h-[52px] max-h-[52px] px-4 bg-slate-950 text-white border-b border-slate-900 flex items-center justify-between z-30 shrink-0 select-none">
         {/* Left: Brand Logo & Title */}

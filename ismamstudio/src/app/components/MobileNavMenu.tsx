@@ -51,6 +51,14 @@ export default function MobileNavMenu({ userId: propUserId }: MobileNavMenuProps
               </Link>
 
               <Link
+                href="/artbook-studio"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
+              >
+                <Sparkles className="w-4 h-4" /> AI Artbook Studio
+              </Link>
+
+              <Link
                 href="/notebook"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-sm rounded-2xl flex items-center gap-3 border border-slate-200 dark:border-slate-800"

@@ -627,6 +627,13 @@ export default function MasterStudioApp() {
         {/* Right: Quick Home Exit */}
         <div className="flex items-center gap-2">
           <Link
+            href="/artbook-studio"
+            className="flex items-center gap-1 text-[10px] font-bold text-amber-400 hover:text-amber-300 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 uppercase tracking-wider transition-colors hover:bg-amber-500/20"
+          >
+            <Sparkles className="w-3 h-3 text-amber-400" />
+            <span className="hidden sm:inline">AI Artbook</span>
+          </Link>
+          <Link
             href="/dashboard"
             className="text-[10px] font-bold text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-900 transition-colors uppercase tracking-wider"
           >

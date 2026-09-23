@@ -32,6 +32,29 @@ interface AiArtbookStudioProps {
 // ─── Styles with mini SVG swatch ────────────────────────────────────────────
 const STYLES = [
   {
+    id: "bold_easy", label: "Bold & Easy",
+    promptSuffix: "bold and easy coloring book page for Amazon KDP, ultra thick solid black outlines, 4px heavy line weight, large open coloring spaces, simple clean shapes, zero small details, zero intricate shading, zero textures, pure flat solid white background, high contrast, perfect for alcohol markers and beginners",
+    swatch: (
+      <svg viewBox="0 0 40 40" className="w-full h-full">
+        <rect width="40" height="40" fill="#fff7ed"/>
+        <circle cx="20" cy="20" r="12" fill="none" stroke="#0f172a" strokeWidth="4"/>
+        <path d="M14 20 L26 20" stroke="#0f172a" strokeWidth="3.5" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: "cozy_hygge", label: "Cozy Hygge",
+    promptSuffix: "cozy hygge whimsical coloring page for Amazon KDP, charming storybook line art, cute comforting interior or storefront, potted plants, books and teacups, clean black outlines on pure white background, delightful whimsical style, zero gray shading, zero gradients, ready to color",
+    swatch: (
+      <svg viewBox="0 0 40 40" className="w-full h-full">
+        <rect width="40" height="40" fill="#fefce8"/>
+        <rect x="10" y="14" width="20" height="18" rx="2" fill="none" stroke="#1e293b" strokeWidth="2"/>
+        <polygon points="20,6 32,14 8,14" fill="none" stroke="#1e293b" strokeWidth="2"/>
+        <circle cx="20" cy="23" r="3" fill="none" stroke="#1e293b" strokeWidth="1.5"/>
+      </svg>
+    ),
+  },
+  {
     id: "standard", label: "Standard",
     promptSuffix: "clean crisp vector line art, solid black outlines, flat white background, no shading, no gray tones, KDP-ready coloring page",
     swatch: (
@@ -119,6 +142,8 @@ const STYLES = [
 ];
 
 const SURPRISE_PROMPTS = [
+  "Bold and easy cute baby dinosaur eating a giant strawberry, thick solid outlines for alcohol markers, white background",
+  "Cozy hygge little bookstore cafe nook with warm armchairs, potted monstera plants, and coffee cups, clean storybook line art",
   "Cute baby dragon resting on a treasure chest overflowing with gems, clean thick outlines, white background",
   "Enchanting fairy sitting on a giant mushroom in a moonlit forest, detailed coloring book art",
   "Majestic lion with intricate mane patterns, zentangle-style, black outlines on white",
@@ -130,6 +155,7 @@ const SURPRISE_PROMPTS = [
   "Ancient tree with a hidden treehouse and rope bridge, storybook style outlines",
   "Galaxy-themed wolf howling at a crescent moon surrounded by stars and nebulae",
 ];
+
 
 // ─── Bridge Trim Sizes for KDP Creator Studio ───────────────────────────────
 export const BRIDGE_TRIM_OPTIONS = [
@@ -176,6 +202,14 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
 
   // Export
   const [isExporting, setIsExporting]     = useState(false);
+  const [showKdpGuides, setShowKdpGuides] = useState(false);
+
+  // KDP PDF Export Modal State
+  const [pdfExportModalOpen, setPdfExportModalOpen] = useState(false);
+  const [pdfTrimId, setPdfTrimId] = useState<"8.5x11" | "8.5x8.5" | "6x9">("8.5x11");
+  const [pdfBleedProtection, setPdfBleedProtection] = useState(true);
+  const [pdfIncludeTitle, setPdfIncludeTitle] = useState(true);
+  const [pdfBookTitle, setPdfBookTitle] = useState("AI Coloring Masterpiece");
 
   // Bridge to Creator Studio Modal State
   const [bridgeModalOpen, setBridgeModalOpen] = useState(false);
@@ -328,27 +362,112 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
     setIsExporting(true);
     try {
       const { jsPDF } = await import("jspdf");
-      const W = 612, H = 792, M = 36;
+
+      let W = 612;
+      let H = 792;
+      if (pdfTrimId === "8.5x8.5") {
+        W = 612;
+        H = 612;
+      } else if (pdfTrimId === "6x9") {
+        W = 432;
+        H = 648;
+      }
+      const M = 36; // 0.5" safe interior margin
+
       const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: [W, H] });
+      let pageNumber = 1;
+
+      // 1. Optional Title Page & Belongs To
+      if (pdfIncludeTitle) {
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(22);
+        pdf.setTextColor(30, 41, 59);
+        const titleText = pdfBookTitle.trim() || "AI Coloring Masterpiece";
+        pdf.text(titleText, W / 2, H * 0.32, { align: "center", maxWidth: W - M * 2 });
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(11);
+        pdf.setTextColor(100, 116, 139);
+        pdf.text("A Premium Coloring Collection", W / 2, H * 0.38, { align: "center" });
+
+        // Belongs To Dedication Frame
+        const boxW = Math.min(260, W - 80);
+        const boxH = 72;
+        const boxX = (W - boxW) / 2;
+        const boxY = H * 0.56;
+        pdf.setDrawColor(203, 213, 225);
+        pdf.setLineWidth(1);
+        pdf.roundedRect(boxX, boxY, boxW, boxH, 6, 6, "S");
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 116, 139);
+        pdf.text("This Book Belongs To:", W / 2, boxY + 22, { align: "center" });
+
+        pdf.setDrawColor(148, 163, 184);
+        pdf.line(boxX + 25, boxY + 50, boxX + boxW - 25, boxY + 50);
+
+        // Page 2: Blank verso / copyright backside
+        pdf.addPage([W, H], "portrait");
+        pdf.setFontSize(8);
+        pdf.setTextColor(160, 174, 192);
+        pdf.text("Created with KDPage Studio", W / 2, H - 36, { align: "center" });
+      }
+
+      // 2. Content Pages
       for (let i = 0; i < pages.length; i++) {
-        if (i > 0) pdf.addPage([W, H], "portrait");
+        if (pdfIncludeTitle || i > 0) {
+          pdf.addPage([W, H], "portrait");
+        }
+
         await new Promise<void>(resolve => {
-          const img = new Image(); img.crossOrigin = "anonymous";
+          const img = new Image();
+          img.crossOrigin = "anonymous";
           img.onload = () => {
-            const ratio = Math.min((W - M * 2) / img.naturalWidth, (H - M * 2) / img.naturalHeight);
-            const dW = img.naturalWidth * ratio, dH = img.naturalHeight * ratio;
-            pdf.addImage(img, "PNG", (W - dW) / 2, M + ((H - M * 2) - dH) / 2, dW, dH);
-            pdf.setFont("helvetica","normal"); pdf.setFontSize(8); pdf.setTextColor(180,180,190);
-            pdf.text(`${i+1}`, W / 2, H - 14, { align: "center" }); resolve();
+            const availW = W - M * 2;
+            const availH = H - M * 2 - 20;
+            const ratio = Math.min(availW / img.naturalWidth, availH / img.naturalHeight);
+            const dW = img.naturalWidth * ratio;
+            const dH = img.naturalHeight * ratio;
+            pdf.addImage(img, "PNG", (W - dW) / 2, M + (availH - dH) / 2, dW, dH);
+
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(8);
+            pdf.setTextColor(160, 174, 192);
+            pdf.text(`${pageNumber}`, W / 2, H - 18, { align: "center" });
+            pageNumber++;
+            resolve();
           };
           img.onerror = resolve;
           img.src = pages[i].imageUrl;
         });
+
+        // 3. Bleed Protection: Blank back page behind each illustration
+        if (pdfBleedProtection) {
+          pdf.addPage([W, H], "portrait");
+          pdf.setFont("helvetica", "italic");
+          pdf.setFontSize(8);
+          pdf.setTextColor(203, 213, 225);
+          pdf.text("Page intentionally left blank for marker bleed protection", W / 2, H / 2, { align: "center" });
+        }
       }
-      pdf.save("coloring-pages.pdf");
-    } catch (err: any) { alert("PDF export failed: " + err.message); }
-    finally { setIsExporting(false); }
-  }, [pages]);
+
+      // 4. Pad to even page count for KDP interior printing
+      if (pdf.getNumberOfPages() % 2 !== 0) {
+        pdf.addPage([W, H], "portrait");
+      }
+
+      const safeFileName = (pdfBookTitle.trim() || "coloring-book")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-");
+      pdf.save(`${safeFileName}-${pdfTrimId}.pdf`);
+      setPdfExportModalOpen(false);
+    } catch (err: any) {
+      alert("PDF export failed: " + err.message);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [pages, pdfTrimId, pdfBleedProtection, pdfIncludeTitle, pdfBookTitle]);
 
   const deletePage = (id: string) => {
     setPages(prev => {
@@ -503,6 +622,10 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
   const finalKdpPageCount = Math.max(24, calculatedTotalPages);
   const calculatedSpine = (finalKdpPageCount * 0.002252).toFixed(4);
 
+  // Live KDP PDF Export calculations
+  const pdfTotalPages = (pdfIncludeTitle ? 2 : 0) + pages.length + (pdfBleedProtection ? pages.length : 0);
+  const pdfFinalEvenPages = pdfTotalPages % 2 === 0 ? pdfTotalPages : pdfTotalPages + 1;
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#FFF9F5" }}>
@@ -548,12 +671,12 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
                   <span>Open in Creator Studio ({pages.length})</span>
                 </button>
                 <button
-                  onClick={exportPDF}
+                  onClick={() => setPdfExportModalOpen(true)}
                   disabled={isExporting}
                   className="hidden sm:flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-sm shadow-emerald-200 cursor-pointer disabled:opacity-50"
-                  title="Quick PDF download"
+                  title="Export KDP-ready PDF with single-sided marker bleed protection"
                 >
-                  <FileDown className="w-3 h-3" />{isExporting ? "Exporting…" : "Quick PDF"}
+                  <FileDown className="w-3 h-3" />{isExporting ? "Exporting…" : "Export KDP PDF"}
                 </button>
               </>
             )}
@@ -632,8 +755,41 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
               </div>
             ) : previewPage ? (
               <div className="relative w-full group">
+                {/* KDP Margin Guides Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowKdpGuides(prev => !prev)}
+                  className={`absolute top-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                    showKdpGuides
+                      ? "bg-amber-500 text-white shadow-amber-500/25 ring-2 ring-amber-300"
+                      : "bg-white/95 text-slate-700 hover:bg-white border border-slate-200"
+                  }`}
+                  title="Toggle 0.375in Amazon KDP safe margin guide boundary"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>KDP Safe Margin: {showKdpGuides ? "ON" : "OFF"}</span>
+                </button>
+
                 {/* Paper shadow */}
                 <div className="absolute inset-4 translate-x-3 translate-y-3 bg-orange-100 rounded-2xl -z-10 opacity-60" />
+
+                {/* KDP Safe Margin Overlay Box */}
+                {showKdpGuides && (
+                  <div className="absolute inset-5 sm:inset-6 border-2 border-dashed border-amber-500/90 rounded-xl pointer-events-none z-20 flex flex-col justify-between p-2.5 bg-amber-500/[0.03]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-100/95 backdrop-blur-xs px-2 py-0.5 rounded shadow-xs">
+                        0.375&quot; Safe Margin
+                      </span>
+                      <span className="text-[9px] font-semibold text-amber-800 bg-white/90 px-1.5 py-0.5 rounded shadow-xs">
+                        Keep artwork inside
+                      </span>
+                    </div>
+                    <div className="text-[9px] font-semibold text-amber-700/90 bg-white/90 px-2 py-0.5 rounded self-center shadow-xs">
+                      Amazon KDP Print Safe Zone
+                    </div>
+                  </div>
+                )}
+
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previewPage.imageUrl}
@@ -942,12 +1098,20 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
           {pages.length > 0 && (
             <div className="flex items-center gap-2.5">
               <button
+                onClick={() => setPdfExportModalOpen(true)}
+                className="flex items-center gap-1.5 text-xs font-black px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 shadow-sm shadow-emerald-200 transition-all cursor-pointer active:scale-95"
+                title="Export KDP-ready PDF with marker bleed protection"
+              >
+                <FileDown className="w-3.5 h-3.5" />
+                <span>Export KDP PDF ({pages.length})</span>
+              </button>
+              <button
                 onClick={() => openBridgeModal()}
                 className="flex items-center gap-1.5 text-xs font-black px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500 shadow-sm shadow-indigo-200 transition-all cursor-pointer active:scale-95"
                 title="Send all coloring pages to Creator Studio Book Builder & calculate cover spine"
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>Open in Creator Studio ({pages.length})</span>
+                <span>Open in Creator Studio</span>
               </button>
               <button onClick={clearAllPages} className="text-xs font-bold text-slate-400 hover:text-rose-500 flex items-center gap-1 cursor-pointer transition-colors px-2 py-1.5">
                 <Trash2 className="w-3 h-3" />Clear all
@@ -1234,6 +1398,186 @@ export default function AiArtbookStudio({ isPremium, isSignedIn }: AiArtbookStud
                   className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-indigo-200 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
                   <Sparkles className="w-4 h-4" />Launch in Creator Studio
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── KDP PDF Export Modal ────────────────────────────────────────── */}
+      {pdfExportModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => !isExporting && setPdfExportModalOpen(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white relative">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+                  <FileDown className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-black text-lg text-white">Export KDP Coloring PDF</h3>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-full">
+                      Print Ready
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-100 mt-0.5">Single-sided bleed protection &amp; standard trim sizes</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isExporting}
+                onClick={() => setPdfExportModalOpen(false)}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-black/20 hover:bg-black/30 flex items-center justify-center text-white cursor-pointer transition-colors disabled:opacity-50"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+              {/* Trim Size Selection */}
+              <div>
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 block">
+                  1. Select KDP Trim Size
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    { id: "8.5x11", label: '8.5" x 11"', sub: "US Letter (Standard)", recommended: true },
+                    { id: "8.5x8.5", label: '8.5" x 8.5"', sub: "Square (Trending)" },
+                    { id: "6x9", label: '6" x 9"', sub: "Trade Paperback" },
+                  ].map(trim => (
+                    <button
+                      key={trim.id}
+                      type="button"
+                      onClick={() => setPdfTrimId(trim.id as any)}
+                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative ${
+                        pdfTrimId === trim.id
+                          ? "border-emerald-500 bg-emerald-50/50 shadow-xs ring-2 ring-emerald-500/20"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
+                      }`}
+                    >
+                      {trim.recommended && (
+                        <span className="absolute -top-2 right-2 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                          Top Choice
+                        </span>
+                      )}
+                      <p className="font-black text-sm text-slate-800">{trim.label}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5 font-medium leading-tight">{trim.sub}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Marker Bleed Protection Toggle */}
+              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span className="text-xs font-black text-slate-800 uppercase tracking-wide">
+                        Marker Bleed Protection (Single-Sided)
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Inserts a blank spacer page behind every artwork. Alcohol markers (Ohuhu, Copic, Sharpie) will never bleed through to the next coloring page. Essential for 5-star KDP reviews.
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={pdfBleedProtection}
+                    onChange={e => setPdfBleedProtection(e.target.checked)}
+                    className="w-5 h-5 accent-emerald-600 rounded cursor-pointer mt-1 shrink-0"
+                  />
+                </div>
+              </div>
+
+              {/* Title & Dedication Page Toggle */}
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    2. Book Title &amp; Dedication Page
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={pdfIncludeTitle}
+                      onChange={e => setPdfIncludeTitle(e.target.checked)}
+                      className="w-4 h-4 accent-emerald-600 rounded"
+                    />
+                    Include Title Page
+                  </label>
+                </div>
+                {pdfIncludeTitle && (
+                  <input
+                    type="text"
+                    value={pdfBookTitle}
+                    onChange={e => setPdfBookTitle(e.target.value)}
+                    placeholder="e.g. Bold &amp; Easy Animals Coloring Book"
+                    className="w-full text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none transition-all"
+                  />
+                )}
+              </div>
+
+              {/* Real-time PDF Page Summary */}
+              <div className="p-4 rounded-2xl bg-slate-900 text-slate-100 text-xs space-y-2">
+                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                  <span className="text-slate-400">Coloring Illustrations:</span>
+                  <span className="font-bold text-amber-400">{pages.length} pages</span>
+                </div>
+                {pdfBleedProtection && (
+                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                    <span className="flex items-center gap-1.5 text-slate-400">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />Blank Marker Backs:
+                    </span>
+                    <span className="font-bold text-emerald-400">+{pages.length} pages</span>
+                  </div>
+                )}
+                {pdfIncludeTitle && (
+                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                    <span className="text-slate-400">Title &amp; &quot;Belongs To&quot; Front Matter:</span>
+                    <span className="font-bold text-teal-400">+2 pages</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pt-1">
+                  <div>
+                    <span className="font-black text-white text-sm">Total PDF Pages:</span>
+                    <p className="text-[10px] text-slate-400">
+                      {pdfFinalEvenPages > pdfTotalPages ? `Padded to even number for KDP printing` : `Even page count verified`}
+                    </p>
+                  </div>
+                  <span className="font-black text-white text-base">{pdfFinalEvenPages} Pages</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  disabled={isExporting}
+                  onClick={() => setPdfExportModalOpen(false)}
+                  className="flex-1 py-3 rounded-2xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isExporting}
+                  onClick={exportPDF}
+                  className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-200 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Compiling KDP PDF…
+                    </>
+                  ) : (
+                    <>
+                      <FileDown className="w-4 h-4" />
+                      Download {pdfTrimId} PDF
+                    </>
+                  )}
                 </button>
               </div>
             </div>

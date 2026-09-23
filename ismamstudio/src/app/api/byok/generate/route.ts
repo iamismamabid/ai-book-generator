@@ -54,7 +54,16 @@ export async function POST(req: Request) {
     // Build specialized prompt tailored to Studio domain
     let enhancedPrompt = prompt.trim();
     if (studioType === "coloring") {
-      enhancedPrompt = `coloring book page for Amazon KDP, ${prompt.trim()}, crisp clean black line art, thick solid black vector outlines, closed shape contours, pure flat plain white background (#FFFFFF), high contrast graphic illustration, 300 DPI print quality, masterpiece. Strictly pure white paper background from edge to edge. Absolutely NO dark backgrounds, NO black backgrounds, NO night theme, NO colors, NO shading, NO gray gradients, NO shadows, NO realistic textures, NO cross-hatching, NO blurry lines, NO double lines, NO sketchy scribbles, NO circular frame fills`;
+      const isBoldEasy = (stylePreset && stylePreset.toLowerCase().includes("bold and easy")) || prompt.toLowerCase().includes("bold and easy");
+      const isCozyHygge = (stylePreset && stylePreset.toLowerCase().includes("cozy hygge")) || prompt.toLowerCase().includes("cozy hygge");
+
+      if (isBoldEasy) {
+        enhancedPrompt = `bold and easy coloring book page for Amazon KDP, ${prompt.trim()}, ultra-thick solid black outlines, 4px heavy line weight, large open coloring spaces, simple clean shapes, zero small details, zero intricate shading, zero textures, pure flat solid white background (#FFFFFF), high contrast, designed specifically for alcohol markers and beginners. Absolutely NO dark backgrounds, NO black backgrounds, NO colors, NO shading, NO gray gradients, NO cross-hatching, NO blurry lines, NO double lines, NO sketchy scribbles`;
+      } else if (isCozyHygge) {
+        enhancedPrompt = `cozy hygge whimsical coloring book page for Amazon KDP, ${prompt.trim()}, charming storybook line art, clean solid black outlines on pure flat white background (#FFFFFF), delightful whimsical style, zero gray shading, zero gradients, ready to color. Absolutely NO dark backgrounds, NO black backgrounds, NO colors, NO cross-hatching, NO blurry lines`;
+      } else {
+        enhancedPrompt = `coloring book page for Amazon KDP, ${prompt.trim()}, crisp clean black line art, thick solid black vector outlines, closed shape contours, pure flat plain white background (#FFFFFF), high contrast graphic illustration, 300 DPI print quality, masterpiece. Strictly pure white paper background from edge to edge. Absolutely NO dark backgrounds, NO black backgrounds, NO night theme, NO colors, NO shading, NO gray gradients, NO shadows, NO realistic textures, NO cross-hatching, NO blurry lines, NO double lines, NO sketchy scribbles, NO circular frame fills`;
+      }
       if (stylePreset) {
         enhancedPrompt += `, artistic style: ${stylePreset}`;
       }

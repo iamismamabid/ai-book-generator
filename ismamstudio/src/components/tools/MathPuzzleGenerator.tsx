@@ -104,20 +104,18 @@ export default function MathPuzzleGenerator() {
   const [activePreviewIndex, setActivePreviewIndex] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [exportProgressText, setExportProgressText] = useState<string>("");
+  const [exportProgressPercent, setExportProgressPercent] = useState<number>(0);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
-  // Generate Addition Equation Systems
-  const generateAdditionPuzzles = () => {
+  // Generator functions that return typed puzzle lists directly
+  const createAdditionPuzzles = (totalCount: number, diff: "easy" | "medium" | "hard"): AdditionPuzzle[] => {
     const list: AdditionPuzzle[] = [];
-    const minVal = difficulty === "easy" ? 1 : difficulty === "medium" ? 5 : 10;
-    const maxVal = difficulty === "easy" ? 9 : difficulty === "medium" ? 20 : 50;
-    const totalPuzzles = numPages * puzzlesPerPage;
-    // Easy difficulty draws from only (maxVal-minVal+1)^4 possible grids --
-    // as few as 6,561 at easy -- so a large book can plausibly repeat a
-    // grid exactly without this guard.
+    const minVal = diff === "easy" ? 1 : diff === "medium" ? 5 : 10;
+    const maxVal = diff === "easy" ? 9 : diff === "medium" ? 20 : 50;
     const seenGrids = new Set<string>();
 
-    for (let p = 0; p < totalPuzzles; p++) {
+    for (let p = 0; p < totalCount; p++) {
       const grid = generateUniquePuzzle(
         () => {
           const a = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
@@ -139,7 +137,7 @@ export default function MathPuzzleGenerator() {
 
       // Hide indexes based on difficulty:
       // easy: hide 3 cells, medium: hide 5, hard: hide 7
-      const hideCount = difficulty === "easy" ? 3 : difficulty === "medium" ? 5 : 7;
+      const hideCount = diff === "easy" ? 3 : diff === "medium" ? 5 : 7;
       const hiddenIndices: number[] = [];
       while (hiddenIndices.length < hideCount) {
         const idx = Math.floor(Math.random() * 9);
@@ -150,25 +148,24 @@ export default function MathPuzzleGenerator() {
 
       list.push({ grid, hiddenIndices });
     }
-    setAdditionPuzzles(list);
+    return list;
   };
 
-  // Generate Multiplication Times Tables
-  const generateMultiplicationPuzzles = () => {
+  const generateAdditionPuzzles = () => {
+    const totalPuzzles = numPages * puzzlesPerPage;
+    const list = createAdditionPuzzles(totalPuzzles, difficulty);
+    setAdditionPuzzles(list);
+    return list;
+  };
+
+  const createMultiplicationPuzzles = (totalCount: number, diff: "easy" | "medium" | "hard"): MultiplicationPuzzle[] => {
     const list: MultiplicationPuzzle[] = [];
     const size = 4; // factor size: 1-9 for times tables
-    const totalPuzzles = numPages * puzzlesPerPage;
-    // Only 9^4 possible factor sets per side -- repeats are plausible at
-    // high book volumes without this guard.
     const seenFactorSets = new Set<string>();
 
-    for (let p = 0; p < totalPuzzles; p++) {
+    for (let p = 0; p < totalCount; p++) {
       const { rowFactors, colFactors, grid } = generateUniquePuzzle(
         () => {
-          // Sampled without replacement (shuffle 1-9, take the first `size`)
-          // so the same multiplier never repeats across a puzzle's own rows
-          // or its own columns -- with replacement, a 4-factor pull from
-          // 1-9 collides often enough to make grids feel repetitive.
           const pickUniqueFactors = () =>
             Array.from({ length: 9 }, (_, i) => i + 1)
               .sort(() => 0.5 - Math.random())
@@ -189,9 +186,9 @@ export default function MathPuzzleGenerator() {
         seenFactorSets
       );
 
-      const rHide = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 4;
-      const cHide = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 4;
-      const pHide = difficulty === "easy" ? 4 : difficulty === "medium" ? 6 : 8;
+      const rHide = diff === "easy" ? 2 : diff === "medium" ? 3 : 4;
+      const cHide = diff === "easy" ? 2 : diff === "medium" ? 3 : 4;
+      const pHide = diff === "easy" ? 4 : diff === "medium" ? 6 : 8;
 
       const hiddenRows: number[] = [];
       while (hiddenRows.length < rHide) {
@@ -216,19 +213,22 @@ export default function MathPuzzleGenerator() {
 
       list.push({ rowFactors, colFactors, grid, hiddenRows, hiddenCols, hiddenProducts });
     }
-    setMultiplicationPuzzles(list);
+    return list;
   };
 
-  // Generate Number Sum Fill-in Grids
-  const generateNumberFillPuzzles = () => {
+  const generateMultiplicationPuzzles = () => {
+    const totalPuzzles = numPages * puzzlesPerPage;
+    const list = createMultiplicationPuzzles(totalPuzzles, difficulty);
+    setMultiplicationPuzzles(list);
+    return list;
+  };
+
+  const createNumberFillPuzzles = (totalCount: number, diff: "easy" | "medium" | "hard"): NumberFillPuzzle[] => {
     const list: NumberFillPuzzle[] = [];
     const size = 4;
-    const totalPuzzles = numPages * puzzlesPerPage;
-    // 9^16 possible grids is large, but the same book-scale volumes that
-    // motivate this guard elsewhere make it cheap insurance here too.
     const seenGrids = new Set<string>();
 
-    for (let p = 0; p < totalPuzzles; p++) {
+    for (let p = 0; p < totalCount; p++) {
       const { grid, rowSums, colSums } = generateUniquePuzzle(
         () => {
           const grid: number[][] = [];
@@ -250,7 +250,7 @@ export default function MathPuzzleGenerator() {
         seenGrids
       );
 
-      const hideCount = difficulty === "easy" ? 4 : difficulty === "medium" ? 8 : 12;
+      const hideCount = diff === "easy" ? 4 : diff === "medium" ? 8 : 12;
       const hiddenCells: Array<[number, number]> = [];
       while (hiddenCells.length < hideCount) {
         const r = Math.floor(Math.random() * 4);
@@ -262,7 +262,14 @@ export default function MathPuzzleGenerator() {
 
       list.push({ grid, rowSums, colSums, hiddenCells });
     }
+    return list;
+  };
+
+  const generateNumberFillPuzzles = () => {
+    const totalPuzzles = numPages * puzzlesPerPage;
+    const list = createNumberFillPuzzles(totalPuzzles, difficulty);
     setNumberFillPuzzles(list);
+    return list;
   };
 
   // Trigger generators
@@ -311,9 +318,25 @@ export default function MathPuzzleGenerator() {
     borderTheme?: import("@/lib/borderThemes").BorderThemeId;
   }) => {
     setIsDownloading(true);
-    const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed: finalBleed, showGuides: finalGuides, isPremium, borderTheme } = options;
+    setExportProgressPercent(5);
+    setExportProgressText("Preparing Math Puzzles...");
+    await new Promise((r) => setTimeout(r, 60));
 
-    setTimeout(async () => {
+    try {
+      const {
+        includeCover: incCover,
+        coverState,
+        includeSolutions: incSol,
+        trimSize: finalTrim,
+        hasBleed: finalBleed,
+        showGuides: finalGuides,
+        isPremium,
+        borderTheme,
+      } = options;
+
+      setExportProgressPercent(15);
+      setExportProgressText("Loading PDF rendering engine...");
+
       const dims = getTrimDimensions(finalTrim);
       const finalW = dims.w;
       const finalH = dims.h;
@@ -322,16 +345,27 @@ export default function MathPuzzleGenerator() {
       const pageW = finalBleed ? finalW + bleed : finalW;
       const pageH = finalBleed ? finalH + bleed * 2 : finalH;
 
-      const [{ jsPDF }, { drawCoverPagePart, drawWatermark, drawMarginGuides }, { drawPageBorderTheme }, { drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, drawKdpSolutionsDividerPage, ensureEvenPageCount }] = await Promise.all([
+      const [
+        { jsPDF },
+        { drawCoverPagePart, drawWatermark, drawMarginGuides },
+        { drawPageBorderTheme },
+        {
+          drawKdpTitlePage,
+          drawKdpCopyrightAndInstructionsPage,
+          drawKdpSolutionsDividerPage,
+          ensureEvenPageCount,
+        },
+      ] = await Promise.all([
         import("jspdf"),
         import("@/app/utils/pdfExportService"),
         import("@/app/utils/borderThemeDrawing"),
         import("@/lib/kdpBookEngine"),
       ]);
+
       const doc = new jsPDF({
         orientation: "portrait",
         unit: "in",
-        format: [pageW, pageH]
+        format: [pageW, pageH],
       });
 
       const marginL = 0.75;
@@ -342,9 +376,27 @@ export default function MathPuzzleGenerator() {
       const contentW = pageW - marginL - marginR;
       const contentH = pageH - marginT - marginB;
 
+      const totalPuzzles = numPages * puzzlesPerPage;
+
+      // Ensure full puzzle list is populated
+      let currentAddition = additionPuzzles;
+      let currentMultiplication = multiplicationPuzzles;
+      let currentNumberFill = numberFillPuzzles;
+
+      if (puzzleType === "addition" && currentAddition.length < totalPuzzles) {
+        currentAddition = createAdditionPuzzles(totalPuzzles, difficulty);
+        setAdditionPuzzles(currentAddition);
+      } else if (puzzleType === "multiplication" && currentMultiplication.length < totalPuzzles) {
+        currentMultiplication = createMultiplicationPuzzles(totalPuzzles, difficulty);
+        setMultiplicationPuzzles(currentMultiplication);
+      } else if (puzzleType === "number_fill" && currentNumberFill.length < totalPuzzles) {
+        currentNumberFill = createNumberFillPuzzles(totalPuzzles, difficulty);
+        setNumberFillPuzzles(currentNumberFill);
+      }
+
       const frontMatterPages = 2;
       const solDividerPages = incSol ? 1 : 0;
-      const solPages = incSol ? (puzzlesPerPage === 2 ? Math.ceil(numPages / 2) : Math.ceil(numPages / 4)) : 0;
+      const solPages = incSol ? Math.ceil(totalPuzzles / 2) : 0;
       const totalExpectedPages = frontMatterPages + numPages + solDividerPages + solPages;
 
       let firstPageAdded = false;
@@ -352,19 +404,24 @@ export default function MathPuzzleGenerator() {
 
       // 1. Draw Front Cover if integrated
       if (incCover && coverState) {
-        await drawCoverPagePart(doc, coverState, 'front', pageW, pageH);
+        setExportProgressText("Drawing Front Cover...");
+        await drawCoverPagePart(doc, coverState, "front", pageW, pageH);
         firstPageAdded = true;
         currentPage++;
       }
 
       // Standard KDP Front Matter (Mandatory)
-      const totalPuzzles = numPages * puzzlesPerPage;
-      if (firstPageAdded) doc.addPage();
+      setExportProgressPercent(25);
+      setExportProgressText("Rendering KDP Title & Instructions...");
+
+      if (firstPageAdded) doc.addPage([pageW, pageH], "portrait");
       firstPageAdded = true;
       currentPage++;
       drawKdpTitlePage(doc, {
         title: bookTitle.trim() || "Math Puzzle Book",
-        subtitle: bookSubtitle.trim() || `${totalPuzzles} Challenging Math & Logic Puzzles with Complete Solutions`,
+        subtitle:
+          bookSubtitle.trim() ||
+          `${totalPuzzles} Challenging Math & Logic Puzzles with Complete Solutions`,
         authorName: authorName.trim() || "Independent Publisher",
         puzzleType: "math_puzzle",
         difficulty,
@@ -374,7 +431,7 @@ export default function MathPuzzleGenerator() {
         totalPages: totalExpectedPages,
       });
 
-      doc.addPage();
+      doc.addPage([pageW, pageH], "portrait");
       currentPage++;
       drawKdpCopyrightAndInstructionsPage(doc, {
         authorName: authorName.trim() || "Independent Publisher",
@@ -385,23 +442,30 @@ export default function MathPuzzleGenerator() {
       });
 
       // 1. Draw Puzzle Pages
+      const titleStr =
+        puzzleType === "addition"
+          ? "Addition Grid"
+          : puzzleType === "multiplication"
+          ? "Multiplication Grid"
+          : "Number Sums Grid";
+      const instruction =
+        puzzleType === "addition"
+          ? "Fill in the blanks to make all horizontal and vertical equations correct."
+          : puzzleType === "multiplication"
+          ? "Fill in the missing factors on the headers and products inside the times table grid."
+          : "Fill in the grid so that each row and column sums up to the target numbers shown.";
+
       for (let pIdx = 0; pIdx < numPages; pIdx++) {
-        if (firstPageAdded || pIdx > 0) doc.addPage();
+        setExportProgressPercent(25 + Math.round(((pIdx + 1) / numPages) * 35));
+        setExportProgressText(`Rendering puzzle page ${pIdx + 1} of ${numPages}...`);
+
+        if (firstPageAdded || pIdx > 0) doc.addPage([pageW, pageH], "portrait");
         firstPageAdded = true;
         currentPage++;
 
         if (finalGuides) {
           drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
         }
-
-        // Title Header
-        // Title strings
-        const titleStr = puzzleType === "addition" ? "Addition Grid" : puzzleType === "multiplication" ? "Multiplication Grid" : "Number Sums Grid";
-        const instruction = puzzleType === "addition" 
-          ? "Fill in the blanks to make all horizontal and vertical equations correct."
-          : puzzleType === "multiplication"
-          ? "Fill in the missing factors on the headers and products inside the times table grid."
-          : "Fill in the grid so that each row and column sums up to the target numbers shown.";
 
         if (puzzlesPerPage === 2) {
           const idx1 = pIdx * 2;
@@ -411,7 +475,9 @@ export default function MathPuzzleGenerator() {
           doc.setFont("helvetica", "bold");
           doc.setFontSize(16);
           doc.setTextColor(0);
-          doc.text(`${titleStr} #${idx1 + 1}`, marginL + contentW / 2, marginT + 0.25, { align: "center" });
+          doc.text(`${titleStr} #${idx1 + 1}`, marginL + contentW / 2, marginT + 0.25, {
+            align: "center",
+          });
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
@@ -419,12 +485,12 @@ export default function MathPuzzleGenerator() {
           doc.text(instruction, marginL + contentW / 2, marginT + 0.45, { align: "center" });
 
           // Draw Top Puzzle
-          if (puzzleType === "addition" && additionPuzzles[idx1]) {
-            drawPdfAddition(doc, additionPuzzles[idx1], marginL, marginT + 0.65, contentW);
-          } else if (puzzleType === "multiplication" && multiplicationPuzzles[idx1]) {
-            drawPdfMultiplication(doc, multiplicationPuzzles[idx1], marginL, marginT + 0.65, contentW);
-          } else if (puzzleType === "number_fill" && numberFillPuzzles[idx1]) {
-            drawPdfNumberFill(doc, numberFillPuzzles[idx1], marginL, marginT + 0.65, contentW);
+          if (puzzleType === "addition" && currentAddition[idx1]) {
+            drawPdfAddition(doc, currentAddition[idx1], marginL, marginT + 0.65, contentW);
+          } else if (puzzleType === "multiplication" && currentMultiplication[idx1]) {
+            drawPdfMultiplication(doc, currentMultiplication[idx1], marginL, marginT + 0.65, contentW);
+          } else if (puzzleType === "number_fill" && currentNumberFill[idx1]) {
+            drawPdfNumberFill(doc, currentNumberFill[idx1], marginL, marginT + 0.65, contentW);
           }
 
           // Separator line
@@ -434,12 +500,13 @@ export default function MathPuzzleGenerator() {
           doc.line(marginL + 0.5, midY, marginL + contentW - 0.5, midY);
 
           // Header Box 2
-          const totalListLen = puzzleType === "addition" ? additionPuzzles.length : puzzleType === "multiplication" ? multiplicationPuzzles.length : numberFillPuzzles.length;
-          if (idx2 < totalListLen) {
+          if (idx2 < totalPuzzles) {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
             doc.setTextColor(0);
-            doc.text(`${titleStr} #${idx2 + 1}`, marginL + contentW / 2, midY + 0.35, { align: "center" });
+            doc.text(`${titleStr} #${idx2 + 1}`, marginL + contentW / 2, midY + 0.35, {
+              align: "center",
+            });
 
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8);
@@ -447,12 +514,12 @@ export default function MathPuzzleGenerator() {
             doc.text(instruction, marginL + contentW / 2, midY + 0.55, { align: "center" });
 
             // Draw Bottom Puzzle
-            if (puzzleType === "addition" && additionPuzzles[idx2]) {
-              drawPdfAddition(doc, additionPuzzles[idx2], marginL, midY + 0.75, contentW);
-            } else if (puzzleType === "multiplication" && multiplicationPuzzles[idx2]) {
-              drawPdfMultiplication(doc, multiplicationPuzzles[idx2], marginL, midY + 0.75, contentW);
-            } else if (puzzleType === "number_fill" && numberFillPuzzles[idx2]) {
-              drawPdfNumberFill(doc, numberFillPuzzles[idx2], marginL, midY + 0.75, contentW);
+            if (puzzleType === "addition" && currentAddition[idx2]) {
+              drawPdfAddition(doc, currentAddition[idx2], marginL, midY + 0.75, contentW);
+            } else if (puzzleType === "multiplication" && currentMultiplication[idx2]) {
+              drawPdfMultiplication(doc, currentMultiplication[idx2], marginL, midY + 0.75, contentW);
+            } else if (puzzleType === "number_fill" && currentNumberFill[idx2]) {
+              drawPdfNumberFill(doc, currentNumberFill[idx2], marginL, midY + 0.75, contentW);
             }
           }
         } else {
@@ -460,7 +527,9 @@ export default function MathPuzzleGenerator() {
           doc.setFont("helvetica", "bold");
           doc.setFontSize(22);
           doc.setTextColor(0);
-          doc.text(`${titleStr} #${pIdx + 1}`, marginL + contentW / 2, marginT + 0.3, { align: "center" });
+          doc.text(`${titleStr} #${pIdx + 1}`, marginL + contentW / 2, marginT + 0.3, {
+            align: "center",
+          });
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
@@ -471,12 +540,12 @@ export default function MathPuzzleGenerator() {
           doc.setDrawColor(0);
           doc.line(marginL, marginT + 0.8, marginL + contentW, marginT + 0.8);
 
-          if (puzzleType === "addition" && additionPuzzles[pIdx]) {
-            drawPdfAddition(doc, additionPuzzles[pIdx], marginL, marginT + 1.6, contentW);
-          } else if (puzzleType === "multiplication" && multiplicationPuzzles[pIdx]) {
-            drawPdfMultiplication(doc, multiplicationPuzzles[pIdx], marginL, marginT + 1.4, contentW);
-          } else if (puzzleType === "number_fill" && numberFillPuzzles[pIdx]) {
-            drawPdfNumberFill(doc, numberFillPuzzles[pIdx], marginL, marginT + 1.4, contentW);
+          if (puzzleType === "addition" && currentAddition[pIdx]) {
+            drawPdfAddition(doc, currentAddition[pIdx], marginL, marginT + 1.6, contentW);
+          } else if (puzzleType === "multiplication" && currentMultiplication[pIdx]) {
+            drawPdfMultiplication(doc, currentMultiplication[pIdx], marginL, marginT + 1.4, contentW);
+          } else if (puzzleType === "number_fill" && currentNumberFill[pIdx]) {
+            drawPdfNumberFill(doc, currentNumberFill[pIdx], marginL, marginT + 1.4, contentW);
           }
         }
 
@@ -484,18 +553,22 @@ export default function MathPuzzleGenerator() {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(0);
-        doc.text(`Page ${pIdx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+        doc.text(`Page ${pIdx + 1}`, marginL + contentW / 2, pageH - marginB + 0.4, {
+          align: "center",
+        });
       }
 
       // 2. Draw Answer Keys
       if (incSol) {
+        setExportProgressPercent(65);
+        setExportProgressText("Generating Solution Keys & Dividers...");
+
         // High-contrast KDP Solutions Divider Page
-        doc.addPage();
+        doc.addPage([pageW, pageH], "portrait");
         currentPage++;
         drawKdpSolutionsDividerPage(doc, {
           puzzleCount: totalPuzzles,
           puzzleType: "math_puzzle",
-          difficulty,
           width: pageW,
           height: pageH,
           pageNumber: currentPage,
@@ -503,7 +576,7 @@ export default function MathPuzzleGenerator() {
           customSubtitle: `Complete Solutions for Math Puzzles #1 to #${totalPuzzles}`,
         });
 
-        doc.addPage();
+        doc.addPage([pageW, pageH], "portrait");
         currentPage++;
         let ansPageCounter = numPages + 1;
 
@@ -516,19 +589,20 @@ export default function MathPuzzleGenerator() {
           drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
         }
 
-        const totalPuzzles = numPages * puzzlesPerPage;
         const gridH = 4.0;
 
         for (let pIdx = 0; pIdx < totalPuzzles; pIdx++) {
           const row = pIdx % 2;
-          
+
           if (pIdx > 0 && row === 0) {
-            doc.addPage();
+            doc.addPage([pageW, pageH], "portrait");
             ansPageCounter++;
             doc.setFont("helvetica", "bold");
             doc.setFontSize(22);
             doc.setTextColor(0);
-            doc.text("Answer Key (Cont.)", marginL + contentW / 2, marginT + 0.3, { align: "center" });
+            doc.text("Answer Key (Cont.)", marginL + contentW / 2, marginT + 0.3, {
+              align: "center",
+            });
             doc.line(marginL, marginT + 0.6, marginL + contentW, marginT + 0.6);
             if (finalGuides) {
               drawMarginGuides(doc, marginL, marginR, marginT, marginB, pageW, pageH);
@@ -543,12 +617,33 @@ export default function MathPuzzleGenerator() {
           doc.setTextColor(0);
           doc.text(`Puzzle #${pIdx + 1} Answers`, marginL, startY);
 
-          if (puzzleType === "addition" && additionPuzzles[pIdx]) {
-            drawPdfAddition(doc, additionPuzzles[pIdx], marginL + 0.5, startY + 0.3, contentW - 1.0, true);
-          } else if (puzzleType === "multiplication" && multiplicationPuzzles[pIdx]) {
-            drawPdfMultiplication(doc, multiplicationPuzzles[pIdx], marginL + 0.5, startY + 0.3, contentW - 1.0, true);
-          } else if (puzzleType === "number_fill" && numberFillPuzzles[pIdx]) {
-            drawPdfNumberFill(doc, numberFillPuzzles[pIdx], marginL + 0.5, startY + 0.3, contentW - 1.0, true);
+          if (puzzleType === "addition" && currentAddition[pIdx]) {
+            drawPdfAddition(
+              doc,
+              currentAddition[pIdx],
+              marginL + 0.5,
+              startY + 0.3,
+              contentW - 1.0,
+              true
+            );
+          } else if (puzzleType === "multiplication" && currentMultiplication[pIdx]) {
+            drawPdfMultiplication(
+              doc,
+              currentMultiplication[pIdx],
+              marginL + 0.5,
+              startY + 0.3,
+              contentW - 1.0,
+              true
+            );
+          } else if (puzzleType === "number_fill" && currentNumberFill[pIdx]) {
+            drawPdfNumberFill(
+              doc,
+              currentNumberFill[pIdx],
+              marginL + 0.5,
+              startY + 0.3,
+              contentW - 1.0,
+              true
+            );
           }
         }
 
@@ -556,17 +651,22 @@ export default function MathPuzzleGenerator() {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(0);
-        doc.text(`Page ${ansPageCounter}`, marginL + contentW / 2, pageH - marginB + 0.4, { align: "center" });
+        doc.text(`Page ${ansPageCounter}`, marginL + contentW / 2, pageH - marginB + 0.4, {
+          align: "center",
+        });
       }
 
       // 3. Draw Back Cover if integrated
       if (incCover && coverState) {
-        doc.addPage();
-        await drawCoverPagePart(doc, coverState, 'back', pageW, pageH);
+        setExportProgressText("Drawing Back Cover...");
+        doc.addPage([pageW, pageH], "portrait");
+        await drawCoverPagePart(doc, coverState, "back", pageW, pageH);
       }
 
-      // Apply watermark (free tier) and the decorative border theme to every
-      // interior page, skipping the front/back cover pages.
+      // Apply watermark (free tier) and the decorative border theme to every interior page
+      setExportProgressPercent(85);
+      setExportProgressText("Applying border themes & finishing touches...");
+
       if (!isPremium || (borderTheme && borderTheme !== "none")) {
         const totalPages = doc.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
@@ -574,16 +674,30 @@ export default function MathPuzzleGenerator() {
           const isBackCover = incCover && coverState && i === totalPages;
           if (!isFrontCover && !isBackCover) {
             doc.setPage(i);
-            if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, pageW, pageH);
+            if (borderTheme && borderTheme !== "none")
+              drawPageBorderTheme(doc, borderTheme, pageW, pageH);
             if (!isPremium) drawWatermark(doc, pageW, pageH);
           }
         }
       }
 
+      setExportProgressPercent(95);
+      setExportProgressText("Saving PDF...");
+
       ensureEvenPageCount(doc);
       doc.save(`math-puzzle-${puzzleType}-${numPages}pages.pdf`);
+
+      setExportProgressPercent(100);
+      setExportProgressText("Download complete!");
+      await new Promise((r) => setTimeout(r, 200));
+    } catch (err) {
+      console.error("Math puzzle PDF export error:", err);
+      alert("An error occurred during PDF generation. Please try again.");
+    } finally {
       setIsDownloading(false);
-    }, 50);
+      setExportProgressText("");
+      setExportProgressPercent(0);
+    }
   };
 
   // Helper adding addition PDF Grid
@@ -1474,8 +1588,11 @@ export default function MathPuzzleGenerator() {
       <ExportInteriorModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
-        defaultTrimSize="8.5x11"
+        defaultTrimSize={trimSize.id}
         onExport={handleExportPDF}
+        allowFreeWatermarkedExport={true}
+        progressText={exportProgressText}
+        progressPercent={exportProgressPercent}
       />
     </div>
   );

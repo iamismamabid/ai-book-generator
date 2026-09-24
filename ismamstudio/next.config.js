@@ -83,22 +83,6 @@ const nextConfig = {
     return config;
   },
 
-  // ─── Canonical redirect (www -> apex) ────────────────────────────────────
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'www.kdpage.com',
-          },
-        ],
-        destination: 'https://kdpage.com/:path*',
-        permanent: true,
-      },
-    ];
-  },
 
   // ─── PostHog reverse proxy (avoids ad blockers) ──────────────────────────
   async rewrites() {
@@ -199,9 +183,16 @@ const nextConfig = {
     ];
   },
 
-  // ─── SEO: consolidate duplicate hub page into the canonical /tools ──────
+  // ─── Redirects: canonical www->apex + SEO slug consolidation ──────────
   async redirects() {
     return [
+      // Canonical: www.kdpage.com -> kdpage.com (fixes Paddle 403 domain mismatch)
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.kdpage.com' }],
+        destination: 'https://kdpage.com/:path*',
+        permanent: true,
+      },
       {
         source: "/artbook-studio",
         missing: [{ type: "query", key: "v", value: "2" }],

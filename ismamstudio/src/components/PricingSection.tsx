@@ -39,7 +39,7 @@ function PricingSectionInner() {
           window.location.reload();
         }, 800);
       } else {
-        setSyncMessage("Could not sync. Please ensure you are logged in.");
+        setSyncMessage(res?.error || "Could not sync. Please ensure you are logged in.");
       }
     } catch (err) {
       console.error("Sync error:", err);

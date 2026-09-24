@@ -283,12 +283,31 @@ export async function checkPremiumStatus() {
   const MAX_ATTEMPTS = 2;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   try {
-    // ১. ডাটাবেসে AppSumo redemption কোড চেক করা
-    const redemptionsCount = await prisma.appSumoRedemption.count({
-      where: { clerkId: userId }
+    // ১. Clerk user ও email চেক করা
+    const user = await currentUser();
+    const userEmails = user?.emailAddresses?.map((e: any) => e.emailAddress?.toLowerCase()).filter(Boolean) || [];
+
+    // ডাটাবেসে AppSumo / DealFuel redemption কোড চেক করা (clerkId অথবা verified email দিয়ে)
+    const redemptions = await prisma.appSumoRedemption.findMany({
+      where: {
+        OR: [
+          { clerkId: userId },
+          ...(userEmails.length > 0 ? [{ email: { in: userEmails, mode: 'insensitive' as const } }] : [])
+        ]
+      }
     });
 
+    const redemptionsCount = redemptions.length;
+
     if (redemptionsCount > 0) {
+      // যদি কোনো কোড পুরানো clerkId তে থাকে, তবে বর্তমান সক্রিয় clerkId তে স্বয়ংক্রিয়ভাবে সিঙ্ক করে দেওয়া
+      if (userEmails.length > 0 && redemptions.some(r => r.clerkId !== userId)) {
+        await prisma.appSumoRedemption.updateMany({
+          where: { email: { in: userEmails, mode: 'insensitive' } },
+          data: { clerkId: userId }
+        }).catch(() => {});
+      }
+
       let plan = "pro";
       let limits = { tier: 1, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
 
@@ -300,7 +319,6 @@ export async function checkPremiumStatus() {
     }
 
     // ২. Clerk publicMetadata চেক করা (সাবস্ক্রিপশনের জন্য)
-    const user = await currentUser();
     if (user) {
       const publicMetadata = (user.publicMetadata || {}) as any;
 
@@ -721,11 +739,27 @@ export async function syncMySubscription() {
     const meta = (user.publicMetadata || {}) as any;
 
     // 1. Check database redemptions first (AppSumo / DealFuel lifetime licenses)
-    const redemptionsCount = await prisma.appSumoRedemption.count({
-      where: { clerkId: userId },
+    const userEmails = user?.emailAddresses?.map((e: any) => e.emailAddress?.toLowerCase()).filter(Boolean) || [];
+
+    const redemptions = await prisma.appSumoRedemption.findMany({
+      where: {
+        OR: [
+          { clerkId: userId },
+          ...(userEmails.length > 0 ? [{ email: { in: userEmails, mode: 'insensitive' as const } }] : [])
+        ]
+      }
     });
 
+    const redemptionsCount = redemptions.length;
+
     if (redemptionsCount > 0) {
+      if (userEmails.length > 0 && redemptions.some(r => r.clerkId !== userId)) {
+        await prisma.appSumoRedemption.updateMany({
+          where: { email: { in: userEmails, mode: 'insensitive' } },
+          data: { clerkId: userId }
+        }).catch(() => {});
+      }
+
       const clerk = await clerkClient();
       const plan = redemptionsCount >= 3 ? "agency" : redemptionsCount >= 2 ? "pro" : "starter";
       await clerk.users.updateUserMetadata(userId, {

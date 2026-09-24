@@ -83,7 +83,6 @@ const nextConfig = {
     return config;
   },
 
-
   // ─── PostHog reverse proxy (avoids ad blockers) ──────────────────────────
   async rewrites() {
     return [
@@ -127,7 +126,7 @@ const nextConfig = {
         headers: [
           { key: "Content-Security-Policy", value: cspHeader },
           // Lock down CORS for page routes to our own domain (resolves ZAP cross-domain warning)
-          { key: "Access-Control-Allow-Origin", value: "https://kdpage.com" },
+          { key: "Access-Control-Allow-Origin", value: "https://www.kdpage.com" },
           // Prevent unauthorized cross-domain policy files
           { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
           // Enforce HTTPS strictly
@@ -183,16 +182,9 @@ const nextConfig = {
     ];
   },
 
-  // ─── Redirects: canonical www->apex + SEO slug consolidation ──────────
+  // ─── SEO: consolidate duplicate hub page into the canonical /tools ──────
   async redirects() {
     return [
-      // Canonical: www.kdpage.com -> kdpage.com (fixes Paddle 403 domain mismatch)
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.kdpage.com' }],
-        destination: 'https://kdpage.com/:path*',
-        permanent: true,
-      },
       {
         source: "/artbook-studio",
         missing: [{ type: "query", key: "v", value: "2" }],

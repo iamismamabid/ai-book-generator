@@ -10,6 +10,8 @@ import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { Lock, Download } from "lucide-react";
 import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
 
 function MazePreview({ 
@@ -92,6 +94,10 @@ export default function MazeGeneratorPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  const { user } = useUser();
+  const { getToken, userId } = useAuth();
+  const clientMeta = (user?.publicMetadata || {}) as any;
+
   const [premiumStatus, setPremiumStatus] = useState<{
     checked: boolean;
     isPremium: boolean;
@@ -114,11 +120,15 @@ export default function MazeGeneratorPage() {
 
   useEffect(() => {
     async function loadPremium() {
+      if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+        setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+      }
       try {
-        const res = await checkPremiumStatus();
+        const token = await getToken().catch(() => null);
+        const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
         setPremiumStatus(res as any);
         if (isRestoringRef.current) return;
-        if (res.plan === "free") {
+        if (res.plan === "free" && !clientMeta?.isPremium) {
           setShape("square");
           setBookCount(6);
         } else if (res.plan === "starter") {
@@ -133,7 +143,7 @@ export default function MazeGeneratorPage() {
       }
     }
     loadPremium();
-  }, []);
+  }, [user, userId]);
 
   // Restore a saved My Notebook entry (via /maze?notebookId=...).
   useEffect(() => {
@@ -194,8 +204,12 @@ export default function MazeGeneratorPage() {
   // an uncapped, unwatermarked book. See handleDownloadSample below for the
   // concrete exploit this closes.
   const getFreshPremiumStatus = async () => {
+    if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+      return { checked: true, isPremium: true, plan: clientMeta.plan || "agency" };
+    }
     try {
-      const res = await checkPremiumStatus();
+      const token = await getToken().catch(() => null);
+      const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
       setPremiumStatus(res as any);
       return res as any;
     } catch (err) {
@@ -216,6 +230,7 @@ export default function MazeGeneratorPage() {
     trimSize: "6x9" | "8.5x11" | "5x8";
     hasBleed?: boolean;
     showGuides?: boolean;
+    isPremium?: boolean;
     borderTheme?: import("@/lib/borderThemes").BorderThemeId;
   }) => {
     setIsDownloading(true);
@@ -225,7 +240,9 @@ export default function MazeGeneratorPage() {
       // isPremium and the puzzle count both come from this fresh check, not
       // from local state or anything the caller passed in.
       const freshStatus = await getFreshPremiumStatus();
-      const finalCount = Math.min(bookCount, tierMaxFor(freshStatus.plan));
+      const effectiveIsPro = Boolean(options.isPremium ?? (freshStatus.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)));
+      const effectivePlan = effectiveIsPro ? (freshStatus.plan !== "free" ? freshStatus.plan : (clientMeta?.plan || "agency")) : freshStatus.plan;
+      const finalCount = Math.min(bookCount, tierMaxFor(effectivePlan));
       const mazes = generateMazeBook(finalCount, gridSize, gridSize, shape);
 
       const { downloadMazePdf } = await import("@/lib/maze-pdf");
@@ -243,7 +260,7 @@ export default function MazeGeneratorPage() {
           coverState,
           hasBleed,
           showGuides,
-          isPremium: freshStatus.isPremium,
+          isPremium: effectiveIsPro,
           borderTheme,
         },
         `maze-${shape}-${finalCount}puzzles.pdf`

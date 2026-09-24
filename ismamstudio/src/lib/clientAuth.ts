@@ -22,7 +22,10 @@ export interface SafePremiumStatus {
  * Works seamlessly even when Clerk third-party cookies are partitioned or blocked
  * on custom domains (e.g. Chrome privacy sandbox on kdpage.com).
  */
-export async function getClientSafePremiumStatus(explicitTokenOrUserId?: string): Promise<SafePremiumStatus> {
+export async function getClientSafePremiumStatus(
+  explicitTokenOrUserId?: string,
+  fallbackUserMetadata?: any
+): Promise<SafePremiumStatus> {
   let token = explicitTokenOrUserId;
   let clientUser: any = null;
 
@@ -45,22 +48,39 @@ export async function getClientSafePremiumStatus(explicitTokenOrUserId?: string)
     }
   }
 
-  // Fast-check client metadata from Clerk user object in browser
-  const clientMeta = (clientUser?.publicMetadata || {}) as any;
+  // Combine metadata from explicit caller, Clerk window object, and local storage cache
+  const clientMeta = (fallbackUserMetadata || clientUser?.publicMetadata || {}) as any;
+
+  let cachedPlan: any = null;
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem("kdpage_cached_plan");
+      if (raw) {
+        cachedPlan = JSON.parse(raw);
+      }
+    } catch {}
+  }
+
   const clientIsPaid = Boolean(
     clientMeta.isPremium === true ||
     clientMeta.hasPaidTransaction === true ||
-    ["pro", "agency", "starter"].includes(clientMeta.plan)
+    ["pro", "agency", "starter"].includes(clientMeta.plan) ||
+    cachedPlan?.isPremium === true
   );
-  const clientPlan = clientMeta.plan || (clientIsPaid ? "agency" : "free");
+  const clientPlan = clientMeta.plan || cachedPlan?.plan || (clientIsPaid ? "agency" : "free");
 
   try {
     const res = await serverCheckPremiumStatus(token || undefined);
     if (res?.isPremium) {
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("kdpage_cached_plan", JSON.stringify({ isPremium: true, plan: res.plan, ts: Date.now() }));
+        } catch {}
+      }
       return res as SafePremiumStatus;
     }
 
-    // If server action returned unauthorized/free due to cookie partitioning
+    // If server action returned unauthorized/free/failed due to cookie partitioning
     // but the client has confirmed Clerk publicMetadata with active plan:
     if (clientIsPaid) {
       return {
@@ -83,6 +103,9 @@ export async function getClientSafePremiumStatus(explicitTokenOrUserId?: string)
         isPremium: true,
         plan: clientPlan,
         isLifetimeDeal: true,
+        limits: clientPlan === "agency"
+          ? { tier: 2, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 }
+          : { tier: 1, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 },
       };
     }
     return { checked: true, isPremium: false, plan: "free", reason: "status_check_failed" };

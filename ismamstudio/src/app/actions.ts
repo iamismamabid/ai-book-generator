@@ -281,12 +281,24 @@ export async function checkPremiumStatus(userToken?: string) {
       try {
         const parts = userToken.split(".");
         if (parts.length === 3) {
-          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
+          // Base64url decoding
+          const decoded = Buffer.from(parts[1], "base64url").toString("utf8");
+          const payload = JSON.parse(decoded);
           if (payload?.sub && typeof payload.sub === "string" && payload.sub.startsWith("user_")) {
             signedInUserId = payload.sub;
           }
         }
-      } catch {}
+      } catch {
+        try {
+          const parts = userToken.split(".");
+          if (parts.length === 3) {
+            const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
+            if (payload?.sub && typeof payload.sub === "string" && payload.sub.startsWith("user_")) {
+              signedInUserId = payload.sub;
+            }
+          }
+        } catch {}
+      }
     }
     if (!signedInUserId && userToken.startsWith("user_")) {
       signedInUserId = userToken;
@@ -324,14 +336,19 @@ export async function checkPremiumStatus(userToken?: string) {
     const userEmails = user?.emailAddresses?.map((e: any) => e.emailAddress?.toLowerCase()).filter(Boolean) || [];
 
     // ডাটাবেসে AppSumo / DealFuel redemption কোড চেক করা (clerkId অথবা verified email দিয়ে)
-    const redemptions = await prisma.appSumoRedemption.findMany({
-      where: {
-        OR: [
-          { clerkId: userId },
-          ...(userEmails.length > 0 ? [{ email: { in: userEmails, mode: 'insensitive' as const } }] : [])
-        ]
-      }
-    });
+    let redemptions: any[] = [];
+    try {
+      redemptions = await prisma.appSumoRedemption.findMany({
+        where: {
+          OR: [
+            { clerkId: userId },
+            ...(userEmails.length > 0 ? [{ email: { in: userEmails, mode: 'insensitive' as const } }] : [])
+          ]
+        }
+      });
+    } catch (dbErr) {
+      console.warn("DB redemption query warning in checkPremiumStatus:", dbErr);
+    }
 
     const redemptionsCount = redemptions.length;
 
@@ -357,6 +374,21 @@ export async function checkPremiumStatus(userToken?: string) {
     // ২. Clerk publicMetadata চেক করা (সাবস্ক্রিপশনের জন্য)
     if (user) {
       const publicMetadata = (user.publicMetadata || {}) as any;
+
+      // First check if Clerk metadata directly confirms an Agency / Pro / Lifetime license
+      if (publicMetadata.isLifetimeDeal || publicMetadata.plan === "agency" || (publicMetadata.isPremium && !publicMetadata.paddleSubscriptionId)) {
+        const userPlan = publicMetadata.plan || "agency";
+        const limits = userPlan === "agency"
+          ? { tier: 2, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 }
+          : { tier: 1, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
+        return {
+          checked: true,
+          isPremium: true,
+          plan: userPlan,
+          limits,
+          isLifetimeDeal: true,
+        };
+      }
 
       // 🔄 Auto-sync user to Loops.so audience once for onboarding campaign
       const primaryEmail = user.emailAddresses?.[0]?.emailAddress;
@@ -613,6 +645,26 @@ export async function checkPremiumStatus(userToken?: string) {
   } catch (error) {
     console.error(`checkPremiumStatus attempt ${attempt}/${MAX_ATTEMPTS} failed:`, error);
     if (attempt === MAX_ATTEMPTS) {
+      // Last-resort fallback: verify directly with Clerk if possible
+      try {
+        const client = await clerkClient();
+        const fallbackUser = await client.users.getUser(userId).catch(() => null);
+        const meta = (fallbackUser?.publicMetadata || {}) as any;
+        if (meta?.isPremium || ["pro", "agency"].includes(meta?.plan)) {
+          const userPlan = meta.plan || "agency";
+          const limits = userPlan === "agency"
+            ? { tier: 2, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 }
+            : { tier: 1, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
+          return {
+            checked: true,
+            isPremium: true,
+            plan: userPlan,
+            limits,
+            isLifetimeDeal: true,
+          };
+        }
+      } catch {}
+
       return { checked: true, isPremium: false, reason: "status_check_failed", plan: "free", limits: defaultFreeLimits };
     }
     await new Promise((resolve) => setTimeout(resolve, 250));

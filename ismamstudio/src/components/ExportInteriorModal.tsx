@@ -106,11 +106,19 @@ export default function ExportInteriorModal<T extends string = string>({
   const [redemptionSuccess, setRedemptionSuccess] = useState<string | null>(null);
   const [isRedeeming, setIsRedeeming] = useState(false);
 
+  // Client metadata check
+  const clientMeta = (user?.publicMetadata || {}) as any;
+  const isClientConfirmedPaid = Boolean(
+    clientMeta?.isPremium === true ||
+    clientMeta?.hasPaidTransaction === true ||
+    ["pro", "agency"].includes(clientMeta?.plan)
+  );
+  const effectiveIsPremium = Boolean(premiumStatus.isPremium || isClientConfirmedPaid);
+
   // Check premium status on mount or when modal opens
   const fetchPremiumStatus = async () => {
     // Immediate optimistic seed if user object already has publicMetadata
-    const clientMeta = (user?.publicMetadata || {}) as any;
-    if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+    if (isClientConfirmedPaid) {
       setPremiumStatus((prev) => ({
         ...prev,
         checked: true,
@@ -121,21 +129,24 @@ export default function ExportInteriorModal<T extends string = string>({
 
     try {
       const token = await getToken().catch(() => null);
-      const res = await getClientSafePremiumStatus(token || userId || undefined);
+      const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
+      const finalIsPremium = Boolean(res.isPremium || isClientConfirmedPaid);
+      const finalPlan = (res.isPremium ? res.plan : (isClientConfirmedPaid ? (clientMeta.plan || "agency") : res.plan)) || "free";
+
       setPremiumStatus({
         checked: true,
-        isPremium: Boolean(res.isPremium),
-        plan: res.plan,
-        isTrial: (res as any).isTrial || false,
-        trialExpired: (res as any).trialExpired || (res as any).reason === "trial_expired_unpaid",
+        isPremium: finalIsPremium,
+        plan: finalPlan,
+        isTrial: finalIsPremium && isClientConfirmedPaid ? false : ((res as any).isTrial || false),
+        trialExpired: finalIsPremium ? false : ((res as any).trialExpired || (res as any).reason === "trial_expired_unpaid"),
         daysRemaining: (res as any).daysRemaining,
         trialDownloadsRemaining: (res as any).trialDownloadsRemaining,
         trialDownloadsLimit: (res as any).trialDownloadsLimit,
-        reason: (res as any).reason,
+        reason: finalIsPremium ? undefined : (res as any).reason,
       });
     } catch (e) {
       console.error("Failed to check premium status:", e);
-      if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+      if (isClientConfirmedPaid) {
         setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
       } else {
         setPremiumStatus({ checked: true, isPremium: false, reason: "status_check_failed" });
@@ -151,9 +162,13 @@ export default function ExportInteriorModal<T extends string = string>({
     }
   }, [isOpen, userId, isLoaded, isSignedIn]);
 
-  const userTierRank = premiumStatus.plan === "free" || !premiumStatus.plan
+  const effectivePlan = effectiveIsPremium
+    ? (premiumStatus.plan && premiumStatus.plan !== "free" ? premiumStatus.plan : (clientMeta.plan || "agency"))
+    : (premiumStatus.plan || "free");
+
+  const userTierRank = effectivePlan === "free" || !effectivePlan
     ? TIER_RANK.free
-    : premiumStatus.plan === "starter"
+    : effectivePlan === "starter"
     ? TIER_RANK.starter
     : TIER_RANK.pro;
 
@@ -239,14 +254,6 @@ export default function ExportInteriorModal<T extends string = string>({
     }
     setIsExporting(true);
     try {
-      const clientMeta = (user?.publicMetadata || {}) as any;
-      const effectivePremium = Boolean(
-        premiumStatus.isPremium ||
-        clientMeta?.isPremium ||
-        clientMeta?.hasPaidTransaction ||
-        ["pro", "agency"].includes(clientMeta?.plan)
-      );
-
       await onExport({
         includeCover,
         coverState,
@@ -255,7 +262,7 @@ export default function ExportInteriorModal<T extends string = string>({
         trimSize,
         hasBleed,
         showGuides,
-        isPremium: effectivePremium,
+        isPremium: effectiveIsPremium,
         borderTheme,
       });
       // 🎁 Record trial download if on trial
@@ -313,7 +320,7 @@ export default function ExportInteriorModal<T extends string = string>({
             {/* Account Status Check Failed -- distinct from genuinely being on
                 the free plan, so a paying customer isn't told they're on
                 free tier just because a status check failed transiently. */}
-            {!premiumStatus.isPremium && premiumStatus.reason === "status_check_failed" && (
+            {!effectiveIsPremium && premiumStatus.reason === "status_check_failed" && (
               <div className="p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-2xl text-[11px] font-semibold mb-4 space-y-2">
                 <div className="flex gap-2 items-start">
                   <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -337,7 +344,7 @@ export default function ExportInteriorModal<T extends string = string>({
             )}
 
             {/* Watermarked Free Tier Notice (e.g. Sudoku Studio) */}
-            {allowFreeWatermarkedExport && !premiumStatus.isPremium && (
+            {allowFreeWatermarkedExport && !effectiveIsPremium && (
               <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-slate-200 flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold shrink-0">
                   <FileDown className="w-4 h-4 text-amber-400" />
@@ -759,7 +766,7 @@ export default function ExportInteriorModal<T extends string = string>({
 
             {/* Action Button */}
             <div className="mt-5">
-              {premiumStatus.isPremium ? (
+              {effectiveIsPremium ? (
                 <button
                   onClick={handleActionExport}
                   disabled={isExporting || (includeCover && !hasSavedCover) || (includeCover && coverDpiChecks.some(c => c.isLowRes))}

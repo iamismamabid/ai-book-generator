@@ -5,6 +5,7 @@ import Link from "next/link";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { getNotebookEntryData, checkPremiumStatus } from "@/app/actions";
 import { getClientSafePremiumStatus } from "@/lib/clientAuth";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, Upload, FileSpreadsheet, Plus, Trash2, 
@@ -30,19 +31,31 @@ interface BatchItem {
 
 export default function BulkGeneratorClient() {
   const router = useRouter();
+  const { user } = useUser();
+  const { getToken, userId } = useAuth();
+  const clientMeta = (user?.publicMetadata || {}) as any;
+
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
 
   useEffect(() => {
     async function loadPremium() {
+      if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+        setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+      }
       try {
-        const res = await getClientSafePremiumStatus();
+        const token = await getToken().catch(() => null);
+        const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
         setPremiumStatus(res as any);
       } catch {
-        setPremiumStatus({ checked: true, isPremium: false, plan: "free" });
+        if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+          setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+        } else {
+          setPremiumStatus({ checked: true, isPremium: false, plan: "free" });
+        }
       }
     }
     loadPremium();
-  }, []);
+  }, [user, userId]);
 
   const [items, setItems] = useState<BatchItem[]>([
     { id: "1", title: "Seniors Easy Sudoku Book", type: "Sudoku", difficulty: "Easy", count: 20, trimSize: "8.5x11", status: "Pending" },
@@ -231,8 +244,9 @@ export default function BulkGeneratorClient() {
       import("@/app/actions"),
     ]);
 
-    const pStatus = await getClientSafePremiumStatus();
-    const isPremiumUser = !!pStatus?.isPremium;
+    const token = await getToken().catch(() => null);
+    const pStatus = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
+    const isPremiumUser = Boolean(pStatus?.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
 
     const updatedItems = [...items];
 

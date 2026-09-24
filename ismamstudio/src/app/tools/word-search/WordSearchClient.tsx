@@ -10,6 +10,7 @@ import ExportInteriorModal from "@/components/ExportInteriorModal";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { useRouter } from "next/navigation";
 import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import { exportWordSearchToSvg, downloadSvgFile } from "@/lib/svgExporter";
 
@@ -26,20 +27,28 @@ import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
 const TRIM_SIZES = KDP_TRIM_SIZES;
 
 export default function WordSearchStudio() {
+    const { user } = useUser();
+    const { getToken, userId } = useAuth();
+    const clientMeta = (user?.publicMetadata || {}) as any;
+
     const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
     const router = useRouter();
 
     useEffect(() => {
         async function loadPremium() {
+            if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+                setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+            }
             try {
-                const res = await getClientSafePremiumStatus();
+                const token = await getToken().catch(() => null);
+                const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
                 setPremiumStatus(res as any);
             } catch (err) {
                 console.error(err);
             }
         }
         loadPremium();
-    }, []);
+    }, [user, userId]);
 
     const [activeTab, setActiveTab] = useState<'interior' | 'cover' | 'guide'>('interior'); 
     const [isGenerating, setIsGenerating] = useState(false);
@@ -331,6 +340,7 @@ export default function WordSearchStudio() {
         borderTheme?: import("@/lib/borderThemes").BorderThemeId;
     }) => {
         const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, isPremium, borderTheme } = options;
+        const effectiveIsPro = Boolean(isPremium ?? (premiumStatus.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)));
         setIsGenerating(true);
         const { cleanedWords, titleText } = getCleanMasterList();
         if (cleanedWords.length < wordsPerPage) { alert(`Add more words!`); setIsGenerating(false); return; }
@@ -597,7 +607,7 @@ export default function WordSearchStudio() {
         // Apply watermark (free tier) and the decorative border theme to every
         // interior page, skipping the front/back cover pages -- those already
         // have their own Cover Studio design.
-        if (!isPremium || (borderTheme && borderTheme !== "none")) {
+        if (!effectiveIsPro || (borderTheme && borderTheme !== "none")) {
             const totalPages = doc.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 const isFrontCover = incCover && coverState && i === 1;
@@ -607,7 +617,7 @@ export default function WordSearchStudio() {
                     const margins = calculateKdpMargins(i, totalPages, finalW);
                     const kdpShift = margins.contentCenterX - (finalW / 2);
                     if (borderTheme && borderTheme !== "none") drawPageBorderTheme(doc, borderTheme, finalW, finalH, kdpShift);
-                    if (!isPremium) drawWatermark(doc, finalW, finalH);
+                    if (!effectiveIsPro) drawWatermark(doc, finalW, finalH);
                 }
             }
         }

@@ -19,7 +19,7 @@ ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 ENV DIRECT_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 # NEXT_PUBLIC_ keys are embedded in the browser bundle — safe to set at build time
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_YXdhaXRlZC1mYXduLTIyLmNsZXJrLmFjY291bnRzLmRldiQ"
-ENV NEXT_PUBLIC_PADDLE_CLIENT_TOKEN="live_16495c6f0a5e429fbea919b267e"
+ENV NEXT_PUBLIC_PADDLE_CLIENT_TOKEN="live_0d6de0aa54c86f518c3a693c0ae"
 ENV NEXT_PUBLIC_PADDLE_ENVIRONMENT="production"
 ENV NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY="pri_01kyf7xm55g1es1gjw2sd5h64s"
 ENV NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL="pri_01kyf7zcb04s6yv124gc9cqyp2"

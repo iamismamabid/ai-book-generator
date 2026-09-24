@@ -65,7 +65,7 @@ function PricingSectionInner() {
           (window as any).Paddle.Environment.set("sandbox");
         }
         
-        const token = cleanEnv(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) || "live_16495c6f0a5e429fbea919b267e";
+        const token = cleanEnv(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) || "live_0d6de0aa54c86f518c3a693c0ae";
         if (!token) {
           console.warn("Paddle Warning: NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is missing.");
           return;

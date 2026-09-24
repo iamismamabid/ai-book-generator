@@ -323,7 +323,7 @@ function PricingSectionInner() {
         "BYOK AI Magic Studio (Connect OpenAI/Gemini/Stability for Unlimited Generations)",
         "Access to 8+ KDP creation tools & engines",
         "Easy Sudoku & basic Word Search tools",
-        "Square maze & basic outline tools",
+        "Basic low-content outline tools",
         "1 Creative Outline / mo",
         "Access to free tools & KDP guides",
       ],
@@ -353,7 +353,7 @@ function PricingSectionInner() {
         "Watermark-free vector PDF exports",
         "Full BYOK AI Magic Studio (Unlimited 8K Covers & 300 DPI Vector Line Art with 0% Markup)",
         "Full Access to All Studios & Generators (Within Limits)",
-        "Word Search, Sudoku, Mazes & Crosswords (Up to 20/book)",
+        "Word Search, Sudoku & Crosswords (Up to 20/book)",
         "Cover & Interior Canvas Studio",
         "KDP Bulk Book Batch Studio (Up to 5 books / batch)",
         "All Standard Trim Sizes (6x9, 8.5x11, 5x8, etc.)",
@@ -1155,8 +1155,8 @@ function PricingSectionInner() {
               free: "Easy Only", starter: "All (Up to 20/book)", pro: "All (Up to 50/book)", agency: "All (Up to 500/book)",
             },
             {
-              label: "Maze Layout Shapes",
-              free: "Square Only", starter: "Square, Circle, Heart (Up to 20)", pro: "All Shapes (Up to 50)", agency: "All + Custom masking (500)",
+              label: "Interior Page Layouts",
+              free: "Basic Planners", starter: "Standard Spreads", pro: "All Spreads & Custom", agency: "All + Unlimited Variations",
             },
             {
               label: "Word Search / Cryptogram / Scramble",
@@ -1279,9 +1279,9 @@ export default function PricingSection() {
 
 function PricingSkeleton() {
   const staticPlans = [
-    { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Square-masked maze layouts", "1 Chapter Outline / mo", "Access to free tools & KDP guides"] },
+    { name: "Free Tier", price: "$0", period: "forever free", features: ["Access to basic puzzle generators", "Watermarked PDF exports (Sample only)", "Easy Sudoku generator", "Basic journal & planner layouts", "1 Chapter Outline / mo", "Access to free tools & KDP guides"] },
     { name: "Starter Creator", price: "$11.99", period: "/ month", features: ["Full Commercial Rights (Keep 100% royalties)", "Watermark-free vector PDF exports", "Up to 3 brand & pen-name profiles", "Standard trim sizes (6\"x9\", 8.5\"x11\")", "Cover & Interior Canvas Studio", "Easy & Medium Sudoku puzzle generator", "Generate up to 5 Chapters / mo", "Email support (24-48h response)"] },
-    { name: "Pro Studio", price: "$21", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Up to 10 Brand & pen-name profiles", "Full Sudoku Engine (Easy, Med, Hard)", "Shaped Labyrinth Generator (Circle, Heart)", "Word Search, Cryptogram & Scramble Studio", "30 AI Book Chapters & 15 Outlines / mo", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
+    { name: "Pro Studio", price: "$21", period: "/ month", popular: true, features: ["Watermark-free PDF exports (All sizes + Custom)", "100% Commercial-use rights", "Up to 10 Brand & pen-name profiles", "Full Sudoku Engine (Easy, Med, Hard)", "Full Puzzle Studio (Crosswords, Kakuro)", "Word Search, Cryptogram & Scramble Studio", "30 AI Book Chapters & 15 Outlines / mo", "Premium Cover & Interior Canvas Studio", "Priority Customer Support (under 12 hours)"] },
     { name: "Publisher Agency", price: "$39", period: "/ month", features: ["Everything in Pro Studio plan", "Up to 3 team member account seats", "Vector SVG & source file exports", "Advanced custom shapes & interior styling", "KDP Niche Hunter & Keyword Spy", "Bulk batch generation & CSV import", "Dedicated customer support manager"] },
   ];
 

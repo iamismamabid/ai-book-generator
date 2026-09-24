@@ -188,7 +188,7 @@ export default function HomePage() {
         <div className="relative w-full overflow-hidden flex">
           <div className="animate-marquee flex gap-6">
             {[
-              { label: "Heart Labyrinth", type: "Maze", desc: "Perfect for Valentine KDP niches", emoji: "💖" },
+              { label: "Habit Tracker", type: "Low-Content", desc: "Monthly goal and habit check grids", emoji: "📈" },
               { label: "Sudoku Grid", type: "Math Logic", desc: "100% compliant trim sizing", emoji: "🔢" },
               { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
               { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },
@@ -196,7 +196,7 @@ export default function HomePage() {
               { label: "Cryptogram", type: "Quotes", desc: "Shuffled letter decryption keys", emoji: "🔐" },
               { label: "Math sums", type: "Arithmetic", desc: "Sums, grid puzzle fill sheets", emoji: "➕" }
             ].concat([
-              { label: "Heart Labyrinth", type: "Maze", desc: "Perfect for Valentine KDP niches", emoji: "💖" },
+              { label: "Habit Tracker", type: "Low-Content", desc: "Monthly goal and habit check grids", emoji: "📈" },
               { label: "Sudoku Grid", type: "Math Logic", desc: "100% compliant trim sizing", emoji: "🔢" },
               { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
               { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },

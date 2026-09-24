@@ -93,6 +93,8 @@ export default function MazeGeneratorPage() {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [exportProgressText, setExportProgressText] = useState("");
+  const [exportProgressPercent, setExportProgressPercent] = useState(0);
 
   const { user } = useUser();
   const { getToken, userId } = useAuth();
@@ -217,21 +219,33 @@ export default function MazeGeneratorPage() {
   // an uncapped, unwatermarked book. See handleDownloadSample below for the
   // concrete exploit this closes.
   const getFreshPremiumStatus = async () => {
-    if (isClientPaid) {
-      return { checked: true, isPremium: true, plan: clientMeta.plan || cached?.plan || "agency" };
+    // Read live Clerk window state to avoid stale React closure issues
+    let liveMeta = (user?.publicMetadata || {}) as any;
+    if (typeof window !== "undefined" && (window as any).Clerk?.user) {
+      liveMeta = { ...((window as any).Clerk.user.publicMetadata || {}), ...liveMeta };
+    }
+    const liveCached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
+    const liveIsPaid = Boolean(
+      isPaidPlan(liveMeta, liveCached) ||
+      liveMeta?.isPremium ||
+      liveMeta?.hasPaidTransaction ||
+      ["pro", "agency", "starter"].includes(String(liveMeta?.plan || "").toLowerCase()) ||
+      (typeof liveMeta?.tier === "number" && liveMeta.tier > 0) ||
+      liveCached?.isPremium ||
+      isClientPaid
+    );
+    if (liveIsPaid) {
+      return { checked: true, isPremium: true, plan: liveMeta.plan || liveCached?.plan || "agency" };
     }
     try {
       const token = await getToken().catch(() => null);
       const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
-      const finalIsPremium = Boolean(res.isPremium || isClientPaid);
-      const finalPlan = finalIsPremium ? (res.plan !== "free" ? res.plan : (clientMeta.plan || cached?.plan || "agency")) : res.plan;
+      const finalIsPremium = Boolean(res.isPremium || liveIsPaid);
+      const finalPlan = finalIsPremium ? (res.plan !== "free" ? res.plan : (liveMeta.plan || liveCached?.plan || "agency")) : res.plan;
       setPremiumStatus({ ...res, isPremium: finalIsPremium, plan: finalPlan });
       return { ...res, isPremium: finalIsPremium, plan: finalPlan };
     } catch (err) {
       console.error(err);
-      if (isClientPaid) {
-        return { checked: true, isPremium: true, plan: clientMeta.plan || cached?.plan || "agency" };
-      }
       return premiumStatus;
     }
   };
@@ -254,14 +268,27 @@ export default function MazeGeneratorPage() {
     borderTheme?: import("@/lib/borderThemes").BorderThemeId;
   }) => {
     setIsDownloading(true);
+    setExportProgressText("Checking account status...");
+    setExportProgressPercent(5);
     const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
     try {
       const freshStatus = await getFreshPremiumStatus();
-      const effectiveIsPro = Boolean(options.isPremium || freshStatus.isPremium || isClientPaid);
-      const effectivePlan = effectiveIsPro ? (freshStatus.plan !== "free" ? freshStatus.plan : (clientMeta?.plan || cached?.plan || "agency")) : freshStatus.plan;
+      // Also read live Clerk window state here as an extra guard
+      const liveCached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
+      const clerkWindowMeta = typeof window !== "undefined" && (window as any).Clerk?.user
+        ? (window as any).Clerk.user.publicMetadata
+        : user?.publicMetadata;
+      const livePaid = isPaidPlan(clerkWindowMeta, liveCached);
+      const effectiveIsPro = Boolean(options.isPremium || freshStatus.isPremium || isClientPaid || livePaid || liveCached?.isPremium);
+      const effectivePlan = effectiveIsPro ? (freshStatus.plan !== "free" ? freshStatus.plan : (clientMeta?.plan || liveCached?.plan || "agency")) : freshStatus.plan;
       const finalCount = Math.min(bookCount, tierMaxFor(effectivePlan));
+
+      setExportProgressText(`Generating ${finalCount} mazes...`);
+      setExportProgressPercent(20);
       const mazes = generateMazeBook(finalCount, gridSize, gridSize, shape);
 
+      setExportProgressText("Compiling PDF...");
+      setExportProgressPercent(60);
       const { downloadMazePdf } = await import("@/lib/maze-pdf");
       await downloadMazePdf(
         {
@@ -282,10 +309,13 @@ export default function MazeGeneratorPage() {
         },
         `maze-${shape}-${finalCount}puzzles.pdf`
       );
+      setExportProgressPercent(100);
     } catch (err) {
       console.error("Failed to download PDF:", err);
     } finally {
       setIsDownloading(false);
+      setExportProgressText("");
+      setExportProgressPercent(0);
     }
   };
 
@@ -762,6 +792,9 @@ export default function MazeGeneratorPage() {
         onClose={() => setIsExportModalOpen(false)}
         defaultTrimSize={trimSize}
         onExport={handleDownloadPdf}
+        allowFreeWatermarkedExport={true}
+        progressText={exportProgressText}
+        progressPercent={exportProgressPercent}
       />
     </div>
   );

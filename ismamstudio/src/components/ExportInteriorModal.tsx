@@ -52,6 +52,10 @@ interface ExportInteriorModalProps<T extends string = string> {
   progressText?: string;
   /** Optional progress percentage (0-100) to render a progress bar during export */
   progressPercent?: number;
+  /** When true, immediately treats this user as premium without a network check.
+   * Use this when the parent has already performed live Clerk verification.
+   * Has no effect on Sudoku or other tools that don't pass this prop. */
+  isPremiumOverride?: boolean;
 }
 
 export default function ExportInteriorModal<T extends string = string>({
@@ -63,6 +67,7 @@ export default function ExportInteriorModal<T extends string = string>({
   trimSizeOptions,
   showBorderThemePicker = true,
   allowFreeWatermarkedExport = false,
+  isPremiumOverride,
   progressText,
   progressPercent,
 }: ExportInteriorModalProps<T>) {
@@ -121,6 +126,12 @@ export default function ExportInteriorModal<T extends string = string>({
 
   // Check premium status on mount or when modal opens
   const fetchPremiumStatus = async () => {
+    // If the parent has already verified premium status via live Clerk checks,
+    // skip the network round-trip entirely and use the override directly.
+    if (isPremiumOverride) {
+      setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+      return;
+    }
     // Immediate optimistic seed if user object already has publicMetadata
     if (isClientConfirmedPaid) {
       setPremiumStatus((prev) => ({
@@ -159,12 +170,15 @@ export default function ExportInteriorModal<T extends string = string>({
   };
 
   useEffect(() => {
-    if (isOpen && userId) {
+    if (isOpen && isPremiumOverride) {
+      // Parent has pre-verified premium status — no network call needed.
+      setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+    } else if (isOpen && userId) {
       fetchPremiumStatus();
     } else if (isOpen && isLoaded && !isSignedIn) {
       setPremiumStatus({ checked: true, isPremium: false });
     }
-  }, [isOpen, userId, isLoaded, isSignedIn]);
+  }, [isOpen, userId, isLoaded, isSignedIn, isPremiumOverride]);
 
   const effectivePlan = effectiveIsPremium
     ? (premiumStatus.plan && premiumStatus.plan !== "free" ? premiumStatus.plan : (clientMeta.plan || "agency"))

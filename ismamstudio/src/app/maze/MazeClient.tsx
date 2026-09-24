@@ -793,6 +793,7 @@ export default function MazeGeneratorPage() {
         defaultTrimSize={trimSize}
         onExport={handleDownloadPdf}
         allowFreeWatermarkedExport={true}
+        isPremiumOverride={isPro}
         progressText={exportProgressText}
         progressPercent={exportProgressPercent}
       />

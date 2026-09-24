@@ -10,6 +10,7 @@ import ExportInteriorModal from "@/components/ExportInteriorModal";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { useRouter } from "next/navigation";
 import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import { exportWordSearchToSvg, downloadSvgFile } from "@/lib/svgExporter";
 
 const WORD_SEARCH_SHAPES: { id: WordSearchShape; label: string }[] = [
@@ -31,7 +32,7 @@ export default function WordSearchStudio() {
     useEffect(() => {
         async function loadPremium() {
             try {
-                const res = await checkPremiumStatus();
+                const res = await getClientSafePremiumStatus();
                 setPremiumStatus(res as any);
             } catch (err) {
                 console.error(err);

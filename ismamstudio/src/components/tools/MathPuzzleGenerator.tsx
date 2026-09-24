@@ -11,6 +11,7 @@ import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { generateUniquePuzzle } from "@/lib/puzzleDedup";
 import { checkPremiumStatus } from "@/app/actions";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 
 import { KDP_TRIM_SIZES, getTrimDimensions } from "@/lib/kdpTrimSizes";
 
@@ -56,7 +57,7 @@ export default function MathPuzzleGenerator() {
   useEffect(() => {
     async function loadPremium() {
       try {
-        const res = await checkPremiumStatus();
+        const res = await getClientSafePremiumStatus();
         setPremiumStatus(res as any);
       } catch (err) {
         console.error(err);
@@ -72,7 +73,7 @@ export default function MathPuzzleGenerator() {
   // check resolved (or before a newly-redeemed plan reflected).
   const getFreshPremiumStatus = async () => {
     try {
-      const res = await checkPremiumStatus();
+      const res = await getClientSafePremiumStatus();
       setPremiumStatus(res as any);
       return res as any;
     } catch (err) {

@@ -1096,8 +1096,8 @@ export default function BookBuilder({
   const triggerExport = async () => {
     setIsExporting(true);
     try {
-      const { checkPremiumStatus } = await import("@/app/actions");
-      const res = await checkPremiumStatus();
+      const { getClientSafePremiumStatus } = await import("@/lib/clientAuth");
+      const res = await getClientSafePremiumStatus();
       const currentIsPremium = !!res?.isPremium;
 
       // Pre-Export Sweep: Auto-heal any puzzle pages or solution entries that might be missing grid/puzzle data

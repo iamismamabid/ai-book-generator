@@ -54,8 +54,8 @@ export default function CryptogramGenerator() {
   // default and capped a genuinely premium account at 7.
   const getFreshPremiumStatus = async () => {
     try {
-      const { checkPremiumStatus } = await import("@/app/actions");
-      const res = await checkPremiumStatus();
+      const { getClientSafePremiumStatus } = await import("@/lib/clientAuth");
+      const res = await getClientSafePremiumStatus();
       setPremiumStatus(res as any);
       return res as any;
     } catch (err) {

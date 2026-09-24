@@ -59,7 +59,8 @@ import {
   Loader2,
   Camera
 } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import GenericStudioTour from "@/components/GenericStudioTour";
@@ -517,6 +518,7 @@ function getInitialNotebookCache(): any | null {
 
 export default function ColoringBookClient() {
   const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const [isByokModalOpen, setIsByokModalOpen] = useState(false);
   const [activeView, setActiveView] = useState<"library" | "editor">(() => {
     if (typeof window !== "undefined") {
@@ -868,9 +870,19 @@ export default function ColoringBookClient() {
   }, [activePreset.id, isSignedIn, paintDrawingToCanvas]);
 
   useEffect(() => {
-    checkPremiumStatus()
-      .then((res: any) => setIsPremium(!!res.isPremium))
-      .catch(() => setIsPremium(false));
+    const clientMeta = (user?.publicMetadata || {}) as any;
+    if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+      setIsPremium(true);
+    }
+    getClientSafePremiumStatus()
+      .then((res: any) => setIsPremium(Boolean(res.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan))))
+      .catch(() => {
+        if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+          setIsPremium(true);
+        } else {
+          setIsPremium(false);
+        }
+      });
 
     // Restore a saved My Notebook entry (via ?notebookId=...)
     if (typeof window !== "undefined") {
@@ -2007,8 +2019,9 @@ export default function ColoringBookClient() {
 
     ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
     ctx.fillRect(0, 0, dims.pxW, dims.pxH);
-    ctx.drawImage(canvas, 0, 0, dims.pxW, dims.pxH);
-    if (!isPremium) drawCanvasWatermark(ctx, dims.pxW, dims.pxH);
+    const clientMeta = (user?.publicMetadata || {}) as any;
+    const effectiveIsPremium = isPremium || Boolean(clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
+    if (!effectiveIsPremium) drawCanvasWatermark(ctx, dims.pxW, dims.pxH);
 
     const link = document.createElement("a");
     link.download = `KDPage_${activePreset.id}_${trimSize.id}_${useBleed ? "bleed" : "nobleed"}_300DPI.png`;
@@ -2098,7 +2111,9 @@ export default function ColoringBookClient() {
         doc.setTextColor(0);
         doc.text(`Page ${p + 1}`, trimSize.w / 2, trimSize.h - 0.3, { align: "center" });
 
-        if (!isPremium) drawWatermark(doc, trimSize.w, trimSize.h);
+        const clientMeta = (user?.publicMetadata || {}) as any;
+        const effectiveIsPremium = isPremium || Boolean(clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
+        if (!effectiveIsPremium) drawWatermark(doc, trimSize.w, trimSize.h);
 
         setExportProgress(Math.floor(((p + 1) / totalP) * 100));
       }

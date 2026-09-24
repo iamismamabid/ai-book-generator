@@ -50,6 +50,7 @@ import CoverExportPaywallModal from "@/components/CoverExportPaywallModal";
 import { BookCoverSyncData } from "@/components/FullBookPackagerModal";
 import { COVER_THEMES, CoverThemeId } from "@/app/utils/autoCoverGenerator";
 import { checkPremiumStatus, saveAccountUploadedAsset, getAccountUploadedAssets, deleteAccountUploadedAsset } from "@/app/actions";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import { saveUserUploadsToIndexedDB, loadUserUploadsFromIndexedDB, loadBookDraftFromIndexedDB } from "@/lib/indexedDbStorage";
 
 // Patch Fabric.Text prototype to support modern rounded text backgrounds with custom radius, padding & opacity
@@ -5699,7 +5700,7 @@ export default function FabricCoverStudio({
         }
 
         // 🎁 Record trial download if on trial
-        checkPremiumStatus().then((st: any) => {
+        getClientSafePremiumStatus().then((st: any) => {
           if (st?.isTrial) {
             import("@/app/actions").then(({ recordTrialDownload }) => recordTrialDownload()).catch(() => {});
           }
@@ -5716,7 +5717,7 @@ export default function FabricCoverStudio({
     if (!canvas) return;
 
     try {
-      const status = await checkPremiumStatus();
+      const status = await getClientSafePremiumStatus();
       if (!status.isPremium) {
         setIsExportPaywallOpen(true);
         return;
@@ -5750,7 +5751,7 @@ export default function FabricCoverStudio({
 
     // 1. Premium Paywall Check
     try {
-      const status = await checkPremiumStatus();
+      const status = await getClientSafePremiumStatus();
       if (!status.isPremium) {
         setIsExportPaywallOpen(true);
         return;
@@ -6144,7 +6145,7 @@ export default function FabricCoverStudio({
     if (!canvas) return;
 
     try {
-      const status = await checkPremiumStatus();
+      const status = await getClientSafePremiumStatus();
       if (!status.isPremium) {
         setIsExportPaywallOpen(true);
         return;

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { X, Sparkles, ShieldCheck, Ticket, Loader2, ArrowRight, Lock, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { checkPremiumStatus, redeemAppSumoCode } from "@/app/actions";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 
 interface CoverExportPaywallModalProps {
   isOpen: boolean;
@@ -33,7 +34,7 @@ export default function CoverExportPaywallModal({
 
   React.useEffect(() => {
     if (isOpen) {
-      checkPremiumStatus()
+      getClientSafePremiumStatus()
         .then((st: any) => {
           if (st?.isTrial) {
             setTrialStatus({ isTrial: true, isExpired: false, daysRemaining: st.daysRemaining });
@@ -61,7 +62,7 @@ export default function CoverExportPaywallModal({
       const res = await redeemAppSumoCode(code.trim());
       if (res.success) {
         setSuccess("License code redeemed successfully! Unlocking your 300 DPI Cover PDF...");
-        const status = await checkPremiumStatus();
+        const status = await getClientSafePremiumStatus();
         if (status.isPremium) {
           setTimeout(() => {
             onClose();

@@ -10,6 +10,7 @@ import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { checkPremiumStatus } from "@/app/actions";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import { 
   generateWordScramblePuzzles, 
   WordScramblePuzzle, 
@@ -51,7 +52,7 @@ export default function WordScrambleGenerator() {
   useEffect(() => {
     async function loadPremium() {
       try {
-        const res = await checkPremiumStatus();
+        const res = await getClientSafePremiumStatus();
         setPremiumStatus(res as any);
       } catch (err) {
         console.error(err);
@@ -83,7 +84,7 @@ export default function WordScrambleGenerator() {
 
   const getFreshPremiumStatus = async () => {
     try {
-      const res = await checkPremiumStatus();
+      const res = await getClientSafePremiumStatus();
       setPremiumStatus(res as any);
       return res as any;
     } catch (err) {

@@ -10,6 +10,7 @@ import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { checkPremiumStatus } from "@/app/actions";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import { generateCrosswordGrid } from "@/app/utils/crosswordGenerator";
 import { getCrosswordThemes } from "@/lib/crosswordDictionary";
 
@@ -80,7 +81,7 @@ export default function CrosswordGenerator() {
   useEffect(() => {
     async function loadPremium() {
       try {
-        const res = await checkPremiumStatus();
+        const res = await getClientSafePremiumStatus();
         setPremiumStatus(res as any);
       } catch (err) {
         console.error(err);
@@ -97,7 +98,7 @@ export default function CrosswordGenerator() {
   // default and capped a genuinely premium account too low.
   const getFreshPremiumStatus = async () => {
     try {
-      const res = await checkPremiumStatus();
+      const res = await getClientSafePremiumStatus();
       setPremiumStatus(res as any);
       return res as any;
     } catch (err) {

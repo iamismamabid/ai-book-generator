@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { getNotebookEntryData, checkPremiumStatus } from "@/app/actions";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, Upload, FileSpreadsheet, Plus, Trash2, 
@@ -34,7 +35,7 @@ export default function BulkGeneratorClient() {
   useEffect(() => {
     async function loadPremium() {
       try {
-        const res = await checkPremiumStatus();
+        const res = await getClientSafePremiumStatus();
         setPremiumStatus(res as any);
       } catch {
         setPremiumStatus({ checked: true, isPremium: false, plan: "free" });
@@ -230,7 +231,7 @@ export default function BulkGeneratorClient() {
       import("@/app/actions"),
     ]);
 
-    const pStatus = await checkPremiumStatus();
+    const pStatus = await getClientSafePremiumStatus();
     const isPremiumUser = !!pStatus?.isPremium;
 
     const updatedItems = [...items];

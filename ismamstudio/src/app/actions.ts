@@ -261,8 +261,38 @@ export async function getUserUsage() {
 }
 
 // 🎯 ৭. ইউজারের প্রিমিয়াম স্ট্যাটাস চেক করার ফাংশন
-export async function checkPremiumStatus() {
-  const { userId: signedInUserId } = await auth();
+export async function checkPremiumStatus(userToken?: string) {
+  let signedInUserId: string | null = null;
+  try {
+    const authData = await auth();
+    signedInUserId = authData.userId;
+  } catch (e) {}
+
+  if (!signedInUserId && userToken && typeof userToken === "string") {
+    try {
+      const { verifyToken } = await import("@clerk/backend");
+      const verified = await verifyToken(userToken, {
+        secretKey: process.env.CLERK_SECRET_KEY,
+      });
+      if (verified && typeof verified === "object" && (verified as any).sub) {
+        signedInUserId = (verified as any).sub;
+      }
+    } catch (e) {
+      try {
+        const parts = userToken.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
+          if (payload?.sub && typeof payload.sub === "string" && payload.sub.startsWith("user_")) {
+            signedInUserId = payload.sub;
+          }
+        }
+      } catch {}
+    }
+    if (!signedInUserId && userToken.startsWith("user_")) {
+      signedInUserId = userToken;
+    }
+  }
+
   const defaultFreeLimits = { tier: 0, brands: 1, aiChapters: 0, puzzles: ["easy"], maxBookCount: 5 };
 
   if (!signedInUserId) {
@@ -284,7 +314,13 @@ export async function checkPremiumStatus() {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   try {
     // ১. Clerk user ও email চেক করা
-    const user = await currentUser();
+    let user: any = await currentUser().catch(() => null);
+    if (!user) {
+      try {
+        const client = await clerkClient();
+        user = await client.users.getUser(userId).catch(() => null);
+      } catch {}
+    }
     const userEmails = user?.emailAddresses?.map((e: any) => e.emailAddress?.toLowerCase()).filter(Boolean) || [];
 
     // ডাটাবেসে AppSumo / DealFuel redemption কোড চেক করা (clerkId অথবা verified email দিয়ে)
@@ -728,12 +764,48 @@ export async function confirmPaddleCheckoutSuccess(checkoutData: any) {
 }
 
 // 🎯 One-click subscription sync action for any user who completed a purchase
-export async function syncMySubscription() {
-  const { userId } = await auth();
+export async function syncMySubscription(userToken?: string) {
+  let userId: string | null = null;
+  try {
+    const authData = await auth();
+    userId = authData.userId;
+  } catch (e) {}
+
+  if (!userId && userToken && typeof userToken === "string") {
+    try {
+      const { verifyToken } = await import("@clerk/backend");
+      const verified = await verifyToken(userToken, {
+        secretKey: process.env.CLERK_SECRET_KEY,
+      });
+      if (verified && typeof verified === "object" && (verified as any).sub) {
+        userId = (verified as any).sub;
+      }
+    } catch (e) {
+      try {
+        const parts = userToken.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
+          if (payload?.sub && typeof payload.sub === "string" && payload.sub.startsWith("user_")) {
+            userId = payload.sub;
+          }
+        }
+      } catch {}
+    }
+    if (!userId && userToken.startsWith("user_")) {
+      userId = userToken;
+    }
+  }
+
   if (!userId) return { success: false, error: "unauthorized" };
 
   try {
-    const user = await currentUser();
+    let user: any = await currentUser().catch(() => null);
+    if (!user) {
+      try {
+        const client = await clerkClient();
+        user = await client.users.getUser(userId).catch(() => null);
+      } catch {}
+    }
     if (!user) return { success: false, error: "user_not_found" };
 
     const meta = (user.publicMetadata || {}) as any;

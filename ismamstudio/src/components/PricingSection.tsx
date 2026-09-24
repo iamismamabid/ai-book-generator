@@ -16,7 +16,7 @@ import { confirmPaddleCheckoutSuccess, syncMySubscription } from "@/app/actions"
 function PricingSectionInner() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const { userId } = useAuth();
+  const { userId, getToken } = useAuth();
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -32,7 +32,8 @@ function PricingSectionInner() {
     setIsSyncing(true);
     setSyncMessage(null);
     try {
-      const res = await syncMySubscription();
+      const token = await getToken();
+      const res = await syncMySubscription(token || undefined);
       if (res?.success) {
         setSyncMessage("✓ Plan synced! Reloading page...");
         setTimeout(() => {

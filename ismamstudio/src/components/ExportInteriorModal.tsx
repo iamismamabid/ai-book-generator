@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { X, Settings2, FileDown, AlertTriangle, Loader2, Lock, Sparkles, ShieldCheck, Ticket, Info, Check } from "lucide-react";
 import { checkPremiumStatus, redeemAppSumoCode } from "@/app/actions";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
@@ -66,7 +67,8 @@ export default function ExportInteriorModal<T extends string = string>({
   progressPercent,
 }: ExportInteriorModalProps<T>) {
   const trimOptions = (trimSizeOptions ?? DEFAULT_TRIM_OPTIONS) as unknown as TrimSizeOption<T>[];
-  const { userId, isLoaded, isSignedIn } = useAuth();
+  const { userId, isLoaded, isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
   const [includeCover, setIncludeCover] = useState(false);
   const [includeSolutions, setIncludeSolutions] = useState(true);
   const [trimSize, setTrimSize] = useState<T>(defaultTrimSize);
@@ -106,12 +108,23 @@ export default function ExportInteriorModal<T extends string = string>({
 
   // Check premium status on mount or when modal opens
   const fetchPremiumStatus = async () => {
-    if (!userId) return;
+    // Immediate optimistic seed if user object already has publicMetadata
+    const clientMeta = (user?.publicMetadata || {}) as any;
+    if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+      setPremiumStatus((prev) => ({
+        ...prev,
+        checked: true,
+        isPremium: true,
+        plan: clientMeta.plan || "agency",
+      }));
+    }
+
     try {
-      const res = await checkPremiumStatus();
+      const token = await getToken().catch(() => null);
+      const res = await getClientSafePremiumStatus(token || userId || undefined);
       setPremiumStatus({
         checked: true,
-        isPremium: res.isPremium,
+        isPremium: Boolean(res.isPremium),
         plan: res.plan,
         isTrial: (res as any).isTrial || false,
         trialExpired: (res as any).trialExpired || (res as any).reason === "trial_expired_unpaid",
@@ -122,9 +135,11 @@ export default function ExportInteriorModal<T extends string = string>({
       });
     } catch (e) {
       console.error("Failed to check premium status:", e);
-      // Distinct from a genuine free-tier user -- this is a client-side
-      // failure to even reach checkPremiumStatus, not a status it returned.
-      setPremiumStatus({ checked: true, isPremium: false, reason: "status_check_failed" });
+      if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+        setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+      } else {
+        setPremiumStatus({ checked: true, isPremium: false, reason: "status_check_failed" });
+      }
     }
   };
 
@@ -224,6 +239,14 @@ export default function ExportInteriorModal<T extends string = string>({
     }
     setIsExporting(true);
     try {
+      const clientMeta = (user?.publicMetadata || {}) as any;
+      const effectivePremium = Boolean(
+        premiumStatus.isPremium ||
+        clientMeta?.isPremium ||
+        clientMeta?.hasPaidTransaction ||
+        ["pro", "agency"].includes(clientMeta?.plan)
+      );
+
       await onExport({
         includeCover,
         coverState,
@@ -232,7 +255,7 @@ export default function ExportInteriorModal<T extends string = string>({
         trimSize,
         hasBleed,
         showGuides,
-        isPremium: premiumStatus.isPremium,
+        isPremium: effectivePremium,
         borderTheme,
       });
       // 🎁 Record trial download if on trial

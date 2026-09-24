@@ -234,8 +234,8 @@ export default function FullBookPackagerModal({
       setStep("interior");
       let activeIsPremium = isPremium ?? true;
       try {
-        const { checkPremiumStatus } = await import("@/app/actions");
-        const res = await checkPremiumStatus();
+        const { getClientSafePremiumStatus } = await import("@/lib/clientAuth");
+        const res = await getClientSafePremiumStatus();
         activeIsPremium = !!res?.isPremium;
       } catch {
         // fallback

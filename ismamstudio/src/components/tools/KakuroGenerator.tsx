@@ -11,6 +11,7 @@ import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { generateKakuro, KakuroPuzzle } from "@/lib/kakuro";
 import { checkPremiumStatus } from "@/app/actions";
+import { getClientSafePremiumStatus } from "@/lib/clientAuth";
 import { generateUniquePuzzle } from "@/lib/puzzleDedup";
 
 import { KDP_TRIM_SIZES } from "@/lib/kdpTrimSizes";
@@ -43,7 +44,7 @@ export default function KakuroGenerator() {
   useEffect(() => {
     async function loadPremium() {
       try {
-        const res = await checkPremiumStatus();
+        const res = await getClientSafePremiumStatus();
         setPremiumStatus(res as any);
       } catch (err) {
         console.error(err);
@@ -61,7 +62,7 @@ export default function KakuroGenerator() {
   // before the mount check resolved slip through uncapped.
   const getFreshPremiumStatus = async () => {
     try {
-      const res = await checkPremiumStatus();
+      const res = await getClientSafePremiumStatus();
       setPremiumStatus(res as any);
       return res as any;
     } catch (err) {

@@ -6,8 +6,6 @@ import GeminiScreenGlow from '@/app/components/GeminiScreenGlow';
 import Header from '@/app/components/Header';
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
 import Script from 'next/script';
 import type { Metadata } from 'next';
 import TawkToChat from '@/components/TawkToChat';
@@ -78,7 +76,7 @@ export default function RootLayout({
 }) {
   // Trigger Vercel redeploy with correct Root Directory settings
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "pk_live_Y2xlcmsua2RwYWdlLmNvbSQ"}>
       {/* 🎯 html ট্যাগে suppressHydrationWarning যুক্ত করা হয়েছে */}
       <html lang="en" className={`scroll-smooth ${inter.variable}`} suppressHydrationWarning>
         <head>
@@ -285,8 +283,6 @@ export default function RootLayout({
             <Script id="trustpilot-invitation-js" src="https://invitejs.trustpilot.com/tp.min.js" strategy="lazyOnload" />
           <Script id="trustpilot-widget-js" src="https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" strategy="lazyOnload" />
 
-          <SpeedInsights />
-          <Analytics />
           <GeminiSupportAssistant />
           <TawkToChat />
           <CookieConsentBanner />

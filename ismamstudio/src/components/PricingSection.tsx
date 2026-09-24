@@ -152,10 +152,6 @@ function PricingSectionInner() {
           }
         };
 
-        if (paddleCustomerId && paddleCustomerId.startsWith("ctm_")) {
-          initOptions.pwCustomer = { id: paddleCustomerId };
-        }
-
         try {
           (window as any).Paddle.Initialize(initOptions);
           console.log("Paddle V2 initialized successfully.");
@@ -245,6 +241,9 @@ function PricingSectionInner() {
     }
 
     if (selectedPriceId && (window as any).Paddle) {
+      const customerEmail = user?.primaryEmailAddress?.emailAddress;
+      const paddleCustomerId = (user?.publicMetadata?.paddleCustomerId as string) || (user?.unsafeMetadata?.paddleCustomerId as string);
+
       const checkoutOptions: any = {
         settings: {
           displayMode: "overlay",
@@ -257,6 +256,11 @@ function PricingSectionInner() {
             quantity: 1
           }
         ],
+        ...(paddleCustomerId && paddleCustomerId.startsWith("ctm_")
+          ? { customer: { id: paddleCustomerId } }
+          : customerEmail
+          ? { customer: { email: customerEmail } }
+          : {}),
         ...(couponParam ? { discountCode: couponParam.trim() } : {}),
         customData: {
           userId: userId,
@@ -271,9 +275,9 @@ function PricingSectionInner() {
 
       try {
         (window as any).Paddle.Checkout.open(checkoutOptions);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Paddle Checkout Open Error:", err);
-        alert("Could not open checkout. Please check browser console for details.");
+        alert(`Could not open checkout: ${err?.message || "Please check browser console for details."}`);
       }
     } else {
       console.error("Paddle Checkout Failed:", {

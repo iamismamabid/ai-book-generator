@@ -375,11 +375,22 @@ export async function checkPremiumStatus(userToken?: string) {
     if (user) {
       const publicMetadata = (user.publicMetadata || {}) as any;
 
-      // First check if Clerk metadata directly confirms an Agency / Pro / Lifetime license
-      if (publicMetadata.isLifetimeDeal || publicMetadata.plan === "agency" || (publicMetadata.isPremium && !publicMetadata.paddleSubscriptionId)) {
-        const userPlan = publicMetadata.plan || "agency";
+      // First check if Clerk metadata directly confirms an Agency / Pro / Starter / Lifetime license
+      const userPlanRaw = String(publicMetadata.plan || "").toLowerCase().trim();
+      const isPaidFromMeta = Boolean(
+        publicMetadata.isLifetimeDeal ||
+        publicMetadata.hasPaidTransaction ||
+        publicMetadata.isPremium ||
+        (userPlanRaw && userPlanRaw !== "free") ||
+        (typeof publicMetadata.tier === "number" && publicMetadata.tier > 0)
+      );
+
+      if (isPaidFromMeta && !publicMetadata.paddleSubscriptionId) {
+        const userPlan = userPlanRaw || "agency";
         const limits = userPlan === "agency"
           ? { tier: 2, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 }
+          : userPlan === "starter"
+          ? { tier: 1, brands: 5, puzzles: ["easy", "medium"], maxBookCount: 100 }
           : { tier: 1, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
         return {
           checked: true,
@@ -650,10 +661,13 @@ export async function checkPremiumStatus(userToken?: string) {
         const client = await clerkClient();
         const fallbackUser = await client.users.getUser(userId).catch(() => null);
         const meta = (fallbackUser?.publicMetadata || {}) as any;
-        if (meta?.isPremium || ["pro", "agency"].includes(meta?.plan)) {
-          const userPlan = meta.plan || "agency";
+        const metaPlan = String(meta?.plan || "").toLowerCase().trim();
+        if (meta?.isPremium || meta?.hasPaidTransaction || (metaPlan && metaPlan !== "free") || (typeof meta?.tier === "number" && meta.tier > 0)) {
+          const userPlan = metaPlan || "agency";
           const limits = userPlan === "agency"
             ? { tier: 2, brands: 25, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 }
+            : userPlan === "starter"
+            ? { tier: 1, brands: 5, puzzles: ["easy", "medium"], maxBookCount: 100 }
             : { tier: 1, brands: 10, puzzles: ["easy", "medium", "hard"], maxBookCount: 1000 };
           return {
             checked: true,

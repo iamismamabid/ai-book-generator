@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { X, Settings2, FileDown, AlertTriangle, Loader2, Lock, Sparkles, ShieldCheck, Ticket, Info, Check } from "lucide-react";
 import { checkPremiumStatus, redeemAppSumoCode } from "@/app/actions";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { getClientSafePremiumStatus } from "@/lib/clientAuth";
+import { getClientSafePremiumStatus, isPaidPlan, getCachedPaidPlan } from "@/lib/clientAuth";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { checkCoverImageResolution, ImageResolutionCheck } from "@/lib/pdfValidator";
@@ -108,10 +108,14 @@ export default function ExportInteriorModal<T extends string = string>({
 
   // Client metadata check
   const clientMeta = (user?.publicMetadata || {}) as any;
+  const cached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
   const isClientConfirmedPaid = Boolean(
+    isPaidPlan(clientMeta, cached) ||
     clientMeta?.isPremium === true ||
     clientMeta?.hasPaidTransaction === true ||
-    ["pro", "agency"].includes(clientMeta?.plan)
+    ["pro", "agency", "starter"].includes(String(clientMeta?.plan || "").toLowerCase()) ||
+    (typeof clientMeta?.tier === "number" && clientMeta.tier > 0) ||
+    cached?.isPremium === true
   );
   const effectiveIsPremium = Boolean(premiumStatus.isPremium || isClientConfirmedPaid);
 

@@ -11,7 +11,7 @@ import GenericStudioTour from "@/components/GenericStudioTour";
 import { Lock, Download } from "lucide-react";
 import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { getClientSafePremiumStatus } from "@/lib/clientAuth";
+import { getClientSafePremiumStatus, isPaidPlan, getCachedPaidPlan } from "@/lib/clientAuth";
 import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
 
 function MazePreview({ 
@@ -97,6 +97,15 @@ export default function MazeGeneratorPage() {
   const { user } = useUser();
   const { getToken, userId } = useAuth();
   const clientMeta = (user?.publicMetadata || {}) as any;
+  const cached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
+  const isClientPaid = Boolean(
+    isPaidPlan(clientMeta, cached) ||
+    clientMeta?.isPremium ||
+    clientMeta?.hasPaidTransaction ||
+    ["pro", "agency", "starter"].includes(String(clientMeta?.plan || "").toLowerCase()) ||
+    (typeof clientMeta?.tier === "number" && clientMeta.tier > 0) ||
+    cached?.isPremium
+  );
 
   const [premiumStatus, setPremiumStatus] = useState<{
     checked: boolean;
@@ -111,6 +120,8 @@ export default function MazeGeneratorPage() {
     };
   }>({ checked: false, isPremium: false, plan: "free" });
 
+  const isPro = Boolean(premiumStatus.isPremium || isClientPaid);
+
   // True when this page was opened to restore a saved My Notebook entry, so
   // the plan-based defaults below don't clobber the restored settings.
   const isRestoringRef = useRef(
@@ -120,18 +131,20 @@ export default function MazeGeneratorPage() {
 
   useEffect(() => {
     async function loadPremium() {
-      if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
-        setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+      if (isClientPaid) {
+        setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || cached?.plan || "agency" });
       }
       try {
         const token = await getToken().catch(() => null);
         const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
-        setPremiumStatus(res as any);
+        const finalIsPremium = Boolean(res.isPremium || isClientPaid);
+        const finalPlan = finalIsPremium ? (res.plan !== "free" ? res.plan : (clientMeta.plan || cached?.plan || "agency")) : res.plan;
+        setPremiumStatus({ ...res, isPremium: finalIsPremium, plan: finalPlan });
         if (isRestoringRef.current) return;
-        if (res.plan === "free" && !clientMeta?.isPremium) {
+        if (finalPlan === "free") {
           setShape("square");
           setBookCount(6);
-        } else if (res.plan === "starter") {
+        } else if (finalPlan === "starter") {
           setShape("square");
           setBookCount(20);
         } else {
@@ -143,7 +156,7 @@ export default function MazeGeneratorPage() {
       }
     }
     loadPremium();
-  }, [user, userId]);
+  }, [user, userId, isClientPaid]);
 
   // Restore a saved My Notebook entry (via /maze?notebookId=...).
   useEffect(() => {
@@ -204,24 +217,31 @@ export default function MazeGeneratorPage() {
   // an uncapped, unwatermarked book. See handleDownloadSample below for the
   // concrete exploit this closes.
   const getFreshPremiumStatus = async () => {
-    if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
-      return { checked: true, isPremium: true, plan: clientMeta.plan || "agency" };
+    if (isClientPaid) {
+      return { checked: true, isPremium: true, plan: clientMeta.plan || cached?.plan || "agency" };
     }
     try {
       const token = await getToken().catch(() => null);
       const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
-      setPremiumStatus(res as any);
-      return res as any;
+      const finalIsPremium = Boolean(res.isPremium || isClientPaid);
+      const finalPlan = finalIsPremium ? (res.plan !== "free" ? res.plan : (clientMeta.plan || cached?.plan || "agency")) : res.plan;
+      setPremiumStatus({ ...res, isPremium: finalIsPremium, plan: finalPlan });
+      return { ...res, isPremium: finalIsPremium, plan: finalPlan };
     } catch (err) {
       console.error(err);
+      if (isClientPaid) {
+        return { checked: true, isPremium: true, plan: clientMeta.plan || cached?.plan || "agency" };
+      }
       return premiumStatus;
     }
   };
 
-  const tierMaxFor = (plan: string) =>
-    plan === "free" ? 6 :
-      plan === "starter" ? 100 :
-        1000;
+  const tierMaxFor = (plan: string) => {
+    const p = String(plan || "").toLowerCase();
+    if (p === "agency" || p === "pro") return 1000;
+    if (p === "starter") return 100;
+    return 6;
+  };
 
   const handleDownloadPdf = async (options: {
     includeCover: boolean;
@@ -236,12 +256,9 @@ export default function MazeGeneratorPage() {
     setIsDownloading(true);
     const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
     try {
-      // Re-verify and re-clamp against the real plan at generation time --
-      // isPremium and the puzzle count both come from this fresh check, not
-      // from local state or anything the caller passed in.
       const freshStatus = await getFreshPremiumStatus();
-      const effectiveIsPro = Boolean(options.isPremium || freshStatus.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
-      const effectivePlan = effectiveIsPro ? (freshStatus.plan !== "free" ? freshStatus.plan : (clientMeta?.plan || "agency")) : freshStatus.plan;
+      const effectiveIsPro = Boolean(options.isPremium || freshStatus.isPremium || isClientPaid);
+      const effectivePlan = effectiveIsPro ? (freshStatus.plan !== "free" ? freshStatus.plan : (clientMeta?.plan || cached?.plan || "agency")) : freshStatus.plan;
       const finalCount = Math.min(bookCount, tierMaxFor(effectivePlan));
       const mazes = generateMazeBook(finalCount, gridSize, gridSize, shape);
 
@@ -273,14 +290,13 @@ export default function MazeGeneratorPage() {
   };
 
   // A genuinely small, fixed-size sample -- always exactly 10 mazes and
-  // never watermarked, regardless of plan. Previously this reused the
-  // user-adjustable bookCount (which had no upper bound for free users) and
-  // hardcoded isPremium: true, so a free/anonymous visitor could set the
-  // count field to hundreds and download a full, unwatermarked book at $0.
+  // never watermarked, regardless of plan.
   const SAMPLE_MAZE_COUNT = 10;
   const handleDownloadSample = async () => {
     setIsDownloading(true);
     try {
+      const freshStatus = await getFreshPremiumStatus();
+      const effectiveIsPro = Boolean(freshStatus.isPremium || isClientPaid);
       const mazes = generateMazeBook(SAMPLE_MAZE_COUNT, gridSize, gridSize, shape);
       const { downloadMazePdf } = await import("@/lib/maze-pdf");
       await downloadMazePdf(
@@ -290,12 +306,14 @@ export default function MazeGeneratorPage() {
           trimSize: "6x9",
           includeSolutions: true,
           scale: mazeScale,
-          title: `Free Sample ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
+          title: effectiveIsPro
+            ? `${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book (Sample Pack)`
+            : `Sample ${shape.charAt(0).toUpperCase() + shape.slice(1)} Maze Book`,
           includeCover: false,
           coverState: null,
           isPremium: true,
         },
-        `maze-${shape}-free-sample.pdf`
+        `maze-${shape}-sample.pdf`
       );
     } catch (err) {
       console.error("Failed to download sample PDF:", err);

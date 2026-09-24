@@ -11,7 +11,7 @@ import GenericStudioTour from "@/components/GenericStudioTour";
 import { useRouter } from "next/navigation";
 import { checkPremiumStatus, getNotebookEntryData } from "@/app/actions";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { getClientSafePremiumStatus } from "@/lib/clientAuth";
+import { getClientSafePremiumStatus, isPaidPlan, getCachedPaidPlan } from "@/lib/clientAuth";
 import { exportWordSearchToSvg, downloadSvgFile } from "@/lib/svgExporter";
 
 const WORD_SEARCH_SHAPES: { id: WordSearchShape; label: string }[] = [
@@ -30,25 +30,36 @@ export default function WordSearchStudio() {
     const { user } = useUser();
     const { getToken, userId } = useAuth();
     const clientMeta = (user?.publicMetadata || {}) as any;
+    const cached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
+    const isClientPaid = Boolean(
+        isPaidPlan(clientMeta, cached) ||
+        clientMeta?.isPremium ||
+        clientMeta?.hasPaidTransaction ||
+        ["pro", "agency", "starter"].includes(String(clientMeta?.plan || "").toLowerCase()) ||
+        (typeof clientMeta?.tier === "number" && clientMeta.tier > 0) ||
+        cached?.isPremium
+    );
 
     const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
     const router = useRouter();
 
     useEffect(() => {
         async function loadPremium() {
-            if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
-                setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+            if (isClientPaid) {
+                setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || cached?.plan || "agency" });
             }
             try {
                 const token = await getToken().catch(() => null);
                 const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
-                setPremiumStatus(res as any);
+                const finalIsPremium = Boolean(res.isPremium || isClientPaid);
+                const finalPlan = finalIsPremium ? (res.plan !== "free" ? res.plan : (clientMeta.plan || cached?.plan || "agency")) : res.plan;
+                setPremiumStatus({ ...res, isPremium: finalIsPremium, plan: finalPlan });
             } catch (err) {
                 console.error(err);
             }
         }
         loadPremium();
-    }, [user, userId]);
+    }, [user, userId, isClientPaid]);
 
     const [activeTab, setActiveTab] = useState<'interior' | 'cover' | 'guide'>('interior'); 
     const [isGenerating, setIsGenerating] = useState(false);
@@ -340,7 +351,7 @@ export default function WordSearchStudio() {
         borderTheme?: import("@/lib/borderThemes").BorderThemeId;
     }) => {
         const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, isPremium, borderTheme } = options;
-        const effectiveIsPro = Boolean(isPremium ?? (premiumStatus.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)));
+        const effectiveIsPro = Boolean(isPremium || premiumStatus.isPremium || isClientPaid);
         setIsGenerating(true);
         const { cleanedWords, titleText } = getCleanMasterList();
         if (cleanedWords.length < wordsPerPage) { alert(`Add more words!`); setIsGenerating(false); return; }

@@ -17,6 +17,32 @@ export interface SafePremiumStatus {
   [key: string]: any;
 }
 
+export function isPaidPlan(meta?: any, cached?: any): boolean {
+  if (!meta && !cached) return false;
+  if (meta?.isPremium === true || cached?.isPremium === true) return true;
+  if (meta?.hasPaidTransaction === true || cached?.hasPaidTransaction === true) return true;
+  if (meta?.isLifetimeDeal === true || cached?.isLifetimeDeal === true) return true;
+  if (typeof meta?.tier === "number" && meta.tier > 0) return true;
+  if (typeof cached?.tier === "number" && cached.tier > 0) return true;
+  const p = String(meta?.plan || cached?.plan || "").toLowerCase().trim();
+  if (p && p !== "free" && p !== "none" && p !== "null" && p !== "undefined") return true;
+  return false;
+}
+
+export function getCachedPaidPlan(): { isPremium: boolean; plan: string } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("kdpage_cached_plan");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.isPremium === true || (parsed?.plan && parsed.plan !== "free")) {
+        return { isPremium: true, plan: parsed.plan || "agency" };
+      }
+    }
+  } catch {}
+  return null;
+}
+
 /**
  * Universal client-side premium status retriever.
  * Works seamlessly even when Clerk third-party cookies are partitioned or blocked
@@ -62,9 +88,10 @@ export async function getClientSafePremiumStatus(
   }
 
   const clientIsPaid = Boolean(
+    isPaidPlan(clientMeta, cachedPlan) ||
     clientMeta.isPremium === true ||
     clientMeta.hasPaidTransaction === true ||
-    ["pro", "agency", "starter"].includes(clientMeta.plan) ||
+    ["pro", "agency", "starter"].includes(String(clientMeta.plan || "").toLowerCase()) ||
     cachedPlan?.isPremium === true
   );
   const clientPlan = clientMeta.plan || cachedPlan?.plan || (clientIsPaid ? "agency" : "free");

@@ -12,7 +12,7 @@ import ExportInteriorModal from "@/components/ExportInteriorModal";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import GenericStudioTour from "@/components/GenericStudioTour";
 import { checkPremiumStatus, getNotebookEntryData, syncMySubscription } from "../actions";
-import { getClientSafePremiumStatus } from "@/lib/clientAuth";
+import { getClientSafePremiumStatus, isPaidPlan, getCachedPaidPlan } from "@/lib/clientAuth";
 import { exportSudokuToSvg, downloadSvgFile } from "@/lib/svgExporter";
 import { loadHeaderFooterPresets, HeaderFooterPreset } from "@/lib/headerFooterPresets";
 import NextStepWorkflowLoop from "@/components/tools/NextStepWorkflowLoop";
@@ -124,10 +124,14 @@ export default function SudokuClient() {
   const { user } = useUser();
   const { getToken, userId } = useAuth();
   const clientMeta = (user?.publicMetadata || {}) as any;
+  const cached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
   const isClientPaid = Boolean(
+    isPaidPlan(clientMeta, cached) ||
     clientMeta?.isPremium ||
     clientMeta?.hasPaidTransaction ||
-    ["pro", "agency"].includes(clientMeta?.plan)
+    ["pro", "agency", "starter"].includes(String(clientMeta?.plan || "").toLowerCase()) ||
+    (typeof clientMeta?.tier === "number" && clientMeta.tier > 0) ||
+    cached?.isPremium
   );
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -156,12 +160,12 @@ export default function SudokuClient() {
   const loadPremium = async () => {
     try {
       if (isClientPaid) {
-        setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+        setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || cached?.plan || "agency" });
       }
       const token = await getToken().catch(() => null);
       const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
       const finalIsPremium = Boolean(res.isPremium || isClientPaid);
-      const finalPlan = finalIsPremium ? (res.plan !== "free" ? res.plan : (clientMeta.plan || "agency")) : res.plan;
+      const finalPlan = finalIsPremium ? (res.plan !== "free" ? res.plan : (clientMeta.plan || cached?.plan || "agency")) : res.plan;
       setPremiumStatus({ ...res, isPremium: finalIsPremium, plan: finalPlan });
       if (isRestoringRef.current) return;
       if (finalPlan === "free") {
@@ -181,7 +185,7 @@ export default function SudokuClient() {
 
   useEffect(() => {
     loadPremium();
-  }, [user, userId]);
+  }, [user, userId, isClientPaid]);
 
   const handleSyncStatus = async () => {
     setIsSyncing(true);

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import { getNotebookEntryData, checkPremiumStatus } from "@/app/actions";
-import { getClientSafePremiumStatus } from "@/lib/clientAuth";
+import { getClientSafePremiumStatus, isPaidPlan, getCachedPaidPlan } from "@/lib/clientAuth";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { 
@@ -34,28 +34,39 @@ export default function BulkGeneratorClient() {
   const { user } = useUser();
   const { getToken, userId } = useAuth();
   const clientMeta = (user?.publicMetadata || {}) as any;
+  const cached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
+  const isClientPaid = Boolean(
+    isPaidPlan(clientMeta, cached) ||
+    clientMeta?.isPremium ||
+    clientMeta?.hasPaidTransaction ||
+    ["pro", "agency", "starter"].includes(String(clientMeta?.plan || "").toLowerCase()) ||
+    (typeof clientMeta?.tier === "number" && clientMeta.tier > 0) ||
+    cached?.isPremium
+  );
 
   const [premiumStatus, setPremiumStatus] = useState({ checked: false, isPremium: false, plan: "free" });
 
   useEffect(() => {
     async function loadPremium() {
-      if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
-        setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+      if (isClientPaid) {
+        setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || cached?.plan || "agency" });
       }
       try {
         const token = await getToken().catch(() => null);
         const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
-        setPremiumStatus(res as any);
+        const finalIsPremium = Boolean(res.isPremium || isClientPaid);
+        const finalPlan = finalIsPremium ? (res.plan !== "free" ? res.plan : (clientMeta.plan || cached?.plan || "agency")) : res.plan;
+        setPremiumStatus({ ...res, isPremium: finalIsPremium, plan: finalPlan });
       } catch {
-        if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
-          setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
+        if (isClientPaid) {
+          setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || cached?.plan || "agency" });
         } else {
           setPremiumStatus({ checked: true, isPremium: false, plan: "free" });
         }
       }
     }
     loadPremium();
-  }, [user, userId]);
+  }, [user, userId, isClientPaid]);
 
   const [items, setItems] = useState<BatchItem[]>([
     { id: "1", title: "Seniors Easy Sudoku Book", type: "Sudoku", difficulty: "Easy", count: 20, trimSize: "8.5x11", status: "Pending" },
@@ -246,7 +257,7 @@ export default function BulkGeneratorClient() {
 
     const token = await getToken().catch(() => null);
     const pStatus = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
-    const isPremiumUser = Boolean(pStatus?.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
+    const isPremiumUser = Boolean(pStatus?.isPremium || isClientPaid);
 
     const updatedItems = [...items];
 

@@ -60,7 +60,7 @@ import {
   Camera
 } from "lucide-react";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { getClientSafePremiumStatus } from "@/lib/clientAuth";
+import { getClientSafePremiumStatus, isPaidPlan, getCachedPaidPlan } from "@/lib/clientAuth";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import GenericStudioTour from "@/components/GenericStudioTour";
@@ -871,17 +871,22 @@ export default function ColoringBookClient() {
 
   useEffect(() => {
     const clientMeta = (user?.publicMetadata || {}) as any;
-    if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+    const cached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
+    const isClientPaid = Boolean(
+      isPaidPlan(clientMeta, cached) ||
+      clientMeta?.isPremium ||
+      clientMeta?.hasPaidTransaction ||
+      ["pro", "agency", "starter"].includes(String(clientMeta?.plan || "").toLowerCase()) ||
+      (typeof clientMeta?.tier === "number" && clientMeta.tier > 0) ||
+      cached?.isPremium
+    );
+    if (isClientPaid) {
       setIsPremium(true);
     }
     getClientSafePremiumStatus()
-      .then((res: any) => setIsPremium(Boolean(res.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan))))
+      .then((res: any) => setIsPremium(Boolean(res.isPremium || isClientPaid)))
       .catch(() => {
-        if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
-          setIsPremium(true);
-        } else {
-          setIsPremium(false);
-        }
+        setIsPremium(isClientPaid);
       });
 
     // Restore a saved My Notebook entry (via ?notebookId=...)
@@ -1998,7 +2003,15 @@ export default function ColoringBookClient() {
     ctx.drawImage(lineCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
     ctx.restore();
     const clientMeta = (user?.publicMetadata || {}) as any;
-    const effectiveIsPremium = isPremium || Boolean(clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
+    const cached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
+    const effectiveIsPremium = isPremium || Boolean(
+      isPaidPlan(clientMeta, cached) ||
+      clientMeta?.isPremium ||
+      clientMeta?.hasPaidTransaction ||
+      ["pro", "agency", "starter"].includes(String(clientMeta?.plan || "").toLowerCase()) ||
+      (typeof clientMeta?.tier === "number" && clientMeta.tier > 0) ||
+      cached?.isPremium
+    );
     if (!effectiveIsPremium) drawCanvasWatermark(ctx, exportCanvas.width, exportCanvas.height);
 
     const link = document.createElement("a");
@@ -2034,7 +2047,15 @@ export default function ColoringBookClient() {
     }
 
     const clientMeta = (user?.publicMetadata || {}) as any;
-    const effectiveIsPremium = isPremium || Boolean(clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
+    const cached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
+    const effectiveIsPremium = isPremium || Boolean(
+      isPaidPlan(clientMeta, cached) ||
+      clientMeta?.isPremium ||
+      clientMeta?.hasPaidTransaction ||
+      ["pro", "agency", "starter"].includes(String(clientMeta?.plan || "").toLowerCase()) ||
+      (typeof clientMeta?.tier === "number" && clientMeta.tier > 0) ||
+      cached?.isPremium
+    );
     if (!effectiveIsPremium) drawCanvasWatermark(ctx, dims.pxW, dims.pxH);
 
     const link = document.createElement("a");
@@ -2139,7 +2160,15 @@ export default function ColoringBookClient() {
         doc.text(`Page ${p + 1}`, trimSize.w / 2, trimSize.h - 0.3, { align: "center" });
 
         const clientMeta = (user?.publicMetadata || {}) as any;
-        const effectiveIsPremium = isPremium || Boolean(clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
+        const cached = typeof window !== "undefined" ? getCachedPaidPlan() : null;
+        const effectiveIsPremium = isPremium || Boolean(
+          isPaidPlan(clientMeta, cached) ||
+          clientMeta?.isPremium ||
+          clientMeta?.hasPaidTransaction ||
+          ["pro", "agency", "starter"].includes(String(clientMeta?.plan || "").toLowerCase()) ||
+          (typeof clientMeta?.tier === "number" && clientMeta.tier > 0) ||
+          cached?.isPremium
+        );
         if (!effectiveIsPremium) drawWatermark(doc, trimSize.w, trimSize.h);
 
         setExportProgress(Math.floor(((p + 1) / totalP) * 100));

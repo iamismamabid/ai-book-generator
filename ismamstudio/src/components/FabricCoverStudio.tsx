@@ -3003,21 +3003,74 @@ export default function FabricCoverStudio({
   // be canvas.toDataURL({multiplier})). Composites Fabric's own
   // objects-only multiplied render on top of a manually-painted background
   // layer at the same resolution.
-  const exportCanvasWithBackground = (targetCanvas: fabric.Canvas, multiplier: number): Promise<string> => {
+  // Ultra-fast synchronous composite canvas generation for 300+ DPI PDF export
+  const exportCompositeCanvas = (targetCanvas: fabric.Canvas, multiplier: number): HTMLCanvasElement => {
+    const compositeEl = document.createElement('canvas');
+    compositeEl.width = Math.round(layout.canvasWidth * multiplier);
+    compositeEl.height = Math.round(layout.canvasHeight * multiplier);
+    const ctx = compositeEl.getContext('2d', { alpha: false });
+    if (!ctx) return compositeEl;
+
+    // 1. Paint cover background at scaled coordinates
+    ctx.save();
+    ctx.scale(multiplier, multiplier);
+    paintCoverBackground(ctx);
+    ctx.restore();
+
+    // 2. Render all fabric canvas objects directly at target multiplier
+    if (typeof (targetCanvas as any).toCanvasElement === 'function') {
+      try {
+        const objectsCanvas = (targetCanvas as any).toCanvasElement(multiplier);
+        ctx.drawImage(objectsCanvas, 0, 0, compositeEl.width, compositeEl.height);
+        objectsCanvas.width = 0;
+        objectsCanvas.height = 0;
+      } catch (err) {
+        console.warn("Direct toCanvasElement export failed, will use fallback:", err);
+      }
+    }
+
+    return compositeEl;
+  };
+
+  // Renders a fabric canvas to a data URL with custom background at high speed.
+  // Uses direct canvas-to-canvas blitting to avoid expensive base64 re-encoding.
+  const exportCanvasWithBackground = (
+    targetCanvas: fabric.Canvas,
+    multiplier: number,
+    format: 'jpeg' | 'png' = 'jpeg',
+    quality = 0.96
+  ): Promise<string> => {
     return new Promise((resolve) => {
+      try {
+        if (typeof (targetCanvas as any).toCanvasElement === 'function') {
+          const compositeEl = exportCompositeCanvas(targetCanvas, multiplier);
+          const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+          const result = compositeEl.toDataURL(mime, quality);
+          compositeEl.width = 0;
+          compositeEl.height = 0;
+          resolve(result);
+          return;
+        }
+      } catch (err) {
+        console.warn("Direct canvas element export failed, falling back to dataUrl pipe:", err);
+      }
+
+      // Legacy fallback
       const objectsOnlyDataUrl = targetCanvas.toDataURL({ format: 'png', multiplier });
       const img = new Image();
       img.onload = () => {
         const compositeEl = document.createElement('canvas');
-        compositeEl.width = layout.canvasWidth * multiplier;
-        compositeEl.height = layout.canvasHeight * multiplier;
+        compositeEl.width = Math.round(layout.canvasWidth * multiplier);
+        compositeEl.height = Math.round(layout.canvasHeight * multiplier);
         const ctx = compositeEl.getContext('2d');
         if (!ctx) { resolve(objectsOnlyDataUrl); return; }
+        ctx.save();
         ctx.scale(multiplier, multiplier);
         paintCoverBackground(ctx);
-        ctx.drawImage(img, 0, 0, layout.canvasWidth, layout.canvasHeight);
-        const result = compositeEl.toDataURL('image/png');
-        // Immediate offscreen buffer reclamation
+        ctx.restore();
+        ctx.drawImage(img, 0, 0, compositeEl.width, compositeEl.height);
+        const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+        const result = compositeEl.toDataURL(mime, quality);
         compositeEl.width = 0;
         compositeEl.height = 0;
         img.src = '';
@@ -3698,25 +3751,7 @@ export default function FabricCoverStudio({
     canvas.discardActiveObject();
     canvas.requestRenderAll();
 
-    const pngUrl = await exportCanvasWithBackground(canvas, 1);
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        const el = document.createElement('canvas');
-        el.width = img.width;
-        el.height = img.height;
-        const ctx = el.getContext('2d');
-        if (!ctx) return reject(new Error("No 2D context"));
-        ctx.drawImage(img, 0, 0);
-        const result = el.toDataURL('image/jpeg', 0.85);
-        el.width = 0;
-        el.height = 0;
-        img.src = '';
-        resolve(result);
-      };
-      img.onerror = () => reject(new Error("Failed to render preview"));
-      img.src = pngUrl;
-    });
+    return exportCanvasWithBackground(canvas, 1, 'jpeg', 0.85);
   };
 
   const restoreVersion = (version: CoverVersion) => {
@@ -5677,25 +5712,41 @@ export default function FabricCoverStudio({
         // Dynamically calculate multiplier to guarantee true 300+ DPI print quality for Amazon KDP
         const targetDpi = 300;
         const targetMultiplier = Math.max(3, Math.ceil((layout.coverWidthInches * targetDpi) / layout.canvasWidth));
-        const dataURL = await exportCanvasWithBackground(canvas, targetMultiplier);
         const safePageCount = pageCount || 100;
         const filename = `KDP_Full_Wrap_Cover_${trimSize.w}x${trimSize.h}_${safePageCount}p_${coverColorSpace.toUpperCase()}.pdf`;
 
         if (coverColorSpace === "cmyk") {
-          const { exportDataUrlToCmykPdf } = await import("@/lib/cmykPdfExport");
-          await exportDataUrlToCmykPdf(dataURL, {
+          let compositeEl: HTMLCanvasElement;
+          try {
+            compositeEl = exportCompositeCanvas(canvas, targetMultiplier);
+          } catch {
+            const dataUrl = await exportCanvasWithBackground(canvas, targetMultiplier, 'png', 1);
+            const img = new Image();
+            await new Promise((res) => { img.onload = res; img.src = dataUrl; });
+            compositeEl = document.createElement('canvas');
+            compositeEl.width = img.width;
+            compositeEl.height = img.height;
+            const cCtx = compositeEl.getContext('2d');
+            if (cCtx) cCtx.drawImage(img, 0, 0);
+          }
+          const { exportCanvasToCmykPdf } = await import("@/lib/cmykPdfExport");
+          await exportCanvasToCmykPdf(compositeEl, {
             widthInches: layout.coverWidthInches,
             heightInches: layout.coverHeightInches,
             filename,
           });
+          compositeEl.width = 0;
+          compositeEl.height = 0;
         } else {
+          const dataURL = await exportCanvasWithBackground(canvas, targetMultiplier, 'jpeg', 0.96);
           const { jsPDF } = await import("jspdf");
           const doc = new jsPDF({
             orientation: "landscape",
             unit: "in",
-            format: [layout.coverWidthInches, layout.coverHeightInches]
+            format: [layout.coverWidthInches, layout.coverHeightInches],
+            compress: true,
           });
-          doc.addImage(dataURL, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
+          doc.addImage(dataURL, 'JPEG', 0, 0, layout.coverWidthInches, layout.coverHeightInches, undefined, 'FAST');
           doc.save(filename);
         }
 
@@ -5710,7 +5761,7 @@ export default function FabricCoverStudio({
       } finally {
         setIsGenerating(false);
       }
-    }, 300);
+    }, 100);
   };
 
   const handleGenerateCover = async () => {
@@ -5825,7 +5876,7 @@ export default function FabricCoverStudio({
 
       const targetDpi = 300;
       const targetMultiplier = Math.max(3, Math.ceil((layout.coverWidthInches * targetDpi) / layout.canvasWidth));
-      const coverDataUrl = await exportCanvasWithBackground(canvas, targetMultiplier);
+      const coverDataUrl = await exportCanvasWithBackground(canvas, targetMultiplier, 'jpeg', 0.96);
       if (!coverDataUrl) {
         throw new Error("Failed to render 300 DPI Cover from canvas.");
       }
@@ -6187,9 +6238,9 @@ export default function FabricCoverStudio({
             (marked as fabric.IText).set('text', title);
           }
           tempCanvas.renderAll();
-          const dataUrl = await exportCanvasWithBackground(tempCanvas, 3);
-          const doc = new JsPdfCtor({ orientation: "landscape", unit: "in", format: [layout.coverWidthInches, layout.coverHeightInches] });
-          doc.addImage(dataUrl, 'PNG', 0, 0, layout.coverWidthInches, layout.coverHeightInches);
+          const dataUrl = await exportCanvasWithBackground(tempCanvas, 3, 'jpeg', 0.95);
+          const doc = new JsPdfCtor({ orientation: "landscape", unit: "in", format: [layout.coverWidthInches, layout.coverHeightInches], compress: true });
+          doc.addImage(dataUrl, 'JPEG', 0, 0, layout.coverWidthInches, layout.coverHeightInches, undefined, 'FAST');
           tempCanvas.dispose();
           tempEl.width = 0;
           tempEl.height = 0;

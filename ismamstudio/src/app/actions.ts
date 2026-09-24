@@ -1715,8 +1715,11 @@ export async function getUserNotebookFolders(clientUserId?: string): Promise<{ s
 }
 
 // 📁 Move a Notebook entry into a custom folder
-export async function moveNotebookEntryToFolder(id: string, folderName: string) {
-  const { userId } = await auth();
+export async function moveNotebookEntryToFolder(id: string, folderName: string, clientUserId?: string) {
+  let { userId } = await auth();
+  if (!userId && clientUserId) {
+    userId = clientUserId;
+  }
   if (!userId) {
     return { success: false, error: "Unauthorized." };
   }
@@ -1771,8 +1774,11 @@ export async function moveNotebookEntryToFolder(id: string, folderName: string) 
 }
 
 // 📁 Rename an existing folder across all items
-export async function renameNotebookFolder(oldFolder: string, newFolder: string) {
-  const { userId } = await auth();
+export async function renameNotebookFolder(oldFolder: string, newFolder: string, clientUserId?: string) {
+  let { userId } = await auth();
+  if (!userId && clientUserId) {
+    userId = clientUserId;
+  }
   if (!userId) {
     return { success: false, error: "Unauthorized." };
   }
@@ -1826,8 +1832,11 @@ export async function renameNotebookFolder(oldFolder: string, newFolder: string)
 }
 
 // 📁 Delete a folder (moves its items back to Unfiled)
-export async function deleteNotebookFolder(folderName: string) {
-  const { userId } = await auth();
+export async function deleteNotebookFolder(folderName: string, clientUserId?: string) {
+  let { userId } = await auth();
+  if (!userId && clientUserId) {
+    userId = clientUserId;
+  }
   if (!userId) {
     return { success: false, error: "Unauthorized." };
   }
@@ -1887,8 +1896,11 @@ export type NotebookEntryDataResult = {
   error?: string;
 };
 
-export async function getNotebookEntryData(id: string): Promise<NotebookEntryDataResult> {
-  const { userId } = await auth();
+export async function getNotebookEntryData(id: string, clientUserId?: string): Promise<NotebookEntryDataResult> {
+  let { userId } = await auth();
+  if (!userId && clientUserId) {
+    userId = clientUserId;
+  }
   if (!userId) {
     return { success: false, error: "Unauthorized. Please sign in." };
   }
@@ -1951,8 +1963,11 @@ export async function getNotebookEntryData(id: string): Promise<NotebookEntryDat
 }
 
 // 🗑️ Delete Notebook Entry Action
-export async function deleteNotebookEntry(id: string) {
-  const { userId } = await auth();
+export async function deleteNotebookEntry(id: string, clientUserId?: string) {
+  let { userId } = await auth();
+  if (!userId && clientUserId) {
+    userId = clientUserId;
+  }
   if (!userId) {
     return { success: false, error: "Unauthorized." };
   }
@@ -1961,11 +1976,6 @@ export async function deleteNotebookEntry(id: string) {
     const workspaceUserIds = await getWorkspaceUserIds(userId);
     const notebookDelegate = (prisma as any).notebook;
     if (notebookDelegate?.deleteMany) {
-      // deleteMany (not delete-by-id) so ownership/workspace membership is
-      // enforced as part of the query -- the Prisma-delegate path previously
-      // used delete({ where: { id } }) with no owner check at all, which let
-      // any signed-in user delete any entry by id via this branch (the raw
-      // SQL fallback below was the only path that ever checked userId).
       await notebookDelegate.deleteMany({
         where: { id, userId: { in: workspaceUserIds } },
       });
@@ -1982,6 +1992,87 @@ export async function deleteNotebookEntry(id: string) {
     console.error("Delete notebook entry failed:", err);
     return { success: false, error: err?.message || "Failed to delete item." };
   }
+}
+
+// 📚 Fetch All Notebook Entries for User / Workspace (with Client Fallback)
+export async function getUserNotebookEntries(clientUserId?: string): Promise<{ success: boolean; items: any[]; error?: string }> {
+  let { userId } = await auth();
+  if (!userId && clientUserId) {
+    userId = clientUserId;
+  }
+  if (!userId) {
+    return { success: false, items: [], error: "Unauthorized. Please sign in." };
+  }
+
+  let notebookItems: any[] = [];
+  try {
+    notebookItems = await prisma.$queryRawUnsafe(`
+      WITH user_team AS (
+        SELECT id, "ownerId" FROM "teams" WHERE "ownerId" = $1
+        UNION ALL
+        SELECT t.id, t."ownerId" FROM "teams" t
+        JOIN "team_members" tm ON tm."teamId" = t.id
+        WHERE tm."userId" = $1
+        LIMIT 1
+      ),
+      workspace_users AS (
+        SELECT "ownerId" as "userId" FROM user_team
+        UNION
+        SELECT tm."userId" FROM "team_members" tm
+        JOIN user_team ut ON ut.id = tm."teamId"
+        UNION
+        SELECT $1 as "userId"
+      )
+      SELECT 
+        n.id, 
+        n.title, 
+        n.subtitle, 
+        n.category, 
+        n."createdAt", 
+        n."updatedAt", 
+        COALESCE(n.data->>'folder', 'Unfiled') as folder
+      FROM "notebooks" n
+      JOIN workspace_users wu ON n."userId" = wu."userId"
+      WHERE (n."category" IS NULL OR n."category" != 'cover_asset')
+      ORDER BY n."createdAt" DESC
+      LIMIT 100;
+    `, userId);
+  } catch (error) {
+    console.error("Unified notebook query failed, falling back:", error);
+    try {
+      const workspaceUserIds = await getWorkspaceUserIds(userId);
+      notebookItems = await prisma.$queryRawUnsafe(`
+        SELECT 
+          id, 
+          title, 
+          subtitle, 
+          category, 
+          "createdAt", 
+          "updatedAt", 
+          COALESCE(data->>'folder', 'Unfiled') as folder
+        FROM "notebooks"
+        WHERE "userId" = ANY($1)
+          AND ("category" IS NULL OR "category" != 'cover_asset')
+        ORDER BY "createdAt" DESC
+        LIMIT 100
+      `, workspaceUserIds);
+    } catch (fallbackErr) {
+      console.error("Notebook fallback query failed:", fallbackErr);
+      return { success: false, items: [], error: "Failed to fetch notebook entries." };
+    }
+  }
+
+  const serializedItems = notebookItems.map((item: any) => ({
+    id: item.id,
+    title: item.title,
+    subtitle: item.subtitle || "Permanently saved in My Notebook",
+    category: item.category || "general",
+    folder: item.folder || "Unfiled",
+    createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : String(item.createdAt),
+    updatedAt: item.updatedAt instanceof Date ? item.updatedAt.toISOString() : String(item.updatedAt),
+  }));
+
+  return { success: true, items: serializedItems };
 }
 
 // 🎓 Mark a first-run interactive tour as seen, so it doesn't replay on

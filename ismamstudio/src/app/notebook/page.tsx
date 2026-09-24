@@ -1,10 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/prisma";
-import Link from "next/link";
-import { deleteNotebookEntry } from "../actions";
-import { getWorkspaceUserIds } from "@/lib/team";
-import { BookOpen, Sparkles, Trash2, ArrowRight, ShieldCheck, Cloud, Plus } from "lucide-react";
-
+import { getUserNotebookEntries } from "../actions";
 import NotebookClient from "./NotebookClient";
 
 export const dynamic = "force-dynamic";
@@ -15,130 +10,30 @@ export const metadata = {
 };
 
 export default async function NotebookPage() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    return (
-      <div className="min-h-screen pt-36 pb-20 px-6 flex flex-col items-center justify-center text-center">
-        <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-950/50 rounded-3xl flex items-center justify-center mb-6 text-indigo-600 dark:text-indigo-400">
-          <BookOpen className="w-10 h-10" />
-        </div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-3">Sign in to Access My Notebook</h1>
-        <p className="text-slate-500 dark:text-slate-400 max-w-md font-medium text-sm mb-8">
-          Save your puzzle books, interiors, and cover designs permanently to your account and access them from any device.
-        </p>
-        <Link
-          href="/sign-in"
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3.5 rounded-2xl shadow-lg shadow-indigo-600/20 text-sm transition-all"
-        >
-          Sign In to Your Account
-        </Link>
-      </div>
-    );
+  let serverUserId: string | null = null;
+  try {
+    const authResult = await auth();
+    serverUserId = authResult?.userId || null;
+  } catch (e) {
+    console.warn("Clerk server auth warning in NotebookPage:", e);
   }
 
-  // Fetch notebook entries for the whole team workspace in a single roundtrip
-  let notebookItems: any[] = [];
-  try {
-    notebookItems = await prisma.$queryRawUnsafe(`
-      WITH user_team AS (
-        SELECT id, "ownerId" FROM "teams" WHERE "ownerId" = $1
-        UNION ALL
-        SELECT t.id, t."ownerId" FROM "teams" t
-        JOIN "team_members" tm ON tm."teamId" = t.id
-        WHERE tm."userId" = $1
-        LIMIT 1
-      ),
-      workspace_users AS (
-        SELECT "ownerId" as "userId" FROM user_team
-        UNION
-        SELECT tm."userId" FROM "team_members" tm
-        JOIN user_team ut ON ut.id = tm."teamId"
-        UNION
-        SELECT $1 as "userId"
-      )
-      SELECT 
-        n.id, 
-        n.title, 
-        n.subtitle, 
-        n.category, 
-        n."createdAt", 
-        n."updatedAt", 
-        COALESCE(n.data->>'folder', 'Unfiled') as folder
-      FROM "notebooks" n
-      JOIN workspace_users wu ON n."userId" = wu."userId"
-      WHERE (n."category" IS NULL OR n."category" != 'cover_asset')
-      ORDER BY n."createdAt" DESC
-      LIMIT 100;
-    `, userId);
-  } catch (error) {
-    console.error("Unified notebook query failed, falling back:", error);
+  let initialItems: any[] = [];
+  if (serverUserId) {
     try {
-      const workspaceUserIds = await getWorkspaceUserIds(userId);
-      notebookItems = await prisma.$queryRawUnsafe(`
-        SELECT 
-          id, 
-          title, 
-          subtitle, 
-          category, 
-          "createdAt", 
-          "updatedAt", 
-          COALESCE(data->>'folder', 'Unfiled') as folder
-        FROM "notebooks"
-        WHERE "userId" = ANY($1)
-          AND ("category" IS NULL OR "category" != 'cover_asset')
-        ORDER BY "createdAt" DESC
-        LIMIT 100
-      `, workspaceUserIds);
-    } catch (fallbackErr) {
-      console.error("Notebook fallback query failed:", fallbackErr);
+      const res = await getUserNotebookEntries(serverUserId);
+      if (res?.success && Array.isArray(res.items)) {
+        initialItems = res.items;
+      }
+    } catch (e) {
+      console.warn("SSR notebook query error:", e);
     }
   }
 
-  // Serialize Date objects to ISO strings with lightweight payload
-  const serializedItems = notebookItems.map((item: any) => ({
-    id: item.id,
-    title: item.title,
-    subtitle: item.subtitle || "Permanently saved in My Notebook",
-    category: item.category || "general",
-    folder: item.folder || "Unfiled",
-    createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
-    updatedAt: item.updatedAt instanceof Date ? item.updatedAt.toISOString() : item.updatedAt,
-  }));
-
   return (
-    <main className="min-h-screen max-w-7xl mx-auto px-6 pt-32 pb-24">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-8 sm:p-10 rounded-3xl text-white shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
-
-        <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest">
-            <Cloud className="w-3.5 h-3.5" /> Permanent Account Cloud Storage
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight">My Notebook</h1>
-          <p className="text-slate-300 font-medium text-sm sm:text-base max-w-xl">
-            All your saved books, puzzle layouts, and cover designs permanently synced with your user account.
-          </p>
-        </div>
-
-        <div className="relative z-10 flex flex-wrap items-center gap-3 shrink-0">
-          <div className="bg-white/10 backdrop-blur-md border border-white/15 px-5 py-3 rounded-2xl text-left">
-            <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300 block mb-0.5">Notebook Items</span>
-            <span className="text-2xl font-black">{serializedItems.length} Saved</span>
-          </div>
-
-          <Link
-            href="/studio"
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-6 py-3.5 rounded-2xl text-xs uppercase tracking-wider shadow-xl shadow-indigo-600/30 flex items-center gap-2 transition-all active:scale-95"
-          >
-            <Plus className="w-4 h-4" /> Create New Design
-          </Link>
-        </div>
-      </div>
-
-      {/* Content Grid via NotebookClient */}
-      <NotebookClient items={serializedItems} />
-    </main>
+    <NotebookClient 
+      initialItems={initialItems} 
+      serverUserId={serverUserId} 
+    />
   );
 }

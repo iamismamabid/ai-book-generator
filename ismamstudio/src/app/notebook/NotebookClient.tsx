@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   BookOpen, 
   Trash2, 
@@ -21,14 +21,17 @@ import {
   Plus,
   FolderOpen,
   Loader2,
+  Cloud,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import { 
   deleteNotebookEntry, 
   moveNotebookEntryToFolder, 
   renameNotebookFolder, 
   deleteNotebookFolder,
   getNotebookEntryData,
+  getUserNotebookEntries,
 } from "../actions";
 
 interface NotebookItem {
@@ -44,7 +47,8 @@ interface NotebookItem {
 }
 
 interface NotebookClientProps {
-  items: NotebookItem[];
+  initialItems?: NotebookItem[];
+  serverUserId?: string | null;
 }
 
 // Where each saved entry reopens, keyed by the category its save button set.
@@ -90,7 +94,10 @@ function resolveDestination(category?: string, id?: string) {
   return { label: "Open in Studio", href: "/studio" };
 }
 
-export default function NotebookClient({ items: initialItems }: NotebookClientProps) {
+export default function NotebookClient({ initialItems = [], serverUserId = null }: NotebookClientProps) {
+  const { isLoaded, isSignedIn, userId: clerkUserId } = useAuth();
+  const effectiveUserId = serverUserId || clerkUserId || null;
+
   const [items, setItems] = useState<NotebookItem[]>(initialItems);
   const [selectedItem, setSelectedItem] = useState<NotebookItem | null>(null);
   const [loadingDetailsId, setLoadingDetailsId] = useState<string | null>(null);
@@ -102,6 +109,35 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
   const [renamedFolderTitle, setRenamedFolderTitle] = useState("");
   const [movingItemId, setMovingItemId] = useState<string | null>(null);
   const [folderActionFeedback, setFolderActionFeedback] = useState<string | null>(null);
+  const [isLoadingEntries, setIsLoadingEntries] = useState(!serverUserId && !isLoaded);
+
+  useEffect(() => {
+    // If SSR already passed entries or user, don't re-fetch
+    if (serverUserId && initialItems.length > 0) {
+      setIsLoadingEntries(false);
+      return;
+    }
+
+    if (!isLoaded) return;
+
+    if (isSignedIn && clerkUserId) {
+      setIsLoadingEntries(true);
+      getUserNotebookEntries(clerkUserId)
+        .then((res) => {
+          if (res?.success && Array.isArray(res.items)) {
+            setItems(res.items);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load notebook entries on client:", err);
+        })
+        .finally(() => {
+          setIsLoadingEntries(false);
+        });
+    } else {
+      setIsLoadingEntries(false);
+    }
+  }, [isLoaded, isSignedIn, clerkUserId, serverUserId]);
 
   // Lazy-load complete entry details on demand when viewing details
   const handleOpenDetails = async (item: NotebookItem) => {
@@ -109,7 +145,7 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
     if (!item.content && !item.data) {
       setLoadingDetailsId(item.id);
       try {
-        const res = await getNotebookEntryData(item.id);
+        const res = await getNotebookEntryData(item.id, effectiveUserId || undefined);
         if (res?.success) {
           const fullEntry = res.entry || {};
           const fullData = res.data || fullEntry.data;
@@ -187,7 +223,7 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
         prev ? { ...prev, folder: targetFolder, data: { ...(prev.data || {}), folder: targetFolder } } : null
       );
     }
-    await moveNotebookEntryToFolder(itemId, targetFolder);
+    await moveNotebookEntryToFolder(itemId, targetFolder, effectiveUserId || undefined);
     setFolderActionFeedback(`Moved to "${targetFolder}"`);
     setTimeout(() => setFolderActionFeedback(null), 2500);
   };
@@ -207,7 +243,7 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
     );
     if (activeFolder === oldName) setActiveFolder(newName);
     setEditingFolder(null);
-    await renameNotebookFolder(oldName, newName);
+    await renameNotebookFolder(oldName, newName, effectiveUserId || undefined);
   };
 
   const handleDeleteFolder = async (folderName: string) => {
@@ -220,12 +256,74 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
         )
       );
       if (activeFolder === folderName) setActiveFolder("all");
-      await deleteNotebookFolder(folderName);
+      await deleteNotebookFolder(folderName, effectiveUserId || undefined);
     }
   };
 
+  if (isLoadingEntries || (!isLoaded && !serverUserId)) {
+    return (
+      <div className="min-h-screen pt-36 pb-20 px-6 flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/50 rounded-3xl flex items-center justify-center mb-6 text-indigo-600 dark:text-indigo-400">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+        <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2">Connecting to My Notebook...</h2>
+        <p className="text-slate-500 dark:text-slate-400 max-w-md font-medium text-sm">
+          Syncing your permanently saved books, covers, and puzzle projects.
+        </p>
+      </div>
+    );
+  }
+
+  if (isLoaded && !isSignedIn && !serverUserId) {
+    return (
+      <div className="min-h-screen pt-36 pb-20 px-6 flex flex-col items-center justify-center text-center">
+        <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-950/50 rounded-3xl flex items-center justify-center mb-6 text-indigo-600 dark:text-indigo-400">
+          <BookOpen className="w-10 h-10" />
+        </div>
+        <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-3">Sign in to Access My Notebook</h1>
+        <p className="text-slate-500 dark:text-slate-400 max-w-md font-medium text-sm mb-8">
+          Save your puzzle books, interiors, and cover designs permanently to your account and access them from any device.
+        </p>
+        <Link
+          href="/sign-in"
+          className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3.5 rounded-2xl shadow-lg shadow-indigo-600/20 text-sm transition-all"
+        >
+          Sign In to Your Account
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <>
+    <main className="min-h-screen max-w-7xl mx-auto px-6 pt-32 pb-24">
+      {/* Header Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-8 sm:p-10 rounded-3xl text-white shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+
+        <div className="relative z-10 space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest">
+            <Cloud className="w-3.5 h-3.5" /> Permanent Account Cloud Storage
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight">My Notebook</h1>
+          <p className="text-slate-300 font-medium text-sm sm:text-base max-w-xl">
+            All your saved books, puzzle layouts, and cover designs permanently synced with your user account.
+          </p>
+        </div>
+
+        <div className="relative z-10 flex flex-wrap items-center gap-3 shrink-0">
+          <div className="bg-white/10 backdrop-blur-md border border-white/15 px-5 py-3 rounded-2xl text-left">
+            <span className="text-[9px] font-black uppercase tracking-wider text-indigo-300 block mb-0.5">Notebook Items</span>
+            <span className="text-2xl font-black">{items.length} Saved</span>
+          </div>
+
+          <Link
+            href="/studio"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-6 py-3.5 rounded-2xl text-xs uppercase tracking-wider shadow-xl shadow-indigo-600/30 flex items-center gap-2 transition-all active:scale-95"
+          >
+            <Plus className="w-4 h-4" /> Create New Design
+          </Link>
+        </div>
+      </div>
       {/* ── CLOUD FOLDER NAVIGATION TABS ── */}
       <div className="mb-8 space-y-3">
         <div className="flex items-center justify-between gap-4">
@@ -516,7 +614,7 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
 
                   <form action={async () => {
                     setItems(prev => prev.filter(it => it.id !== item.id));
-                    await deleteNotebookEntry(item.id);
+                    await deleteNotebookEntry(item.id, effectiveUserId || undefined);
                   }}>
                     <button
                       title="Delete from My Notebook"
@@ -669,6 +767,6 @@ export default function NotebookClient({ items: initialItems }: NotebookClientPr
           </div>
         </div>
       )}
-    </>
+    </main>
   );
 }

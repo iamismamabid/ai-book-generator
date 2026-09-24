@@ -83,6 +83,23 @@ const nextConfig = {
     return config;
   },
 
+  // ─── Canonical redirect (www -> apex) ────────────────────────────────────
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.kdpage.com',
+          },
+        ],
+        destination: 'https://kdpage.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
   // ─── PostHog reverse proxy (avoids ad blockers) ──────────────────────────
   async rewrites() {
     return [
@@ -126,7 +143,7 @@ const nextConfig = {
         headers: [
           { key: "Content-Security-Policy", value: cspHeader },
           // Lock down CORS for page routes to our own domain (resolves ZAP cross-domain warning)
-          { key: "Access-Control-Allow-Origin", value: "https://www.kdpage.com" },
+          { key: "Access-Control-Allow-Origin", value: "https://kdpage.com" },
           // Prevent unauthorized cross-domain policy files
           { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
           // Enforce HTTPS strictly

@@ -62,23 +62,50 @@ When modifying `StudioClient.tsx`, `BookBuilder.tsx`, or `FabricCoverStudio.tsx`
 4. **Guard global shortcuts with `isActiveRef`:**
    - Background canvas editors must not capture keyboard shortcuts (e.g. Undo/Redo/Delete) when their tab is not active.
 
-## Modular Isolation & Puzzle Code Lockdown Guidelines
+## Permanent Puzzle Code Freeze & Lockdown (STRICT ENFORCEMENT)
 
-To prevent cross-contamination and guarantee that editing one puzzle/tool NEVER breaks another:
+All puzzle engines, generation algorithms, math solvers, and puzzle-specific studio editors are under **PERMANENT CODE FREEZE**.
 
-1. **Strict Target Scope Isolation:**
-   - When modifying a specific tool or puzzle (e.g. Maze, Coloring Book, or Sudoku), ONLY edit files dedicated to that tool.
-   - NEVER touch or refactor other puzzle engines (e.g. `sudoku.ts`, `crosswordDictionary.ts`, `wordSearchGenerator.ts`, etc.) unless explicitly instructed.
+### 1. FROZEN INVENTORY (READ-ONLY / NO EDITS ALLOWED):
+Under NO circumstances should any AI agent, assistant, or automated tool edit, refactor, clean up, format, or re-architect the following files or directories unless explicitly commanded by the user with the exact phrase "UNLOCK PUZZLE [name]":
 
-2. **Zero-Breaking-Changes on Shared Components:**
-   - Shared components like `ExportInteriorModal.tsx`, `FabricCoverStudio.tsx`, and `BookBuilder.tsx` are utilized across ALL tools.
-   - Any new props or features added to shared components MUST be completely optional (`prop?: Type`) with safe, non-breaking fallback defaults.
-   - NEVER alter, rename, or delete existing prop signatures or interfaces in shared components.
+- **Sudoku:**
+  - `src/lib/sudoku.ts`, `src/lib/sudokuGenerator.ts`, `src/lib/sudoku-pdf.ts`
+  - `src/app/sudoku/` (all files including `SudokuClient.tsx`, `page.tsx`)
+  - `src/components/SudokuEditor.tsx`, `src/components/SudokuGenerator.tsx`
+- **Crossword:**
+  - `src/lib/crosswordDictionary.ts`, `src/app/utils/crosswordGenerator.ts`
+  - `src/app/studio/crossword/`
+  - `src/components/CrosswordEditor.tsx`, `src/components/tools/CrosswordGenerator.tsx`
+- **Word Search:**
+  - `src/lib/wordSearchThemes.ts`, `src/lib/wordSearch-pdf.ts`
+  - `src/app/tools/word-search/`
+  - `src/components/WordSearchEditor.tsx`
+- **Maze:**
+  - `src/lib/maze.ts`, `src/lib/maze-pdf.ts`, `src/app/utils/mazeGenerator.js`
+  - `src/app/maze/` (all files including `MazeClient.tsx`, `page.tsx`)
+  - `src/components/MazeEditor.tsx`
+- **Kakuro:**
+  - `src/lib/kakuro.ts`, `src/lib/kakuro-pdf.ts`
+  - `src/app/studio/kakuro/`
+  - `src/components/KakuroEditor.tsx`, `src/components/tools/KakuroGenerator.tsx`
+- **Cryptogram:**
+  - `src/lib/cryptogramQuotes.ts`
+  - `src/app/studio/cryptogram/`
+  - `src/components/CryptogramEditor.tsx`, `src/components/tools/CryptogramGenerator.tsx`
+- **Math Puzzle:**
+  - `src/app/studio/math-puzzle/`
+  - `src/components/MathPuzzleEditor.tsx`, `src/components/tools/MathPuzzleGenerator.tsx`
+- **Core Puzzle Engines & Exporters:**
+  - `src/app/utils/puzzleEngine.ts`
+  - `src/lib/puzzleDedup.ts`
+  - `src/lib/puzzleDpiExporter.ts`
+  - `src/app/api/puzzle/batch/`
+  - `src/app/tools/kdp-puzzle-generator/`
 
-3. **Self-Contained Tool Logic:**
-   - Keep tool-specific logic (e.g., maze generation algorithms, coloring page filters) isolated within its own dedicated directory (`src/app/maze/`, `src/app/tools/coloring-book-generator/`, etc.).
-   - Do not leak tool-specific flags into global state or unrelated studio tabs.
+### 2. STRICT NON-INTERFERENCE RULES:
+1. **Zero Cross-Contamination:** When working on cover studios, payments, auth, books, or any other tools, puzzle files MUST NEVER be included in edits.
+2. **Shared Components Guarantee:** When modifying shared components (`ExportInteriorModal.tsx`, `FabricCoverStudio.tsx`, `BookBuilder.tsx`), any new prop MUST be strictly optional with non-breaking fallbacks so puzzle components never experience runtime exceptions or layout breaks.
+3. **Mandatory Build & Typecheck Gate:** Any changes made to any part of the repository must be validated with `npx tsc --noEmit` and `npm run build` in `ismamstudio` to guarantee 100% regression-free builds for all puzzle pages.
 
-4. **Mandatory Full Regression Typecheck Before Commit:**
-   - Always run `npx tsc --noEmit` and `npm run build` in `ismamstudio` to verify that 100% of routes and puzzle engines remain completely green and unaffected before committing any change.
 

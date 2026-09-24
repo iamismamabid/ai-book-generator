@@ -1997,7 +1997,9 @@ export default function ColoringBookClient() {
     ctx.globalCompositeOperation = "multiply";
     ctx.drawImage(lineCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
     ctx.restore();
-    if (!isPremium) drawCanvasWatermark(ctx, exportCanvas.width, exportCanvas.height);
+    const clientMeta = (user?.publicMetadata || {}) as any;
+    const effectiveIsPremium = isPremium || Boolean(clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
+    if (!effectiveIsPremium) drawCanvasWatermark(ctx, exportCanvas.width, exportCanvas.height);
 
     const link = document.createElement("a");
     link.download = `KDPage_${activePreset.id}_${trimSize.id}_${useBleed ? "bleed" : "nobleed"}_colored.png`;
@@ -2008,6 +2010,7 @@ export default function ColoringBookClient() {
   // Download Single 300 DPI PNG Page
   const handleDownloadPng = () => {
     const canvas = canvasRef.current;
+    const colorCanvas = colorCanvasRef.current;
     if (!canvas) return;
 
     const dims = useBleed ? trimSize.bleed : trimSize.noBleed;
@@ -2019,6 +2022,17 @@ export default function ColoringBookClient() {
 
     ctx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
     ctx.fillRect(0, 0, dims.pxW, dims.pxH);
+
+    if (colorCanvas) {
+      ctx.drawImage(colorCanvas, 0, 0, dims.pxW, dims.pxH);
+      ctx.save();
+      ctx.globalCompositeOperation = "multiply";
+      ctx.drawImage(canvas, 0, 0, dims.pxW, dims.pxH);
+      ctx.restore();
+    } else {
+      ctx.drawImage(canvas, 0, 0, dims.pxW, dims.pxH);
+    }
+
     const clientMeta = (user?.publicMetadata || {}) as any;
     const effectiveIsPremium = isPremium || Boolean(clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
     if (!effectiveIsPremium) drawCanvasWatermark(ctx, dims.pxW, dims.pxH);
@@ -2072,8 +2086,10 @@ export default function ColoringBookClient() {
         if (p > 0) doc.addPage([pageW, pageH]);
 
         if (pageCtx) {
+          pageCtx.fillStyle = isMidnightMode ? "#0F172A" : "#FFFFFF";
+          pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+
           if (customLineArt) {
-            pageCtx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
             const tempCanvas = document.createElement("canvas");
             tempCanvas.width = customLineArt.width;
             tempCanvas.height = customLineArt.height;
@@ -2087,6 +2103,17 @@ export default function ColoringBookClient() {
             const dy = (pageCanvas.height - dh) / 2 + lineArtOffsetY;
             pageCtx.drawImage(tempCanvas, dx, dy, dw, dh);
             pageCtx.restore();
+          } else if (p === 0 && canvasRef.current && (activePreset.id === "blank_canvas" || userHasDrawnRef.current)) {
+            // Include user live canvas on page 0 if drawn or blank canvas mode
+            if (colorCanvasRef.current) {
+              pageCtx.drawImage(colorCanvasRef.current, 0, 0, pageCanvas.width, pageCanvas.height);
+              pageCtx.save();
+              pageCtx.globalCompositeOperation = "multiply";
+              pageCtx.drawImage(canvasRef.current, 0, 0, pageCanvas.width, pageCanvas.height);
+              pageCtx.restore();
+            } else {
+              pageCtx.drawImage(canvasRef.current, 0, 0, pageCanvas.width, pageCanvas.height);
+            }
           } else {
             drawColoringPattern(pageCtx, pageCanvas.width, pageCanvas.height, {
               presetId: activePreset.id,

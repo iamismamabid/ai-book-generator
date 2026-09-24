@@ -182,9 +182,9 @@ function PricingSectionInner() {
   }, [user]);
 
   const directPriceIds: Record<string, string | undefined> = {
-    "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_DIRECT_MONTHLY) || cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kwbgsarn24e1rn46dhadfcnx",
-    "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_DIRECT_MONTHLY) || cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) || "pri_01kwbgyfhhq6h86av5qycv52fs",
-    "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY) || cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY) || "pri_01kwbwhfxnebsj6nds4m65jjrq",
+    "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_DIRECT_MONTHLY) || cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kyf7xm55g1es1gjw2sd5h64s",
+    "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_DIRECT_MONTHLY) || cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) || "pri_01kyf83bjbj4gnk80mt50j0ba6",
+    "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY) || cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY) || "pri_01kzexp93jyfwe6fe2ks00v3gc",
   };
 
   const handleCheckout = (planKey: string, options?: { skipTrial?: boolean }) => {
@@ -197,12 +197,12 @@ function PricingSectionInner() {
     const planIdKey = `${planKey}_${isAnnualBilling ? "annual" : "monthly"}`;
 
     const standardPriceIds: Record<string, string | undefined> = {
-      "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kwbgsarn24e1rn46dhadfcnx",
-      "starter_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL) || "pri_01kwbh8envq2yez7j7hsd1y679",
-      "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) || "pri_01kwbgyfhhq6h86av5qycv52fs",
-      "pro_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL) || "pri_01kwbh4d3njs6ywbv9qr1wae79",
-      "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY) || "pri_01kwbwhfxnebsj6nds4m65jjrq",
-      "agency_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL) || "pri_01kwbwkrk1w7tnc318ga4d6xt6",
+      "starter_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kyf7xm55g1es1gjw2sd5h64s",
+      "starter_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL) || "pri_01kyf7zcb04s6yv124gc9cqyp2",
+      "pro_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) || "pri_01kyf83bjbj4gnk80mt50j0ba6",
+      "pro_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL) || "pri_01kyf86kqfrqxmhbbw0sj3kc9x",
+      "agency_monthly": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY) || "pri_01kzexp93jyfwe6fe2ks00v3gc",
+      "agency_annual": cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL) || "pri_01kyf8kzxeqjsxns6pc6x9a4k3",
     };
 
     const selectedPriceId = (options?.skipTrial && directPriceIds[planIdKey]) || standardPriceIds[planIdKey] || directPriceIds[planIdKey];

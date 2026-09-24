@@ -744,12 +744,12 @@ export async function confirmPaddleCheckoutSuccess(checkoutData: any) {
     const subscriptionId = checkoutData?.id || checkoutData?.subscription_id;
 
     let plan = "pro";
-    const starterMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY || "pri_01kwbgsarn24e1rn46dhadfcnx";
-    const starterAnnual = process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL || "pri_01kwbh8envq2yez7j7hsd1y679";
-    const proMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY || "pri_01kwbgyfhhq6h86av5qycv52fs";
-    const agencyMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY || "pri_01kwbwhfxnebsj6nds4m65jjrq";
-    const agencyAnnual = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL || "pri_01kwbwkrk1w7tnc318ga4d6xt6";
-    const agencyDirectMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY || "pri_01m1xpfd1pbtgfw3qj4gmp2h9x";
+    const starterMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY || "pri_01kyf7xm55g1es1gjw2sd5h64s";
+    const starterAnnual = process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL || "pri_01kyf7zcb04s6yv124gc9cqyp2";
+    const proMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY || "pri_01kyf83bjbj4gnk80mt50j0ba6";
+    const agencyMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY || "pri_01kzexp93jyfwe6fe2ks00v3gc";
+    const agencyAnnual = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL || "pri_01kyf8kzxeqjsxns6pc6x9a4k3";
+    const agencyDirectMonthly = process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY || "pri_01kzexp93jyfwe6fe2ks00v3gc";
 
     if (priceId === starterMonthly || priceId === starterAnnual) {
       plan = "starter";

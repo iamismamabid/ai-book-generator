@@ -84,21 +84,21 @@ export async function POST(request: Request) {
     
     let plan = "pro"; // Default paid tier is pro
     if (
-      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kwbgsarn24e1rn46dhadfcnx") ||
-      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL) || "pri_01kwbh8envq2yez7j7hsd1y679") ||
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_MONTHLY) || "pri_01kyf7xm55g1es1gjw2sd5h64s") ||
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ANNUAL) || "pri_01kyf7zcb04s6yv124gc9cqyp2") ||
       (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_DIRECT_MONTHLY) && priceId === cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_DIRECT_MONTHLY))
     ) {
       plan = "starter";
     } else if (
-      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) || "pri_01kwbgyfhhq6h86av5qycv52fs") ||
-      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL) || "pri_01kwbh4d3njs6ywbv9qr1wae79") ||
-      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_DIRECT_MONTHLY) || "pri_01m1xp939ywtagxwqc8qrr7z7t")
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY) || "pri_01kyf83bjbj4gnk80mt50j0ba6") ||
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL) || "pri_01kyf86kqfrqxmhbbw0sj3kc9x") ||
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_DIRECT_MONTHLY) || "pri_01kyf83bjbj4gnk80mt50j0ba6")
     ) {
       plan = "pro";
     } else if (
-      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY) || "pri_01kwbwhfxnebsj6nds4m65jjrq") ||
-      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL) || "pri_01kwbwkrk1w7tnc318ga4d6xt6") ||
-      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY) || "pri_01m1xpfd1pbtgfw3qj4gmp2h9x")
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_MONTHLY) || "pri_01kzexp93jyfwe6fe2ks00v3gc") ||
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_ANNUAL) || "pri_01kyf8kzxeqjsxns6pc6x9a4k3") ||
+      priceId === (cleanEnv(process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY_DIRECT_MONTHLY) || "pri_01kzexp93jyfwe6fe2ks00v3gc")
     ) {
       plan = "agency";
     }

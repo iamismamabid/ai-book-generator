@@ -40,7 +40,7 @@ interface ToolItem {
   id: string;
   name: string;
   badge?: string;
-  category: "Design" | "Writing" | "Formatting" | "Marketing";
+  category: "Design" | "Writing" | "Formatting" | "Marketing" | "Upcoming Tools (Beta)";
   description: string;
   features: string[];
   keywords?: string[];
@@ -343,13 +343,23 @@ export default function FreeToolsHub() {
     },
     {
       id: "coloring-book-generator",
-      name: "Free Coloring Book & Mandala Studio",
-      badge: "Popular",
-      category: "Design",
-      description: "Generate 300 DPI vector coloring pages, mandalas, botanical line art, and color-by-number templates.",
+      name: "Coloring Book Studio & Mandala Generator",
+      badge: "Beta Testing",
+      category: "Upcoming Tools (Beta)",
+      description: "Generate 300 DPI vector coloring pages, mandalas, botanical line art, and color-by-number templates with advanced canvas tools.",
       features: ["300 DPI vector PDF & PNG", "Mandalas & botanical florals", "Color-by-number palettes"],
-      keywords: ["coloring book", "mandala", "color by number", "line art", "coloring pages", "stained glass"],
+      keywords: ["coloring book", "mandala", "color by number", "line art", "coloring pages", "stained glass", "coloring book studio"],
       link: "/tools/coloring-book-generator"
+    },
+    {
+      id: "maze-studio",
+      name: "Labyrinth & Maze Studio",
+      badge: "Beta Testing",
+      category: "Upcoming Tools (Beta)",
+      description: "Generate mathematically unique Square, Heart, and Circular shape-masked mazes with single-solution paths and KDP-safe margins.",
+      features: ["Square, circle & heart labyrinths", "Auto-computed unique solution paths", "300 DPI vector KDP export"],
+      keywords: ["maze generator", "maze studio", "labyrinth maker", "puzzle interior", "activity book", "shape mask maze"],
+      link: "/maze"
     },
     // 1. Cover & Spine Tools
     {
@@ -838,14 +848,18 @@ export default function FreeToolsHub() {
           {/* Category Filter Buttons + Match Counter */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap gap-2.5">
-              {["All", "Design", "Writing", "Formatting", "Marketing"].map((cat) => (
+              {["All", "Design", "Writing", "Formatting", "Marketing", "Upcoming Tools (Beta)"].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm ${
                     activeCategory === cat 
-                      ? "bg-gradient-to-r from-amber-600 to-amber-500 text-white font-black shadow-amber-600/10 scale-[1.03]" 
-                      : "bg-white border border-stone-200 text-stone-600 hover:text-stone-950 hover:border-stone-300"
+                      ? cat === "Upcoming Tools (Beta)"
+                        ? "bg-gradient-to-r from-amber-600 via-orange-600 to-amber-500 text-white font-black shadow-amber-600/20 scale-[1.03]"
+                        : "bg-gradient-to-r from-amber-600 to-amber-500 text-white font-black shadow-amber-600/10 scale-[1.03]" 
+                      : cat === "Upcoming Tools (Beta)"
+                        ? "bg-amber-500/10 border border-amber-500/30 text-amber-800 hover:text-amber-950 hover:border-amber-400"
+                        : "bg-white border border-stone-200 text-stone-600 hover:text-stone-950 hover:border-stone-300"
                   }`}
                 >
                   {cat}
@@ -872,6 +886,7 @@ export default function FreeToolsHub() {
                     tool.category === "Design" ? "text-sky-700 bg-sky-500/10 border-sky-500/20" :
                     tool.category === "Writing" ? "text-rose-700 bg-rose-500/10 border-rose-500/20" :
                     tool.category === "Formatting" ? "text-purple-700 bg-purple-500/10 border-purple-500/20" :
+                    tool.category === "Upcoming Tools (Beta)" ? "text-amber-800 bg-amber-500/15 border-amber-500/30" :
                     "text-emerald-700 bg-emerald-500/10 border-emerald-500/20"
                   }`}>
                     {tool.category}

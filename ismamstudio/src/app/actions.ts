@@ -1616,9 +1616,13 @@ export async function saveToNotebook(
   subtitle?: string, 
   category?: string, 
   data?: any,
-  folder?: string
+  folder?: string,
+  clientUserId?: string
 ) {
-  const { userId } = await auth();
+  let { userId } = await auth();
+  if (!userId && clientUserId) {
+    userId = clientUserId;
+  }
   if (!userId) {
     return { success: false, error: "Unauthorized. Please sign in to save to your Notebook." };
   }
@@ -1673,8 +1677,11 @@ export async function saveToNotebook(
 }
 
 // 📁 Fetch all unique custom folders for the authenticated workspace
-export async function getUserNotebookFolders(): Promise<{ success: boolean; folders: string[] }> {
-  const { userId } = await auth();
+export async function getUserNotebookFolders(clientUserId?: string): Promise<{ success: boolean; folders: string[] }> {
+  let { userId } = await auth();
+  if (!userId && clientUserId) {
+    userId = clientUserId;
+  }
   if (!userId) {
     return { success: false, folders: [] };
   }

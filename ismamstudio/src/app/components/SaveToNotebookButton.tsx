@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { BookOpen, Check, Loader2, Folder, FolderPlus, ChevronDown, Plus, X } from "lucide-react";
 import { saveToNotebook, getUserNotebookFolders } from "../actions";
+import { useAuth, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 
 interface SaveToNotebookButtonProps {
@@ -40,15 +41,21 @@ export default function SaveToNotebookButton({
   const [isCreatingNewFolder, setIsCreatingNewFolder] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const { userId: authUserId } = useAuth();
+  const { user } = useUser();
+  const getClientUserId = () => {
+    return authUserId || user?.id || (typeof window !== "undefined" ? (window as any).Clerk?.user?.id : undefined);
+  };
+
   useEffect(() => {
-    getUserNotebookFolders()
+    getUserNotebookFolders(getClientUserId())
       .then((res) => {
         if (res.success && res.folders) {
           setFolders(res.folders);
         }
       })
       .catch(() => {});
-  }, []);
+  }, [authUserId, user?.id]);
 
   // Click outside and Escape key to close folder picker
   useEffect(() => {
@@ -77,7 +84,7 @@ export default function SaveToNotebookButton({
     const targetFolder = overrideFolder || selectedFolder;
     try {
       const payloadData = getData ? await getData() : data;
-      const res = await saveToNotebook(title, content, subtitle, category, payloadData, targetFolder);
+      const res = await saveToNotebook(title, content, subtitle, category, payloadData, targetFolder, getClientUserId());
       if (res.success) {
         setSaved(true);
         setIsFolderPickerOpen(false);

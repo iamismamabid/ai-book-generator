@@ -393,32 +393,9 @@ export async function generateMazePdf(options: PdfOptions): Promise<jsPDF> {
 
   // Apply watermark (free tier) and the decorative border theme to every
   // interior page, skipping the front/back cover pages.
-  //
-  // Triple-defense guard: even if isPremium was accidentally passed as false
-  // (e.g. due to a Clerk hook race condition), we re-check live window.Clerk
-  // state and localStorage cache before drawing the watermark.
-  let isPremiumDoc = Boolean(options.isPremium);
-  if (!isPremiumDoc && typeof window !== "undefined") {
-    try {
-      const { getCachedPaidPlan, isPaidPlan } = await import("./clientAuth");
-      const liveCached = getCachedPaidPlan();
-      const clerkUser = (window as any).Clerk?.user;
-      const liveMeta = clerkUser?.publicMetadata || {};
-      if (
-        isPaidPlan(liveMeta, liveCached) ||
-        liveMeta?.isPremium ||
-        liveMeta?.hasPaidTransaction ||
-        ["pro", "agency", "starter"].includes(String(liveMeta?.plan || "").toLowerCase()) ||
-        (typeof liveMeta?.tier === "number" && liveMeta.tier > 0) ||
-        liveCached?.isPremium
-      ) {
-        isPremiumDoc = true;
-      }
-    } catch {
-      // Ignore — worst case we fall back to options.isPremium
-    }
-  }
-
+  // isPremium is guaranteed to be set correctly by the caller (MazeClient.tsx)
+  // via live window.Clerk checks before this function is ever invoked.
+  const isPremiumDoc = Boolean(options.isPremium);
   const { borderTheme } = options;
   if (!isPremiumDoc || (borderTheme && borderTheme !== "none")) {
     const totalPages = doc.getNumberOfPages();

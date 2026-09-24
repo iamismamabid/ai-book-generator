@@ -240,7 +240,7 @@ export default function MazeGeneratorPage() {
       // isPremium and the puzzle count both come from this fresh check, not
       // from local state or anything the caller passed in.
       const freshStatus = await getFreshPremiumStatus();
-      const effectiveIsPro = Boolean(options.isPremium ?? (freshStatus.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)));
+      const effectiveIsPro = Boolean(options.isPremium || freshStatus.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
       const effectivePlan = effectiveIsPro ? (freshStatus.plan !== "free" ? freshStatus.plan : (clientMeta?.plan || "agency")) : freshStatus.plan;
       const finalCount = Math.min(bookCount, tierMaxFor(effectivePlan));
       const mazes = generateMazeBook(finalCount, gridSize, gridSize, shape);

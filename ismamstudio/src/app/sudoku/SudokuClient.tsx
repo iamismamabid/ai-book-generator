@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { generateSudoku, generateSudokuBook, generateSudokuBookAsync, Grid, Difficulty } from '../../lib/sudoku';
 import DownloadButton from "@/components/DownloadButton";
 import { CheckCircle2, BookOpen, Eye, Grid3x3, FileText, Lock, Download, ShieldCheck, Sparkles, RefreshCw } from "lucide-react";
@@ -122,6 +122,13 @@ export default function SudokuClient() {
   };
 
   const { user } = useUser();
+  const { getToken, userId } = useAuth();
+  const clientMeta = (user?.publicMetadata || {}) as any;
+  const isClientPaid = Boolean(
+    clientMeta?.isPremium ||
+    clientMeta?.hasPaidTransaction ||
+    ["pro", "agency"].includes(clientMeta?.plan)
+  );
   const [isSyncing, setIsSyncing] = useState(false);
 
   const [premiumStatus, setPremiumStatus] = useState<{
@@ -137,7 +144,7 @@ export default function SudokuClient() {
     };
   }>({ checked: false, isPremium: false, plan: "free" });
 
-  const isPro = Boolean(premiumStatus.isPremium);
+  const isPro = Boolean(premiumStatus.isPremium || isClientPaid);
 
   // True when this page was opened to restore a saved My Notebook entry, so
   // the plan-based defaults below don't clobber the restored settings.
@@ -148,17 +155,19 @@ export default function SudokuClient() {
 
   const loadPremium = async () => {
     try {
-      const clientMeta = (user?.publicMetadata || {}) as any;
-      if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+      if (isClientPaid) {
         setPremiumStatus({ checked: true, isPremium: true, plan: clientMeta.plan || "agency" });
       }
-      const res = await getClientSafePremiumStatus();
-      setPremiumStatus(res as any);
+      const token = await getToken().catch(() => null);
+      const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
+      const finalIsPremium = Boolean(res.isPremium || isClientPaid);
+      const finalPlan = finalIsPremium ? (res.plan !== "free" ? res.plan : (clientMeta.plan || "agency")) : res.plan;
+      setPremiumStatus({ ...res, isPremium: finalIsPremium, plan: finalPlan });
       if (isRestoringRef.current) return;
-      if (res.plan === "free") {
+      if (finalPlan === "free") {
         setDifficulty("easy");
         setBookCount(6);
-      } else if (res.plan === "starter") {
+      } else if (finalPlan === "starter") {
         setDifficulty("medium");
         setBookCount(20);
       } else {
@@ -172,7 +181,7 @@ export default function SudokuClient() {
 
   useEffect(() => {
     loadPremium();
-  }, [user]);
+  }, [user, userId]);
 
   const handleSyncStatus = async () => {
     setIsSyncing(true);
@@ -262,14 +271,17 @@ export default function SudokuClient() {
   // Fetches plan status fresh rather than trusting whatever `premiumStatus`
   // happened to hold at render time
   const getFreshPremiumStatus = async () => {
+    if (isClientPaid) {
+      return { checked: true, isPremium: true, plan: clientMeta.plan || "agency" };
+    }
     try {
-      const res = await getClientSafePremiumStatus();
+      const token = await getToken().catch(() => null);
+      const res = await getClientSafePremiumStatus(token || userId || undefined, user?.publicMetadata);
       setPremiumStatus(res as any);
       return res as any;
     } catch (err) {
       console.error(err);
-      const clientMeta = (user?.publicMetadata || {}) as any;
-      if (clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)) {
+      if (isClientPaid) {
         return { checked: true, isPremium: true, plan: clientMeta.plan || "agency" };
       }
       return premiumStatus;
@@ -300,9 +312,9 @@ export default function SudokuClient() {
       const { includeCover: incCover, coverState, includeSolutions: incSol, trimSize: finalTrim, hasBleed, showGuides, borderTheme } = options;
 
       const freshStatus = await getFreshPremiumStatus();
-      const clientMeta = (user?.publicMetadata || {}) as any;
-      const effectiveIsPro = Boolean(options.isPremium ?? (freshStatus.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan)));
-      const count = Math.min(Math.max(1, bookCount), tierMaxFor(effectiveIsPro ? "pro" : freshStatus.plan));
+      const effectiveIsPro = Boolean(options.isPremium || freshStatus.isPremium || isClientPaid);
+      const effectivePlan = effectiveIsPro ? (freshStatus.plan !== "free" ? freshStatus.plan : (clientMeta?.plan || "agency")) : freshStatus.plan;
+      const count = Math.min(Math.max(1, bookCount), tierMaxFor(effectivePlan));
 
       setExportProgressText(`Generating puzzles (0/${count})...`);
       setExportProgressPercent(10);
@@ -363,8 +375,7 @@ export default function SudokuClient() {
     setExportProgressPercent(10);
     try {
       const freshStatus = await getFreshPremiumStatus();
-      const clientMeta = (user?.publicMetadata || {}) as any;
-      const effectiveIsPro = Boolean(freshStatus.isPremium || clientMeta?.isPremium || ["pro", "agency"].includes(clientMeta?.plan));
+      const effectiveIsPro = Boolean(freshStatus.isPremium || isClientPaid);
       const puzzles = await generateSudokuBookAsync(SAMPLE_SUDOKU_COUNT, difficulty, (curr, tot) => {
         setExportProgressPercent(10 + Math.round((curr / tot) * 35));
         setExportProgressText(`Generating sample puzzles (${curr}/${tot})...`);

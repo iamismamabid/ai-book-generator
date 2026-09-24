@@ -61,3 +61,24 @@ When modifying `StudioClient.tsx`, `BookBuilder.tsx`, or `FabricCoverStudio.tsx`
    - This ensures flexbox centering calculates against the scaled visual bounds without generating phantom scrollbars or layout shifts.
 4. **Guard global shortcuts with `isActiveRef`:**
    - Background canvas editors must not capture keyboard shortcuts (e.g. Undo/Redo/Delete) when their tab is not active.
+
+## Modular Isolation & Puzzle Code Lockdown Guidelines
+
+To prevent cross-contamination and guarantee that editing one puzzle/tool NEVER breaks another:
+
+1. **Strict Target Scope Isolation:**
+   - When modifying a specific tool or puzzle (e.g. Maze, Coloring Book, or Sudoku), ONLY edit files dedicated to that tool.
+   - NEVER touch or refactor other puzzle engines (e.g. `sudoku.ts`, `crosswordDictionary.ts`, `wordSearchGenerator.ts`, etc.) unless explicitly instructed.
+
+2. **Zero-Breaking-Changes on Shared Components:**
+   - Shared components like `ExportInteriorModal.tsx`, `FabricCoverStudio.tsx`, and `BookBuilder.tsx` are utilized across ALL tools.
+   - Any new props or features added to shared components MUST be completely optional (`prop?: Type`) with safe, non-breaking fallback defaults.
+   - NEVER alter, rename, or delete existing prop signatures or interfaces in shared components.
+
+3. **Self-Contained Tool Logic:**
+   - Keep tool-specific logic (e.g., maze generation algorithms, coloring page filters) isolated within its own dedicated directory (`src/app/maze/`, `src/app/tools/coloring-book-generator/`, etc.).
+   - Do not leak tool-specific flags into global state or unrelated studio tabs.
+
+4. **Mandatory Full Regression Typecheck Before Commit:**
+   - Always run `npx tsc --noEmit` and `npm run build` in `ismamstudio` to verify that 100% of routes and puzzle engines remain completely green and unaffected before committing any change.
+

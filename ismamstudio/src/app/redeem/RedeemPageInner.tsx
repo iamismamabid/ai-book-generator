@@ -261,8 +261,8 @@ export default function RedeemPageInner({ initialCode = "", initialPartner = "" 
                 <Link href="/sudoku" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
                   <Zap className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Sudoku Studio
                 </Link>
-                <Link href="/maze" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
-                  <Zap className="w-3.5 h-3.5 text-purple-400 shrink-0" /> Maze Designer
+                <Link href="/studio" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
+                  <Zap className="w-3.5 h-3.5 text-purple-400 shrink-0" /> Creator Studio
                 </Link>
                 <Link href="/tools/word-search" className="flex items-center gap-2 p-3 bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/40 rounded-xl transition text-xs font-bold text-slate-300 hover:text-white">
                   <Zap className="w-3.5 h-3.5 text-blue-400 shrink-0" /> Word Search

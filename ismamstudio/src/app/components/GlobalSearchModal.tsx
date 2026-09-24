@@ -27,15 +27,7 @@ const SEARCH_ITEMS: SearchItem[] = [
     link: "/sudoku",
     badge: "Popular"
   },
-  {
-    id: "maze",
-    name: "Shape-Masked Maze Studio",
-    category: "Puzzles & Interiors",
-    description: "Create labyrinths and shape-masked mazes (hearts, stars, circles) with bleed safety.",
-    keywords: ["maze", "mazes", "labyrinth", "shaped maze", "heart maze", "puzzle", "interior"],
-    link: "/maze",
-    badge: "Popular"
-  },
+
   {
     id: "word-search",
     name: "Word Search Builder",

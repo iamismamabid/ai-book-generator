@@ -79,6 +79,14 @@ const SEARCH_ITEMS: SearchItem[] = [
     link: "/studio/calcudoku"
   },
   {
+    id: "missing-vowels",
+    name: "Missing Vowels Studio",
+    category: "Puzzles & Interiors",
+    description: "Generate vocabulary & spelling missing vowels worksheets with 20+ thematic niches, custom word banks, and solutions.",
+    keywords: ["missing vowels", "vowel puzzle", "word puzzle", "spelling worksheet", "vocabulary", "word games", "puzzle"],
+    link: "/studio/missing-vowels"
+  },
+  {
     id: "kakuro",
     name: "Kakuro Cross-Sums Generator",
     category: "Puzzles & Interiors",

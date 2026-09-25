@@ -18,7 +18,8 @@ import {
   BookOpen,
   LayoutTemplate,
   Star,
-  Shuffle
+  Shuffle,
+  Type
 } from "lucide-react";
 
 import HomeNewsletterForm from "./components/HomeNewsletterForm";
@@ -249,6 +250,7 @@ export default function HomePage() {
             { title: "Kakuro Generator", desc: "Number-sum logic grids, 4x4 to 9x17, Easy to Expert with solution answer keys.", href: "/studio/kakuro", icon: Grid3x3, badge: "Number Sum Logic" },
             { title: "Nonogram (Picross) Studio", desc: "Japanese picture-logic puzzles, 5x5 to 15x15, with 50+ pixel art presets, custom drawing, and 300 DPI book export.", href: "/studio/nonogram", icon: Palette, badge: "New Logic Studio" },
             { title: "Calcudoku (KenKen) Studio", desc: "Math logic cage puzzles, 4x4 to 8x8, with single/all operations (+, −, ×, ÷) and full KDP interiors.", href: "/studio/calcudoku", icon: Calculator, badge: "Mathdoku Logic" },
+            { title: "Missing Vowels Studio", desc: "Vocabulary & brain-teaser missing vowel worksheets with 20+ thematic niches, custom word banks, and 300 DPI interiors.", href: "/studio/missing-vowels", icon: Type, badge: "Spelling & Vocab" },
           ].map((tool) => (
             <div key={tool.title} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between group">
               <div className="space-y-3">

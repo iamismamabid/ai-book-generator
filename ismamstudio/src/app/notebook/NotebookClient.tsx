@@ -63,6 +63,7 @@ const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) =
   kakuro: { label: "Open in Kakuro Studio", href: (id) => `/studio/kakuro?notebookId=${id}` },
   nonogram: { label: "Open in Nonogram Studio", href: (id) => `/studio/nonogram?notebookId=${id}` },
   calcudoku: { label: "Open in Calcudoku Studio", href: (id) => `/studio/calcudoku?notebookId=${id}` },
+  "missing-vowels": { label: "Open in Missing Vowels Studio", href: (id) => `/studio/missing-vowels?notebookId=${id}` },
   cryptogram: { label: "Open in Cryptogram Studio", href: (id) => `/studio/cryptogram?notebookId=${id}` },
   "word-search": { label: "Open in Word Search Studio", href: (id) => `/tools/word-search?notebookId=${id}` },
   sudoku: { label: "Open in Sudoku Generator", href: (id) => `/sudoku?notebookId=${id}` },
@@ -87,6 +88,7 @@ function resolveDestination(category?: string, id?: string) {
     (cat.includes("kakuro") ? OPEN_IN_DESTINATIONS["kakuro"] : undefined) ||
     (cat.includes("nonogram") ? OPEN_IN_DESTINATIONS["nonogram"] : undefined) ||
     ((cat.includes("calcudoku") || cat.includes("kenken")) ? OPEN_IN_DESTINATIONS["calcudoku"] : undefined) ||
+    ((cat.includes("vowel") || cat.includes("missing")) ? OPEN_IN_DESTINATIONS["missing-vowels"] : undefined) ||
     (cat.includes("math") ? OPEN_IN_DESTINATIONS["math-puzzle"] : undefined) ||
     (cat.includes("sudoku") ? OPEN_IN_DESTINATIONS["sudoku"] : undefined) ||
     (cat.includes("maze") ? OPEN_IN_DESTINATIONS["maze"] : undefined) ||

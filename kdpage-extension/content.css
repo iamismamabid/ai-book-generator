@@ -101,46 +101,53 @@
 }
 
 .kdpage-qv-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 8px !important;
+  width: 100% !important;
+  overflow: visible !important;
 }
 
 .kdpage-qv-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 5px 8px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 700;
+  flex: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  padding: 6px 6px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
   text-decoration: none !important;
-  transition: all 0.15s ease;
-  cursor: pointer;
-  border: none;
+  transition: all 0.15s ease !important;
+  cursor: pointer !important;
+  border: none !important;
+  box-sizing: border-box !important;
+  line-height: 1.3 !important;
+  white-space: nowrap !important;
 }
 
 .kdpage-qv-btn-primary {
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
   color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4) !important;
 }
 
 .kdpage-qv-btn-primary:hover {
-  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%) !important;
   color: #ffffff !important;
+  transform: translateY(-1px) !important;
 }
 
 .kdpage-qv-btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08) !important;
   color: #cbd5e1 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
 .kdpage-qv-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.15) !important;
   color: #ffffff !important;
 }
 

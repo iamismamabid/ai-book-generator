@@ -146,18 +146,16 @@
       </div>
     `;
 
-    // Insert at the TOP of the product card (above title, directly below book cover)
-    const titleElem = item.querySelector('h2');
-    const imgContainer = item.querySelector('.s-product-image-container, .s-image-wrapper');
+    // Position between the image section and details block so it is NEVER clipped by Amazon's title line-clamp / overflow:hidden
+    const imgSection = item.querySelector('.s-product-image-container')?.closest('.a-section') ||
+                       item.querySelector('.s-product-image-container') ||
+                       item.querySelector('.s-image-wrapper') ||
+                       item.querySelector('img.s-image')?.closest('.a-section');
 
-    if (titleElem && titleElem.parentNode) {
-      titleElem.parentNode.insertBefore(card, titleElem);
-    } else if (imgContainer && imgContainer.parentNode) {
-      imgContainer.parentNode.insertBefore(card, imgContainer.nextSibling);
+    if (imgSection && imgSection.parentNode) {
+      imgSection.parentNode.insertBefore(card, imgSection.nextSibling);
     } else {
-      const container = item.querySelector('.s-card-container') || 
-                        item.querySelector('.a-section') || 
-                        item;
+      const container = item.querySelector('.s-card-container') || item;
       container.insertBefore(card, container.firstChild);
     }
   }

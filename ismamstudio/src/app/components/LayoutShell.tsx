@@ -15,13 +15,7 @@ export default function LayoutShell({
   const isStudio = pathname === "/studio" || pathname === "/artbook-studio";
 
   return (
-    <div
-      className={`min-h-screen w-full flex flex-col ${
-        isStudio
-          ? "bg-slate-950 text-slate-100 overflow-hidden"
-          : "bg-[#F8FAFC] dark:bg-slate-950"
-      }`}
-    >
+    <div className="min-h-screen w-full flex flex-col bg-[#F8FAFC] dark:bg-slate-950">
       {!isStudio && header}
       <div
         className={`flex flex-col flex-1 ${

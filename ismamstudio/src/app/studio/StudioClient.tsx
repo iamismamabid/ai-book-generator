@@ -23,17 +23,7 @@ const FabricCoverStudio = dynamic(
       }
       throw err;
     }),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-indigo-400 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Loading Cover Studio...
-        </span>
-      </div>
-    ),
-  }
+  { ssr: false }
 );
 const BookBuilder = dynamic(
   () =>
@@ -46,17 +36,7 @@ const BookBuilder = dynamic(
       }
       throw err;
     }),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-indigo-400 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Loading Book Builder...
-        </span>
-      </div>
-    ),
-  }
+  { ssr: false }
 );
 import CoverStudioErrorBoundary from "@/components/CoverStudioErrorBoundary";
 import InteriorErrorBoundary from "@/components/InteriorErrorBoundary";
@@ -674,7 +654,7 @@ export default function MasterStudioApp() {
   }
 
   return (
-    <div className="h-screen w-screen bg-slate-950 font-sans text-slate-100 flex flex-col overflow-hidden select-none">
+    <div className="h-screen w-screen bg-[#F8FAFC] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col overflow-hidden select-none">
       
       {/* Toast Notification (e.g. Artbook Import Success) */}
       {importToast && (
@@ -827,7 +807,7 @@ export default function MasterStudioApp() {
 
         {/* Cover Studio Tab Content (FabricCoverStudio) */}
         <div
-          className="absolute inset-0 w-full h-full flex flex-col overflow-hidden bg-slate-950 transition-opacity duration-150"
+          className="absolute inset-0 w-full h-full flex flex-col overflow-hidden bg-white dark:bg-slate-900 transition-opacity duration-150"
           style={{
             visibility: activeTab === 'cover' ? 'visible' : 'hidden',
             pointerEvents: activeTab === 'cover' ? 'auto' : 'none',

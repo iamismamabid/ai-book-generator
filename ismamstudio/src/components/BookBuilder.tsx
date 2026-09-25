@@ -1241,7 +1241,7 @@ export default function BookBuilder({
 
   return (
     <>
-      <div className="flex flex-col flex-1 w-full h-full bg-[#F8FAFC] dark:bg-slate-950 overflow-hidden relative">
+      <div className="flex flex-col flex-1 w-full h-full bg-[#F8FAFC] dark:bg-slate-950 overflow-hidden relative transition-colors duration-300">
 
       {/* Mobile warning banner — sits in the normal flex flow so it pushes
           the main editor workspace down instead of overlapping the toolbar */}

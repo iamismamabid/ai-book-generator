@@ -63,6 +63,14 @@ const SEARCH_ITEMS: SearchItem[] = [
     link: "/studio/word-scramble"
   },
   {
+    id: "nonogram",
+    name: "Nonogram (Picross) Studio",
+    category: "Puzzles & Interiors",
+    description: "Generate Japanese Nonogram (Picross / Hanjie / Griddlers) logic puzzle books with pixel art and solution keys.",
+    keywords: ["nonogram", "picross", "hanjie", "griddlers", "japanese crossword", "pixel puzzle", "logic puzzle", "puzzle"],
+    link: "/studio/nonogram"
+  },
+  {
     id: "kakuro",
     name: "Kakuro Cross-Sums Generator",
     category: "Puzzles & Interiors",

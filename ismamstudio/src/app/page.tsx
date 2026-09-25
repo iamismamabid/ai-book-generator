@@ -247,6 +247,7 @@ export default function HomePage() {
             { title: "Math Puzzle Builder", desc: "Arithmetic and logic-grid sheets for kids, seniors, and KDP activity workbooks.", href: "/studio/math-puzzle", icon: Calculator, badge: "Arithmetic Grid" },
             { title: "Word Scramble Studio", desc: "Scramble your word list into activity worksheets, ready for instant export.", href: "/studio/word-scramble", icon: Shuffle, badge: "Vocabulary Builder" },
             { title: "Kakuro Generator", desc: "Number-sum logic grids, 4x4 to 9x17, Easy to Expert with solution answer keys.", href: "/studio/kakuro", icon: Grid3x3, badge: "Number Sum Logic" },
+            { title: "Nonogram (Picross) Studio", desc: "Japanese picture-logic puzzles, 5x5 to 15x15, with 50+ pixel art presets, custom drawing, and 300 DPI book export.", href: "/studio/nonogram", icon: Palette, badge: "New Logic Studio" },
           ].map((tool) => (
             <div key={tool.title} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between group">
               <div className="space-y-3">

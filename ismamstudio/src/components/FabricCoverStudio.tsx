@@ -147,8 +147,8 @@ const PATH_SHAPE_OPTIONS: { value: PathShape; label: string }[] = [
 ];
 
 const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
-  { category: "System", fonts: ["Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo", "Verdana", "Garamond", "Palatino"] },
-  { category: "Sans Serif", fonts: ["Inter", "Outfit", "Montserrat", "Poppins", "Raleway", "Nunito", "Work Sans", "Rubik", "DM Sans", "Archivo", "Karla", "Mulish", "Manrope", "Josefin Sans", "Quicksand", "Lato", "Open Sans", "Roboto", "Ubuntu", "Barlow", "Exo 2", "Urbanist", "Fira Sans"] },
+  { category: "System", fonts: ["Inter", "Arial", "Georgia", "Times New Roman", "Courier New", "Impact", "Comic Sans MS", "Trebuchet MS", "Arimo", "Verdana", "Garamond", "Palatino"] },
+  { category: "Sans Serif", fonts: ["Outfit", "Montserrat", "Poppins", "Raleway", "Nunito", "Work Sans", "Rubik", "DM Sans", "Archivo", "Karla", "Mulish", "Manrope", "Josefin Sans", "Quicksand", "Lato", "Open Sans", "Roboto", "Ubuntu", "Barlow", "Exo 2", "Urbanist", "Fira Sans"] },
   { category: "Serif", fonts: ["Playfair Display", "Merriweather", "Lora", "Cormorant Garamond", "Crimson Text", "PT Serif", "Libre Baskerville", "EB Garamond", "Cinzel", "Bitter", "Noto Serif", "Vollkorn", "Domine", "Spectral", "DM Serif Display", "Prata", "Bodoni Moda", "Arvo", "Cardo", "Zilla Slab", "Alegreya"] },
   { category: "Display & Bold", fonts: ["Bebas Neue", "Oswald", "Anton", "Passion One", "Alfa Slab One", "Bungee", "Fjalla One", "Righteous", "Staatliches", "Abril Fatface", "Bangers", "Titan One", "Luckiest Guy", "Big Shoulders Display", "Black Ops One", "Lobster", "Orbitron", "Russo One", "Press Start 2P", "Boogaloo", "Special Elite"] },
   { category: "Handwriting & Script", fonts: ["Pacifico", "Sacramento", "Great Vibes", "Dancing Script", "Caveat", "Satisfy", "Kalam", "Shadows Into Light", "Amatic SC", "Permanent Marker", "Indie Flower", "Homemade Apple", "Alex Brush", "Parisienne", "Allura", "Kaushan Script", "Cookie", "Courgette", "Yellowtail", "Marck Script", "Reenie Beanie"] },
@@ -159,7 +159,7 @@ const FONT_CATEGORIES: { category: string; fonts: string[] }[] = [
 const FONT_FAMILIES = FONT_CATEGORIES.flatMap(c => c.fonts);
 
 // Fonts that need loading from Google Fonts (i.e. everything except the browser-native System group)
-const GOOGLE_FONT_FAMILIES = FONT_CATEGORIES.filter(c => c.category !== "System").flatMap(c => c.fonts);
+const GOOGLE_FONT_FAMILIES = FONT_CATEGORIES.filter(c => c.category !== "System").flatMap(c => c.fonts).filter(f => f !== "Inter");
 
 // Photoshop-style layer compositing modes (native canvas globalCompositeOperation)
 const BLEND_MODES = [
@@ -953,19 +953,18 @@ export default function FabricCoverStudio({
   // GOOGLE_FONT_FAMILIES (everything but the browser-native "System" group)
   // gets requested at both regular and bold weight in one combined stylesheet.
   useEffect(() => {
+    if (!isActive) return;
+    const linkId = 'fabric-cover-google-fonts';
+    if (typeof document !== 'undefined' && document.getElementById(linkId)) return;
     const familyParams = GOOGLE_FONT_FAMILIES
       .map(f => `family=${f.replace(/\s+/g, '+')}:wght@400;700`)
       .join('&');
     const link = document.createElement('link');
+    link.id = linkId;
     link.href = `https://fonts.googleapis.com/css2?${familyParams}&display=swap`;
     link.rel = 'stylesheet';
     document.head.appendChild(link);
-    return () => {
-      if (document.head && document.head.contains(link)) {
-        document.head.removeChild(link);
-      }
-    };
-  }, []);
+  }, [isActive]);
 
   // Local helper setters that update the combined coverBackground state object and the ref for instant sync
   const setBackCoverColor = (val: string) => {

@@ -6,7 +6,7 @@ const loadedFamilies = new Set<string>();
 
 export function loadGoogleFontFamilies(families: string[]): void {
   if (typeof document === "undefined") return;
-  const toLoad = families.filter((f) => f && !loadedFamilies.has(f));
+  const toLoad = families.filter((f) => f && f !== "Inter" && !loadedFamilies.has(f));
   if (toLoad.length === 0) return;
   toLoad.forEach((f) => loadedFamilies.add(f));
 

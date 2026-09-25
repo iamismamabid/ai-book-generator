@@ -87,6 +87,23 @@ const SEARCH_ITEMS: SearchItem[] = [
     link: "/studio/calcudoku"
   },
   {
+    id: "futoshiki",
+    name: "Futoshiki (More or Less) Studio",
+    category: "Puzzles & Interiors",
+    description: "Generate Japanese Futoshiki inequality logic puzzle books (4x4 to 9x9) with unique solutions and vector PDFs.",
+    keywords: ["futoshiki", "more or less", "unequal", "inequality", "japanese puzzle", "math puzzle", "logic puzzle", "puzzle"],
+    link: "/studio/futoshiki",
+    badge: "New"
+  },
+  {
+    id: "maze",
+    name: "Maze Generator & Labyrinth Studio",
+    category: "Puzzles & Interiors",
+    description: "Generate custom shape-masked mazes, circular & rectangular labyrinths with verified solutions for KDP interiors.",
+    keywords: ["maze", "mazes", "labyrinth", "maze generator", "puzzle book", "activity book", "puzzle"],
+    link: "/maze"
+  },
+  {
     id: "missing-vowels",
     name: "Missing Vowels Studio",
     category: "Puzzles & Interiors",

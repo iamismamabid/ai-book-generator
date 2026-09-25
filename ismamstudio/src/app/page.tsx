@@ -19,7 +19,9 @@ import {
   LayoutTemplate,
   Star,
   Shuffle,
-  Type
+  Type,
+  Route,
+  Scale
 } from "lucide-react";
 
 import HomeNewsletterForm from "./components/HomeNewsletterForm";
@@ -191,6 +193,8 @@ export default function HomePage() {
             {[
               { label: "Habit Tracker", type: "Low-Content", desc: "Monthly goal and habit check grids", emoji: "📈" },
               { label: "Sudoku Grid", type: "Math Logic", desc: "100% compliant trim sizing", emoji: "🔢" },
+              { label: "Maze Labyrinth", type: "Puzzle", desc: "Shape-masked vector labyrinths", emoji: "🌀" },
+              { label: "Futoshiki", type: "Math Logic", desc: "Japanese inequality logic grids", emoji: "⚖️" },
               { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
               { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },
               { label: "Lined Journal", type: "Low-Content", desc: "Classic horizontal writing lines", emoji: "📖" },
@@ -199,6 +203,8 @@ export default function HomePage() {
             ].concat([
               { label: "Habit Tracker", type: "Low-Content", desc: "Monthly goal and habit check grids", emoji: "📈" },
               { label: "Sudoku Grid", type: "Math Logic", desc: "100% compliant trim sizing", emoji: "🔢" },
+              { label: "Maze Labyrinth", type: "Puzzle", desc: "Shape-masked vector labyrinths", emoji: "🌀" },
+              { label: "Futoshiki", type: "Math Logic", desc: "Japanese inequality logic grids", emoji: "⚖️" },
               { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
               { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },
               { label: "Lined Journal", type: "Low-Content", desc: "Classic horizontal writing lines", emoji: "📖" },
@@ -241,16 +247,19 @@ export default function HomePage() {
           {[
             { title: "All-In-One Studio", desc: "Wrap-around full-bleed covers, interior manuscript assembly, and complete KDP book builder.", href: "/studio", icon: BookOpen, badge: "Full KDP Publisher" },
             { title: "Sudoku Studio", desc: "Bulk Sudoku grids, Easy to Hard, each verified for exactly one unique solution.", href: "/sudoku", icon: Grid3x3, badge: "300 DPI Vector" },
+            { title: "Maze Studio", desc: "Custom shape-masked labyrinths, circular & rectangular mazes with verified solution paths.", href: "/maze", icon: Route, badge: "Labyrinth Engine" },
+            { title: "Futoshiki Studio", desc: "Japanese inequality math-logic grids, 4x4 to 9x9, with unique solution backtracking and 300 DPI interiors.", href: "/studio/futoshiki", icon: Scale, badge: "Inequality Logic" },
             { title: "Word Search Studio", desc: "Import a word list or CSV, build the grid, export the interior sheet with clue layouts.", href: "/tools/word-search", icon: Sparkles, badge: "CSV Import" },
-            { title: "KDP Bulk Book Batch Studio", desc: "Queue dozens of puzzle book interiors, import configurations via CSV, and compile ready-to-upload files in bulk.", href: "/tools/bulk-generator", icon: Layers, badge: "Pro Batch Builder" },
             { title: "Crossword Studio", desc: "Custom crosswords, 10x10 to 20x20, up to 1,000+ pages, with auto-intersecting clues.", href: "/studio/crossword", icon: LayoutTemplate, badge: "Auto-Generate" },
             { title: "Cryptogram Studio", desc: "Substitution-cipher worksheets from your own quotes, up to 1,000+ pages with solution keys.", href: "/studio/cryptogram", icon: Hash, badge: "Cipher Engine" },
+            { title: "Calcudoku (KenKen) Studio", desc: "Math logic cage puzzles, 4x4 to 8x8, with single/all operations (+, −, ×, ÷) and full KDP interiors.", href: "/studio/calcudoku", icon: Calculator, badge: "Mathdoku Logic" },
+            { title: "Nonogram (Picross) Studio", desc: "Japanese picture-logic puzzles, 5x5 to 15x15, with 50+ pixel art presets, custom drawing, and 300 DPI book export.", href: "/studio/nonogram", icon: Palette, badge: "New Logic Studio" },
+            { title: "Kakuro Generator", desc: "Number-sum logic grids, 4x4 to 9x17, Easy to Expert with solution answer keys.", href: "/studio/kakuro", icon: Grid3x3, badge: "Number Sum Logic" },
+            { title: "Missing Vowels Studio", desc: "Vocabulary & brain-teaser missing vowel worksheets with 20+ thematic niches, custom word banks, and 300 DPI interiors.", href: "/studio/missing-vowels", icon: Type, badge: "Spelling & Vocab" },
             { title: "Math Puzzle Builder", desc: "Arithmetic and logic-grid sheets for kids, seniors, and KDP activity workbooks.", href: "/studio/math-puzzle", icon: Calculator, badge: "Arithmetic Grid" },
             { title: "Word Scramble Studio", desc: "Scramble your word list into activity worksheets, ready for instant export.", href: "/studio/word-scramble", icon: Shuffle, badge: "Vocabulary Builder" },
-            { title: "Kakuro Generator", desc: "Number-sum logic grids, 4x4 to 9x17, Easy to Expert with solution answer keys.", href: "/studio/kakuro", icon: Grid3x3, badge: "Number Sum Logic" },
-            { title: "Nonogram (Picross) Studio", desc: "Japanese picture-logic puzzles, 5x5 to 15x15, with 50+ pixel art presets, custom drawing, and 300 DPI book export.", href: "/studio/nonogram", icon: Palette, badge: "New Logic Studio" },
-            { title: "Calcudoku (KenKen) Studio", desc: "Math logic cage puzzles, 4x4 to 8x8, with single/all operations (+, −, ×, ÷) and full KDP interiors.", href: "/studio/calcudoku", icon: Calculator, badge: "Mathdoku Logic" },
-            { title: "Missing Vowels Studio", desc: "Vocabulary & brain-teaser missing vowel worksheets with 20+ thematic niches, custom word banks, and 300 DPI interiors.", href: "/studio/missing-vowels", icon: Type, badge: "Spelling & Vocab" },
+            { title: "AI Coloring Artbook Studio", desc: "Generate coloring books, intricate line art, and thematic illustrations ready for KDP print.", href: "/artbook-studio?v=2", icon: Sparkles, badge: "AI Illustration" },
+            { title: "KDP Bulk Book Batch Studio", desc: "Queue dozens of puzzle book interiors, import configurations via CSV, and compile ready-to-upload files in bulk.", href: "/tools/bulk-generator", icon: Layers, badge: "Pro Batch Builder" },
           ].map((tool) => (
             <div key={tool.title} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between group">
               <div className="space-y-3">

@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { RefreshCw, AlertCircle, Sparkles, BookOpen, Layers } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { RefreshCw, AlertCircle, Sparkles, BookOpen, Layers, Upload, FileSpreadsheet, Check } from "lucide-react";
 import {
   MissingVowelsWorksheet,
   MISSING_VOWELS_THEMES,
   generateMissingVowelsBook,
+  parseMissingVowelsCsv,
+  ParsedMissingVowelsItem,
 } from "../lib/missingVowelsEngine";
 
 export function MissingVowelsEditor({ page, updatePage, bulkAddPages }: any) {
@@ -18,12 +20,16 @@ export function MissingVowelsEditor({ page, updatePage, bulkAddPages }: any) {
     page.config?.worksheetData || null
   );
   const [customCount, setCustomCount] = useState<number>(10);
+  const [customCsvWords, setCustomCsvWords] = useState<ParsedMissingVowelsItem[]>(page.config?.customCsvWords || []);
+  const csvInputRef = useRef<HTMLInputElement | null>(null);
 
   const isSolution = page.config?.isSolution || false;
 
   const handleGenerate = (curTheme = themeIndex, curMode = mode, curCount = wordsCount) => {
-    let customList: string[] | undefined = undefined;
-    if (curTheme >= 0 && MISSING_VOWELS_THEMES[curTheme]) {
+    let customList: any = undefined;
+    if (customCsvWords.length > 0) {
+      customList = customCsvWords;
+    } else if (curTheme >= 0 && MISSING_VOWELS_THEMES[curTheme]) {
       customList = MISSING_VOWELS_THEMES[curTheme].words;
     }
 
@@ -36,8 +42,55 @@ export function MissingVowelsEditor({ page, updatePage, bulkAddPages }: any) {
       mode: curMode,
       wordsCount: curCount,
       worksheetData: ws,
+      customCsvWords,
       isSolution,
     });
+  };
+
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = (event.target?.result as string) || "";
+      const parsed = parseMissingVowelsCsv(text);
+      if (parsed.length === 0) {
+        alert("No valid words detected in CSV.");
+        return;
+      }
+      setCustomCsvWords(parsed);
+      const book = generateMissingVowelsBook(1, wordsCount, mode, parsed);
+      const ws = book[0] || null;
+      setWorksheetData(ws);
+      updatePage({
+        themeIndex: -1,
+        mode,
+        wordsCount,
+        worksheetData: ws,
+        customCsvWords: parsed,
+        isSolution,
+      });
+
+      const totalPagesPossible = Math.ceil(parsed.length / wordsCount);
+      if (bulkAddPages && totalPagesPossible > 1) {
+        const confirmBulk = window.confirm(
+          `CSV contains ${parsed.length} words (${totalPagesPossible} total worksheets). Would you like to add the remaining ${totalPagesPossible - 1} pages to your book now?`
+        );
+        if (confirmBulk) {
+          const allPages = generateMissingVowelsBook(totalPagesPossible, wordsCount, mode, parsed);
+          const remainingPages = allPages.slice(1).map((wPage) => ({
+            themeIndex: -1,
+            mode,
+            wordsCount,
+            worksheetData: wPage,
+            isSolution: false,
+          }));
+          bulkAddPages(remainingPages);
+        }
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   };
 
   const handleToggleMode = (solMode: boolean) => {
@@ -113,18 +166,54 @@ export function MissingVowelsEditor({ page, updatePage, bulkAddPages }: any) {
 
           <div className="h-px bg-slate-200 dark:bg-slate-800" />
 
-          {/* Theme Select */}
+          {/* Theme Select & CSV Import */}
           <div>
-            <h3 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-2">Word Theme</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Word Source</h3>
+              <button
+                type="button"
+                onClick={() => csvInputRef.current?.click()}
+                className="flex items-center gap-1 text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition cursor-pointer"
+              >
+                <Upload className="w-3 h-3" />
+                <span>Upload CSV</span>
+              </button>
+              <input
+                type="file"
+                accept=".csv,.txt"
+                ref={csvInputRef}
+                onChange={handleCsvUpload}
+                className="hidden"
+              />
+            </div>
+            {customCsvWords.length > 0 && (
+              <div className="mb-2 p-2 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-lg flex items-center justify-between text-[11px]">
+                <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                  📁 Custom CSV ({customCsvWords.length} words)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomCsvWords([]);
+                    handleGenerate(themeIndex, mode, wordsCount);
+                  }}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[10px] font-bold cursor-pointer"
+                >
+                  Reset
+                </button>
+              </div>
+            )}
             <select
-              value={themeIndex}
+              value={customCsvWords.length > 0 ? -99 : themeIndex}
               onChange={(e) => {
                 const idx = parseInt(e.target.value);
+                setCustomCsvWords([]);
                 setThemeIndex(idx);
                 handleGenerate(idx, mode, wordsCount);
               }}
               className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-indigo-500 outline-none shadow-sm"
             >
+              {customCsvWords.length > 0 && <option value={-99}>📁 Custom Uploaded CSV</option>}
               <option value={-1}>Mixed Themes (Universal Vocabulary)</option>
               {MISSING_VOWELS_THEMES.map((t, idx) => (
                 <option key={t.id} value={idx}>

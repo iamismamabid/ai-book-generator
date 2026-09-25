@@ -221,6 +221,132 @@ export const MISSING_VOWELS_THEMES: MissingVowelsTheme[] = [
   },
 ];
 
+export type CustomMissingVowelInput = string | { word: string; hint?: string; title?: string };
+
+export interface ParsedMissingVowelsItem {
+  word: string;
+  hint?: string;
+  title?: string;
+}
+
+/**
+ * Robust CSV / TXT parser for Missing Vowels puzzles.
+ * Supports:
+ * - Word, Hint (2 columns)
+ * - Word, Hint, Title (3 columns)
+ * - Title, Word1, Word2, Word3... (Row-based worksheets)
+ * - Single-column list of words (one per line)
+ * - Quoted values containing commas
+ */
+export function parseMissingVowelsCsv(rawText: string): ParsedMissingVowelsItem[] {
+  if (!rawText || !rawText.trim()) return [];
+
+  const lines = rawText.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+  if (lines.length === 0) return [];
+
+  const results: ParsedMissingVowelsItem[] = [];
+
+  const parseLine = (line: string): string[] => {
+    const cells: string[] = [];
+    let current = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"' || ch === "'") {
+        if (inQuotes && line[i + 1] === ch) {
+          current += ch;
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (!inQuotes && (ch === "," || ch === "\t" || ch === ";")) {
+        cells.push(current.trim());
+        current = "";
+      } else {
+        current += ch;
+      }
+    }
+    cells.push(current.trim());
+    return cells;
+  };
+
+  const headerCandidates = ["WORD", "WORDS", "PUZZLE", "SOLUTION", "ANSWER", "TERM", "HINT", "CLUE", "TITLE", "THEME"];
+
+  lines.forEach((line, lineIdx) => {
+    const cells = parseLine(line);
+    if (cells.length === 0) return;
+
+    if (lineIdx === 0) {
+      const upper0 = cells[0].toUpperCase();
+      const upper1 = cells[1]?.toUpperCase() || "";
+      if (
+        headerCandidates.includes(upper0) ||
+        headerCandidates.includes(upper1) ||
+        upper0.includes("WORD") ||
+        upper0.includes("TITLE")
+      ) {
+        return; // Skip CSV header row
+      }
+    }
+
+    if (cells.length === 1) {
+      const w = cells[0].replace(/^["']|["']$/g, "").trim();
+      if (w.length > 0) {
+        results.push({ word: w });
+      }
+    } else if (cells.length === 2) {
+      const w = cells[0].replace(/^["']|["']$/g, "").trim();
+      const h = cells[1].replace(/^["']|["']$/g, "").trim();
+      if (w.length > 0) {
+        results.push({ word: w, hint: h || undefined });
+      }
+    } else {
+      const firstCell = cells[0].replace(/^["']|["']$/g, "").trim();
+      const restCells = cells.slice(1).map((c) => c.replace(/^["']|["']$/g, "").trim()).filter(Boolean);
+
+      if (restCells.length >= 2) {
+        // Multi-word row format: Title, Word1, Word2, Word3...
+        restCells.forEach((w) => {
+          results.push({ word: w, title: firstCell });
+        });
+      } else if (cells.length === 3) {
+        // Word, Hint, Title format
+        const w = cells[0].replace(/^["']|["']$/g, "").trim();
+        const h = cells[1].replace(/^["']|["']$/g, "").trim();
+        const t = cells[2].replace(/^["']|["']$/g, "").trim();
+        if (w.length > 0) {
+          results.push({ word: w, hint: h || undefined, title: t || undefined });
+        }
+      }
+    }
+  });
+
+  return results;
+}
+
+/**
+ * Returns a high-quality sample CSV template for Missing Vowels worksheets
+ */
+export function getMissingVowelsSampleCsv(): string {
+  return `Word,Hint
+ELEPHANT,Largest living land animal with trunk and tusks
+ASTRONOMY,Scientific study of stars and outer space
+BUTTERFLY,Insect with colorful patterned wings
+CHOCOLATE,Delicious sweet treat made from roasted cacao beans
+DICTIONARY,Reference book containing alphabetical word definitions
+EVERGREEN,Tree or plant that keeps foliage all year long
+FLAMINGO,Tall pink wading bird with curved beak
+GLADIATOR,Armed combatant entertaining audiences in ancient Rome
+HURRICANE,Severe tropical cyclone with violent high winds
+KANGAROO,Australian marsupial known for powerful hopping
+LABYRINTH,Intricate network of winding paths or maze
+MOONLIGHT,Soft radiant light illuminating the Earth from the Moon
+NORTHERN,Pertaining to or situated in the northern direction
+OCTOPUS,Eight-armed sea creature renowned for intelligence
+PENGUIN,Flightless aquatic seabird native to Southern Hemisphere
+QUICKSAND,Loose wet sand that yields easily to pressure`;
+}
+
 /**
  * Generate a list of Missing Vowels worksheets for a full KDP book
  */
@@ -228,27 +354,38 @@ export function generateMissingVowelsBook(
   pageCount: number,
   wordsPerPage: number = 8,
   mode: "guided_blanks" | "pure_consonants" | "partial_blanks" = "guided_blanks",
-  customWordList?: string[]
+  customWordList?: CustomMissingVowelInput[]
 ): MissingVowelsWorksheet[] {
   const worksheets: MissingVowelsWorksheet[] = [];
 
   // If user provided a custom list of words
   if (customWordList && customWordList.length > 0) {
-    const cleanList = customWordList.filter((w) => w.trim().length > 0);
+    const cleanList = customWordList.filter((item) => {
+      const text = typeof item === "string" ? item : item.word;
+      return text && text.trim().length > 0;
+    });
     const pagesNeeded = Math.ceil(cleanList.length / wordsPerPage);
 
     for (let p = 0; p < Math.min(pageCount, pagesNeeded); p++) {
       const slice = cleanList.slice(p * wordsPerPage, (p + 1) * wordsPerPage);
-      const items: MissingVowelItem[] = slice.map((word, idx) => ({
-        id: `custom-${p + 1}-${idx + 1}`,
-        original: word.toUpperCase().trim(),
-        puzzle: maskVowels(word, mode),
-      }));
+      const firstWithTitle = slice.find((item) => typeof item !== "string" && item.title);
+      const customTitle = firstWithTitle && typeof firstWithTitle !== "string" ? firstWithTitle.title : `Custom Worksheet #${p + 1}`;
+
+      const items: MissingVowelItem[] = slice.map((item, idx) => {
+        const word = typeof item === "string" ? item : item.word;
+        const hint = typeof item === "string" ? undefined : item.hint;
+        return {
+          id: `custom-${p + 1}-${idx + 1}`,
+          original: word.toUpperCase().trim(),
+          puzzle: maskVowels(word, mode),
+          hint: hint?.trim() || undefined,
+        };
+      });
 
       worksheets.push({
         id: `worksheet-custom-${p + 1}`,
         pageNumber: p + 1,
-        title: `Custom Worksheet #${p + 1}`,
+        title: customTitle || `Custom Worksheet #${p + 1}`,
         category: "Custom Word Bank",
         items,
         mode,

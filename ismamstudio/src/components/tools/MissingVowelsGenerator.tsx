@@ -20,6 +20,13 @@ import {
   ListPlus,
   HelpCircle,
   FileText,
+  Upload,
+  FileSpreadsheet,
+  Check,
+  X,
+  FileUp,
+  DownloadCloud,
+  FileCheck,
 } from "lucide-react";
 import CoverStudioCTA from "@/components/CoverStudioCTA";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
@@ -30,6 +37,9 @@ import {
   MISSING_VOWELS_THEMES,
   generateMissingVowelsBook,
   maskVowels,
+  parseMissingVowelsCsv,
+  getMissingVowelsSampleCsv,
+  ParsedMissingVowelsItem,
 } from "@/lib/missingVowelsEngine";
 import { exportMissingVowelsBookPdf } from "@/lib/missingVowelsPdfExporter";
 
@@ -65,6 +75,13 @@ export default function MissingVowelsGenerator() {
     "ASTRONOMY\nBUTTERFLY\nCHOCOLATE\nDICTIONARY\nEVERGREEN\nFLAMINGO\nGLADIATOR\nHURRICANE"
   );
 
+  // CSV Upload State
+  const [csvFileName, setCsvFileName] = useState<string>("");
+  const [csvParsedItems, setCsvParsedItems] = useState<ParsedMissingVowelsItem[]>([]);
+  const [csvUploadSuccess, setCsvUploadSuccess] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
   // Book Options
   const [trimSize, setTrimSize] = useState<KdpTrimSize>(KDP_TRIM_SIZES[0]);
   const [bookPageCount, setBookPageCount] = useState<number>(20);
@@ -85,14 +102,84 @@ export default function MissingVowelsGenerator() {
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportProgress, setExportProgress] = useState<number>(0);
 
+  // CSV File Upload Processor
+  const handleFileUpload = (file: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = (e.target?.result as string) || "";
+      const parsed = parseMissingVowelsCsv(text);
+      if (parsed.length === 0) {
+        alert("Could not detect any valid words in this file. Please ensure it has words (one per line, or 'Word, Hint').");
+        return;
+      }
+
+      setCsvFileName(file.name);
+      setCsvParsedItems(parsed);
+      setUseCustomWords(true);
+
+      // Populate textarea for user inspection
+      const formatted = parsed
+        .map((item) => (item.hint ? `${item.word}, ${item.hint}` : item.word))
+        .join("\n");
+      setCustomWordsText(formatted);
+
+      // Auto-adjust page count to accommodate all uploaded words
+      const calcPages = Math.max(1, Math.ceil(parsed.length / wordsPerPage));
+      setBookPageCount(calcPages);
+
+      // Instantly generate and display
+      const list = generateMissingVowelsBook(calcPages, wordsPerPage, maskMode, parsed);
+      setWorksheets(list);
+      setActivePageIndex(0);
+      setUserAnswers({});
+      setShowSolutions(false);
+
+      setCsvUploadSuccess(`✓ Imported ${parsed.length} words (${calcPages} ${calcPages === 1 ? "worksheet" : "worksheets"}) from ${file.name}`);
+      setTimeout(() => setCsvUploadSuccess(null), 6000);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileUpload(file);
+    e.target.value = "";
+  };
+
+  const handleDownloadSampleCsv = () => {
+    const sample = getMissingVowelsSampleCsv();
+    const blob = new Blob([sample], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "missing-vowels-sample.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleClearCsv = () => {
+    setCsvFileName("");
+    setCsvParsedItems([]);
+    setCsvUploadSuccess(null);
+    setUseCustomWords(false);
+  };
+
   // Regenerate book worksheets
   const handleRegenerate = () => {
-    let customList: string[] | undefined = undefined;
-    if (useCustomWords && customWordsText.trim()) {
-      customList = customWordsText
-        .split(/[\n,;]+/)
-        .map((w) => w.trim())
-        .filter((w) => w.length > 0);
+    let customList: (string | ParsedMissingVowelsItem)[] | undefined = undefined;
+    if (useCustomWords) {
+      if (csvParsedItems.length > 0) {
+        customList = csvParsedItems;
+      } else if (customWordsText.trim()) {
+        const parsed = parseMissingVowelsCsv(customWordsText);
+        customList = parsed.length > 0 ? parsed : customWordsText
+          .split(/[\n,;]+/)
+          .map((w) => w.trim())
+          .filter((w) => w.length > 0);
+      }
     }
 
     if (!useCustomWords && selectedThemeIndex >= 0) {
@@ -119,7 +206,7 @@ export default function MissingVowelsGenerator() {
 
   useEffect(() => {
     handleRegenerate();
-  }, [selectedThemeIndex, maskMode, wordsPerPage, useCustomWords]);
+  }, [selectedThemeIndex, maskMode, wordsPerPage, useCustomWords, csvParsedItems]);
 
   const currentWorksheet = useMemo(() => {
     return worksheets[activePageIndex] || worksheets[0];
@@ -239,34 +326,158 @@ export default function MissingVowelsGenerator() {
               Puzzle Configuration
             </h2>
 
-            {/* Custom Words Toggle */}
-            <div className="flex items-center justify-between bg-slate-950/60 p-3 rounded-lg border border-slate-800">
-              <span className="text-xs font-medium text-slate-300">Custom Word Bank</span>
-              <button
-                onClick={() => setUseCustomWords(!useCustomWords)}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                  useCustomWords
-                    ? "bg-indigo-600 text-white"
-                    : "bg-slate-800 text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {useCustomWords ? "Enabled" : "Themes"}
-              </button>
+            {/* Word Source: Curated Themes vs CSV / Custom Words */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-300">Word Source:</span>
+                <span className="text-[10px] text-indigo-400 font-medium">
+                  {useCustomWords ? (csvFileName ? "CSV File Loaded" : "Custom Word Bank") : "Thematic Dictionary"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setUseCustomWords(false)}
+                  className={`py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    !useCustomWords
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Curated Themes</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUseCustomWords(true)}
+                  className={`py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    useCustomWords
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span>CSV / Custom</span>
+                </button>
+              </div>
             </div>
 
             {useCustomWords ? (
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400 flex items-center justify-between">
-                  <span>Enter Words / Phrases (comma or newline separated):</span>
-                  <span className="text-indigo-400 text-[10px]">Auto-masked</span>
-                </label>
-                <textarea
-                  value={customWordsText}
-                  onChange={(e) => setCustomWordsText(e.target.value)}
-                  rows={4}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
-                  placeholder="ELEPHANT&#10;GIRAFFE&#10;KANGAROO"
-                />
+              <div className="space-y-3 pt-1">
+                {/* Upload Status Alert */}
+                {csvUploadSuccess && (
+                  <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs flex items-center justify-between gap-2 animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <FileCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span className="font-semibold">{csvUploadSuccess}</span>
+                    </div>
+                    <button
+                      onClick={() => setCsvUploadSuccess(null)}
+                      className="text-emerald-400 hover:text-emerald-200 p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Active Uploaded File Info Card */}
+                {csvFileName && (
+                  <div className="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 flex-shrink-0">
+                        <FileSpreadsheet className="w-4 h-4" />
+                      </div>
+                      <div className="overflow-hidden">
+                        <div className="text-xs font-bold text-slate-100 truncate">{csvFileName}</div>
+                        <div className="text-[10px] text-indigo-300 font-medium">
+                          {csvParsedItems.length} words • {Math.ceil(csvParsedItems.length / wordsPerPage)} worksheets
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleClearCsv}
+                      className="px-2 py-1 text-[11px] font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-950/50 rounded-lg transition-colors border border-rose-900/50 flex-shrink-0"
+                      title="Clear CSV and revert to themes"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+
+                {/* Drag & Drop CSV Upload Area */}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleFileUpload(file);
+                  }}
+                  className={`p-4 rounded-xl border-2 border-dashed text-center cursor-pointer transition-all ${
+                    isDragging
+                      ? "border-indigo-400 bg-indigo-950/60 scale-[1.01]"
+                      : "border-slate-700 bg-slate-950/70 hover:border-indigo-500/70 hover:bg-slate-900/80"
+                  }`}
+                >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept=".csv,.txt"
+                    onChange={handleFileInputChange}
+                    className="hidden"
+                  />
+                  <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <div className="text-xs font-bold text-slate-200">
+                    Click to Upload CSV / TXT or Drag & Drop
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-1">
+                    Supports <code className="text-indigo-300">Word, Hint</code> or 1 word per line
+                  </div>
+                </div>
+
+                {/* CSV Template Download Action */}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-slate-400">Need a starting format?</span>
+                  <button
+                    type="button"
+                    onClick={handleDownloadSampleCsv}
+                    className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-950/30 hover:bg-indigo-950/60 border border-indigo-800/50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <DownloadCloud className="w-3.5 h-3.5" />
+                    <span>Download Sample CSV</span>
+                  </button>
+                </div>
+
+                {/* Manual Words / Hints Textarea */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
+                    <span>Edit Words & Hints ({customWordsText.split(/\r?\n/).filter(Boolean).length} lines):</span>
+                    <span className="text-indigo-400 text-[10px]">Auto-masked</span>
+                  </label>
+                  <textarea
+                    value={customWordsText}
+                    onChange={(e) => {
+                      setCustomWordsText(e.target.value);
+                      const parsed = parseMissingVowelsCsv(e.target.value);
+                      setCsvParsedItems(parsed);
+                    }}
+                    rows={4}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono shadow-inner leading-relaxed"
+                    placeholder="ELEPHANT, Largest living land mammal&#10;ASTRONOMY, Study of outer space&#10;BUTTERFLY, Insect with colorful wings"
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    Tip: Enter <code className="text-slate-400">WORD, HINT</code> on each line or simply <code className="text-slate-400">WORD</code>.
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="space-y-2">

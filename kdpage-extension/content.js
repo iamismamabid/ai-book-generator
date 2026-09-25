@@ -146,16 +146,16 @@
       </div>
     `;
 
-    // Position between the image section and details block so it is NEVER clipped by Amazon's title line-clamp / overflow:hidden
-    const imgSection = item.querySelector('.s-product-image-container')?.closest('.a-section') ||
-                       item.querySelector('.s-product-image-container') ||
-                       item.querySelector('.s-image-wrapper') ||
-                       item.querySelector('img.s-image')?.closest('.a-section');
+    // Position at the TOP of the details block (above title, directly below cover image)
+    const titleWrapper = item.querySelector('.s-title-instructions-style') ||
+                         item.querySelector('[data-cy="title-recipe"]') ||
+                         item.querySelector('h2')?.closest('.a-section') ||
+                         item.querySelector('h2');
 
-    if (imgSection && imgSection.parentNode) {
-      imgSection.parentNode.insertBefore(card, imgSection.nextSibling);
+    if (titleWrapper && titleWrapper.parentNode) {
+      titleWrapper.parentNode.insertBefore(card, titleWrapper);
     } else {
-      const container = item.querySelector('.s-card-container') || item;
+      const container = item.querySelector('.s-card-container, .puis-card-container') || item;
       container.insertBefore(card, container.firstChild);
     }
   }

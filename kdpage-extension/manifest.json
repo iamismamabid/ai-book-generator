@@ -1,16 +1,20 @@
 {
   "manifest_version": 3,
   "name": "KDPage — Amazon KDP Quick View & BSR Estimator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Instant Amazon KDP BSR tracker, monthly sales estimator, royalties calculator, and 1-click publishing tools for self-publishers.",
   "permissions": [
     "storage"
   ],
   "host_permissions": [
     "*://*.amazon.com/*",
+    "*://amazon.com/*",
     "*://*.amazon.co.uk/*",
+    "*://amazon.co.uk/*",
     "*://*.amazon.ca/*",
-    "*://*.amazon.de/*"
+    "*://amazon.ca/*",
+    "*://*.amazon.de/*",
+    "*://amazon.de/*"
   ],
   "action": {
     "default_popup": "popup/popup.html",
@@ -29,9 +33,13 @@
     {
       "matches": [
         "*://*.amazon.com/*",
+        "*://amazon.com/*",
         "*://*.amazon.co.uk/*",
+        "*://amazon.co.uk/*",
         "*://*.amazon.ca/*",
-        "*://*.amazon.de/*"
+        "*://amazon.ca/*",
+        "*://*.amazon.de/*",
+        "*://amazon.de/*"
       ],
       "js": ["content.js"],
       "css": ["content.css"],

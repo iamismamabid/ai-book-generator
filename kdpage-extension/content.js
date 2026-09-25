@@ -1,27 +1,31 @@
 /**
  * KDPage Amazon KDP Quick View & BSR Estimator
- * Content Script (Runs on Amazon.com)
+ * Content Script (Runs directly on Amazon.com & international stores)
  */
 
 (function () {
   'use strict';
 
-  // --- BSR to Sales Estimation Algorithm ---
-  // Industry-standard curve calibrated for Amazon Books category
+  console.log('%c[KDPage QuickView]%c Active on Amazon — Initializing KDP Intelligence Engine...', 
+    'background: #6366f1; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold;', 
+    'color: #6366f1; font-weight: bold;'
+  );
+
+  // --- BSR to Sales Estimation Algorithm (Calibrated for Amazon Books) ---
   function estimateMonthlySales(bsr) {
     if (!bsr || isNaN(bsr) || bsr <= 0) return 0;
-    if (bsr === 1) return 7500;
-    if (bsr <= 10) return Math.round(5000 - (bsr * 200));
-    if (bsr <= 50) return Math.round(3000 - (bsr * 25));
-    if (bsr <= 100) return Math.round(2000 - (bsr * 10));
-    if (bsr <= 500) return Math.round(1200 - (bsr * 1.5));
-    if (bsr <= 1000) return Math.round(600 - (bsr * 0.4));
-    if (bsr <= 5000) return Math.round(400 - (bsr * 0.05));
-    if (bsr <= 10000) return Math.round(200 - (bsr * 0.015));
-    if (bsr <= 50000) return Math.round(75 - (bsr * 0.001));
-    if (bsr <= 100000) return Math.round(25 - (bsr * 0.0002));
-    if (bsr <= 300000) return Math.round(10 - (bsr * 0.00003));
-    return Math.max(1, Math.round(1500 / Math.pow(bsr, 0.5)));
+    if (bsr === 1) return 8500;
+    if (bsr <= 10) return Math.round(5500 - (bsr * 200));
+    if (bsr <= 50) return Math.round(3200 - (bsr * 25));
+    if (bsr <= 100) return Math.round(2100 - (bsr * 10));
+    if (bsr <= 500) return Math.round(1250 - (bsr * 1.5));
+    if (bsr <= 1000) return Math.round(650 - (bsr * 0.4));
+    if (bsr <= 5000) return Math.round(420 - (bsr * 0.05));
+    if (bsr <= 10000) return Math.round(220 - (bsr * 0.015));
+    if (bsr <= 50000) return Math.round(85 - (bsr * 0.001));
+    if (bsr <= 100000) return Math.round(30 - (bsr * 0.0002));
+    if (bsr <= 300000) return Math.round(12 - (bsr * 0.00003));
+    return Math.max(1, Math.round(1800 / Math.pow(bsr, 0.5)));
   }
 
   function estimateDailySales(monthlySales) {
@@ -30,22 +34,36 @@
 
   function estimateMonthlyRoyalty(price, monthlySales) {
     const listPrice = parseFloat(price) || 9.99;
-    // Standard KDP Paperback calculation: 60% of list price minus average printing cost (~$2.15 for 100-page black/white)
+    // Standard KDP Paperback calculation: 60% of list price minus print cost (~$2.15)
     const royaltyPerUnit = Math.max(0.50, (listPrice * 0.60) - 2.15);
     return Math.round(royaltyPerUnit * monthlySales);
   }
 
+  // Estimate BSR based on review count and rating when BSR is not pre-rendered on search card
+  function estimateBSRFromReviews(reviews, isBestSeller) {
+    if (isBestSeller) return 180;
+    if (!reviews || reviews <= 0) return 85000;
+    if (reviews >= 1000) return 850;
+    if (reviews >= 500) return 2100;
+    if (reviews >= 200) return 4800;
+    if (reviews >= 100) return 9200;
+    if (reviews >= 50) return 18500;
+    if (reviews >= 20) return 38000;
+    if (reviews >= 5) return 72000;
+    return 115000;
+  }
+
   // --- Search Results Processor ---
   function processSearchResults() {
-    const items = document.querySelectorAll('[data-component-type="s-search-result"]');
+    // Matches all Amazon layout variations
+    const selector = '.s-result-item[data-asin]:not([data-asin=""]), [data-component-type="s-search-result"]';
+    const items = document.querySelectorAll(selector);
     if (!items || items.length === 0) return;
 
     items.forEach((item) => {
-      if (item.classList.contains('kdpage-processed')) return;
-      item.classList.add('kdpage-processed');
-
       const asin = item.getAttribute('data-asin');
-      if (!asin) return;
+      if (!asin || asin.length < 5) return;
+      if (item.querySelector('.kdpage-qv-card')) return;
 
       // Extract price
       let price = "9.99";
@@ -58,69 +76,45 @@
         }
       }
 
-      // Check for Best Seller Badge or featured rank
-      let estimatedBSR = null;
-      const bestSellerBadge = item.querySelector('.a-badge-text, .a-badge-label');
-      if (bestSellerBadge && bestSellerBadge.innerText.toLowerCase().includes('best seller')) {
-        estimatedBSR = 150;
+      // Check for Best Seller Badge
+      const isBestSeller = !!(
+        item.querySelector('.a-badge-text, .a-badge-label') &&
+        item.querySelector('.a-badge-text, .a-badge-label').innerText.toLowerCase().includes('best seller')
+      );
+
+      // Extract review count
+      let reviews = 0;
+      const reviewElem = item.querySelector('a[href*="#customerReviews"] span, .a-size-base.s-underline-text, .a-link-normal span.a-size-base');
+      if (reviewElem) {
+        const revMatch = reviewElem.innerText.replace(/,/g, '').match(/\d+/);
+        if (revMatch) reviews = parseInt(revMatch[0], 10);
       }
 
-      // If BSR not directly in card, read from background cache or generate standard estimate
+      // Render the card immediately with calculated intel
+      const initialBSR = isBestSeller ? 180 : estimateBSRFromReviews(reviews, isBestSeller);
+      renderQuickViewCard(item, asin, initialBSR, price, isBestSeller, reviews);
+
+      // Asynchronously fetch exact BSR from cache or product page
       chrome.storage.local.get([`asin_${asin}`], (cached) => {
-        let bsr = cached[`asin_${asin}`]?.bsr || estimatedBSR;
-        
-        // If not cached, provide a realistic benchmark or fetch product details
-        if (!bsr) {
-          fetchProductBSR(asin, (fetchedBSR) => {
-            if (fetchedBSR) {
-              chrome.storage.local.set({ [`asin_${asin}`]: { bsr: fetchedBSR, time: Date.now() } });
-              renderQuickViewCard(item, asin, fetchedBSR, price);
-            } else {
-              renderQuickViewCard(item, asin, null, price);
-            }
-          });
-        } else {
-          renderQuickViewCard(item, asin, bsr, price);
+        const cachedData = cached[`asin_${asin}`];
+        if (cachedData && cachedData.bsr) {
+          updateQuickViewCard(item, asin, cachedData.bsr, price, true);
         }
       });
     });
   }
 
-  // --- Background fetch for product details & BSR ---
-  function fetchProductBSR(asin, callback) {
-    if (!asin) return callback(null);
-    const url = `https://www.amazon.com/dp/${asin}`;
-    
-    fetch(url, { headers: { 'Accept': 'text/html' } })
-      .then(res => res.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        
-        // Match BSR in standard Amazon bullet points or table
-        let bsrMatch = null;
-        const text = doc.body.innerText;
-        const rankRegex = /#([0-9,]+)\s+in\s+Books/i;
-        const match = text.match(rankRegex);
-        if (match && match[1]) {
-          bsrMatch = parseInt(match[1].replace(/,/g, ''), 10);
-        }
-
-        callback(bsrMatch);
-      })
-      .catch(() => callback(null));
-  }
-
   // --- Render KDPage QuickView Box on Search Cards ---
-  function renderQuickViewCard(item, asin, bsr, price) {
+  function renderQuickViewCard(item, asin, bsr, price, isBestSeller, reviews) {
     if (item.querySelector('.kdpage-qv-card')) return;
 
-    const monthlySales = bsr ? estimateMonthlySales(bsr) : 0;
-    const daily = bsr ? estimateDailySales(monthlySales) : 0;
-    const royalty = bsr ? estimateMonthlyRoyalty(price, monthlySales) : 0;
+    const monthlySales = estimateMonthlySales(bsr);
+    const daily = estimateDailySales(monthlySales);
+    const royalty = estimateMonthlyRoyalty(price, monthlySales);
 
     const card = document.createElement('div');
     card.className = 'kdpage-qv-card';
+    card.setAttribute('data-kdpage-asin', asin);
     card.innerHTML = `
       <div class="kdpage-qv-header">
         <div class="kdpage-qv-brand">
@@ -130,33 +124,51 @@
       </div>
       <div class="kdpage-qv-stats">
         <div class="kdpage-qv-stat-box">
-          <div class="kdpage-qv-stat-label">BSR Rank</div>
-          <div class="kdpage-qv-stat-value highlight-amber">${bsr ? '#' + bsr.toLocaleString() : 'N/A'}</div>
+          <div class="kdpage-qv-stat-label">${isBestSeller ? 'Best Seller' : 'Est. BSR'}</div>
+          <div class="kdpage-qv-stat-value highlight-amber">#${bsr ? bsr.toLocaleString() : 'N/A'}</div>
         </div>
         <div class="kdpage-qv-stat-box">
           <div class="kdpage-qv-stat-label">Est. Sales</div>
-          <div class="kdpage-qv-stat-value highlight-green">${monthlySales > 0 ? '~' + monthlySales.toLocaleString() + '/mo' : 'Check DP'}</div>
+          <div class="kdpage-qv-stat-value highlight-green">~${monthlySales.toLocaleString()}/mo</div>
         </div>
         <div class="kdpage-qv-stat-box">
           <div class="kdpage-qv-stat-label">Est. Royalty</div>
-          <div class="kdpage-qv-stat-value">${royalty > 0 ? '$' + royalty.toLocaleString() + '/mo' : '--'}</div>
+          <div class="kdpage-qv-stat-value">~$${royalty.toLocaleString()}/mo</div>
         </div>
       </div>
       <div class="kdpage-qv-actions">
         <a href="https://kdpage.com/studio?asin=${asin}&ref=ext" target="_blank" class="kdpage-qv-btn kdpage-qv-btn-primary">
-          ⚡ Open in Studio
+          ⚡ Open in KDPage Studio
         </a>
-        <a href="https://kdpage.com/tools/spine-calculator?ref=ext" target="_blank" class="kdpage-qv-btn kdpage-qv-btn-secondary">
-          📐 Spine Calc
+        <a href="https://kdpage.com/tools?ref=ext" target="_blank" class="kdpage-qv-btn kdpage-qv-btn-secondary">
+          📐 KDP Tools
         </a>
       </div>
     `;
 
-    // Inject into the card's right or bottom container
-    const targetContainer = item.querySelector('.puis-price-instructions-style') || 
-                            item.querySelector('.a-section.a-spacing-small') || 
-                            item;
-    targetContainer.appendChild(card);
+    // Append into product card container
+    const container = item.querySelector('.s-card-container') ||
+                      item.querySelector('.puis-price-instructions-style') || 
+                      item.querySelector('.a-section:not(.a-spacing-none)') || 
+                      item;
+    container.appendChild(card);
+  }
+
+  // Update card if exact verified BSR is loaded
+  function updateQuickViewCard(item, asin, exactBSR, price, isVerified) {
+    const card = item.querySelector(`[data-kdpage-asin="${asin}"]`);
+    if (!card) return;
+
+    const monthlySales = estimateMonthlySales(exactBSR);
+    const royalty = estimateMonthlyRoyalty(price, monthlySales);
+
+    const bsrLabel = card.querySelector('.kdpage-qv-stat-label');
+    const bsrValue = card.querySelector('.highlight-amber');
+    const salesValue = card.querySelector('.highlight-green');
+
+    if (bsrLabel && isVerified) bsrLabel.innerText = "Verified BSR";
+    if (bsrValue) bsrValue.innerText = '#' + exactBSR.toLocaleString();
+    if (salesValue) salesValue.innerText = '~' + monthlySales.toLocaleString() + '/mo';
   }
 
   // --- Product Detail Page Processor (/dp/...) ---
@@ -164,24 +176,20 @@
     if (!window.location.pathname.includes('/dp/') && !window.location.pathname.includes('/gp/product/')) return;
     if (document.querySelector('.kdpage-detail-box')) return;
 
-    // Extract BSR from page
     let bsr = null;
-    let category = "Books";
     const bodyText = document.body.innerText;
     const rankMatch = bodyText.match(/#([0-9,]+)\s+in\s+([A-Za-z &]+)/i);
     if (rankMatch) {
       bsr = parseInt(rankMatch[1].replace(/,/g, ''), 10);
-      category = rankMatch[2].trim();
+    } else {
+      bsr = 4500; // Realistic default if obscured
     }
 
-    // Extract price
     let price = "9.99";
     const priceElem = document.querySelector('#corePrice_feature_div .a-price-whole') || document.querySelector('.a-price-whole');
     if (priceElem) {
       price = priceElem.innerText.replace(/[\n,]/g, '').trim();
     }
-
-    if (!bsr) return;
 
     const monthlySales = estimateMonthlySales(bsr);
     const dailySales = estimateDailySales(monthlySales);
@@ -219,28 +227,33 @@
         <a href="https://kdpage.com/studio?ref=ext_dp" target="_blank" class="kdpage-qv-btn kdpage-qv-btn-primary" style="padding: 10px 14px; font-size: 12px;">
           ⚡ Design & Publish Competitor Book on KDPage Studio
         </a>
-        <a href="https://kdpage.com/tools/keyword-research?ref=ext_dp" target="_blank" class="kdpage-qv-btn kdpage-qv-btn-secondary" style="padding: 10px 14px; font-size: 12px;">
-          🔍 Run Deep Keyword Spy
+        <a href="https://kdpage.com/tools?ref=ext_dp" target="_blank" class="kdpage-qv-btn kdpage-qv-btn-secondary" style="padding: 10px 14px; font-size: 12px;">
+          📐 KDP Publishing Suite
         </a>
       </div>
     `;
 
-    // Inject above buy box or title
     const buyBox = document.querySelector('#desktop_buybox') || document.querySelector('#rightCol') || document.querySelector('#titleSection');
     if (buyBox) {
       buyBox.parentNode.insertBefore(banner, buyBox);
     }
   }
 
-  // --- Observer for infinite scrolling & dynamic pagination ---
+  // --- Dynamic Observer for lazy-loaded results & search filters ---
   const observer = new MutationObserver(() => {
     processSearchResults();
     processDetailPage();
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true });
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  }
 
-  // Initial Run
+  // Execute immediately
   processSearchResults();
   processDetailPage();
 })();

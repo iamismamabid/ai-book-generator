@@ -75,6 +75,7 @@ export default function NonogramGenerator() {
   const [includeSolutions, setIncludeSolutions] = useState<boolean>(true);
   const [bookTitle, setBookTitle] = useState<string>("Nonogram Puzzle Book");
   const [authorName, setAuthorName] = useState<string>("");
+  const [facingPages, setFacingPages] = useState<boolean>(true);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportProgress, setExportProgress] = useState<number>(0);
 
@@ -154,6 +155,7 @@ export default function NonogramGenerator() {
           authorName,
           solutionsPerPage: 4,
           showPageNumbers: true,
+          facingPages,
         },
         (progress) => setExportProgress(progress)
       );
@@ -573,6 +575,19 @@ export default function NonogramGenerator() {
                   <span>Include Keys</span>
                 </label>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+              <div>
+                <div className="text-xs text-slate-300 font-medium">Right & Left Page Layout</div>
+                <div className="text-[10px] text-slate-500">Alternating KDP gutter margins for spine binding (Facing Pages)</div>
+              </div>
+              <input
+                type="checkbox"
+                checked={facingPages}
+                onChange={(e) => setFacingPages(e.target.checked)}
+                className="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700"
+              />
             </div>
 
             <div className="space-y-1.5">

@@ -1,11 +1,13 @@
 /**
  * KDPage Missing Vowels PDF Exporter
  * 300 DPI Vector PDF generator for Amazon KDP Print-Ready Interiors
+ * Supports Facing Pages (Left & Right alternating KDP spine gutter margins)
  */
 
 import jsPDF from "jspdf";
 import { MissingVowelsWorksheet } from "./missingVowelsEngine";
 import { getTrimDimensions, KdpTrimSize } from "./kdpTrimSizes";
+import { getGutterMargin } from "./gutterMargin";
 
 export interface MissingVowelsPdfOptions {
   trimSize: KdpTrimSize;
@@ -14,6 +16,7 @@ export interface MissingVowelsPdfOptions {
   bookSubtitle?: string;
   authorName?: string;
   showPageNumbers?: boolean;
+  facingPages?: boolean; // Right & Left page layout (Alternating KDP spine gutter)
 }
 
 export async function exportMissingVowelsBookPdf(
@@ -39,7 +42,13 @@ export async function exportMissingVowelsBookPdf(
   const totalSteps = totalPuzzlePages + totalSolutionPages + 2;
   let currentStep = 0;
 
-  // 1. Title Page
+  // Calculate dynamic KDP inside gutter margin based on total page count
+  const totalExpectedPages = 1 + totalPuzzlePages + (options.includeSolutions ? 1 + totalSolutionPages : 0);
+  const gutterExtra = getGutterMargin(totalExpectedPages);
+  const outsideMargin = 0.5 * 72; // 36 pt
+  const insideMargin = Math.max(0.65, Math.min(1.0, 0.25 + gutterExtra)) * 72;
+
+  // 1. Title Page (Always on a Recto / Right-hand Page)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(26);
   doc.setTextColor(30, 41, 59);
@@ -80,22 +89,29 @@ export async function exportMissingVowelsBookPdf(
     const ws = worksheets[idx];
     doc.addPage([pageWidth, pageHeight]);
 
-    // Margins
-    const marginX = 40;
+    // Determine Left vs Right page layout
+    // In book binding: Odd pages (Right / Recto) have spine on the LEFT -> inside margin on left
+    // Even pages (Left / Verso) have spine on the RIGHT -> inside margin on right
+    const currentPageNum = doc.internal.getNumberOfPages();
+    const isOdd = currentPageNum % 2 !== 0;
+    const isFacing = options.facingPages !== false;
+
+    const marginL = isFacing ? (isOdd ? insideMargin : outsideMargin) : 40;
+    const marginR = isFacing ? (isOdd ? outsideMargin : insideMargin) : 40;
     const marginY = 40;
-    const contentWidth = pageWidth - marginX * 2;
+    const contentWidth = pageWidth - marginL - marginR;
 
     // Header Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(15, 23, 42);
-    doc.text(ws.title.toUpperCase(), marginX, marginY + 15);
+    doc.text(ws.title.toUpperCase(), marginL, marginY + 15);
 
     // Category / Badge
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(99, 102, 241);
-    doc.text(ws.category.toUpperCase(), marginX, marginY + 28);
+    doc.text(ws.category.toUpperCase(), marginL, marginY + 28);
 
     // Instruction bar
     doc.setFont("helvetica", "normal");
@@ -105,12 +121,12 @@ export async function exportMissingVowelsBookPdf(
       ws.mode === "pure_consonants"
         ? "Vowels (A, E, I, O, U) have been completely removed. Reconstruct each word on the line below:"
         : "Fill in the missing vowels (A, E, I, O, U) to spell each target word correctly:";
-    doc.text(instructionText, marginX, marginY + 44);
+    doc.text(instructionText, marginL, marginY + 44);
 
     // Divider rule
     doc.setDrawColor(226, 232, 240);
     doc.setLineWidth(1);
-    doc.line(marginX, marginY + 52, marginX + contentWidth, marginY + 52);
+    doc.line(marginL, marginY + 52, marginL + contentWidth, marginY + 52);
 
     // Render Items
     const startY = marginY + 68;
@@ -125,12 +141,12 @@ export async function exportMissingVowelsBookPdf(
       doc.setFillColor(241, 245, 249);
       doc.setDrawColor(203, 213, 225);
       doc.setLineWidth(0.75);
-      doc.roundedRect(marginX, itemY, 24, 20, 3, 3, "FD");
+      doc.roundedRect(marginL, itemY, 24, 20, 3, 3, "FD");
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
       doc.setTextColor(51, 65, 85);
-      doc.text(String(itemIdx + 1).padStart(2, "0"), marginX + 12, itemY + 13.5, {
+      doc.text(String(itemIdx + 1).padStart(2, "0"), marginL + 12, itemY + 13.5, {
         align: "center",
       });
 
@@ -138,7 +154,7 @@ export async function exportMissingVowelsBookPdf(
       doc.setFont("courier", "bold");
       doc.setFontSize(15);
       doc.setTextColor(15, 23, 42);
-      doc.text(item.puzzle, marginX + 34, itemY + 14);
+      doc.text(item.puzzle, marginL + 34, itemY + 14);
 
       // Hint (if present)
       if (item.hint) {
@@ -146,11 +162,11 @@ export async function exportMissingVowelsBookPdf(
         doc.setFontSize(8.5);
         doc.setTextColor(100, 116, 139);
         const truncatedHint = item.hint.length > 55 ? item.hint.substring(0, 52) + "..." : item.hint;
-        doc.text(`Hint: ${truncatedHint}`, marginX + 34, itemY + 27);
+        doc.text(`Hint: ${truncatedHint}`, marginL + 34, itemY + 27);
       }
 
       // Answer Writing Line on the right side
-      const answerLineStart = marginX + contentWidth * 0.62;
+      const answerLineStart = marginL + contentWidth * 0.62;
       const answerLineWidth = contentWidth * 0.38;
       const lineY = itemY + 16;
 
@@ -169,16 +185,26 @@ export async function exportMissingVowelsBookPdf(
         doc.setDrawColor(241, 245, 249);
         doc.setLineWidth(0.5);
         const sepY = itemY + itemSpacing - 4;
-        doc.line(marginX, sepY, marginX + contentWidth, sepY);
+        doc.line(marginL, sepY, marginL + contentWidth, sepY);
       }
     });
 
-    // Page Number Footer
+    // Page Number Footer (Mirrored on outer edge for Facing Pages)
     if (options.showPageNumbers !== false) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(148, 163, 184);
-      doc.text(`Page ${idx + 1}`, pageWidth / 2, pageHeight - 20, { align: "center" });
+      if (isFacing) {
+        if (isOdd) {
+          // Right page -> Outer edge is right
+          doc.text(`Page ${idx + 1}`, pageWidth - marginR, pageHeight - 20, { align: "right" });
+        } else {
+          // Left page -> Outer edge is left
+          doc.text(`Page ${idx + 1}`, marginL, pageHeight - 20, { align: "left" });
+        }
+      } else {
+        doc.text(`Page ${idx + 1}`, pageWidth / 2, pageHeight - 20, { align: "center" });
+      }
     }
 
     currentStep++;
@@ -187,7 +213,7 @@ export async function exportMissingVowelsBookPdf(
 
   // 3. Solutions Section
   if (options.includeSolutions && worksheets.length > 0) {
-    // Solution Cover Page
+    // Solution Divider Page
     doc.addPage([pageWidth, pageHeight]);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(30);
@@ -209,14 +235,21 @@ export async function exportMissingVowelsBookPdf(
     for (let s = 0; s < worksheets.length; s += perSolPage) {
       doc.addPage([pageWidth, pageHeight]);
 
+      const currentPageNum = doc.internal.getNumberOfPages();
+      const isOdd = currentPageNum % 2 !== 0;
+      const isFacing = options.facingPages !== false;
+
+      const marginL = isFacing ? (isOdd ? insideMargin : outsideMargin) : 40;
+      const marginR = isFacing ? (isOdd ? outsideMargin : insideMargin) : 40;
+      const marginY = 50;
+
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.setTextColor(30, 41, 59);
-      doc.text("ANSWER KEYS", 40, 36);
+      doc.text("ANSWER KEYS", marginL, 36);
 
-      const marginX = 40;
-      const marginY = 50;
-      const blockWidth = (pageWidth - marginX * 2 - 20) / 2;
+      const contentWidth = pageWidth - marginL - marginR;
+      const blockWidth = (contentWidth - 20) / 2;
       const blockHeight = (pageHeight - marginY - 45 - 20) / 2;
 
       for (let sub = 0; sub < perSolPage; sub++) {
@@ -226,7 +259,7 @@ export async function exportMissingVowelsBookPdf(
         const ws = worksheets[wsIdx];
         const col = sub % 2;
         const row = Math.floor(sub / 2);
-        const bx = marginX + col * (blockWidth + 20);
+        const bx = marginL + col * (blockWidth + 20);
         const by = marginY + row * (blockHeight + 20);
 
         // Card box

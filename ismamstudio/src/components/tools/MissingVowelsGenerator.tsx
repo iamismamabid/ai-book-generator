@@ -71,6 +71,7 @@ export default function MissingVowelsGenerator() {
   const [includeSolutions, setIncludeSolutions] = useState<boolean>(true);
   const [bookTitle, setBookTitle] = useState<string>("Missing Vowels Puzzle Book");
   const [authorName, setAuthorName] = useState<string>("");
+  const [facingPages, setFacingPages] = useState<boolean>(true);
 
   // Worksheets list
   const [worksheets, setWorksheets] = useState<MissingVowelsWorksheet[]>([]);
@@ -147,6 +148,7 @@ export default function MissingVowelsGenerator() {
           bookTitle,
           authorName: authorName.trim() || undefined,
           showPageNumbers: true,
+          facingPages,
         },
         (progress) => setExportProgress(progress)
       );
@@ -407,6 +409,19 @@ export default function MissingVowelsGenerator() {
                 type="checkbox"
                 checked={includeSolutions}
                 onChange={(e) => setIncludeSolutions(e.target.checked)}
+                className="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <div>
+                <div className="text-xs text-slate-300 font-medium">Right & Left Page Layout</div>
+                <div className="text-[10px] text-slate-500">Alternating KDP gutter margins for spine binding (Facing Pages)</div>
+              </div>
+              <input
+                type="checkbox"
+                checked={facingPages}
+                onChange={(e) => setFacingPages(e.target.checked)}
                 className="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700"
               />
             </div>

@@ -1,11 +1,13 @@
 /**
  * KDPage Calcudoku PDF Exporter
  * 300 DPI Vector PDF generator for Amazon KDP Print-Ready Interiors
+ * Supports Facing Pages (Left & Right alternating KDP spine gutter margins)
  */
 
 import jsPDF from "jspdf";
 import { CalcudokuPuzzle } from "./calcudokuEngine";
 import { getTrimDimensions, KdpTrimSize } from "./kdpTrimSizes";
+import { getGutterMargin } from "./gutterMargin";
 
 export interface CalcudokuPdfOptions {
   trimSize: KdpTrimSize;
@@ -15,6 +17,7 @@ export interface CalcudokuPdfOptions {
   authorName?: string;
   puzzlesPerPage?: 1 | 2 | 4;
   showPageNumbers?: boolean;
+  facingPages?: boolean; // Right & Left page layout (Alternating KDP spine gutter)
 }
 
 export async function exportCalcudokuBookPdf(
@@ -40,11 +43,19 @@ export async function exportCalcudokuBookPdf(
   const totalSteps = totalPuzzlePages + totalSolutionPages + 2;
   let currentStep = 0;
 
-  // 1. Title Page
+  // Calculate dynamic KDP inside gutter margin based on total page count
+  const totalExpectedPages = 1 + totalPuzzlePages + (options.includeSolutions ? 1 + totalSolutionPages : 0);
+  const gutterExtra = getGutterMargin(totalExpectedPages);
+  const outsideMargin = 0.5 * 72; // 36 pt
+  const insideMargin = Math.max(0.65, Math.min(1.0, 0.25 + gutterExtra)) * 72;
+
+  // 1. Title Page (Always on a Recto / Right-hand Page)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(28);
   doc.setTextColor(30, 41, 59);
-  doc.text(options.bookTitle || "CALCUDOKU PUZZLE BOOK", pageWidth / 2, pageHeight * 0.38, { align: "center" });
+  doc.text(options.bookTitle || "CALCUDOKU PUZZLE BOOK", pageWidth / 2, pageHeight * 0.38, {
+    align: "center",
+  });
 
   if (options.bookSubtitle) {
     doc.setFont("helvetica", "normal");
@@ -56,12 +67,19 @@ export async function exportCalcudokuBookPdf(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
   doc.setTextColor(148, 163, 184);
-  doc.text(`${puzzles.length} Math Logic Grid Puzzles with Solutions`, pageWidth / 2, pageHeight * 0.50, { align: "center" });
+  doc.text(
+    `${puzzles.length} Math Logic Grid Puzzles with Solutions`,
+    pageWidth / 2,
+    pageHeight * 0.50,
+    { align: "center" }
+  );
 
   if (options.authorName) {
     doc.setFontSize(12);
     doc.setTextColor(71, 85, 105);
-    doc.text(`Created by ${options.authorName}`, pageWidth / 2, pageHeight * 0.75, { align: "center" });
+    doc.text(`Created by ${options.authorName}`, pageWidth / 2, pageHeight * 0.75, {
+      align: "center",
+    });
   }
 
   currentStep++;
@@ -75,7 +93,19 @@ export async function exportCalcudokuBookPdf(
     if (onProgress) onProgress(Math.round((currentStep / totalSteps) * 100));
 
     const chunk = puzzles.slice(i, i + ppp);
-    renderPuzzlesOnPage(doc, chunk, i + 1, pageNumber++, pageWidth, pageHeight, ppp, options.showPageNumbers !== false);
+    renderPuzzlesOnPage(
+      doc,
+      chunk,
+      i + 1,
+      pageNumber++,
+      pageWidth,
+      pageHeight,
+      ppp,
+      options.showPageNumbers !== false,
+      options.facingPages !== false,
+      insideMargin,
+      outsideMargin
+    );
   }
 
   // 3. Render Solutions Section
@@ -89,7 +119,9 @@ export async function exportCalcudokuBookPdf(
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 116, 139);
-    doc.text("Complete answer keys for all puzzles", pageWidth / 2, pageHeight / 2 + 15, { align: "center" });
+    doc.text("Complete answer keys for all puzzles", pageWidth / 2, pageHeight / 2 + 15, {
+      align: "center",
+    });
 
     currentStep++;
     if (onProgress) onProgress(Math.round((currentStep / totalSteps) * 100));
@@ -100,7 +132,17 @@ export async function exportCalcudokuBookPdf(
       if (onProgress) onProgress(Math.round((currentStep / totalSteps) * 100));
 
       const chunk = puzzles.slice(i, i + 4);
-      renderSolutionsGrid(doc, chunk, i + 1, pageNumber++, pageWidth, pageHeight);
+      renderSolutionsGrid(
+        doc,
+        chunk,
+        i + 1,
+        pageNumber++,
+        pageWidth,
+        pageHeight,
+        options.facingPages !== false,
+        insideMargin,
+        outsideMargin
+      );
     }
   }
 
@@ -115,20 +157,29 @@ function renderPuzzlesOnPage(
   pageWidth: number,
   pageHeight: number,
   ppp: number,
-  showPageNumber: boolean
+  showPageNumber: boolean,
+  facingPages: boolean,
+  insideMargin: number,
+  outsideMargin: number
 ) {
-  const margin = 40;
-  const availWidth = pageWidth - margin * 2;
-  const availHeight = pageHeight - margin * 2 - 40;
+  const currentPageNum = doc.internal.getNumberOfPages();
+  const isOdd = currentPageNum % 2 !== 0;
+
+  const marginL = facingPages ? (isOdd ? insideMargin : outsideMargin) : 40;
+  const marginR = facingPages ? (isOdd ? outsideMargin : insideMargin) : 40;
+  const marginY = 40;
+
+  const availWidth = pageWidth - marginL - marginR;
+  const availHeight = pageHeight - marginY * 2 - 40;
 
   if (ppp === 1) {
     const puzzle = puzzles[0];
-    renderSingleGrid(doc, puzzle, startIdx, margin, margin, availWidth, availHeight, false);
+    renderSingleGrid(doc, puzzle, startIdx, marginL, marginY, availWidth, availHeight, false);
   } else if (ppp === 2) {
     const slotHeight = availHeight / 2 - 20;
     puzzles.forEach((puzzle, idx) => {
-      const y = margin + idx * (slotHeight + 30);
-      renderSingleGrid(doc, puzzle, startIdx + idx, margin, y, availWidth, slotHeight, false);
+      const y = marginY + idx * (slotHeight + 30);
+      renderSingleGrid(doc, puzzle, startIdx + idx, marginL, y, availWidth, slotHeight, false);
     });
   } else {
     // 4 per page
@@ -137,8 +188,8 @@ function renderPuzzlesOnPage(
     puzzles.forEach((puzzle, idx) => {
       const col = idx % 2;
       const row = Math.floor(idx / 2);
-      const x = margin + col * (slotWidth + 30);
-      const y = margin + row * (slotHeight + 30);
+      const x = marginL + col * (slotWidth + 30);
+      const y = marginY + row * (slotHeight + 30);
       renderSingleGrid(doc, puzzle, startIdx + idx, x, y, slotWidth, slotHeight, false);
     });
   }
@@ -147,7 +198,17 @@ function renderPuzzlesOnPage(
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(148, 163, 184);
-    doc.text(String(pageNumber), pageWidth / 2, pageHeight - margin + 15, { align: "center" });
+    if (facingPages) {
+      if (isOdd) {
+        doc.text(String(pageNumber), pageWidth - marginR, pageHeight - marginY + 15, {
+          align: "right",
+        });
+      } else {
+        doc.text(String(pageNumber), marginL, pageHeight - marginY + 15, { align: "left" });
+      }
+    } else {
+      doc.text(String(pageNumber), pageWidth / 2, pageHeight - marginY + 15, { align: "center" });
+    }
   }
 }
 
@@ -174,7 +235,12 @@ function renderSingleGrid(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(100, 116, 139);
-  doc.text(`${puzzle.size}x${puzzle.size} • ${puzzle.difficulty.toUpperCase()}`, boxX + boxWidth, boxY + 15, { align: "right" });
+  doc.text(
+    `${puzzle.size}x${puzzle.size} • ${puzzle.difficulty.toUpperCase()}`,
+    boxX + boxWidth,
+    boxY + 15,
+    { align: "right" }
+  );
 
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.8);
@@ -205,7 +271,7 @@ function renderSingleGrid(
     for (let r = 0; r < puzzle.size; r++) {
       for (let c = 0; c < puzzle.size; c++) {
         const cx = startX + c * cellSize + cellSize / 2;
-        const cy = startY + r * cellSize + cellSize / 2 + (cellSize * 0.15);
+        const cy = startY + r * cellSize + cellSize / 2 + cellSize * 0.15;
         doc.text(String(puzzle.grid[r][c]), cx, cy, { align: "center" });
       }
     }
@@ -222,7 +288,11 @@ function renderSingleGrid(
       if (r < puzzle.size - 1) {
         const bottomCage = cellCageMap.get(`${r + 1},${c}`);
         const isCageBoundary = currentCage !== bottomCage;
-        doc.setDrawColor(isCageBoundary ? 15 : 180, isCageBoundary ? 23 : 180, isCageBoundary ? 42 : 180);
+        doc.setDrawColor(
+          isCageBoundary ? 15 : 180,
+          isCageBoundary ? 23 : 180,
+          isCageBoundary ? 42 : 180
+        );
         doc.setLineWidth(isCageBoundary ? 2 : 0.4);
         doc.line(cx, cy + cellSize, cx + cellSize, cy + cellSize);
       }
@@ -231,7 +301,11 @@ function renderSingleGrid(
       if (c < puzzle.size - 1) {
         const rightCage = cellCageMap.get(`${r},${c + 1}`);
         const isCageBoundary = currentCage !== rightCage;
-        doc.setDrawColor(isCageBoundary ? 15 : 180, isCageBoundary ? 23 : 180, isCageBoundary ? 42 : 180);
+        doc.setDrawColor(
+          isCageBoundary ? 15 : 180,
+          isCageBoundary ? 23 : 180,
+          isCageBoundary ? 42 : 180
+        );
         doc.setLineWidth(isCageBoundary ? 2 : 0.4);
         doc.line(cx + cellSize, cy, cx + cellSize, cy + cellSize);
       }
@@ -266,20 +340,29 @@ function renderSolutionsGrid(
   startIdx: number,
   pageNumber: number,
   pageWidth: number,
-  pageHeight: number
+  pageHeight: number,
+  facingPages: boolean,
+  insideMargin: number,
+  outsideMargin: number
 ) {
-  const margin = 40;
+  const currentPageNum = doc.internal.getNumberOfPages();
+  const isOdd = currentPageNum % 2 !== 0;
+
+  const marginL = facingPages ? (isOdd ? insideMargin : outsideMargin) : 40;
+  const marginR = facingPages ? (isOdd ? outsideMargin : insideMargin) : 40;
+  const marginY = 40;
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(15, 23, 42);
-  doc.text(`SOLUTIONS #${startIdx} – #${startIdx + puzzles.length - 1}`, margin, margin + 15);
+  doc.text(`SOLUTIONS #${startIdx} – #${startIdx + puzzles.length - 1}`, marginL, marginY + 15);
 
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.8);
-  doc.line(margin, margin + 22, pageWidth - margin, margin + 22);
+  doc.line(marginL, marginY + 22, pageWidth - marginR, marginY + 22);
 
-  const availW = pageWidth - margin * 2;
-  const availH = pageHeight - margin * 2 - 50;
+  const availW = pageWidth - marginL - marginR;
+  const availH = pageHeight - marginY * 2 - 50;
 
   const slotW = availW / 2 - 15;
   const slotH = availH / 2 - 20;
@@ -287,8 +370,8 @@ function renderSolutionsGrid(
   puzzles.forEach((puzzle, idx) => {
     const col = idx % 2;
     const row = Math.floor(idx / 2);
-    const x = margin + col * (slotW + 30);
-    const y = margin + 35 + row * (slotH + 30);
+    const x = marginL + col * (slotW + 30);
+    const y = marginY + 35 + row * (slotH + 30);
 
     renderSingleGrid(doc, puzzle, startIdx + idx, x, y, slotW, slotH, true);
   });
@@ -296,5 +379,15 @@ function renderSolutionsGrid(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(148, 163, 184);
-  doc.text(String(pageNumber), pageWidth / 2, pageHeight - margin + 15, { align: "center" });
+  if (facingPages) {
+    if (isOdd) {
+      doc.text(String(pageNumber), pageWidth - marginR, pageHeight - marginY + 15, {
+        align: "right",
+      });
+    } else {
+      doc.text(String(pageNumber), marginL, pageHeight - marginY + 15, { align: "left" });
+    }
+  } else {
+    doc.text(String(pageNumber), pageWidth / 2, pageHeight - marginY + 15, { align: "center" });
+  }
 }

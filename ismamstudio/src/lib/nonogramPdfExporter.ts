@@ -1,11 +1,13 @@
 /**
  * KDPage Nonogram PDF Exporter
  * 300 DPI Vector PDF generator for Amazon KDP Print-Ready Interiors
+ * Supports Facing Pages (Left & Right alternating KDP spine gutter margins)
  */
 
 import jsPDF from "jspdf";
 import { NonogramPuzzle } from "./nonogramEngine";
 import { getTrimDimensions, KdpTrimSize } from "./kdpTrimSizes";
+import { getGutterMargin } from "./gutterMargin";
 
 export interface NonogramPdfOptions {
   trimSize: KdpTrimSize;
@@ -15,6 +17,7 @@ export interface NonogramPdfOptions {
   authorName?: string;
   solutionsPerPage?: 4 | 6 | 9;
   showPageNumbers?: boolean;
+  facingPages?: boolean; // Right & Left page layout (Alternating KDP spine gutter)
 }
 
 export async function exportNonogramBookPdf(
@@ -34,14 +37,26 @@ export async function exportNonogramBookPdf(
     format: [pageWidth, pageHeight],
   });
 
-  const totalSteps = puzzles.length + (options.includeSolutions ? Math.ceil(puzzles.length / (options.solutionsPerPage || 4)) : 0);
+  const totalSteps =
+    puzzles.length +
+    (options.includeSolutions
+      ? Math.ceil(puzzles.length / (options.solutionsPerPage || 4))
+      : 0);
   let currentStep = 0;
 
-  // 1. Cover / Title Page
+  // Calculate dynamic KDP inside gutter margin based on total page count
+  const totalExpectedPages = 1 + puzzles.length + (options.includeSolutions ? 1 + Math.ceil(puzzles.length / 4) : 0);
+  const gutterExtra = getGutterMargin(totalExpectedPages);
+  const outsideMargin = 0.5 * 72; // 36 pt
+  const insideMargin = Math.max(0.65, Math.min(1.0, 0.25 + gutterExtra)) * 72;
+
+  // 1. Cover / Title Page (Always on a Recto / Right-hand Page)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(28);
   doc.setTextColor(30, 41, 59);
-  doc.text(options.bookTitle || "NONOGRAM PUZZLE BOOK", pageWidth / 2, pageHeight * 0.38, { align: "center" });
+  doc.text(options.bookTitle || "NONOGRAM PUZZLE BOOK", pageWidth / 2, pageHeight * 0.38, {
+    align: "center",
+  });
 
   if (options.bookSubtitle) {
     doc.setFont("helvetica", "normal");
@@ -53,12 +68,19 @@ export async function exportNonogramBookPdf(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
   doc.setTextColor(148, 163, 184);
-  doc.text(`${puzzles.length} Japanese Logic Pixel Art Puzzles with Solutions`, pageWidth / 2, pageHeight * 0.50, { align: "center" });
+  doc.text(
+    `${puzzles.length} Japanese Logic Pixel Art Puzzles with Solutions`,
+    pageWidth / 2,
+    pageHeight * 0.50,
+    { align: "center" }
+  );
 
   if (options.authorName) {
     doc.setFontSize(12);
     doc.setTextColor(71, 85, 105);
-    doc.text(`Created by ${options.authorName}`, pageWidth / 2, pageHeight * 0.75, { align: "center" });
+    doc.text(`Created by ${options.authorName}`, pageWidth / 2, pageHeight * 0.75, {
+      align: "center",
+    });
   }
 
   // 2. Render Each Puzzle Page
@@ -68,7 +90,17 @@ export async function exportNonogramBookPdf(
     if (onProgress) onProgress(Math.round((currentStep / totalSteps) * 100));
 
     const puzzle = puzzles[i];
-    renderSinglePuzzlePage(doc, puzzle, i + 1, pageWidth, pageHeight, options.showPageNumbers !== false);
+    renderSinglePuzzlePage(
+      doc,
+      puzzle,
+      i + 1,
+      pageWidth,
+      pageHeight,
+      options.showPageNumbers !== false,
+      options.facingPages !== false,
+      insideMargin,
+      outsideMargin
+    );
   }
 
   // 3. Render Solutions Section (if enabled)
@@ -82,7 +114,9 @@ export async function exportNonogramBookPdf(
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 116, 139);
-    doc.text("Answer keys to verify your pixel art pictures", pageWidth / 2, pageHeight / 2 + 15, { align: "center" });
+    doc.text("Answer keys to verify your pixel art pictures", pageWidth / 2, pageHeight / 2 + 15, {
+      align: "center",
+    });
 
     const perPage = options.solutionsPerPage || 4;
     const solutionChunks: NonogramPuzzle[][] = [];
@@ -96,7 +130,17 @@ export async function exportNonogramBookPdf(
       currentStep++;
       if (onProgress) onProgress(Math.round((currentStep / totalSteps) * 100));
 
-      renderSolutionsPage(doc, chunk, solutionPageIndex++, pageWidth, pageHeight, perPage);
+      renderSolutionsPage(
+        doc,
+        chunk,
+        solutionPageIndex++,
+        pageWidth,
+        pageHeight,
+        perPage,
+        options.facingPages !== false,
+        insideMargin,
+        outsideMargin
+      );
     }
   }
 
@@ -109,9 +153,17 @@ function renderSinglePuzzlePage(
   puzzleNum: number,
   pageWidth: number,
   pageHeight: number,
-  showPageNumber: boolean
+  showPageNumber: boolean,
+  facingPages: boolean,
+  insideMargin: number,
+  outsideMargin: number
 ) {
-  const margin = 40;
+  const currentPageNum = doc.internal.getNumberOfPages();
+  const isOdd = currentPageNum % 2 !== 0;
+
+  const marginL = facingPages ? (isOdd ? insideMargin : outsideMargin) : 40;
+  const marginR = facingPages ? (isOdd ? outsideMargin : insideMargin) : 40;
+  const marginY = 40;
   const headerHeight = 60;
   const footerHeight = 40;
 
@@ -119,25 +171,32 @@ function renderSinglePuzzlePage(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(15, 23, 42);
-  doc.text(`PUZZLE #${puzzleNum}`, margin, margin + 20);
+  doc.text(`PUZZLE #${puzzleNum}`, marginL, marginY + 20);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   doc.setTextColor(100, 116, 139);
-  doc.text(`${puzzle.width}x${puzzle.height} ${puzzle.difficulty.toUpperCase()} • ${puzzle.category || "LOGIC"}`, pageWidth - margin, margin + 20, { align: "right" });
+  doc.text(
+    `${puzzle.width}x${puzzle.height} ${puzzle.difficulty.toUpperCase()} • ${
+      puzzle.category || "LOGIC"
+    }`,
+    pageWidth - marginR,
+    marginY + 20,
+    { align: "right" }
+  );
 
   // Thin dividing line
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(1);
-  doc.line(margin, margin + 30, pageWidth - margin, margin + 30);
+  doc.line(marginL, marginY + 30, pageWidth - marginR, marginY + 30);
 
   // Calculate Clue Bounds
   const maxRowClues = Math.max(...puzzle.clues.rows.map((r) => r.length), 1);
   const maxColClues = Math.max(...puzzle.clues.cols.map((c) => c.length), 1);
 
   // Available area for grid + clues
-  const availWidth = pageWidth - margin * 2;
-  const availHeight = pageHeight - margin - headerHeight - footerHeight;
+  const availWidth = pageWidth - marginL - marginR;
+  const availHeight = pageHeight - marginY - headerHeight - footerHeight;
 
   // Dynamic cell size
   const maxCellWidth = (availWidth * 0.70) / puzzle.width;
@@ -153,8 +212,8 @@ function renderSinglePuzzlePage(
   const totalBoardWidth = leftClueWidth + gridWidth;
   const totalBoardHeight = topClueHeight + gridHeight;
 
-  const startX = (pageWidth - totalBoardWidth) / 2;
-  const startY = margin + headerHeight + (availHeight - totalBoardHeight) / 2;
+  const startX = marginL + (availWidth - totalBoardWidth) / 2;
+  const startY = marginY + headerHeight + (availHeight - totalBoardHeight) / 2;
 
   const gridX = startX + leftClueWidth;
   const gridY = startY + topClueHeight;
@@ -212,12 +271,22 @@ function renderSinglePuzzlePage(
     doc.line(x, gridY, x, gridY + gridHeight);
   }
 
-  // Footer Page Number
+  // Footer Page Number (Mirrored on outer edge for Facing Pages)
   if (showPageNumber) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(148, 163, 184);
-    doc.text(String(puzzleNum), pageWidth / 2, pageHeight - margin + 15, { align: "center" });
+    if (facingPages) {
+      if (isOdd) {
+        doc.text(String(puzzleNum), pageWidth - marginR, pageHeight - marginY + 15, {
+          align: "right",
+        });
+      } else {
+        doc.text(String(puzzleNum), marginL, pageHeight - marginY + 15, { align: "left" });
+      }
+    } else {
+      doc.text(String(puzzleNum), pageWidth / 2, pageHeight - marginY + 15, { align: "center" });
+    }
   }
 }
 
@@ -227,23 +296,32 @@ function renderSolutionsPage(
   pageIndex: number,
   pageWidth: number,
   pageHeight: number,
-  perPage: number
+  perPage: number,
+  facingPages: boolean,
+  insideMargin: number,
+  outsideMargin: number
 ) {
-  const margin = 40;
+  const currentPageNum = doc.internal.getNumberOfPages();
+  const isOdd = currentPageNum % 2 !== 0;
+
+  const marginL = facingPages ? (isOdd ? insideMargin : outsideMargin) : 40;
+  const marginR = facingPages ? (isOdd ? outsideMargin : insideMargin) : 40;
+  const marginY = 40;
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(15, 23, 42);
-  doc.text(`SOLUTIONS (Part ${pageIndex})`, margin, margin + 20);
+  doc.text(`SOLUTIONS (Part ${pageIndex})`, marginL, marginY + 20);
 
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(1);
-  doc.line(margin, margin + 30, pageWidth - margin, margin + 30);
+  doc.line(marginL, marginY + 30, pageWidth - marginR, marginY + 30);
 
   const cols = perPage === 9 ? 3 : 2;
   const rows = perPage === 9 ? 3 : perPage === 6 ? 3 : 2;
 
-  const contentWidth = pageWidth - margin * 2;
-  const contentHeight = pageHeight - margin * 2 - 70;
+  const contentWidth = pageWidth - marginL - marginR;
+  const contentHeight = pageHeight - marginY * 2 - 70;
 
   const cellBoxWidth = contentWidth / cols;
   const cellBoxHeight = contentHeight / rows;
@@ -252,8 +330,8 @@ function renderSolutionsPage(
     const colIdx = idx % cols;
     const rowIdx = Math.floor(idx / cols);
 
-    const boxX = margin + colIdx * cellBoxWidth;
-    const boxY = margin + 50 + rowIdx * cellBoxHeight;
+    const boxX = marginL + colIdx * cellBoxWidth;
+    const boxY = marginY + 50 + rowIdx * cellBoxHeight;
 
     // Mini solution header
     doc.setFont("helvetica", "bold");

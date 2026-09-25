@@ -57,6 +57,7 @@ export default function CalcudokuGenerator() {
   const [includeSolutions, setIncludeSolutions] = useState<boolean>(true);
   const [bookTitle, setBookTitle] = useState<string>("Calcudoku Math Puzzle Book");
   const [authorName, setAuthorName] = useState<string>("");
+  const [facingPages, setFacingPages] = useState<boolean>(true);
 
   // Puzzles list
   const [puzzleList, setPuzzleList] = useState<CalcudokuPuzzle[]>([]);
@@ -150,6 +151,7 @@ export default function CalcudokuGenerator() {
           authorName,
           puzzlesPerPage,
           showPageNumbers: true,
+          facingPages,
         },
         (progress) => setExportProgress(progress)
       );
@@ -501,6 +503,19 @@ export default function CalcudokuGenerator() {
                   <span>Answer Keys</span>
                 </label>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+              <div>
+                <div className="text-xs text-slate-300 font-medium">Right & Left Page Layout</div>
+                <div className="text-[10px] text-slate-500">Alternating KDP gutter margins for spine binding (Facing Pages)</div>
+              </div>
+              <input
+                type="checkbox"
+                checked={facingPages}
+                onChange={(e) => setFacingPages(e.target.checked)}
+                className="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700"
+              />
             </div>
 
             <div className="space-y-1.5">

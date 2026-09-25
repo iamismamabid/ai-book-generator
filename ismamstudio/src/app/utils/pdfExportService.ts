@@ -3510,7 +3510,7 @@ const drawNonogram = (doc: any, page: any, xShift: number, pageWidth: number, pa
   doc.setFont("Helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(100);
-  doc.text(`${cols}x${rows} • ${puzzle.category || "Logic Pixel Art"} • ${puzzle.difficulty || "Medium"}`.toUpperCase(), pageWidth / 2 + xShift, 1.05, { align: "center" });
+  doc.text(`${cols}x${rows} | ${puzzle.category || "Logic Pixel Art"} | ${puzzle.difficulty || "Medium"}`.toUpperCase(), pageWidth / 2 + xShift, 1.05, { align: "center" });
 
   // Column clues (aligned above each column, from bottom to top)
   doc.setFont("Helvetica", "bold");
@@ -3840,7 +3840,8 @@ const drawMissingVowels = (doc: any, page: any, xShift: number, pageWidth: numbe
   doc.setFont("Helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(80);
-  doc.text(`Theme: ${ws.theme || "Universal Vocabulary"}`, pageWidth / 2 + xShift, 1.15, { align: "center" });
+  const themeLabel = ws.title || ws.category || ws.theme || "Universal Vocabulary";
+  doc.text(`Theme: ${themeLabel}`, pageWidth / 2 + xShift, 1.15, { align: "center" });
 
   doc.setFontSize(8.5);
   doc.setTextColor(120);
@@ -3867,11 +3868,12 @@ const drawMissingVowels = (doc: any, page: any, xShift: number, pageWidth: numbe
     // Masked Puzzle Word
     doc.setFont("Courier", "bold");
     doc.setFontSize(14);
-    doc.text(item.masked, startX + 0.5, y + 0.22);
+    const puzzleText = item.puzzle || item.masked || "";
+    doc.text(String(puzzleText), startX + 0.5, y + 0.22);
 
     // Clue / Hint
     if (item.hint) {
-      doc.setFont("Helvetica", "oblique");
+      doc.setFont("Helvetica", "italic");
       doc.setFontSize(8.5);
       doc.setTextColor(100);
       doc.text(`Clue: ${item.hint}`, startX + 0.5, y + 0.42);
@@ -3882,7 +3884,7 @@ const drawMissingVowels = (doc: any, page: any, xShift: number, pageWidth: numbe
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(12);
       doc.setTextColor(0);
-      doc.text(`→  ${item.original}`, startX + contentW - 0.2, y + 0.25, { align: "right" });
+      doc.text(`->  ${item.original || ""}`, startX + contentW - 0.2, y + 0.25, { align: "right" });
     } else {
       // Answer blank write-in line
       doc.setDrawColor(160);
@@ -3920,7 +3922,8 @@ const drawMissingVowelsSolutionPack = (doc: any, page: any, xShift: number, page
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(100);
-    doc.text(`Theme: ${ws.theme || "Mixed Words"}`, zone.x + zone.w / 2, zone.y + 0.35, { align: "center" });
+    const solTheme = ws.title || ws.category || ws.theme || "Mixed Words";
+    doc.text(`Theme: ${solTheme}`, zone.x + zone.w / 2, zone.y + 0.35, { align: "center" });
 
     // List words in 1 or 2 columns within zone
     const listY = zone.y + 0.55;
@@ -3941,7 +3944,7 @@ const drawMissingVowelsSolutionPack = (doc: any, page: any, xShift: number, page
       doc.text(`${idx + 1}.`, lx, ly);
 
       doc.setFont("Helvetica", "normal");
-      doc.text(item.original, lx + 0.22, ly);
+      doc.text(String(item.original || ""), lx + 0.22, ly);
     });
 
     doc.setDrawColor(220);

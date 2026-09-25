@@ -256,13 +256,13 @@ export function MissingVowelsEditor({ page, updatePage, bulkAddPages }: any) {
         <div className="text-center w-full">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 rounded-full text-purple-700 dark:text-purple-300 text-[10px] font-black uppercase tracking-wider mb-2">
             <BookOpen className="w-3.5 h-3.5" />
-            {worksheetData?.theme || "Vocabulary Challenge"}
+            {worksheetData?.title || worksheetData?.category || (worksheetData as any)?.theme || "Vocabulary Challenge"}
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-center mb-1 uppercase tracking-widest text-slate-800 dark:text-slate-100">
             Missing Vowels {isSolution && <span className="text-indigo-600 dark:text-indigo-400">(Answer Key)</span>}
           </h1>
           <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest mb-6">
-            Theme: {worksheetData?.theme || "Mixed Words"} | Count: {worksheetData?.items?.length || wordsCount}
+            Theme: {worksheetData?.title || worksheetData?.category || (worksheetData as any)?.theme || "Mixed Words"} | Count: {worksheetData?.items?.length || wordsCount}
           </p>
         </div>
 
@@ -284,7 +284,7 @@ export function MissingVowelsEditor({ page, updatePage, bulkAddPages }: any) {
                           {item.original}
                         </span>
                       ) : (
-                        item.masked
+                        item.puzzle || item.masked || ""
                       )}
                     </div>
                     {item.hint && (

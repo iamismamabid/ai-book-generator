@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Grid3x3, Palette, Loader2, Sparkles, Lock, Cloud, CloudOff, Check, X, Paintbrush, Tag, Box } from "lucide-react";
 import dynamic from 'next/dynamic';
 import { motion } from "framer-motion";
@@ -328,6 +328,13 @@ export default function MasterStudioApp() {
 
   // Cover Math
   const spineWidth = pageCount * 0.002252;
+
+  const coverStateMemo = useMemo(() => ({
+    coverElements,
+    spineWidth,
+    trimSize,
+    ...coverBackground
+  }), [coverElements, spineWidth, trimSize, coverBackground]);
 
   // Applies a loaded project (from localStorage or the cloud) to state.
   const applyCoverData = (data: any) => {
@@ -711,34 +718,26 @@ export default function MasterStudioApp() {
         {/* Center: Mode Switcher */}
         <div className="flex bg-slate-900 p-1 rounded-full border border-slate-800 backdrop-blur-md">
           <button
+            type="button"
             onClick={() => handleTabChange('interior')}
-            className={`relative px-4 sm:px-5 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-200 flex items-center gap-1.5 z-10 ${
-              activeTab === 'interior' ? 'text-slate-950 font-black' : 'text-slate-400 hover:text-white'
+            className={`relative px-4 sm:px-5 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 z-10 cursor-pointer ${
+              activeTab === 'interior'
+                ? 'bg-amber-400 text-slate-950 font-black shadow-md'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            {activeTab === 'interior' && (
-              <motion.div
-                layoutId="activeTabPill"
-                className="absolute inset-0 bg-amber-400 rounded-full shadow-md -z-10"
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              />
-            )}
             <Grid3x3 className="w-3.5 h-3.5"/> Book Builder
           </button>
           
           <button
+            type="button"
             onClick={() => handleTabChange('cover')}
-            className={`relative px-4 sm:px-5 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-colors duration-200 flex items-center gap-1.5 z-10 ${
-              activeTab === 'cover' ? 'text-white font-black' : 'text-slate-400 hover:text-white'
+            className={`relative px-4 sm:px-5 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 z-10 cursor-pointer ${
+              activeTab === 'cover'
+                ? 'bg-indigo-600 text-white font-black shadow-md'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            {activeTab === 'cover' && (
-              <motion.div
-                layoutId="activeTabPill"
-                className="absolute inset-0 bg-indigo-600 rounded-full shadow-md -z-10"
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              />
-            )}
             <Palette className="w-3.5 h-3.5"/> Cover Studio
           </button>
         </div>
@@ -787,21 +786,20 @@ export default function MasterStudioApp() {
       <main className="flex-1 w-full min-h-0 overflow-hidden relative">
         {/* Interior Tab Content (BookBuilder) */}
         <div
-          className={`absolute inset-0 w-full h-full flex flex-col overflow-hidden transition-opacity duration-150 ${
-            activeTab === 'interior' ? 'opacity-100 z-10 pointer-events-auto visible' : 'opacity-0 z-0 pointer-events-none invisible'
-          }`}
+          className="absolute inset-0 w-full h-full flex flex-col overflow-hidden transition-opacity duration-150"
+          style={{
+            visibility: activeTab === 'interior' ? 'visible' : 'hidden',
+            pointerEvents: activeTab === 'interior' ? 'auto' : 'none',
+            zIndex: activeTab === 'interior' ? 10 : 0,
+            opacity: activeTab === 'interior' ? 1 : 0,
+          }}
         >
           <InteriorErrorBoundary>
             <BookBuilder
-              coverState={{
-                coverElements,
-                spineWidth,
-                trimSize,
-                ...coverBackground
-              }}
+              coverState={coverStateMemo}
               initialPages={notebookInitialPages ?? undefined}
-              onOpenCoverStudio={(syncData) => handleOpenCoverStudio(syncData)}
-              onInteriorChange={(info) => handleInteriorChange(info)}
+              onOpenCoverStudio={handleOpenCoverStudio}
+              onInteriorChange={handleInteriorChange}
               onSyncPages={handleSyncInteriorPages}
             />
           </InteriorErrorBoundary>
@@ -809,9 +807,13 @@ export default function MasterStudioApp() {
 
         {/* Cover Studio Tab Content (FabricCoverStudio) */}
         <div
-          className={`absolute inset-0 w-full h-full flex flex-col overflow-hidden bg-white dark:bg-slate-900 transition-opacity duration-150 ${
-            activeTab === 'cover' ? 'opacity-100 z-10 pointer-events-auto visible' : 'opacity-0 z-0 pointer-events-none invisible'
-          }`}
+          className="absolute inset-0 w-full h-full flex flex-col overflow-hidden bg-white dark:bg-slate-900 transition-opacity duration-150"
+          style={{
+            visibility: activeTab === 'cover' ? 'visible' : 'hidden',
+            pointerEvents: activeTab === 'cover' ? 'auto' : 'none',
+            zIndex: activeTab === 'cover' ? 10 : 0,
+            opacity: activeTab === 'cover' ? 1 : 0,
+          }}
         >
           {!coverDraftLoaded ? (
             <div className="w-full h-full flex items-center justify-center bg-slate-950 text-indigo-400">

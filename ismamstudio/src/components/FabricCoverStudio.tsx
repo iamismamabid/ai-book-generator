@@ -2423,6 +2423,24 @@ export default function FabricCoverStudio({
     };
   }, [layout.canvasWidth, layout.canvasHeight]);
 
+  // Recalculate canvas offset and scale whenever switching into Cover Studio tab
+  useEffect(() => {
+    if (isActive && containerRef.current) {
+      const parentWidth = containerRef.current.clientWidth;
+      const parentHeight = containerRef.current.clientHeight;
+      if (parentWidth > 20 && parentHeight > 20) {
+        const ratioX = parentWidth / layout.canvasWidth;
+        const ratioY = parentHeight / layout.canvasHeight;
+        const ratio = Math.min(ratioX, ratioY) * 0.95;
+        setScaleRatio(ratio);
+        setIsScaleReady(true);
+        if (canvas) {
+          canvas.calcOffset();
+        }
+      }
+    }
+  }, [isActive, layout.canvasWidth, layout.canvasHeight, canvas]);
+
   // Initialize Fabric Canvas
   useEffect(() => {
     if (!canvasRef.current) return;

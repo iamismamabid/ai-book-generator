@@ -271,12 +271,14 @@ export function resolveTrimSize(input: any): KdpTrimSize {
 /**
  * Returns exact width and height in inches.
  */
-export function getTrimDimensions(input: any): { width: number; height: number; w: number; h: number } {
+export function getTrimDimensions(input: any): { width: number; height: number; w: number; h: number; widthInches: number; heightInches: number } {
   const resolved = resolveTrimSize(input);
   return {
     width: resolved.w,
     height: resolved.h,
     w: resolved.w,
-    h: resolved.h
+    h: resolved.h,
+    widthInches: resolved.w,
+    heightInches: resolved.h,
   };
 }

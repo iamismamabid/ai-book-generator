@@ -21,7 +21,9 @@ export async function exportMissingVowelsBookPdf(
   options: MissingVowelsPdfOptions,
   onProgress?: (percent: number) => void
 ): Promise<jsPDF> {
-  const { widthInches, heightInches } = getTrimDimensions(options.trimSize);
+  const dims = getTrimDimensions(options.trimSize);
+  const widthInches = dims.widthInches || dims.width || dims.w || 8.5;
+  const heightInches = dims.heightInches || dims.height || dims.h || 11;
   const pageWidth = widthInches * 72;
   const pageHeight = heightInches * 72;
 

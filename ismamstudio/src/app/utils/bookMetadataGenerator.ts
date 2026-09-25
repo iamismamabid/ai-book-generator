@@ -61,6 +61,9 @@ export function generateKdpMetadata(options: MetadataGeneratorOptions): KdpMetad
   const hasCryptogram = (typeCounts["cryptogram"] || 0) > 0;
   const hasMath = (typeCounts["math_puzzle"] || 0) > 0;
   const hasColoring = (typeCounts["coloring"] || 0) > 0;
+  const hasNonogram = (typeCounts["nonogram"] || 0) > 0;
+  const hasCalcudoku = (typeCounts["calcudoku"] || 0) > 0;
+  const hasMissingVowels = (typeCounts["missing_vowels"] || 0) > 0;
 
   // Language Labels
   const languageNames: Record<KdpBookLanguage, { label: string; kdpSelect: string }> = {
@@ -237,6 +240,9 @@ ${featureList.map((f) => `  <li><b>${f}.</b></li>`).join("\n")}
     if (hasScramble) featureList.push(`Word Scramble games for anagram enthusiasts`);
     if (hasKakuro) featureList.push(`Kakuro (Cross-Sums) mathematical logic grids`);
     if (hasMath) featureList.push(`Creative Math Puzzles to keep mental math sharp`);
+    if (hasNonogram) featureList.push(`Engaging Nonogram Pixel Art Puzzles to test deductive logic`);
+    if (hasCalcudoku) featureList.push(`Math-Driven Calcudoku Logic Grids to sharpen arithmetic skills`);
+    if (hasMissingVowels) featureList.push(`Missing Vowels Word Play Puzzles to test vocabulary and deduction`);
     if (hasColoring) featureList.push(`Stress-Relieving Coloring Illustrations with bold clean outlines`);
 
     if (featureList.length === 0) {

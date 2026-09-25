@@ -8,6 +8,9 @@ import { generateSudoku } from "@/lib/sudokuGenerator";
 import { generatePuzzleGrid } from "./puzzleEngine";
 import { generateCrosswordGrid } from "./crosswordGenerator";
 import { generateKakuro } from "@/lib/kakuro";
+import { generateProceduralNonogram } from "@/lib/nonogramEngine";
+import { generateCalcudoku } from "@/lib/calcudokuEngine";
+import { generateMissingVowelsBook } from "@/lib/missingVowelsEngine";
 import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "@/lib/kdpBookEngine";
 
 export interface ExportOptions {
@@ -183,6 +186,47 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
       drawMathPuzzleSolutionPack(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'math_puzzle' && page.config.puzzleData) {
       drawMathPuzzle(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'nonogram' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawNonogramSolutionPack(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'nonogram') {
+      if (!page.config?.puzzleData) {
+        page.config = page.config || {};
+        const sz = page.config.size || 10;
+        page.config.puzzleData = generateProceduralNonogram(
+          sz,
+          Math.floor(Math.random() * 1000000),
+          "Nonogram",
+          sz <= 5 ? "easy" : sz <= 10 ? "medium" : "hard"
+        );
+      }
+      drawNonogram(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'calcudoku' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawCalcudokuSolutionPack(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'calcudoku') {
+      if (!page.config?.puzzleData) {
+        page.config = page.config || {};
+        const ops = page.config.opsMode === 'add_only' ? ['+'] : page.config.opsMode === 'add_sub' ? ['+', '-'] : page.config.opsMode === 'mul_div' ? ['*', '/'] : ['+', '-', '*', '/'];
+        page.config.puzzleData = generateCalcudoku(
+          page.config.size || 5,
+          Math.floor(Math.random() * 1000000),
+          ops as any,
+          "Calcudoku"
+        );
+      }
+      drawCalcudoku(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'missing_vowels' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawMissingVowelsSolutionPack(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'missing_vowels') {
+      if (!page.config?.worksheetData) {
+        page.config = page.config || {};
+        const wsBook = generateMissingVowelsBook(
+          1,
+          page.config.wordsCount || 8,
+          page.config.mode || "guided_blanks"
+        );
+        page.config.worksheetData = wsBook[0] || null;
+      }
+      drawMissingVowels(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'coloring_book' && (page.config.presetId || page.config.uploadedImageUrl)) {
       drawColoringBookPage(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'low_content') {
@@ -3415,5 +3459,479 @@ const drawLowContent = (doc: any, page: any, xShift: number, w: number, h: numbe
     }
   }
 
+  doc.setTextColor(0);
+};
+
+// ── Nonogram Drawer ──────────────────────────────────────────────────────────
+const drawNonogram = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const puzzle = page.config.puzzleData;
+  if (!puzzle) return;
+  const isSolution = page.config.isSolution || false;
+  const rows = puzzle.height || puzzle.grid.length;
+  const cols = puzzle.width || puzzle.grid[0]?.length || rows;
+
+  const marginX = 0.75;
+  const marginY = 1.3;
+  const maxW = pageWidth - marginX * 2;
+  const maxH = pageHeight - marginY * 2;
+
+  const maxRowClues = Math.max(...(puzzle.clues?.rows || []).map((r: number[]) => r.length), 1);
+  const maxColClues = Math.max(...(puzzle.clues?.cols || []).map((c: number[]) => c.length), 1);
+
+  const clueColRatio = Math.min(0.28, maxRowClues * 0.04);
+  const clueRowRatio = Math.min(0.25, maxColClues * 0.04);
+
+  const availableGridW = maxW * (1 - clueColRatio);
+  const availableGridH = maxH * (1 - clueRowRatio);
+
+  const cellSize = Math.min(availableGridW / cols, availableGridH / rows, 0.45);
+  const gridW = cellSize * cols;
+  const gridH = cellSize * rows;
+
+  const leftClueW = maxRowClues * Math.max(0.18, cellSize * 0.7);
+  const topClueH = maxColClues * Math.max(0.18, cellSize * 0.7);
+
+  const totalW = leftClueW + gridW;
+  const totalH = topClueH + gridH;
+
+  const startX = (pageWidth - totalW) / 2 + xShift;
+  const startY = marginY + (maxH - totalH) / 2;
+
+  const gridX = startX + leftClueW;
+  const gridY = startY + topClueH;
+
+  // Header Title
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  const titleText = isSolution ? `${puzzle.title || "NONOGRAM"} (SOLUTION)` : (puzzle.title || "NONOGRAM PUZZLE");
+  doc.text(titleText.toUpperCase(), pageWidth / 2 + xShift, 0.85, { align: "center" });
+
+  doc.setFont("Helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.text(`${cols}x${rows} • ${puzzle.category || "Logic Pixel Art"} • ${puzzle.difficulty || "Medium"}`.toUpperCase(), pageWidth / 2 + xShift, 1.05, { align: "center" });
+
+  // Column clues (aligned above each column, from bottom to top)
+  doc.setFont("Helvetica", "bold");
+  const colFontSize = Math.max(6, Math.min(Math.floor(cellSize * 24), 9));
+  doc.setFontSize(colFontSize);
+  doc.setTextColor(0);
+
+  for (let c = 0; c < cols; c++) {
+    const colClues = puzzle.clues?.cols?.[c] || [];
+    const cellCenterX = gridX + c * cellSize + cellSize / 2;
+    const clueStep = topClueH / maxColClues;
+    for (let i = 0; i < colClues.length; i++) {
+      const clueVal = colClues[colClues.length - 1 - i];
+      const clueY = gridY - 0.04 - i * clueStep;
+      doc.text(String(clueVal), cellCenterX, clueY, { align: "center" });
+    }
+  }
+
+  // Row clues (aligned to left of each row, from right to left)
+  const rowFontSize = Math.max(6, Math.min(Math.floor(cellSize * 24), 9));
+  doc.setFontSize(rowFontSize);
+
+  for (let r = 0; r < rows; r++) {
+    const rowClues = puzzle.clues?.rows?.[r] || [];
+    const cellCenterY = gridY + r * cellSize + cellSize * 0.65;
+    const clueStep = leftClueW / maxRowClues;
+    for (let i = 0; i < rowClues.length; i++) {
+      const clueVal = rowClues[rowClues.length - 1 - i];
+      const clueX = gridX - 0.06 - i * clueStep;
+      doc.text(String(clueVal), clueX, cellCenterY, { align: "right" });
+    }
+  }
+
+  // Render Grid Cells
+  doc.setLineWidth(0.005);
+  doc.setDrawColor(180);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cx = gridX + c * cellSize;
+      const cy = gridY + r * cellSize;
+      const isFilled = puzzle.grid[r]?.[c] === 1;
+
+      if (isSolution && isFilled) {
+        doc.setFillColor(30, 41, 59);
+        doc.rect(cx, cy, cellSize, cellSize, "FD");
+      } else {
+        doc.setFillColor(255);
+        doc.rect(cx, cy, cellSize, cellSize, "FD");
+      }
+    }
+  }
+
+  // 5x5 Grid Accent Lines
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.015);
+  for (let c = 0; c <= cols; c += 5) {
+    const lx = gridX + c * cellSize;
+    doc.line(lx, gridY, lx, gridY + gridH);
+  }
+  for (let r = 0; r <= rows; r += 5) {
+    const ly = gridY + r * cellSize;
+    doc.line(gridX, ly, gridX + gridW, ly);
+  }
+
+  // Outer Border
+  doc.setLineWidth(0.02);
+  doc.rect(gridX, gridY, gridW, gridH);
+  doc.setTextColor(0);
+};
+
+// ── Nonogram Solution Pack (1, 2, or 4 per page) ─────────────────────────────
+const drawNonogramSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { puzzleData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
+  const margin = 0.65;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.puzzleData) return;
+    const puzzle = entry.puzzleData;
+    const rows = puzzle.height || puzzle.grid.length;
+    const cols = puzzle.width || puzzle.grid[0]?.length || rows;
+    const titleSpace = 0.28;
+
+    const cellSize = Math.min((zone.w - 0.2) / cols, (zone.h - titleSpace - 0.2) / rows, 0.35);
+    const gridW = cols * cellSize;
+    const gridH = rows * cellSize;
+    const startX = zone.x + (zone.w - gridW) / 2;
+    const startY = zone.y + titleSpace + (zone.h - titleSpace - gridH) / 2;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    // Cells
+    doc.setLineWidth(0.004);
+    doc.setDrawColor(180);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cx = startX + c * cellSize;
+        const cy = startY + r * cellSize;
+        const isFilled = puzzle.grid[r]?.[c] === 1;
+        if (isFilled) {
+          doc.setFillColor(30, 41, 59);
+          doc.rect(cx, cy, cellSize, cellSize, "FD");
+        } else {
+          doc.setFillColor(255);
+          doc.rect(cx, cy, cellSize, cellSize, "FD");
+        }
+      }
+    }
+
+    // 5x5 lines
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.012);
+    for (let c = 0; c <= cols; c += 5) {
+      const lx = startX + c * cellSize;
+      doc.line(lx, startY, lx, startY + gridH);
+    }
+    for (let r = 0; r <= rows; r += 5) {
+      const ly = startY + r * cellSize;
+      doc.line(startX, ly, startX + gridW, ly);
+    }
+    doc.rect(startX, startY, gridW, gridH);
+  });
+  doc.setTextColor(0);
+};
+
+// ── Calcudoku Drawer ─────────────────────────────────────────────────────────
+const drawCalcudoku = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const puzzle = page.config.puzzleData;
+  if (!puzzle) return;
+  const isSolution = page.config.isSolution || false;
+  const size = puzzle.size;
+
+  const marginX = 0.75;
+  const marginY = 1.4;
+  const maxW = pageWidth - marginX * 2;
+  const maxH = pageHeight - marginY * 2;
+
+  const cellSize = Math.min(maxW / size, maxH / size, 0.75);
+  const gridW = size * cellSize;
+  const gridH = size * cellSize;
+  const startX = (pageWidth - gridW) / 2 + xShift;
+  const startY = marginY + (maxH - gridH) / 2;
+
+  // Header Title
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  const title = isSolution ? "CALCUDOKU (SOLUTION)" : (puzzle.title || "CALCUDOKU PUZZLE");
+  doc.text(title.toUpperCase(), pageWidth / 2 + xShift, 0.85, { align: "center" });
+
+  doc.setFont("Helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.text(`${size}x${size} Arithmetic Logic Grid`, pageWidth / 2 + xShift, 1.05, { align: "center" });
+
+  // Thin interior cell outlines
+  doc.setLineWidth(0.004);
+  doc.setDrawColor(200);
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const cx = startX + c * cellSize;
+      const cy = startY + r * cellSize;
+      doc.rect(cx, cy, cellSize, cellSize);
+
+      // If solution, draw number centered
+      if (isSolution && puzzle.solution?.[r]?.[c] !== undefined) {
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(Math.max(10, Math.floor(cellSize * 28)));
+        doc.setTextColor(0);
+        doc.text(String(puzzle.solution[r][c]), cx + cellSize / 2, cy + cellSize * 0.65, { align: "center" });
+      }
+    }
+  }
+
+  // Thick cage boundaries
+  doc.setLineWidth(0.022);
+  doc.setDrawColor(0);
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const cageId = puzzle.cageGrid[r][c];
+      const cx = startX + c * cellSize;
+      const cy = startY + r * cellSize;
+
+      if (r === 0 || puzzle.cageGrid[r - 1]?.[c] !== cageId) {
+        doc.line(cx, cy, cx + cellSize, cy);
+      }
+      if (r === size - 1 || puzzle.cageGrid[r + 1]?.[c] !== cageId) {
+        doc.line(cx, cy + cellSize, cx + cellSize, cy + cellSize);
+      }
+      if (c === 0 || puzzle.cageGrid[r]?.[c - 1] !== cageId) {
+        doc.line(cx, cy, cx, cy + cellSize);
+      }
+      if (c === size - 1 || puzzle.cageGrid[r]?.[c + 1] !== cageId) {
+        doc.line(cx + cellSize, cy, cx + cellSize, cy + cellSize);
+      }
+    }
+  }
+
+  // Clues in top-left cell of each cage
+  puzzle.cages.forEach((cage: any) => {
+    if (!cage?.cells?.length) return;
+    const [r, c] = cage.cells[0];
+    const cx = startX + c * cellSize;
+    const cy = startY + r * cellSize;
+    const clueText = `${cage.target}${cage.op !== "none" ? cage.op : ""}`;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(Math.max(7, Math.floor(cellSize * 16)));
+    doc.setTextColor(0);
+    doc.text(clueText, cx + 0.05, cy + 0.14);
+  });
+
+  // Outer border
+  doc.setLineWidth(0.025);
+  doc.setDrawColor(0);
+  doc.rect(startX, startY, gridW, gridH);
+  doc.setTextColor(0);
+};
+
+// ── Calcudoku Solution Pack (1, 2, or 4 per page) ────────────────────────────
+const drawCalcudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { puzzleData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
+  const margin = 0.65;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.puzzleData) return;
+    const puzzle = entry.puzzleData;
+    const size = puzzle.size;
+    const titleSpace = 0.28;
+
+    const cellSize = Math.min((zone.w - 0.2) / size, (zone.h - titleSpace - 0.2) / size, 0.45);
+    const gridW = size * cellSize;
+    const gridH = size * cellSize;
+    const startX = zone.x + (zone.w - gridW) / 2;
+    const startY = zone.y + titleSpace + (zone.h - titleSpace - gridH) / 2;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    // Thin lines & values
+    doc.setLineWidth(0.004);
+    doc.setDrawColor(200);
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const cx = startX + c * cellSize;
+        const cy = startY + r * cellSize;
+        doc.rect(cx, cy, cellSize, cellSize);
+        if (puzzle.solution?.[r]?.[c] !== undefined) {
+          doc.setFont("Helvetica", "bold");
+          doc.setFontSize(Math.max(7, Math.floor(cellSize * 26)));
+          doc.setTextColor(0);
+          doc.text(String(puzzle.solution[r][c]), cx + cellSize / 2, cy + cellSize * 0.65, { align: "center" });
+        }
+      }
+    }
+
+    // Thick cage lines
+    doc.setLineWidth(0.016);
+    doc.setDrawColor(0);
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const cageId = puzzle.cageGrid[r][c];
+        const cx = startX + c * cellSize;
+        const cy = startY + r * cellSize;
+        if (r === 0 || puzzle.cageGrid[r - 1]?.[c] !== cageId) doc.line(cx, cy, cx + cellSize, cy);
+        if (r === size - 1 || puzzle.cageGrid[r + 1]?.[c] !== cageId) doc.line(cx, cy + cellSize, cx + cellSize, cy + cellSize);
+        if (c === 0 || puzzle.cageGrid[r]?.[c - 1] !== cageId) doc.line(cx, cy, cx, cy + cellSize);
+        if (c === size - 1 || puzzle.cageGrid[r]?.[c + 1] !== cageId) doc.line(cx + cellSize, cy, cx + cellSize, cy + cellSize);
+      }
+    }
+    doc.rect(startX, startY, gridW, gridH);
+  });
+  doc.setTextColor(0);
+};
+
+// ── Missing Vowels Drawer ────────────────────────────────────────────────────
+const drawMissingVowels = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const ws = page.config.worksheetData;
+  if (!ws) return;
+  const isSolution = page.config.isSolution || false;
+  const items = ws.items || [];
+
+  const marginX = 0.8;
+  const startX = marginX + xShift;
+  const contentW = pageWidth - marginX * 2;
+
+  // Header Title
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(0);
+  const title = isSolution ? "MISSING VOWELS (ANSWER KEY)" : "MISSING VOWELS";
+  doc.text(title, pageWidth / 2 + xShift, 0.9, { align: "center" });
+
+  doc.setFont("Helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(80);
+  doc.text(`Theme: ${ws.theme || "Universal Vocabulary"}`, pageWidth / 2 + xShift, 1.15, { align: "center" });
+
+  doc.setFontSize(8.5);
+  doc.setTextColor(120);
+  doc.text("Fill in the missing vowels (A, E, I, O, U) to solve each word puzzle.", pageWidth / 2 + xShift, 1.35, { align: "center" });
+
+  // Thin dividing line
+  doc.setDrawColor(200);
+  doc.setLineWidth(0.008);
+  doc.line(startX, 1.5, startX + contentW, 1.5);
+
+  const startY = 1.8;
+  const availableH = pageHeight - startY - 0.8;
+  const itemH = Math.min(0.65, availableH / Math.max(items.length, 1));
+
+  items.forEach((item: any, idx: number) => {
+    const y = startY + idx * itemH;
+
+    // Item Number
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text(`${idx + 1}.`, startX + 0.1, y + 0.22);
+
+    // Masked Puzzle Word
+    doc.setFont("Courier", "bold");
+    doc.setFontSize(14);
+    doc.text(item.masked, startX + 0.5, y + 0.22);
+
+    // Clue / Hint
+    if (item.hint) {
+      doc.setFont("Helvetica", "oblique");
+      doc.setFontSize(8.5);
+      doc.setTextColor(100);
+      doc.text(`Clue: ${item.hint}`, startX + 0.5, y + 0.42);
+    }
+
+    if (isSolution) {
+      // Solution text
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text(`→  ${item.original}`, startX + contentW - 0.2, y + 0.25, { align: "right" });
+    } else {
+      // Answer blank write-in line
+      doc.setDrawColor(160);
+      doc.setLineWidth(0.008);
+      const lineLen = 1.8;
+      doc.line(startX + contentW - lineLen, y + 0.25, startX + contentW, y + 0.25);
+    }
+  });
+
+  doc.setTextColor(0);
+};
+
+// ── Missing Vowels Solution Pack (1, 2, or 4 per page) ───────────────────────
+const drawMissingVowelsSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { worksheetData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
+  const margin = 0.65;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.worksheetData) return;
+    const ws = entry.worksheetData;
+    const items = ws.items || [];
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    const solLabel = entry.pageNumber ? `Page ${entry.pageNumber} Solution` : `Answer #${entry.puzzleIndex}`;
+    doc.text(solLabel, zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(`Theme: ${ws.theme || "Mixed Words"}`, zone.x + zone.w / 2, zone.y + 0.35, { align: "center" });
+
+    // List words in 1 or 2 columns within zone
+    const listY = zone.y + 0.55;
+    const numCols = items.length > 6 ? 2 : 1;
+    const colWidth = zone.w / numCols;
+    const itemsPerCol = Math.ceil(items.length / numCols);
+    const lineStep = Math.min(0.24, (zone.h - 0.7) / itemsPerCol);
+
+    items.forEach((item: any, idx: number) => {
+      const col = Math.floor(idx / itemsPerCol);
+      const row = idx % itemsPerCol;
+      const lx = zone.x + col * colWidth + 0.1;
+      const ly = listY + row * lineStep;
+
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(0);
+      doc.text(`${idx + 1}.`, lx, ly);
+
+      doc.setFont("Helvetica", "normal");
+      doc.text(item.original, lx + 0.22, ly);
+    });
+
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.005);
+    doc.rect(zone.x, zone.y, zone.w, zone.h);
+  });
   doc.setTextColor(0);
 };

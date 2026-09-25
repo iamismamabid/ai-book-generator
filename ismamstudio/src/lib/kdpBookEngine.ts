@@ -10,7 +10,10 @@ export type KdpPuzzleType =
   | "crossword"
   | "cryptogram"
   | "word_scramble"
-  | "math_puzzle";
+  | "math_puzzle"
+  | "nonogram"
+  | "calcudoku"
+  | "missing_vowels";
 
 export interface KdpMarginResult {
   isOdd: boolean;
@@ -378,6 +381,48 @@ const PUZZLE_GUIDES: Record<KdpPuzzleType, RuleGuide> = {
       "• Start with multiplication and division steps to narrow down candidate factors.",
       "• Check target parity (even vs. odd) to deduce whether an addition or subtraction step is needed.",
       "• Work symmetrically between crossing equations to verify each candidate value.",
+    ],
+  },
+  nonogram: {
+    title: "HOW TO SOLVE NONOGRAMS (PICROSS)",
+    intro: "Nonograms are picture logic puzzles in which cells in a grid must be colored or left blank according to numbers at the side of the grid to reveal a hidden pixel art picture.",
+    rules: [
+      "1. Numbers outside the grid specify the length of consecutive runs of filled black squares in that row or column.",
+      "2. Multiple clues (e.g. 3 2) mean there is at least one empty square between consecutive runs.",
+      "3. The order of clues corresponds directly to the visual sequence from left to right or top to bottom.",
+    ],
+    tips: [
+      "• Start by identifying lines where clue totals plus required spaces equal or exceed the grid dimension.",
+      "• Mark known empty squares with small dots or crosses to avoid coloring them accidentally.",
+      "• Cross-reference intersections where filled cells from perpendicular runs establish anchor points.",
+    ],
+  },
+  calcudoku: {
+    title: "HOW TO PLAY CALCUDOKU (KENKEN)",
+    intro: "Calcudoku is an arithmetic logic puzzle. The goal is to fill the grid with numbers such that no digit appears more than once in any row or column, while satisfying cage math targets.",
+    rules: [
+      "1. Fill every row and column with digits 1 through the grid size (e.g. 1 to 5 for a 5x5 grid).",
+      "2. Digits within each heavily outlined cage must compute the cage's target number using the specified operator (+, -, ×, ÷).",
+      "3. Digits may repeat within a cage as long as they are in different rows and columns.",
+    ],
+    tips: [
+      "• Single-cell cages require no calculation—write the target number directly in the square.",
+      "• For division and subtraction cages, determine the few valid digit pairs that yield the target.",
+      "• Use Latin Square deduction: every number must appear exactly once in each row and column.",
+    ],
+  },
+  missing_vowels: {
+    title: "HOW TO SOLVE MISSING VOWELS",
+    intro: "Missing Vowels is a deduction and vocabulary puzzle where all the vowels (A, E, I, O, U) have been stripped from words and phrases, leaving only the consonants in place.",
+    rules: [
+      "1. Examine the sequence of consonants and use the category clue to deduce the original word.",
+      "2. Insert the appropriate vowels (A, E, I, O, U) into the blank spaces to rebuild the word.",
+      "3. All consonants remain in their exact original sequential order.",
+    ],
+    tips: [
+      "• Read the consonant skeleton aloud phonetically—your brain will often naturally supply common vowel sounds.",
+      "• Pay attention to common consonant clusters like STR, BL, CH, or TH.",
+      "• Use the category and definition hint to eliminate unrelated homophones.",
     ],
   },
 };

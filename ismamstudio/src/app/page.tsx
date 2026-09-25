@@ -252,7 +252,7 @@ export default function HomePage() {
             { title: "Calcudoku (KenKen) Studio", desc: "Math logic cage puzzles, 4x4 to 8x8, with single/all operations (+, −, ×, ÷) and full KDP interiors.", href: "/studio/calcudoku", icon: Calculator, badge: "Mathdoku Logic" },
             { title: "Missing Vowels Studio", desc: "Vocabulary & brain-teaser missing vowel worksheets with 20+ thematic niches, custom word banks, and 300 DPI interiors.", href: "/studio/missing-vowels", icon: Type, badge: "Spelling & Vocab" },
           ].map((tool) => (
-            <div key={tool.title} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between group">
+            <div key={tool.title} className="relative bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200 space-y-4 flex flex-col justify-between group">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
@@ -267,7 +267,8 @@ export default function HomePage() {
               </div>
               <Link
                 href={tool.href}
-                className="inline-flex items-center gap-1.5 text-xs font-black text-indigo-700 group-hover:text-indigo-800 transition-colors pt-2"
+                prefetch={true}
+                className="inline-flex items-center gap-1.5 text-xs font-black text-indigo-700 group-hover:text-indigo-800 transition-colors pt-2 after:absolute after:inset-0"
                 aria-label={`Open ${tool.title}`}
               >
                 Launch Studio Engine <ArrowRight className="w-3.5 h-3.5" />

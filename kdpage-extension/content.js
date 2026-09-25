@@ -146,12 +146,20 @@
       </div>
     `;
 
-    // Append into product card container
-    const container = item.querySelector('.s-card-container') ||
-                      item.querySelector('.puis-price-instructions-style') || 
-                      item.querySelector('.a-section:not(.a-spacing-none)') || 
-                      item;
-    container.appendChild(card);
+    // Insert at the TOP of the product card (above title, directly below book cover)
+    const titleElem = item.querySelector('h2');
+    const imgContainer = item.querySelector('.s-product-image-container, .s-image-wrapper');
+
+    if (titleElem && titleElem.parentNode) {
+      titleElem.parentNode.insertBefore(card, titleElem);
+    } else if (imgContainer && imgContainer.parentNode) {
+      imgContainer.parentNode.insertBefore(card, imgContainer.nextSibling);
+    } else {
+      const container = item.querySelector('.s-card-container') || 
+                        item.querySelector('.a-section') || 
+                        item;
+      container.insertBefore(card, container.firstChild);
+    }
   }
 
   // Update card if exact verified BSR is loaded

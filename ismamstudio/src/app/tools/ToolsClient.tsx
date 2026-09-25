@@ -363,6 +363,16 @@ export default function FreeToolsHub() {
       link: "/tools/kdp-puzzle-generator"
     },
     {
+      id: "maze-generator",
+      name: "Free KDP Maze Generator & Labyrinth Studio",
+      badge: "Popular",
+      category: "Design",
+      description: "Design custom shape-masked mazes (Circle, Square, Heart) with start-to-finish solution paths and KDP margins.",
+      features: ["Square, Circle & Heart shapes", "Instant solution path reveal", "Print-ready vector PDF export"],
+      keywords: ["kdp maze generator", "maze generator", "labyrinth generator", "maze maker", "puzzle book", "activity book"],
+      link: "/maze"
+    },
+    {
       id: "kdp-book-description-generator",
       name: "100% Free Amazon KDP Formatter & Description Generator",
       badge: "Essential",

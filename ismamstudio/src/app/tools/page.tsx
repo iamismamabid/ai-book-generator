@@ -64,6 +64,7 @@ const TOOL_ITEMS: { name: string; path: string }[] = [
   { name: "AI Coloring Artbook Studio", path: "/artbook-studio?v=2" },
   { name: "Free KDP Coloring Book Generator & Color-by-Number Studio", path: "/tools/coloring-book-generator" },
   { name: "Free KDP Puzzle Generator", path: "/tools/kdp-puzzle-generator" },
+  { name: "Free KDP Maze Generator & Labyrinth Studio", path: "/maze" },
   { name: "Automated KDP Cover Creator", path: "/tools/kdp-cover-creator" },
   { name: "100% Free Amazon KDP Formatter (Book Description Generator)", path: "/tools/kdp-book-description-generator" },
   { name: "Free KDP Spine & Cover Calculator", path: "/tools/spine-calculator" },

@@ -27,7 +27,15 @@ const SEARCH_ITEMS: SearchItem[] = [
     link: "/sudoku",
     badge: "Popular"
   },
-
+  {
+    id: "maze",
+    name: "KDP Labyrinth & Maze Studio",
+    category: "Puzzles & Interiors",
+    description: "Generate shape-masked mazes (Square, Circle, Heart) with automated solution keys.",
+    keywords: ["maze", "mazes", "labyrinth", "maze studio", "shape maze", "puzzle", "interior"],
+    link: "/maze",
+    badge: "Popular"
+  },
   {
     id: "word-search",
     name: "Word Search Builder",

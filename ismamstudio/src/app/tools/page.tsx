@@ -66,6 +66,8 @@ const TOOL_ITEMS: { name: string; path: string }[] = [
   { name: "Free KDP Puzzle Generator", path: "/tools/kdp-puzzle-generator" },
   { name: "Free KDP Maze Generator & Labyrinth Studio", path: "/maze" },
   { name: "Free Futoshiki (More or Less) Logic Puzzle Studio", path: "/studio/futoshiki" },
+  { name: "Free Slitherlink (Loop the Loop / Fences) Studio", path: "/studio/slitherlink" },
+  { name: "Free Nurikabe (Islands in the Stream) Studio", path: "/studio/nurikabe" },
   { name: "Automated KDP Cover Creator", path: "/tools/kdp-cover-creator" },
   { name: "100% Free Amazon KDP Formatter (Book Description Generator)", path: "/tools/kdp-book-description-generator" },
   { name: "Free KDP Spine & Cover Calculator", path: "/tools/spine-calculator" },

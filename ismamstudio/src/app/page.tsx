@@ -21,7 +21,9 @@ import {
   Shuffle,
   Type,
   Route,
-  Scale
+  Scale,
+  CircleDot,
+  Waves
 } from "lucide-react";
 
 import HomeNewsletterForm from "./components/HomeNewsletterForm";
@@ -195,6 +197,8 @@ export default function HomePage() {
               { label: "Sudoku Grid", type: "Math Logic", desc: "100% compliant trim sizing", emoji: "🔢" },
               { label: "Maze Labyrinth", type: "Puzzle", desc: "Shape-masked vector labyrinths", emoji: "🌀" },
               { label: "Futoshiki", type: "Math Logic", desc: "Japanese inequality logic grids", emoji: "⚖️" },
+              { label: "Slitherlink", type: "Math Logic", desc: "Single continuous closed loop grids", emoji: "➰" },
+              { label: "Nurikabe", type: "Math Logic", desc: "Islands in the stream logic puzzles", emoji: "🏝️" },
               { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
               { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },
               { label: "Lined Journal", type: "Low-Content", desc: "Classic horizontal writing lines", emoji: "📖" },
@@ -205,6 +209,8 @@ export default function HomePage() {
               { label: "Sudoku Grid", type: "Math Logic", desc: "100% compliant trim sizing", emoji: "🔢" },
               { label: "Maze Labyrinth", type: "Puzzle", desc: "Shape-masked vector labyrinths", emoji: "🌀" },
               { label: "Futoshiki", type: "Math Logic", desc: "Japanese inequality logic grids", emoji: "⚖️" },
+              { label: "Slitherlink", type: "Math Logic", desc: "Single continuous closed loop grids", emoji: "➰" },
+              { label: "Nurikabe", type: "Math Logic", desc: "Islands in the stream logic puzzles", emoji: "🏝️" },
               { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
               { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },
               { label: "Lined Journal", type: "Low-Content", desc: "Classic horizontal writing lines", emoji: "📖" },
@@ -249,6 +255,8 @@ export default function HomePage() {
             { title: "Sudoku Studio", desc: "Bulk Sudoku grids, Easy to Hard, each verified for exactly one unique solution.", href: "/sudoku", icon: Grid3x3, badge: "300 DPI Vector" },
             { title: "Maze Studio", desc: "Custom shape-masked labyrinths, circular & rectangular mazes with verified solution paths.", href: "/maze", icon: Route, badge: "Labyrinth Engine" },
             { title: "Futoshiki Studio", desc: "Japanese inequality math-logic grids, 4x4 to 9x9, with unique solution backtracking and 300 DPI interiors.", href: "/studio/futoshiki", icon: Scale, badge: "Inequality Logic" },
+            { title: "Slitherlink (Fences) Studio", desc: "Classic Japanese single closed loop logic puzzles, 5x5 to 10x10 dot grids, with 300 DPI vector book export.", href: "/studio/slitherlink", icon: CircleDot, badge: "Single Loop Logic" },
+            { title: "Nurikabe (Islands) Studio", desc: "Japanese stream & island deduction puzzles with verified single-stream connectivity and 300 DPI vector interiors.", href: "/studio/nurikabe", icon: Waves, badge: "Island Stream Logic" },
             { title: "Word Search Studio", desc: "Import a word list or CSV, build the grid, export the interior sheet with clue layouts.", href: "/tools/word-search", icon: Sparkles, badge: "CSV Import" },
             { title: "Crossword Studio", desc: "Custom crosswords, 10x10 to 20x20, up to 1,000+ pages, with auto-intersecting clues.", href: "/studio/crossword", icon: LayoutTemplate, badge: "Auto-Generate" },
             { title: "Cryptogram Studio", desc: "Substitution-cipher worksheets from your own quotes, up to 1,000+ pages with solution keys.", href: "/studio/cryptogram", icon: Hash, badge: "Cipher Engine" },

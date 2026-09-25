@@ -12,6 +12,8 @@ import { generateProceduralNonogram } from "@/lib/nonogramEngine";
 import { generateCalcudoku } from "@/lib/calcudokuEngine";
 import { generateMissingVowelsBook } from "@/lib/missingVowelsEngine";
 import { generateFutoshiki } from "@/lib/futoshikiEngine";
+import { generateSlitherlink } from "@/lib/slitherlinkEngine";
+import { generateNurikabe } from "@/lib/nurikabeEngine";
 import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "@/lib/kdpBookEngine";
 
 export interface ExportOptions {
@@ -241,6 +243,32 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
         );
       }
       drawFutoshiki(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'slitherlink' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawSlitherlinkSolutionPack(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'slitherlink') {
+      if (!page.config?.puzzleData) {
+        page.config = page.config || {};
+        page.config.puzzleData = generateSlitherlink(
+          page.config.rows || 7,
+          page.config.cols || 7,
+          page.config.difficulty || "medium",
+          "Slitherlink"
+        );
+      }
+      drawSlitherlink(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'nurikabe' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawNurikabeSolutionPack(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'nurikabe') {
+      if (!page.config?.puzzleData) {
+        page.config = page.config || {};
+        page.config.puzzleData = generateNurikabe(
+          page.config.rows || 7,
+          page.config.cols || 7,
+          page.config.difficulty || "medium",
+          "Nurikabe"
+        );
+      }
+      drawNurikabe(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'coloring_book' && (page.config.presetId || page.config.uploadedImageUrl)) {
       drawColoringBookPage(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'low_content') {
@@ -4115,6 +4143,321 @@ const drawFutoshikiSolutionPack = (doc: any, page: any, xShift: number, pageWidt
         }
       }
     }
+
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.005);
+    doc.rect(zone.x, zone.y, zone.w, zone.h);
+  });
+  doc.setTextColor(0);
+};
+
+// ── Slitherlink Single Page ──────────────────────────────────────────────
+const drawSlitherlink = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const puzzle = page.config?.puzzleData;
+  if (!puzzle) return;
+
+  const rows = puzzle.rows || 7;
+  const cols = puzzle.cols || 7;
+  const isSolution = page.config?.isSolution || false;
+
+  const marginX = 0.85;
+  const marginY = 1.35;
+  const maxW = pageWidth - marginX * 2;
+  const maxH = pageHeight - marginY * 2;
+
+  const cellSize = Math.min(maxW / cols, maxH / rows, 0.65);
+  const gridW = cols * cellSize;
+  const gridH = rows * cellSize;
+  const startX = (pageWidth - gridW) / 2 + xShift;
+  const startY = marginY + (maxH - gridH) / 2;
+
+  // Header Title
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  const title = isSolution ? "SLITHERLINK (SOLUTION)" : (puzzle.title || "SLITHERLINK PUZZLE");
+  doc.text(title.toUpperCase(), pageWidth / 2 + xShift, 0.85, { align: "center" });
+
+  doc.setFont("Helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.text(`${rows}x${cols} Dot Grid • Connect The Dots Into A Single Closed Loop`, pageWidth / 2 + xShift, 1.05, { align: "center" });
+
+  // Draw Clues (numbers in cells)
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(Math.max(10, Math.floor(cellSize * 24)));
+  doc.setTextColor(isSolution ? 140 : 0);
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const clue = puzzle.clues?.[r]?.[c];
+      if (clue !== null && clue !== undefined) {
+        const cx = startX + c * cellSize + cellSize / 2;
+        const cy = startY + r * cellSize + cellSize * 0.68;
+        doc.text(String(clue), cx, cy, { align: "center" });
+      }
+    }
+  }
+
+  // If Solution: Draw Loop Lines
+  if (isSolution && puzzle.solutionH && puzzle.solutionV) {
+    doc.setDrawColor(20);
+    doc.setLineWidth(0.028);
+
+    // Horizontal lines
+    for (let r = 0; r <= rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (puzzle.solutionH[r]?.[c]) {
+          doc.line(
+            startX + c * cellSize,
+            startY + r * cellSize,
+            startX + (c + 1) * cellSize,
+            startY + r * cellSize
+          );
+        }
+      }
+    }
+
+    // Vertical lines
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c <= cols; c++) {
+        if (puzzle.solutionV[r]?.[c]) {
+          doc.line(
+            startX + c * cellSize,
+            startY + r * cellSize,
+            startX + c * cellSize,
+            startY + (r + 1) * cellSize
+          );
+        }
+      }
+    }
+  }
+
+  // Draw Dot Grid (all vertices)
+  const dotRadius = Math.max(0.015, Math.min(0.03, cellSize * 0.065));
+  doc.setFillColor(30);
+
+  for (let r = 0; r <= rows; r++) {
+    for (let c = 0; c <= cols; c++) {
+      const vx = startX + c * cellSize;
+      const vy = startY + r * cellSize;
+      doc.circle(vx, vy, dotRadius, "F");
+    }
+  }
+};
+
+// ── Slitherlink Solution Pack ──────────────────────────────────────────────
+const drawSlitherlinkSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { puzzleData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
+  const margin = 0.65;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.puzzleData) return;
+    const puzzle = entry.puzzleData;
+    const rows = puzzle.rows || 7;
+    const cols = puzzle.cols || 7;
+    const titleSpace = 0.28;
+
+    const cellSize = Math.min((zone.w - 0.2) / cols, (zone.h - titleSpace - 0.2) / rows, 0.35);
+    const gridW = cols * cellSize;
+    const gridH = rows * cellSize;
+    const startX = zone.x + (zone.w - gridW) / 2;
+    const startY = zone.y + titleSpace + (zone.h - titleSpace - gridH) / 2;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(60);
+    const pTitle = puzzle.title || `Slitherlink #${entry.puzzleIndex || i + 1}`;
+    const pSub = entry.pageNumber ? `(Page ${entry.pageNumber})` : "";
+    doc.text(`${pTitle} ${pSub}`.trim(), zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    // Clues
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(Math.max(6, Math.floor(cellSize * 20)));
+    doc.setTextColor(140);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const clue = puzzle.clues?.[r]?.[c];
+        if (clue !== null && clue !== undefined) {
+          doc.text(String(clue), startX + c * cellSize + cellSize / 2, startY + r * cellSize + cellSize * 0.68, { align: "center" });
+        }
+      }
+    }
+
+    // Solution Lines
+    doc.setDrawColor(20);
+    doc.setLineWidth(0.016);
+    if (puzzle.solutionH && puzzle.solutionV) {
+      for (let r = 0; r <= rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (puzzle.solutionH[r]?.[c]) {
+            doc.line(startX + c * cellSize, startY + r * cellSize, startX + (c + 1) * cellSize, startY + r * cellSize);
+          }
+        }
+      }
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c <= cols; c++) {
+          if (puzzle.solutionV[r]?.[c]) {
+            doc.line(startX + c * cellSize, startY + r * cellSize, startX + c * cellSize, startY + (r + 1) * cellSize);
+          }
+        }
+      }
+    }
+
+    // Dots
+    doc.setFillColor(40);
+    const dotR = Math.max(0.01, cellSize * 0.05);
+    for (let r = 0; r <= rows; r++) {
+      for (let c = 0; c <= cols; c++) {
+        doc.circle(startX + c * cellSize, startY + r * cellSize, dotR, "F");
+      }
+    }
+
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.005);
+    doc.rect(zone.x, zone.y, zone.w, zone.h);
+  });
+  doc.setTextColor(0);
+};
+
+// ── Nurikabe Single Page ──────────────────────────────────────────────
+const drawNurikabe = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const puzzle = page.config?.puzzleData;
+  if (!puzzle) return;
+
+  const rows = puzzle.rows || 7;
+  const cols = puzzle.cols || 7;
+  const isSolution = page.config?.isSolution || false;
+
+  const marginX = 0.85;
+  const marginY = 1.35;
+  const maxW = pageWidth - marginX * 2;
+  const maxH = pageHeight - marginY * 2;
+
+  const cellSize = Math.min(maxW / cols, maxH / rows, 0.65);
+  const gridW = cols * cellSize;
+  const gridH = rows * cellSize;
+  const startX = (pageWidth - gridW) / 2 + xShift;
+  const startY = marginY + (maxH - gridH) / 2;
+
+  // Header Title
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  const title = isSolution ? "NURIKABE (SOLUTION)" : (puzzle.title || "NURIKABE PUZZLE");
+  doc.text(title.toUpperCase(), pageWidth / 2 + xShift, 0.85, { align: "center" });
+
+  doc.setFont("Helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.text(`${rows}x${cols} Grid • Islands in the Stream • Form Islands & Shaded Sea`, pageWidth / 2 + xShift, 1.05, { align: "center" });
+
+  // Draw Grid Cells
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cx = startX + c * cellSize;
+      const cy = startY + r * cellSize;
+      const isSea = isSolution && puzzle.solution?.[r]?.[c] === "sea";
+
+      if (isSea) {
+        doc.setFillColor(45, 45, 52);
+        doc.rect(cx, cy, cellSize, cellSize, "F");
+      } else {
+        doc.setFillColor(255, 255, 255);
+        doc.rect(cx, cy, cellSize, cellSize, "F");
+      }
+
+      // Cell border
+      doc.setDrawColor(180, 180, 185);
+      doc.setLineWidth(0.008);
+      doc.rect(cx, cy, cellSize, cellSize, "S");
+
+      // Clue
+      const clue = puzzle.clues?.[r]?.[c];
+      if (clue !== null && clue !== undefined) {
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(Math.max(10, Math.floor(cellSize * 24)));
+        doc.setTextColor(0);
+        doc.text(String(clue), cx + cellSize / 2, cy + cellSize * 0.68, { align: "center" });
+      }
+    }
+  }
+
+  // Outer Grid Border
+  doc.setDrawColor(20);
+  doc.setLineWidth(0.024);
+  doc.rect(startX, startY, gridW, gridH, "S");
+};
+
+// ── Nurikabe Solution Pack ──────────────────────────────────────────────
+const drawNurikabeSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { puzzleData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
+  const margin = 0.65;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.puzzleData) return;
+    const puzzle = entry.puzzleData;
+    const rows = puzzle.rows || 7;
+    const cols = puzzle.cols || 7;
+    const titleSpace = 0.28;
+
+    const cellSize = Math.min((zone.w - 0.2) / cols, (zone.h - titleSpace - 0.2) / rows, 0.35);
+    const gridW = cols * cellSize;
+    const gridH = rows * cellSize;
+    const startX = zone.x + (zone.w - gridW) / 2;
+    const startY = zone.y + titleSpace + (zone.h - titleSpace - gridH) / 2;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(60);
+    const pTitle = puzzle.title || `Nurikabe #${entry.puzzleIndex || i + 1}`;
+    const pSub = entry.pageNumber ? `(Page ${entry.pageNumber})` : "";
+    doc.text(`${pTitle} ${pSub}`.trim(), zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    // Cells
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cx = startX + c * cellSize;
+        const cy = startY + r * cellSize;
+        const isSea = puzzle.solution?.[r]?.[c] === "sea";
+
+        if (isSea) {
+          doc.setFillColor(55, 55, 65);
+          doc.rect(cx, cy, cellSize, cellSize, "F");
+        } else {
+          doc.setFillColor(255, 255, 255);
+          doc.rect(cx, cy, cellSize, cellSize, "F");
+        }
+
+        doc.setDrawColor(200);
+        doc.setLineWidth(0.005);
+        doc.rect(cx, cy, cellSize, cellSize, "S");
+
+        const clue = puzzle.clues?.[r]?.[c];
+        if (clue !== null && clue !== undefined) {
+          doc.setFont("Helvetica", "bold");
+          doc.setFontSize(Math.max(6, Math.floor(cellSize * 20)));
+          doc.setTextColor(0);
+          doc.text(String(clue), cx + cellSize / 2, cy + cellSize * 0.68, { align: "center" });
+        }
+      }
+    }
+
+    doc.setDrawColor(30);
+    doc.setLineWidth(0.012);
+    doc.rect(startX, startY, gridW, gridH, "S");
 
     doc.setDrawColor(220);
     doc.setLineWidth(0.005);

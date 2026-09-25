@@ -179,6 +179,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.85,
         },
         {
+            url: `${baseUrl}/studio/slitherlink`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.85,
+        },
+        {
+            url: `${baseUrl}/studio/nurikabe`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.85,
+        },
+        {
             url: `${baseUrl}/maze`,
             lastModified: new Date(),
             changeFrequency: 'weekly',

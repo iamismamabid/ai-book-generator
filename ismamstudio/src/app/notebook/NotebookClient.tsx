@@ -64,6 +64,8 @@ const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) =
   nonogram: { label: "Open in Nonogram Studio", href: (id) => `/studio/nonogram?notebookId=${id}` },
   calcudoku: { label: "Open in Calcudoku Studio", href: (id) => `/studio/calcudoku?notebookId=${id}` },
   futoshiki: { label: "Open in Futoshiki Studio", href: (id) => `/studio/futoshiki?notebookId=${id}` },
+  slitherlink: { label: "Open in Slitherlink Studio", href: (id) => `/studio/slitherlink?notebookId=${id}` },
+  nurikabe: { label: "Open in Nurikabe Studio", href: (id) => `/studio/nurikabe?notebookId=${id}` },
   "missing-vowels": { label: "Open in Missing Vowels Studio", href: (id) => `/studio/missing-vowels?notebookId=${id}` },
   cryptogram: { label: "Open in Cryptogram Studio", href: (id) => `/studio/cryptogram?notebookId=${id}` },
   "word-search": { label: "Open in Word Search Studio", href: (id) => `/tools/word-search?notebookId=${id}` },

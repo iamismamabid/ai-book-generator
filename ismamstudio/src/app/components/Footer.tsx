@@ -199,6 +199,12 @@ export default function Footer() {
                 <Link href="/studio/futoshiki" className="text-slate-400 hover:text-indigo-400 transition-colors">Futoshiki Studio</Link>
               </li>
               <li>
+                <Link href="/studio/slitherlink" className="text-slate-400 hover:text-indigo-400 transition-colors">Slitherlink Studio</Link>
+              </li>
+              <li>
+                <Link href="/studio/nurikabe" className="text-slate-400 hover:text-indigo-400 transition-colors">Nurikabe Studio</Link>
+              </li>
+              <li>
                 <Link href="/studio/kakuro" className="text-slate-400 hover:text-indigo-400 transition-colors">Kakuro Puzzle Generator</Link>
               </li>
               <li>

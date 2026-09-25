@@ -96,6 +96,24 @@ const SEARCH_ITEMS: SearchItem[] = [
     badge: "New"
   },
   {
+    id: "slitherlink",
+    name: "Slitherlink (Loop the Loop / Fences) Studio",
+    category: "Puzzles & Interiors",
+    description: "Generate Japanese Slitherlink single closed loop logic puzzle books (5x5 to 10x10) with verified solutions and 300 DPI vector PDFs.",
+    keywords: ["slitherlink", "loop the loop", "fences", "takegaki", "dot grid", "single loop", "logic puzzle", "puzzle"],
+    link: "/studio/slitherlink",
+    badge: "New"
+  },
+  {
+    id: "nurikabe",
+    name: "Nurikabe (Islands in the Stream) Studio",
+    category: "Puzzles & Interiors",
+    description: "Generate Japanese Nurikabe island & stream logic puzzle books (5x5 to 10x10) with verified connected sea solutions and 300 DPI vector PDFs.",
+    keywords: ["nurikabe", "islands in the stream", "cell structure", "islands", "stream", "logic puzzle", "japanese puzzle", "puzzle"],
+    link: "/studio/nurikabe",
+    badge: "New"
+  },
+  {
     id: "maze",
     name: "Maze Generator & Labyrinth Studio",
     category: "Puzzles & Interiors",

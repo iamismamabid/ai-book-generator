@@ -1,0 +1,170 @@
+/* KDPage Amazon QuickView Styling */
+.kdpage-qv-card {
+  margin-top: 10px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #090d16 0%, #111827 100%);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease-in-out;
+  position: relative;
+  z-index: 10;
+  text-align: left;
+}
+
+.kdpage-qv-card:hover {
+  border-color: rgba(99, 102, 241, 0.7);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.2);
+  transform: translateY(-1px);
+}
+
+.kdpage-qv-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.kdpage-qv-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #818cf8;
+}
+
+.kdpage-qv-brand span.logo-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6366f1;
+  display: inline-block;
+  box-shadow: 0 0 8px #6366f1;
+}
+
+.kdpage-qv-asin {
+  font-size: 10px;
+  color: #94a3b8;
+  font-family: monospace;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.kdpage-qv-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.kdpage-qv-stat-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+.kdpage-qv-stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 2px;
+  letter-spacing: 0.3px;
+}
+
+.kdpage-qv-stat-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.kdpage-qv-stat-value.highlight-green {
+  color: #34d399;
+}
+
+.kdpage-qv-stat-value.highlight-amber {
+  color: #fbbf24;
+}
+
+.kdpage-qv-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.kdpage-qv-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none !important;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.kdpage-qv-btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #ffffff !important;
+}
+
+.kdpage-qv-btn-primary:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+  color: #ffffff !important;
+}
+
+.kdpage-qv-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kdpage-qv-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff !important;
+}
+
+/* Detail page banner styling */
+.kdpage-detail-box {
+  margin: 15px 0;
+  background: linear-gradient(135deg, #090d16 0%, #1e1b4b 100%);
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  border-radius: 14px;
+  padding: 16px;
+  color: #f8fafc;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.kdpage-detail-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 800;
+  color: #a5b4fc;
+  margin-bottom: 12px;
+}
+
+.kdpage-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}

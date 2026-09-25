@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KDPage Extension</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <div class="popup-header">
+      <div class="popup-logo">
+        <span class="logo-badge">KD</span>
+        <span class="logo-text">KDPage <span>Tools</span></span>
+      </div>
+      <span class="status-pill">Active</span>
+    </div>
+
+    <!-- BSR Sales Calculator Card -->
+    <div class="calc-card">
+      <div class="calc-title">⚡ Instant BSR Sales Calculator</div>
+      <div class="input-group">
+        <label for="bsrInput">Amazon Best Sellers Rank (BSR):</label>
+        <div class="input-wrapper">
+          <input type="number" id="bsrInput" placeholder="e.g. 1500" min="1" value="2500" />
+          <button id="calcBtn">Calculate</button>
+        </div>
+      </div>
+
+      <div class="results-grid">
+        <div class="result-box">
+          <div class="result-label">Daily Sales</div>
+          <div class="result-value" id="dailySalesVal">~12 books</div>
+        </div>
+        <div class="result-box">
+          <div class="result-label">Monthly Sales</div>
+          <div class="result-value highlight" id="monthlySalesVal">~360 copies</div>
+        </div>
+        <div class="result-box">
+          <div class="result-label">Est. Royalties</div>
+          <div class="result-value highlight-gold" id="royaltiesVal">~$920 / mo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Shortcuts -->
+    <div class="section-title">Creator Shortcuts</div>
+    <div class="shortcuts-grid">
+      <a href="https://kdpage.com/studio?ref=ext" target="_blank" class="shortcut-btn primary">
+        🎨 Book Studio
+      </a>
+      <a href="https://kdpage.com/tools/spine-calculator?ref=ext" target="_blank" class="shortcut-btn">
+        📐 Spine Calc
+      </a>
+      <a href="https://kdpage.com/tools/keyword-research?ref=ext" target="_blank" class="shortcut-btn">
+        🔍 Keyword Spy
+      </a>
+      <a href="https://kdpage.com/tools/bulk-generator?ref=ext" target="_blank" class="shortcut-btn">
+        📦 Bulk Studio
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="popup-footer">
+      <span>KDPage Toolkit v1.0.0</span>
+      <a href="https://kdpage.com?ref=ext" target="_blank">Visit KDPage.com →</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

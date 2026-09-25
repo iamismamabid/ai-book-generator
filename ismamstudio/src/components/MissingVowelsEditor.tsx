@@ -262,13 +262,13 @@ export function MissingVowelsEditor({ page, updatePage, bulkAddPages }: any) {
             Missing Vowels {isSolution && <span className="text-indigo-600 dark:text-indigo-400">(Answer Key)</span>}
           </h1>
           <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest mb-6">
-            Theme: {worksheetData?.theme || "Mixed Words"} | Count: {worksheetData?.items.length || wordsCount}
+            Theme: {worksheetData?.theme || "Mixed Words"} | Count: {worksheetData?.items?.length || wordsCount}
           </p>
         </div>
 
-        {worksheetData ? (
+        {worksheetData && worksheetData.items ? (
           <div className="w-full max-w-xl space-y-3 p-2">
-            {worksheetData.items.map((item, idx) => (
+            {(worksheetData.items || []).map((item, idx) => (
               <div
                 key={idx}
                 className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm"

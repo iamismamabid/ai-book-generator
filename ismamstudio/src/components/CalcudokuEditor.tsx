@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { RefreshCw, AlertCircle, Sparkles, Calculator } from "lucide-react";
 import {
   CalcudokuPuzzle,
@@ -84,6 +84,20 @@ export function CalcudokuEditor({ page, updatePage, bulkAddPages }: any) {
     bulkAddPages(configs);
     alert(`✅ Successfully added ${configs.length} Calcudoku puzzles (${gridSize}x${gridSize}) to your book!`);
   };
+
+  const cellCageMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (puzzleData?.cages) {
+      puzzleData.cages.forEach((cage, idx) => {
+        if (cage?.cells) {
+          cage.cells.forEach(([r, c]) => {
+            map.set(`${r},${c}`, idx);
+          });
+        }
+      });
+    }
+    return map;
+  }, [puzzleData]);
 
   return (
     <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 h-full p-2 sm:p-4 overflow-y-auto">
@@ -266,17 +280,17 @@ export function CalcudokuEditor({ page, updatePage, bulkAddPages }: any) {
             >
               {Array.from({ length: gridSize }).map((_, r) =>
                 Array.from({ length: gridSize }).map((_, c) => {
-                  const cageId = puzzleData.cageGrid[r][c];
-                  const cage = puzzleData.cages[cageId];
-                  const isTopLeft = cage?.cells[0]?.[0] === r && cage?.cells[0]?.[1] === c;
+                  const currentCageIdx = cellCageMap.get(`${r},${c}`);
+                  const cage = currentCageIdx !== undefined && puzzleData?.cages ? puzzleData.cages[currentCageIdx] : null;
+                  const isTopLeft = cage?.cells?.[0]?.[0] === r && cage?.cells?.[0]?.[1] === c;
 
                   // Cage boundary checks
-                  const isTopCage = r === 0 || puzzleData.cageGrid[r - 1]?.[c] !== cageId;
-                  const isBottomCage = r === gridSize - 1 || puzzleData.cageGrid[r + 1]?.[c] !== cageId;
-                  const isLeftCage = c === 0 || puzzleData.cageGrid[r]?.[c - 1] !== cageId;
-                  const isRightCage = c === gridSize - 1 || puzzleData.cageGrid[r]?.[c + 1] !== cageId;
+                  const isTopCage = r === 0 || cellCageMap.get(`${r - 1},${c}`) !== currentCageIdx;
+                  const isBottomCage = r === gridSize - 1 || cellCageMap.get(`${r + 1},${c}`) !== currentCageIdx;
+                  const isLeftCage = c === 0 || cellCageMap.get(`${r},${c - 1}`) !== currentCageIdx;
+                  const isRightCage = c === gridSize - 1 || cellCageMap.get(`${r},${c + 1}`) !== currentCageIdx;
 
-                  const cellValue = puzzleData.solution[r][c];
+                  const cellValue = puzzleData?.grid?.[r]?.[c];
 
                   return (
                     <div
@@ -293,12 +307,12 @@ export function CalcudokuEditor({ page, updatePage, bulkAddPages }: any) {
                       {isTopLeft && cage && (
                         <span className="absolute top-1 left-1.5 text-[9px] sm:text-[10px] font-black tracking-tight text-slate-800 dark:text-slate-200 select-none">
                           {cage.target}
-                          {cage.op !== "none" ? cage.op : ""}
+                          {cage.op || ""}
                         </span>
                       )}
 
                       {/* Solution Value */}
-                      {isSolution && (
+                      {isSolution && cellValue !== undefined && (
                         <span className="text-base sm:text-xl font-black text-indigo-600 dark:text-indigo-400">
                           {cellValue}
                         </span>

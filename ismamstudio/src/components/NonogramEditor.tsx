@@ -79,11 +79,11 @@ export function NonogramEditor({ page, updatePage, bulkAddPages }: any) {
   };
 
   // Extract clue bounds for UI rendering
-  const maxRowClues = puzzleData
-    ? Math.max(...puzzleData.clues.rows.map((r) => r.length), 1)
+  const maxRowClues = puzzleData?.clues?.rows
+    ? Math.max(...puzzleData.clues.rows.map((r) => r?.length || 0), 1)
     : 1;
-  const maxColClues = puzzleData
-    ? Math.max(...puzzleData.clues.cols.map((c) => c.length), 1)
+  const maxColClues = puzzleData?.clues?.cols
+    ? Math.max(...puzzleData.clues.cols.map((c) => c?.length || 0), 1)
     : 1;
 
   return (

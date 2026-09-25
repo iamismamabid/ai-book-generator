@@ -3650,7 +3650,7 @@ const drawCalcudoku = (doc: any, page: any, xShift: number, pageWidth: number, p
   const puzzle = page.config.puzzleData;
   if (!puzzle) return;
   const isSolution = page.config.isSolution || false;
-  const size = puzzle.size;
+  const size = puzzle.size || 5;
 
   const marginX = 0.75;
   const marginY = 1.4;
@@ -3662,6 +3662,14 @@ const drawCalcudoku = (doc: any, page: any, xShift: number, pageWidth: number, p
   const gridH = size * cellSize;
   const startX = (pageWidth - gridW) / 2 + xShift;
   const startY = marginY + (maxH - gridH) / 2;
+
+  // Build cell -> cage index map
+  const cellCageMap = new Map<string, number>();
+  (puzzle.cages || []).forEach((cage: any, idx: number) => {
+    (cage.cells || []).forEach(([r, c]: [number, number]) => {
+      cellCageMap.set(`${r},${c}`, idx);
+    });
+  });
 
   // Header Title
   doc.setFont("Helvetica", "bold");
@@ -3675,7 +3683,7 @@ const drawCalcudoku = (doc: any, page: any, xShift: number, pageWidth: number, p
   doc.setTextColor(100);
   doc.text(`${size}x${size} Arithmetic Logic Grid`, pageWidth / 2 + xShift, 1.05, { align: "center" });
 
-  // Thin interior cell outlines
+  // Thin interior cell outlines & solution values
   doc.setLineWidth(0.004);
   doc.setDrawColor(200);
   for (let r = 0; r < size; r++) {
@@ -3685,11 +3693,11 @@ const drawCalcudoku = (doc: any, page: any, xShift: number, pageWidth: number, p
       doc.rect(cx, cy, cellSize, cellSize);
 
       // If solution, draw number centered
-      if (isSolution && puzzle.solution?.[r]?.[c] !== undefined) {
+      if (isSolution && puzzle.grid?.[r]?.[c] !== undefined) {
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(Math.max(10, Math.floor(cellSize * 28)));
         doc.setTextColor(0);
-        doc.text(String(puzzle.solution[r][c]), cx + cellSize / 2, cy + cellSize * 0.65, { align: "center" });
+        doc.text(String(puzzle.grid[r][c]), cx + cellSize / 2, cy + cellSize * 0.65, { align: "center" });
       }
     }
   }
@@ -3699,32 +3707,32 @@ const drawCalcudoku = (doc: any, page: any, xShift: number, pageWidth: number, p
   doc.setDrawColor(0);
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      const cageId = puzzle.cageGrid[r][c];
+      const currentCageIdx = cellCageMap.get(`${r},${c}`);
       const cx = startX + c * cellSize;
       const cy = startY + r * cellSize;
 
-      if (r === 0 || puzzle.cageGrid[r - 1]?.[c] !== cageId) {
+      if (r === 0 || cellCageMap.get(`${r - 1},${c}`) !== currentCageIdx) {
         doc.line(cx, cy, cx + cellSize, cy);
       }
-      if (r === size - 1 || puzzle.cageGrid[r + 1]?.[c] !== cageId) {
+      if (r === size - 1 || cellCageMap.get(`${r + 1},${c}`) !== currentCageIdx) {
         doc.line(cx, cy + cellSize, cx + cellSize, cy + cellSize);
       }
-      if (c === 0 || puzzle.cageGrid[r]?.[c - 1] !== cageId) {
+      if (c === 0 || cellCageMap.get(`${r},${c - 1}`) !== currentCageIdx) {
         doc.line(cx, cy, cx, cy + cellSize);
       }
-      if (c === size - 1 || puzzle.cageGrid[r]?.[c + 1] !== cageId) {
+      if (c === size - 1 || cellCageMap.get(`${r},${c + 1}`) !== currentCageIdx) {
         doc.line(cx + cellSize, cy, cx + cellSize, cy + cellSize);
       }
     }
   }
 
   // Clues in top-left cell of each cage
-  puzzle.cages.forEach((cage: any) => {
+  (puzzle.cages || []).forEach((cage: any) => {
     if (!cage?.cells?.length) return;
     const [r, c] = cage.cells[0];
     const cx = startX + c * cellSize;
     const cy = startY + r * cellSize;
-    const clueText = `${cage.target}${cage.op !== "none" ? cage.op : ""}`;
+    const clueText = `${cage.target}${cage.op || ""}`;
 
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(Math.max(7, Math.floor(cellSize * 16)));
@@ -3753,7 +3761,7 @@ const drawCalcudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidt
     const zone = zones[i];
     if (!zone || !entry.puzzleData) return;
     const puzzle = entry.puzzleData;
-    const size = puzzle.size;
+    const size = puzzle.size || 5;
     const titleSpace = 0.28;
 
     const cellSize = Math.min((zone.w - 0.2) / size, (zone.h - titleSpace - 0.2) / size, 0.45);
@@ -3761,6 +3769,13 @@ const drawCalcudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidt
     const gridH = size * cellSize;
     const startX = zone.x + (zone.w - gridW) / 2;
     const startY = zone.y + titleSpace + (zone.h - titleSpace - gridH) / 2;
+
+    const cellCageMap = new Map<string, number>();
+    (puzzle.cages || []).forEach((cage: any, idx: number) => {
+      (cage.cells || []).forEach(([r, c]: [number, number]) => {
+        cellCageMap.set(`${r},${c}`, idx);
+      });
+    });
 
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(10);
@@ -3776,11 +3791,11 @@ const drawCalcudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidt
         const cx = startX + c * cellSize;
         const cy = startY + r * cellSize;
         doc.rect(cx, cy, cellSize, cellSize);
-        if (puzzle.solution?.[r]?.[c] !== undefined) {
+        if (puzzle.grid?.[r]?.[c] !== undefined) {
           doc.setFont("Helvetica", "bold");
           doc.setFontSize(Math.max(7, Math.floor(cellSize * 26)));
           doc.setTextColor(0);
-          doc.text(String(puzzle.solution[r][c]), cx + cellSize / 2, cy + cellSize * 0.65, { align: "center" });
+          doc.text(String(puzzle.grid[r][c]), cx + cellSize / 2, cy + cellSize * 0.65, { align: "center" });
         }
       }
     }
@@ -3790,13 +3805,13 @@ const drawCalcudokuSolutionPack = (doc: any, page: any, xShift: number, pageWidt
     doc.setDrawColor(0);
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
-        const cageId = puzzle.cageGrid[r][c];
+        const currentCageIdx = cellCageMap.get(`${r},${c}`);
         const cx = startX + c * cellSize;
         const cy = startY + r * cellSize;
-        if (r === 0 || puzzle.cageGrid[r - 1]?.[c] !== cageId) doc.line(cx, cy, cx + cellSize, cy);
-        if (r === size - 1 || puzzle.cageGrid[r + 1]?.[c] !== cageId) doc.line(cx, cy + cellSize, cx + cellSize, cy + cellSize);
-        if (c === 0 || puzzle.cageGrid[r]?.[c - 1] !== cageId) doc.line(cx, cy, cx, cy + cellSize);
-        if (c === size - 1 || puzzle.cageGrid[r]?.[c + 1] !== cageId) doc.line(cx + cellSize, cy, cx + cellSize, cy + cellSize);
+        if (r === 0 || cellCageMap.get(`${r - 1},${c}`) !== currentCageIdx) doc.line(cx, cy, cx + cellSize, cy);
+        if (r === size - 1 || cellCageMap.get(`${r + 1},${c}`) !== currentCageIdx) doc.line(cx, cy + cellSize, cx + cellSize, cy + cellSize);
+        if (c === 0 || cellCageMap.get(`${r},${c - 1}`) !== currentCageIdx) doc.line(cx, cy, cx, cy + cellSize);
+        if (c === size - 1 || cellCageMap.get(`${r},${c + 1}`) !== currentCageIdx) doc.line(cx + cellSize, cy, cx + cellSize, cy + cellSize);
       }
     }
     doc.rect(startX, startY, gridW, gridH);

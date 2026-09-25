@@ -11,6 +11,7 @@ import { generateKakuro } from "@/lib/kakuro";
 import { generateProceduralNonogram } from "@/lib/nonogramEngine";
 import { generateCalcudoku } from "@/lib/calcudokuEngine";
 import { generateMissingVowelsBook } from "@/lib/missingVowelsEngine";
+import { generateFutoshiki } from "@/lib/futoshikiEngine";
 import { calculateKdpMargins, drawKdpTitlePage, drawKdpCopyrightAndInstructionsPage, ensureEvenPageCount } from "@/lib/kdpBookEngine";
 
 export interface ExportOptions {
@@ -227,6 +228,19 @@ export const exportBookToPDF = async (bookPages: any[], options: ExportOptions =
         page.config.worksheetData = wsBook[0] || null;
       }
       drawMissingVowels(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'futoshiki' && page.config.isMultiSolution && page.config.solutionGroup) {
+      drawFutoshikiSolutionPack(doc, page, leftMarginShift, w, h);
+    } else if (page.type === 'futoshiki') {
+      if (!page.config?.puzzleData) {
+        page.config = page.config || {};
+        page.config.puzzleData = generateFutoshiki(
+          page.config.size || 5,
+          page.config.difficulty || "medium",
+          Math.floor(Math.random() * 1000000),
+          "Futoshiki"
+        );
+      }
+      drawFutoshiki(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'coloring_book' && (page.config.presetId || page.config.uploadedImageUrl)) {
       drawColoringBookPage(doc, page, leftMarginShift, w, h);
     } else if (page.type === 'low_content') {
@@ -3946,6 +3960,161 @@ const drawMissingVowelsSolutionPack = (doc: any, page: any, xShift: number, page
       doc.setFont("Helvetica", "normal");
       doc.text(String(item.original || ""), lx + 0.22, ly);
     });
+
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.005);
+    doc.rect(zone.x, zone.y, zone.w, zone.h);
+  });
+  doc.setTextColor(0);
+};
+
+// ── Futoshiki Puzzle Renderer ─────────────────────────────────────────────
+const drawFutoshiki = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const puzzle = page.config.puzzleData;
+  if (!puzzle) return;
+  const isSolution = page.config.isSolution || false;
+  const size = puzzle.size || 5;
+
+  const marginX = 0.75;
+  const marginY = 1.4;
+  const maxW = pageWidth - marginX * 2;
+  const maxH = pageHeight - marginY * 2;
+
+  const cellGapRatio = 0.35;
+  const totalUnits = size + (size - 1) * cellGapRatio;
+  const cellSize = Math.min(maxW / totalUnits, maxH / totalUnits, 0.65);
+  const gapSize = cellSize * cellGapRatio;
+  const gridW = size * cellSize + (size - 1) * gapSize;
+  const gridH = size * cellSize + (size - 1) * gapSize;
+  const startX = (pageWidth - gridW) / 2 + xShift;
+  const startY = marginY + (maxH - gridH) / 2;
+
+  // Header Title
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  const title = isSolution ? "FUTOSHIKI (SOLUTION)" : (puzzle.title || "FUTOSHIKI PUZZLE");
+  doc.text(title.toUpperCase(), pageWidth / 2 + xShift, 0.85, { align: "center" });
+
+  doc.setFont("Helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.text(`${size}x${size} Japanese Logic Grid • Inequality More or Less`, pageWidth / 2 + xShift, 1.05, { align: "center" });
+
+  const hMap: Record<string, string> = {};
+  (puzzle.hInequalities || []).forEach((h: any) => { hMap[`${h.row},${h.col}`] = h.sign; });
+
+  const vMap: Record<string, string> = {};
+  (puzzle.vInequalities || []).forEach((v: any) => { vMap[`${v.row},${v.col}`] = v.sign; });
+
+  // Draw cells
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const cx = startX + c * (cellSize + gapSize);
+      const cy = startY + r * (cellSize + gapSize);
+
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.012);
+      doc.rect(cx, cy, cellSize, cellSize);
+
+      const initialVal = puzzle.initialGrid?.[r]?.[c];
+      const solVal = puzzle.solution?.[r]?.[c];
+
+      if (isSolution && solVal !== undefined && solVal !== null) {
+        doc.setFont("Helvetica", initialVal !== null && initialVal !== undefined ? "bold" : "normal");
+        doc.setFontSize(Math.max(9, Math.floor(cellSize * 24)));
+        doc.setTextColor(0);
+        doc.text(String(solVal), cx + cellSize / 2, cy + cellSize * 0.65, { align: "center" });
+      } else if (initialVal !== undefined && initialVal !== null) {
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(Math.max(10, Math.floor(cellSize * 26)));
+        doc.setTextColor(0);
+        doc.text(String(initialVal), cx + cellSize / 2, cy + cellSize * 0.65, { align: "center" });
+      }
+    }
+  }
+
+  // Draw horizontal inequalities
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(Math.max(8, Math.floor(gapSize * 30)));
+  doc.setTextColor(0);
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size - 1; c++) {
+      const sign = hMap[`${r},${c}`];
+      if (sign) {
+        const midX = startX + c * (cellSize + gapSize) + cellSize + gapSize / 2;
+        const midY = startY + r * (cellSize + gapSize) + cellSize * 0.62;
+        doc.text(sign, midX, midY, { align: "center" });
+      }
+    }
+  }
+
+  // Draw vertical inequalities
+  for (let r = 0; r < size - 1; r++) {
+    for (let c = 0; c < size; c++) {
+      const sign = vMap[`${r},${c}`];
+      if (sign) {
+        const midX = startX + c * (cellSize + gapSize) + cellSize / 2;
+        const midY = startY + r * (cellSize + gapSize) + cellSize + gapSize * 0.68;
+        doc.text(sign === "^" ? "^" : "v", midX, midY, { align: "center" });
+      }
+    }
+  }
+};
+
+// ── Futoshiki Solution Pack ──────────────────────────────────────────────
+const drawFutoshikiSolutionPack = (doc: any, page: any, xShift: number, pageWidth: number, pageHeight: number) => {
+  const group: { puzzleData: any; puzzleIndex: number; pageNumber?: number }[] = page.config.solutionGroup || [];
+  const margin = 0.65;
+  const topReserved = 1.2;
+  const x0 = margin + xShift;
+  const safeW = pageWidth - margin * 2;
+  const safeH = pageHeight - topReserved - margin;
+  const zones = getSolutionPackZones(group.length, x0, topReserved, safeW, safeH);
+
+  group.forEach((entry, i) => {
+    const zone = zones[i];
+    if (!zone || !entry.puzzleData) return;
+    const puzzle = entry.puzzleData;
+    const size = puzzle.size || 5;
+    const titleSpace = 0.28;
+
+    const cellGapRatio = 0.35;
+    const totalUnits = size + (size - 1) * cellGapRatio;
+    const cellSize = Math.min((zone.w - 0.2) / totalUnits, (zone.h - titleSpace - 0.2) / totalUnits, 0.38);
+    const gapSize = cellSize * cellGapRatio;
+    const gridW = size * cellSize + (size - 1) * gapSize;
+    const gridH = size * cellSize + (size - 1) * gapSize;
+    const startX = zone.x + (zone.w - gridW) / 2;
+    const startY = zone.y + titleSpace + (zone.h - titleSpace - gridH) / 2;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(60);
+    const pTitle = puzzle.title || `Futoshiki #${entry.puzzleIndex || i + 1}`;
+    const pSub = entry.pageNumber ? `(Page ${entry.pageNumber})` : "";
+    doc.text(`${pTitle} ${pSub}`.trim(), zone.x + zone.w / 2, zone.y + 0.18, { align: "center" });
+
+    // Draw cells with solution
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const cx = startX + c * (cellSize + gapSize);
+        const cy = startY + r * (cellSize + gapSize);
+
+        doc.setDrawColor(80);
+        doc.setLineWidth(0.008);
+        doc.rect(cx, cy, cellSize, cellSize);
+
+        const solVal = puzzle.solution?.[r]?.[c];
+        if (solVal !== undefined) {
+          doc.setFont("Helvetica", "bold");
+          doc.setFontSize(Math.max(6, Math.floor(cellSize * 24)));
+          doc.setTextColor(0);
+          doc.text(String(solVal), cx + cellSize / 2, cy + cellSize * 0.68, { align: "center" });
+        }
+      }
+    }
 
     doc.setDrawColor(220);
     doc.setLineWidth(0.005);

@@ -19,6 +19,7 @@ import { KakuroEditor } from "./KakuroEditor";
 import { NonogramEditor } from "./NonogramEditor";
 import { CalcudokuEditor } from "./CalcudokuEditor";
 import { MissingVowelsEditor } from "./MissingVowelsEditor";
+import { FutoshikiEditor } from "./FutoshikiEditor";
 import { ColoringBookEditor } from "./ColoringBookEditor";
 import LowContentEditor from "./LowContentEditor";
 import SaveToNotebookButton from "@/app/components/SaveToNotebookButton";
@@ -36,6 +37,7 @@ import { generateKakuro } from "@/lib/kakuro";
 import { generateProceduralNonogram, PRESET_NONOGRAMS, createPuzzleFromPreset } from "@/lib/nonogramEngine";
 import { generateCalcudoku } from "@/lib/calcudokuEngine";
 import { generateMissingVowelsBook, MISSING_VOWELS_THEMES } from "@/lib/missingVowelsEngine";
+import { generateFutoshiki } from "@/lib/futoshikiEngine";
 import { createPortal } from "react-dom";
 import { KdpBookLanguage } from "@/app/utils/bookMetadataGenerator";
 import { getThemesByLanguage } from "@/lib/wordSearchThemes";
@@ -277,6 +279,17 @@ export function hydrateOrGeneratePuzzleData(type: string, config: any = {}, forc
         );
         cfg.worksheetData = wsBook[0] || null;
       }
+    } else if (type === 'futoshiki') {
+      if (forceRegenerate || !cfg.puzzleData) {
+        const sz = cfg.size || 5;
+        const diff = cfg.difficulty || 'medium';
+        cfg.puzzleData = generateFutoshiki(
+          sz,
+          diff,
+          Math.floor(Math.random() * 1000000),
+          `Futoshiki ${sz}x${sz}`
+        );
+      }
     }
   } catch (e) {
     console.warn(`Error generating puzzle data for ${type}:`, e);
@@ -297,6 +310,7 @@ const GENERATED_CONTENT_KEY: Record<string, string> = {
   nonogram: 'puzzleData',
   calcudoku: 'puzzleData',
   missing_vowels: 'worksheetData',
+  futoshiki: 'puzzleData',
 };
 
 const TRIM_SIZES = KDP_TRIM_SIZES;
@@ -578,6 +592,7 @@ export default function BookBuilder({
   const [nonogramSolutionsPerPage, setNonogramSolutionsPerPage] = useState<1 | 2 | 4>(2);
   const [calcudokuSolutionsPerPage, setCalcudokuSolutionsPerPage] = useState<1 | 2 | 4>(2);
   const [missingVowelsSolutionsPerPage, setMissingVowelsSolutionsPerPage] = useState<1 | 2 | 4>(2);
+  const [futoshikiSolutionsPerPage, setFutoshikiSolutionsPerPage] = useState<1 | 2 | 4>(2);
 
   const [builderToast, setBuilderToast] = useState<{ message: string; type?: 'info' | 'success' | 'warning' } | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1064,6 +1079,7 @@ export default function BookBuilder({
       nonogram: { perPage: nonogramSolutionsPerPage, dataKey: 'puzzleData' },
       calcudoku: { perPage: calcudokuSolutionsPerPage, dataKey: 'puzzleData' },
       missing_vowels: { perPage: missingVowelsSolutionsPerPage, dataKey: 'worksheetData' },
+      futoshiki: { perPage: futoshikiSolutionsPerPage, dataKey: 'puzzleData' },
     };
 
     const ensurePageData = (p: any) => {
@@ -1392,7 +1408,7 @@ export default function BookBuilder({
             <div className="pt-3 border-t border-slate-800 space-y-2" data-tour="solutions-settings">
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Solutions Per Page</span>
-                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider bg-slate-800 px-1.5 py-0.5 rounded">11 Puzzles</span>
+                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider bg-slate-800 px-1.5 py-0.5 rounded">12 Puzzles</span>
               </div>
               <div className="grid grid-cols-2 gap-1.5">
                 {([
@@ -1407,6 +1423,7 @@ export default function BookBuilder({
                   ['Nonogram', nonogramSolutionsPerPage, setNonogramSolutionsPerPage],
                   ['Calcudoku', calcudokuSolutionsPerPage, setCalcudokuSolutionsPerPage],
                   ['Missing Vowels', missingVowelsSolutionsPerPage, setMissingVowelsSolutionsPerPage],
+                  ['Futoshiki', futoshikiSolutionsPerPage, setFutoshikiSolutionsPerPage],
                 ] as const).map(([label, val, setter]) => (
                   <div key={label} className="flex items-center justify-between gap-1 bg-slate-800/60 hover:bg-slate-800 px-2 py-1.5 rounded-xl border border-slate-800/80 transition">
                     <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-tight truncate" title={label}>{label}</span>
@@ -1601,6 +1618,14 @@ export default function BookBuilder({
                 page={bookPages[activeIndex]}
                 updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
                 bulkAddPages={(configs: any[]) => addMultiplePages('missing_vowels', configs)}
+              />
+            )}
+            {bookPages[activeIndex].type === 'futoshiki' && !bookPages[activeIndex].config.isMultiSolution && (
+              <FutoshikiEditor
+                key={bookPages[activeIndex].id}
+                page={bookPages[activeIndex]}
+                updatePage={(config: any) => updatePageConfig(bookPages[activeIndex].id, config)}
+                bulkAddPages={(configs: any[]) => addMultiplePages('futoshiki', configs)}
               />
             )}
             {bookPages[activeIndex].type === 'coloring_book' && (
@@ -1862,6 +1887,7 @@ export default function BookBuilder({
               { category: 'puzzle', type: 'nonogram', config: { size: 10, category: 'All' }, label: 'Nonogram (Picross)', desc: 'Japanese logic pixel picture cross grids', icon: '⬛', color: 'bg-violet-50 border-violet-200 text-violet-600' },
               { category: 'puzzle', type: 'calcudoku', config: { size: 5, opsMode: 'all' }, label: 'Calcudoku (KenKen)', desc: 'Math logic cages with arithmetic operators', icon: '➗', color: 'bg-blue-50 border-blue-200 text-blue-600' },
               { category: 'puzzle', type: 'missing_vowels', config: { wordsCount: 8, mode: 'guided_blanks' }, label: 'Missing Vowels', desc: 'Deduce hidden words without vowels', icon: '🔤', color: 'bg-lime-50 border-lime-200 text-lime-700' },
+              { category: 'puzzle', type: 'futoshiki', config: { size: 5, difficulty: 'medium' }, label: 'Futoshiki (More or Less)', desc: 'Japanese inequality logic number grids', icon: '⚖️', color: 'bg-cyan-50 border-cyan-200 text-cyan-700' },
 
               
               { category: 'structure', type: 'blank', config: {}, label: 'Blank Spacer', desc: 'Adds gutter and spacing padding', icon: '🔲', color: 'bg-slate-50 border-slate-200 text-slate-600' },

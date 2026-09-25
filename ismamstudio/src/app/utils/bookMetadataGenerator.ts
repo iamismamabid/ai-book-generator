@@ -64,6 +64,7 @@ export function generateKdpMetadata(options: MetadataGeneratorOptions): KdpMetad
   const hasNonogram = (typeCounts["nonogram"] || 0) > 0;
   const hasCalcudoku = (typeCounts["calcudoku"] || 0) > 0;
   const hasMissingVowels = (typeCounts["missing_vowels"] || 0) > 0;
+  const hasFutoshiki = (typeCounts["futoshiki"] || 0) > 0;
 
   // Language Labels
   const languageNames: Record<KdpBookLanguage, { label: string; kdpSelect: string }> = {
@@ -243,6 +244,7 @@ ${featureList.map((f) => `  <li><b>${f}.</b></li>`).join("\n")}
     if (hasNonogram) featureList.push(`Engaging Nonogram Pixel Art Puzzles to test deductive logic`);
     if (hasCalcudoku) featureList.push(`Math-Driven Calcudoku Logic Grids to sharpen arithmetic skills`);
     if (hasMissingVowels) featureList.push(`Missing Vowels Word Play Puzzles to test vocabulary and deduction`);
+    if (hasFutoshiki) featureList.push(`Futoshiki (More or Less) Japanese Inequality Logic Grids`);
     if (hasColoring) featureList.push(`Stress-Relieving Coloring Illustrations with bold clean outlines`);
 
     if (featureList.length === 0) {

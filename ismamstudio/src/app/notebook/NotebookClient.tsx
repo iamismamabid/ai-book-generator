@@ -62,6 +62,7 @@ const OPEN_IN_DESTINATIONS: Record<string, { label: string; href: (id: string) =
   "word-scramble": { label: "Open in Word Scramble Studio", href: (id) => `/studio/word-scramble?notebookId=${id}` },
   kakuro: { label: "Open in Kakuro Studio", href: (id) => `/studio/kakuro?notebookId=${id}` },
   nonogram: { label: "Open in Nonogram Studio", href: (id) => `/studio/nonogram?notebookId=${id}` },
+  calcudoku: { label: "Open in Calcudoku Studio", href: (id) => `/studio/calcudoku?notebookId=${id}` },
   cryptogram: { label: "Open in Cryptogram Studio", href: (id) => `/studio/cryptogram?notebookId=${id}` },
   "word-search": { label: "Open in Word Search Studio", href: (id) => `/tools/word-search?notebookId=${id}` },
   sudoku: { label: "Open in Sudoku Generator", href: (id) => `/sudoku?notebookId=${id}` },
@@ -85,6 +86,7 @@ function resolveDestination(category?: string, id?: string) {
     (cat.includes("scramble") ? OPEN_IN_DESTINATIONS["word-scramble"] : undefined) ||
     (cat.includes("kakuro") ? OPEN_IN_DESTINATIONS["kakuro"] : undefined) ||
     (cat.includes("nonogram") ? OPEN_IN_DESTINATIONS["nonogram"] : undefined) ||
+    ((cat.includes("calcudoku") || cat.includes("kenken")) ? OPEN_IN_DESTINATIONS["calcudoku"] : undefined) ||
     (cat.includes("math") ? OPEN_IN_DESTINATIONS["math-puzzle"] : undefined) ||
     (cat.includes("sudoku") ? OPEN_IN_DESTINATIONS["sudoku"] : undefined) ||
     (cat.includes("maze") ? OPEN_IN_DESTINATIONS["maze"] : undefined) ||

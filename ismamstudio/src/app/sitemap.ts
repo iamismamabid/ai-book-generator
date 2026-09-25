@@ -160,6 +160,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             changeFrequency: 'weekly',
             priority: 0.85,
         },
+        {
+            url: `${baseUrl}/studio/calcudoku`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.85,
+        },
 
         // ── High-Intent Money & Free Tools ──────────────────────
         {

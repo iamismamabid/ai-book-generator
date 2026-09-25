@@ -71,6 +71,14 @@ const SEARCH_ITEMS: SearchItem[] = [
     link: "/studio/nonogram"
   },
   {
+    id: "calcudoku",
+    name: "Calcudoku (KenKen) Studio",
+    category: "Puzzles & Interiors",
+    description: "Generate Calcudoku (KenKen / Mathdoku) math cage logic puzzles with addition, subtraction, multiplication, and division.",
+    keywords: ["calcudoku", "kenken", "mathdoku", "newdoku", "math puzzle", "logic puzzle", "latin square", "puzzle"],
+    link: "/studio/calcudoku"
+  },
+  {
     id: "kakuro",
     name: "Kakuro Cross-Sums Generator",
     category: "Puzzles & Interiors",

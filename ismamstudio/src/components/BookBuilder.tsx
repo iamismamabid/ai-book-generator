@@ -414,16 +414,31 @@ export function ensureMandatoryFrontMatter(pages: any[]): any[] {
 export default function BookBuilder({
   coverState,
   initialPages,
+  notebookId,
   onOpenCoverStudio,
   onInteriorChange,
   onSyncPages,
 }: {
   coverState?: any;
   initialPages?: any[];
+  notebookId?: string;
   onOpenCoverStudio?: (syncData?: any) => void;
   onInteriorChange?: (info: { pageCount: number; trimSize: any; bookPages?: any[]; borderTheme?: any; language?: KdpBookLanguage }) => void;
   onSyncPages?: (pages: any[], borderTheme?: any) => void;
 }) {
+  const [activeNotebookId, setActiveNotebookId] = useState<string | null>(() => {
+    if (notebookId) return notebookId;
+    if (typeof window !== "undefined") {
+      return new URLSearchParams(window.location.search).get("notebookId");
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (notebookId) {
+      setActiveNotebookId(notebookId);
+    }
+  }, [notebookId]);
   const [bookPages, setBookPages] = useState<any[]>(() => {
     if (initialPages && initialPages.length > 0) {
       return ensureMandatoryFrontMatter(initialPages);
@@ -1430,9 +1445,14 @@ export default function BookBuilder({
                 <SaveToNotebookButton
                   title={`All-in-One KDP Puzzle Book (${bookPages.length} Pages)`}
                   content={`Complete KDP Activity Book with ${bookPages.length} pages generated in All-in-One Studio.`}
-                  subtitle={`Trim: ${selectedTrim} | Total Pages: ${bookPages.length}`}
+                  subtitle={`Trim: ${selectedTrim?.label || selectedTrim} | Total Pages: ${bookPages.length}`}
                   category="puzzle-book"
                   data={{ pagesCount: bookPages.length, pages: bookPages }}
+                  notebookId={activeNotebookId ?? undefined}
+                  onSaved={(id, isUpdate) => {
+                    setActiveNotebookId(id);
+                    showToast(isUpdate ? "Changes updated in My Notebook!" : "Book saved to My Notebook!", "success");
+                  }}
                   className="w-full justify-center py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black text-[10px] uppercase tracking-wider"
                 />
               </div>

@@ -68,6 +68,7 @@ export default function MasterStudioApp() {
   // from a saved My Notebook entry) so Book Builder restores those exact pages
   // instead of whatever draft is sitting in localStorage.
   const [notebookInitialPages, setNotebookInitialPages] = useState<any[] | null>(null);
+  const [activeNotebookId, setActiveNotebookId] = useState<string | null>(null);
   const [notebookLoadState, setNotebookLoadState] = useState<'idle' | 'loading' | 'done'>('idle');
   // Mount already reads ?tab= from the URL to restore the active tab, but the
   // tab buttons themselves never wrote it back -- so switching to Cover
@@ -451,6 +452,7 @@ export default function MasterStudioApp() {
       }
 
       if (notebookId) {
+        setActiveNotebookId(notebookId);
         setNotebookLoadState("loading");
 
         // 1. Fast path: check if sessionStorage cached the notebook entry on click
@@ -798,6 +800,7 @@ export default function MasterStudioApp() {
             <BookBuilder
               coverState={coverStateMemo}
               initialPages={notebookInitialPages ?? undefined}
+              notebookId={activeNotebookId ?? undefined}
               onOpenCoverStudio={handleOpenCoverStudio}
               onInteriorChange={handleInteriorChange}
               onSyncPages={handleSyncInteriorPages}

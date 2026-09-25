@@ -1617,7 +1617,8 @@ export async function saveToNotebook(
   category?: string, 
   data?: any,
   folder?: string,
-  clientUserId?: string
+  clientUserId?: string,
+  existingId?: string
 ) {
   let { userId } = await auth();
   if (!userId && clientUserId) {
@@ -1635,6 +1636,64 @@ export async function saveToNotebook(
 
   try {
     const notebookDelegate = (prisma as any).notebook;
+    const workspaceUserIds = await getWorkspaceUserIds(userId);
+
+    // If an existing entry ID was provided, check if it exists in the user's workspace
+    if (existingId && typeof existingId === "string" && existingId.trim()) {
+      const cleanExistingId = existingId.trim();
+      let existingRecord: any = null;
+
+      if (notebookDelegate?.findFirst) {
+        existingRecord = await notebookDelegate.findFirst({
+          where: {
+            id: cleanExistingId,
+            userId: { in: workspaceUserIds },
+          },
+        });
+      } else {
+        const rows = await prisma.$queryRawUnsafe(
+          `SELECT "id" FROM "notebooks" WHERE "id" = $1 AND "userId" = ANY($2) LIMIT 1`,
+          cleanExistingId,
+          workspaceUserIds
+        );
+        existingRecord = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+      }
+
+      if (existingRecord) {
+        // Update existing notebook entry
+        const now = new Date();
+        if (notebookDelegate?.update) {
+          await notebookDelegate.update({
+            where: { id: cleanExistingId },
+            data: {
+              title: title.trim() || "Untitled Notebook Entry",
+              subtitle: subtitle || "Permanent Cloud Storage Entry",
+              content: content || "",
+              category: category || "general",
+              data: payloadData,
+              updatedAt: now,
+            },
+          });
+        } else {
+          await prisma.$executeRawUnsafe(
+            `UPDATE "notebooks" 
+             SET "title" = $1, "subtitle" = $2, "content" = $3, "category" = $4, "data" = $5::jsonb, "updatedAt" = $6
+             WHERE "id" = $7`,
+            title.trim() || "Untitled Notebook Entry",
+            subtitle || "Permanent Cloud Storage Entry",
+            content || "",
+            category || "general",
+            JSON.stringify(payloadData),
+            now,
+            cleanExistingId
+          );
+        }
+
+        revalidatePath("/notebook");
+        return { success: true, id: cleanExistingId, folder: assignedFolder, updated: true };
+      }
+    }
+
     let entryId = "";
 
     if (notebookDelegate?.create) {
@@ -1669,7 +1728,7 @@ export async function saveToNotebook(
     }
 
     revalidatePath("/notebook");
-    return { success: true, id: entryId, folder: assignedFolder };
+    return { success: true, id: entryId, folder: assignedFolder, updated: false };
   } catch (err: any) {
     console.error("Save to notebook failed:", err);
     return { success: false, error: err?.message || "Failed to save to Notebook." };

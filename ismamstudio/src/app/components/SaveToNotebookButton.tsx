@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { BookOpen, Check, Loader2, Folder, FolderPlus, ChevronDown, Plus, X } from "lucide-react";
+import { BookOpen, Check, Loader2, Folder, FolderPlus, ChevronDown, Plus, X, Copy } from "lucide-react";
 import { saveToNotebook, getUserNotebookFolders } from "../actions";
 import { useAuth, useUser } from "@clerk/nextjs";
 import Link from "next/link";
@@ -16,6 +16,9 @@ interface SaveToNotebookButtonProps {
   defaultFolder?: string;
   className?: string;
   iconOnly?: boolean;
+  notebookId?: string;
+  onSaved?: (id: string, isUpdate: boolean) => void;
+  allowSaveAsCopy?: boolean;
 }
 
 export default function SaveToNotebookButton({
@@ -28,10 +31,29 @@ export default function SaveToNotebookButton({
   defaultFolder = "Unfiled",
   className = "",
   iconOnly = false,
+  notebookId,
+  onSaved,
+  allowSaveAsCopy = true,
 }: SaveToNotebookButtonProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Track active notebook entry ID (passed via prop, found in URL, or returned from initial save)
+  const [activeNotebookId, setActiveNotebookId] = useState<string | null>(() => {
+    if (notebookId) return notebookId;
+    if (typeof window !== "undefined") {
+      const urlId = new URLSearchParams(window.location.search).get("notebookId");
+      if (urlId) return urlId;
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (notebookId) {
+      setActiveNotebookId(notebookId);
+    }
+  }, [notebookId]);
 
   // Folder management states
   const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false);
@@ -78,16 +100,43 @@ export default function SaveToNotebookButton({
     };
   }, [isFolderPickerOpen]);
 
-  const handleSave = async (overrideFolder?: string) => {
+  const handleSave = async (overrideFolder?: string, forceNewCopy: boolean = false) => {
     setSaving(true);
     setError(null);
     const targetFolder = overrideFolder || selectedFolder;
     try {
       const payloadData = getData ? await getData() : data;
-      const res = await saveToNotebook(title, content, subtitle, category, payloadData, targetFolder, getClientUserId());
-      if (res.success) {
+      const targetId = forceNewCopy ? undefined : (activeNotebookId || undefined);
+      const res = await saveToNotebook(
+        title,
+        content,
+        subtitle,
+        category,
+        payloadData,
+        targetFolder,
+        getClientUserId(),
+        targetId
+      );
+      if (res.success && res.id) {
         setSaved(true);
         setIsFolderPickerOpen(false);
+        setActiveNotebookId(res.id);
+
+        if (typeof window !== "undefined") {
+          try {
+            const url = new URL(window.location.href);
+            if (url.searchParams.get("notebookId") !== res.id) {
+              url.searchParams.set("notebookId", res.id);
+              window.history.replaceState({}, "", url.toString());
+            }
+            sessionStorage.setItem(`kdpage_notebook_entry_${res.id}`, JSON.stringify(payloadData));
+          } catch (e) {}
+        }
+
+        if (onSaved) {
+          onSaved(res.id, !!res.updated);
+        }
+
         setTimeout(() => setSaved(false), 5000);
       } else {
         setError(res.error || "Failed to sync to Notebook");
@@ -114,7 +163,15 @@ export default function SaveToNotebookButton({
       <button
         onClick={() => handleSave()}
         disabled={saving}
-        title={saved ? `Saved to ${selectedFolder}!` : saving ? "Saving to Notebook..." : "Save Design to My Notebook"}
+        title={
+          saved
+            ? `Saved to ${selectedFolder}!`
+            : saving
+            ? "Syncing to Notebook..."
+            : activeNotebookId
+            ? "Update Changes in My Notebook"
+            : "Save Design to My Notebook"
+        }
         className={`p-2.5 mx-auto rounded-xl transition-all duration-200 ease-out active:scale-[0.94] cursor-pointer flex items-center justify-center ${
           saved
             ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
@@ -148,17 +205,17 @@ export default function SaveToNotebookButton({
           {saving ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin text-white" />
-              <span>Syncing...</span>
+              <span>{activeNotebookId ? "Updating..." : "Syncing..."}</span>
             </>
           ) : saved ? (
             <>
               <Check className="w-4 h-4 text-white" />
-              <span>Saved to {selectedFolder === "Unfiled" ? "Notebook" : selectedFolder}!</span>
+              <span>{activeNotebookId ? "Updated in" : "Saved to"} {selectedFolder === "Unfiled" ? "Notebook" : selectedFolder}!</span>
             </>
           ) : (
             <>
               <BookOpen className="w-4 h-4 text-white" />
-              <span>Save to Notebook</span>
+              <span>{activeNotebookId ? "Update in Notebook" : "Save to Notebook"}</span>
             </>
           )}
         </button>
@@ -294,6 +351,24 @@ export default function SaveToNotebookButton({
             )}
           </div>
 
+          {/* Option: Save as New Copy */}
+          {activeNotebookId && allowSaveAsCopy !== false && (
+            <div className="mt-2.5 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => handleSave(selectedFolder, true)}
+                disabled={saving}
+                className="w-full py-1.5 px-2.5 rounded-lg bg-slate-800/90 hover:bg-slate-800 text-amber-300 font-bold text-[11px] flex items-center justify-between transition cursor-pointer"
+                title="Create a separate duplicate copy in My Notebook instead of updating this one"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Copy className="w-3.5 h-3.5 text-amber-400" /> Save as New Copy
+                </span>
+                <span className="text-[9px] uppercase tracking-wide bg-amber-400/10 text-amber-400 px-1 py-0.5 rounded font-black">Duplicate</span>
+              </button>
+            </div>
+          )}
+
           {/* Bottom pointer arrow pointing down towards the trigger */}
           <div className="absolute -bottom-1.5 right-4 w-3 h-3 bg-slate-900 border-b border-r border-slate-700/80 rotate-45 pointer-events-none" />
         </div>
@@ -304,7 +379,7 @@ export default function SaveToNotebookButton({
           href="/notebook"
           className="text-[10px] font-bold text-emerald-600 hover:underline inline-flex items-center gap-1"
         >
-          Synced to {selectedFolder === "Unfiled" ? "Notebook" : `"${selectedFolder}"`} — View in My Notebook →
+          {activeNotebookId ? "Changes updated in" : "Synced to"} {selectedFolder === "Unfiled" ? "Notebook" : `"${selectedFolder}"`} — View in My Notebook →
         </Link>
       )}
 

@@ -202,6 +202,7 @@ export default function HomePage() {
               { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
               { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },
               { label: "Lined Journal", type: "Low-Content", desc: "Classic horizontal writing lines", emoji: "📖" },
+              { label: "Coloring Art", type: "Illustration", desc: "Line art & mandala color sheets", emoji: "🎨" },
               { label: "Cryptogram", type: "Quotes", desc: "Shuffled letter decryption keys", emoji: "🔐" },
               { label: "Math sums", type: "Arithmetic", desc: "Sums, grid puzzle fill sheets", emoji: "➕" }
             ].concat([
@@ -214,6 +215,7 @@ export default function HomePage() {
               { label: "Word Search", type: "Puzzle", desc: "Vocabulary & clue layout builder", emoji: "🔍" },
               { label: "Daily Planner", type: "Low-Content", desc: "Schedule, priorities & water logging", emoji: "☀️" },
               { label: "Lined Journal", type: "Low-Content", desc: "Classic horizontal writing lines", emoji: "📖" },
+              { label: "Coloring Art", type: "Illustration", desc: "Line art & mandala color sheets", emoji: "🎨" },
               { label: "Cryptogram", type: "Quotes", desc: "Shuffled letter decryption keys", emoji: "🔐" },
               { label: "Math sums", type: "Arithmetic", desc: "Sums, grid puzzle fill sheets", emoji: "➕" }
             ]).map((item, idx) => (
@@ -266,6 +268,7 @@ export default function HomePage() {
             { title: "Missing Vowels Studio", desc: "Vocabulary & brain-teaser missing vowel worksheets with 20+ thematic niches, custom word banks, and 300 DPI interiors.", href: "/studio/missing-vowels", icon: Type, badge: "Spelling & Vocab" },
             { title: "Math Puzzle Builder", desc: "Arithmetic and logic-grid sheets for kids, seniors, and KDP activity workbooks.", href: "/studio/math-puzzle", icon: Calculator, badge: "Arithmetic Grid" },
             { title: "Word Scramble Studio", desc: "Scramble your word list into activity worksheets, ready for instant export.", href: "/studio/word-scramble", icon: Shuffle, badge: "Vocabulary Builder" },
+            { title: "Coloring Book Studio", desc: "Interactive canvas color-by-number, mandala & vector line art studio with printable PDF export.", href: "/tools/coloring-book-generator", icon: Palette, badge: "Coloring & Art" },
             { title: "AI Coloring Artbook Studio", desc: "Generate coloring books, intricate line art, and thematic illustrations ready for KDP print.", href: "/artbook-studio?v=2", icon: Sparkles, badge: "AI Illustration" },
             { title: "KDP Bulk Book Batch Studio", desc: "Queue dozens of puzzle book interiors, import configurations via CSV, and compile ready-to-upload files in bulk.", href: "/tools/bulk-generator", icon: Layers, badge: "Pro Batch Builder" },
           ].map((tool) => (

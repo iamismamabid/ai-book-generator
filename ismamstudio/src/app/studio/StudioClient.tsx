@@ -636,7 +636,7 @@ export default function MasterStudioApp() {
         console.error("Failed to save cover project to cloud:", err);
         setCloudSyncStatus("saved");
       }
-    }, 1500);
+    }, 20000);
   }, [
     isMounted,
     coverDraftLoaded,

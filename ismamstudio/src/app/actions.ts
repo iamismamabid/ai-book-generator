@@ -1649,6 +1649,7 @@ export async function saveToNotebook(
             id: cleanExistingId,
             userId: { in: workspaceUserIds },
           },
+          select: { id: true },
         });
       } else {
         const rows = await prisma.$queryRawUnsafe(
@@ -1746,27 +1747,42 @@ export async function getUserNotebookFolders(clientUserId?: string): Promise<{ s
   }
   try {
     const workspaceUserIds = await getWorkspaceUserIds(userId);
-    const notebookDelegate = (prisma as any).notebook;
-    let entries: any[] = [];
-    if (notebookDelegate?.findMany) {
-      entries = await notebookDelegate.findMany({
-        where: { userId: { in: workspaceUserIds } },
-        select: { data: true },
-      });
-    } else {
-      entries = await prisma.$queryRawUnsafe(
-        `SELECT "data" FROM "notebooks" WHERE "userId" = ANY($1)`,
+    // Ultra-lightweight: Extract distinct folder names directly in Postgres jsonb without transferring book contents
+    try {
+      const rows: any = await prisma.$queryRawUnsafe(
+        `SELECT DISTINCT ("data"->>'folder') AS folder 
+         FROM "notebooks" 
+         WHERE "userId" = ANY($1) 
+           AND "data"->>'folder' IS NOT NULL 
+           AND "data"->>'folder' != '' 
+           AND "data"->>'folder' != 'Unfiled'`,
         workspaceUserIds
       );
-    }
-    const folderSet = new Set<string>();
-    entries.forEach((e) => {
-      const f = e?.data?.folder;
-      if (typeof f === "string" && f.trim() && f.trim() !== "Unfiled") {
-        folderSet.add(f.trim());
+      const folderList = (Array.isArray(rows) ? rows : [])
+        .map((r: any) => (typeof r?.folder === "string" ? r.folder.trim() : ""))
+        .filter(Boolean)
+        .sort();
+      return { success: true, folders: Array.from(new Set(folderList)) };
+    } catch {
+      // Safe fallback if raw json query fails
+      const notebookDelegate = (prisma as any).notebook;
+      let entries: any[] = [];
+      if (notebookDelegate?.findMany) {
+        entries = await notebookDelegate.findMany({
+          where: { userId: { in: workspaceUserIds } },
+          select: { data: true },
+          take: 60,
+        });
       }
-    });
-    return { success: true, folders: Array.from(folderSet).sort() };
+      const folderSet = new Set<string>();
+      entries.forEach((e) => {
+        const f = e?.data?.folder;
+        if (typeof f === "string" && f.trim() && f.trim() !== "Unfiled") {
+          folderSet.add(f.trim());
+        }
+      });
+      return { success: true, folders: Array.from(folderSet).sort() };
+    }
   } catch (err) {
     console.error("Failed to fetch folders:", err);
     return { success: false, folders: [] };
@@ -1791,10 +1807,11 @@ export async function moveNotebookEntryToFolder(id: string, folderName: string, 
     if (notebookDelegate?.findFirst) {
       entry = await notebookDelegate.findFirst({
         where: { id, userId: { in: workspaceUserIds } },
+        select: { id: true, data: true },
       });
     } else {
       const rows = await prisma.$queryRawUnsafe(
-        `SELECT * FROM "notebooks" WHERE "id" = $1 AND "userId" = ANY($2)`,
+        `SELECT "id", "data" FROM "notebooks" WHERE "id" = $1 AND "userId" = ANY($2) LIMIT 1`,
         id,
         workspaceUserIds
       );
@@ -1848,36 +1865,38 @@ export async function renameNotebookFolder(oldFolder: string, newFolder: string,
   }
   try {
     const workspaceUserIds = await getWorkspaceUserIds(userId);
-    const notebookDelegate = (prisma as any).notebook;
-    let entries: any[] = [];
-    if (notebookDelegate?.findMany) {
-      entries = await notebookDelegate.findMany({
-        where: { userId: { in: workspaceUserIds } },
-      });
-    } else {
-      entries = await prisma.$queryRawUnsafe(
-        `SELECT * FROM "notebooks" WHERE "userId" = ANY($1)`,
-        workspaceUserIds
+    // Direct in-database JSON update: Zero data downloaded over network!
+    try {
+      await prisma.$executeRawUnsafe(
+        `UPDATE "notebooks"
+         SET "data" = jsonb_set(COALESCE("data", '{}'::jsonb), '{folder}', to_jsonb($1::text)),
+             "updatedAt" = NOW()
+         WHERE "userId" = ANY($2) AND "data"->>'folder' = $3`,
+        trimmedNew,
+        workspaceUserIds,
+        trimmedOld
       );
-    }
-
-    for (const item of entries) {
-      if (item?.data?.folder === trimmedOld) {
-        const updated = {
-          ...(item.data || {}),
-          folder: trimmedNew,
-        };
-        if (notebookDelegate?.update) {
-          await notebookDelegate.update({
-            where: { id: item.id },
-            data: { data: updated },
-          });
-        } else {
-          await prisma.$executeRawUnsafe(
-            `UPDATE "notebooks" SET "data" = $1::jsonb WHERE "id" = $2`,
-            JSON.stringify(updated),
-            item.id
-          );
+    } catch {
+      // Fallback
+      const notebookDelegate = (prisma as any).notebook;
+      const entries = notebookDelegate?.findMany
+        ? await notebookDelegate.findMany({
+            where: { userId: { in: workspaceUserIds } },
+            select: { id: true, data: true },
+          })
+        : [];
+      for (const item of entries) {
+        if (item?.data?.folder === trimmedOld) {
+          const updated = {
+            ...(item.data || {}),
+            folder: trimmedNew,
+          };
+          if (notebookDelegate?.update) {
+            await notebookDelegate.update({
+              where: { id: item.id },
+              data: { data: updated },
+            });
+          }
         }
       }
     }
@@ -1902,36 +1921,37 @@ export async function deleteNotebookFolder(folderName: string, clientUserId?: st
   const trimmed = folderName.trim();
   try {
     const workspaceUserIds = await getWorkspaceUserIds(userId);
-    const notebookDelegate = (prisma as any).notebook;
-    let entries: any[] = [];
-    if (notebookDelegate?.findMany) {
-      entries = await notebookDelegate.findMany({
-        where: { userId: { in: workspaceUserIds } },
-      });
-    } else {
-      entries = await prisma.$queryRawUnsafe(
-        `SELECT * FROM "notebooks" WHERE "userId" = ANY($1)`,
-        workspaceUserIds
+    // Direct in-database JSON update: Zero data downloaded over network!
+    try {
+      await prisma.$executeRawUnsafe(
+        `UPDATE "notebooks"
+         SET "data" = jsonb_set(COALESCE("data", '{}'::jsonb), '{folder}', '"Unfiled"'::jsonb),
+             "updatedAt" = NOW()
+         WHERE "userId" = ANY($1) AND "data"->>'folder' = $2`,
+        workspaceUserIds,
+        trimmed
       );
-    }
-
-    for (const item of entries) {
-      if (item?.data?.folder === trimmed) {
-        const updated = {
-          ...(item.data || {}),
-          folder: "Unfiled",
-        };
-        if (notebookDelegate?.update) {
-          await notebookDelegate.update({
-            where: { id: item.id },
-            data: { data: updated },
-          });
-        } else {
-          await prisma.$executeRawUnsafe(
-            `UPDATE "notebooks" SET "data" = $1::jsonb WHERE "id" = $2`,
-            JSON.stringify(updated),
-            item.id
-          );
+    } catch {
+      // Fallback
+      const notebookDelegate = (prisma as any).notebook;
+      const entries = notebookDelegate?.findMany
+        ? await notebookDelegate.findMany({
+            where: { userId: { in: workspaceUserIds } },
+            select: { id: true, data: true },
+          })
+        : [];
+      for (const item of entries) {
+        if (item?.data?.folder === trimmed) {
+          const updated = {
+            ...(item.data || {}),
+            folder: "Unfiled",
+          };
+          if (notebookDelegate?.update) {
+            await notebookDelegate.update({
+              where: { id: item.id },
+              data: { data: updated },
+            });
+          }
         }
       }
     }
@@ -2348,7 +2368,7 @@ export async function getArtbookPagesAction() {
     const pages = await prisma.artbookPage.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
-      take: 100,
+      take: 30,
     });
 
     return {

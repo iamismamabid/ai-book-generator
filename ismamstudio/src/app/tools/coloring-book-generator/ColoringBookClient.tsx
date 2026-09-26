@@ -1343,7 +1343,7 @@ export default function ColoringBookClient() {
               console.error("Failed to save coloring project to cloud:", err);
               setCloudSyncStatus("error");
             }
-          }, 2000);
+          }, 30000);
         }
       } catch {
         // ignore

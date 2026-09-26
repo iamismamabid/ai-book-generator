@@ -71,6 +71,11 @@ export default async function DashboardPage() {
   try {
     books = await prisma.book.findMany({
       where: { userId: userId as string },
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: "desc" },
     });
   } catch (error) {

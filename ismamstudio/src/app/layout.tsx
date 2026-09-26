@@ -63,6 +63,7 @@ export const metadata: Metadata = {
   verification: {
     google: "BxkWaFUAZ5Hu_euEr87tYkNVlw7iKrDKKl6ktdk2ihs",
     other: {
+      "msvalidate.01": "B530E188B235862A751ADC8F22E93CB2",
       "p:domain_verify": "a8a1ae0bc29b03f4045275105afd56c7",
       "gridinsoft-key": "etdv7o32iiuixb8r60esuwglse8tzyg3k0fkb6y1ah85fbygbsqm8hf1w8fp23tj",
     },

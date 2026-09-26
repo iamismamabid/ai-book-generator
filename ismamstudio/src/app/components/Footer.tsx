@@ -278,12 +278,20 @@ export default function Footer() {
               <div className="mb-3">
                 <NewsletterLeadForm source="footer_newsletter" />
               </div>
-              <a
-                href="mailto:support@kdpage.com"
-                className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
-              >
-                <Mail className="w-3.5 h-3.5" /> support@kdpage.com
-              </a>
+              <div className="flex flex-col gap-1.5">
+                <a
+                  href="mailto:support@kdpage.com"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                  <Mail className="w-3.5 h-3.5" /> support@kdpage.com
+                </a>
+                <a
+                  href="mailto:ismamabid.islet@gmail.com"
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-indigo-300 transition-colors"
+                >
+                  <Mail className="w-3.5 h-3.5" /> ismamabid.islet@gmail.com
+                </a>
+              </div>
             </div>
           </div>
 
